@@ -30,7 +30,7 @@ conflist = [
 
 parser = ConfigParser.RawConfigParser()
 parser.add_section("neubot")
-parser.set("neubot", "basedir", "/usr/share/neubot")
+parser.set("neubot", "basedir", "/usr/share")
 for conffile in conflist:
 	parser.read(conffile)
 basedir = parser.get("neubot", "basedir")

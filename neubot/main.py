@@ -33,7 +33,7 @@ conflist = [
 ]
 
 defaults = {
-	"basedir": "/usr/share/neubot",
+	"basedir": "/usr/share",
 	"rendezvous": "http://whitespider.polito.it:9773/",
 	"verbose": "False",
 }
