@@ -1,0 +1,78 @@
+Install (and uninstall) Neubot, below Linux (and other Unices)
+
+
+1. Howto install
+
+This document provides a brief description of how to install and
+uninstall Neubot in an Unix-like environment (e.g. Ubuntu Linux.)
+
+First of all, you need to have python 2.6 installed -- which is
+always the case with Ubuntu.  However, you might want to check
+invoking the following command:
+
+  python -V
+
+Now, assuming you have downloaded the latest Neubot archive, e.g.
+neubot-0.0.1.tar.gz, you have to unpack it, with the following
+command:
+
+  tar -xzf neubot-0.0.1.tar.gz
+
+The above command should create a directory named neubot-0.0.1.
+Now enter such directory with:
+
+  cd neubot-0.0.1
+
+At this point, you need to become administrator, in order to
+install neubot in your system.  Depending on the system you might
+have to do one of the following two commands:
+
+  su
+  sudo -s
+
+The latter is the command you have to type with Ubuntu.  After
+that you will be prompted for the password (the administrator one
+in the former case, your password in the latter.)  Be careful that
+the password will not produce any echo.  If that has worked, your
+prompt should now end with '#' rather than with '$', in order to
+notice you that you have become admin.
+
+We're ready.  At this point just type:
+
+  make install
+
+Now, if you're running Ubuntu you're (nearly) done.  You can
+logout, with the `logout' command.  Before you stop reading these
+notes be informed that you should keep neubot archive or sources
+around if you want to uninstall it.  More on this on the relevant
+section.
+
+Otherwise, if you are not running Ubuntu, you can launch Neubot
+once with the following command
+
+  /usr/bin/neubot
+
+It will immediatly run in background, so you are not going to see
+any output.  Note that, if you want to automatize such process,
+you might add
+
+  if [ -x /usr/bin/neubot ]; then
+    /usr/bin/neubot
+  fi
+
+near the end of your /etc/rc.local.  After that you are (nearly)
+done.  Before you stop reading these notes be informed that you
+should keep neubot archive or sources around if you want to
+uninstall it.  More on this on the relevant section.
+
+
+2. Howto uninstall
+
+To uninstall neubot, enter the neubot sources, become administrator,
+and do:
+
+  make uninstall
+
+If you are running Ubuntu you are done at this point.  Otherwise,
+if you have edited /etc/rc.local, you might also want to undo these
+changes.

@@ -1,0 +1,9 @@
+Neubot 0.0.1 [2010-05-07]
+	* Makefile: Code to install/uninstall in Unix-like environments.
+	* bin/neubot: Lookup neubot sources and launch it (Unix-only).
+	* doc/: Pictures of neubot/network and neubot/http classes.
+	* etc/init.d/neubot: Startup/shutdown script for Ubuntu.
+	* neubot/http: Generic and client-side HTTP/1.1 support.
+	* neubot/main.py: Logic to launch Neubot in Unix-like environments.
+	* neubot/network: Support for nonblocking network I/O.
+	* neubot/testing: Code to test neubot/network and neubot/http.

@@ -1,0 +1,11 @@
+AUTHORS		List of authors
+BUGS		List of open bugs
+COPYING		Copying conditions (GPLv3)
+ChangeLog	Log of changes
+INSTALL		Install instructions
+Makefile	Instructions for make(1)
+README		This file
+TODO		Things to be done
+bin		Executable scripts (e.g. neubot)
+doc		Documentation
+neubot		The `neubot' python module
