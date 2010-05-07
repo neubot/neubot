@@ -74,9 +74,11 @@ install:
 	        echo "[INSTALL] Install /etc/init.d/neubot";		\
 	        install etc/init.d/neubot /etc/init.d/neubot;		\
 	        for N in 2 3 4 5; do					\
-	            echo "[INSTALL] Symlink /etc/rc$${N}.d/098neubot";	\
-	            ln -s /etc/init.d/neubot /etc/rc$${N}.d/098neubot;	\
+	            echo "[INSTALL] Symlink /etc/rc$${N}.d/S98neubot";	\
+	            ln -s /etc/init.d/neubot /etc/rc$${N}.d/S98neubot;	\
 	        done;							\
+	        echo "[INSTALL] Symlink /etc/rc6.d/K08neubot";		\
+	        ln -s /etc/init.d/neubot /etc/rc6.d/K08neubot;		\
 	        echo "[INSTALL] Starting neubot";			\
 	        /etc/init.d/neubot start;				\
 	    fi;								\
@@ -88,9 +90,11 @@ uninstall:
 	        echo "[UNINSTALL] Stop the running neubots";		\
 	        /etc/init.d/neubot stop;				\
 	        for N in 2 3 4 5; do					\
-	            echo "[UNINSTALL] Remove /etc/rc$${N}.d/098neubot";	\
-	            rm -rf /etc/rc$${N}.d/098neubot;			\
+	            echo "[UNINSTALL] Remove /etc/rc$${N}.d/S98neubot";	\
+	            rm -rf /etc/rc$${N}.d/S98neubot;			\
 	        done;							\
+	        echo "[UNINSTALL] Remove /etc/rc6.d/K08neubot";		\
+	        rm -rf /etc/rc6.d/K08neubot;				\
 	        echo "[UNINSTALL] Remove /etc/init.d/neubot";		\
 	        rm -rf /etc/init.d/neubot;				\
 	    fi;								\
