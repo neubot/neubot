@@ -86,8 +86,11 @@ def unixmain(args):
 	os.chdir("/")
 	poller = neubot.network.poller()
 	while (True):
-		uri = parser.get("neubot", "rendezvous")
-		neubot.http.client(poller, "HEAD", uri)
-		poller.loop()
+		try:
+			uri = parser.get("neubot", "rendezvous")
+			neubot.http.client(poller, "HEAD", uri)
+			poller.loop()
+		except:
+			pass
 		time.sleep(300)
 	sys.exit(0)
