@@ -25,7 +25,7 @@ import traceback
 
 conflist = [
 	"/etc/neubot",
-	os.environ["HOME"] + "/" + ".neubot",
+#	os.environ["HOME"] + "/" + ".neubot",		# FIXME
 ]
 
 parser = ConfigParser.RawConfigParser()

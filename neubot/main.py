@@ -29,7 +29,7 @@ USAGE = "Usage: neubot [-v] [-O key=value] [module [options]]\n"
 
 conflist = [
 	"/etc/neubot",
-	os.environ["HOME"] + "/" + ".neubot",
+#	os.environ["HOME"] + "/" + ".neubot",		# FIXME
 ]
 
 defaults = {
