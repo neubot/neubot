@@ -1,0 +1,3 @@
+Remove deprecated files
+	* neubot/http/clients.py
+	* neubot/testing/http.py
