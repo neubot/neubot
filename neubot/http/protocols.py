@@ -26,14 +26,14 @@ class protocol:
 		self.adaptor.attach(self)
 		self.adaptor.get_metadata()
 		self.message = None
-		self.parent = None
+		self.application = None
 
 	def closing(self):
-		self.parent.closing()
-		self.parent = None
+		self.application.closing(self)
+		self.application = None
 
 	def got_body(self):
-		self.parent.got_message()
+		self.application.got_message(self)
 		self.adaptor.get_metadata()
 
 	def got_body_part(self, octets):
@@ -66,7 +66,7 @@ class protocol:
 				key, value = vector
 				key, value = key.strip(), value.strip()
 				self.message[key] = value
-		self.parent.got_metadata()
+		self.application.got_metadata(self)
 		if (self.message["transfer-encoding"] == "chunked"):
 			self.adaptor.get_chunked_body()
 			return
@@ -80,17 +80,17 @@ class protocol:
 				raise (neubot.error("Invalid line"))
 			self.adaptor.get_bounded_body(length)
 			return
-		if (self.parent.is_message_unbounded()):
+		if (self.application.is_message_unbounded(self)):
 			self.adaptor.get_unbounded_body()
 			return
-		self.parent.got_message()
+		self.application.got_message(self)
 		self.adaptor.get_metadata()
 
 	def sent_all(self):
-		self.parent.message_sent()
+		self.application.message_sent(self)
 
-	def attach(self, parent):
-		self.parent = parent
+	def attach(self, application):
+		self.application = application
 
 	def close(self):
 		self.adaptor.close()
