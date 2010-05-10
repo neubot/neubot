@@ -21,7 +21,7 @@
 #
 
 ARCHIVE = neubot
-.PHONY: _all _archives clean help install uninstall
+.PHONY: _all _archives _release clean help install uninstall
 
 _all: help
 
@@ -30,6 +30,15 @@ _archives:
 	@git archive --format=tar --prefix=$(ARCHIVE)/ HEAD > $(ARCHIVE).tar
 	@gzip -9 $(ARCHIVE).tar
 	@git archive --format=zip --prefix=$(ARCHIVE)/ HEAD > $(ARCHIVE).zip
+_release:
+	@echo "[RELEASE]"
+	@V=`git tag|head -n1` 					&&	\
+	ARCHIVENAME=neubot-$$V					&&	\
+	git archive --format=tar --prefix=$$ARCHIVENAME/		\
+	     HEAD | gzip -9 > $$ARCHIVENAME.tar.gz		&&	\
+	git archive --format=zip --prefix=$$ARCHIVENAME/		\
+	     HEAD > $$ARCHIVENAME.zip				&&	\
+	sha256sum $$ARCHIVENAME.* > SHA256
 clean:
 	@echo "[CLEAN]"
 	@find . -type f -name \*.pyc -exec rm {} \;
