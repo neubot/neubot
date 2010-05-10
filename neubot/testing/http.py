@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+#
+# DEPRECATED -- use neubot/testing/getter.py instead
+#
+
 import getopt
 import logging
 import socket
