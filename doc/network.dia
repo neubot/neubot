@@ -1003,8 +1003,14 @@
         <dia:attribute name="border_width">
           <dia:real val="0.10000000149011612"/>
         </dia:attribute>
+        <dia:attribute name="border_color">
+          <dia:color val="#a9a9a9"/>
+        </dia:attribute>
         <dia:attribute name="show_background">
           <dia:boolean val="true"/>
+        </dia:attribute>
+        <dia:attribute name="line_style">
+          <dia:enum val="2"/>
         </dia:attribute>
       </dia:object>
       <dia:object type="Standard - Text" version="1" id="O30">
