@@ -56,7 +56,7 @@ class protocol:
 				elif (vector[2] in PROTOCOLS):
 					self.message.method = vector[0]
 					self.message.uri = vector[1]
-					self.message.reason = vector[2]
+					self.message.protocol = vector[2]
 				else:
 					raise (neubot.error("Invalid line"))
 			else:
