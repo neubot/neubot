@@ -20,7 +20,7 @@
 
 case $1 in
     "start")
-        if ps aux|grep /usr/bin/neubot|grep -v grep; then
+        if ps aux|grep /usr/bin/neubot|grep -v grep 1>/dev/null; then
             echo "error: neubot seems to be already running."
             exit 1
         fi
