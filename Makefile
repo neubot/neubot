@@ -49,7 +49,13 @@ help:
 install:
 	@echo "[INSTALL] Create directory /usr/share/neubot"
 	@if [ -e /usr/share/neubot ]; then				\
-	    echo "error: /usr/share/neubot already exists.";		\
+	    echo "Oops: /usr/share/neubot already exists.";		\
+	    echo "  Hey!  Do you want to re-install Neubot, uh?";	\
+	    echo "   (Perhaps you got an updated version)";		\
+	    echo "  If so, un-install it first, e.g. type:";		\
+	    echo "    make uninstall";					\
+	    echo "  Then, try again with:";				\
+	    echo "    make install";					\
 	    exit 1;							\
 	fi
 	@for DIR in / /http /network /testing; do			\
