@@ -21,7 +21,7 @@
 #
 
 ARCHIVE = neubot
-.PHONY: _all _archives _release clean help install uninstall
+.PHONY: _all _archives _docs _release clean help install uninstall
 
 _all: help
 
@@ -30,6 +30,11 @@ _archives:
 	@git archive --format=tar --prefix=$(ARCHIVE)/ HEAD > $(ARCHIVE).tar
 	@gzip -9 $(ARCHIVE).tar
 	@git archive --format=zip --prefix=$(ARCHIVE)/ HEAD > $(ARCHIVE).zip
+_docs:
+	@echo "[DOCS]"
+	@cd doc && for DIA in *.dia; do					\
+	    dia --filter=png $$DIA;					\
+	done
 _release:
 	@echo "[RELEASE]"
 	@V=`git tag|head -n1` 					&&	\
