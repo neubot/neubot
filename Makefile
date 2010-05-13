@@ -84,6 +84,11 @@ install:
 	@install bin/unix/neubot /usr/bin
 	@echo "[INSTALL] Create directory /var/run/neubot"
 	@install -d /var/run/neubot
+	@echo "[INSTALL] Create directory /etc/neubot"
+	@install -d /etc/neubot
+	@echo "[INSTALL] Install /etc/neubot/config"
+	@neubot -E _writeconfig > /etc/neubot/config
+	@chmod 644 /etc/neubot/config
 	@echo "[INSTALL] Creating group _neubot"
 	@groupadd _neubot
 	@echo "[INSTALL] Creating user _neubot"
@@ -115,6 +120,8 @@ uninstall:
 	@rm -rf /usr/bin/neubot
 	@echo "[UNINSTALL] Remove directory /var/run/neubot"
 	@rm -rf /var/run/neubot
+	@echo "[UNINSTALL] Remove directory /etc/neubot"
+	@rm -rf /etc/neubot
 	@echo "[UNINSTALL] Remove user _neubot"
 	@userdel _neubot
 	@echo "[UNINSTALL] Remove group _neubot"
