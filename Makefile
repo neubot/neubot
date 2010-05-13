@@ -46,7 +46,7 @@ _release:
 	sha256sum $$ARCHIVENAME.* > SHA256
 clean:
 	@echo "[CLEAN]"
-	@find . -type f -name \*.pyc -exec rm {} \;
+	@find . -type f -name \*.pyc -exec rm -f {} \;
 	@rm -rf -- build/ dist/ $(ARCHIVE).tar.* $(ARCHIVE).zip
 help:
 	@echo "[HELP] Available targets"
