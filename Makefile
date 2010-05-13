@@ -63,7 +63,7 @@ install:
 	    echo "    make install";					\
 	    exit 1;							\
 	fi
-	@for DIR in / /http /network /testing; do			\
+	@for DIR in / /application /http /network /testing; do		\
 	    DIR=/usr/share/neubot$$DIR;					\
 	    install -d $$DIR;						\
 	    if [ $$? -ne 0 ]; then					\
@@ -81,7 +81,7 @@ install:
 	@echo "[INSTALL] Byte-compile sources at /usr/share/neubot"
 	@python -m compileall -q /usr/share/neubot
 	@echo "[INSTALL] Install /usr/bin/neubot"
-	@install bin/neubot /usr/bin
+	@install bin/unix/neubot /usr/bin
 	@echo "[INSTALL] Create directory /var/run/neubot"
 	@install -d /var/run/neubot
 	@echo "[INSTALL] Creating group _neubot"
