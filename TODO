@@ -1,3 +1,5 @@
 Remove deprecated files
 	* neubot/http/clients.py
 	* neubot/testing/http.py
+Do we need to address interrupted system calls?
+Double-check UNIX network programming for proper daemonization
