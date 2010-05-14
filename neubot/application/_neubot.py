@@ -38,7 +38,7 @@ def main(configuration, argv):
 			neubot.http.client(poller, "HEAD", uri)
 			poller.loop()
 		except Exception:
-			logging.warning("Rendez-vous with '%s' failed" % uri)
+			logging.error("Rendez-vous with '%s' failed" % uri)
 			lines = traceback.format_exc().splitlines()
 			for line in lines:
 				logging.info(line)
