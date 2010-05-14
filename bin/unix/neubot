@@ -19,6 +19,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 import ConfigParser
+import StringIO
 import getopt
 import logging
 import logging.handlers
@@ -28,7 +29,7 @@ import sys
 
 STDERR_FORMAT = "<%(levelname)s> %(message)s"
 SYSLOG_FORMAT = "neubot[%(process)d]: " + STDERR_FORMAT
-USAGE = "Usage: neubot [-bEv] [-I path] [-O opt=val] [--] [command [opts]]\n"
+USAGE = "Usage: neubot [-bEv] [-I path] [-O option] [--] [command [opts]]\n"
 
 def bootstrap():
 	background = False
@@ -52,11 +53,17 @@ def bootstrap():
 		elif (opt == "-I"):
 			incdir = arg
 		elif (opt == "-O"):
-			if (not "=" in arg):
-				sys.stderr.write("Bad option: '-O%s'" % arg)
+			configparser = ConfigParser.RawConfigParser()
+			content = "[DEFAULT]\n" + arg + "\n"
+			filelike = StringIO.StringIO(content)
+			try:
+				configparser.readfp(filelike)
+			except ConfigParser.Error:
+				sys.stderr.write("Bad syntax: -O '%s'\n" % arg)
 				sys.exit(1)
-			key, value = arg.split("=", 1)
-			configuration[key] = value
+			for key, value in configparser.items("DEFAULT"):
+				if (not configuration.has_key(key)):
+					configuration[key] = value
 		elif (opt == "-v"):
 			verbose = True
 	logger = logging.getLogger()

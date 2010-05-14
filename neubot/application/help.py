@@ -26,13 +26,14 @@ HELP = 									\
 "Copyright (c) 2010 NEXA Center for Internet & Society\n"		\
 "  For more info, see http://nexa.polito.it/neubot\n"			\
 "\n"									\
-"Usage: neubot [-bEv] [-I path] [-O opt=val] [--] [command [opts]]\n"	\
+"Usage: neubot [-bEv] [-I path] [-O option] [--] [command [opts]]\n"	\
 "\n"									\
 "Options:\n"								\
 "  -b                   Run in background as a daemon.\n"		\
 "  -E                   Do not read any configuration file.\n"		\
 "  -I path              Run the neubot located at path.\n"		\
-"  -O opt=val           Set option's value via command line.\n"		\
+"  -O option            Specify an option in the format used in the\n"	\
+"                       configuration file, e.g. 'opt = value'\n"	\
 "  -v                   Turn on debugging output.\n"			\
 "\n"									\
 "Commands:\n"								\
@@ -40,6 +41,10 @@ HELP = 									\
 "  _neubot              The command invoked by default.\n"		\
 "  _writeconfig         Write configuration on stdout.\n"		\
 "  help                 Print this help screen and exit.\n"		\
+"\n"									\
+"Examples:\n"								\
+"  Run sources in-place, overriding 'server' option:\n"			\
+"    ./bin/unix/neubot -I. -O 'server = http://127.0.0.1:3456'\n"	\
 "\n"
 
 def main(configuration, argv):
