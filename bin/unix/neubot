@@ -119,7 +119,7 @@ def bootstrap():
 		logging.info("Moving to root directory")
 		os.chdir("/")
 		logging.info("Using the default umask")
-		os.umask(0)
+		os.umask(022)
 		logging.info("Redirect stdio to /dev/null")
 		for fd in range(0, 3):
 			os.close(fd)
