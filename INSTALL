@@ -1,27 +1,48 @@
 Install (and uninstall) Neubot, below Linux (and other Unices)
 
-
-1. Howto install
-
 This document provides a brief description of how to install and
 uninstall Neubot in an Unix-like environment (e.g. Ubuntu Linux.)
 
+
+0. Index
+
+    1. Howto run in-place
+    2. Howto install
+    3. Howto uninstall
+
+
+1. Howto run in-place
+
+We suggest you to install Neubot, but sometimes that might not be
+pratical, e.g. you are testing a development version.  In that case,
+assuming that you are in the sources directory, you can run Neubot
+in-place as follows:
+
+  ./bin/unix/neubot -I. [options]
+
+That works because the -I. command line options instructs Neubot
+launcher (i.e. ./bin/unix/neubot) to search for Neubot sources in
+the current working directory.
+
+
+2. Howto install
+
 First of all, you need to have python 2.6 installed -- which is
-always the case with Ubuntu.  However, you might want to check
-invoking the following command:
+always the case with Ubuntu 9.10, 10.04.  However, you might want
+to check invoking the following command:
 
   python -V
 
 Now, assuming you have downloaded the latest Neubot archive, e.g.
-neubot-0.0.1.tar.gz, you have to unpack it, with the following
+neubot-0.0.2.tar.gz, you have to unpack it, with the following
 command:
 
-  tar -xzf neubot-0.0.1.tar.gz
+  tar -xzf neubot-0.0.2.tar.gz
 
-The above command should create a directory named neubot-0.0.1.
+The above command should create a directory named neubot-0.0.2.
 Now enter such directory with:
 
-  cd neubot-0.0.1
+  cd neubot-0.0.2
 
 At this point, you need to become administrator, in order to
 install neubot in your system.  Depending on the system you might
@@ -30,7 +51,7 @@ have to do one of the following two commands:
   su
   sudo -s
 
-The latter is the command you have to type with Ubuntu.  After
+(The latter is the command you have to type with Ubuntu.)  After
 that you will be prompted for the password (the administrator one
 in the former case, your password in the latter.)  Be careful that
 the password will not produce any echo.  If that has worked, your
@@ -42,31 +63,31 @@ We're ready.  At this point just type:
   make install
 
 Now, if you're running Ubuntu you're (nearly) done.  You can
-logout, with the `logout' command.  Before you stop reading these
-notes be informed that you should keep neubot archive or sources
-around if you want to uninstall it.  More on this on the relevant
-section.
+logout, with the `logout' command.  Before you stop reading
+these notes be informed that you should keep neubot archive or
+sources around if you want to be able to uninstall it later.
+More on this in the relevant section.
 
 Otherwise, if you are not running Ubuntu, you can launch Neubot
 once with the following command
 
-  /usr/bin/neubot
+  /usr/bin/neubot -b
 
 It will immediatly run in background, so you are not going to see
 any output.  Note that, if you want to automatize such process,
 you might add
 
   if [ -x /usr/bin/neubot ]; then
-    /usr/bin/neubot
+    /usr/bin/neubot -b
   fi
 
 near the end of your /etc/rc.local.  After that you are (nearly)
 done.  Before you stop reading these notes be informed that you
-should keep neubot archive or sources around if you want to
-uninstall it.  More on this on the relevant section.
+should keep neubot archive or sources around if you want to be
+able to uninstall it later.  More on this in the relevant section.
 
 
-2. Howto uninstall
+3. Howto uninstall
 
 To uninstall neubot, enter the neubot sources, become administrator,
 and do:
