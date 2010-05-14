@@ -37,7 +37,7 @@ _docs:
 	done
 _release:
 	@echo "[RELEASE]"
-	@V=`git tag|head -n1` 					&&	\
+	@V=`git tag|tail -n1` 					&&	\
 	ARCHIVENAME=neubot-$$V					&&	\
 	git archive --format=tar --prefix=$$ARCHIVENAME/		\
 	     HEAD | gzip -9 > $$ARCHIVENAME.tar.gz		&&	\
