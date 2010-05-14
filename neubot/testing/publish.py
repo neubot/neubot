@@ -57,7 +57,8 @@ class Publisher:
 			path = request.uri[1:]			# XXX
 			f = None
 			try:
-				f = open(path, "rb")
+				if (path in self.names):
+					f = open(path, "rb")
 			except:
 				pass
 			if (f):
