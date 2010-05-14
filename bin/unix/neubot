@@ -24,6 +24,7 @@ import getopt
 import logging
 import logging.handlers
 import os
+import os.path
 import pwd
 import sys
 
@@ -74,6 +75,12 @@ def bootstrap():
 	if (verbose):
 		logger.setLevel(logging.DEBUG)
 		logging.info("Running in verbose mode")
+	if (os.environ.has_key("HOME")):
+		path = os.environ["HOME"] + "/.neubot"
+		if (not os.path.exists(path)):
+			logging.info("Creating %s directory" % path)
+			os.umask(022)
+			os.mkdir(path)
 	if (not noconf):
 		configparser = ConfigParser.RawConfigParser()
 		rclist = [ rcdir + "/config" ]
