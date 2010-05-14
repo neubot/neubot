@@ -87,7 +87,7 @@ install:
 	@echo "[INSTALL] Create directory /etc/neubot"
 	@install -d /etc/neubot
 	@echo "[INSTALL] Install /etc/neubot/config"
-	@neubot -E _writeconfig > /etc/neubot/config
+	@neubot -qE _writeconfig > /etc/neubot/config
 	@chmod 644 /etc/neubot/config
 	@echo "[INSTALL] Creating group _neubot"
 	@groupadd _neubot

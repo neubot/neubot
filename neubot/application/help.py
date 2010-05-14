@@ -26,7 +26,7 @@ HELP = 									\
 "Copyright (c) 2010 NEXA Center for Internet & Society\n"		\
 "  For more info, see http://nexa.polito.it/neubot\n"			\
 "\n"									\
-"Usage: neubot [-bEv] [-I path] [-O option] [--] [command [opts]]\n"	\
+"Usage: neubot [-bEq] [-I path] [-O option] [--] [command [opts]]\n"	\
 "\n"									\
 "Options:\n"								\
 "  -b                   Run in background as a daemon.\n"		\
@@ -34,7 +34,7 @@ HELP = 									\
 "  -I path              Run the neubot located at path.\n"		\
 "  -O option            Specify an option in the format used in the\n"	\
 "                       configuration file, e.g. 'opt = value'\n"	\
-"  -v                   Turn on debugging output.\n"			\
+"  -q                   Turn off verbose output.\n"			\
 "\n"									\
 "Commands:\n"								\
 "  _exit                Exit immediatly (for testing).\n"		\

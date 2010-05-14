@@ -30,7 +30,7 @@ import sys
 
 STDERR_FORMAT = "<%(levelname)s> %(message)s"
 SYSLOG_FORMAT = "neubot[%(process)d]: " + STDERR_FORMAT
-USAGE = "Usage: neubot [-bEv] [-I path] [-O option] [--] [command [opts]]\n"
+USAGE = "Usage: neubot [-bEq] [-I path] [-O option] [--] [command [opts]]\n"
 
 def bootstrap():
 	background = False
@@ -39,9 +39,9 @@ def bootstrap():
 	noconf = False
 	pidfile = "/var/run/neubot.pid"
 	rcdir = "/etc/neubot"
-	verbose = False
+	verbose = True
 	try:
-		options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:v")
+		options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:q")
 	except getopt.error:
 		sys.stderr.write(USAGE)
 		sys.stderr.write("Try `neubot help' for more help.\n")
@@ -65,8 +65,8 @@ def bootstrap():
 			for key, value in configparser.items("DEFAULT"):
 				if (not configuration.has_key(key)):
 					configuration[key] = value
-		elif (opt == "-v"):
-			verbose = True
+		elif (opt == "-q"):
+			verbose = False
 	logger = logging.getLogger()
 	handler = logging.StreamHandler()
 	formatter = logging.Formatter(STDERR_FORMAT)
