@@ -42,7 +42,7 @@ def bootstrap():
 		options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:v")
 	except getopt.error:
 		sys.stderr.write(USAGE)
-		sys.stderr.write("Try `man neubot' for more help.\n")
+		sys.stderr.write("Try `neubot help' for more help.\n")
 		sys.exit(1)
 	for opt, arg in options:
 		if (opt == "-b"):
