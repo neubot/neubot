@@ -17,7 +17,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 from errors import *
-from main import *
 from utils import *
 
 import http
