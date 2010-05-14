@@ -1,3 +1,12 @@
+Neubot 0.0.2 [2010-05-14]
+	* neubot/http/connectors.py: Client-side connector.
+	* neubot/http/acceptors.py: Server-side acceptor.
+	* http/clients.py: Marked as deprecated (use connector instead.)
+	* bin/neubot neubot/main.py: Removed (now using neubot/application.)
+	* bin/unix/neubot neubot/application: New improved startup procedure.
+	* Makefile: Be more friendly in the install phase.
+	* doc: Fully document the (now complete) neubot/http module.
+
 Neubot 0.0.1 [2010-05-07]
 	* Makefile: Code to install/uninstall in Unix-like environments.
 	* bin/neubot: Lookup neubot sources and launch it (Unix-only).
