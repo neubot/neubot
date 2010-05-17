@@ -20,14 +20,17 @@ import neubot
 import ssl
 import urlparse
 
-def prettyprint(file, direction, message):
+def prettyprinter(write, direction, message, eol=""):
 	stringio = message.serialize_headers()
 	content = stringio.read()
 	headers = content.split("\r\n")
 	for line in headers:
-		file.write(direction + line + "\n")
+		write(direction + line + eol)
 		if (line == ""):
 			break
+
+def prettyprint(file, direction, message):			# Deprecated!
+	prettyprinter(file.write, direction, message, eol="\n")
 
 def urlsplit(uri):
 	scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
