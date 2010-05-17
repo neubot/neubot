@@ -1,4 +1,4 @@
-# neubot/__init__.py
+# neubot/application/coordinator.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -16,12 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from clients import *
-from errors import *
-from servers import *
-from utils import *
+import socket
+import sys
 
-import http
-import network
-import rendezvous
-import testing
+import neubot
+
+from neubot.application.__defaults import defaults
+
+def main(configuration, argv):
+	family = socket.AF_INET
+	address = "0.0.0.0"
+	port = "9773"
+	poller = neubot.network.poller()
+	neubot.simpleserver(poller, family, address, port)
+	poller.loop()
+
+if (__name__ == "__main__"):
+	main(defaults, sys.argv)
