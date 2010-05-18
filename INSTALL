@@ -69,16 +69,22 @@ sources around if you want to be able to uninstall it later.
 More on this in the relevant section.
 
 Otherwise, if you are not running Ubuntu, you can launch Neubot
-once with the following command
+once with one of the following two commands
 
-  /usr/bin/neubot -b
+  /usr/bin/neubot
+  /usr/bin/neubot -bq
 
-It will immediatly run in background, so you are not going to see
-any output.  Note that, if you want to automatize such process,
-you might add
+In the former case it will run in foreground, logging messages to
+the console.  You can terminate the running Neubot anytime you want
+with Ctrl-C.
+
+In the latter, it will immediatly fork in background, so you are
+not going to see any output (because it exploits syslog in that
+case.)  Note that, if you want to automatize such process, you might
+add
 
   if [ -x /usr/bin/neubot ]; then
-    /usr/bin/neubot -b
+    /usr/bin/neubot -bq
   fi
 
 near the end of your /etc/rc.local.  After that you are (nearly)
