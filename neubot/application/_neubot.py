@@ -26,7 +26,7 @@ import neubot
 from neubot.application.__defaults import defaults
 
 def main(configuration, argv):
-	sleeptime = 300
+	sleeptime = 60
 	logging.info("Merge configuration with defaults")
 	for key, value in defaults.items():
 		if (not configuration.has_key(key)):
