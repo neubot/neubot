@@ -34,15 +34,15 @@ to check invoking the following command:
   python -V
 
 Now, assuming you have downloaded the latest Neubot archive, e.g.
-neubot-0.0.2.tar.gz, you have to unpack it, with the following
+neubot-0.0.3.tar.gz, you have to unpack it, with the following
 command:
 
-  tar -xzf neubot-0.0.2.tar.gz
+  tar -xzf neubot-0.0.3.tar.gz
 
-The above command should create a directory named neubot-0.0.2.
+The above command should create a directory named neubot-0.0.3.
 Now enter such directory with:
 
-  cd neubot-0.0.2
+  cd neubot-0.0.3
 
 At this point, you need to become administrator, in order to
 install neubot in your system.  Depending on the system you might
