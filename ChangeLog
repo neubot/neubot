@@ -1,3 +1,13 @@
+Neubot 0.0.3 [2010-05-18]
+	* bin/unix/neubot: By default be verbose rather than quiet
+	* bin/unix/neubot: Revert: Create $HOME/.neubot if non-existent
+	* http/utils.py: More flexible prettyprint approach
+	* neubot/rendezvous.py: Parse rendez-vous JSON messages
+	* neubot/clients.py: Client side rendez-vous (class simpleclient)
+	* neubot/servers.py: Server side rendez-vous (class simpleserver)
+	* application/coordinator.py: Run the coordinator server
+	* application/_neubot.py: Periodically try the rendez-vous
+
 Neubot 0.0.2 [2010-05-14]
 	* neubot/http/connectors.py: Client-side connector.
 	* neubot/http/acceptors.py: Server-side acceptor.
