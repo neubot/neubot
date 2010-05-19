@@ -53,7 +53,7 @@ class poller:
 		except:
 			neubot.prettyprint_exception()
 
-	def readable(self, fileno):
+	def _readable(self, fileno):
 		if (self.readset.has_key(fileno)):		# XXX
 			connection = self.readset[fileno]
 			try:
@@ -62,7 +62,7 @@ class poller:
 				neubot.prettyprint_exception()
 				self.close(connection)
 
-	def writable(self, fileno):
+	def _writable(self, fileno):
 		if (self.writeset.has_key(fileno)):		# XXX
 			connection = self.writeset[fileno]
 			try:
@@ -78,9 +78,9 @@ class poller:
 				res = select.select(self.readset.keys(),
 				    self.writeset.keys(), [], self.timeout)
 				for fileno in res[0]:
-					self.readable(fileno)
+					self._readable(fileno)
 				for fileno in res[1]:
-					self.writable(fileno)
+					self._writable(fileno)
 				now = time.time()
 				if (now - last >= self.timeout):
 					try:
