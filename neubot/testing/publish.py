@@ -82,21 +82,21 @@ class Publisher:
 			response["connection"] = "close"
 		protocol.sendmessage(response)
 		if (self.prettyprint):
-			neubot.http.prettyprint(sys.stderr,
-			    "> ", response)
+			neubot.http.prettyprinter(sys.stderr.write,
+			    "> ", response, eol="\r\n")
 
 	def got_metadata(self, protocol):
 		request = protocol.message
 		if (self.prettyprint):
-			neubot.http.prettyprint(sys.stderr,
-			    "< ", request)
+			neubot.http.prettyprinter(sys.stderr.write,
+			    "< ", request, eol="\r\n")
 		if (request["expect"] == "100-continue"):
 			response = neubot.http.message(protocol="HTTP/1.1",
 			    code="100", reason="Continue")
 			protocol.sendmessage(response)
 			if (self.prettyprint):
-				neubot.http.prettyprint(sys.stderr,
-				    "> ", response)
+				neubot.http.prettyprinter(sys.stderr.write,
+				    "> ", response, eol="\r\n")
 		request.body = self.outfile		# Yes, always
 
 	def is_message_unbounded(self, protocol):

@@ -29,9 +29,6 @@ def prettyprinter(write, direction, message, eol=""):
 		if (line == ""):
 			break
 
-def prettyprint(file, direction, message):			# Deprecated!
-	prettyprinter(file.write, direction, message, eol="\n")
-
 def urlsplit(uri):
 	scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
 	if (scheme != "http" and scheme != "https"):

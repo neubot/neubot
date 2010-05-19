@@ -20,7 +20,6 @@ class recvbuff:
 	def __init__(self):
 		self.length = 0
 		self.list = []
-		self.join = self._join				# Deprecated
 
 	def __len__(self):
 		return (self.length)
@@ -62,7 +61,6 @@ class recvbuff:
 class sendbuff:
 	def __init__(self, content = ""):
 		self.set_content(content)
-		self.get_buffer = self.get_content		# Deprecated
 
 	def __len__(self):
 		return (self.length)

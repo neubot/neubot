@@ -65,8 +65,8 @@ class Getter:
 		response = protocol.message
 		response.body = self.outfile
 		if (self.prettyprint):
-			neubot.http.prettyprint(sys.stderr,
-			    "< ", response)
+			neubot.http.prettyprinter(sys.stderr.write,
+			    "< ", response, eol="\r\n")
 
 	def is_message_unbounded(self, protocol):
 		request = self.protocols[protocol]
@@ -77,8 +77,8 @@ class Getter:
 	def message_sent(self, protocol):
 		request = self.protocols[protocol]
 		if (self.prettyprint):
-			neubot.http.prettyprint(sys.stderr,
-			    "> ", request)
+			neubot.http.prettyprinter(sys.stderr.write,
+			    "> ", request, eol="\r\n")
 
 USAGE = "Usage: python %s [-46v] uri [uri ...]\n"
 

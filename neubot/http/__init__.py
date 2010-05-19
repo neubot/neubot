@@ -18,7 +18,6 @@
 
 from acceptors import *
 from adaptors import *
-from clients import *
 from connectors import *
 from messages import *
 from protocols import *
