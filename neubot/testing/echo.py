@@ -50,9 +50,16 @@ class echoer:
 			self.connection.set_readable()
 
 class listener:
-	def __init__(self, sock, poller):
-		self.sock = sock
+	def __init__(self, poller, family, address, port):
 		self.poller = poller
+		self.poller.register_initializer(self.init)
+		self.family = family
+		self.address = address
+		self.port = port
+
+	def init(self):
+		self.sock = neubot.network.listen(self.family,
+		    self.address, self.port)
 		self.poller.set_readable(self)
 
 	def fileno(self):
@@ -67,8 +74,8 @@ class listener:
 			connection = neubot.network.socket_connection(
 			    self.poller, s)
 			echoer(connection)
-		except socket.error:
-			logging.info(traceback.format_exc())
+		except:
+			neubot.prettyprint_exception()
 
 	def writable(self):
 		pass
@@ -103,8 +110,7 @@ def main():
 		logger = logging.getLogger()
 		logger.setLevel(logging.DEBUG)
 	poller = neubot.network.poller()
-	sock = neubot.network.listen(family, address, port)
-	listener(sock, poller)
+	listener(poller, family, address, port)
 	poller.loop()
 	sys.exit(0)
 

@@ -28,12 +28,17 @@ class acceptor:
 	    family=socket.AF_INET, secure=False, certfile=None):
 		self.application = application
 		self.poller = poller
+		self.poller.register_initializer(self.init)
 		self.address = address
 		self.port = port
 		self.family = family
 		self.secure = secure
 		self.certfile = certfile
-		self.socket = neubot.network.listen(family, address, port)
+		self.socket = None
+
+	def init(self):
+		self.socket = neubot.network.listen(self.family,
+		    self.address, self.port)
 		self.poller.set_readable(self)
 
 	def closing(self):
@@ -57,8 +62,8 @@ class acceptor:
 			adaptor = neubot.http.adaptor(connection)
 			protocol = neubot.http.protocol(adaptor)
 			self.application.got_client(protocol)
-		except Exception:					# XXX
-			logging.warning(traceback.format_exc())
+		except:
+			neubot.prettyprint_exception()
 
 	def writable(self):
 		pass

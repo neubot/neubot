@@ -28,9 +28,17 @@ class connector:
 	    family=socket.AF_INET, secure=False):
 		self.application = application
 		self.poller = poller
-		self.socket = neubot.network.connect(family, address, port)
-		self.poller.set_writable(self)
+		self.poller.register_initializer(self.init)
+		self.address = address
+		self.port = port
+		self.family = family
 		self.secure = secure
+		self.socket = None
+
+	def init(self):
+		self.socket = neubot.network.connect(self.family,
+		    self.address, self.port)
+		self.poller.set_writable(self)
 
 	def closing(self):
 		self.application.aborted(self)

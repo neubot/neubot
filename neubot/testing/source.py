@@ -50,6 +50,22 @@ class sender:
 		count = self.connection.send(content)
 		self.sendbuff.advance(count)
 
+class connector:
+	def __init__(self, poller, family, address, port, filelike):
+		self.poller = poller
+		self.poller.register_initializer(self.init)
+		self.family = family
+		self.address = address
+		self.port = port
+		self.filelike = filelike
+
+	def init(self):
+		sock = neubot.network.connect(self.family,
+		    self.address, self.port)
+		connection = neubot.network.socket_connection(
+		    self.poller, sock)
+		sender(connection, self.filelike)
+
 class Afile:
 	def __init__(self, size=8000):
 		i = 0
@@ -119,9 +135,7 @@ def main():
 	else:
 		filelike = Afile()
 	poller = neubot.network.poller()
-	sock = neubot.network.connect(family, address, port)
-	connection = neubot.network.socket_connection(poller, sock)
-	sender(connection, filelike)
+	connector(poller, family, address, port, filelike)
 	poller.loop()
 	sys.exit(0)
 
