@@ -52,15 +52,16 @@ class connector:
 
 	def writable(self):
 		self.poller.unset_writable(self)
-		self.socket.getpeername()		# Connected?
+		sockname = self.socket.getsockname()
+		peername = self.socket.getpeername()		# Connected?
 		if (self.secure):
 			ssl_socket = ssl.wrap_socket(self.socket,
 			    do_handshake_on_connect=False)
 			connection = neubot.network.ssl_connection(
-			    self.poller, ssl_socket)
+			    self.poller, ssl_socket, sockname, peername)
 		else:
 			connection = neubot.network.socket_connection(
-			    self.poller, self.socket)
+			    self.poller, self.socket, sockname, peername)
 		adaptor = neubot.http.adaptor(connection)
 		protocol = neubot.http.protocol(adaptor)
 		self.application.connected(self, protocol)

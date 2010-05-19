@@ -71,8 +71,10 @@ class listener:
 	def readable(self):
 		try:
 			s = neubot.network.accept(self.sock)
+			sockname = s.getsockname()
+			peername = s.getpeername()
 			connection = neubot.network.socket_connection(
-			    self.poller, s)
+			    self.poller, s, sockname, peername)
 			echoer(connection)
 		except:
 			neubot.prettyprint_exception()

@@ -22,10 +22,14 @@ import ssl
 
 import neubot
 
+concatname = lambda x, y: str(x) + ":" + str(y)
+
 class socket_connection:
-	def __init__(self, poller, socket):
+	def __init__(self, poller, socket, sockname, peername):
 		self.poller = poller
 		self.socket = socket
+		self.sockname = reduce(concatname, sockname)
+		self.peername = reduce(concatname, peername)
 		self.protocol = None
 
 	def attach(self, protocol):
@@ -84,9 +88,11 @@ class socket_connection:
 		self.protocol.writable()
 
 class ssl_connection:
-	def __init__(self, poller, ssl, handshake=True):
+	def __init__(self, poller, ssl, sockname, peername, handshake=True):
 		self.poller = poller
 		self.ssl = ssl
+		self.sockname = reduce(concatname, sockname)
+		self.peername = reduce(concatname, peername)
 		self.handshake = handshake
 		self.wantread = False
 		self.wantwrite = False

@@ -62,8 +62,10 @@ class connector:
 	def init(self):
 		sock = neubot.network.connect(self.family,
 		    self.address, self.port)
+		sockname = sock.getsockname()
+		peername = sock.getpeername()
 		connection = neubot.network.socket_connection(
-		    self.poller, sock)
+		    self.poller, sock, sockname, peername)
 		sender(connection, self.filelike)
 
 class Afile:

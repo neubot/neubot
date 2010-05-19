@@ -50,15 +50,17 @@ class acceptor:
 	def readable(self):
 		try:
 			socket = neubot.network.accept(self.socket)
+			sockname = socket.getsockname()
+			peername = socket.getpeername()
 			if (self.secure):
 				ssl_socket = ssl.wrap_socket(socket,
 				    do_handshake_on_connect=False,
 				    certfile=self.certfile, server_side=True)
 				connection = neubot.network.ssl_connection(
-				    self.poller, ssl_socket)
+				    self.poller, ssl_socket, sockname, peername)
 			else:
 				connection = neubot.network.socket_connection(
-				    self.poller, socket)
+				    self.poller, socket, sockname, peername)
 			adaptor = neubot.http.adaptor(connection)
 			protocol = neubot.http.protocol(adaptor)
 			self.application.got_client(protocol)

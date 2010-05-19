@@ -27,6 +27,8 @@ class protocol:
 		self.adaptor.get_metadata()
 		self.message = None
 		self.application = None
+		self.sockname = adaptor.connection.sockname
+		self.peername = adaptor.connection.peername
 
 	def closing(self):
 		self.application.closing(self)
