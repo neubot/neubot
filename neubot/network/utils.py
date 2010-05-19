@@ -31,11 +31,14 @@ def accept(sock, blocking=False):
 	return (s)
 
 def connect(family, address, port, blocking=False):
+	logging.info("Connecting to '%s:%s'" % (address, port))
 	lst = socket.getaddrinfo(address, port, family,
 	    socket.SOCK_STREAM, 0, 0)
 	for elem in lst:
 		family, socktype, proto, canon, sa = elem
 		try:
+			repr = reduce(neubot.network.concatname, sa)
+			logging.info("Trying with '%s'" % repr)
 			s = socket.socket(family, socktype, proto)
 			s.setblocking(blocking)
 			err = s.connect_ex(sa)
@@ -44,7 +47,7 @@ def connect(family, address, port, blocking=False):
 				raise (socket.error(err, os.strerror(err)))
 			return (s)
 		except socket.error:
-			logging.info(traceback.format_exc())
+			neubot.prettyprint_exception()
 			s = None
 	raise (neubot.error("can't connect to %s:%s" % (address, port)))
 

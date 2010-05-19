@@ -21,7 +21,7 @@ import types
 
 def prettyprinter(write, prefix, message, eol=""):
 	obj = json.loads(str(message))
-	lines = json.dumps(obj, ensure_ascii=True, indent=1)
+	lines = json.dumps(obj, ensure_ascii=True, indent=2)
 	for line in lines.splitlines():
 		write(prefix + line + eol)
 

@@ -29,12 +29,31 @@ WANT = [ "http", "latency" ]
 
 class simpleclient:
 	def __init__(self, poller, scheme, address, port):
+		logging.info("Begin rendez-vous procedure")
 		self.poller = poller
+		self.scheme = scheme
+		self.address = address
+		self.port = port
+		self.request = None
+		neubot.http.connector(self, self.poller, address, port,
+		    socket.AF_INET, (scheme == "https"))
+
+	def __del__(self):
+		logging.info("End rendez-vous procedure")
+
+	def aborted(self, connector):
+		logging.error("Connection to '%s:%s' failed" % (
+		    self.address, self.port))
+
+	def connected(self, connector, protocol):
+		logging.info("We're connected to '%s'" % protocol.peername)
+		protocol.attach(self)
+		logging.info("Pretty-printing the request we will send")
 		self.request = neubot.http.message(protocol="HTTP/1.1",
 		    uri="/rendez-vous/1.0", method="POST")
 		self.request["cache-control"] = "no-cache"
 		self.request["connection"] = "close"
-		self.request["host"] = address + ":" + port
+		self.request["host"] = self.address + ":" + self.port
 		self.request["pragma"] = "no-cache"
 		info = neubot.rendezvous.clientinfo()
 		info.set_version(VERSION)
@@ -45,42 +64,37 @@ class simpleclient:
 		self.request["content-type"] = "application/json"
 		self.request["content-length"] = str(len(octets))
 		self.request.body = StringIO.StringIO(octets)
-		neubot.http.prettyprinter(logging.info, "HTTP > ",
-		    self.request)
-		neubot.rendezvous.prettyprinter(logging.info, "JSON > ", info)
-		neubot.http.connector(self, self.poller, address, port,
-		    socket.AF_INET, (scheme == "https"))
-
-	def aborted(self, connector):
-		logging.error("Connection failed")
-
-	def connected(self, connector, protocol):
-		logging.info("Connected to the remote host")
-		protocol.attach(self)
+		neubot.http.prettyprinter(logging.info, "  ", self.request)
+		neubot.rendezvous.prettyprinter(logging.info, "  ", info)
+		logging.info("Start sending the request")
 		protocol.sendmessage(self.request)
 
 	def closing(self, protocol):
-		logging.info("Connection closed")
+		logging.info("Connection to '%s' closed" % protocol.peername)
 
 	def got_message(self, protocol):
 		response = protocol.message
-		protocol.close()
 		response.body.seek(0)
 		octets = response.body.read()
-		if (response["content-type"] == "application/json"
-		    and response.code == "200"):
-			todo = neubot.rendezvous.todolist(octets)
-			neubot.rendezvous.prettyprinter(logging.info,
-			    "JSON < ", todo)
+		todo = neubot.rendezvous.todolist(octets)
+		neubot.rendezvous.prettyprinter(logging.info, "  ", todo)
+		protocol.close()
 
 	def got_metadata(self, protocol):
+		logging.info("Pretty-printing response we received")
 		response = protocol.message
-		neubot.http.prettyprinter(logging.info, "HTTP < ", response)
+		neubot.http.prettyprinter(logging.info, "  ", response)
 		response.body = StringIO.StringIO()
+		if (response["content-type"] != "application/json"
+		    or response.code != "200"):
+			logging.error("Unexpected response")
+			protocol.close()
+			return
 
 	def is_message_unbounded(self, protocol):
 		return (neubot.http.response_unbounded(self.request,
 		    protocol.message))
 
 	def message_sent(self, protocol):
-		logging.info("Message sent")
+		logging.info("Done sending the request")
+		logging.info("Now waiting for the response")

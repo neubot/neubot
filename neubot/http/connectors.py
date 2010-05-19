@@ -36,9 +36,13 @@ class connector:
 		self.socket = None
 
 	def init(self):
-		self.socket = neubot.network.connect(self.family,
-		    self.address, self.port)
-		self.poller.set_writable(self)
+		try:
+			self.socket = neubot.network.connect(self.family,
+			    self.address, self.port)
+			self.poller.set_writable(self)
+		except:
+			self.application.aborted(self)
+			self.application = None
 
 	def closing(self):
 		self.application.aborted(self)
