@@ -26,8 +26,12 @@ class poller:
     def __init__(self, timeout = 1, periodic = lambda: None):
         self.timeout = timeout
         self.periodic = periodic
+        self.inits = set()
         self.readset = {}
         self.writeset = {}
+
+    def register_initializer(self, init):
+        self.inits.add(init)
 
     def set_readable(self, connection):
         self.readset[connection.fileno()] = connection
@@ -71,8 +75,17 @@ class poller:
 
     def loop(self):
         last = time.time()
-        while self.readset or self.writeset:
+        while True:
             try:
+                if self.inits:
+                    for init in self.inits:
+                        try:
+                            init()
+                        except:
+                            neubot.prettyprint_exception()
+                    self.inits.clear()
+                if not (self.readset or self.writeset):
+                    break
                 res = select.select(self.readset.keys(),
                     self.writeset.keys(), [], self.timeout)
                 for fileno in res[0]:
