@@ -20,6 +20,12 @@ import logging
 import logging.handlers
 import os
 import sys
+import traceback
+
+def prettyprint_exception(write=logging.error, eol=""):
+	content = traceback.format_exc()
+	for ln in content.splitlines():
+		write(ln + eol)
 
 def daemonize():
 	if (os.name == "posix"):
