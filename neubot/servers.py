@@ -33,14 +33,21 @@ URI = "http://whitespider.polito.it:8080/neubot-" + VERSION + ".exe"
 class simpleserver:
 	def __init__(self, poller, family, address, port):
 		self.poller = poller
+		self.family = family
+		self.address = address
+		self.port = port
 		neubot.http.acceptor(self, self.poller, address, port,
 		    family, False, None)
 
+	def aborted(self, acceptor):
+		logging.error("Could not listen at '%s:%s'" % (
+		    self.address, self.port))
+
 	def closing(self, protocol):
-		logging.info("Closing connection")
+		logging.info("[%s] Closing connection" % protocol.peername)
 
 	def got_client(self, protocol):
-		logging.info("Got connection")
+		logging.info("[%s] Got connection" % protocol.peername)
 		protocol.attach(self)
 
 	def got_message(self, protocol):
@@ -51,14 +58,14 @@ class simpleserver:
 				octets = request.body.read()
 				info = neubot.rendezvous.clientinfo(octets)
 				neubot.rendezvous.prettyprinter(logging.info,
-				    "JSON < ", info)
-				logging.info("Analyzing client info")
-				logging.info("Preparing per-client todo list")
+				    "[%s]   " % protocol.peername, info)
+				logging.info("[%s] Pretty printing "	\
+				    "the response we'll send" % (
+				    protocol.peername))
 				todo = neubot.rendezvous.todolist()
 				todo.set_versioninfo(VERSION, URI)
 				for name, uri in AVAILABLE.items():
 					todo.add_available(name, uri)
-				logging.info("Preparing HTTP response")
 				response = neubot.http.message(reason="Ok",
 				    code="200", protocol="HTTP/1.1")
 				response["cache-control"] = "no-cache"
@@ -68,9 +75,9 @@ class simpleserver:
 				response["content-length"] = str(len(octets))
 				response.body = StringIO.StringIO(octets)
 				neubot.http.prettyprinter(logging.info,
-				    "HTTP > ", response)
+				    "[%s]   " % protocol.peername, response)
 				neubot.rendezvous.prettyprinter(logging.info,
-				    "JSON > ", todo)
+				    "[%s]   " % protocol.peername, todo)
 			else:
 				response = neubot.http.message(code="405",
 				    reason="Method Not Allowed",
@@ -79,23 +86,36 @@ class simpleserver:
 				response["cache-control"] = "no-cache"
 				response["connection"] = "close"
 				neubot.http.prettyprinter(logging.info,
-				    "HTTP > ", response)
+				    "[%s]   " % protocol.peername, response)
 		else:
 			response = neubot.http.message(protocol="HTTP/1.1",
 			    code="404", reason="Not Found")
 			response["cache-control"] = "no-cache"
 			response["connection"] = "close"
 			neubot.http.prettyprinter(logging.info,
-			    "HTTP > ", response)
+			    "[%s]   " % protocol.peername, response)
 		protocol.sendmessage(response)
+		logging.info("[%s] Start sending the response" % (
+		    protocol.peername))
 
 	def got_metadata(self, protocol):
+		logging.info("[%s] Pretty printing the request we received" % (
+		    protocol.peername))
 		request = protocol.message
-		neubot.http.prettyprinter(logging.info, "HTTP < ", request)
+		neubot.http.prettyprinter(logging.info,
+		    "[%s]   " % protocol.peername, request)
 		request.body = StringIO.StringIO()
 
 	def is_message_unbounded(self, protocol):
 		return (False)
 
+	def listening(self, acceptor):
+		logging.info("Listen at '%s:%s'" % (
+		    self.address, self.port))
+
 	def message_sent(self, protocol):
+		logging.info("[%s] Done sending the response" % (
+		    protocol.peername))
+		logging.info("[%s] Now closing the connection" % (
+		    protocol.peername))
 		protocol.close()

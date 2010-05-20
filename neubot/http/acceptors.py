@@ -37,9 +37,14 @@ class acceptor:
 		self.socket = None
 
 	def init(self):
-		self.socket = neubot.network.listen(self.family,
-		    self.address, self.port)
-		self.poller.set_readable(self)
+		try:
+			self.socket = neubot.network.listen(self.family,
+			    self.address, self.port)
+			self.poller.set_readable(self)
+			self.application.listening(self)
+		except:
+			self.application.aborted(self)
+			self.application = None
 
 	def closing(self):
 		self.socket.close()

@@ -52,11 +52,14 @@ def connect(family, address, port, blocking=False):
 	raise (neubot.error("can't connect to %s:%s" % (address, port)))
 
 def listen(family, address, port, blocking=False):
+	logging.info("Want to listen at '%s:%s'" % (address, port))
 	lst = socket.getaddrinfo(address, port, family,
 	    socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
 	for elem in lst:
 		family, socktype, proto, canon, sa = elem
 		try:
+			repr = reduce(neubot.network.concatname, sa)
+			logging.info("Trying with '%s'" % repr)
 			s = socket.socket(family, socktype, proto)
 			s.setsockopt(socket.SOL_SOCKET,
 			    socket.SO_REUSEADDR, 1)
@@ -65,6 +68,6 @@ def listen(family, address, port, blocking=False):
 			s.listen(128)
 			return (s)
 		except socket.error:
-			logging.info(traceback.format_exc())
+			neubot.prettyprint_exception()
 			s = None
-	raise (neubot.error("can't listen %s:%s" % (address, port)))
+	raise (neubot.error("can't listen at %s:%s" % (address, port)))
