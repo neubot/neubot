@@ -44,7 +44,8 @@ class simpleserver:
 		    self.address, self.port))
 
 	def closing(self, protocol):
-		logging.info("[%s] Closing connection" % protocol.peername)
+		logging.info("[%s] The connection has been closed" % (
+		    protocol.peername))
 
 	def got_client(self, protocol):
 		logging.info("[%s] Got connection" % protocol.peername)
@@ -116,6 +117,5 @@ class simpleserver:
 	def message_sent(self, protocol):
 		logging.info("[%s] Done sending the response" % (
 		    protocol.peername))
-		logging.info("[%s] Now closing the connection" % (
+		logging.info("[%s] Wait for the client to close connection" % (
 		    protocol.peername))
-		protocol.close()
