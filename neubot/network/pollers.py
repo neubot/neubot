@@ -25,70 +25,70 @@ import traceback
 import neubot
 
 class poller:
-	def __init__(self, timeout = 1, periodic = lambda: None):
-		self.timeout = timeout
-		self.periodic = periodic
-		self.readset = {}
-		self.writeset = {}
+    def __init__(self, timeout = 1, periodic = lambda: None):
+        self.timeout = timeout
+        self.periodic = periodic
+        self.readset = {}
+        self.writeset = {}
 
-	def set_readable(self, connection):
-		self.readset[connection.fileno()] = connection
+    def set_readable(self, connection):
+        self.readset[connection.fileno()] = connection
 
-	def set_writable(self, connection):
-		self.writeset[connection.fileno()] = connection
+    def set_writable(self, connection):
+        self.writeset[connection.fileno()] = connection
 
-	def unset_readable(self, connection):
-		if (self.readset.has_key(connection.fileno())):
-			del self.readset[connection.fileno()]
+    def unset_readable(self, connection):
+        if self.readset.has_key(connection.fileno()):
+            del self.readset[connection.fileno()]
 
-	def unset_writable(self, connection):
-		if (self.writeset.has_key(connection.fileno())):
-			del self.writeset[connection.fileno()]
+    def unset_writable(self, connection):
+        if self.writeset.has_key(connection.fileno()):
+            del self.writeset[connection.fileno()]
 
-	def close(self, connection):
-		try:
-			self.unset_readable(connection)
-			self.unset_writable(connection)
-			connection.closing()
-		except:
-			neubot.prettyprint_exception()
+    def close(self, connection):
+        try:
+            self.unset_readable(connection)
+            self.unset_writable(connection)
+            connection.closing()
+        except:
+            neubot.prettyprint_exception()
 
-	def _readable(self, fileno):
-		if (self.readset.has_key(fileno)):		# XXX
-			connection = self.readset[fileno]
-			try:
-				connection.readable()
-			except:
-				neubot.prettyprint_exception()
-				self.close(connection)
+    def _readable(self, fileno):
+        if self.readset.has_key(fileno):        # XXX
+            connection = self.readset[fileno]
+            try:
+                connection.readable()
+            except:
+                neubot.prettyprint_exception()
+                self.close(connection)
 
-	def _writable(self, fileno):
-		if (self.writeset.has_key(fileno)):		# XXX
-			connection = self.writeset[fileno]
-			try:
-				connection.writable()
-			except:
-				neubot.prettyprint_exception()
-				self.close(connection)
+    def _writable(self, fileno):
+        if self.writeset.has_key(fileno):        # XXX
+            connection = self.writeset[fileno]
+            try:
+                connection.writable()
+            except:
+                neubot.prettyprint_exception()
+                self.close(connection)
 
-	def loop(self):
-		last = time.time()
-		while (self.readset or self.writeset):
-			try:
-				res = select.select(self.readset.keys(),
-				    self.writeset.keys(), [], self.timeout)
-				for fileno in res[0]:
-					self._readable(fileno)
-				for fileno in res[1]:
-					self._writable(fileno)
-				now = time.time()
-				if (now - last >= self.timeout):
-					try:
-						self.periodic()
-					except:
-						neubot.prettyprint_exception()
-					last = now
-			except select.error, (code, reason):
-				neubot.prettyprint_exception()
-				if (code != errno.EINTR):
-					raise
+    def loop(self):
+        last = time.time()
+        while self.readset or self.writeset:
+            try:
+                res = select.select(self.readset.keys(),
+                    self.writeset.keys(), [], self.timeout)
+                for fileno in res[0]:
+                    self._readable(fileno)
+                for fileno in res[1]:
+                    self._writable(fileno)
+                now = time.time()
+                if now - last >= self.timeout:
+                    try:
+                        self.periodic()
+                    except:
+                        neubot.prettyprint_exception()
+                    last = now
+            except select.error, (code, reason):
+                neubot.prettyprint_exception()
+                if code != errno.EINTR:
+                    raise
