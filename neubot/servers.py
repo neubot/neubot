@@ -69,6 +69,7 @@ class simpleserver:
 					todo.add_available(name, uri)
 				response = neubot.http.message(reason="Ok",
 				    code="200", protocol="HTTP/1.1")
+				response["date"] = neubot.http.date()
 				response["cache-control"] = "no-cache"
 				response["connection"] = "close"
 				response["content-type"] = "application/json"
@@ -83,6 +84,7 @@ class simpleserver:
 				response = neubot.http.message(code="405",
 				    reason="Method Not Allowed",
 				    protocol="HTTP/1.1")
+				response["date"] = neubot.http.date()
 				response["allow"] = "POST"
 				response["cache-control"] = "no-cache"
 				response["connection"] = "close"
@@ -91,6 +93,7 @@ class simpleserver:
 		else:
 			response = neubot.http.message(protocol="HTTP/1.1",
 			    code="404", reason="Not Found")
+			response["date"] = neubot.http.date()
 			response["cache-control"] = "no-cache"
 			response["connection"] = "close"
 			neubot.http.prettyprinter(logging.info,

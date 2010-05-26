@@ -50,6 +50,7 @@ class Getter:
 		(scheme, address, port, pathquery) = neubot.http.urlsplit(uri)
 		request = neubot.http.message(method="GET", uri=pathquery,
 		    protocol="HTTP/1.1")
+		request["date"] = neubot.http.date()
 		request["connection"] = "close"
 		request["pragma"] = "no-cache"
 		request["cache-control"] = "no-cache"

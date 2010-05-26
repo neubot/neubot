@@ -51,6 +51,7 @@ class simpleclient:
 		logging.info("Pretty-printing the request we will send")
 		self.request = neubot.http.message(protocol="HTTP/1.1",
 		    uri="/rendez-vous/1.0", method="POST")
+		self.request["date"] = neubot.http.date()
 		self.request["cache-control"] = "no-cache"
 		self.request["connection"] = "close"
 		self.request["host"] = self.address + ":" + self.port

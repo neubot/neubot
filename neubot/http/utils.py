@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+import email.utils
 import neubot
 import ssl
 import urlparse
@@ -54,3 +55,6 @@ def response_unbounded(request, response):
 		return (True)
 	else:
 		return (False)
+
+def date():
+	return (email.utils.formatdate(usegmt=True))

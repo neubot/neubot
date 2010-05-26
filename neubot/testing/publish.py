@@ -50,6 +50,7 @@ class Publisher:
 		request = protocol.message
 		response = neubot.http.message(protocol="HTTP/1.1")
 		response["cache-control"] = "no-cache"
+		response["date"] = neubot.http.date()
 		if (request.protocol == "HTTP/1.0" or
 		    request["connection"] == "close"):
 			self.mustclose[protocol] = True
