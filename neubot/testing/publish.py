@@ -36,6 +36,9 @@ class Publisher:
 		self.mustclose = {}
 		self.names = []
 
+	def aborted(self, acceptor):
+		logging.error("Could not listen")
+
 	def closing(self, protocol):
 		if (self.mustclose.has_key(protocol)):
 			del self.mustclose[protocol]
@@ -101,6 +104,9 @@ class Publisher:
 
 	def is_message_unbounded(self, protocol):
 		return (False)
+
+	def listening(self, acceptor):
+		logging.info("Listening")
 
 	def message_sent(self, protocol):
 		if (self.mustclose.has_key(protocol)):
