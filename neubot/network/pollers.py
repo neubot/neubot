@@ -76,30 +76,34 @@ class poller:
     def loop(self):
         last = time.time()
         while True:
-            try:
-                if self.inits:
-                    for init in self.inits:
-                        try:
-                            init()
-                        except:
-                            neubot.prettyprint_exception()
-                    self.inits.clear()
-                if not (self.readset or self.writeset):
-                    break
-                res = select.select(self.readset.keys(),
-                    self.writeset.keys(), [], self.timeout)
-                for fileno in res[0]:
-                    self._readable(fileno)
-                for fileno in res[1]:
-                    self._writable(fileno)
-                now = time.time()
-                if now - last >= self.timeout:
+            if self.inits:
+                for init in self.inits:
                     try:
-                        self.periodic()
+                        init()
                     except:
                         neubot.prettyprint_exception()
-                    last = now
+                self.inits.clear()
+            if not (self.readset or self.writeset):
+                break
+            try:
+                res = select.select(self.readset.keys(),
+                    self.writeset.keys(), [], self.timeout)
             except select.error, (code, reason):
+                if code == errno.EINTR:
+                    continue
                 neubot.prettyprint_exception()
-                if code != errno.EINTR:
-                    raise
+                break
+            except:
+                neubot.prettyprint_exception()
+                break
+            for fileno in res[0]:
+                self._readable(fileno)
+            for fileno in res[1]:
+                self._writable(fileno)
+            now = time.time()
+            if now - last >= self.timeout:
+                try:
+                    self.periodic()
+                except:
+                    neubot.prettyprint_exception()
+                last = now
