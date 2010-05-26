@@ -17,10 +17,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
-import logging
 import select
 import time
-import traceback
 
 import neubot
 
