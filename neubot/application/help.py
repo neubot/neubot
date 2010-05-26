@@ -22,7 +22,7 @@ from neubot.application.__defaults import defaults
 
 HELP = 									\
 "\n"									\
-"Network neutrality bot (Neubot) -- version 0.0.3\n"			\
+"Network neutrality bot (Neubot) -- version 0.0.4\n"			\
 "Copyright (c) 2010 NEXA Center for Internet & Society\n"		\
 "  For more info, see http://nexa.polito.it/neubot\n"			\
 "\n"									\
