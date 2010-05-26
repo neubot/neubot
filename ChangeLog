@@ -1,3 +1,28 @@
+Neubot 0.0.4 [2010-05-26]
+	* neubot/utils.py
+	    * Add prettyprint_exception() function
+	* network/pollers.py
+	    * Robust exception handler
+	    * Support for robust initialization
+	    * PEP8 compliant code
+	    * Fine grained exception handling in the core loop
+	    * Remove unused imports
+	    * Prepend underscore to private methods
+	* Employ the new robust initialization mechanism
+	* Update documentation
+	* network/connections.py
+	    * Guard against unexpected behavior
+	* Removed deprecated code
+	* network/connections.py
+	  http/protocols.py
+	    * Allow getting socket and peer name
+	* More verbose transparency on client and server side
+	* neubot/servers.py
+	    * Do NOT close connection server side
+	* bin/unix/neubot
+	    * Handle the INT signal properly
+	* Add support for date http header
+
 Neubot 0.0.3 [2010-05-18]
 	* bin/unix/neubot: By default be verbose rather than quiet
 	* bin/unix/neubot: Revert: Create $HOME/.neubot if non-existent
