@@ -26,13 +26,19 @@ import logging.handlers
 import os
 import os.path
 import pwd
+import signal
 import sys
 
 STDERR_FORMAT = "<%(levelname)s> %(message)s"
 SYSLOG_FORMAT = "neubot[%(process)d]: " + STDERR_FORMAT
 USAGE = "Usage: neubot [-bEq] [-I path] [-O option] [--] [command [opts]]\n"
 
+def interrupt(signo, frame):
+	logging.info("Got interrupt signal")
+	os._exit(1)
+
 def bootstrap():
+	signal.signal(signal.SIGINT, interrupt)
 	background = False
 	configuration = {}
 	incdir = "/usr/share"
@@ -133,6 +139,8 @@ def bootstrap():
 		if (os.fork() > 0):
 			os._exit(0)
 		logging.info("Now running in background as a daemon")
+		logging.info("Ignoring the INT signal")
+		signal.signal(signal.SIGINT, signal.SIG_IGN)
 		logging.info("Trying to write the pidfile '%s'" % pidfile)
 		try:
 			f = open(pidfile, "wb")
