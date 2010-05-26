@@ -168,8 +168,8 @@ class ssl_connection:
 		self.ssl.close()
 
 	def readable(self):
-		if (self.internalwrite):		# FIXME
-			return
+		if (self.internalwrite):
+			raise (Exception("Internal error"))
 		if (self.internalread):
 			self.internalread = False
 			if (not self.wantread):
@@ -182,8 +182,8 @@ class ssl_connection:
 		self.protocol.readable()
 
 	def writable(self):
-		if (self.internalread):			# FIXME
-			return
+		if (self.internalread):
+			raise (Exception("Internal error"))
 		if (self.internalwrite):
 			self.internalwrite = False
 			if (not self.wantwrite):
