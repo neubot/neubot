@@ -24,6 +24,7 @@ import getopt
 import logging
 import logging.handlers
 import os
+import os.path
 import pwd
 import sys
 
@@ -80,19 +81,22 @@ def bootstrap():
 		if (os.environ.has_key("HOME")):
 			rclist.append(os.environ["HOME"] + "/.neubot/config")
 		for rc in rclist:
-			logging.info("Trying rcfile '%s'" % rc)
-			configparser.read(rc)
+			if (os.path.isfile(rc)):
+				logging.info("Reading config file '%s'" % rc)
+				configparser.read(rc)
 		for key, value in configparser.items("DEFAULT"):
 			if (not configuration.has_key(key)):
 				configuration[key] = value
+	incdir = os.path.abspath(incdir)
+	logging.info("Assuming neubot core is at '%s'" % incdir)
 	if (not incdir in sys.path):
-		logging.info("Prepend '%s' to sys.path" % incdir)
 		sys.path.insert(0, incdir)
-	logging.info("Trying to import neubot")
+	logging.info("Trying to import neubot core")
 	try:
 		import neubot
 	except ImportError:
-		logging.error("Could not import neubot (Try using -I)")
+		logging.error("Could not import neubot core")
+		logging.error("Use -I to specify the path to neubot core")
 		sys.exit(1)
 	if (len(arguments) == 0):
 		arguments = ["_neubot"]
@@ -104,16 +108,17 @@ def bootstrap():
 		logging.error("Unknown command: '%s'" % name)
 		sys.exit(1)
 	if (background):
-		logging.info("Redirecting logs to syslog")
+		logging.info("Redirecting logs from stderr to syslog")
 		handler = logging.handlers.SysLogHandler("/dev/log")
 		formatter = logging.Formatter(SYSLOG_FORMAT)
 		handler.setFormatter(formatter)
 		logger.addHandler(handler)		# XXX
-		logging.info("Moving to root directory")
+		logging.info("Changing current directory to '/'")
 		os.chdir("/")
-		logging.info("Using the default umask")
+		logging.info("Setting the default umask")
 		os.umask(022)
-		logging.info("Redirect stdio to /dev/null")
+		logging.info("Redirecting stdio to '/dev/null'")
+		logging.info("That's the last message you will see on console")
 		for fd in range(0, 3):
 			os.close(fd)
 		stdin = os.open("/dev/null", os.O_RDWR)
@@ -127,7 +132,7 @@ def bootstrap():
 		logging.info("Detaching from the controlling session")
 		if (os.fork() > 0):
 			os._exit(0)
-		logging.info("Now running in background")
+		logging.info("Now running in background as a daemon")
 		logging.info("Trying to write the pidfile '%s'" % pidfile)
 		try:
 			f = open(pidfile, "wb")
@@ -136,7 +141,7 @@ def bootstrap():
 		except IOError:
 			pass
 		if (os.getuid() == 0):
-			logging.info("Trying to become the '_neubot' user")
+			logging.info("Trying to drop root privileges")
 			try:
 				pw = pwd.getpwnam("_neubot")
 			except KeyError:
