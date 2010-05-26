@@ -20,7 +20,7 @@ in-place as follows:
 
   ./bin/unix/neubot -I. [options]
 
-That works because the -I. command line options instructs Neubot
+That works because the -I. command line option instructs the Neubot
 launcher (i.e. ./bin/unix/neubot) to search for Neubot sources in
 the current working directory.
 
@@ -28,21 +28,21 @@ the current working directory.
 2. Howto install
 
 First of all, you need to have python 2.6 installed -- which is
-always the case with Ubuntu 9.10, 10.04.  However, you might want
-to check invoking the following command:
+always the case with Ubuntu 9.10, 10.04, MacOsX 10.6 (Snow Leopard).
+However, you might want to check invoking the following command:
 
   python -V
 
 Now, assuming you have downloaded the latest Neubot archive, e.g.
-neubot-0.0.3.tar.gz, you have to unpack it, with the following
+neubot-0.0.4.tar.gz, you have to unpack it, with the following
 command:
 
-  tar -xzf neubot-0.0.3.tar.gz
+  tar -xzf neubot-0.0.4.tar.gz
 
-The above command should create a directory named neubot-0.0.3.
+The above command should create a directory named neubot-0.0.4.
 Now enter such directory with:
 
-  cd neubot-0.0.3
+  cd neubot-0.0.4
 
 At this point, you need to become administrator, in order to
 install neubot in your system.  Depending on the system you might
@@ -78,10 +78,9 @@ In the former case it will run in foreground, logging messages to
 the console.  You can terminate the running Neubot anytime you want
 with Ctrl-C.
 
-In the latter, it will immediatly fork in background, so you are
-not going to see any output (because it exploits syslog in that
-case.)  Note that, if you want to automatize such process, you might
-add
+In the latter, it will go in background, so you are not going to see
+much output (because it exploits syslog in that case.)  Note that, if
+you want to automatize such process, you might add
 
   if [ -x /usr/bin/neubot ]; then
     /usr/bin/neubot -bq
