@@ -1,4 +1,4 @@
-# neubot/__init__.py
+# neubot.nsi
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -16,15 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from clients import *
-from errors import *
-from servers import *
-from utils import *
-
-import http
-import network
-import rendezvous
-
-import os
-if os.name == "posix":
-    import testing
+name "Network Neutrality Bot (Neubot) 0.0.4"
+outfile "Neubot Setup 0.0.4.exe"
+installdir "$PROGRAMFILES\Neubot"
+section
+    setoutpath "$INSTDIR"
+    file "dist\*.*"
+    writeuninstaller "$INSTDIR\uninstall.exe"
+sectionend
+section "uninstall"
+    rmdir /r "$INSTDIR"
+sectionend

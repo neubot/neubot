@@ -1,5 +1,6 @@
 AUTHORS		List of authors
 BUGS		List of open bugs
+Build.bat	Batch file to auto-create Win32 installer
 COPYING		Copying conditions (GPLv3)
 ChangeLog	Log of changes
 INSTALL		Install instructions
@@ -10,3 +11,5 @@ bin		Executable scripts (e.g. neubot)
 doc		Documentation
 etc		Startup scripts for various distros
 neubot		The `neubot' python module
+neubot.nsi	Nullsoft Scriptable Installer System (NSIS) script
+setup.py	Setup script for Py2exe

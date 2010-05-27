@@ -1,4 +1,4 @@
-# neubot/__init__.py
+# setup.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -16,15 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from clients import *
-from errors import *
-from servers import *
-from utils import *
-
-import http
-import network
-import rendezvous
-
+import distutils.core
 import os
-if os.name == "posix":
-    import testing
+
+if (os.name != "posix"):
+    import py2exe
+    distutils.core.setup(name="neubot",
+        description="Network Neutrality Bot (Neubot)",
+        license="GPL",
+        packages=["neubot"],
+        package_dir={"neubot" : "."},
+        version="0.0.4",
+        author="Simone Basso",
+        author_email="bassosimone@gmail.com",
+        console=[{"script": "bin/win32/neubot"}],
+        url="http://nexa.polito.it/neubot")
