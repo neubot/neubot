@@ -9,6 +9,7 @@ README		This file
 TODO		Things to be done
 bin		Executable scripts (e.g. neubot)
 doc		Documentation
+debian		Contains files needed to create the Debian package
 etc		Startup scripts for various distros
 neubot		The `neubot' python module
 neubot.nsi	Nullsoft Scriptable Installer System (NSIS) script
