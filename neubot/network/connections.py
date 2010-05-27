@@ -51,14 +51,14 @@ class socket_connection:
 		try:
 			buf = self.socket.recv(cnt)
 			if (not buf):
-				raise (neubot.error(errno.EPIPE, "Broken pipe"))
+				raise (socket.error(errno.EPIPE, "Broken pipe"))
 			return (buf)
 		except socket.error, (code, reason):
 			if (code == errno.EWOULDBLOCK or
 			    code == errno.EAGAIN):
 				return ("")
 			else:
-				raise (neubot.error(code, reason))
+				raise (socket.error(code, reason))
 
 	def send(self, buf):
 		try:
@@ -68,7 +68,7 @@ class socket_connection:
 			    code == errno.EAGAIN):
 				return (0)
 			else:
-				raise (neubot.error(code, reason))
+				raise (socket.error(code, reason))
 
 	def close(self):
 		self.poller.close(self)
@@ -130,7 +130,7 @@ class ssl_connection:
 				self.handshake = False
 			buf = self.ssl.read(cnt)
 			if (not buf):
-				raise (neubot.error(errno.EPIPE, "Broken pipe"))
+				raise (socket.error(errno.EPIPE, "Broken pipe"))
 			return (buf)
 		except ssl.SSLError, (code, reason):
 			if (code == ssl.SSL_ERROR_WANT_READ or
@@ -142,7 +142,7 @@ class ssl_connection:
 					self.poller.unset_readable(self) # XXX
 				return ("")
 			else:
-				raise (neubot.error(code, reason))
+				raise (socket.error(code, reason))
 
 	def send(self, buf):
 		try:
@@ -160,7 +160,7 @@ class ssl_connection:
 					self.poller.unset_writable(self) # XXX
 				return (0)
 			else:
-				raise (neubot.error(code, reason))
+				raise (socket.error(code, reason))
 
 	def close(self):
 		self.poller.close(self)

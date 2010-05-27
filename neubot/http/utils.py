@@ -33,7 +33,7 @@ def prettyprinter(write, direction, message, eol=""):
 def urlsplit(uri):
 	scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
 	if (scheme != "http" and scheme != "https"):
-		raise (neubot.error("Unknown scheme"))
+		raise (Exception("Unknown scheme"))
 	if (":" in netloc):
 		address, port = netloc.split(":", 1)
 	elif (scheme == "https"):

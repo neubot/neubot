@@ -50,7 +50,7 @@ class protocol:
 			if (not self.message.protocol):
 				vector = line.split(" ", 2)
 				if (len(vector) != 3):
-					raise (neubot.error("Invalid line"))
+					raise (Exception("Invalid line"))
 				if (vector[0] in PROTOCOLS):
 					self.message.protocol = vector[0]
 					self.message.code = vector[1]
@@ -60,11 +60,11 @@ class protocol:
 					self.message.uri = vector[1]
 					self.message.protocol = vector[2]
 				else:
-					raise (neubot.error("Invalid line"))
+					raise (Exception("Invalid line"))
 			else:
 				vector = line.split(":", 1)		# XXX
 				if (len(vector) != 2):
-					raise (neubot.error("Invalid line"))
+					raise (Exception("Invalid line"))
 				key, value = vector
 				key, value = key.strip(), value.strip()
 				self.message[key] = value
@@ -79,7 +79,7 @@ class protocol:
 			except ValueError:
 				length = -1
 			if (length < 0):
-				raise (neubot.error("Invalid line"))
+				raise (Exception("Invalid line"))
 			self.adaptor.get_bounded_body(length)
 			return
 		if (self.application.is_message_unbounded(self)):

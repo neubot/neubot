@@ -18,6 +18,7 @@
 
 import collections
 import errno
+import socket
 
 import neubot
 
@@ -49,10 +50,10 @@ class adaptor:
 
 	def readable(self):
 		if (len(self.recvbuff) > MAXLENGTH):
-			raise (neubot.error("Buffer too big"))
+			raise (Exception("Buffer too big"))
 		try:
 			octets = self.connection.recv(8000)
-		except neubot.error, (code, reason):
+		except socket.error, (code, reason):
 			if (code == errno.EPIPE):
 				self.connection.close()
 				return
@@ -62,7 +63,7 @@ class adaptor:
 		self.recvbuff.append(octets)
 		while (True):
 			if (len(self.parsers) == 0):
-				raise (neubot.error("Empty parser list"))
+				raise (Exception("Empty parser list"))
 			parser = self.parsers[0]
 			done = parser()
 			if (not done):
@@ -104,7 +105,7 @@ class adaptor:
 				line = self.recvbuff.slice(index + 2)
 				if (self.chunkstate == READING_END):
 					if (line != "\r\n"):
-						raise (neubot.error
+						raise (Exception
 						    ("Protocol error"))
 					self.chunkstate = READING_LENGTH
 					continue
@@ -115,7 +116,7 @@ class adaptor:
 				except:
 					self.chunklength = -1
 				if (self.chunklength < 0):
-					raise (neubot.error("Protocol error"))
+					raise (Exception("Protocol error"))
 				if (self.chunklength == 0):
 					self.chunkstate = READING_TRAILERS
 					continue
@@ -141,7 +142,7 @@ class adaptor:
 					return (True)
 				# Ignore other trailers
 				continue
-		raise (neubot.error("Reading chunks: internal error"))
+		raise (Exception("Reading chunks: internal error"))
 
 	def writable(self):
 		while (len(self.sendbuff) == 0):

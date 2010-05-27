@@ -49,7 +49,7 @@ def connect(family, address, port, blocking=False):
 		except socket.error:
 			neubot.prettyprint_exception()
 			s = None
-	raise (neubot.error("can't connect to %s:%s" % (address, port)))
+	raise (Exception("can't connect to %s:%s" % (address, port)))
 
 def listen(family, address, port, blocking=False):
 	logging.info("Want to listen at '%s:%s'" % (address, port))
@@ -70,4 +70,4 @@ def listen(family, address, port, blocking=False):
 		except socket.error:
 			neubot.prettyprint_exception()
 			s = None
-	raise (neubot.error("can't listen at %s:%s" % (address, port)))
+	raise (Exception("can't listen at %s:%s" % (address, port)))

@@ -19,6 +19,7 @@
 import errno
 import fcntl
 import os
+import socket
 
 import neubot
 
@@ -54,20 +55,20 @@ class stdio_connection:
 			    code == errno.EPIPE):
 				return (0)
 			else:
-				raise (neubot.error(code, reason))
+				raise (socket.error(code, reason))
 
 	def recv(self, cnt):
 		try:
 			buf = os.read(self.fd, cnt)
 			if (buf == ""):
-				raise (neubot.error(errno.EPIPE, "Broken pipe"))
+				raise (socket.error(errno.EPIPE, "Broken pipe"))
 			return (buf)
 		except os.error, (code, reason):
 			if (code == errno.EWOULDBLOCK or
 			    code == errno.EPIPE):
 				return ("")
 			else:
-				raise (neubot.error(code, reason))
+				raise (socket.error(code, reason))
 
 	def set_readable(self):
 		self.poller.set_readable(self)

@@ -17,7 +17,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 from clients import *
-from errors import *
 from servers import *
 from utils import *
 
