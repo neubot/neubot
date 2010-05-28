@@ -27,3 +27,5 @@ import rendezvous
 import os
 if os.name == "posix":
     import testing
+
+version = "0.0.4"

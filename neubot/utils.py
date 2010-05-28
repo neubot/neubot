@@ -26,3 +26,12 @@ def prettyprint_exception(write=logging.error, eol=""):
 	content = traceback.format_exc()
 	for ln in content.splitlines():
 		write(ln + eol)
+
+def versioncmp(left, right):
+    left = map(int, left.split("."))
+    right = map(int, right.split("."))
+    for i in range(0, 3):
+        diff = left[i] - right[i]
+        if diff:
+            return diff
+    return 0
