@@ -24,6 +24,7 @@ import container
 import http
 import network
 import rendezvous
+import nrendezvous
 
 import os
 if os.name == "posix":
