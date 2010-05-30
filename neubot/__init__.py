@@ -22,6 +22,7 @@ from utils import *
 
 import container
 import http
+import measure
 import negotiate
 import network
 import rendezvous
