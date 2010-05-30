@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import logging
 import logging.handlers
 import os
@@ -35,3 +36,9 @@ def versioncmp(left, right):
         if diff:
             return diff
     return 0
+
+def prettyprint_json(write, prefix, octets, eol=""):
+    obj = json.loads(octets)
+    lines = json.dumps(obj, ensure_ascii=True, indent=2)
+    for line in lines.splitlines():
+        write(prefix + line + eol)
