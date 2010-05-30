@@ -21,7 +21,10 @@
 #
 
 ARCHIVE = neubot
-.PHONY: _all _archives _docs _release clean help install uninstall
+DESTDIR =
+PREFIX  = /usr
+
+.PHONY: _all _archives _docs _install _release clean help install uninstall
 
 _all: help
 
@@ -35,6 +38,16 @@ _docs:
 	@cd doc && for DIA in *.dia; do					\
 	    dia --filter=png $$DIA;					\
 	done
+_install:
+	@for D in `find neubot/ -type d`; do				\
+	    install -m755 -d $(DESTDIR)$(PREFIX)/share/$$D || exit 1;	\
+	done
+	@for F in `find neubot/ -type f -name \*.py`; do		\
+	    install -m644 $$F $(DESTDIR)$(PREFIX)/share/$$F || exit 1;	\
+	done
+	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
+	@install -d $(DESTDIR)$(PREFIX)/bin
+	@install bin/unix/neubot $(DESTDIR)$(PREFIX)/bin/
 _release:
 	@echo "[RELEASE]"
 	@V=`git tag|tail -n1` 					&&	\
@@ -50,7 +63,7 @@ clean:
 	@rm -rf -- build/ dist/ $(ARCHIVE).tar.* $(ARCHIVE).zip
 help:
 	@echo "[HELP] Available targets"
-	@cat Makefile|grep '^[a-zA-Z]*:'|sed 's/:.*$$//'|sed 's/^/\t/'
+	@cat Makefile|grep '^[a-zA-Z0-9]*:'|sed 's/:.*$$//'|sed 's/^/  /'
 install:
 	@echo "[INSTALL] Create directory /usr/share/neubot"
 	@if [ -e /usr/share/neubot ]; then				\
