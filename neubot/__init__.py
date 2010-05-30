@@ -33,3 +33,6 @@ if os.name == "posix":
     import testing
 
 version = "0.0.4"
+
+# Must be the last import
+import main

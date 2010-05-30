@@ -111,8 +111,9 @@ def bootstrap():
 	try:
 		exec("from neubot.application.%s import main" % name)
 	except ImportError:
-		logging.error("Unknown command: '%s'" % name)
-		sys.exit(1)
+		logging.warning("Unknown command: '%s'" % name)
+		logging.warning("Fall back to new-style commands")
+		main = None
 	if (background):
 		logging.info("Redirecting logs from stderr to syslog")
 		handler = logging.handlers.SysLogHandler("/dev/log")
@@ -160,7 +161,9 @@ def bootstrap():
 			os.setuid(pw.pw_uid)
 			logging.info("Now running as the '_neubot' user")
 	logging.info("Invoking command: '%s'" % name)
-	main(configuration, arguments)
+	if main:
+		main(configuration, arguments)
+	neubot.main.main(arguments)
 
 if (__name__ == "__main__"):
 	bootstrap()
