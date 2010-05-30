@@ -36,6 +36,9 @@ class acceptor:
 		self.certfile = certfile
 		self.socket = None
 
+	def __str__(self):
+		return self.address + ":" + self.port
+
 	def init(self):
 		try:
 			self.socket = neubot.network.listen(self.family,

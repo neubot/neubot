@@ -30,6 +30,9 @@ class protocol:
 		self.sockname = adaptor.connection.sockname
 		self.peername = adaptor.connection.peername
 
+	def __str__(self):
+		return self.peername
+
 	def closing(self):
 		self.application.closing(self)
 		self.application = None

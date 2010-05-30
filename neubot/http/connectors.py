@@ -35,6 +35,9 @@ class connector:
 		self.secure = secure
 		self.socket = None
 
+	def __str__(self):
+		return self.address + ":" + self.port
+
 	def init(self):
 		try:
 			self.socket = neubot.network.connect(self.family,
