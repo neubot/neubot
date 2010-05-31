@@ -20,6 +20,7 @@ from clients import *
 from servers import *
 from utils import *
 
+import auto
 import container
 import http
 import measure

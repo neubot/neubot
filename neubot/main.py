@@ -22,6 +22,7 @@ import sys
 import neubot
 
 maintbl = {
+    "auto"        : neubot.auto.main,
     "rendezvous"  : neubot.nrendezvous.main,
     "measure"     : neubot.measure.main,
     "negotiate"   : neubot.negotiate.main,
