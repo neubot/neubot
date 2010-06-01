@@ -21,10 +21,11 @@
 #
 
 ARCHIVE = neubot
+DEB     = neubot-0.0.4-2.deb
 DESTDIR =
 PREFIX  = /usr
 
-.PHONY: _all _archives _docs _install _release clean help install uninstall
+.PHONY: _all _archives _docs _install _release clean deb help install uninstall
 
 _all: help
 
@@ -60,7 +61,25 @@ _release:
 clean:
 	@echo "[CLEAN]"
 	@find . -type f -name \*.pyc -exec rm -f {} \;
-	@rm -rf -- build/ dist/ $(ARCHIVE).tar.* $(ARCHIVE).zip
+	@rm -rf -- build/ dist/ $(ARCHIVE).tar.* $(ARCHIVE).zip $(DEB)
+deb:
+	@echo "[DEB] $(DEB)"
+	@rm -rf dist/
+	@make -f Makefile _install DESTDIR=dist/data
+	@install -d -m755 dist/data/etc/init.d
+	@install -m755 debian/neubot dist/data/etc/init.d/
+	@cd dist/data && tar czf ../data.tar.gz ./*
+	@install -d -m755 dist/control
+	@find dist/data -type f -exec md5sum {} \; > dist/control/md5sums
+	@sed -i 's!dist\/data\/!!g' dist/control/md5sums
+	@chmod 644 dist/control/md5sums
+	@install -m644 debian/control dist/control/
+	@for file in postinst prerm; do					\
+	    install debian/$$file dist/control/;			\
+	done
+	@cd dist/control && tar czf ../control.tar.gz ./*
+	@echo '2.0' > dist/debian-binary
+	@ar r $(DEB) dist/debian-binary dist/*.tar.gz
 help:
 	@echo "[HELP] Available targets"
 	@cat Makefile|grep '^[a-zA-Z0-9]*:'|sed 's/:.*$$//'|sed 's/^/  /'
