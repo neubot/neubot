@@ -3,7 +3,7 @@ Version: 0.0.4-2
 Architecture: all
 Maintainer: Simone Basso <bassosimone@gmail.com>
 Installed-Size: 123
-Depends: python (>= 2.6)
+Depends: python2.6
 Section: net
 Homepage: http://nexa.polito.it/neubot
 Priority: optional
