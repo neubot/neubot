@@ -105,7 +105,7 @@ def bootstrap():
 		logging.error("Use -I to specify the path to neubot core")
 		sys.exit(1)
 	if (len(arguments) == 0):
-		arguments = ["_neubot"]
+		arguments = ["auto"]
 	name = arguments[0]
 	logging.info("Looking-up command: '%s'" % name)
 	try:
