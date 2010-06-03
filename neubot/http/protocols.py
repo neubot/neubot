@@ -16,9 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import time
+
 import neubot
 
 PROTOCOLS = [ "HTTP/1.1", "HTTP/1.0" ]
+TIMEOUT   = 15
 
 class protocol:
 	def __init__(self, adaptor):
@@ -29,13 +33,24 @@ class protocol:
 		self.application = None
 		self.sockname = adaptor.connection.sockname
 		self.peername = adaptor.connection.peername
+		self.begin = time.time()
+		poller = self.adaptor.connection.poller
+		poller.register_periodic(self.periodic)
 
 	def __str__(self):
 		return self.peername
 
+	def periodic(self, now):
+		if now - self.begin > TIMEOUT:
+			logging.warning("Watchdog timeout")
+			poller = self.adaptor.connection.poller
+			poller.register_func(self.close)
+
 	def closing(self):
 		self.application.closing(self)
 		self.application = None
+		poller = self.adaptor.connection.poller
+		poller.unregister_periodic(self.periodic)
 
 	def got_body(self):
 		self.application.got_message(self)

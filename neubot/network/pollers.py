@@ -17,21 +17,33 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
+import logging
 import select
 import time
 
 import neubot
 
 class poller:
-    def __init__(self, timeout = 1, periodic = lambda: None):
+    def __init__(self, timeout=5):
         self.timeout = timeout
-        self.periodic = periodic
-        self.inits = set()
+        self.periodic = set()
+        self.funcs = set()
         self.readset = {}
         self.writeset = {}
 
+    def register_periodic(self, periodic):
+        self.periodic.add(periodic)
+
+    def unregister_periodic(self, periodic):
+        if periodic in self.periodic:
+            self.periodic.remove(periodic)
+
+    def register_func(self, func):
+        self.funcs.add(func)
+
     def register_initializer(self, init):
-        self.inits.add(init)
+        logging.warning("poller.register_initializer is deprecated")
+        self.funcs.add(init)
 
     def set_readable(self, connection):
         self.readset[connection.fileno()] = connection
@@ -76,14 +88,14 @@ class poller:
     def loop(self):
         last = time.time()
         while True:
-            if self.inits:
-                for init in self.inits:
+            if self.funcs:
+                for func in self.funcs:
                     try:
-                        init()
+                        func()
                     except:
                         neubot.prettyprint_exception()
-                self.inits.clear()
-            if not (self.readset or self.writeset):
+                self.funcs.clear()
+            if not (self.readset or self.writeset or self.periodic):
                 break
             try:
                 res = select.select(self.readset.keys(),
@@ -102,8 +114,9 @@ class poller:
                 self._writable(fileno)
             now = time.time()
             if now - last >= self.timeout:
-                try:
-                    self.periodic()
-                except:
-                    neubot.prettyprint_exception()
+                for periodic in self.periodic:
+                    try:
+                        periodic(now)
+                    except:
+                        neubot.prettyprint_exception()
                 last = now
