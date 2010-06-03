@@ -126,8 +126,7 @@ above example, you can take the following steps in order to uninstall it:
 
 4. Remove the rest of the program::
 
-     rm -rf /opt/share/neubot/*
-     rmdir /opt/share/neubot
+     rm -rf /opt/share/neubot/
 
 In addition, if you amended your system to invoke Neubot at startup,
 perform the following steps:
