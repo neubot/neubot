@@ -46,7 +46,6 @@ _install:
 	@for F in `find neubot/ -type f -name \*.py`; do		\
 	    install -m644 $$F $(DESTDIR)$(PREFIX)/share/$$F || exit 1;	\
 	done
-	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
 	@install -d $(DESTDIR)$(PREFIX)/bin
 	@install bin/unix/neubot $(DESTDIR)$(PREFIX)/bin/
 _release:
@@ -86,3 +85,4 @@ help:
 install:
 	@echo "[INSTALL]"
 	@make -f Makefile _install
+	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
