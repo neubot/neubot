@@ -21,7 +21,7 @@
 #
 
 ARCHIVE = neubot
-DEB     = neubot-0.0.4-2.deb
+DEB     = neubot-0.0.5-1.deb
 DESTDIR =
 PREFIX  = /usr/local
 

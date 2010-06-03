@@ -27,7 +27,7 @@ AVAILABLE = {
 	"latency": "http://whitespider.polito.it:9773/latency"
 }
 
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 URI = "http://whitespider.polito.it:8080/neubot-" + VERSION + ".exe"
 
 class simpleserver:

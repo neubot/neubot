@@ -33,7 +33,7 @@ import os
 if os.name == "posix":
     import testing
 
-version = "0.0.4"
+version = "0.0.5"
 
 # Must be the last import
 import main
