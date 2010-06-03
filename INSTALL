@@ -1,104 +1,145 @@
-Install (and uninstall) Neubot, below Linux (and other Unices)
+How-to install Neubot below Linux and other Unices
+==================================================
 
-This document provides a brief description of how to install and
-uninstall Neubot in an Unix-like environment (e.g. Ubuntu Linux.)
+This document is intended for people running Unix-like operatings systems
+(OSs) for which a package is not available (as well as for people
+interested in experimenting with Neubot.)  We provide packages for the
+following operating systems
+
+* Ubuntu 9.10, 10.04
+
+So, if you have installed one of the above, you probably might want to
+give a look at the following web pages
+
+* http://www.neubot.org:8080/
+* http://nexa.polito.it/neubot
+
+That said, this document explains how to run neubot in-place, e.g.
+from the sources archive, and covers the topic of installing it manually
+(possibily in order to prepare a package for your Linux distribution.)
+
+Dependencies
+------------
+
+To run Neubot you need to have the complete Python 2.6 distribution
+installed.  In other words, the command::
+
+  python2.6 -V
+
+Should return ``Python 2.6.X`` where ``X`` might vary depending on
+your OS.  If that is not the case, you should take the proper steps in
+order to install Python 2.6 on your distro.
+
+We known that Python 2.6 is available for the following Unix-like
+operating systems
+
+* LinuxMint 7
+* MacOsX 10.6 "Snow Leopard"
+* OpenBSD 4.7
+* Ubuntu 9.10, 10.04
+
+Run Neubot in-place
+-------------------
+
+To run Neubot in-place from the sources directory, type::
+
+  ./bin/unix/neubot -I.
+
+The magic lies in the ``-I.`` command line switch, that instructs the
+startup procedure to search the rest of the program in the current
+working directory (rather than in ``/usr/local/share``.)
+
+Invoked this way, neubot will run in automatic mode, e.g. it connects
+periodically to the master server retrieving the list of tests to be
+performed and checking for updates.  You can interrupt it with ``Ctrl-C``
+at any time.
+
+To find out more options, try the following commands::
+
+  ./bin/unix/neubot -I. --help
+  ./bin/unix/neubot -I. help
 
 
-0. Index
+Install Neubot
+--------------
 
-    1. Howto run in-place
-    2. Howto install
-    3. Howto uninstall
-
-
-1. Howto run in-place
-
-We suggest you to install Neubot, but sometimes that might not be
-pratical, e.g. you are testing a development version.  In that case,
-assuming that you are in the sources directory, you can run Neubot
-in-place as follows:
-
-  ./bin/unix/neubot -I. [options]
-
-That works because the -I. command line option instructs the Neubot
-launcher (i.e. ./bin/unix/neubot) to search for Neubot sources in
-the current working directory.
-
-
-2. Howto install
-
-First of all, you need to have python 2.6 installed -- which is
-always the case with Ubuntu 9.10, 10.04, MacOsX 10.6 (Snow Leopard).
-However, you might want to check invoking the following command:
-
-  python -V
-
-Now, assuming you have downloaded the latest Neubot archive, e.g.
-neubot-0.0.4.tar.gz, you have to unpack it, with the following
-command:
-
-  tar -xzf neubot-0.0.4.tar.gz
-
-The above command should create a directory named neubot-0.0.4.
-Now enter such directory with:
-
-  cd neubot-0.0.4
-
-At this point, you need to become administrator, in order to
-install neubot in your system.  Depending on the system you might
-have to do one of the following two commands:
-
-  su
-  sudo -s
-
-(The latter is the command you have to type with Ubuntu.)  After
-that you will be prompted for the password (the administrator one
-in the former case, your password in the latter.)  Be careful that
-the password will not produce any echo.  If that has worked, your
-prompt should now end with '#' rather than with '$', in order to
-notice you that you have become admin.
-
-We're ready.  At this point just type:
+The vanilla command to install Neubot, to be run as root, is::
 
   make install
 
-Now, if you're running Ubuntu you're (nearly) done.  You can
-logout, with the `logout' command.  Before you stop reading
-these notes be informed that you should keep neubot archive or
-sources around if you want to be able to uninstall it later.
-More on this in the relevant section.
+It will install the neubot command in ``$PREFIX/bin`` and the rest of
+the program in ``$PREFIX/share/neubot``, where, by default, ``PREFIX``
+is ``/usr/local``.  By modifying ``PREFIX``, you can adjust the actual
+location where Neubot is installed.  So, for example, to install below
+``/opt``, become root and then type something like::
 
-Otherwise, if you are not running Ubuntu, you can launch Neubot
-once with one of the following two commands
+  make install PREFIX=/opt
 
-  /usr/bin/neubot
-  /usr/bin/neubot -bq
+Run Neubot automatically
+------------------------
 
-In the former case it will run in foreground, logging messages to
-the console.  You can terminate the running Neubot anytime you want
-with Ctrl-C.
+You need to create the ``_neubot`` user and group, because Neubot will
+refuse to run as the ``root`` user.  To do that, as ``root``, type::
 
-In the latter, it will go in background, so you are not going to see
-much output (because it exploits syslog in that case.)  Note that, if
-you want to automatize such process, you might add
+  groupadd _neubot
+  useradd -d/ -g_neubot -s/bin/false _neubot
 
-  if [ -x /usr/bin/neubot ]; then
-    /usr/bin/neubot -bq
-  fi
+Now (assuming that you have installed Neubot below ``/opt``, as shown
+in the above example) add near the bottom of ``/etc/rc.local`` the
+following line::
 
-near the end of your /etc/rc.local.  After that you are (nearly)
-done.  Before you stop reading these notes be informed that you
-should keep neubot archive or sources around if you want to be
-able to uninstall it later.  More on this in the relevant section.
+  test -x /opt/bin/neubot && /opt/bin/neubot -bq
 
+Finally, if you don't want to reboot your machine, start Neubot immediatly
+with::
 
-3. Howto uninstall
+  /opt/bin/neubot -bq
 
-To uninstall neubot, enter the neubot sources, become administrator,
-and do:
+Invoked that way, it will detach from the shell, running in background,
+logging messages through ``syslog(3)``.  The actual log file employed
+depends on your operating system, however, you can get a list of all the
+files containing the ``neubot`` word running the following command as
+``root``::
 
-  make uninstall
+  grep neubot /var/log/*|awk -F: '{print $1}'|sort|uniq
 
-If you are running Ubuntu you are done at this point.  Otherwise,
-if you have edited /etc/rc.local, you might also want to undo these
-changes.
+Once you have guessed the name of the relevant file, you can ``grep``
+to read just the Neubot-related messages, e.g. with Ubuntu::
+
+  grep neubot /var/log/syslog|less
+
+Uninstall Neubot
+----------------
+
+Assuming that you have installed Neubot below ``/opt``, as show by the
+above example, you can take the following steps in order to uninstall it:
+
+1. Become ``root``.
+
+2. Kill all the running Neubots::
+
+     kill `ps aux|grep neubot|grep -v grep|awk '{print $2}'`
+
+3. Remove the neubot command::
+
+     rm /opt/bin/neubot
+
+4. Remove the rest of the program::
+
+     rm -rf /opt/share/neubot/*
+     rmdir /opt/share/neubot
+
+In addition, if you amended your system to invoke Neubot at startup,
+perform the following steps:
+
+5. Remove the following line from ``/etc/rc.local``::
+
+     test -x /opt/bin/neubot && /opt/bin/neubot -bq
+
+6. Remove the ``_neubot`` user::
+
+     userdel _neubot
+
+7. Remove the ``_neubot`` group (not needed on some systems)::
+
+     groupdel _neubot || true
