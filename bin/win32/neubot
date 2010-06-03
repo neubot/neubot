@@ -36,22 +36,8 @@ def startup():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
-    configuration = {}
-    configuration["server"] = "http://master.neubot.org:9773"
-    sleeptime = 60
-    poller = neubot.network.poller()
-    while (True):
-        try:
-            uri = configuration["server"]
-            logging.info("Starting rendez-vous")
-            (scheme, address, port, pathquery) = neubot.http.urlsplit(uri)
-            neubot.simpleclient(poller, scheme, address, port)
-            poller.loop()
-        except Exception:
-            logging.error("Rendez-vous failed")
-            neubot.prettyprint_exception()
-        logging.info("Now going to sleep for %d secs" % sleeptime)
-        time.sleep(sleeptime)
+    argv = []
+    neubot.auto.main(argv)
 
 if (__name__ == "__main__"):
     startup()
