@@ -1,3 +1,25 @@
+Neubot 0.0.5 [2010-06-03]
+	* Add support for creating Windows installer.
+	* Add support for creating Debian package.
+	* Remove deprecated file neubot/errors.py.
+	* Make neubot/buffers.py PEP8-compliant.
+	* Add support for version number comparison.
+	* Syntactic sugar for more readable verbose logs.
+	* neubot/container.py: Common container for servlet-like classes.
+	* neubot/nrendezvous.py: New module implementing rendezvous.
+	* neubot/negotiate.py: Module implementing negotiation.
+	* neubot/measure.py: Module implementing http measurements.
+	* neubot/main.py: Initial support for new-style commands.
+	* neubot/auto.py: New-style command to run automatic client.
+	* Makefile: Roll-out simplified _install command.
+	* Makefile: Merge support for creating debian packages.
+	* Makefile: Zap legacy install/uninstall code.
+	* bin/unix/neubot: Explicitly require python-2.6.
+	* bin/unix/neubot: Use `auto' as the default command.
+	* bin/win32/neubot: Modified to invoke `auto' command.
+	* Roll-out simple watchdog mechanism to avoid getting stuck.
+	* By default install neubot below '/usr/local'
+
 Neubot 0.0.4 [2010-05-26]
 	* neubot/utils.py
 	    * Add prettyprint_exception() function
