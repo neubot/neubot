@@ -23,7 +23,7 @@
 ARCHIVE = neubot
 DEB     = neubot-0.0.4-2.deb
 DESTDIR =
-PREFIX  = /usr
+PREFIX  = /usr/local
 
 .PHONY: _all _archives _docs _install _release clean deb help install
 
@@ -47,7 +47,9 @@ _install:
 	    install -m644 $$F $(DESTDIR)$(PREFIX)/share/$$F || exit 1;	\
 	done
 	@install -d $(DESTDIR)$(PREFIX)/bin
-	@install bin/unix/neubot $(DESTDIR)$(PREFIX)/bin/
+	@sed 's!/usr/local!$(PREFIX)!' bin/unix/neubot > binunixneubot
+	@install binunixneubot $(DESTDIR)$(PREFIX)/bin/neubot
+	@rm binunixneubot
 _release:
 	@echo "[RELEASE]"
 	@V=`git tag|tail -n1` 					&&	\
@@ -64,7 +66,7 @@ clean:
 deb:
 	@echo "[DEB] $(DEB)"
 	@rm -rf dist/
-	@make -f Makefile _install DESTDIR=dist/data
+	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@install -d -m755 dist/data/etc/init.d
 	@install -m755 debian/neubot dist/data/etc/init.d/
 	@cd dist/data && tar czf ../data.tar.gz ./*

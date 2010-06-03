@@ -41,7 +41,7 @@ def bootstrap():
 	signal.signal(signal.SIGINT, interrupt)
 	background = False
 	configuration = {}
-	incdir = "/usr/share"
+	incdir = "/usr/local/share"
 	noconf = False
 	pidfile = "/var/run/neubot.pid"
 	rcdir = "/etc/neubot"
