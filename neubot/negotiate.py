@@ -23,6 +23,7 @@ import logging
 import socket
 import sys
 import types
+import uuid
 import urlparse
 
 import neubot
@@ -93,19 +94,33 @@ class servlet:
         self.maxlen = maxlen
         self.uri = uri
 
-    #
-    # FIXME At the moment the container does not implement
-    # assigning a prefix to a servlet -- so, we could not
-    # implement negotiation employing PUT.  As it seems more
-    # complling to have a prototype rather than getting it
-    # right from the first time, we are going to employ
-    # POST instead.  In the next minor release cycle we will
-    # look again at the issue, either fixing the container
-    # or modifying our design documents.
-    #
-
     def main(self, protocol, response):
-        if protocol.message.method != "POST":
+        if protocol.message.method == "PUT":
+            uri = protocol.message.uri
+            if uri[-1] == "/":
+                logging.warning("There is not resource identifier")
+                response.code, response.reason = "403", "Forbidden"
+                return
+            index = uri.rfind("/")
+            if index == -1:
+                logging.warning("Could not find the last slash")
+                response.code, response.reason = "403", "Forbidden"
+                return
+            collection = uri[:index + 1]
+            identifier = uri[index + 1:]
+            if collection not in ["/http/1.0/", "/latency/1.0"]:
+                logging.warning("Unrecognized collection name")
+                response.code, response.reason = "403", "Forbidden"
+                return
+            try:
+                uuid.UUID(identifier)
+            except ValueError:
+                logging.warning("Could not parse resource identifier")
+                response.code, response.reason = "403", "Forbidden"
+                return
+        elif protocol.message.method == "POST":
+            logging.warning("Accepting old-style POST request")
+        else:
             response.code, response.reason = "204", "No Content"
             return
         protocol.message.body.seek(0)
@@ -127,6 +142,7 @@ class client:
         secure =  scheme == "https"
         neubot.http.connector(self, poller, address, port, family, secure)
         self.params = None
+        self.identifier = str(uuid.uuid4())
 
     #
     # FIXME I don't like the fact that we have to validate and
@@ -151,8 +167,8 @@ class client:
         logging.info("Connected to '%s'" % connector)
         protocol.attach(self)
         logging.info("Pretty-printing the request")
-        self.request = neubot.http.message(method="POST",
-          uri=self.path, protocol="HTTP/1.1")
+        self.request = neubot.http.message(method="PUT",
+          uri=self.path + self.identifier, protocol="HTTP/1.1")
         self.request["date"] = neubot.http.date()
         self.request["cache-control"] = "no-cache"
         self.request["connection"] = "close"
