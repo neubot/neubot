@@ -33,6 +33,10 @@ class container:
         self.funcs = {}
 
     def register(self, uri, func):
+        if uri[-1] != "/":
+            logging.warning("Working around non /-terminated URI:")
+            logging.warning("  From %s to %s" % (uri, uri + "/"))
+            uri = uri + "/"
         self.funcs[uri] = func
 
     def aborted(self, acceptor):
@@ -68,7 +72,16 @@ class container:
             neubot.utils.prettyprint_json(logging.info, prefix, octets)
         response = self._http_response(protocol="HTTP/1.1")
         try:
-            func = self.funcs[protocol.message.uri]
+            uri = protocol.message.uri
+            if uri in ["/rendez-vous/1.0", "/latency/1.0", "/http/1.0"]:
+                logging.warning("Working around pre-0.0.6 client URI:")
+                logging.warning("  From %s to %s" % (uri, uri + "/"))
+                uri = uri + "/"
+            if uri[-1] != "/":
+                index = uri.rfind("/")
+                if index > 0:
+                    uri = uri[:index + 1]
+            func = self.funcs[uri]
             try:
                 func(protocol, response)
             except Exception:
