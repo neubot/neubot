@@ -70,7 +70,6 @@ def main(argv):
         sys.exit(1)
     elif len(arguments) == 1:
         rendezvousuri = arguments[0]
-    logging.info("Running in automatic mode")
     poller = neubot.network.poller()
     while True:
         logging.info("Going to sleep for %s seconds" % sleeptime)
