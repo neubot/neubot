@@ -47,7 +47,8 @@ class protocol:
 			poller.register_func(self.close)
 
 	def closing(self):
-		self.application.closing(self)
+                if self.application:
+			self.application.closing(self)
 		self.application = None
 		poller = self.adaptor.connection.poller
 		poller.unregister_periodic(self.periodic)
