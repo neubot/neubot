@@ -23,7 +23,11 @@ section
     setoutpath "$INSTDIR"
     file "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
+    createdirectory "$SMPROGRAMS\Neubot"
+    createshortcut "$SMPROGRAMS\Neubot\neubot.lnk" "$INSTDIR\neubot.exe"
+    createshortcut "$SMPROGRAMS\Neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
 sectionend
 section "uninstall"
     rmdir /r "$INSTDIR"
+    rmdir /r "$SMPROGRAMS\Neubot"
 sectionend
