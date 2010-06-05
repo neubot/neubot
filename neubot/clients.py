@@ -22,7 +22,7 @@ import socket
 
 import neubot
 
-VERSION = "0.0.5"
+VERSION = "0.0.6"
 TESTNAME = "simple"
 TESTURI = "http://127.0.0.1:0/simple"
 WANT = [ "http", "latency" ]
