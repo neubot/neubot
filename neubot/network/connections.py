@@ -20,8 +20,6 @@ import errno
 import socket
 import ssl
 
-import neubot
-
 concatname = lambda x, y: str(x) + ":" + str(y)
 
 class socket_connection:
