@@ -81,6 +81,7 @@ class response:
     def __init__(self, octets=""):
         self.versioninfo = {}
         self.available = {}
+        self.collecturi = u""
         if octets:
             dictionary = json.loads(octets)
             if type(dictionary) != types.DictType:
@@ -105,6 +106,11 @@ class response:
                     if type(uri) != types.UnicodeType:
                         raise ValueError("Bad json message")
                     self.available[name] = uri
+            if dictionary.has_key(u"collecturi"):
+                collecturi = dictionary[u"collecturi"]
+                if type(collecturi) != types.UnicodeType:
+                    raise ValueError("Bad json message")
+                self.collecturi = collecturi
 
     def __str__(self):
         dictionary = {}
@@ -112,6 +118,8 @@ class response:
             dictionary[u"versioninfo"] = self.versioninfo
         if len(self.available) > 0:
             dictionary[u"available"] = self.available
+        if self.collecturi:
+            dictionary[u"collecturi"] = self.collecturi
         octets = json.dumps(dictionary, ensure_ascii=True)
         return octets
 
@@ -122,11 +130,15 @@ class response:
     def add_available(self, name, uri):
         self.available[unicode(name)] = unicode(uri)
 
+    def set_collecturi(self, collecturi):
+        self.collecturi = unicode(collecturi)
+
 class servlet:
     def __init__(self):
         self.available = {}
         self.version = neubot.version
         self.uri = "http://www.neubot.org:8080/"
+        self.collecturi = "http://master.neubot.org:9773/collect/1.0/"
 
     def add_available(self, name, value):
         self.available[name] = value
@@ -134,6 +146,9 @@ class servlet:
     def set_versioninfo(self, version, uri):
         self.version = version
         self.uri = uri
+
+    def set_collecturi(self, collecturi):
+        self.collecturi = collecturi
 
     def main(self, protocol, response):
         if protocol.message.method != "POST":
@@ -150,6 +165,7 @@ class servlet:
         for name in requestbody.accepts:
             if name in self.available.keys():
                 responsebody.add_available(name, self.available[name])
+        responsebody.set_collecturi(self.collecturi)
         response.code, response.reason = "200", "Ok"
         response["content-type"] = "application/json"
         octets = str(responsebody)
@@ -252,6 +268,7 @@ USAGE =									\
 LONGOPTS = [
     "accept-test=",
     "add-available-test=",
+    "collecturi=",
     "help",
     "provide-test=",
     "server",
@@ -270,6 +287,8 @@ HELP =									\
 "  --add-available-test NAME,URI\n"					\
 "      Add test NAME provided by URI to the list of tests that the\n"	\
 "      server is aware of (provided by TestServers or other Neubots.)\n"\
+"  --collecturi URI\n"                                                 \
+"      Uri to send results to.\n"                                       \
 "  --help\n"								\
 "      Print this help screen.\n"					\
 "  --provide-test NAME,URI\n"						\
@@ -292,6 +311,7 @@ def main(argv):
     availablelist = collections.deque()
     providelist = collections.deque()
     updateuri = "http://www.neubot.org:8080/"
+    collecturi = "http://master.neubot.org:9773/collect/1.0/"
     version = neubot.version
     servermode = False
     for name, value in options:
@@ -305,6 +325,8 @@ def main(argv):
                 sys.stderr.write(USAGE)
                 sys.exit(1)
             availablelist.append((testname, testuri))
+        elif name == "--collecturi":
+            collecturi = value
         elif name == "--help":
             sys.stdout.write(HELP)
             sys.exit(0)
@@ -340,6 +362,7 @@ def main(argv):
         for name, value in availablelist:
             slet.add_available(name, value)
         slet.set_versioninfo(version, updateuri)
+        slet.set_collecturi(collecturi)
         container = neubot.container.container(poller,
           address=address, port=port)
         container.register("/rendez-vous/1.0", slet.main)
