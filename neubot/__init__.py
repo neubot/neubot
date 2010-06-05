@@ -28,6 +28,7 @@ import negotiate
 import network
 import rendezvous
 import nrendezvous
+import whitelist
 
 import os
 if os.name == "posix":

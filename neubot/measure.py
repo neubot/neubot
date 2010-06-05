@@ -52,14 +52,20 @@ class server:
 
     def listening(self, acceptor):
         logging.info("Listening at '%s'" % acceptor)
+        self.poller.register_periodic(neubot.whitelist.prune)
 
     def got_client(self, protocol):
         logging.info("[%s] New client" % protocol)
+        # XXX Here we should RST the client to avoid CLOSE_WAIT state
         if self.conns > self.maxconns:
             logging.error("[%s] Too many connections" % protocol)
             protocol.close()
             return
-        # TODO Implement list of clients allowed to connect
+        address, port = str(protocol).split(":")                        # XXX
+        if not neubot.whitelist.allowed(address):
+            logging.warning("Not in whitelist %s" % address)
+            protocol.close()
+            return
         neubot.measure.servercontext(protocol, self)
         self.conns = self.conns + 1
 
@@ -147,6 +153,8 @@ class servercontext:
         logging.info("[%s] Waiting for client to close connection" % protocol)
 
     def closing(self, protocol):
+        address, port = str(protocol).split(":")                        # XXX
+        neubot.whitelist.unregister(address)
         logging.info("[%s] The connection has been closed" % protocol)
         # TODO Save result into the proper database
         logging.info("[%s] Received %d bytes in %.2f seconds" % (protocol,
@@ -278,9 +286,13 @@ USAGE = 								\
 
 LONGOPTS = [
     "connections=",
+    "disable-whitelist",
+    "disable-whitelist-prune",
     "file=",
     "help",
+    "permanent-whitelist",
     "server",
+    "whitelist=",
 ]
 
 HELP = 									\
@@ -293,6 +305,10 @@ HELP = 									\
 "      When running as a client, use NCONN connections to download\n"	\
 "      the resource.  When running as a server, do not accept more\n"	\
 "      than NCONN incoming connections at a time.\n"			\
+"  --disable-whitelist\n"						\
+"      Disable the white-list mechanism.\n"				\
+"  --disable-whitelist-prune\n"						\
+"      Disable the white-list prune mechanism.\n"			\
 "  --file FILE\n"							\
 "      When running as a client, measure the time required to send\n"	\
 "      the specified file (instead of measuring the time required\n"	\
@@ -300,8 +316,13 @@ HELP = 									\
 "      file to be sent to the client.\n"				\
 "  --help\n"								\
 "      Print this help screen.\n"					\
+"  --permanent-whitelist\n"						\
+"      Do not remove address from whitelist after a measure.\n"		\
 "  --server\n"								\
 "      Run in server mode.\n"						\
+"  --whitelist ADDRESS\n"						\
+"      Add ADDRESS to white-list (address that are not white-listed\n"	\
+"      are not allowed to perform measurements.)\n"			\
 "\n"
 
 def main(argv):
@@ -322,13 +343,21 @@ def main(argv):
             if connections < 0:
                 logging.error("Argument to --connections is invalid")
                 sys.exit(1)
+        elif name == "--disable-whitelist":
+            neubot.whitelist.allowed = lambda x: True
+        elif name == "--disable-whitelist-prune":
+            neubot.whitelist.prune = lambda x: None
         elif name == "--file":
             myfile = value
         elif name == "--help":
             sys.stdout.write(HELP)
             sys.exit(0)
+        elif name == "--permanent-whitelist":
+            neubot.whitelist.unregister = lambda x: None
         elif name == "--server":
             servermode = True
+        elif name == "--whitelist":
+            neubot.whitelist.register(value)
     poller = neubot.network.poller()
     if servermode:
         if len(arguments) >= 3:

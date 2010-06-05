@@ -123,6 +123,8 @@ class servlet:
         else:
             response.code, response.reason = "204", "No Content"
             return
+        address, port = str(protocol).split(":")                        # XXX
+        neubot.whitelist.register(address)
         protocol.message.body.seek(0)
         octets = protocol.message.body.read()
         params = neubot.negotiate.parameters(octets)
