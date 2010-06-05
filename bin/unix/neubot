@@ -31,7 +31,8 @@ import sys
 
 STDERR_FORMAT = "<%(levelname)s> %(message)s"
 SYSLOG_FORMAT = "neubot[%(process)d]: " + STDERR_FORMAT
-USAGE = "Usage: neubot [-bEq] [-I path] [-O option] [--] [command [opts]]\n"
+USAGE = "Usage: neubot [-bEqV] [-I path] [-O option] [--] [command [opts]]\n"
+VERSION = "0.0.6"
 
 def interrupt(signo, frame):
 	logging.info("Got interrupt signal")
@@ -47,7 +48,7 @@ def bootstrap():
 	rcdir = "/etc/neubot"
 	verbose = True
 	try:
-		options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:q")
+		options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:qV")
 	except getopt.error:
 		sys.stderr.write(USAGE)
 		sys.stderr.write("Try `neubot help' for more help.\n")
@@ -73,6 +74,9 @@ def bootstrap():
 					configuration[key] = value
 		elif (opt == "-q"):
 			verbose = False
+		elif opt == "-V":
+			print "Neubot", VERSION
+			sys.exit(0)
 	logger = logging.getLogger()
 	handler = logging.StreamHandler()
 	formatter = logging.Formatter(STDERR_FORMAT)
