@@ -110,14 +110,6 @@ def bootstrap():
 		sys.exit(1)
 	if (len(arguments) == 0):
 		arguments = ["auto"]
-	name = arguments[0]
-	logging.info("Looking-up command: '%s'" % name)
-	try:
-		exec("from neubot.application.%s import main" % name)
-	except ImportError:
-		logging.warning("Unknown command: '%s'" % name)
-		logging.warning("Fall back to new-style commands")
-		main = None
 	if (background):
 		logging.info("Redirecting logs from stderr to syslog")
 		handler = logging.handlers.SysLogHandler("/dev/log")
@@ -164,9 +156,6 @@ def bootstrap():
 			os.setgid(pw.pw_gid)
 			os.setuid(pw.pw_uid)
 			logging.info("Now running as the '_neubot' user")
-	logging.info("Invoking command: '%s'" % name)
-	if main:
-		main(configuration, arguments)
 	neubot.main.main(arguments)
 
 if (__name__ == "__main__"):
