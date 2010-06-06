@@ -66,18 +66,24 @@ class server:
             logging.warning("Not in whitelist %s" % address)
             protocol.close()
             return
-        neubot.measure.servercontext(protocol, self)
+        identifier = neubot.table.find_identifier(address)
+        if not identifier:
+            logging.warning("Could not find identifier for %s" % address)
+            protocol.close()
+            return
+        neubot.measure.servercontext(protocol, self, identifier)
         self.conns = self.conns + 1
 
     def dead_client(self):
         self.conns = self.conns - 1
 
 class servercontext:
-    def __init__(self, protocol, server):
+    def __init__(self, protocol, server, identifier):
         self.protocol = protocol
         self.protocol.attach(self)
         logging.info("[%s] Ready to serve client" % protocol)
         self.server = server
+        self.identifier = identifier
         self.requestlength = 0
         self.responselength = 0
         self.recv_begin = time.time()
@@ -156,11 +162,19 @@ class servercontext:
         address, port = str(protocol).split(":")                        # XXX
         neubot.whitelist.unregister(address)
         logging.info("[%s] The connection has been closed" % protocol)
-        # TODO Save result into the proper database
-        logging.info("[%s] Received %d bytes in %.2f seconds" % (protocol,
-                     self.requestlength, self.recv_end - self.recv_begin))
-        logging.info("[%s] Sent %d bytes in %.2f seconds" % (protocol,
-                     self.responselength, self.send_end - self.send_begin))
+        peername = protocol.peername.split(":")[0]
+        sockname = protocol.sockname.split(":")[0]
+        delta = self.send_end - self.send_begin
+        if delta > 0:
+            # TODO Probably need to include OTHER active conns as well!
+            neubot.table.update_entry(self.identifier, self.server.conns,
+                                      "download", self.responselength,
+                                      sockname, "http", delta)
+            octets = neubot.table.stringify_entry(self.identifier)
+            neubot.table.remove_entry(self.identifier)
+            sys.stdout.write(octets)
+            sys.stdout.write("\r\n")
+            sys.stdout.flush()
         self.server.dead_client()
 
 class client:

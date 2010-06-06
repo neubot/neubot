@@ -65,6 +65,13 @@ class resultstable:
         logging.info("Created entry %s" % identifier)
         return True
 
+    # XXX Assuming that we have 1:1 identifier:peername
+    def find_identifier(self, peername):
+        for identifier, entry in self.dictionary.items():
+            if entry.peername == peername:
+                return identifier
+        return None
+
     def remove_entry(self, identifier):
         if self.dictionary.has_key(identifier):
             del self.dictionary[identifier]
@@ -100,6 +107,7 @@ class resultstable:
 instance = resultstable()
 
 create_entry = instance.create_entry
+find_identifier = instance.find_identifier
 remove_entry = instance.remove_entry
 prune = instance.prune
 stringify_entry = instance.stringify_entry
