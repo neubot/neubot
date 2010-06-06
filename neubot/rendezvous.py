@@ -1,4 +1,4 @@
-# neubot/nrendezvous.py
+# neubot/rendezvous.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -156,8 +156,8 @@ class servlet:
             return
         protocol.message.body.seek(0)
         octets = protocol.message.body.read()
-        requestbody = neubot.nrendezvous.request(octets)
-        responsebody = neubot.nrendezvous.response()
+        requestbody = neubot.rendezvous.request(octets)
+        responsebody = neubot.rendezvous.response()
         if len(requestbody.version) > 0:
             version = requestbody.version
             if neubot.utils.versioncmp(neubot.version, version) > 0:
@@ -209,7 +209,7 @@ class client:
         self.request["connection"] = "close"
         self.request["host"] = str(protocol)
         self.request["pragma"] = "no-cache"
-        requestbody = neubot.nrendezvous.request()
+        requestbody = neubot.rendezvous.request()
         requestbody.set_version(self.version)
         for name, uri in self.provides.items():
             requestbody.provide_test(name, uri)
@@ -249,7 +249,7 @@ class client:
         response.body.seek(0)
         octets = response.body.read()
         neubot.utils.prettyprint_json(logging.info, "  ", octets)
-        self.responsebody = neubot.nrendezvous.response(octets)
+        self.responsebody = neubot.rendezvous.response(octets)
         protocol.close()
 
     def closing(self, protocol):
@@ -358,7 +358,7 @@ def main(argv):
         else:
             address = "0.0.0.0"
             port = "9773"
-        slet = neubot.nrendezvous.servlet()
+        slet = neubot.rendezvous.servlet()
         for name, value in availablelist:
             slet.add_available(name, value)
         slet.set_versioninfo(version, updateuri)
@@ -374,7 +374,7 @@ def main(argv):
             uri = arguments[0]
         else:
             uri = "http://master.neubot.org:9773/rendez-vous/1.0"
-        clnt = neubot.nrendezvous.client(poller, uri=uri)
+        clnt = neubot.rendezvous.client(poller, uri=uri)
         for name in acceptlist:
             clnt.accept_test(name)
         for name, value in providelist:

@@ -41,7 +41,7 @@ def main(argv):
                                            port="9773")
     servlet = neubot.negotiate.servlet(length, test_uri)
     container.register("/http/1.0/", servlet.main)
-    servlet = neubot.nrendezvous.servlet()
+    servlet = neubot.rendezvous.servlet()
     servlet.set_versioninfo(neubot.version, "http://www.neubot.org:8080/")
     servlet.set_collecturi(collect_uri)
     servlet.add_available("http", negotiate_uri)

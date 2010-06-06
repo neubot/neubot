@@ -75,7 +75,7 @@ def main(argv):
         logging.info("Going to sleep for %s seconds" % sleeptime)
         time.sleep(sleeptime)
         try:
-            client = neubot.nrendezvous.client(poller, uri=rendezvousuri)
+            client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
             client.set_version(neubot.version)
             poller.loop()
