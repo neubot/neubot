@@ -24,8 +24,11 @@ ARCHIVE = neubot
 DEB     = neubot-0.0.6-1_all.deb
 DESTDIR =
 PREFIX  = /usr/local
+TAG     = `git tag|grep -v ^_|tail -n1`
 
-.PHONY: _all _archives _docs _install _release clean deb help install
+PHONIES += patches
+
+.PHONY: _all _archives _docs _install _release clean deb help install $(PHONIES)
 
 _all: help
 
@@ -88,3 +91,8 @@ install:
 	@echo "[INSTALL]"
 	@make -f Makefile _install
 	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
+patches:
+	@echo "[PATCHES] dist/patches.tar.gz"
+	@rm -rf dist/
+	@git format-patch -o dist/ $(TAG) 1>/dev/null
+	@cd dist && tar czf patches.tar.gz *.patch
