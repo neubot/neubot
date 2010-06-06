@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from utils import *
-
 import auto
 import collect
 import container
@@ -28,6 +26,7 @@ import negotiate
 import network
 import rendezvous
 import table
+import utils
 import whitelist
 
 import os

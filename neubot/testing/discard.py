@@ -67,7 +67,7 @@ class listener:
 			    self.poller, s, sockname, peername)
 			discarder(connection)
 		except:
-			neubot.prettyprint_exception()
+			neubot.utils.prettyprint_exception()
 
 	def writable(self):
 		pass

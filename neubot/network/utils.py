@@ -47,7 +47,7 @@ def connect(family, address, port, blocking=False):
 				raise (socket.error(err, os.strerror(err)))
 			return (s)
 		except socket.error:
-			neubot.prettyprint_exception()
+			neubot.utils.prettyprint_exception()
 			s = None
 	raise (Exception("can't connect to %s:%s" % (address, port)))
 
@@ -68,6 +68,6 @@ def listen(family, address, port, blocking=False):
 			s.listen(128)
 			return (s)
 		except socket.error:
-			neubot.prettyprint_exception()
+			neubot.utils.prettyprint_exception()
 			s = None
 	raise (Exception("can't listen at %s:%s" % (address, port)))

@@ -77,7 +77,7 @@ class listener:
 			    self.poller, s, sockname, peername)
 			echoer(connection)
 		except:
-			neubot.prettyprint_exception()
+			neubot.utils.prettyprint_exception()
 
 	def writable(self):
 		pass

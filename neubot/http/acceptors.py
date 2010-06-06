@@ -73,7 +73,7 @@ class acceptor:
 			protocol = neubot.http.protocol(adaptor)
 			self.application.got_client(protocol)
 		except:
-			neubot.prettyprint_exception()
+			neubot.utils.prettyprint_exception()
 
 	def writable(self):
 		pass

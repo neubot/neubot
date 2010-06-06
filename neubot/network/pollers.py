@@ -65,7 +65,7 @@ class poller:
             self.unset_writable(connection)
             connection.closing()
         except:
-            neubot.prettyprint_exception()
+            neubot.utils.prettyprint_exception()
 
     def _readable(self, fileno):
         if self.readset.has_key(fileno):        # XXX
@@ -73,7 +73,7 @@ class poller:
             try:
                 connection.readable()
             except:
-                neubot.prettyprint_exception()
+                neubot.utils.prettyprint_exception()
                 self.close(connection)
 
     def _writable(self, fileno):
@@ -82,7 +82,7 @@ class poller:
             try:
                 connection.writable()
             except:
-                neubot.prettyprint_exception()
+                neubot.utils.prettyprint_exception()
                 self.close(connection)
 
     def loop(self):
@@ -93,7 +93,7 @@ class poller:
                     try:
                         func()
                     except:
-                        neubot.prettyprint_exception()
+                        neubot.utils.prettyprint_exception()
                 self.funcs.clear()
             if not (self.readset or self.writeset or self.periodic):
                 break
@@ -103,10 +103,10 @@ class poller:
             except select.error, (code, reason):
                 if code == errno.EINTR:
                     continue
-                neubot.prettyprint_exception()
+                neubot.utils.prettyprint_exception()
                 break
             except:
-                neubot.prettyprint_exception()
+                neubot.utils.prettyprint_exception()
                 break
             for fileno in res[0]:
                 self._readable(fileno)
@@ -118,5 +118,5 @@ class poller:
                     try:
                         periodic(now)
                     except:
-                        neubot.prettyprint_exception()
+                        neubot.utils.prettyprint_exception()
                 last = now
