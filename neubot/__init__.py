@@ -26,7 +26,6 @@ import http
 import measure
 import negotiate
 import network
-import rendezvous
 import nrendezvous
 import table
 import whitelist
