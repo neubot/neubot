@@ -27,6 +27,7 @@ maintbl = {
     "measure"     : neubot.measure.main,
     "negotiate"   : neubot.negotiate.main,
     "collect"     : neubot.collect.main,
+    "coordinate"  : neubot.coordinate.main,
 }
 
 def main(argv):
