@@ -174,7 +174,7 @@ class servlet:
 
 class client:
     def __init__(self, poller, family=socket.AF_INET,
-      uri="http://master.neubot.org:9773/rendez-vous/1.0"):
+      uri="http://master.neubot.org:9773/rendez-vous/1.0/"):
         logging.info("Begin rendez-vous procedure")
         self.poller = poller
         scheme, address, port, self.path = neubot.http.urlsplit(uri)
@@ -365,7 +365,7 @@ def main(argv):
         slet.set_collecturi(collecturi)
         container = neubot.container.container(poller,
           address=address, port=port)
-        container.register("/rendez-vous/1.0", slet.main)
+        container.register("/rendez-vous/1.0/", slet.main)
     else:
         if len(arguments) >= 2:
             sys.stderr.write(USAGE)
@@ -373,7 +373,7 @@ def main(argv):
         elif len(arguments) == 1:
             uri = arguments[0]
         else:
-            uri = "http://master.neubot.org:9773/rendez-vous/1.0"
+            uri = "http://master.neubot.org:9773/rendez-vous/1.0/"
         clnt = neubot.rendezvous.client(poller, uri=uri)
         for name in acceptlist:
             clnt.accept_test(name)

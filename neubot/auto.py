@@ -47,7 +47,7 @@ HELP =                                                                  \
 
 def main(argv):
     sleeptime = 60
-    rendezvousuri = "http://neubot.org:9773/rendez-vous/1.0"
+    rendezvousuri = "http://master.neubot.org:9773/rendez-vous/1.0/"
     try:
         options, arguments = getopt.getopt(argv[1:], "", LONGOPTS)
     except getopt.error:

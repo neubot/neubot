@@ -315,8 +315,8 @@ def main(argv):
         slet = neubot.negotiate.servlet(length, testuri)
         container = neubot.container.container(poller, address=address,
                                                port=port)
-        container.register("/latency/1.0", slet.main)
-        container.register("/http/1.0", slet.main)
+        container.register("/latency/1.0/", slet.main)
+        container.register("/http/1.0/", slet.main)
     else:
         if len(arguments) >= 2:
             sys.stderr.write(USAGE)
