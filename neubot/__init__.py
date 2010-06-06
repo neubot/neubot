@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+version = "0.0.6"
+
 import auto
 import collect
 import container
@@ -28,12 +30,6 @@ import rendezvous
 import table
 import utils
 import whitelist
-
-import os
-if os.name == "posix":
-    import testing
-
-version = "0.0.6"
 
 # Must be the last import
 import main

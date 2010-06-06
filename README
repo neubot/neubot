@@ -13,3 +13,4 @@ debian		Contains files needed to create the Debian package
 neubot		The `neubot' python module
 neubot.nsi	Nullsoft Scriptable Installer System (NSIS) script
 setup.py	Setup script for Py2exe
+testing		Some testing modules for Neubot
