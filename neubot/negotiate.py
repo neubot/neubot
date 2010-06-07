@@ -118,6 +118,11 @@ class servlet:
                 logging.warning("Could not parse resource identifier")
                 response.code, response.reason = "403", "Forbidden"
                 return
+            address = str(protocol).split(":")[0]
+            success = neubot.table.create_entry(identifier, address)
+            if not success:
+                response.code, response.reason = "403", "Forbidden"
+                return
         elif protocol.message.method == "POST":
             logging.warning("Accepting old-style POST request")
         else:

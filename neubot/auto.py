@@ -100,14 +100,22 @@ def main(argv):
             except Exception:
                 logging.warning("There are no available test I can perform")
                 continue
+            collecturi = todolist.collecturi
+            collecturi = str(collecturi)                                # FIXME
             client = neubot.negotiate.client(poller, negotiateuri)
             client.set_direction("download")
             client.set_length((1<<16))
             poller.loop()
+            identifier = client.identifier
             params = client.params
             uri = params.uri
             uri = str(uri)    # FIXME See above
             client = neubot.measure.client(poller, uri, connections=1)
+            client.identifier = identifier                              # XXX
+            poller.loop()
+            octets = neubot.table.stringify_entry(identifier)
+            neubot.table.remove_entry(identifier)
+            neubot.collect.client(poller, collecturi, octets)
             poller.loop()
         except Exception:
             neubot.utils.prettyprint_exception()

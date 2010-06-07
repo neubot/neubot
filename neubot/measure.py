@@ -163,8 +163,6 @@ class servercontext:
                      self.responselength, self.send_end - self.send_begin))
         self.server.dead_client()
 
-CONNECTIONS = 1
-
 class client:
     def __init__(self, poller, uri, family=FAMILY, connections=3, myfile=None):
         logging.info("Begin measurement")
@@ -176,10 +174,12 @@ class client:
         (self.scheme, self.address,
          self.port, self.path) = neubot.http.urlsplit(uri)
         secure =  self.scheme == "https"
+        connections = 1                                                 # FIXME
         while connections >= 1:
             connections = connections - 1
             neubot.http.connector(self, self.poller, self.address,
                                   self.port, self.family, secure)
+        self.identifier = None                                          # XXX
 
     def aborted(self, connector):
         logging.error("Connection to '%s' failed" % connector)
@@ -266,13 +266,14 @@ class clientcontext:
 
     def closing(self, protocol):
         logging.info("[%s] Connection closed" % protocol.sockname)
-        # TODO Save result into the proper database
-        logging.info("[%s] Received %d bytes in %.2f seconds" % (
-                     protocol.sockname, self.responselength,
-                     self.recv_end - self.recv_begin))
-        logging.info("[%s] Sent %d bytes in %.2f seconds" % (
-                     protocol.sockname, self.requestlength,
-                     self.send_end - self.send_begin))
+        if self.client.identifier:                                      # XXX
+            peername = protocol.peername.split(":")[0]
+            sockname = protocol.sockname.split(":")[0]
+            neubot.table.create_entry(self.client.identifier, peername)
+            delta = self.recv_end - self.recv_begin
+            if delta > 0:
+                neubot.table.update_entry(self.client.identifier, 1, "download",
+                    self.responselength, sockname, "http", delta)
 
     def __del__(self):
         self.client.probe_done()

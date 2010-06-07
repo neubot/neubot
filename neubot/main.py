@@ -26,6 +26,7 @@ maintbl = {
     "rendezvous"  : neubot.nrendezvous.main,
     "measure"     : neubot.measure.main,
     "negotiate"   : neubot.negotiate.main,
+    "collect"     : neubot.collect.main,
 }
 
 def main(argv):

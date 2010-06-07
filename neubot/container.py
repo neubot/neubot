@@ -44,6 +44,7 @@ class container:
 
     def listening(self, acceptor):
         logging.info("Listening at '%s'" % acceptor)
+        self.poller.register_periodic(neubot.table.prune)
 
     def got_client(self, protocol):
         logging.info("[%s] Got client" % protocol)
