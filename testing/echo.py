@@ -51,7 +51,7 @@ class echoer:
 class listener:
 	def __init__(self, poller, family, address, port):
 		self.poller = poller
-		self.poller.register_initializer(self.init)
+		self.poller.register_func(self.init)
 		self.family = family
 		self.address = address
 		self.port = port

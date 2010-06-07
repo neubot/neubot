@@ -26,7 +26,7 @@ class acceptor:
 	    family=socket.AF_INET, secure=False, certfile=None):
 		self.application = application
 		self.poller = poller
-		self.poller.register_initializer(self.init)
+		self.poller.register_func(self.init)
 		self.address = address
 		self.port = port
 		self.family = family
