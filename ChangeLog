@@ -1,3 +1,15 @@
+Neubot 0.0.6 [2010-06-07]
+	* Add support for -V command line option.
+	* Use PUT /http/1.0/<uuid> to negotiate measurements.
+	* Add 'collecturi' to rendezvous response.
+	* Add whitelist mechanism to control who can perform measurements.
+	* Implement collection of measurements results.
+	* Remove most of the deprecated code.
+	* Add 'coordinate' command that runs the coordinator.
+	* Move 'testing/' out of 'neubot/' directory.
+	* Incremental improvements.
+	* Bugfixes.
+
 Neubot 0.0.5 [2010-06-03]
 	* Add support for creating Windows installer.
 	* Add support for creating Debian package.
