@@ -20,24 +20,34 @@
 # Makefile
 #
 
-ARCHIVE = neubot
-DEB     = neubot-0.0.6-1_all.deb
+DEB     = dist/neubot-0.0.6-1_all.deb
 DESTDIR =
 PREFIX  = /usr/local
 TAG     = `git tag|grep -v ^_|tail -n1`
 
+PHONIES += _all
+PHONIES += _archive
+PHONIES += _docs
+PHONIES += _install
+PHONIES += archive
+PHONIES += clean
+PHONIES += deb
+PHONIES += help
+PHONIES += install
 PHONIES += lint
 PHONIES += patches
+PHONIES += release
 
-.PHONY: _all _archives _docs _install _release clean deb help install $(PHONIES)
+.PHONY: $(PHONIES)
 
 _all: help
-
-_archives:
-	@echo "[ARCHIVES] $(ARCHIVE).tar.gz $(ARCHIVE).zip"
-	@git archive --format=tar --prefix=$(ARCHIVE)/ HEAD > $(ARCHIVE).tar
-	@gzip -9 $(ARCHIVE).tar
-	@git archive --format=zip --prefix=$(ARCHIVE)/ HEAD > $(ARCHIVE).zip
+_archive:
+	@install -d dist/neubot-$$ATAG
+	@git archive --format=tar --prefix=neubot-$$ATAG/ $$ATAG        \
+            | gzip -9 > dist/neubot-$$ATAG/neubot-$$ATAG.tar.gz
+	@git archive --format=zip --prefix=neubot-$$ATAG/ $$ATAG        \
+            > dist/neubot-$$ATAG/neubot-$$ATAG.zip
+	@cd dist/neubot-$$ATAG && sha256sum neubot* > SHA256
 _docs:
 	@echo "[DOCS]"
 	@cd doc && for DIA in *.dia; do					\
@@ -54,19 +64,14 @@ _install:
 	@sed 's!/usr/local!$(PREFIX)!' bin/unix/neubot > binunixneubot
 	@install binunixneubot $(DESTDIR)$(PREFIX)/bin/neubot
 	@rm binunixneubot
-_release:
-	@echo "[RELEASE]"
-	@V=`git tag|tail -n1` 					&&	\
-	ARCHIVENAME=neubot-$$V					&&	\
-	git archive --format=tar --prefix=$$ARCHIVENAME/		\
-	     HEAD | gzip -9 > $$ARCHIVENAME.tar.gz		&&	\
-	git archive --format=zip --prefix=$$ARCHIVENAME/		\
-	     HEAD > $$ARCHIVENAME.zip				&&	\
-	sha256sum $$ARCHIVENAME.* > SHA256
+archive:
+	@echo "[ARCHIVE] dist/neubot-HEAD/"
+	@rm -rf dist/
+	@make _archive ATAG=HEAD
 clean:
 	@echo "[CLEAN]"
 	@find . -type f -name \*.pyc -exec rm -f {} \;
-	@rm -rf -- build/ dist/ $(ARCHIVE).tar.* $(ARCHIVE).zip $(DEB)
+	@rm -rf -- dist/
 deb:
 	@echo "[DEB] $(DEB)"
 	@rm -rf dist/
@@ -100,3 +105,7 @@ patches:
 	@rm -rf dist/
 	@git format-patch -o dist/ $(TAG) 1>/dev/null
 	@cd dist && tar czf patches.tar.gz *.patch
+release:
+	@echo "[RELEASE] dist/neubot-$(TAG)/"
+	@rm -rf dist/
+	@make _archive ATAG=$(TAG)
