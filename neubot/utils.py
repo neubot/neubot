@@ -19,8 +19,6 @@
 import json
 import logging
 import logging.handlers
-import os
-import sys
 import traceback
 
 def prettyprint_exception(write=logging.error, eol=""):

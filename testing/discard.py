@@ -20,7 +20,6 @@ import getopt
 import logging
 import socket
 import sys
-import traceback
 
 import neubot
 

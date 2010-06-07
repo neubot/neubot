@@ -17,12 +17,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 import email.utils
-import neubot
-import ssl
 import urlparse
 
-def prettyprinter(write, direction, message, eol=""):
-	stringio = message.serialize_headers()
+def prettyprinter(write, direction, msg, eol=""):
+	stringio = msg.serialize_headers()
 	content = stringio.read()
 	headers = content.split("\r\n")
 	for line in headers:

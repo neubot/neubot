@@ -21,7 +21,6 @@ import logging
 import logging.handlers
 import os
 import socket
-import traceback
 
 import neubot
 
@@ -37,8 +36,8 @@ def connect(family, address, port, blocking=False):
 	for elem in lst:
 		family, socktype, proto, canon, sa = elem
 		try:
-			repr = reduce(neubot.network.concatname, sa)
-			logging.info("Trying with '%s'" % repr)
+			name = reduce(neubot.network.concatname, sa)
+			logging.info("Trying with '%s'" % name)
 			s = socket.socket(family, socktype, proto)
 			s.setblocking(blocking)
 			err = s.connect_ex(sa)
@@ -58,8 +57,8 @@ def listen(family, address, port, blocking=False):
 	for elem in lst:
 		family, socktype, proto, canon, sa = elem
 		try:
-			repr = reduce(neubot.network.concatname, sa)
-			logging.info("Trying with '%s'" % repr)
+			name = reduce(neubot.network.concatname, sa)
+			logging.info("Trying with '%s'" % name)
 			s = socket.socket(family, socktype, proto)
 			s.setsockopt(socket.SOL_SOCKET,
 			    socket.SO_REUSEADDR, 1)

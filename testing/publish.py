@@ -37,7 +37,7 @@ class Publisher:
 		self.names = []
 
 	def aborted(self, acceptor):
-		logging.error("Could not listen")
+		logging.error("Could not listen %s" % acceptor)
 
 	def closing(self, protocol):
 		if (self.mustclose.has_key(protocol)):
@@ -107,7 +107,7 @@ class Publisher:
 		return (False)
 
 	def listening(self, acceptor):
-		logging.info("Listening")
+		logging.info("Listening to %s" % acceptor)
 
 	def message_sent(self, protocol):
 		if (self.mustclose.has_key(protocol)):

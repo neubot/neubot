@@ -116,6 +116,6 @@ class protocol:
 	def close(self):
 		self.adaptor.close()
 
-	def sendmessage(self, message):
-		self.adaptor.send(message.serialize_headers())
-		self.adaptor.send(message.serialize_body())
+	def sendmessage(self, msg):
+		self.adaptor.send(msg.serialize_headers())
+		self.adaptor.send(msg.serialize_body())

@@ -21,8 +21,6 @@ import fcntl
 import os
 import socket
 
-import neubot
-
 class stdio_connection:
 	def __init__(self, poller, fd):
 		self.poller = poller

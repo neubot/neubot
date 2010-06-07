@@ -162,7 +162,6 @@ class servercontext:
         address, port = str(protocol).split(":")                        # XXX
         neubot.whitelist.unregister(address)
         logging.info("[%s] The connection has been closed" % protocol)
-        peername = protocol.peername.split(":")[0]
         sockname = protocol.sockname.split(":")[0]
         delta = self.send_end - self.send_begin
         if delta > 0:
