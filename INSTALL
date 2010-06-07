@@ -6,6 +6,7 @@ This document is intended for people running Unix-like operatings systems
 interested in experimenting with Neubot.)  We provide packages for the
 following operating systems
 
+* LinuxMint 7+
 * Ubuntu 9.10, 10.04
 
 So, if you have installed one of the above, you probably might want to
@@ -21,8 +22,8 @@ from the sources archive, and covers the topic of installing it manually
 Dependencies
 ------------
 
-To run Neubot you need to have the complete Python 2.6 distribution
-installed.  In other words, the command::
+To run Neubot you need to have Python 2.6 installed.  In other words,
+the command::
 
   python2.6 -V
 
@@ -33,7 +34,7 @@ order to install Python 2.6 on your distro.
 We known that Python 2.6 is available for the following Unix-like
 operating systems
 
-* LinuxMint 7
+* LinuxMint 7+
 * MacOsX 10.6 "Snow Leopard"
 * OpenBSD 4.7
 * Ubuntu 9.10, 10.04
@@ -59,6 +60,8 @@ To find out more options, try the following commands::
   ./bin/unix/neubot -I. --help
   ./bin/unix/neubot -I. help
 
+[The ``help`` command is actually disabled in this release, but we
+will re-enabled it into the next one.]
 
 Install Neubot
 --------------
@@ -96,7 +99,7 @@ with::
   /opt/bin/neubot -bq
 
 Invoked that way, it will detach from the shell, running in background,
-logging messages through ``syslog(3)``.  The actual log file employed
+logging messages through ``syslog(8)``.  The actual log file employed
 depends on your operating system, however, you can get a list of all the
 files containing the ``neubot`` word running the following command as
 ``root``::
