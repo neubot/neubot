@@ -26,6 +26,7 @@ DESTDIR =
 PREFIX  = /usr/local
 TAG     = `git tag|grep -v ^_|tail -n1`
 
+PHONIES += lint
 PHONIES += patches
 
 .PHONY: _all _archives _docs _install _release clean deb help install $(PHONIES)
@@ -91,6 +92,9 @@ install:
 	@echo "[INSTALL]"
 	@make -f Makefile _install
 	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
+lint:
+	@echo "[LINT]"
+	@find . -type f -name \*.py -exec pychecker --limit 256 {} \;
 patches:
 	@echo "[PATCHES] dist/patches.tar.gz"
 	@rm -rf dist/
