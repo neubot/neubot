@@ -26,8 +26,16 @@ section
     createdirectory "$SMPROGRAMS\Neubot"
     createshortcut "$SMPROGRAMS\Neubot\neubot.lnk" "$INSTDIR\neubot.exe"
     createshortcut "$SMPROGRAMS\Neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
+    WriteRegStr HKLM                                                    \
+      "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
+      "DisplayName" "Neubot"
+    WriteRegStr HKLM                                                    \
+      "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
+      "UninstallString" "$INSTDIR\uninstall.exe"
 sectionend
 section "uninstall"
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\Neubot"
+    deleteregkey HKLM                                                   \
+      "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"
 sectionend
