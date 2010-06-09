@@ -36,6 +36,7 @@ class protocol:
 		self.begin = time.time()
 		poller = self.adaptor.connection.poller
 		poller.register_periodic(self.periodic)
+		self.have_body = True
 
 	def __str__(self):
 		return self.peername
@@ -88,22 +89,23 @@ class protocol:
 				key, value = key.strip(), value.strip()
 				self.message[key] = value
 		self.application.got_metadata(self)
-		if (self.message["transfer-encoding"] == "chunked"):
-			self.adaptor.get_chunked_body()
-			return
-		if (self.message["content-length"]):
-			value = self.message["content-length"]
-			try:
-				length = int(value)
-			except ValueError:
-				length = -1
-			if (length < 0):
-				raise (Exception("Invalid line"))
-			self.adaptor.get_bounded_body(length)
-			return
-		if (self.application.is_message_unbounded(self)):
-			self.adaptor.get_unbounded_body()
-			return
+		if self.have_body:
+			if (self.message["transfer-encoding"] == "chunked"):
+				self.adaptor.get_chunked_body()
+				return
+			if (self.message["content-length"]):
+				value = self.message["content-length"]
+				try:
+					length = int(value)
+				except ValueError:
+					length = -1
+				if (length < 0):
+					raise (Exception("Invalid line"))
+				self.adaptor.get_bounded_body(length)
+				return
+			if (self.application.is_message_unbounded(self)):
+				self.adaptor.get_unbounded_body()
+				return
 		self.application.got_message(self)
 		self.adaptor.get_metadata()
 
@@ -119,3 +121,6 @@ class protocol:
 	def sendmessage(self, msg):
 		self.adaptor.send(msg.serialize_headers())
 		self.adaptor.send(msg.serialize_body())
+
+	def donthavebody(self):
+		self.have_body = False
