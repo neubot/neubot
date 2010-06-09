@@ -86,10 +86,8 @@ class servercontext:
         self.identifier = identifier
         self.requestlength = 0
         self.responselength = 0
-        self.recv_begin = time.time()
-        self.recv_end = 0
-        self.send_begin = 0
-        self.send_end = 0
+        self.begin = time.time()
+        self.end = 0
 
     def got_metadata(self, protocol):
         request = protocol.message
@@ -108,7 +106,6 @@ class servercontext:
         return False
 
     def got_message(self, protocol):
-        self.recv_end = time.time()
         request = protocol.message
         response = neubot.http.message(protocol="HTTP/1.1")
         response["date"] = neubot.http.date()
@@ -151,10 +148,9 @@ class servercontext:
         neubot.http.prettyprinter(logging.info, "[%s]   " % protocol, response)
         logging.info("[%s] Start sending response" % protocol)
         protocol.sendmessage(response)
-        self.send_begin = time.time()
 
     def message_sent(self, protocol):
-        self.send_end = time.time()
+        self.end = time.time()
         logging.info("[%s] Response sent" % protocol)
         logging.info("[%s] Waiting for client to close connection" % protocol)
 
@@ -163,11 +159,11 @@ class servercontext:
         neubot.whitelist.unregister(address)
         logging.info("[%s] The connection has been closed" % protocol)
         sockname = protocol.sockname.split(":")[0]
-        delta = self.send_end - self.send_begin
+        delta = self.end - self.begin
         if delta > 0:
             # TODO Probably need to include OTHER active conns as well!
             neubot.table.update_entry(self.identifier, self.server.conns,
-                                      "download", self.responselength,
+                                      "upload", self.responselength,
                                       sockname, "http", delta)
             octets = neubot.table.stringify_entry(self.identifier)
             neubot.table.remove_entry(self.identifier)
@@ -248,17 +244,13 @@ class clientcontext:
                                   self.request)
         logging.info("[%s] Start sending the request" % protocol.sockname)
         protocol.sendmessage(self.request)
-        self.send_begin = time.time()
-        self.send_end = 0
-        self.recv_begin = 0
-        self.recv_end = 0
+        self.begin = time.time()
+        self.end = 0
         self.responselength = 0
 
     def message_sent(self, protocol):
-        self.send_end = time.time()
         logging.info("[%s] Done sending request" % protocol.sockname)
         logging.info("[%s] Waiting for response" % protocol.sockname)
-        self.recv_begin = time.time()
 
     def got_metadata(self, protocol):
         logging.info("[%s] Pretty-printing response" % protocol.sockname)
@@ -273,7 +265,7 @@ class clientcontext:
         return neubot.http.response_unbounded(self.request, protocol.message)
 
     def got_message(self, protocol):
-        self.recv_end = time.time()
+        self.end = time.time()
         logging.info("[%s] Done receiving response" % protocol.sockname)
         response = protocol.message
         response.body.seek(0, os.SEEK_END)
@@ -286,7 +278,7 @@ class clientcontext:
             peername = protocol.peername.split(":")[0]
             sockname = protocol.sockname.split(":")[0]
             neubot.table.create_entry(self.client.identifier, peername)
-            delta = self.recv_end - self.recv_begin
+            delta = self.end - self.begin
             if delta > 0:
                 neubot.table.update_entry(self.client.identifier, 1, "download",
                     self.responselength, sockname, "http", delta)
