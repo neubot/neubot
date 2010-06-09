@@ -131,10 +131,10 @@ class servercontext:
                         myfile.seek(0, os.SEEK_END)
                         mylen = myfile.tell()
                         myfile.seek(0)
-                        self.responselength = mylen
-                        contentlength = str(self.responselength)
+                        contentlength = str(mylen)
                         response["content-length"] = contentlength
                         if request.method == "GET":
+                            self.responselength = mylen
                             response.body = myfile
                     else:
                         response.code, response.reason = "404", "Not Found"
@@ -176,14 +176,20 @@ class servercontext:
             sys.stdout.flush()
         self.server.dead_client()
 
+CONNECTIONS = 3
+HEAD        = False
+MYFILE      = None
+
 class client:
-    def __init__(self, poller, uri, family=FAMILY, connections=3, myfile=None):
+    def __init__(self, poller, uri, family=FAMILY, connections=CONNECTIONS,
+                 myfile=None, head=HEAD):
         logging.info("Begin measurement")
         self.poller = poller
         self.uri = uri
         self.family = family
         self.connections = connections
         self.myfile = myfile
+        self.head = head
         (self.scheme, self.address,
          self.port, self.path) = neubot.http.urlsplit(uri)
         secure =  self.scheme == "https"
@@ -232,8 +238,9 @@ class clientcontext:
                 self.request.body = myfile
                 myfile.seek(0)
         else:
-            # FIXME Add support for HEAD (to calculate "latency")
             self.request.method = "GET"
+            if self.client.head:
+                self.request.method = "HEAD"
             self.requestlength = 0
         protocol.attach(self)
         logging.info("[%s] Pretty-printing the request" % protocol.sockname)
@@ -259,12 +266,8 @@ class clientcontext:
         neubot.http.prettyprinter(logging.info, "[%s]   " % protocol.sockname,
                                   response)
         response.body = StringIO.StringIO()
-        # FIXME The model does not allow easy handling of responses to HEAD
         if self.request.method == "HEAD":
-            if self.request["transfer-encoding"]:
-                del self.request["transfer-encoding"]
-            if self.request["content-length"]:
-                del self.request["content-length"]
+            protocol.donthavebody()
 
     def is_message_unbounded(self, protocol):
         return neubot.http.response_unbounded(self.request, protocol.message)
@@ -304,6 +307,7 @@ LONGOPTS = [
     "disable-whitelist-prune",
     "file=",
     "help",
+    "latency",
     "permanent-whitelist",
     "server",
     "whitelist=",
@@ -330,6 +334,8 @@ HELP = 									\
 "      file to be sent to the client.\n"				\
 "  --help\n"								\
 "      Print this help screen.\n"					\
+"  --latency\n"                                                         \
+"      Use HEAD in order to get a latency approximation.\n"             \
 "  --permanent-whitelist\n"						\
 "      Do not remove address from whitelist after a measure.\n"		\
 "  --server\n"								\
@@ -346,6 +352,7 @@ def main(argv):
         sys.stderr.write(USAGE)
         sys.exit(1)
     connections = 1
+    latency = False
     myfile = None
     servermode = False
     for name, value in options:
@@ -366,6 +373,8 @@ def main(argv):
         elif name == "--help":
             sys.stdout.write(HELP)
             sys.exit(0)
+        elif name == "--latency":
+            latency = True
         elif name == "--permanent-whitelist":
             neubot.whitelist.unregister = lambda x: None
         elif name == "--server":
@@ -396,7 +405,8 @@ def main(argv):
         else:
             sys.stderr.write(USAGE)
             sys.exit(1)
-        client(poller, uri=uri, connections=connections, myfile=myfile)
+        client(poller, uri=uri, connections=connections, myfile=myfile,
+               head=latency)
     poller.loop()
 
 if (__name__ == "__main__"):
