@@ -28,10 +28,10 @@ class socket_connection:
         self.socket = socket
         self.sockname = reduce(concatname, sockname)
         self.peername = reduce(concatname, peername)
-        self.protocol = None
+        self.adaptor = None
 
-    def attach(self, protocol):
-        self.protocol = protocol
+    def attach(self, adaptor):
+        self.adaptor = adaptor
 
     def set_readable(self):
         self.poller.set_readable(self)
@@ -73,15 +73,15 @@ class socket_connection:
         return self.socket.fileno()
 
     def closing(self):
-        self.protocol.closing()
-        self.protocol = None
+        self.adaptor.closing()
+        self.adaptor = None
         self.socket.close()
 
     def readable(self):
-        self.protocol.readable()
+        self.adaptor.readable()
 
     def writable(self):
-        self.protocol.writable()
+        self.adaptor.writable()
 
 class ssl_connection:
     def __init__(self, poller, ssl, sockname, peername, handshake=True):
@@ -94,10 +94,10 @@ class ssl_connection:
         self.wantwrite = False
         self.internalread = False
         self.internalwrite = False
-        self.protocol = None
+        self.adaptor = None
 
-    def attach(self, protocol):
-        self.protocol = protocol
+    def attach(self, adaptor):
+        self.adaptor = adaptor
 
     def set_readable(self):
         self.wantread = True
@@ -165,8 +165,8 @@ class ssl_connection:
         return self.ssl.fileno()
 
     def closing(self):
-        self.protocol.closing()
-        self.protocol = None
+        self.adaptor.closing()
+        self.adaptor = None
         self.ssl.close()
 
     def readable(self):
@@ -179,9 +179,9 @@ class ssl_connection:
             if self.wantwrite:
                 self.poller.set_writable(self)
             #print 'leave internalread state'
-            self.protocol.writable()
+            self.adaptor.writable()
             return
-        self.protocol.readable()
+        self.adaptor.readable()
 
     def writable(self):
         if self.internalread:
@@ -193,6 +193,6 @@ class ssl_connection:
             if self.wantread:
                 self.poller.set_readable(self)
             #print 'leave internalwrite state'
-            self.protocol.readable()
+            self.adaptor.readable()
             return
-        self.protocol.writable()
+        self.adaptor.writable()
