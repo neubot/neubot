@@ -37,6 +37,23 @@ USAGE =                                                                 \
 "usage: neubot [--help] [-bEqVv] [-I dir] [-O option=value]\n"          \
 "              [-P pidfile] [--] [command [option ...]]\n"
 
+HELP =                                                                  \
+USAGE +                                                                 \
+"\n"                                                                    \
+"Options:\n"                                                            \
+"    -b              Background mode, become a daemon\n"                \
+"    -E              Do not read any configuration file.\n"             \
+"    --help          Print this help message and exit.\n"               \
+"    -I dir          Prepend dir to Python search path.\n"              \
+"    -O option=value Set the value of the specified option.\n"          \
+"    -P pidfile      Pidfile to use in background mode.\n"              \
+"    -q              Be more quiet, log less messages.\n"               \
+"    -V              Print version number and exit.\n"                  \
+"    -v              Be more verbose, log more messages.\n"             \
+"\n"                                                                    \
+"You don't need to specify commands unless you whish to play with\n"    \
+"neubot internals.  If so, try `neubot help' for more help.\n"
+
 def interrupt(signo, frame):
     logging.info("Got interrupt signal")
     os._exit(1)
@@ -52,7 +69,8 @@ def bootstrap():
     rcdir = "/etc/neubot"
     verbosity = logging.INFO
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:P:qVv")
+        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:P:qVv",
+                                           ["help"])
     except getopt.error:
         sys.stderr.write(USAGE)
         sys.exit(1)
@@ -63,6 +81,9 @@ def bootstrap():
             background = True
         elif opt == "-E":
             noconf = True
+        elif opt == "--help":
+            sys.stdout.write(HELP)
+            sys.exit(0)
         elif opt == "-I":
             sys.path.insert(0, os.path.abspath(arg))
         elif opt == "-O":
