@@ -31,8 +31,11 @@ import sys
 
 STDERR_FORMAT = "[%(asctime)s] <%(levelname)s> %(message)s"
 SYSLOG_FORMAT = "neubot[%(process)d]: <%(levelname)s> %(message)s"
-USAGE = "Usage: neubot [-bEqVv] [-I path] [-O option] [--] [command [opts]]\n"
 VERSION = "0.0.6"
+
+USAGE =                                                                 \
+"usage: neubot [--help] [-bEqVv] [-I dir] [-O option=value]\n"          \
+"              [-P pidfile] [--] [command [option ...]]\n"
 
 def interrupt(signo, frame):
     logging.info("Got interrupt signal")
@@ -49,10 +52,9 @@ def bootstrap():
     rcdir = "/etc/neubot"
     verbosity = logging.INFO
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:qVv")
+        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:P:qVv")
     except getopt.error:
         sys.stderr.write(USAGE)
-        sys.stderr.write("Try `neubot help' for more help.\n")
         sys.exit(1)
     filelike = StringIO.StringIO()
     filelike.write("[DEFAULT]\r\n")
@@ -65,6 +67,8 @@ def bootstrap():
             sys.path.insert(0, os.path.abspath(arg))
         elif opt == "-O":
             filelike.write(arg + "\r\n")
+        elif opt == "-P":
+            pidfile = arg
         elif opt == "-q":
             verbosity += 10                                             # XXX
             if verbosity > logging.ERROR:
@@ -131,13 +135,12 @@ def bootstrap():
         logging.info("Now running in background as a daemon")
         logging.info("Ignoring the INT signal")
         signal.signal(signal.SIGINT, signal.SIG_IGN)
-        logging.info("Trying to write the pidfile '%s'" % pidfile)
         try:
             f = open(pidfile, "wb")
             f.write(str(os.getpid()) + "\n")
             f.close()
         except IOError:
-            pass
+            logging.warning("Could not write pidfile '%s'" % pidfile)
         if os.getuid() == 0:
             logging.info("Trying to drop root privileges")
             try:
