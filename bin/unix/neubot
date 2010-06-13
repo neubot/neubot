@@ -31,7 +31,7 @@ import sys
 
 STDERR_FORMAT = "[%(asctime)s] <%(levelname)s> %(message)s"
 SYSLOG_FORMAT = "neubot[%(process)d]: <%(levelname)s> %(message)s"
-USAGE = "Usage: neubot [-bEqV] [-I path] [-O option] [--] [command [opts]]\n"
+USAGE = "Usage: neubot [-bEqVv] [-I path] [-O option] [--] [command [opts]]\n"
 VERSION = "0.0.6"
 
 def interrupt(signo, frame):
@@ -46,9 +46,9 @@ def bootstrap():
     noconf = False
     pidfile = "/var/run/neubot.pid"
     rcdir = "/etc/neubot"
-    verbose = True
+    verbosity = logging.INFO
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:qV")
+        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:qVv")
     except getopt.error:
         sys.stderr.write(USAGE)
         sys.stderr.write("Try `neubot help' for more help.\n")
@@ -73,18 +73,22 @@ def bootstrap():
                 if not configuration.has_key(key):
                     configuration[key] = value
         elif opt == "-q":
-            verbose = False
+            verbosity += 10                                             # XXX
+            if verbosity > logging.ERROR:
+                verbosity = logging.ERROR
         elif opt == "-V":
             print "Neubot", VERSION
             sys.exit(0)
+        elif opt == "-v":
+            verbosity -= 10                                             # XXX
+            if verbosity < logging.DEBUG:
+                verbosity = logging.DEBUG
     logger = logging.getLogger()
     handler = logging.StreamHandler()
     formatter = logging.Formatter(STDERR_FORMAT)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-        logging.info("Running in verbose mode")
+    logger.setLevel(verbosity)
     if not noconf:
         configparser = ConfigParser.RawConfigParser()
         rclist = [ rcdir + "/config" ]
