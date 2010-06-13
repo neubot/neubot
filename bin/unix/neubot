@@ -42,6 +42,8 @@ def bootstrap():
     signal.signal(signal.SIGINT, interrupt)
     background = False
     incdir = "/usr/local/share"
+    if not incdir in sys.path:
+        sys.path.insert(0, incdir)
     noconf = False
     pidfile = "/var/run/neubot.pid"
     rcdir = "/etc/neubot"
@@ -60,7 +62,7 @@ def bootstrap():
         elif opt == "-E":
             noconf = True
         elif opt == "-I":
-            incdir = arg
+            sys.path.insert(0, os.path.abspath(arg))
         elif opt == "-O":
             filelike.write(arg + "\r\n")
         elif opt == "-q":
@@ -92,10 +94,6 @@ def bootstrap():
     filelike.seek(0)
     configparser.readfp(filelike, "(commandline)")
     filelike = None
-    incdir = os.path.abspath(incdir)
-    logging.info("Assuming neubot core is at '%s'" % incdir)
-    if not incdir in sys.path:
-        sys.path.insert(0, incdir)
     logging.info("Trying to import neubot core")
     try:
         import neubot
