@@ -35,128 +35,128 @@ USAGE = "Usage: neubot [-bEqV] [-I path] [-O option] [--] [command [opts]]\n"
 VERSION = "0.0.6"
 
 def interrupt(signo, frame):
-	logging.info("Got interrupt signal")
-	os._exit(1)
+    logging.info("Got interrupt signal")
+    os._exit(1)
 
 def bootstrap():
-	signal.signal(signal.SIGINT, interrupt)
-	background = False
-	configuration = {}
-	incdir = "/usr/local/share"
-	noconf = False
-	pidfile = "/var/run/neubot.pid"
-	rcdir = "/etc/neubot"
-	verbose = True
-	try:
-		options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:qV")
-	except getopt.error:
-		sys.stderr.write(USAGE)
-		sys.stderr.write("Try `neubot help' for more help.\n")
-		sys.exit(1)
-	for opt, arg in options:
-		if (opt == "-b"):
-			background = True
-		elif (opt == "-E"):
-			noconf = True
-		elif (opt == "-I"):
-			incdir = arg
-		elif (opt == "-O"):
-			configparser = ConfigParser.RawConfigParser()
-			content = "[DEFAULT]\n" + arg + "\n"
-			filelike = StringIO.StringIO(content)
-			try:
-				configparser.readfp(filelike)
-			except ConfigParser.Error:
-				sys.stderr.write("Bad syntax: -O '%s'\n" % arg)
-				sys.exit(1)
-			for key, value in configparser.items("DEFAULT"):
-				if (not configuration.has_key(key)):
-					configuration[key] = value
-		elif (opt == "-q"):
-			verbose = False
-		elif opt == "-V":
-			print "Neubot", VERSION
-			sys.exit(0)
-	logger = logging.getLogger()
-	handler = logging.StreamHandler()
-	formatter = logging.Formatter(STDERR_FORMAT)
-	handler.setFormatter(formatter)
-	logger.addHandler(handler)
-	if (verbose):
-		logger.setLevel(logging.DEBUG)
-		logging.info("Running in verbose mode")
-	if (not noconf):
-		configparser = ConfigParser.RawConfigParser()
-		rclist = [ rcdir + "/config" ]
-		if (os.environ.has_key("HOME")):
-			rclist.append(os.environ["HOME"] + "/.neubot/config")
-		for rc in rclist:
-			if (os.path.isfile(rc)):
-				logging.info("Reading config file '%s'" % rc)
-				configparser.read(rc)
-		for key, value in configparser.items("DEFAULT"):
-			if (not configuration.has_key(key)):
-				configuration[key] = value
-	incdir = os.path.abspath(incdir)
-	logging.info("Assuming neubot core is at '%s'" % incdir)
-	if (not incdir in sys.path):
-		sys.path.insert(0, incdir)
-	logging.info("Trying to import neubot core")
-	try:
-		import neubot
-	except ImportError:
-		logging.error("Could not import neubot core")
-		logging.error("Use -I to specify the path to neubot core")
-		sys.exit(1)
-	if (len(arguments) == 0):
-		arguments = ["auto"]
-	if (background):
-		logging.info("Redirecting logs from stderr to syslog")
-		handler = logging.handlers.SysLogHandler("/dev/log")
-		formatter = logging.Formatter(SYSLOG_FORMAT)
-		handler.setFormatter(formatter)
-		logger.addHandler(handler)		# XXX
-		logging.info("Changing current directory to '/'")
-		os.chdir("/")
-		logging.info("Setting the default umask")
-		os.umask(022)
-		logging.info("Redirecting stdio to '/dev/null'")
-		logging.info("That's the last message you will see on console")
-		for fd in range(0, 3):
-			os.close(fd)
-		stdin = os.open("/dev/null", os.O_RDWR)
-		for fd in range(1, 3):
-			os.dup2(stdin, fd)
-		logging.info("Detaching from the controlling terminal")
-		if (os.fork() > 0):
-			os._exit(0)
-		logging.info("Becoming a session leader")
-		os.setsid()
-		logging.info("Detaching from the controlling session")
-		if (os.fork() > 0):
-			os._exit(0)
-		logging.info("Now running in background as a daemon")
-		logging.info("Ignoring the INT signal")
-		signal.signal(signal.SIGINT, signal.SIG_IGN)
-		logging.info("Trying to write the pidfile '%s'" % pidfile)
-		try:
-			f = open(pidfile, "wb")
-			f.write(str(os.getpid()) + "\n")
-			f.close()
-		except IOError:
-			pass
-		if (os.getuid() == 0):
-			logging.info("Trying to drop root privileges")
-			try:
-				pw = pwd.getpwnam("_neubot")
-			except KeyError:
-				logging.error("Could not get '_neubot'"	\
-				    "user information from password file")
-				sys.exit(1)
-			os.setgid(pw.pw_gid)
-			os.setuid(pw.pw_uid)
-			logging.info("Now running as the '_neubot' user")
-	neubot.main.main(arguments)
+    signal.signal(signal.SIGINT, interrupt)
+    background = False
+    configuration = {}
+    incdir = "/usr/local/share"
+    noconf = False
+    pidfile = "/var/run/neubot.pid"
+    rcdir = "/etc/neubot"
+    verbose = True
+    try:
+        options, arguments = getopt.getopt(sys.argv[1:], "bEI:O:qV")
+    except getopt.error:
+        sys.stderr.write(USAGE)
+        sys.stderr.write("Try `neubot help' for more help.\n")
+        sys.exit(1)
+    for opt, arg in options:
+        if opt == "-b":
+            background = True
+        elif opt == "-E":
+            noconf = True
+        elif opt == "-I":
+            incdir = arg
+        elif opt == "-O":
+            configparser = ConfigParser.RawConfigParser()
+            content = "[DEFAULT]\n" + arg + "\n"
+            filelike = StringIO.StringIO(content)
+            try:
+                configparser.readfp(filelike)
+            except ConfigParser.Error:
+                sys.stderr.write("Bad syntax: -O '%s'\n" % arg)
+                sys.exit(1)
+            for key, value in configparser.items("DEFAULT"):
+                if not configuration.has_key(key):
+                    configuration[key] = value
+        elif opt == "-q":
+            verbose = False
+        elif opt == "-V":
+            print "Neubot", VERSION
+            sys.exit(0)
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(STDERR_FORMAT)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+        logging.info("Running in verbose mode")
+    if not noconf:
+        configparser = ConfigParser.RawConfigParser()
+        rclist = [ rcdir + "/config" ]
+        if os.environ.has_key("HOME"):
+            rclist.append(os.environ["HOME"] + "/.neubot/config")
+        for rc in rclist:
+            if os.path.isfile(rc):
+                logging.info("Reading config file '%s'" % rc)
+                configparser.read(rc)
+        for key, value in configparser.items("DEFAULT"):
+            if not configuration.has_key(key):
+                configuration[key] = value
+    incdir = os.path.abspath(incdir)
+    logging.info("Assuming neubot core is at '%s'" % incdir)
+    if not incdir in sys.path:
+        sys.path.insert(0, incdir)
+    logging.info("Trying to import neubot core")
+    try:
+        import neubot
+    except ImportError:
+        logging.error("Could not import neubot core")
+        logging.error("Use -I to specify the path to neubot core")
+        sys.exit(1)
+    if len(arguments) == 0:
+        arguments = ["auto"]
+    if background:
+        logging.info("Redirecting logs from stderr to syslog")
+        handler = logging.handlers.SysLogHandler("/dev/log")
+        formatter = logging.Formatter(SYSLOG_FORMAT)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)        # XXX
+        logging.info("Changing current directory to '/'")
+        os.chdir("/")
+        logging.info("Setting the default umask")
+        os.umask(022)
+        logging.info("Redirecting stdio to '/dev/null'")
+        logging.info("That's the last message you will see on console")
+        for fd in range(0, 3):
+            os.close(fd)
+        stdin = os.open("/dev/null", os.O_RDWR)
+        for fd in range(1, 3):
+            os.dup2(stdin, fd)
+        logging.info("Detaching from the controlling terminal")
+        if os.fork() > 0:
+            os._exit(0)
+        logging.info("Becoming a session leader")
+        os.setsid()
+        logging.info("Detaching from the controlling session")
+        if os.fork() > 0:
+            os._exit(0)
+        logging.info("Now running in background as a daemon")
+        logging.info("Ignoring the INT signal")
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        logging.info("Trying to write the pidfile '%s'" % pidfile)
+        try:
+            f = open(pidfile, "wb")
+            f.write(str(os.getpid()) + "\n")
+            f.close()
+        except IOError:
+            pass
+        if os.getuid() == 0:
+            logging.info("Trying to drop root privileges")
+            try:
+                pw = pwd.getpwnam("_neubot")
+            except KeyError:
+                logging.error("Could not get '_neubot'"    \
+                    "user information from password file")
+                sys.exit(1)
+            os.setgid(pw.pw_gid)
+            os.setuid(pw.pw_uid)
+            logging.info("Now running as the '_neubot' user")
+    neubot.main.main(arguments)
 
-if (__name__ == "__main__"):
-	bootstrap()
+if __name__ == "__main__":
+    bootstrap()
