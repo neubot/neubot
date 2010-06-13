@@ -41,7 +41,6 @@ def interrupt(signo, frame):
 def bootstrap():
     signal.signal(signal.SIGINT, interrupt)
     background = False
-    configuration = {}
     incdir = "/usr/local/share"
     noconf = False
     pidfile = "/var/run/neubot.pid"
@@ -53,6 +52,8 @@ def bootstrap():
         sys.stderr.write(USAGE)
         sys.stderr.write("Try `neubot help' for more help.\n")
         sys.exit(1)
+    filelike = StringIO.StringIO()
+    filelike.write("[DEFAULT]\r\n")
     for opt, arg in options:
         if opt == "-b":
             background = True
@@ -61,17 +62,7 @@ def bootstrap():
         elif opt == "-I":
             incdir = arg
         elif opt == "-O":
-            configparser = ConfigParser.RawConfigParser()
-            content = "[DEFAULT]\n" + arg + "\n"
-            filelike = StringIO.StringIO(content)
-            try:
-                configparser.readfp(filelike)
-            except ConfigParser.Error:
-                sys.stderr.write("Bad syntax: -O '%s'\n" % arg)
-                sys.exit(1)
-            for key, value in configparser.items("DEFAULT"):
-                if not configuration.has_key(key):
-                    configuration[key] = value
+            filelike.write(arg + "\r\n")
         elif opt == "-q":
             verbosity += 10                                             # XXX
             if verbosity > logging.ERROR:
@@ -89,8 +80,8 @@ def bootstrap():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(verbosity)
+    configparser = ConfigParser.RawConfigParser()
     if not noconf:
-        configparser = ConfigParser.RawConfigParser()
         rclist = [ rcdir + "/config" ]
         if os.environ.has_key("HOME"):
             rclist.append(os.environ["HOME"] + "/.neubot/config")
@@ -98,9 +89,9 @@ def bootstrap():
             if os.path.isfile(rc):
                 logging.info("Reading config file '%s'" % rc)
                 configparser.read(rc)
-        for key, value in configparser.items("DEFAULT"):
-            if not configuration.has_key(key):
-                configuration[key] = value
+    filelike.seek(0)
+    configparser.readfp(filelike, "(commandline)")
+    filelike = None
     incdir = os.path.abspath(incdir)
     logging.info("Assuming neubot core is at '%s'" % incdir)
     if not incdir in sys.path:
