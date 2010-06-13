@@ -114,47 +114,43 @@ def bootstrap():
             rclist.append(os.environ["HOME"] + "/.neubot/config")
         for rc in rclist:
             if os.path.isfile(rc):
-                logging.info("Reading config file '%s'" % rc)
+                logging.debug("Reading config file '%s'" % rc)
                 configparser.read(rc)
+    logging.debug("Reading options specified via -O option")
     filelike.seek(0)
-    configparser.readfp(filelike, "(commandline)")
+    configparser.readfp(filelike, "(options specified via -O option)")
     filelike = None
-    logging.info("Trying to import neubot core")
-    try:
-        import neubot
-    except ImportError:
-        logging.error("Could not import neubot core")
-        logging.error("Use -I to specify the path to neubot core")
-        sys.exit(1)
+    logging.debug("Trying to import NPL (Neubot Python Library)")
+    import neubot
     if len(arguments) == 0:
         arguments = ["auto"]
     if background:
-        logging.info("Redirecting logs from stderr to syslog")
+        logging.debug("Redirecting logs from stderr to syslog")
         handler = logging.handlers.SysLogHandler("/dev/log")
         formatter = logging.Formatter(SYSLOG_FORMAT)
         handler.setFormatter(formatter)
         logger.addHandler(handler)        # XXX
-        logging.info("Changing current directory to '/'")
+        logging.debug("Changing current directory to '/'")
         os.chdir("/")
-        logging.info("Setting the default umask")
+        logging.debug("Setting the default umask")
         os.umask(022)
-        logging.info("Redirecting stdio to '/dev/null'")
-        logging.info("That's the last message you will see on console")
+        logging.debug("Redirecting stdio to '/dev/null'")
+        logging.debug("That's the last message you will see on console")
         for fd in range(0, 3):
             os.close(fd)
         stdin = os.open("/dev/null", os.O_RDWR)
         for fd in range(1, 3):
             os.dup2(stdin, fd)
-        logging.info("Detaching from the controlling terminal")
+        logging.debug("Detaching from the controlling terminal")
         if os.fork() > 0:
             os._exit(0)
-        logging.info("Becoming a session leader")
+        logging.debug("Becoming a session leader")
         os.setsid()
-        logging.info("Detaching from the controlling session")
+        logging.debug("Detaching from the controlling session")
         if os.fork() > 0:
             os._exit(0)
-        logging.info("Now running in background as a daemon")
-        logging.info("Ignoring the INT signal")
+        logging.debug("Now running in background as a daemon")
+        logging.debug("Ignoring the INT signal")
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         try:
             f = open(pidfile, "wb")
@@ -163,7 +159,7 @@ def bootstrap():
         except IOError:
             logging.warning("Could not write pidfile '%s'" % pidfile)
         if os.getuid() == 0:
-            logging.info("Trying to drop root privileges")
+            logging.debug("Trying to drop root privileges")
             try:
                 pw = pwd.getpwnam("_neubot")
             except KeyError:
@@ -172,7 +168,6 @@ def bootstrap():
                 sys.exit(1)
             os.setgid(pw.pw_gid)
             os.setuid(pw.pw_uid)
-            logging.info("Now running as the '_neubot' user")
     neubot.main.main(arguments)
 
 if __name__ == "__main__":
