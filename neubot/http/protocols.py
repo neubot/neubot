@@ -17,7 +17,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import time
 
 import neubot
 
@@ -33,7 +32,7 @@ class protocol:
 		self.application = None
 		self.sockname = adaptor.connection.sockname
 		self.peername = adaptor.connection.peername
-		self.begin = time.time()
+		self.begin = neubot.utils.ticks()
 		poller = self.adaptor.connection.poller
 		poller.register_periodic(self.periodic)
 		self.have_body = True

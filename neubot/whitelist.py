@@ -18,7 +18,8 @@
 
 import collections
 import logging
-import time
+
+import neubot
 
 TIMEOUT = 15
 
@@ -33,13 +34,13 @@ class whitelist:
         return self.dictionary.has_key(address)
 
     def register(self, address):
-        self.dictionary[address] = time.time()
+        self.dictionary[address] = neubot.utils.ticks()
         logging.info("Added address %s to whitelist" % address)
 
     def prune(self, now):
         stale = collections.deque()
-        for address, timestamp in self.dictionary.items():
-            if now - timestamp > TIMEOUT:
+        for address, ticks in self.dictionary.items():
+            if now - ticks > TIMEOUT:
                 stale.append(address)
         for address in stale:
             del self.dictionary[address]

@@ -19,7 +19,8 @@
 import collections
 import json
 import logging
-import time
+
+import neubot
 
 TIMEOUT = 15
 
@@ -54,13 +55,13 @@ class resultstable:
 
     def create_entry(self, identifier, peername):
         if self.dictionary.has_key(identifier):
-            now = time.time()
+            now = neubot.utils.ticks()
             entry = self.dictionary[identifier]
             if now - entry.timestamp <= TIMEOUT:
                 logging.warning("Entry already exists %s" % identifier)
                 return False
             logging.info("Replacing (stale) entry %s" % identifier)
-        entry = resultsentry(identifier, peername, time.time())
+        entry = resultsentry(identifier, peername, neubot.utils.timestamp())
         self.dictionary[identifier] = entry
         logging.info("Created entry %s" % identifier)
         return True

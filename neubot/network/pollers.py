@@ -19,7 +19,6 @@
 import errno
 import logging
 import select
-import time
 
 import neubot
 
@@ -86,7 +85,7 @@ class poller:
                 self.close(connection)
 
     def loop(self):
-        last = time.time()
+        last = neubot.utils.ticks()
         while True:
             if self.funcs:
                 for func in self.funcs:
@@ -112,7 +111,7 @@ class poller:
                 self._readable(fileno)
             for fileno in res[1]:
                 self._writable(fileno)
-            now = time.time()
+            now = neubot.utils.ticks()
             if now - last >= self.timeout:
                 for periodic in self.periodic:
                     try:

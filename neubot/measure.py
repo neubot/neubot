@@ -22,7 +22,6 @@ import logging
 import os
 import sys
 import socket
-import time
 
 import neubot
 
@@ -86,7 +85,7 @@ class servercontext:
         self.identifier = identifier
         self.requestlength = 0
         self.responselength = 0
-        self.begin = time.time()
+        self.begin = neubot.utils.ticks()
         self.end = 0
 
     def got_metadata(self, protocol):
@@ -150,7 +149,7 @@ class servercontext:
         protocol.sendmessage(response)
 
     def message_sent(self, protocol):
-        self.end = time.time()
+        self.end = neubot.utils.ticks()
         logging.info("[%s] Response sent" % protocol)
         logging.info("[%s] Waiting for client to close connection" % protocol)
 
@@ -242,7 +241,7 @@ class clientcontext:
                                   self.request)
         logging.info("[%s] Start sending the request" % protocol.sockname)
         protocol.sendmessage(self.request)
-        self.begin = time.time()
+        self.begin = neubot.utils.ticks()
         self.end = 0
         self.responselength = 0
 
@@ -269,14 +268,14 @@ class clientcontext:
     def is_message_unbounded(self, protocol):
         return neubot.http.response_unbounded(self.request, protocol.message)
 
-    def progress(self, timestamp):
+    def progress(self, ticks):
         if os.isatty(sys.stderr.fileno()):
             sys.stderr.write(".")
 
     def got_message(self, protocol):
         if os.isatty(sys.stderr.fileno()):
             sys.stderr.write(" DONE\n")
-        self.end = time.time()
+        self.end = neubot.utils.ticks()
         logging.info("[%s] Done receiving response" % protocol.sockname)
         response = protocol.message
         response.body.seek(0, os.SEEK_END)

@@ -19,6 +19,8 @@
 import json
 import logging
 import logging.handlers
+import sys
+import time
 import traceback
 
 def prettyprint_exception(write=logging.error, eol=""):
@@ -40,3 +42,21 @@ def prettyprint_json(write, prefix, octets, eol=""):
     lines = json.dumps(obj, ensure_ascii=True, indent=2)
     for line in lines.splitlines():
         write(prefix + line + eol)
+
+#
+# neubot.utils.timestamp()
+#   Suitable for timestamping, returns an *integer* representing the
+#   number of seconds elapsed since the epoch, in UTC.
+#
+# neubot.utils.ticks()
+#   An very precise monotonic clock, that might not be suitable for
+#   timestamping (depending on the plaform.)  It should only be used
+#   to calculate the time elapsed between two events.
+#
+
+timestamp = lambda: int(time.time())
+
+if sys.platform == 'win32':
+    ticks = time.clock
+else:
+    ticks = time.time
