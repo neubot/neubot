@@ -60,6 +60,8 @@ _install:
 	@for F in `find neubot/ -type f -name \*.py`; do		\
 	    install -m644 $$F $(DESTDIR)$(PREFIX)/share/$$F || exit 1;	\
 	done
+	@install -d $(DESTDIR)/etc/neubot
+	@install -d $(DESTDIR)/var/neubot
 	@install -d $(DESTDIR)$(PREFIX)/bin
 	@sed 's!/usr/local!$(PREFIX)!' bin/unix/neubot > binunixneubot
 	@install binunixneubot $(DESTDIR)$(PREFIX)/bin/neubot
