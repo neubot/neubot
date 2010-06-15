@@ -1,0 +1,161 @@
+=head1 NAME
+
+neubot - Network neutrality bot
+
+=head1 SYNOPSYS
+
+B<neubot> [B<--help>] [B<-bEqVv>] [B<-I> I<dir>] [B<-O> I<option>=I<value>]
+       [B<-P> I<pidfile>] [I<command> [I<option> ...]]
+
+=head1 DESCRIPTION
+
+Neubot is a software that measures in a distributed way network neutrality
+violations, like peer-to-peer traffic discrimination.
+
+The neubot client periodically contacts I<master.neubot.org> to
+get information on the available tests, and to check for updates.
+If there are updates available, the user is notified with a message,
+which is printed either on console or via syslogd(8), depending on
+whether neubot is running in interactive mode or in background.  If the
+list of available tests is not empty, the client picks one at random and
+negotiates the parameters (e.g. length, direction) with the I<TestServer>
+that provides the test.  The outcome of the negotiation is either the
+indication that the client should retry later, because the TestServer
+is busy, or a string that uniquely identifies the measure, together
+with the parameters.  In turn, the client exploits these parameters to
+connect to the TestServer for performing the measurement (e.g. a download
+of a certain file using B<HTTP>.)  In the end, both the client and the
+TestServer report results back to master.neubot.org.
+
+Options, that let users modify slightly the default behavior of the
+neubot command, are documented below in a separate section.
+
+Commands are not (yet) documented in this manual page.  You should not
+need to specify a command, because commands are the interface to play
+with neubot internals.
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-b>
+
+Background mode, become a daemon.
+
+=item B<-E>
+
+Do not read any configuration file.
+
+=item B<--help>
+
+Print an help screen and exit.
+
+=item B<-I> I<dir>
+
+Prepend I<dir> to Python search path.
+
+=item B<-O> I<option>=I<value>
+
+Set the I<value> of the specified I<option>.
+
+=item B<-P> I<pidfile>
+
+Pidfile to use in background mode.
+
+=item B<-q>
+
+Be more quiet, log less messages.
+
+=item B<-V>
+
+Print version number and exit.
+
+=item B<-v>
+
+Be more verbose, log more messages.
+
+=back
+
+=head1 EXAMPLES
+
+Run neubot in interactive mode:
+
+    neubot
+
+Same as above, but running in-place from the sources directory:
+
+    ./bin/unix/neubot -I.
+
+Run neubot in verbose mode to get diagnostic messages:
+
+    neubot -v
+
+Force neubot to save results to I</some/file>:
+
+    neubot -O database.path=/some/file
+
+Run neubot in background:
+
+    neubot -b
+
+Invoke neubot from I</etc/rc.local>:
+
+    if test -x /usr/local/bin/neubot; then
+      echo 'Starting neubot: neubot -b'
+      /usr/local/bin/neubot -b
+    fi
+
+=head1 FILES
+
+When installed from sources, neubot lives below I</usr/local>.  When
+installed with a package manager, it is common to see it below I</usr>.
+
+=over 4
+
+=item /usr/local/bin/neubot
+
+The neubot program, that locates, imports, and invokes commands implemented
+in the neubot python library.
+
+=item /usr/local/share/neubot/*
+
+The neubot python library, that is the core of neubot.
+
+=item /etc/neubot/
+
+The system-wide configuration directory.
+
+=item /var/neubot/
+
+The system-wide data directory.
+
+=item $HOME/.neubot/
+
+The per-user configuration and data directory.
+
+=back
+
+=head1 AUTHOR
+
+Simone Basso <bassosimone@gmail.com>
+
+=head1 COPYRIGHT
+
+ Copyright (c) 2010 NEXA Center for Internet & Society.
+
+ Neubot is free software: you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation, either version
+ 3 of the License, or (at your option) any later version.
+
+=head1 SEE ALSO
+
+=over 2
+
+=item The Neubot Home Page L<http://nexa.polito.it/neubot>
+
+=item Neubot Sources Archive L<http://www.neubot.org:8080/>
+
+=back
+
+=cut
