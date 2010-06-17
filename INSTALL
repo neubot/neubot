@@ -1,23 +1,160 @@
-How-to install Neubot below Linux and other Unices
-==================================================
+How-to install Neubot
+=====================
 
-This document is intended for people running Unix-like operatings systems
-(OSs) for which a package is not available (as well as for people
-interested in experimenting with Neubot.)  We provide packages for the
-following operating systems
+This document provides information on how to install Neubot in the
+following Operating Systems (OSes:)
 
-* LinuxMint 7+
-* Ubuntu 9.10, 10.04
+* Windows XP, Vista, 7
+* Debian, Ubuntu, LinuxMint
+* MacOsX, OpenBSD
 
-So, if you have installed one of the above, you probably might want to
-give a look at the following web pages
+We also provide generic instructions to run and (optionally) install
+Neubot that should fit most Unix-like OSes.
 
-* http://www.neubot.org:8080/
-* http://nexa.polito.it/neubot
+Windows XP, Vista, 7
+^^^^^^^^^^^^^^^^^^^^
 
-That said, this document explains how to run neubot in-place, e.g.
-from the sources archive, and covers the topic of installing it manually
-(possibily in order to prepare a package for your Linux distribution.)
+For the Windows operating systems we deploy a standard installer, that
+copies our program in ``Program Files``, creates the proper links in the
+Start menu, and adds an entry to "Add or Remove programs" in the Control
+Panel.  You can download the latest installer at::
+
+  http://www.neubot.org:8080/Neubot Setup 0.0.6.exe
+
+Debian, Ubuntu, LinuxMint
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For this family of Linux distros we provide a debian repository, that
+contains packages in ``.deb`` format.
+
+The packages depend on Python 2.6, which is installed by default in
+Ubuntu 9.10+ and LinuxMint 7+.  Debian users should upgrade to testing
+("sid") because Python 2.6 is not available for unstable ("squeeze")
+and 5.0 ("lenny.")
+
+There are three alternate procedures for installing Neubot with Debian,
+Ubuntu, and LinuxMint:
+
+(a) Install Neubot automatically with ``apt-get``.
+(b) Install the ``.deb`` package manually.
+(c) Install Neubot directly from sources.
+
+The recommended one is (a), because this way updates for Neubot are
+automatically installed.
+
+In the following sections, we will briefly cover the steps required for
+(a), and (b).  For (c), please refer to the "Running and installing from
+sources" section.
+
+Install Neubot automatically with ``apt-get``
+---------------------------------------------
+
+This procedure is composed of two sub-procedures.  The former, which
+is optional, has the goal of importing Neubot public key, used to sign
+the packages index.  The latter, mandatory, is the one that actually
+installs the program in your system.  If you don't perform the former
+you will get a warning message when installing Neubot with ``apt-get``.
+
+Import Neubot public key
+////////////////////////
+
+1. Download Neubot public key::
+
+    $ wget http://www.neubot.org:8080/PublicKey
+
+2. Trust the public key::
+
+    # apt-key add PublicKey
+
+3. Get all the trusted keys fingerprints::
+
+    # apt-key finger
+
+4. Make sure that the output of step 3 contains the following entry::
+
+    pub   2048D/F68D1AAD 2010-06-08 [expires: 2011-06-08]
+        Key fingerprint = EE47 0CA5 B488 D2CC 3944  DE07 95F9 6A7A F68D 1AAD
+    uid   Simone Basso <bassosimone@gmail.com>
+
+Install Neubot with ``apt-get``
+///////////////////////////////
+
+1. Add Neubot repository to ``/etc/apt/sources.list``::
+
+    # echo 'deb http://www.neubot.org:8080/ /' >> /etc/apt/sources.list
+
+2. Resynchronize the package index files::
+
+    # apt-get update
+
+3. Install Neubot::
+
+    # apt-get install neubot
+
+Install the ``.deb`` package manually
+-------------------------------------
+
+This procedure is simpler than the previous one, but is less convenient
+in the long run, because you will not get automatic updates.
+
+1. Download the Neubot package::
+
+    $ wget http://www.neubot.org:8080/neubot-0.0.6-1_all.deb
+
+2. Install it::
+
+    # dpkg -i neubot-0.0.6-1_all.deb
+
+MacOsX, OpenBSD
+^^^^^^^^^^^^^^^
+
+We do not provide Neubot packages for these two offsprings of the
+BSD lineage.  So, please, refer to the "Running and installing Neubot
+from sources" section for actual instructions.  Here we just collect
+some hints that are specific of these two OSes, since we routinely test
+Neubot on both.
+
+MacOsX
+------
+
+Users not running MacOsX 10.6 ("Snow Leopard") must download and install
+Python for Mac from::
+
+  http://www.python.org/download/releases/2.6.5/
+
+Once you have installed Python, you can follow the generic instructions
+for running and installing from sources.
+
+OpenBSD
+-------
+
+Python 2.6 is available since OpenBSD 4.5, but is not installed by
+default.  Provided that the ``PKG_PATH`` environment variable is set,
+you can install Python with the following command::
+
+  # pkg_add -vi python
+
+If there is more than one Python version available, you will be asked
+which one you would like to install.  Choose version 2.6.
+
+In addition to installing Python, you should apply the following patch
+to be able to run Neubot at system startup::
+
+  --- a/bin/unix/neubot
+  +++ b/bin/unix/neubot
+  @@ -1,4 +1,4 @@
+  -#!/usr/bin/env python2.6
+  +#!/usr/local/bin/python2.6
+
+   # bin/unix/neubot
+   # Copyright (c) 2010 NEXA Center for Internet & Society
+
+Running and installing Python from sources
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This section describes the procedure to run and, optionally, install
+Neubot from the sources archive.  It should work on most Unix-like
+operating systems.
 
 Dependencies
 ------------
