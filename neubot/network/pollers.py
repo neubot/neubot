@@ -24,7 +24,7 @@ import time
 import neubot
 
 class poller:
-    def __init__(self, timeout=5):
+    def __init__(self, timeout=1):
         self.timeout = timeout
         self.periodic = set()
         self.funcs = set()

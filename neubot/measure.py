@@ -258,11 +258,24 @@ class clientcontext:
         response.body = StringIO.StringIO()
         if self.request.method == "HEAD":
             protocol.donthavebody()
+        if os.isatty(sys.stderr.fileno()):
+            poller = protocol.adaptor.connection.poller
+            poller.register_periodic(self.progress)
+            type = "Short"
+            if self.request.method == "GET":
+                type = "Long"
+            sys.stderr.write("%s test in progress:" % type)
 
     def is_message_unbounded(self, protocol):
         return neubot.http.response_unbounded(self.request, protocol.message)
 
+    def progress(self, timestamp):
+        if os.isatty(sys.stderr.fileno()):
+            sys.stderr.write(".")
+
     def got_message(self, protocol):
+        if os.isatty(sys.stderr.fileno()):
+            sys.stderr.write(" DONE\n")
         self.end = time.time()
         logging.info("[%s] Done receiving response" % protocol.sockname)
         response = protocol.message
@@ -271,6 +284,8 @@ class clientcontext:
         protocol.close()
 
     def closing(self, protocol):
+        poller = protocol.adaptor.connection.poller
+        poller.unregister_periodic(self.progress)                       # XXX
         logging.info("[%s] Connection closed" % protocol.sockname)
         if self.client.identifier:                                      # XXX
             peername = protocol.peername.split(":")[0]
@@ -282,6 +297,11 @@ class clientcontext:
                     self.responselength, sockname, "http", delta)
                 octets = neubot.table.stringify_entry(self.client.identifier)
                 neubot.database.writes(octets)
+                if os.isatty(sys.stderr.fileno()):
+                    speed = self.responselength / delta
+                    sys.stderr.write(                                   \
+"Retrieved a %d bytes page in %.2f seconds (%.1f bytes/sec)\n" %        \
+(self.responselength, delta, speed))
 
     def __del__(self):
         self.client.probe_done()

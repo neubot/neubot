@@ -18,10 +18,15 @@
 
 import getopt
 import logging
+import os
 import sys
 import time
 
 import neubot
+
+WAITING =                                                               \
+"Waiting %d seconds before starting next test...\n"                     \
+"(Hit Ctrl-C to exit from Neubot.)\n"
 
 USAGE =                                                                 \
 "Usage:\n"                                                              \
@@ -71,8 +76,13 @@ def main(argv):
     elif len(arguments) == 1:
         rendezvousuri = arguments[0]
     poller = neubot.network.poller()
+    if os.isatty(sys.stderr.fileno()):
+        sys.stderr.write(
+"Measuring the time required to send request and get the response.\n")
+        sys.stderr.write("Performing a test every %s seconds.\n" % sleeptime)
     while True:
-        logging.info("Going to sleep for %s seconds" % sleeptime)
+        if (os.isatty(sys.stderr.fileno())):
+            sys.stderr.write(WAITING % sleeptime)
         time.sleep(sleeptime)
         try:
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
@@ -87,6 +97,9 @@ def main(argv):
                 if neubot.utils.versioncmp(version, neubot.version) > 0:
                     logging.warning("New version %s available at %s" % (
                                     version, updateuri))
+                    if os.isatty(sys.stderr.fileno()):
+                        sys.stderr.write("New version %s available at %s\n" % (
+                                         version, updateuri))
             try:
                 negotiateuri = todolist.available["http"]
                 #
