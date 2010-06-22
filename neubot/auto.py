@@ -35,6 +35,7 @@ USAGE =                                                                 \
 "Try `neubot measure --help' for more help.\n"
 
 LONGOPTS = [
+    "count=",
     "help",
     "sleep-time=",
 ]
@@ -46,11 +47,14 @@ HELP =                                                                  \
 "Options:\n"                                                            \
 "  --help\n"                                                            \
 "      Print this help screen.\n"                                       \
+"  --count N\n"                                                         \
+"      Exit after N iterations of the main loop.\n"                     \
 "  --sleep-time TIME\n"                                                 \
 "      Time to sleep between each rendez-vous.\n"                       \
 "\n"
 
 def main(argv):
+    count = -1
     sleeptime = 300
     iters = 0
     rendezvousuri = "http://master.neubot.org:9773/rendez-vous/1.0/"
@@ -60,7 +64,15 @@ def main(argv):
         sys.stderr.write(USAGE)    # FIXME
         sys.exit(1)
     for name, value in options:
-        if name == "--help":
+        if name == "--count":
+            try:
+                count = int(value)
+            except ValueError:
+                count = -1
+            if count < 0:
+                logging.error("Bad argument to --count")
+                sys.exit(1)
+        elif name == "--help":
             sys.stdout.write(HELP)
             sys.exit(0)
         elif name == "--sleep-time":
@@ -82,7 +94,7 @@ def main(argv):
 "Measuring the time required to send request and get the response.\n")
         sys.stderr.write("Performing a test every %s seconds.\n" % sleeptime)
     firstiter = True
-    while True:
+    while count:
         if not firstiter:
             if (os.isatty(sys.stderr.fileno())):
                 sys.stderr.write(WAITING % sleeptime)
@@ -92,6 +104,8 @@ def main(argv):
                 iters = 0
         else:
             firstiter = False
+        if count > 0:
+            count = count -1
         try:
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
