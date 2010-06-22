@@ -1,3 +1,21 @@
+Neubot 0.1.0 [2010-06-22]
+	* Updated documentation
+	* Added manual page for Unix
+	* Improved INSTALL file
+	* Added support for textual database
+	* Improved Makefile
+	* Improved Win32 setup
+	* Adjusted the verbosity
+	* By default be interactive
+	* Full support for HEAD requests
+	* Added timstamps to logs
+	* Removed some deprecated code
+	* Improved Unix startup procedure
+	* Added support for "latency" measurements
+	* Measuring "time to transfer" instead of "speed"
+	* Bugfixed clock handling with Win32
+	* Improved client mode
+
 Neubot 0.0.6 [2010-06-07]
 	* Add support for -V command line option.
 	* Use PUT /http/1.0/<uuid> to negotiate measurements.
