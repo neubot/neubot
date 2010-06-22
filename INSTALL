@@ -19,7 +19,7 @@ copies our program in ``Program Files``, creates the proper links in the
 Start menu, and adds an entry to "Add or Remove programs" in the Control
 Panel.  You can download the latest installer at::
 
-  http://www.neubot.org:8080/Neubot Setup 0.0.6.exe
+  http://www.neubot.org:8080/Neubot_Setup_0.1.0.exe
 
 Debian, Ubuntu, LinuxMint
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -99,11 +99,11 @@ in the long run, because you will not get automatic updates.
 
 1. Download the Neubot package::
 
-    $ wget http://www.neubot.org:8080/neubot-0.0.6-1_all.deb
+    $ wget http://www.neubot.org:8080/neubot-0.1.0-1_all.deb
 
 2. Install it::
 
-    # dpkg -i neubot-0.0.6-1_all.deb
+    # dpkg -i neubot-0.1.0-1_all.deb
 
 MacOsX, OpenBSD
 ^^^^^^^^^^^^^^^
