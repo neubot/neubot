@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="42cm" height="43cm" viewBox="94 -302 828 841" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="419" y="470" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="419" y="470" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="499.7" y="491.9">
+      <tspan x="499.7" y="491.9">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="429" y1="494.95" x2="570.4" y2="494.95"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="406" y="301" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="406" y="301" width="195.7" height="36"/>
+    <rect style="fill: #ffffff" x="398" y="309" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="398" y="309" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="495.85" y="330.9">
+      <tspan x="495.85" y="330.9">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="412" y1="333.95" x2="587.7" y2="333.95"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="160.4" y="163.3" width="155.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="160.4" y="163.3" width="155.55" height="36"/>
+    <rect style="fill: #ffffff" x="152.4" y="171.3" width="155.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="152.4" y="171.3" width="155.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="230.175" y="193.2">
+      <tspan x="230.175" y="193.2">neubot.http.acceptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="166.4" y1="196.25" x2="301.95" y2="196.25"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="688.8" y="163.6" width="163.6" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="688.8" y="163.6" width="163.6" height="36"/>
+    <rect style="fill: #ffffff" x="680.8" y="171.6" width="163.6" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="680.8" y="171.6" width="163.6" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="762.6" y="193.5">
+      <tspan x="762.6" y="193.5">neubot.http.connector</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="694.8" y1="196.55" x2="838.4" y2="196.55"/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 581.355,486.124 A 240.371,240.371 0 0 0 773.298,218.105"/>
+    <polygon style="fill: #000000" points="772.19,210.692 778.851,219.672 773.493,218.078 769.003,221.409 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="772.19,210.692 778.851,219.672 773.493,218.078 769.003,221.409 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 217.136,217.152 A 209.069,209.069 0 0 0 434.754,506.995"/>
+    <polygon style="fill: #000000" points="220.198,210.313 220.337,221.493 216.927,217.062 211.338,217.131 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="220.198,210.313 220.337,221.493 216.927,217.062 211.338,217.131 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 562.689,508.748 A 206.503,206.503 0 0 0 777.673,208.554"/>
+    <polygon style="fill: #000000" points="555.309,507.455 566.114,504.584 562.653,508.974 564.088,514.377 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="555.309,507.455 566.114,504.584 562.653,508.974 564.088,514.377 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 228.281,208.305 A 236.091,236.091 0 0 0 408.489,485.815"/>
+    <polygon style="fill: #000000" points="415.828,487.333 405.103,490.492 408.445,486.011 406.865,480.649 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="415.828,487.333 405.103,490.492 408.445,486.011 406.865,480.649 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="429.4" y="371.25">
+    <tspan x="429.4" y="371.25">    closing()</tspan>
+    <tspan x="429.4" y="382.539">     fileno()</tspan>
+    <tspan x="429.4" y="393.828">readable()</tspan>
+    <tspan x="429.4" y="405.117">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="721.6" y="264.05">
+    <tspan x="721.6" y="264.05">   closing()</tspan>
+    <tspan x="721.6" y="275.339">      fileno()</tspan>
+    <tspan x="721.6" y="286.628">readable()</tspan>
+    <tspan x="721.6" y="297.917">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="151.8" y="347.45">
+    <tspan x="151.8" y="347.45">   closing()</tspan>
+    <tspan x="151.8" y="358.739">     fileno()</tspan>
+    <tspan x="151.8" y="370.028">  readable()</tspan>
+    <tspan x="151.8" y="381.317">     writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="530.6" y="400.05">
+    <tspan x="530.6" y="400.05">close(self)</tspan>
+    <tspan x="530.6" y="411.339">set_readable(self)</tspan>
+    <tspan x="530.6" y="422.628">set_writable(self)</tspan>
+    <tspan x="530.6" y="433.917">unset_readable(self)</tspan>
+    <tspan x="530.6" y="445.206">unset_writable(self)</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="352.6" y="445.05">
+    <tspan x="352.6" y="445.05">register_func(self.init)</tspan>
+    <tspan x="352.6" y="456.339">set_readable(self)</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="573.6" y="526.05">
+    <tspan x="573.6" y="526.05">register_func(self.init)</tspan>
+    <tspan x="573.6" y="537.339">set_writable(self)</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="172.4" y="327.25">
+    <tspan x="172.4" y="327.25">init()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="729.6" y="332.05">
+    <tspan x="729.6" y="332.05">init()</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="429.6" y="-253.35" width="139.8" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="429.6" y="-253.35" width="139.8" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="499.5" y="-231.45">
+      <tspan x="499.5" y="-231.45">neubot.application</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="439.6" y1="-228.4" x2="559.4" y2="-228.4"/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 419.061,-229.749 A 281.618,281.618 0 0 0 222.395,162.314"/>
+    <polygon style="fill: #000000" points="426.406,-231.246 417.454,-224.549 419.026,-229.914 415.677,-234.39 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="426.406,-231.246 417.454,-224.549 419.026,-229.914 415.677,-234.39 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 778.718,162.604 A 280.155,280.155 0 0 0 579.976,-231.089"/>
+    <polygon style="fill: #000000" points="572.607,-232.468 583.285,-235.784 580.009,-231.255 581.667,-225.916 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="572.607,-232.468 583.285,-235.784 580.009,-231.255 581.667,-225.916 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="301.6" y="-236.95">
+    <tspan x="301.6" y="-236.95">aborted(self)</tspan>
+    <tspan x="301.6" y="-225.661">got_client(protocol)</tspan>
+    <tspan x="301.6" y="-214.372">listening(self)</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="622.6" y="-240.95">
+    <tspan x="622.6" y="-240.95">aborted(self)</tspan>
+    <tspan x="622.6" y="-229.661">connected(protocol)</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 471.667,-254.266 A 249.956,249.956 0 0 0 188.909,156.359"/>
+    <polygon style="fill: #000000" points="194.817,160.972 183.805,159.037 188.79,156.507 189.758,151.001 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="194.817,160.972 183.805,159.037 188.79,156.507 189.758,151.001 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 817.236,157.025 A 252.782,252.782 0 0 0 523.363,-254.332"/>
+    <polygon style="fill: #000000" points="811.116,161.352 816.638,151.631 817.346,157.176 822.206,159.938 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="811.116,161.352 816.638,151.631 817.346,157.176 822.206,159.938 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="97.6" y="145.05">
+    <tspan x="97.6" y="145.05">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="856.6" y="139.05">
+    <tspan x="856.6" y="139.05">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="425.1" y="91.05" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="425.1" y="91.05" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="499.875" y="112.95">
+      <tspan x="499.875" y="112.95">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="435.1" y1="116" x2="564.65" y2="116"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="424.1" y="-85.95" width="151.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="424.1" y="-85.95" width="151.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="499.95" y="-64.05">
+      <tspan x="499.95" y="-64.05">neubot.http.protocol</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="434.1" y1="-61" x2="565.8" y2="-61"/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 486.962,355.269 A 180.156,180.156 0 0 0 491.288,469.016"/>
+    <polygon style="fill: #000000" points="489.192,348.118 490.6,359.209 486.709,355.195 481.164,355.899 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="489.192,348.118 490.6,359.209 486.709,355.195 481.164,355.899 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 511.346,459.815 A 180.156,180.156 0 0 0 509.716,345.996"/>
+    <polygon style="fill: #000000" points="508.947,466.911 507.803,455.789 511.597,459.894 517.158,459.322 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="508.947,466.911 507.803,455.789 511.597,459.894 517.158,459.322 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 507.69,300.018 A 296.091,296.091 0 0 0 509.24,137.391"/>
+    <polygon style="fill: #000000" points="507.167,130.187 514.911,138.251 509.394,137.348 505.362,141.221 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="507.167,130.187 514.911,138.251 509.394,137.348 505.362,141.221 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 493.247,128.044 A 296.091,296.091 0 0 0 489.41,290.639"/>
+    <polygon style="fill: #000000" points="491.381,297.871 483.751,289.7 489.255,290.679 493.341,286.864 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="491.381,297.871 483.751,289.7 489.255,290.679 493.341,286.864 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 510.868,80.8146 A 205.806,205.806 0 0 0 507.846,-48.9646"/>
+    <polygon style="fill: #000000" points="508.553,87.9405 507.228,76.839 511.088,80.8821 516.639,80.2195 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="508.553,87.9405 507.228,76.839 511.088,80.8821 516.639,80.2195 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 488.958,-39.7146 A 205.806,205.806 0 0 0 491.98,90.0646"/>
+    <polygon style="fill: #000000" points="491.273,-46.8405 492.598,-35.739 488.738,-39.7821 483.187,-39.1195 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="491.273,-46.8405 492.598,-35.739 488.738,-39.7821 483.187,-39.1195 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 499.95,-85.95 A 149.504,149.504 0 0 0 512.155,-207.23"/>
+    <polygon style="fill: #000000" points="509.642,-214.282 518.029,-206.889 512.456,-207.33 508.759,-203.136 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="509.642,-214.282 518.029,-206.889 512.456,-207.33 508.759,-203.136 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 491.238,-216.365 A 185.144,185.144 0 0 0 488.394,-96.1006"/>
+    <polygon style="fill: #000000" points="490.791,-89.0035 482.591,-96.6029 488.151,-96.0233 491.95,-100.124 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="490.791,-89.0035 482.591,-96.6029 488.151,-96.0233 491.95,-100.124 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 413.548,-65.9601 A 229.361,229.361 0 0 0 232.612,162.4"/>
+    <polygon style="fill: #000000" points="420.896,-67.4319 411.887,-60.8109 413.504,-66.162 410.194,-70.6665 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="420.896,-67.4319 411.887,-60.8109 413.504,-66.162 410.194,-70.6665 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 418.842,127.985 A 1937.62,1937.62 0 0 0 300.726,162.305"/>
+    <polygon style="fill: #000000" points="426.11,126.135 417.628,133.42 418.836,127.962 415.193,123.721 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="426.11,126.135 417.628,133.42 418.836,127.962 415.193,123.721 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 253.2,208.287 A 348.206,348.206 0 0 0 387.881,300.443"/>
+    <polygon style="fill: #000000" points="394.914,303.041 383.825,304.468 387.833,300.571 387.119,295.026 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="394.914,303.041 383.825,304.468 387.833,300.571 387.119,295.026 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 769.099,162.599 A 222.921,222.921 0 0 0 586.384,-69.2798"/>
+    <polygon style="fill: #000000" points="578.992,-70.5065 589.578,-74.1035 586.422,-69.4889 588.221,-64.196 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="578.992,-70.5065 589.578,-74.1035 586.422,-69.4889 588.221,-64.196 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 713.161,162.598 A 868.206,868.206 0 0 0 585.17,123.59"/>
+    <polygon style="fill: #000000" points="577.842,121.991 588.658,119.159 585.181,123.536 586.598,128.944 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="577.842,121.991 588.658,119.159 585.181,123.536 586.598,128.944 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 582.586,296.49 A 651.812,651.812 0 0 0 738.141,208.605"/>
+    <polygon style="fill: #000000" points="575.598,299.212 583.181,290.996 582.612,296.557 586.721,300.349 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="575.598,299.212 583.181,290.996 582.612,296.557 586.721,300.349 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="351.1" y="-73.55">
+    <tspan x="351.1" y="-73.55">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="352.6" y="121.25">
+    <tspan x="352.6" y="121.25">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="324.1" y="318.05">
+    <tspan x="324.1" y="318.05">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="599.6" y="-72.15">
+    <tspan x="599.6" y="-72.15">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="601.1" y="118.65">
+    <tspan x="601.1" y="118.65">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="615.6" y="295.45">
+    <tspan x="615.6" y="295.45">&lt;&lt;create&gt;&gt;</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="525.1" y="205.45">
+    <tspan x="525.1" y="205.45">closing()</tspan>
+    <tspan x="525.1" y="216.739">readable()</tspan>
+    <tspan x="525.1" y="228.028">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="400.1" y="220.45">
+    <tspan x="400.1" y="220.45">              close()</tspan>
+    <tspan x="400.1" y="231.739"> set_readable()</tspan>
+    <tspan x="400.1" y="243.028">   set_writable()</tspan>
+    <tspan x="400.1" y="254.317">unset_readable()</tspan>
+    <tspan x="400.1" y="265.606">unset_writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="444.1" y="184.45">
+    <tspan x="444.1" y="184.45">recv()</tspan>
+    <tspan x="444.1" y="195.739">send()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="442.1" y="154.45">
+    <tspan x="442.1" y="154.45">attach()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="400.1" y="10.45">
+    <tspan x="400.1" y="10.45">             closing()</tspan>
+    <tspan x="400.1" y="21.7389">        got_body()</tspan>
+    <tspan x="400.1" y="33.0278">got_body_part()</tspan>
+    <tspan x="400.1" y="44.3167"> got_metadata()</tspan>
+    <tspan x="400.1" y="55.6056">            sent_all()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="530.1" y="72.5624">
+    <tspan x="530.1" y="72.5624">send()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="528.1" y="-19.55">
+    <tspan x="528.1" y="-19.55">attach()</tspan>
+    <tspan x="528.1" y="-8.26111"> close()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="533.1" y="13.45">
+    <tspan x="533.1" y="13.45">get_metadata()</tspan>
+    <tspan x="533.1" y="24.7389"> get_bounded_body()</tspan>
+    <tspan x="533.1" y="36.0278"> get_chunked_body()</tspan>
+    <tspan x="533.1" y="47.3167">get_unbounded_body()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="403.1" y="-152.55">
+    <tspan x="403.1" y="-152.55">           attach()</tspan>
+    <tspan x="403.1" y="-141.261">             close()</tspan>
+    <tspan x="403.1" y="-129.972">donthavebody()</tspan>
+    <tspan x="403.1" y="-118.683">  sendmessage()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="522.1" y="-179.55">
+    <tspan x="522.1" y="-179.55">closing()</tspan>
+    <tspan x="522.1" y="-168.261"> got_message()</tspan>
+    <tspan x="522.1" y="-156.972"> got_metadata()</tspan>
+    <tspan x="522.1" y="-145.683"> is_message_unbounded()</tspan>
+    <tspan x="522.1" y="-134.394">message_sent()</tspan>
+  </text>
+</svg>

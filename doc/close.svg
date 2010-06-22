@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="12cm" height="26cm" viewBox="1883 -1000 231 520" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="1907.4" y="-885.036" width="151.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="1907.4" y="-885.036" width="151.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1983.25" y="-863.136">
+      <tspan x="1983.25" y="-863.136">neubot.http.protocol</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1917.4" y1="-860.086" x2="2049.1" y2="-860.086"/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1925.4" y="-806.886">
+    <tspan x="1925.4" y="-806.886">close()</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1906.84" y="-763.8" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1906.84" y="-763.8" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1981.62" y="-741.9">
+      <tspan x="1981.62" y="-741.9">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1916.84" y1="-738.85" x2="2046.39" y2="-738.85"/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1923.1" y="-688.4">
+    <tspan x="1923.1" y="-688.4">close()</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1884.11" y="-642.8" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1884.11" y="-642.8" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1981.96" y="-620.9">
+      <tspan x="1981.96" y="-620.9">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1894.11" y1="-617.85" x2="2069.81" y2="-617.85"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1901.82" y="-516.8" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1901.82" y="-516.8" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1982.52" y="-494.9">
+      <tspan x="1982.52" y="-494.9">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1911.82" y1="-491.85" x2="2053.22" y2="-491.85"/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1925.82" y="-556.4">
+    <tspan x="1925.82" y="-556.4">close()</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1971.32,-605.8 A 109.227,109.227 0 0 0 1967.72,-528.025"/>
+    <polygon style="fill: #000000" points="1962.63,-525.82 1971.26,-518.715 1971.76,-529.884 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1962.63,-525.82 1971.26,-518.715 1971.76,-529.884 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1970.55,-726.794 A 101.507,101.507 0 0 0 1966.8,-654.014"/>
+    <polygon style="fill: #000000" points="1961.68,-651.774 1970.35,-644.713 1970.8,-655.884 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1961.68,-651.774 1970.35,-644.713 1970.8,-655.884 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1971.82,-848.045 A 101.88,101.88 0 0 0 1967.02,-775.069"/>
+    <polygon style="fill: #000000" points="1961.87,-772.905 1970.43,-765.718 1971.04,-776.882 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1961.87,-772.905 1970.43,-765.718 1971.04,-776.882 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1993.16,-517.8 A 109.227,109.227 0 0 0 1996.76,-595.575"/>
+    <polygon style="fill: #000000" points="2001.85,-597.78 1993.22,-604.885 1992.71,-593.716 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2001.85,-597.78 1993.22,-604.885 1992.71,-593.716 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1993.02,-643.806 A 101.507,101.507 0 0 0 1996.77,-716.586"/>
+    <polygon style="fill: #000000" points="2001.89,-718.826 1993.23,-725.887 1992.78,-714.716 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2001.89,-718.826 1993.23,-725.887 1992.78,-714.716 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1993.05,-764.791 A 101.88,101.88 0 0 0 1997.85,-837.767"/>
+    <polygon style="fill: #000000" points="2003,-839.931 1994.44,-847.118 1993.83,-835.954 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2003,-839.931 1994.44,-847.118 1993.83,-835.954 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2012.92" y="-557.8">
+    <tspan x="2012.92" y="-557.8">closing()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2008.92" y="-689.8">
+    <tspan x="2008.92" y="-689.8">closing()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2014.42" y="-810">
+    <tspan x="2014.42" y="-810">closing()</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1912.92" y="-998.2" width="139.8" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1912.92" y="-998.2" width="139.8" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1982.82" y="-976.3">
+      <tspan x="1982.82" y="-976.3">neubot.application</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1922.92" y1="-973.25" x2="2042.72" y2="-973.25"/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1971.13,-961.203 A 90.0392,90.0392 0 0 0 1967.46,-895.997"/>
+    <polygon style="fill: #000000" points="1962.3,-893.676 1971.05,-886.728 1971.36,-897.904 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1962.3,-893.676 1971.05,-886.728 1971.36,-897.904 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" d="M 1994.94,-886.033 A 90.0392,90.0392 0 0 0 1998.91,-950.301"/>
+    <polygon style="fill: #000000" points="2004.2,-952.653 1995.44,-959.602 1995.14,-948.426 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="2004.2,-952.653 1995.44,-959.602 1995.14,-948.426 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1920.92" y="-913.8">
+    <tspan x="1920.92" y="-913.8">close()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2021.42" y="-916">
+    <tspan x="2021.42" y="-916">closing(self)</tspan>
+  </text>
+  <text style="fill: #ff0000;text-anchor:start;font-size:18.0622;font-family:sanserif;font-style:normal;font-weight:normal" x="2076.1" y="-495">
+    <tspan x="2076.1" y="-495">XXX</tspan>
+  </text>
+</svg>

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="45cm" height="54cm" viewBox="1613 -942 888 1062" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="1667.4" y="-818.036" width="151.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1667.4" y="-818.036" width="151.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1743.25" y="-796.136">
+      <tspan x="1743.25" y="-796.136">neubot.http.protocol</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1677.4" y1="-793.086" x2="1809.1" y2="-793.086"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="1693.9" y1="-903.194" x2="1729.41" y2="-828.965"/>
+    <polygon style="fill: #000000" points="1724.9,-826.807 1733.73,-819.944 1733.92,-831.123 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1724.9,-826.807 1733.73,-819.944 1733.92,-831.123 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1725.4" y="-859.886">
+    <tspan x="1725.4" y="-859.886">sendmessage(msg)</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1718.84" y="-713.8" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1718.84" y="-713.8" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1793.62" y="-691.9">
+      <tspan x="1793.62" y="-691.9">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1728.84" y1="-688.85" x2="1858.39" y2="-688.85"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="1752.43" y1="-781.039" x2="1779.65" y2="-724.702"/>
+    <polygon style="fill: #000000" points="1775.15,-722.526 1784,-715.698 1784.15,-726.877 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1775.15,-722.526 1784,-715.698 1784.15,-726.877 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1784.1" y="-747.4">
+    <tspan x="1784.1" y="-747.4">send()</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1745.11" y="-609.8" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="1745.11" y="-609.8" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1842.96" y="-587.9">
+      <tspan x="1842.96" y="-587.9">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1755.11" y1="-584.85" x2="1930.81" y2="-584.85"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1815.82" y="-498.8" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1815.82" y="-498.8" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1896.52" y="-476.9">
+      <tspan x="1896.52" y="-476.9">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1825.82" y1="-473.85" x2="1967.22" y2="-473.85"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="1802.63" y1="-676.795" x2="1829.22" y2="-620.743"/>
+    <polygon style="fill: #000000" points="1824.71,-618.6 1833.51,-611.708 1833.74,-622.886 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1824.71,-618.6 1833.51,-611.708 1833.74,-622.886 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="1852.13" y1="-572.796" x2="1882.13" y2="-510.611"/>
+    <polygon style="fill: #000000" points="1877.63,-508.438 1886.48,-501.605 1886.64,-512.784 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="1877.63,-508.438 1886.48,-501.605 1886.64,-512.784 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1837.82" y="-649.4">
+    <tspan x="1837.82" y="-649.4">set_writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1887.82" y="-538.4">
+    <tspan x="1887.82" y="-538.4">set_writable(self)</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1987.22" y="-499.4" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1987.22" y="-499.4" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2067.92" y="-477.5">
+      <tspan x="2067.92" y="-477.5">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1997.22" y1="-474.45" x2="2138.62" y2="-474.45"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2021.42" y="-608.8" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2021.42" y="-608.8" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2119.27" y="-586.9">
+      <tspan x="2119.27" y="-586.9">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2031.42" y1="-583.85" x2="2207.12" y2="-583.85"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2094.42" y="-716.8" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="2094.42" y="-716.8" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2169.2" y="-694.9">
+      <tspan x="2169.2" y="-694.9">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2104.42" y1="-691.85" x2="2233.97" y2="-691.85"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2076.8" y1="-500.31" x2="2105.72" y2="-561.932"/>
+    <polygon style="fill: #000000" points="2110.25,-559.808 2109.97,-570.985 2101.19,-564.057 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2110.25,-559.808 2109.97,-570.985 2101.19,-564.057 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2128.05" y1="-609.798" x2="2155.8" y2="-669.818"/>
+    <polygon style="fill: #000000" points="2160.34,-667.72 2159.99,-678.895 2151.26,-671.916 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2160.34,-667.72 2159.99,-678.895 2151.26,-671.916 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2038.22" y="-538.4">
+    <tspan x="2038.22" y="-538.4">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2099.42" y="-644.9">
+    <tspan x="2099.42" y="-644.9">writable()</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" d="M 2172.58 -679.795 C 2177.1,-654.395 2183.27,-633.4 2157.8,-616.449"/>
+    <polygon style="fill: #000000" points="2155.03,-620.611 2149.47,-610.908 2160.57,-612.286 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="2155.03,-620.611 2149.47,-610.908 2160.57,-612.286 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2182.22" y="-621.2">
+    <tspan x="2182.22" y="-621.2">send()</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="2195.22" y="-498.6" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2195.22" y="-498.6" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2275.92" y="-476.7">
+      <tspan x="2275.92" y="-476.7">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2205.22" y1="-473.65" x2="2346.62" y2="-473.65"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2226.42" y="-608" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2226.42" y="-608" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2324.27" y="-586.1">
+      <tspan x="2324.27" y="-586.1">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2236.42" y1="-583.05" x2="2412.12" y2="-583.05"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2298.42" y="-718" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="2298.42" y="-718" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2373.2" y="-696.1">
+      <tspan x="2373.2" y="-696.1">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2308.42" y1="-693.05" x2="2437.97" y2="-693.05"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2284.28" y1="-499.51" x2="2311.47" y2="-561.029"/>
+    <polygon style="fill: #000000" points="2316.04,-559.008 2315.51,-570.175 2306.89,-563.05 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2316.04,-559.008 2315.51,-570.175 2306.89,-563.05 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2332.7" y1="-608.96" x2="2360.29" y2="-670.989"/>
+    <polygon style="fill: #000000" points="2364.86,-668.957 2364.36,-680.126 2355.72,-673.021 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2364.86,-668.957 2364.36,-680.126 2355.72,-673.021 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2240.78" y="-534.4">
+    <tspan x="2240.78" y="-534.4">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2303.78" y="-647.7">
+    <tspan x="2303.78" y="-647.7">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:36.1244;font-family:sanserif;font-style:normal;font-weight:normal" x="1887.42" y="-423">
+    <tspan x="1887.42" y="-423">1</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:36.1244;font-family:sanserif;font-style:normal;font-weight:normal" x="2037.92" y="-422.65">
+    <tspan x="2037.92" y="-422.65">2.1</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:36.1244;font-family:sanserif;font-style:normal;font-weight:normal" x="2245.92" y="-425.65">
+    <tspan x="2245.92" y="-425.65">2.2</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" d="M 2374.03 -680.993 C 2374.95,-659.993 2377,-638.004 2353.99,-617.063"/>
+    <polygon style="fill: #000000" points="2348.45,-612.015 2352.48,-622.444 2353.99,-617.063 2359.21,-615.048 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="2348.45,-612.015 2352.48,-622.444 2353.99,-617.063 2359.21,-615.048 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2375.92" y="-621.8">
+    <tspan x="2375.92" y="-621.8">unset_writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1687.92" y="0.2">
+    <tspan x="1687.92" y="0.2">unset_writable(self)</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1614.9" y="-940.2" width="139.8" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1614.9" y="-940.2" width="139.8" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1684.8" y="-918.3">
+      <tspan x="1684.8" y="-918.3">neubot.application</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1624.9" y1="-915.25" x2="1744.7" y2="-915.25"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1917.92" y="38" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1917.92" y="38" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1998.62" y="59.9">
+      <tspan x="1998.62" y="59.9">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1927.92" y1="62.95" x2="2069.32" y2="62.95"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1955.12" y="-70.4" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1955.12" y="-70.4" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2052.97" y="-48.5">
+      <tspan x="2052.97" y="-48.5">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1965.12" y1="-45.45" x2="2140.82" y2="-45.45"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2032.12" y="-179.4" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="2032.12" y="-179.4" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2106.89" y="-157.5">
+      <tspan x="2106.89" y="-157.5">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2042.12" y1="-154.45" x2="2171.67" y2="-154.45"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2008.13" y1="37.0247" x2="2038.53" y2="-23.5915"/>
+    <polygon style="fill: #000000" points="2043,-21.3504 2043.01,-32.5308 2034.06,-25.8325 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2043,-21.3504 2043.01,-32.5308 2034.06,-25.8325 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2062.36" y1="-71.3739" x2="2092.63" y2="-132.567"/>
+    <polygon style="fill: #000000" points="2097.11,-130.35 2097.06,-141.53 2088.15,-134.784 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2097.11,-130.35 2097.06,-141.53 2088.15,-134.784 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2083.42" y="-281.2" width="151.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2083.42" y="-281.2" width="151.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2159.27" y="-259.3">
+      <tspan x="2159.27" y="-259.3">neubot.http.protocol</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2093.42" y1="-256.25" x2="2225.12" y2="-256.25"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="2116.67" y1="-180.401" x2="2144" y2="-233.529"/>
+    <polygon style="fill: #000000" points="2148.45,-231.241 2148.58,-242.421 2139.56,-235.816 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="2148.45,-231.241 2148.58,-242.421 2139.56,-235.816 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2148.42" y="-207.3">
+    <tspan x="2148.42" y="-207.3">sent_all()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2038.48" y="2.2">
+    <tspan x="2038.48" y="2.2">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2096.48" y="-104.1">
+    <tspan x="2096.48" y="-104.1">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:36.1244;font-family:sanserif;font-style:normal;font-weight:normal" x="1968.62" y="109.95">
+    <tspan x="1968.62" y="109.95">2.4</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="1708.92" y="37.2" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1708.92" y="37.2" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1789.62" y="59.1">
+      <tspan x="1789.62" y="59.1">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1718.92" y1="62.15" x2="1860.32" y2="62.15"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1740.12" y="-70.2" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="1740.12" y="-70.2" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1837.97" y="-48.3">
+      <tspan x="1837.97" y="-48.3">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1750.12" y1="-45.25" x2="1925.82" y2="-45.25"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="1813.12" y="-178.2" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="1813.12" y="-178.2" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="1887.89" y="-156.3">
+      <tspan x="1887.89" y="-156.3">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="1823.12" y1="-153.25" x2="1952.67" y2="-153.25"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="1798.17" y1="36.2031" x2="1824.9" y2="-23.1727"/>
+    <polygon style="fill: #000000" points="1829.46,-21.1201 1829.01,-32.2912 1820.34,-25.2252 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1829.46,-21.1201 1829.01,-32.2912 1820.34,-25.2252 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="1846.75" y1="-71.1976" x2="1874.5" y2="-131.218"/>
+    <polygon style="fill: #000000" points="1879.04,-129.12 1878.69,-140.295 1869.96,-133.316 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1879.04,-129.12 1878.69,-140.295 1869.96,-133.316 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1822.48" y="4.4">
+    <tspan x="1822.48" y="4.4">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1812.48" y="-105.9">
+    <tspan x="1812.48" y="-105.9">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:36.1244;font-family:sanserif;font-style:normal;font-weight:normal" x="1760.62" y="112.15">
+    <tspan x="1760.62" y="112.15">2.3</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 1889.15 -141.419 C 1890.37,-123.219 1884.05,-93.9875 1866.12,-77.7281"/>
+    <polygon style="fill: #000000" points="1860.56,-72.6897 1864.61,-83.1113 1866.12,-77.7281 1871.33,-75.7039 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="1860.56,-72.6897 1864.61,-83.1113 1866.12,-77.7281 1871.33,-75.7039 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="1886.62" y="-84">
+    <tspan x="1886.62" y="-84">unset_writable()</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" d="M 1812.1 -33.1931 C 1783.24,-11.9931 1782.03,20.056 1783,24.5539"/>
+    <polygon style="fill: #000000" points="1784.58,31.8848 1777.58,23.1662 1783,24.5539 1787.36,21.0544 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="1784.58,31.8848 1777.58,23.1662 1783,24.5539 1787.36,21.0544 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2127.64" y="37" width="161.4" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2127.64" y="37" width="161.4" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2208.34" y="58.9">
+      <tspan x="2208.34" y="58.9">neubot.network.poller</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2137.64" y1="61.95" x2="2279.04" y2="61.95"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2164.84" y="-71.4" width="195.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2164.84" y="-71.4" width="195.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2262.69" y="-49.5">
+      <tspan x="2262.69" y="-49.5">neubot.network.connection</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2174.84" y1="-46.45" x2="2350.54" y2="-46.45"/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2241.84" y="-180.4" width="149.55" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2241.84" y="-180.4" width="149.55" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2316.61" y="-158.5">
+      <tspan x="2316.61" y="-158.5">neubot.http.adaptor</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2251.84" y1="-155.45" x2="2381.39" y2="-155.45"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2217.85" y1="36.0247" x2="2248.25" y2="-24.5915"/>
+    <polygon style="fill: #000000" points="2252.72,-22.3504 2252.73,-33.5308 2243.78,-26.8325 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2252.72,-22.3504 2252.73,-33.5308 2243.78,-26.8325 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2272.08" y1="-72.3739" x2="2302.35" y2="-133.567"/>
+    <polygon style="fill: #000000" points="2306.83,-131.35 2306.78,-142.53 2297.87,-135.784 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2306.83,-131.35 2306.78,-142.53 2297.87,-135.784 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="2293.14" y="-282.2" width="151.7" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x="2293.14" y="-282.2" width="151.7" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2368.99" y="-260.3">
+      <tspan x="2368.99" y="-260.3">neubot.http.protocol</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2303.14" y1="-257.25" x2="2434.84" y2="-257.25"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="2326.39" y1="-181.401" x2="2354.18" y2="-235.418"/>
+    <polygon style="fill: #000000" points="2358.63,-233.131 2358.76,-244.31 2349.74,-237.706 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="2358.63,-233.131 2358.76,-244.31 2349.74,-237.706 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2358.14" y="-208.3">
+    <tspan x="2358.14" y="-208.3">sent_all()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2248.2" y="1.2">
+    <tspan x="2248.2" y="1.2">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2306.2" y="-105.1">
+    <tspan x="2306.2" y="-105.1">writable()</tspan>
+  </text>
+  <text style="fill: #000000;text-anchor:start;font-size:36.1244;font-family:sanserif;font-style:normal;font-weight:normal" x="2178.34" y="108.95">
+    <tspan x="2178.34" y="108.95">2.5</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="2360.34" y="-404.2" width="139.8" height="36"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="2360.34" y="-404.2" width="139.8" height="36"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal" x="2430.24" y="-382.3">
+      <tspan x="2430.24" y="-382.3">neubot.application</tspan>
+    </text>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="2370.34" y1="-379.25" x2="2490.14" y2="-379.25"/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" x1="2378.52" y1="-283.173" x2="2415.33" y2="-356.503"/>
+    <polygon style="fill: #000000" points="2419.8,-354.259 2419.82,-365.439 2410.86,-358.746 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 4; stroke: #000000" points="2419.8,-354.259 2419.82,-365.439 2410.86,-358.746 "/>
+  </g>
+  <text style="fill: #000000;text-anchor:start;font-size:9.03111;font-family:sanserif;font-style:normal;font-weight:normal" x="2407.34" y="-314.8">
+    <tspan x="2407.34" y="-314.8">message_sent(self)</tspan>
+  </text>
+</svg>
