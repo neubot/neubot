@@ -29,8 +29,8 @@ import pwd
 import signal
 import sys
 
-STDERR_FORMAT = "<%(levelname)s> %(message)s"
-SYSLOG_FORMAT = "neubot[%(process)d]: " + STDERR_FORMAT
+STDERR_FORMAT = "[%(asctime)s] <%(levelname)s> %(message)s"
+SYSLOG_FORMAT = "neubot[%(process)d]: <%(levelname)s> %(message)s"
 USAGE = "Usage: neubot [-bEqV] [-I path] [-O option] [--] [command [opts]]\n"
 VERSION = "0.0.6"
 

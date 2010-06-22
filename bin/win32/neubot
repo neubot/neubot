@@ -20,7 +20,7 @@ import logging
 import sys
 import time
 
-LOG_FORMAT = "<%(levelname)s> %(message)s"
+LOG_FORMAT = "[%(asctime)s] <%(levelname)s> %(message)s"
 
 sys.path.insert(0, ".")
 try:
