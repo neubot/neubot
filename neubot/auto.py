@@ -51,7 +51,8 @@ HELP =                                                                  \
 "\n"
 
 def main(argv):
-    sleeptime = 60
+    sleeptime = 300
+    iters = 0
     rendezvousuri = "http://master.neubot.org:9773/rendez-vous/1.0/"
     try:
         options, arguments = getopt.getopt(argv[1:], "", LONGOPTS)
@@ -80,10 +81,17 @@ def main(argv):
         sys.stderr.write(
 "Measuring the time required to send request and get the response.\n")
         sys.stderr.write("Performing a test every %s seconds.\n" % sleeptime)
+    firstiter = True
     while True:
-        if (os.isatty(sys.stderr.fileno())):
-            sys.stderr.write(WAITING % sleeptime)
-        time.sleep(sleeptime)
+        if not firstiter:
+            if (os.isatty(sys.stderr.fileno())):
+                sys.stderr.write(WAITING % sleeptime)
+            time.sleep(sleeptime)
+            iters = iters + 1
+            if iters == 3:
+                iters = 0
+        else:
+            firstiter = False
         try:
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
@@ -123,7 +131,11 @@ def main(argv):
             params = client.params
             uri = params.uri
             uri = str(uri)    # FIXME See above
-            client = neubot.measure.client(poller, uri, connections=1)
+            latency = True
+            if iters == 0:
+                latency = False
+            client = neubot.measure.client(poller, uri, connections=1,
+                                           head=latency)
             client.identifier = identifier                              # XXX
             poller.loop()
             octets = neubot.table.stringify_entry(identifier)
