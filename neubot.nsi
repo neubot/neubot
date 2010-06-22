@@ -17,7 +17,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 name "Network Neutrality Bot (Neubot) 0.0.6"
-outfile "Neubot Setup 0.0.6.exe"
+outfile "Neubot_Setup_0.0.6.exe"
 installdir "$PROGRAMFILES\Neubot"
 section
     setoutpath "$INSTDIR"
