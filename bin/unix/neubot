@@ -55,6 +55,15 @@ USAGE +                                                                 \
 "You don't need to specify commands unless you whish to play with\n"    \
 "neubot internals.  If so, try `neubot help' for more help.\n"
 
+def databasename():
+    if os.getuid() == 0:
+        name = "/var/neubot/database.txt"
+    elif os.environ.has_key("HOME"):
+        name = os.environ["HOME"] + "/.neubot/database.txt"
+    else:
+        name = "-"
+    return name
+
 def interrupt(signo, frame):
     logging.info("Got interrupt signal")
     os._exit(1)
@@ -125,6 +134,31 @@ def bootstrap():
     import neubot
     if len(arguments) == 0:
         arguments = ["auto"]
+    logging.debug("Setting the default umask")
+    os.umask(022)
+    if os.getuid() > 0 and os.environ.has_key("HOME"):
+        confdir = os.environ["HOME"] + "/.neubot"
+        if os.path.exists(confdir):
+            if not os.path.isdir(confdir):
+                logging.warning("%s: Should be a directory" % confdir)
+                logging.warning("You might want to fix this by hand")
+        else:
+            logging.debug("Creating private confdir: %s" % confdir)
+            os.mkdir(confdir)
+    if not configparser.has_option("DEFAULT", "database.path"):
+        database = databasename()
+        if database != "-":
+            if os.path.exists(database):
+                if not os.path.isfile(database):
+                    logging.warning("%s: Should be a regular file" % database)
+                    logging.warning("You might want to fix this by hand")
+            else:
+                logging.debug("Creating database file: %s" % database)
+                f = open(database, "wb")
+                f = None
+        logging.debug("Using default database file %s" % database)
+        configparser.set("DEFAULT", "database.path", database)
+    neubot.database.init(configparser)
     if background:
         logging.debug("Redirecting logs from stderr to syslog")
         handler = logging.handlers.SysLogHandler("/dev/log")
@@ -133,8 +167,6 @@ def bootstrap():
         logger.addHandler(handler)        # XXX
         logging.debug("Changing current directory to '/'")
         os.chdir("/")
-        logging.debug("Setting the default umask")
-        os.umask(022)
         logging.debug("Detaching from the controlling terminal")
         if os.fork() > 0:
             if os.environ.has_key("HOME"):

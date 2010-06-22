@@ -167,9 +167,7 @@ class servercontext:
                                       sockname, "http", delta)
             octets = neubot.table.stringify_entry(self.identifier)
             neubot.table.remove_entry(self.identifier)
-            sys.stdout.write(octets)
-            sys.stdout.write("\r\n")
-            sys.stdout.flush()
+            neubot.database.writes(octets)
         self.server.dead_client()
 
 CONNECTIONS = 3
@@ -282,6 +280,8 @@ class clientcontext:
             if delta > 0:
                 neubot.table.update_entry(self.client.identifier, 1, "download",
                     self.responselength, sockname, "http", delta)
+                octets = neubot.table.stringify_entry(self.client.identifier)
+                neubot.database.writes(octets)
 
     def __del__(self):
         self.client.probe_done()

@@ -29,9 +29,6 @@ import neubot
 DIRECTIONS = ["upload", "download"]
 
 class servlet:
-    def __init__(self, filelike):
-        self.filelike = filelike
-
     def main(self, protocol, response):
         if protocol.message.method != "POST":
             response.code, response.reason = "204", "No Content"
@@ -43,9 +40,7 @@ class servlet:
         except ValueError:
             response.code, response.reason = "500", "Internal Server Error"
             return
-        self.filelike.write(octets)
-        self.filelike.write("\r\n")
-        self.filelike.flush()
+        neubot.database.writes(octets)
         response.code, response.reason = "201", "Created"
 
 class client:
@@ -218,7 +213,7 @@ def main(argv):
         else:
             address = "0.0.0.0"
             port = "9773"
-        slet = neubot.collect.servlet(sys.stdout)
+        slet = neubot.collect.servlet()
         container = neubot.container.container(poller, address=address,
                                                port=port)
         container.register("/collect/1.0/", slet.main)

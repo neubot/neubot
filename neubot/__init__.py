@@ -22,6 +22,7 @@ import auto
 import collect
 import container
 import coordinate
+import database
 import http
 import measure
 import negotiate

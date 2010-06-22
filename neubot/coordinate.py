@@ -48,7 +48,7 @@ def main(argv):
     container.register("/rendez-vous/1.0/", servlet.main)
     neubot.measure.server(poller, address="0.0.0.0", port="9090",
                           myfile=filename)
-    servlet = neubot.collect.servlet(sys.stdout)
+    servlet = neubot.collect.servlet()
     container.register("/collect/1.0/", servlet.main)
     poller.loop()
 

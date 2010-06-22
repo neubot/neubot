@@ -16,7 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+import ConfigParser
 import logging
+import os
+import os.path
 import sys
 import time
 
@@ -36,6 +39,28 @@ def startup():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
+    configparser = ConfigParser.RawConfigParser()
+    databasepath = "database.txt"
+    if os.environ.has_key("APPDATA"):
+        appdata = os.environ["APPDATA"]
+        privatedir = appdata + os.sep + "Neubot"
+        if os.path.exists(privatedir):
+            if not os.path.isdir(privatedir):
+                logging.warning("%s: Should be a directory" % privatedir)
+                logging.warning("You might want to fix this by hand")
+        else:
+            os.mkdir(privatedir)
+        databasepath = privatedir + os.sep + databasepath
+        if os.path.exists(databasepath):
+            if not os.path.isfile(databasepath):
+                logging.warning("%s: Should be a file" % databasepath)
+                logging.warning("You might want to fix this by hand")
+        else:
+            open(databasepath, "wb")
+    else:
+        logging.warning("Environment variable %APPDATA%: Not found")
+    configparser.set("DEFAULT", "database.path", databasepath)
+    neubot.database.init(configparser)
     argv = []
     neubot.auto.main(argv)
 
