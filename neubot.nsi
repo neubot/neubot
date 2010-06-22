@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-name "Network Neutrality Bot (Neubot) 0.0.6"
-outfile "Neubot_Setup_0.0.6.exe"
+name "Network Neutrality Bot (Neubot) 0.1.0"
+outfile "Neubot_Setup_0.1.0.exe"
 installdir "$PROGRAMFILES\Neubot"
 section
     setoutpath "$INSTDIR"

@@ -20,7 +20,7 @@
 # Makefile
 #
 
-DEB     = dist/neubot-0.0.6-1_all.deb
+DEB     = dist/neubot-0.1.0-1_all.deb
 DESTDIR =
 PREFIX  = /usr/local
 TAG     = `git tag|grep -v ^_|tail -n1`
