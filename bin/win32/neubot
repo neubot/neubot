@@ -38,7 +38,7 @@ def startup():
     formatter = logging.Formatter(LOG_FORMAT)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     configparser = ConfigParser.RawConfigParser()
     databasepath = "database.txt"
     if os.environ.has_key("APPDATA"):

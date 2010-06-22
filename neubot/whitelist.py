@@ -35,7 +35,7 @@ class whitelist:
 
     def register(self, address):
         self.dictionary[address] = neubot.utils.ticks()
-        logging.info("Added address %s to whitelist" % address)
+        logging.debug("Added address %s to whitelist" % address)
 
     def prune(self, now):
         stale = collections.deque()
@@ -44,12 +44,12 @@ class whitelist:
                 stale.append(address)
         for address in stale:
             del self.dictionary[address]
-            logging.info("Removing (stale) address %s from whitelist" % address)
+            logging.debug("Removing (stale) address %s from whitelist" % address)
 
     def unregister(self, address):
         if self.dictionary.has_key(address):
             del self.dictionary[address]
-            logging.info("Removed address %s from whitelist" % address)
+            logging.debug("Removed address %s from whitelist" % address)
 
 instance = whitelist()
 

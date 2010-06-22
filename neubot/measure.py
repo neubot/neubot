@@ -90,8 +90,8 @@ class servercontext:
 
     def got_metadata(self, protocol):
         request = protocol.message
-        logging.info("[%s] Pretty-printing request" % protocol)
-        neubot.http.prettyprinter(logging.info, "[%s]   " % protocol, request)
+        logging.debug("[%s] Pretty-printing request" % protocol)
+        neubot.http.prettyprinter(logging.debug, "[%s]   " % protocol, request)
         # Make sure request-body is not too big
         if request["transfer-encoding"] == "chunked":
             raise Exception("Not accepting chunked request body")
@@ -143,8 +143,8 @@ class servercontext:
             response.code, response.reason = "404", "Not Found"
         if not keepalive:
             response["connection"] = "close"
-        logging.info("[%s] Pretty-printing response" % protocol)
-        neubot.http.prettyprinter(logging.info, "[%s]   " % protocol, response)
+        logging.debug("[%s] Pretty-printing response" % protocol)
+        neubot.http.prettyprinter(logging.debug, "[%s]   " % protocol, response)
         logging.info("[%s] Start sending response" % protocol)
         protocol.sendmessage(response)
 
@@ -176,7 +176,6 @@ MYFILE      = None
 class client:
     def __init__(self, poller, uri, family=FAMILY, connections=CONNECTIONS,
                  myfile=None, head=HEAD):
-        logging.info("Begin measurement")
         self.poller = poller
         self.uri = uri
         self.family = family
@@ -185,6 +184,7 @@ class client:
         self.head = head
         (self.scheme, self.address,
          self.port, self.path) = neubot.http.urlsplit(uri)
+        logging.info("Begin measurement with %s" % self.address)
         secure =  self.scheme == "https"
         connections = 1                                                 # FIXME
         while connections >= 1:
@@ -197,14 +197,11 @@ class client:
         logging.error("Connection to '%s' failed" % connector)
 
     def connected(self, connector, protocol):
-        logging.info("Connected to '%s'" % connector)
+        logging.debug("Connected to '%s'" % connector)
         clientcontext(protocol, self)
 
     def probe_done(self):
         pass
-
-    def __del__(self):
-        logging.info("End measurement")
 
 class clientcontext:
     def __init__(self, protocol, client):
@@ -236,23 +233,23 @@ class clientcontext:
                 self.request.method = "HEAD"
             self.requestlength = 0
         protocol.attach(self)
-        logging.info("[%s] Pretty-printing the request" % protocol.sockname)
-        neubot.http.prettyprinter(logging.info, "[%s]   " % protocol.sockname,
+        logging.debug("[%s] Pretty-printing the request" % protocol.sockname)
+        neubot.http.prettyprinter(logging.debug, "[%s]   " % protocol.sockname,
                                   self.request)
-        logging.info("[%s] Start sending the request" % protocol.sockname)
+        logging.debug("[%s] Start sending the request" % protocol.sockname)
         protocol.sendmessage(self.request)
         self.begin = neubot.utils.ticks()
         self.end = 0
         self.responselength = 0
 
     def message_sent(self, protocol):
-        logging.info("[%s] Done sending request" % protocol.sockname)
-        logging.info("[%s] Waiting for response" % protocol.sockname)
+        logging.debug("[%s] Done sending request" % protocol.sockname)
+        logging.debug("[%s] Waiting for response" % protocol.sockname)
 
     def got_metadata(self, protocol):
-        logging.info("[%s] Pretty-printing response" % protocol.sockname)
+        logging.debug("[%s] Pretty-printing response" % protocol.sockname)
         response = protocol.message
-        neubot.http.prettyprinter(logging.info, "[%s]   " % protocol.sockname,
+        neubot.http.prettyprinter(logging.debug, "[%s]   " % protocol.sockname,
                                   response)
         response.body = StringIO.StringIO()
         if self.request.method == "HEAD":
@@ -276,16 +273,17 @@ class clientcontext:
         if os.isatty(sys.stderr.fileno()):
             sys.stderr.write(" DONE\n")
         self.end = neubot.utils.ticks()
-        logging.info("[%s] Done receiving response" % protocol.sockname)
+        logging.debug("[%s] Done receiving response" % protocol.sockname)
         response = protocol.message
         response.body.seek(0, os.SEEK_END)
         self.responselength = response.body.tell()
         protocol.close()
+        logging.info("Measurement completed successfully")
 
     def closing(self, protocol):
         poller = protocol.adaptor.connection.poller
         poller.unregister_periodic(self.progress)                       # XXX
-        logging.info("[%s] Connection closed" % protocol.sockname)
+        logging.debug("[%s] Connection closed" % protocol.sockname)
         if self.client.identifier:                                      # XXX
             peername = protocol.peername.split(":")[0]
             sockname = protocol.sockname.split(":")[0]
@@ -301,8 +299,6 @@ class clientcontext:
                     sys.stderr.write(                                   \
 "Retrieved a %d bytes page in %.2f seconds (%.1f bytes/sec)\n" %        \
 (self.responselength, delta, speed))
-
-    def __del__(self):
         self.client.probe_done()
 
 USAGE = 								\

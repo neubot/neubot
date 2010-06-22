@@ -30,14 +30,14 @@ def accept(sock, blocking=False):
 	return (s)
 
 def connect(family, address, port, blocking=False):
-	logging.info("Connecting to '%s:%s'" % (address, port))
+	logging.debug("Connecting to '%s:%s'" % (address, port))
 	lst = socket.getaddrinfo(address, port, family,
 	    socket.SOCK_STREAM, 0, 0)
 	for elem in lst:
 		family, socktype, proto, canon, sa = elem
 		try:
 			name = reduce(neubot.network.concatname, sa)
-			logging.info("Trying with '%s'" % name)
+			logging.debug("Trying with '%s'" % name)
 			s = socket.socket(family, socktype, proto)
 			s.setblocking(blocking)
 			err = s.connect_ex(sa)
@@ -51,14 +51,14 @@ def connect(family, address, port, blocking=False):
 	raise (Exception("can't connect to %s:%s" % (address, port)))
 
 def listen(family, address, port, blocking=False):
-	logging.info("Want to listen at '%s:%s'" % (address, port))
+	logging.debug("Want to listen at '%s:%s'" % (address, port))
 	lst = socket.getaddrinfo(address, port, family,
 	    socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
 	for elem in lst:
 		family, socktype, proto, canon, sa = elem
 		try:
 			name = reduce(neubot.network.concatname, sa)
-			logging.info("Trying with '%s'" % name)
+			logging.debug("Trying with '%s'" % name)
 			s = socket.socket(family, socktype, proto)
 			s.setsockopt(socket.SOL_SOCKET,
 			    socket.SO_REUSEADDR, 1)

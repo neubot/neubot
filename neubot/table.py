@@ -60,10 +60,10 @@ class resultstable:
             if now - entry.timestamp <= TIMEOUT:
                 logging.warning("Entry already exists %s" % identifier)
                 return False
-            logging.info("Replacing (stale) entry %s" % identifier)
+            logging.debug("Replacing (stale) entry %s" % identifier)
         entry = resultsentry(identifier, peername, neubot.utils.timestamp())
         self.dictionary[identifier] = entry
-        logging.info("Created entry %s" % identifier)
+        logging.debug("Created entry %s" % identifier)
         return True
 
     # XXX Assuming that we have 1:1 identifier:peername
@@ -76,7 +76,7 @@ class resultstable:
     def remove_entry(self, identifier):
         if self.dictionary.has_key(identifier):
             del self.dictionary[identifier]
-            logging.info("Removed entry %s" % identifier)
+            logging.debug("Removed entry %s" % identifier)
 
     def prune(self, now):
         stale = collections.deque()
@@ -85,7 +85,7 @@ class resultstable:
                 stale.append(identifier)
         for identifier in stale:
             del self.dictionary[identifier]
-            logging.info("Removed (stale) entry %s" % identifier)
+            logging.debug("Removed (stale) entry %s" % identifier)
 
     def stringify_entry(self, identifier):
         if not self.dictionary.has_key(identifier):
@@ -96,7 +96,7 @@ class resultstable:
     def update_entry(self, identifier, concurrency, direction, length,
                      myname, protocol, timespan):
         if self.dictionary.has_key(identifier):
-            logging.info("Updating entry %s" % identifier)
+            logging.debug("Updating entry %s" % identifier)
             entry = self.dictionary[identifier]
             entry.concurrency = concurrency
             entry.direction = direction

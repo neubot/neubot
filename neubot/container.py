@@ -52,9 +52,9 @@ class container:
 
     def got_metadata(self, protocol):
         prefix = "[%s]   " % protocol
-        logging.info("[%s] Pretty-printing request" % protocol)
+        logging.debug("[%s] Pretty-printing request" % protocol)
         protocol.message.body = StringIO.StringIO()
-        neubot.http.prettyprinter(logging.info, prefix, protocol.message)
+        neubot.http.prettyprinter(logging.debug, prefix, protocol.message)
         if protocol.message["transfer-encoding"] == "chunked":
             raise Exception("Unexpected chunked request")
         if protocol.message["content-length"]:
@@ -70,7 +70,7 @@ class container:
         if protocol.message["content-type"] == "application/json":
             protocol.message.body.seek(0)
             octets = protocol.message.body.read()
-            neubot.utils.prettyprint_json(logging.info, prefix, octets)
+            neubot.utils.prettyprint_json(logging.debug, prefix, octets)
         response = self._http_response(protocol="HTTP/1.1")
         try:
             uri = protocol.message.uri
@@ -92,11 +92,11 @@ class container:
         except KeyError:
             response = self._http_response(protocol="HTTP/1.1",
               code="404", reason="Not Found")
-        logging.info("[%s] Pretty-printing response" % protocol)
-        neubot.http.prettyprinter(logging.info, prefix, response)
+        logging.debug("[%s] Pretty-printing response" % protocol)
+        neubot.http.prettyprinter(logging.debug, prefix, response)
         if response["content-type"] == "application/json":
             octets = response.body.read()
-            neubot.utils.prettyprint_json(logging.info, prefix, octets)
+            neubot.utils.prettyprint_json(logging.debug, prefix, octets)
             response.body.seek(0)
         logging.info("[%s] Sending response" % protocol.peername)
         protocol.sendmessage(response)

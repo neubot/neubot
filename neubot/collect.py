@@ -49,6 +49,7 @@ class client:
         scheme, address, port, self.path = neubot.http.urlsplit(uri)
         secure =  scheme == "https"
         neubot.http.connector(self, poller, address, port, family, secure)
+        logging.info("Begin uploading results to %s" % address)
         self.octets = octets
         json.loads(self.octets)                                         # FIXME
 
@@ -56,9 +57,9 @@ class client:
         logging.error("Connection to '%s' failed" % connector)
 
     def connected(self, connector, protocol):
-        logging.info("Connected to '%s'" % connector)
+        logging.debug("Connected to '%s'" % connector)
         protocol.attach(self)
-        logging.info("Pretty-printing the request")
+        logging.debug("Pretty-printing the request")
         self.request = neubot.http.message(method="POST",
           uri=self.path, protocol="HTTP/1.1")
         self.request["date"] = neubot.http.date()
@@ -69,19 +70,19 @@ class client:
         self.request["content-type"] = "application/json"
         self.request["content-length"] = str(len(self.octets))
         self.request.body = StringIO.StringIO(self.octets)
-        neubot.http.prettyprinter(logging.info, "  ", self.request)
-        neubot.utils.prettyprint_json(logging.info, "  ", self.octets)
-        logging.info("Start sending the request")
+        neubot.http.prettyprinter(logging.debug, "  ", self.request)
+        neubot.utils.prettyprint_json(logging.debug, "  ", self.octets)
+        logging.debug("Start sending the request")
         protocol.sendmessage(self.request)
 
     def message_sent(self, protocol):
-        logging.info("Done sending request to '%s'" % protocol)
-        logging.info("Waiting for response from '%s'" % protocol)
+        logging.debug("Done sending request to '%s'" % protocol)
+        logging.debug("Waiting for response from '%s'" % protocol)
 
     def got_metadata(self, protocol):
-        logging.info("Pretty-printing response")
+        logging.debug("Pretty-printing response")
         response = protocol.message
-        neubot.http.prettyprinter(logging.info, "  ", response)
+        neubot.http.prettyprinter(logging.debug, "  ", response)
         response.body = StringIO.StringIO()
         if response.code != "201":
             raise Exception("Unexpected response code")
@@ -92,12 +93,10 @@ class client:
 
     def got_message(self, protocol):
         protocol.close()
+        logging.info("Results successfully uploaded")
 
     def closing(self, protocol):
-        logging.info("Connection to '%s' closed" % protocol)
-
-    def __del__(self):
-        pass
+        logging.debug("Connection to '%s' closed" % protocol)
 
 USAGE = 								\
 "Usage:\n"								\
