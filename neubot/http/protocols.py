@@ -21,7 +21,7 @@ import logging
 import neubot
 
 PROTOCOLS = [ "HTTP/1.1", "HTTP/1.0" ]
-TIMEOUT   = 15
+TIMEOUT   = 300
 
 class protocol:
 	def __init__(self, adaptor):
