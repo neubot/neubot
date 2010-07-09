@@ -70,6 +70,9 @@ _install:
 	@install -d $(DESTDIR)$(PREFIX)/man/man1
 	@pod2man --center="Neubot manual" --release="Neubot $(TAG)"     \
          doc/neubot.1.pod > $(DESTDIR)/$(PREFIX)/man/man1/neubot.1
+	@install -d $(DESTDIR)$(PREFIX)/man/man3
+	@pod2man -c"Neubot manual" -r"Neubot $(TAG)" -s3 -n"NEUBOT.NET" \
+         doc/neubot.net.3.pod > $(DESTDIR)/$(PREFIX)/man/man3/neubot.net.3
 archive:
 	@echo "[ARCHIVE] dist/neubot-HEAD/"
 	@rm -rf dist/
