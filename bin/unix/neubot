@@ -203,6 +203,10 @@ def bootstrap():
         stdin = os.open("/dev/null", os.O_RDWR)
         for fd in range(1, 3):
             os.dup2(stdin, fd)
+    if os.environ.has_key("NEUBOT_TRACE"):
+        trace = os.environ["NEUBOT_TRACE"]
+        if trace.upper() not in ["FALSE", "NO", "0"]:
+            sys.setprofile(neubot.debug.trace)
     neubot.main.main(arguments)
 
 if __name__ == "__main__":
