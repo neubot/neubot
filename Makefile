@@ -69,7 +69,7 @@ _install:
 	@# XXX Using BSD convention for installing manual page
 	@install -d $(DESTDIR)$(PREFIX)/man/man1
 	@pod2man --center="Neubot manual" --release="Neubot $(TAG)"     \
-         doc/neubot.pod > $(DESTDIR)/$(PREFIX)/man/man1/neubot.1
+         doc/neubot.1.pod > $(DESTDIR)/$(PREFIX)/man/man1/neubot.1
 archive:
 	@echo "[ARCHIVE] dist/neubot-HEAD/"
 	@rm -rf dist/
