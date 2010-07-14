@@ -227,6 +227,7 @@ class client:
     def message_sent(self, protocol):
         logging.debug("Done sending request to '%s'" % protocol)
         logging.debug("Waiting for response from '%s'" % protocol)
+        protocol.recvmessage()
 
     def got_metadata(self, protocol):
         logging.debug("Pretty-printing response")

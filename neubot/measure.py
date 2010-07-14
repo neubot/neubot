@@ -87,6 +87,7 @@ class servercontext:
         self.responselength = 0
         self.begin = neubot.utils.ticks()
         self.end = 0
+        protocol.recvmessage()
 
     def got_metadata(self, protocol):
         request = protocol.message
@@ -214,6 +215,7 @@ class clientcontext:
         self.request["connection"] = "close"
         self.request["host"] = self.client.address + ":" + self.client.port
         self.request["pragma"] = "no-cache"
+        self.poller = self.client.poller
         if self.client.myfile:
             self.request.method = "PUT"
             try:
@@ -245,6 +247,7 @@ class clientcontext:
     def message_sent(self, protocol):
         logging.debug("[%s] Done sending request" % protocol.sockname)
         logging.debug("[%s] Waiting for response" % protocol.sockname)
+        protocol.recvmessage()
 
     def got_metadata(self, protocol):
         logging.debug("[%s] Pretty-printing response" % protocol.sockname)
@@ -255,8 +258,7 @@ class clientcontext:
         if self.request.method == "HEAD":
             protocol.donthavebody()
         if os.isatty(sys.stderr.fileno()):
-            poller = protocol.adaptor.connection.poller
-            poller.register_periodic(self.progress)
+            self.poller.register_periodic(self.progress)
             type = "Short"
             if self.request.method == "GET":
                 type = "Long"
@@ -281,8 +283,7 @@ class clientcontext:
         logging.info("Measurement completed successfully")
 
     def closing(self, protocol):
-        poller = protocol.adaptor.connection.poller
-        poller.unregister_periodic(self.progress)                       # XXX
+        self.poller.unregister_periodic(self.progress)                  # XXX
         logging.debug("[%s] Connection closed" % protocol.sockname)
         if self.client.identifier:                                      # XXX
             peername = protocol.peername.split(":")[0]

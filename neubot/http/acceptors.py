@@ -16,62 +16,34 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket
-import ssl
-
 import neubot
+import socket
 
 class acceptor:
 	def __init__(self, application, poller, address, port,
 	    family=socket.AF_INET, secure=False, certfile=None):
 		self.application = application
 		self.poller = poller
-		self.poller.register_func(self.init)
 		self.address = address
 		self.port = port
 		self.family = family
 		self.secure = secure
 		self.certfile = certfile
-		self.socket = None
+		neubot.net.listen(self.address, self.port, self._accepted,
+		    cantbind=self._failed, poller=self.poller,
+                    family=self.family, secure=self.secure,
+		    certfile=self.certfile)
 
 	def __str__(self):
 		return self.address + ":" + self.port
 
-	def init(self):
+	def _failed(self):
+		self.application.aborted(self)
+
+	def _accepted(self, connection):
 		try:
-			self.socket = neubot.network.listen(self.family,
-			    self.address, self.port)
-			self.poller.set_readable(self)
-			self.application.listening(self)
-		except:
-			self.application.aborted(self)
-			self.application = None
-
-	def closing(self):
-		self.socket.close()
-
-	def fileno(self):
-		return (self.socket.fileno())
-
-	def readable(self):
-		try:
-			socket = neubot.network.accept(self.socket)
-			sockname = socket.getsockname()
-			peername = socket.getpeername()
-			if (self.secure):
-				ssl_socket = ssl.wrap_socket(socket,
-				    do_handshake_on_connect=False,
-				    certfile=self.certfile, server_side=True)
-				connection = neubot.network.ssl_connection(
-				    self.poller, ssl_socket, sockname, peername)
-			else:
-				connection = neubot.network.socket_connection(
-				    self.poller, socket, sockname, peername)
 			adaptor = neubot.http.adaptor(connection)
 			protocol = neubot.http.protocol(adaptor)
 			self.application.got_client(protocol)
 		except:
 			neubot.utils.prettyprint_exception()
-
-	def writable(self):
-		pass

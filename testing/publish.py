@@ -1,4 +1,4 @@
-# neubot/testing/publish.py
+# testing/publish.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -45,6 +45,7 @@ class Publisher:
 
 	def got_client(self, protocol):
 		protocol.attach(self)
+		protocol.recvmessage()
 
 	def got_message(self, protocol):
 		request = protocol.message
@@ -112,6 +113,8 @@ class Publisher:
 	def message_sent(self, protocol):
 		if (self.mustclose.has_key(protocol)):
 			protocol.close()
+		else:
+			protocol.recvmessage()
 
 	def publish(self, name):
 		if (not name in self.names):

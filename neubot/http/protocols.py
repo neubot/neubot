@@ -27,14 +27,15 @@ class protocol:
 	def __init__(self, adaptor):
 		self.adaptor = adaptor
 		self.adaptor.attach(self)
-		self.adaptor.get_metadata()
 		self.message = None
 		self.application = None
-		self.sockname = adaptor.connection.sockname
-		self.peername = adaptor.connection.peername
+		self.sockname = reduce(neubot.network.concatname,
+		    adaptor.connection.myname)
+		self.peername = reduce(neubot.network.concatname,
+		    adaptor.connection.peername)
 		self.begin = neubot.utils.ticks()
-		poller = self.adaptor.connection.poller
-		poller.register_periodic(self.periodic)
+		self.poller = self.adaptor.connection.poller
+		self.poller.register_periodic(self.periodic)
 		self.have_body = True
 
 	def __str__(self):
@@ -43,19 +44,17 @@ class protocol:
 	def periodic(self, now):
 		if now - self.begin > TIMEOUT:
 			logging.warning("Watchdog timeout")
-			poller = self.adaptor.connection.poller
-			poller.register_func(self.close)
+			self.poller.register_func(self.close)
 
 	def closing(self):
+		self.poller.unregister_periodic(self.periodic)
+		self.adaptor = None
                 if self.application:
 			self.application.closing(self)
-		self.application = None
-		poller = self.adaptor.connection.poller
-		poller.unregister_periodic(self.periodic)
 
 	def got_body(self):
-		self.application.got_message(self)
-		self.adaptor.get_metadata()
+		if self.application:
+			self.application.got_message(self)
 
 	def got_body_part(self, octets):
 		self.message.body.write(octets)
@@ -106,7 +105,6 @@ class protocol:
 				self.adaptor.get_unbounded_body()
 				return
 		self.application.got_message(self)
-		self.adaptor.get_metadata()
 
 	def sent_all(self):
 		self.application.message_sent(self)
@@ -123,3 +121,9 @@ class protocol:
 
 	def donthavebody(self):
 		self.have_body = False
+
+	def recvmessage(self):
+		self.adaptor.get_metadata()
+
+	def __del__(self):
+		pass

@@ -49,6 +49,7 @@ class container:
     def got_client(self, protocol):
         logging.info("[%s] Got client" % protocol)
         protocol.attach(self)
+        protocol.recvmessage()
 
     def got_metadata(self, protocol):
         prefix = "[%s]   " % protocol

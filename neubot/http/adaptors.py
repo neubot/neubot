@@ -17,9 +17,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
-import errno
-import socket
-
 import neubot
 
 MAXLENGTH = (1<<23)
@@ -33,8 +30,7 @@ READING_TRAILERS = 3
 class adaptor:
 	def __init__(self, connection):
 		self.connection = connection
-		self.connection.set_readable()		# Yep, always
-		self.connection.attach(self)
+		self.connection.notify_closing = self.closing
 		self.protocol = None
 		self.recvbuff = neubot.network.recvbuff()
 		self.sendbuff = neubot.network.sendbuff()
@@ -43,32 +39,30 @@ class adaptor:
 		self.chunkstate = -1
 		self.chunklength = 0
 		self.bodylength = 0
+		self.unbounded = False
+
+	def _except(self):
+		neubot.utils.prettyprint_exception()
 
 	def closing(self):
+		if self.unbounded and self.connection.eof:
+			self.protocol.got_body()
+		self.connection = None
 		self.protocol.closing()
-		self.protocol = None
 
-	def readable(self):
+	def _got_data(self, connection, octets):
 		if (len(self.recvbuff) > MAXLENGTH):
 			raise (Exception("Buffer too big"))
-		try:
-			octets = self.connection.recv(8000)
-		except socket.error, (code, reason):
-			if (code == errno.EPIPE):
-				self.connection.close()
-				return
-			raise
-		if (octets == ""):
-			return
 		self.recvbuff.append(octets)
 		while (True):
 			if (len(self.parsers) == 0):
-				raise (Exception("Empty parser list"))
+				return
 			parser = self.parsers[0]
 			done = parser()
 			if (not done):
 				break
 			self.parsers.popleft()
+		self.connection.recv(8000, self._got_data, compat=True)
 
 	def _parse_metadata(self):
 		index = self.recvbuff.find("\r\n\r\n")
@@ -144,23 +138,20 @@ class adaptor:
 				continue
 		raise (Exception("Reading chunks: internal error"))
 
-	def writable(self):
+	def _sent_data(self, connection=None, octets=None):
+		# TODO This function needs to be rewritten
 		while (len(self.sendbuff) == 0):
 			if (len(self.sendqueue) == 0):
-				self.connection.unset_writable()
 				self.protocol.sent_all()
 				return
 			filelike = self.sendqueue[0]
-			octets = filelike.read()		# Yep, *all*
+			octets = filelike.read(8000)			# XXX
 			if (octets == ""):
 				self.sendqueue.popleft()
 				continue
-			self.sendbuff.set_content(octets)
-		content = self.sendbuff.get_content()
-		count = self.connection.send(content)
-		if (count == 0):
-			return
-		self.sendbuff.advance(count)
+			self.connection.send(octets, self._sent_data,
+			    compat=True)
+			break
 
 	def attach(self, protocol):
 		self.protocol = protocol
@@ -170,18 +161,28 @@ class adaptor:
 
 	def get_metadata(self):
 		self.parsers.append(self._parse_metadata)
+		self.connection.recv(8000, self._got_data, compat=True)
 
 	def get_bounded_body(self, length):
 		self.parsers.append(self._parse_bounded_body)
 		self.bodylength = length
+		self.connection.recv(8000, self._got_data, compat=True)
 
 	def get_chunked_body(self):
 		self.parsers.append(self._parse_chunked_body)
 		self.chunkstate = READING_LENGTH
+		self.connection.recv(8000, self._got_data, compat=True)
 
 	def get_unbounded_body(self):
 		self.parsers.append(self._parse_unbounded_body)
+		self.unbounded = True
+		self.connection.recv(8000, self._got_data, compat=True)
 
 	def send(self, filelike):
 		self.sendqueue.append(filelike)
-		self.connection.set_writable()
+                # XXX Quirk to avoid logging twice the message headers.
+                if len(self.sendqueue) == 2:
+		    self._sent_data()
+
+	def __del__(self):
+		pass

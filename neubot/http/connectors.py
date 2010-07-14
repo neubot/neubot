@@ -16,57 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket
-import ssl
-
 import neubot
+import socket
 
 class connector:
 	def __init__(self, application, poller, address, port,
 	    family=socket.AF_INET, secure=False):
 		self.application = application
 		self.poller = poller
-		self.poller.register_func(self.init)
 		self.address = address
 		self.port = port
 		self.family = family
 		self.secure = secure
-		self.socket = None
+		neubot.net.connect(self.address, self.port, self._connected,
+		    cantconnect=self._failed, poller=self.poller,
+                    family=self.family, secure=self.secure)
 
 	def __str__(self):
 		return self.address + ":" + self.port
 
-	def init(self):
-		try:
-			self.socket = neubot.network.connect(self.family,
-			    self.address, self.port)
-			self.poller.set_writable(self)
-		except:
-			self.application.aborted(self)
-			self.application = None
-
-	def closing(self):
+	def _failed(self):
 		self.application.aborted(self)
-		self.application = None
 
-	def fileno(self):
-		return (self.socket.fileno())
-
-	def readable(self):
-		pass
-
-	def writable(self):
-		self.poller.unset_writable(self)
-		sockname = self.socket.getsockname()
-		peername = self.socket.getpeername()		# Connected?
-		if (self.secure):
-			ssl_socket = ssl.wrap_socket(self.socket,
-			    do_handshake_on_connect=False)
-			connection = neubot.network.ssl_connection(
-			    self.poller, ssl_socket, sockname, peername)
-		else:
-			connection = neubot.network.socket_connection(
-			    self.poller, self.socket, sockname, peername)
+	def _connected(self, connection):
 		adaptor = neubot.http.adaptor(connection)
 		protocol = neubot.http.protocol(adaptor)
 		self.application.connected(self, protocol)

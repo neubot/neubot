@@ -1,4 +1,4 @@
-# neubot/testing/getter.py
+# testing/getter.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -40,8 +40,8 @@ class Getter:
 		request = self.connectors[connector]
 		del self.connectors[connector]
 		protocol.attach(self)
-		protocol.sendmessage(request)
 		self.protocols[protocol] = request
+		protocol.sendmessage(request)
 
 	def closing(self, protocol):
 		del self.protocols[protocol]
@@ -80,6 +80,7 @@ class Getter:
 		if (self.prettyprint):
 			neubot.http.prettyprinter(sys.stderr.write,
 			    "> ", request, eol="\r\n")
+		protocol.recvmessage()
 
 USAGE = "Usage: python %s [-46v] uri [uri ...]\n"
 
