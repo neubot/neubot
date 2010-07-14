@@ -66,6 +66,7 @@ _install:
 	@sed 's!/usr/local!$(PREFIX)!' bin/unix/neubot > binunixneubot
 	@install binunixneubot $(DESTDIR)$(PREFIX)/bin/neubot
 	@rm binunixneubot
+	@# XXX Using BSD convention for installing manual page
 	@install -d $(DESTDIR)$(PREFIX)/man/man1
 	@pod2man --center="Neubot manual" --release="Neubot $(TAG)"     \
          doc/neubot.pod > $(DESTDIR)/$(PREFIX)/man/man1/neubot.1
@@ -81,6 +82,8 @@ deb:
 	@echo "[DEB] $(DEB)"
 	@rm -rf dist/
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
+	@# XXX Work-around using BSD convention for installing manual page
+	@mv dist/data/usr/man dist/data/usr/share/
 	@install -d -m755 dist/data/etc/init.d
 	@install -m755 debian/neubot dist/data/etc/init.d/
 	@cd dist/data && tar czf ../data.tar.gz ./*
