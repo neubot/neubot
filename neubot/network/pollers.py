@@ -22,7 +22,7 @@ import select
 
 import neubot
 
-class poller:
+class Poller:
     def __init__(self, timeout=1):
         self.timeout = timeout
         self.periodic = set()
@@ -119,3 +119,11 @@ class poller:
                     except:
                         neubot.utils.prettyprint_exception()
                 last = now
+
+#
+# This is the magic that redirects neubot to the new network
+# module (neubot.net)
+#
+
+def poller():
+    return neubot.net.pollers.poller

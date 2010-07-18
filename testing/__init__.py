@@ -1,4 +1,4 @@
-# neubot/testing/__init__.py
+# testing/__init__.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -16,4 +16,4 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from utils import *
+pass

@@ -1,4 +1,4 @@
-# neubot/testing/utils.py
+# testing/utils.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -18,67 +18,79 @@
 
 import errno
 import fcntl
+import logging
 import os
-import socket
+import sys
 
-class stdio_connection:
-	def __init__(self, poller, fd):
-		self.poller = poller
-		self.fd = fd
-		flags = fcntl.fcntl(self.fd, fcntl.F_GETFL)
-		flags |= os.O_NONBLOCK
-		fcntl.fcntl(self.fd, fcntl.F_SETFL, flags)
-		self.protocol = None
+import neubot
 
-	def readable(self):
-		self.protocol.readable()
+# ______________________________________________________________________
 
-	def writable(self):
-		self.protocol.writable()
+#
+# To speed-up servers and clients we should wrap file descriptors
+# with the following class (which, however, is not portable.)
+#
 
-	def closing(self):
-		self.protocol.closing()
+from neubot.net.streams import *
 
-	def fileno(self):
-		return (self.fd)
+class FdStream(Stream):
+    def __init__(self, poller, fileno):
+        Stream.__init__(self, poller, fileno, "", "")
+        self.setblocking(False)
 
-	def attach(self, protocol):
-		self.protocol = protocol
+    def __del__(self):
+        pass
 
-	def send(self, buf):
-		try:
-			return (os.write(self.fd, buf))
-		except os.error, (code, reason):
-			if (code == errno.EWOULDBLOCK or
-			    code == errno.EPIPE):
-				return (0)
-			else:
-				raise (socket.error(code, reason))
+    def setblocking(self, blocking):
+        flags = fcntl.fcntl(self.fileno(), fcntl.F_GETFL)
+        if blocking:
+            flags &= ~os.O_NONBLOCK
+        else:
+            flags |= os.O_NONBLOCK
+        fcntl.fcntl(self.fileno(), fcntl.F_SETFL, flags)
 
-	def recv(self, cnt):
-		try:
-			buf = os.read(self.fd, cnt)
-			if (buf == ""):
-				raise (socket.error(errno.EPIPE, "Broken pipe"))
-			return (buf)
-		except os.error, (code, reason):
-			if (code == errno.EWOULDBLOCK or
-			    code == errno.EPIPE):
-				return ("")
-			else:
-				raise (socket.error(code, reason))
+    def soclose(self):
+        pass                                                            # ???
 
-	def set_readable(self):
-		self.poller.set_readable(self)
+    def sorecv(self, maxlen):
+        try:
+            octets = os.read(self.fileno(), maxlen)
+            return SUCCESS, octets
+        except os.error, (code, reason):
+            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+                return WANT_READ, ""
+            else:
+                neubot.utils.prettyprint_exception()
+                return ERROR, ""
 
-	def set_writable(self):
-		self.poller.set_writable(self)
+    def sosend(self, octets):
+        try:
+            count = os.write(self.fileno(), octets)
+            return SUCCESS, count
+        except os.error, (code, reason):
+            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+                return WANT_WRITE, 0
+            else:
+                neubot.utils.prettyprint_exception()
+                return ERROR, 0
 
-	def unset_readable(self):
-		self.poller.unset_readable(self)
+# ______________________________________________________________________
 
-	def unset_writable(self):
-		self.poller.unset_writable(self)
+from neubot.net.pollers import poller
 
-	def close(self):
-		self.poller.close(self)
+class Echo:
+    def __init__(self, stream):
+        stream.recv(8000, self.got_data)
+
+    def got_data(self, stream, octets):
+        stream.send(octets, self.sent_data)
+
+    def sent_data(self, stream, octets):
+        stream.recv(8000, self.got_data)
+
+    def __del__(self):
+        pass
+
+if __name__ == "__main__":
+    Echo(FdStream(poller, 0))
+    neubot.net.loop()

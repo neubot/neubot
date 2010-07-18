@@ -1,0 +1,3 @@
+This is the old network module.  We keep it around for some development
+cycles because some of its bits are still used.  The new network module
+is neubot.net.
