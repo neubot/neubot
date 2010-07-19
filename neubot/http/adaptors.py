@@ -51,6 +51,7 @@ class adaptor:
 		self.protocol.closing()
 
 	def _got_data(self, connection, octets):
+		self.protocol.got_data(octets)
 		if (len(self.recvbuff) > MAXLENGTH):
 			raise (Exception("Buffer too big"))
 		self.recvbuff.append(octets)
@@ -139,6 +140,8 @@ class adaptor:
 		raise (Exception("Reading chunks: internal error"))
 
 	def _sent_data(self, connection=None, octets=None):
+		if octets:
+			self.protocol.sent_data(octets)
 		# TODO This function needs to be rewritten
 		while (len(self.sendbuff) == 0):
 			if (len(self.sendqueue) == 0):

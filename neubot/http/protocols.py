@@ -146,3 +146,21 @@ class protocol:
 
 	def __del__(self):
 		pass
+
+	#
+	# XXX Here we surround got_data() and sent_data() because some
+	# pieces of code define these two functions (like api.py) and
+	# others don't.  This is the simplest solution in the short run.
+	#
+
+	def got_data(self, octets):
+		try:
+			self.application.got_data(self, octets)
+		except:
+			pass
+
+	def sent_data(self, octets):
+		try:
+			self.application.sent_data(self, octets)
+		except:
+			pass

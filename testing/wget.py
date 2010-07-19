@@ -1,4 +1,4 @@
-# neubot/http/__init__.py
+# testing/wget.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -16,10 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from acceptors import *
-from adaptors import *
-from api import *
-from connectors import *
-from messages import *
-from protocols import *
-from utils import *
+#
+# A very stripped-down wget(1)
+#
+
+import neubot, sys
+
+def received(message):
+    sys.stdout.write(message.body.read())
+
+def sent(message):
+    neubot.http.recv(message, received=received)
+
+if __name__ == "__main__":
+    uri = sys.argv[1]
+    message = neubot.http.compose(method="GET", uri=uri, keepalive=False)
+    neubot.http.send(message, sent=sent)
+    neubot.net.loop()

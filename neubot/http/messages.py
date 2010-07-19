@@ -28,6 +28,13 @@ class message:
 		self.protocol = protocol
 		self.headers = {}
 		self.body = StringIO.StringIO("")
+		self._proto = None
+		self.scheme = ""
+		self.address = ""
+		self.port = ""
+		self.pathquery = ""
+		self.family = 0
+		self.context = None
 		if (self.method and self.code):
 			raise (ValueError("Both method and code are set"))
 
@@ -38,7 +45,13 @@ class message:
 		if (self.method):
 			lst.append(self.method)
 			lst.append(" ")
-			lst.append(self.uri)
+			if not self.uri.startswith("/"):
+				if self.pathquery.startswith("/"):
+					lst.append(self.pathquery)
+				else:
+					lst.append("/")
+			else:
+				lst.append(self.uri)
 			lst.append(" ")
 			lst.append(self.protocol)
 		else:
