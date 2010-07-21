@@ -117,7 +117,7 @@ to be able to run Neubot at system startup::
    # bin/unix/neubot
    # Copyright (c) 2010 NEXA Center for Internet & Society
 
-Running and installing Python from sources
+Running and installing Neubot from sources
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This section describes the procedure to run and, optionally, install
