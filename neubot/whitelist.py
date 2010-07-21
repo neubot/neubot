@@ -31,7 +31,15 @@ class whitelist:
         return len(self.dictionary.keys())
 
     def allowed(self, address):
-        return self.dictionary.has_key(address)
+        #
+        # FIXME In some (legitimate!) cases the measure is not performed
+        # because a white-listing strategy that is based only on the IP
+        # address seems to be too aggressive.  As a temporary work-around
+        # I disable the mechanism so that we do not forbid legitimate
+        # measurements.
+        #
+        #return self.dictionary.has_key(address)
+        return True
 
     def register(self, address):
         self.dictionary[address] = neubot.utils.ticks()
