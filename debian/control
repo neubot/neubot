@@ -2,12 +2,13 @@ Package: neubot
 Version: 0.1.1-1
 Architecture: all
 Maintainer: Simone Basso <bassosimone@gmail.com>
-Installed-Size: 160
+Installed-Size: 260
 Depends: python2.6
 Section: net
 Homepage: http://nexa.polito.it/neubot
 Priority: optional
 Description: Network Neutrality Bot (Neubot)
- The "Network Neutrality Bot" (Neubot) is a software that measures in a
- distributed way network neutrality violations (such as peer-to-peer traffic
- discrimination).
+ The "Network Neutrality Bot" (Neubot) is a distributed peer-to-peer
+ program that measures the Quality of Service of Internet access and
+ focus on detecting potential violations of the "Network Neutrality"
+ principle.
