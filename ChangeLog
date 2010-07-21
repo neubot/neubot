@@ -1,3 +1,11 @@
+Neubot 0.1.1 [2010-07-21]
+	* neubot.whitelist: Temporarily disable white-listing
+	* neubot.http: Raise the number of seconds before timeout
+	* doc: Improve installation process under Ubuntu
+	* doc: Change source file name for manpage
+	* doc: incremental changes to manual page
+	* debian: Initial support for automatic repository install
+
 Neubot 0.1.0 [2010-06-22]
 	* Updated documentation
 	* Added manual page for Unix
