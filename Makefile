@@ -86,6 +86,8 @@ deb:
 	@mv dist/data/usr/man dist/data/usr/share/
 	@install -d -m755 dist/data/etc/init.d
 	@install -m755 debian/neubot dist/data/etc/init.d/
+	@install -d -m755 dist/data/etc/apt/sources.list.d/
+	@install -m644 debian/neubot.list dist/data/etc/apt/sources.list.d/
 	@cd dist/data && tar czf ../data.tar.gz ./*
 	@install -d -m755 dist/control
 	@find dist/data -type f -exec md5sum {} \; > dist/control/md5sums
