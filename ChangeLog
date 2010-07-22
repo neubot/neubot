@@ -1,3 +1,10 @@
+Neubot 0.1.2 [2010-07-22]
+	* INSTALL: Fix a typo--Python instead of Neubot
+	* neubot.debug: Trace functions "call" and "return"
+	* neubot.net: Re-implementation of neubot.network
+	* neubot.network: By default use the new neubot.net module
+	* neubot.http: Use neubot.net instead of neubot.network
+
 Neubot 0.1.1 [2010-07-21]
 	* neubot.whitelist: Temporarily disable white-listing
 	* neubot.http: Raise the number of seconds before timeout
