@@ -20,7 +20,9 @@
 # Makefile
 #
 
-DEB     = dist/neubot-0.1.2-1_all.deb
+VERSION	= 0.1.2
+
+DEB     = dist/neubot-$(VERSION)-1_all.deb
 DESTDIR =
 PREFIX  = /usr/local
 TAG     = `git tag|grep -v ^_|tail -n1`
@@ -68,10 +70,10 @@ _install:
 	@rm binunixneubot
 	@# XXX Using BSD convention for installing manual page
 	@install -d $(DESTDIR)$(PREFIX)/man/man1
-	@pod2man --center="Neubot manual" --release="Neubot $(TAG)"     \
+	@pod2man --center="Neubot manual" --release="Neubot $(VERSION)" \
          doc/neubot.1.pod > $(DESTDIR)/$(PREFIX)/man/man1/neubot.1
 	@install -d $(DESTDIR)$(PREFIX)/man/man3
-	@pod2man -c"Neubot manual" -r"Neubot $(TAG)" -s3 -n"NEUBOT.NET" \
+	@pod2man -c"Neubot manual" -r"Neubot $(VERSION)" -s3 -n"NEUBOT.NET" \
          doc/neubot.net.3.pod > $(DESTDIR)/$(PREFIX)/man/man3/neubot.net.3
 archive:
 	@echo "[ARCHIVE] dist/neubot-HEAD/"
