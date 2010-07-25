@@ -156,18 +156,15 @@ class Stream(Pollable):
     # discarded) or because of EOF (and so the message is good.)
     #
 
+    # Remember to modify neubot.http and remove compat
     def recv(self, maxlen, recv_success, recv_error=None, compat=False):
         self.recv_maxlen = maxlen
         self.recv_success = recv_success
         self.recv_ticks = self.poller.get_ticks()
         self.recv_pending = True
         self.recv_error = recv_error
-        if not self.recvblocked:
-            if self.isreceiving or compat:
-                self.poller.set_readable(self)
-                self.readable = self._do_recv
-            else:
-                self._do_recv()
+        if not self.isreceiving:
+            self._do_recv()
 
     def _do_recv(self):
         if not self.recvblocked:
@@ -191,10 +188,16 @@ class Stream(Pollable):
                     self.recv_ticks = 0
                     self.recv_pending = False
                     self.recv_error = None
-                    self.poller.unset_readable(self)
-                    self.readable = None
                     if notify:
                         notify(self, octets)
+                    # Notify() might invoke send() that might block recv()
+                    if not self.recvblocked:
+                        if not self.recv_pending:
+                            self.poller.unset_readable(self)
+                            self.readable = None
+                        else:
+                            self.poller.set_readable(self)
+                            self.readable = self._do_recv
                 else:
                     self.eof = True
                     self.poller.close(self)
@@ -214,6 +217,7 @@ class Stream(Pollable):
             if panic:
                 raise Exception(panic)
 
+    # Remember to modify neubot.http and remove compat
     def send(self, octets, send_success, send_error=None, compat=False):
         self.send_octets = octets
         self.send_pos = 0
@@ -221,12 +225,8 @@ class Stream(Pollable):
         self.send_ticks = self.poller.get_ticks()
         self.send_pending = True
         self.send_error = send_error
-        if not self.sendblocked:
-            if self.issending or compat:
-                self.poller.set_writable(self)
-                self.writable = self._do_send
-            else:
-                self._do_send()
+        if not self.issending:
+            self._do_send()
 
     def _do_send(self):
         if not self.sendblocked:
@@ -258,10 +258,16 @@ class Stream(Pollable):
                         self.send_ticks = 0
                         self.send_pending = False
                         self.send_error = None
-                        self.poller.unset_writable(self)
-                        self.writable = None
                         if notify:
                             notify(self, octets)
+                        # Notify() might invoke recv() that might block send()
+                        if not self.sendblocked:
+                            if not self.send_pending:
+                                self.poller.unset_writable(self)
+                                self.writable = None
+                            else:
+                                self.poller.set_writable(self)
+                                self.writable = self._do_send
                     else:
                         panic = "Internal error"
                 else:
