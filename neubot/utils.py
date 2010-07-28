@@ -23,10 +23,10 @@ import sys
 import time
 import traceback
 
+import neubot
+
 def prettyprint_exception(write=logging.error, eol=""):
-	content = traceback.format_exc()
-	for ln in content.splitlines():
-		write(ln + eol)
+    neubot.log.exception()
 
 def versioncmp(left, right):
     left = map(int, left.split("."))

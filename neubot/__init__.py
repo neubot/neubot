@@ -18,6 +18,8 @@
 
 version = "0.1.3"
 
+import log
+
 import net
 import http
 
