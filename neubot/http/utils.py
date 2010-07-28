@@ -56,3 +56,34 @@ def response_unbounded(request, response):
 
 def date():
 	return (email.utils.formatdate(usegmt=True))
+
+def parse_accept(accept):
+    if accept == "":
+        return [(1.0, "*/*")]
+    result = []
+    pass1 = accept.split(",")
+    for entry in pass1:
+        pass2 = entry.split(";")
+        if len(pass2) == 2:
+            type = pass2[0]
+            quality = float(pass2[1].replace("q=", ""))
+        elif len(pass2) == 1:
+            type = pass2[0]
+            quality = 1.0
+        else:
+            continue
+        result.append((quality, type))
+    return sorted(result)
+
+def select_mime(accept, available):
+    for quality, type in accept:
+        if type in available:
+            return type
+    return None
+
+def negotiate_mime(m, available, default):
+    accept = parse_accept(m["accept"])
+    mimetype = select_mime(accept, available)
+    if mimetype == None:
+        mimetype = default
+    return mimetype
