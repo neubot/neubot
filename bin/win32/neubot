@@ -62,6 +62,7 @@ def startup():
     configparser.set("DEFAULT", "database.path", databasepath)
     neubot.database.init(configparser)
     argv = []
+    neubot.log.install()
     neubot.auto.main(argv)
 
 if (__name__ == "__main__"):

@@ -207,6 +207,7 @@ def bootstrap():
         trace = os.environ["NEUBOT_TRACE"]
         if trace.upper() not in ["FALSE", "NO", "0"]:
             sys.setprofile(neubot.debug.trace)
+    neubot.log.install()
     neubot.main.main(arguments)
 
 if __name__ == "__main__":
