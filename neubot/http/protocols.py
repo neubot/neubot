@@ -37,14 +37,30 @@ class protocol:
 		self.poller = self.adaptor.connection.poller
 		self.poller.register_periodic(self.periodic)
 		self.have_body = True
+		self.timeout = TIMEOUT
+		self.waitingclose = False
 
 	def __str__(self):
 		return self.peername
 
 	def periodic(self, now):
-		if now - self.begin > TIMEOUT:
+		if now - self.begin > self.timeout:
 			logging.warning("Watchdog timeout")
 			self.poller.register_func(self.close)
+
+        #
+        # In passive close mode we wait for the client to close the
+        # connection, and, if this does not happen for one second,
+        # we close the connection.  We read a message because we want
+        # the poller to check the socket for readability--indeed the
+        # socket becomes readable when the other end closes the conn-
+        # ection.
+        #
+
+	def passiveclose(self):
+		self.timeout = 1
+		self.waitingclose = True
+		self.recvmessage()
 
 	def closing(self):
 		self.poller.unregister_periodic(self.periodic)
@@ -60,6 +76,9 @@ class protocol:
 		self.message.body.write(octets)
 
 	def got_metadata(self, metadata):
+		if self.waitingclose:
+		    logging.warning("Client should have closed the connection")
+		    return
 		self.message = neubot.http.message()
 		headers = metadata.split("\r\n")
 		for line in headers:

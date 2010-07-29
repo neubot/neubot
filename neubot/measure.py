@@ -153,6 +153,7 @@ class servercontext:
         self.end = neubot.utils.ticks()
         logging.info("[%s] Response sent" % protocol)
         logging.info("[%s] Waiting for client to close connection" % protocol)
+        protocol.passiveclose()
 
     def closing(self, protocol):
         address, port = str(protocol).split(":")                        # XXX

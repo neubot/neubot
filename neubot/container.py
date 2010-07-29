@@ -115,6 +115,7 @@ class container:
     def message_sent(self, protocol):
         logging.info("[%s] Response sent" % protocol)
         logging.info("[%s] Waiting for client to close connection" % protocol)
+        protocol.passiveclose()
 
     def closing(self, protocol):
         logging.info("[%s] The connection has been closed" % protocol)
