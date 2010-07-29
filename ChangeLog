@@ -1,3 +1,10 @@
+Neubot 0.1.4 [2010-07-30]
+	* neubot.net: streams.py: Deal with "continuous" I/O operations
+	* neubot.net: streams.py: Remove the compat parameter from send, recv
+	* neubot.net: streams.py: Block send(), recv(), close() if isclosing
+	* neubot.log: Wrapper for Python logging module
+	* bin: Install neubot.log as the default logger
+
 Neubot 0.1.3 [2010-07-29]
 	* Makefile: don't assume we're in a GIT repo when installing
 	* neubot: __init__.py: Import libraries before other modules
