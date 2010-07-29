@@ -62,7 +62,7 @@ class adaptor:
 			if (not done):
 				break
 			self.parsers.popleft()
-		self.connection.recv(8000, self._got_data, compat=True)
+		self.connection.recv(8000, self._got_data)
 
 	def _parse_metadata(self):
 		index = self.recvbuff.find("\r\n\r\n")
@@ -149,8 +149,7 @@ class adaptor:
 			if (octets == ""):
 				self.sendqueue.popleft()
 				continue
-			self.connection.send(octets, self._sent_data,
-			    compat=True)
+			self.connection.send(octets, self._sent_data)
 			break
 
 	def attach(self, protocol):
@@ -161,22 +160,22 @@ class adaptor:
 
 	def get_metadata(self):
 		self.parsers.append(self._parse_metadata)
-		self.connection.recv(8000, self._got_data, compat=True)
+		self.connection.recv(8000, self._got_data)
 
 	def get_bounded_body(self, length):
 		self.parsers.append(self._parse_bounded_body)
 		self.bodylength = length
-		self.connection.recv(8000, self._got_data, compat=True)
+		self.connection.recv(8000, self._got_data)
 
 	def get_chunked_body(self):
 		self.parsers.append(self._parse_chunked_body)
 		self.chunkstate = READING_LENGTH
-		self.connection.recv(8000, self._got_data, compat=True)
+		self.connection.recv(8000, self._got_data)
 
 	def get_unbounded_body(self):
 		self.parsers.append(self._parse_unbounded_body)
 		self.unbounded = True
-		self.connection.recv(8000, self._got_data, compat=True)
+		self.connection.recv(8000, self._got_data)
 
 	def send(self, filelike):
 		self.sendqueue.append(filelike)

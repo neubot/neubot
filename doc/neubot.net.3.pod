@@ -15,9 +15,9 @@ B<neubot.net.listen>(address, port, accepted, listening=None,
     family=socket.AF_INET, secure=False, certfile=None,
     maxclients=7, maxconns=4)
 
-stream.I<recv>(maxlen, recv_success, recv_error=None, compat=False)
+stream.I<recv>(maxlen, recv_success, recv_error=None)
 
-stream.I<send>(octets, send_success, send_error=None, compat=False)
+stream.I<send>(octets, send_success, send_error=None)
 
 stream.I<close>()
 
@@ -78,20 +78,14 @@ will read up to I<maxlen> bytes and the I/O module machinery will
 invoke I<recv_success> on success, and I<recv_error> on failure.
 The first function receives two parameters: a reference to the stream
 and a reference to a string that contains the read bytes.  The second one
-receives a reference to the stream as its only parameter.  The I<compat>
-parameter specifies whether the module machinery is allowed to attempt
-a non-blocking recv immediately or it should stay compatible with the
-B<neubot.http> module code that do not expect this behavior.
+receives a reference to the stream as its only parameter.
 
 The send() method starts an asynchronous send operation.  The operation
 will send the I<octets> string over the network and the I/O module
 machinery will invoke I<send_success> on success, and I<send_error>
 on failure.  The first function receives two parameters: a reference
 to the stream and a reference to the sent string.  The second one
-receives a reference to the stream as its only parameter.  The I<compat>
-parameter specifies whether the module machinery is allowed to attempt
-a non-blocking send immediately or it should stay compatible with the
-B<neubot.http> module code that do not expect this behavior.
+receives a reference to the stream as its only parameter.
 
 The close() method close the underlying socket or SSL connection and
 frees all the resources.  It is important that you drop any reference

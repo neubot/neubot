@@ -156,8 +156,7 @@ class Stream(Pollable):
     # discarded) or because of EOF (and so the message is good.)
     #
 
-    # Remember to modify neubot.http and remove compat
-    def recv(self, maxlen, recv_success, recv_error=None, compat=False):
+    def recv(self, maxlen, recv_success, recv_error=None):
         self.recv_maxlen = maxlen
         self.recv_success = recv_success
         self.recv_ticks = self.poller.get_ticks()
@@ -217,8 +216,7 @@ class Stream(Pollable):
             if panic:
                 raise Exception(panic)
 
-    # Remember to modify neubot.http and remove compat
-    def send(self, octets, send_success, send_error=None, compat=False):
+    def send(self, octets, send_success, send_error=None):
         self.send_octets = octets
         self.send_pos = 0
         self.send_success = send_success
