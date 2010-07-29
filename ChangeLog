@@ -1,3 +1,9 @@
+Neubot 0.1.3 [2010-07-29]
+	* Makefile: don't assume we're in a GIT repo when installing
+	* neubot: __init__.py: Import libraries before other modules
+	* neubot.whitelist: Allow more than one peer per IP address
+	* neubot.http: Add support for passive close()
+
 Neubot 0.1.2 [2010-07-22]
 	* INSTALL: Fix a typo--Python instead of Neubot
 	* neubot.debug: Trace functions "call" and "return"
