@@ -76,6 +76,7 @@ class Stream(Pollable):
         self.timeout = TIMEOUT
         self.notify_closing = None
         self.context = None
+        self.isclosing = False
 
     def __del__(self):
         pass
@@ -91,6 +92,7 @@ class Stream(Pollable):
     #
 
     def closing(self):
+        self.isclosing = True
         self.soclose()
         if self.recv_error:
             self.recv_error(self)
@@ -119,18 +121,19 @@ class Stream(Pollable):
     #
 
     def close(self):
-        self.send_octets = None
-        self.send_success = None
-        self.send_ticks = 0
-        self.send_pos = 0
-        self.send_pending = False
-        self.send_error = None
-        self.recv_maxlen = 0
-        self.recv_success = None
-        self.recv_ticks = 0
-        self.recv_pending = False
-        self.recv_error = None
-        self.poller.close(self)
+        if not self.isclosing:
+            self.send_octets = None
+            self.send_success = None
+            self.send_ticks = 0
+            self.send_pos = 0
+            self.send_pending = False
+            self.send_error = None
+            self.recv_maxlen = 0
+            self.recv_success = None
+            self.recv_ticks = 0
+            self.recv_pending = False
+            self.recv_error = None
+            self.poller.close(self)
 
     def readtimeout(self, now):
         return self.recv_pending and now - self.recv_ticks > self.timeout
@@ -157,13 +160,14 @@ class Stream(Pollable):
     #
 
     def recv(self, maxlen, recv_success, recv_error=None):
-        self.recv_maxlen = maxlen
-        self.recv_success = recv_success
-        self.recv_ticks = self.poller.get_ticks()
-        self.recv_pending = True
-        self.recv_error = recv_error
-        if not self.isreceiving:
-            self._do_recv()
+        if not self.isclosing:
+            self.recv_maxlen = maxlen
+            self.recv_success = recv_success
+            self.recv_ticks = self.poller.get_ticks()
+            self.recv_pending = True
+            self.recv_error = recv_error
+            if not self.isreceiving:
+                self._do_recv()
 
     def _do_recv(self):
         if not self.recvblocked:
@@ -217,14 +221,15 @@ class Stream(Pollable):
                 raise Exception(panic)
 
     def send(self, octets, send_success, send_error=None):
-        self.send_octets = octets
-        self.send_pos = 0
-        self.send_success = send_success
-        self.send_ticks = self.poller.get_ticks()
-        self.send_pending = True
-        self.send_error = send_error
-        if not self.issending:
-            self._do_send()
+        if not self.isclosing:
+            self.send_octets = octets
+            self.send_pos = 0
+            self.send_success = send_success
+            self.send_ticks = self.poller.get_ticks()
+            self.send_pending = True
+            self.send_error = send_error
+            if not self.issending:
+                self._do_send()
 
     def _do_send(self):
         if not self.sendblocked:
