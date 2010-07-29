@@ -31,23 +31,28 @@ class whitelist:
         return len(self.dictionary.keys())
 
     def allowed(self, address):
-        #
-        # FIXME In some (legitimate!) cases the measure is not performed
-        # because a white-listing strategy that is based only on the IP
-        # address seems to be too aggressive.  As a temporary work-around
-        # I disable the mechanism so that we do not forbid legitimate
-        # measurements.
-        #
-        #return self.dictionary.has_key(address)
-        return True
+        return self.dictionary.has_key(address)
+
+    #
+    # FIXME The code below is a crap--yes, it allows a client to
+    # run more than one Neubot instance, but the way this is im-
+    # plemented sucks.  Rather than allowing on a per-IP address
+    # basis, we should employ the unique identifier for the mea-
+    # surement (we can use cookies for HTTP, infohashes for Bit-
+    # Torrent, and so forth) together with the client IP address.
+    #
 
     def register(self, address):
-        self.dictionary[address] = neubot.utils.ticks()
+        if self.dictionary.has_key(address):
+            count, ticks = self.dictionary[address]
+        else:
+            count = 0
+        self.dictionary[address] = (count + 1, neubot.utils.ticks())
         logging.debug("Added address %s to whitelist" % address)
 
     def prune(self, now):
         stale = collections.deque()
-        for address, ticks in self.dictionary.items():
+        for address, (count, ticks) in self.dictionary.items():
             if now - ticks > TIMEOUT:
                 stale.append(address)
         for address in stale:
@@ -56,8 +61,13 @@ class whitelist:
 
     def unregister(self, address):
         if self.dictionary.has_key(address):
-            del self.dictionary[address]
-            logging.debug("Removed address %s from whitelist" % address)
+            count, ticks = self.dictionary[address]
+            count = count - 1
+            if count == 0:
+                del self.dictionary[address]
+                logging.debug("Removed address %s from whitelist" % address)
+            else:
+                self.dictionary[address] = (count, ticks)
 
 instance = whitelist()
 
