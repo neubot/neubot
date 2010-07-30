@@ -28,6 +28,7 @@ maintbl = {
     "negotiate"   : neubot.negotiate.main,
     "collect"     : neubot.collect.main,
     "coordinate"  : neubot.coordinate.main,
+    "ui"          : neubot.ui.main,
 }
 
 def main(argv):

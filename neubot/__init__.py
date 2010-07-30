@@ -39,5 +39,7 @@ import table
 import utils
 import whitelist
 
+import ui
+
 # Must be the last import
 import main
