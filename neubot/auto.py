@@ -55,6 +55,16 @@ HELP =                                                                  \
 
 enabled = True
 
+# I don't like this thread solution--but see below.
+import threading
+class UI_thread(threading.Thread):
+    def run(self):
+        # XXX Here we must use the default poller
+        neubot.ui.init()
+        neubot.net.loop()
+def spawn_ui_thread():
+    UI_thread().start()
+
 def main(argv):
     count = -1
     sleeptime = 300
@@ -90,7 +100,15 @@ def main(argv):
         sys.exit(1)
     elif len(arguments) == 1:
         rendezvousuri = arguments[0]
-    poller = neubot.network.poller()
+    #
+    # FIXME Yes, it's ugly to spawn a thread to handle the UI,
+    # and this is particularly bad because I don't have even
+    # thought at possible race issues--but at this point I am
+    # a bit short of time, and I feel it is a bit more impor-
+    # tant to focus on improving the UI.
+    #
+    poller = neubot.net.pollers.create_poller()
+    spawn_ui_thread()
     if os.isatty(sys.stderr.fileno()):
         sys.stderr.write(
 "Measuring the time required to send request and get the response.\n")
