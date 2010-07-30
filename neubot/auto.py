@@ -53,6 +53,8 @@ HELP =                                                                  \
 "      Time to sleep between each rendez-vous.\n"                       \
 "\n"
 
+enabled = True
+
 def main(argv):
     count = -1
     sleeptime = 300
@@ -122,6 +124,8 @@ def main(argv):
                     if os.isatty(sys.stderr.fileno()):
                         sys.stderr.write("New version %s available at %s\n" % (
                                          version, updateuri))
+            if not enabled:
+                continue
             try:
                 negotiateuri = todolist.available["http"]
                 #
