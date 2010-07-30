@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+import collections
 import logging
 import os
 import sys
@@ -25,6 +26,13 @@ import neubot
 class database:
     def __init__(self):
         self.outfile = sys.stdout
+        self.queue = collections.deque(maxlen=100)
+
+    def export(self):
+        result = []
+        for line in self.queue:
+            result.append(line)
+        return result
 
     def init(self, configparser):
         if configparser.has_option("DEFAULT", "database.path"):
@@ -46,11 +54,13 @@ class database:
                 neubot.utils.prettyprint_exception(write=logging.warning)
 
     def writes(self, octets):
+        self.queue.appendleft(octets)
         self.outfile.write(octets)
         self.outfile.write("\r\n")
         self.outfile.flush()
 
 instance = database()
 
+export = instance.export
 init = instance.init
 writes = instance.writes
