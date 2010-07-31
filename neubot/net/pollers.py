@@ -23,6 +23,7 @@
 import errno
 import logging
 import select
+import time
 
 from neubot.utils import prettyprint_exception
 from neubot.utils import ticks
@@ -159,18 +160,22 @@ class Poller:
             func()
 
     def dispatch_events(self):
-        try:
-            res = select.select(self.readset.keys(),
-                self.writeset.keys(), [], self.timeout)
-        except select.error, (code, reason):
-            if code != errno.EINTR:
-                self.notify_except()
-                raise
-        else:
-            for fileno in res[0]:
-                self._readable(fileno)
-            for fileno in res[1]:
-                self._writable(fileno)
+        if self.readset or self.writeset:
+            try:
+                res = select.select(self.readset.keys(),
+                    self.writeset.keys(), [], self.timeout)
+            except select.error, (code, reason):
+                if code != errno.EINTR:
+                    self.notify_except()
+                    raise
+            else:
+                for fileno in res[0]:
+                    self._readable(fileno)
+                for fileno in res[1]:
+                    self._writable(fileno)
+        elif not self.funcs:
+            logging.warning("Nothing to do--this is probably a bug")
+            time.sleep(self.timeout)
 
     def check_timeout(self):
         now = self.get_ticks()
