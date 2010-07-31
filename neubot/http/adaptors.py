@@ -148,7 +148,20 @@ class adaptor:
 				self.protocol.sent_all()
 				return
 			filelike = self.sendqueue[0]
-			octets = filelike.read(8000)			# XXX
+			#
+			# If we read very small pieces (as we were doing
+			# since 0.1.2 until 0.1.4) there is the risk to
+			# slow down the transfer speed--on the other hand,
+			# if 'filelike' is a file on the disk and not a
+			# stringio, we must not read chunks that are too
+			# big or we risk to slow down the whole program
+			# waiting for the disk (the read here is blocking.)
+			# Hope that 256 KiB is a good compromise between
+			# these two needs.  However the right solution might
+			# be to use non-blocking I/O for dealing with files
+			# too.
+			#
+			octets = filelike.read(262144)
 			if (octets == ""):
 				self.sendqueue.popleft()
 				continue
