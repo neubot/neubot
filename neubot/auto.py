@@ -114,7 +114,9 @@ def main(argv):
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
             client.set_version(neubot.version)
+            before = time.time()
             poller.loop()
+            after = time.time()
             todolist = client.responsebody
             if (todolist.versioninfo.has_key(u"version") and
               todolist.versioninfo.has_key(u"uri")):
@@ -126,6 +128,9 @@ def main(argv):
                     if os.isatty(sys.stderr.fileno()):
                         sys.stderr.write("New version %s available at %s\n" % (
                                          version, updateuri))
+            if after - before > 1:
+                logging.warning("Rendez-vous was too slow! Not doing tests")
+                continue
             if not enabled:
                 continue
             neubot.config.state = "NEGOTIATE"
