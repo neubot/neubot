@@ -100,6 +100,7 @@ def main(argv):
         if not firstiter:
             if (os.isatty(sys.stderr.fileno())):
                 sys.stderr.write(WAITING % sleeptime)
+            neubot.config.state = "SLEEPING"
             time.sleep(sleeptime)
             iters = iters + 1
             if iters == 3:
@@ -109,6 +110,7 @@ def main(argv):
         if count > 0:
             count = count -1
         try:
+            neubot.config.state = "RENDEZVOUS"
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
             client.set_version(neubot.version)
@@ -126,6 +128,7 @@ def main(argv):
                                          version, updateuri))
             if not enabled:
                 continue
+            neubot.config.state = "NEGOTIATE"
             try:
                 negotiateuri = todolist.available["http"]
                 #
@@ -145,6 +148,7 @@ def main(argv):
             client.set_direction("download")
             client.set_length((1<<16))
             poller.loop()
+            neubot.config.state = "TESTING"
             identifier = client.identifier
             params = client.params
             uri = params.uri
@@ -156,6 +160,7 @@ def main(argv):
                                            head=latency)
             client.identifier = identifier                              # XXX
             poller.loop()
+            neubot.config.state = "COLLECT"
             octets = neubot.table.stringify_entry(identifier)
             neubot.table.remove_entry(identifier)
             neubot.collect.client(poller, collecturi, octets)
