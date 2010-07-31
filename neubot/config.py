@@ -1,4 +1,4 @@
-# neubot/__init__.py
+# neubot/config.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
@@ -16,28 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-version = "0.1.4"
+#
+# Most of the variables you can configure via UI
+#
 
-import config
-
-import log
-
-import net
-import http
-
-import auto
-import collect
-import container
-import coordinate
-import database
-import debug
-import measure
-import negotiate
-import network
-import rendezvous
-import table
-import utils
-import whitelist
-
-# Must be the last import
-import main
+# A string describing the state of the program
+state = "UNKNOWN"
