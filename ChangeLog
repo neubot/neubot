@@ -1,3 +1,16 @@
+Neubot 0.1.5 [2010-08-01]
+	* neubot.http: Add message-oriented API
+	* neubot.http: Add code for MIME type negotiation
+	* neubot.net: Avoid sleeping and warn when we sleep
+	* neubot.config: Keep most configurable variables
+	* neubot.database: Cache and allow to export recent measurements
+	* neubot.auto: Make it possible to disable measurements
+	* neubot.auto: Record the current state into a variable
+	* neubot.auto: Don't test if rendez-vous is too slow
+	* neubot.http: adaptor: Read files in bigger chunks to avoid slowdowns
+	* neubot.ui: RESTful API for user interfaces attachment
+	* neubot.auto: Start a thread for the UI
+
 Neubot 0.1.4 [2010-07-30]
 	* neubot.net: streams.py: Deal with "continuous" I/O operations
 	* neubot.net: streams.py: Remove the compat parameter from send, recv
