@@ -2,7 +2,7 @@ Package: neubot
 Version: 0.1.5-1
 Architecture: all
 Maintainer: Simone Basso <bassosimone@gmail.com>
-Installed-Size: 340
+Installed-Size: 376
 Depends: python2.6
 Section: net
 Homepage: http://nexa.polito.it/neubot
