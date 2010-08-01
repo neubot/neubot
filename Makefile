@@ -49,7 +49,6 @@ _archive:
             | gzip -9 > dist/neubot-$$ATAG/neubot-$$ATAG.tar.gz
 	@git archive --format=zip --prefix=neubot-$$ATAG/ $$ATAG        \
             > dist/neubot-$$ATAG/neubot-$$ATAG.zip
-	@cd dist/neubot-$$ATAG && sha256sum neubot* > SHA256
 _docs:
 	@echo "[DOCS]"
 	@cd doc && for DIA in *.dia; do					\
