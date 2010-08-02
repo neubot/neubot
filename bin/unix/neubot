@@ -134,6 +134,8 @@ def bootstrap():
     import neubot
     if len(arguments) == 0:
         arguments = ["auto"]
+    if verbosity == logging.DEBUG:
+        neubot.log.verbose()
     logging.debug("Setting the default umask")
     os.umask(022)
     if os.getuid() > 0 and os.environ.has_key("HOME"):
