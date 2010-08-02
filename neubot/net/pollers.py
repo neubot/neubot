@@ -153,6 +153,12 @@ class Poller:
             self.dispatch_events()
             self.check_timeout()
 
+    def dispatch(self):
+        if self.funcs or self.readset or self.writeset:
+            self.run_once_funcs()
+            self.dispatch_events()
+            self.check_timeout()
+
     def run_once_funcs(self):
         copy = self.funcs.copy()
         self.funcs = set()
@@ -199,4 +205,5 @@ def create_poller(timeout=1, get_ticks=ticks,
     return Poller(timeout, get_ticks, notify_except)
 
 poller = create_poller()
+dispatch = poller.dispatch
 loop = poller.loop
