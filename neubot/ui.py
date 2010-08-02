@@ -202,7 +202,7 @@ class Receiver:
             else:
                 m1 = neubot.http.reply(m, code="405",
                  reason="Method Not Allowed")
-                m1["allow"] = "GET, PUT"
+                m1["allow"] = "GET, PUT, POST"
         elif m.uri == "/logs":
             if m.method == "GET":
                 lines = neubot.log.getlines()
