@@ -33,7 +33,6 @@ class adaptor:
 		self.connection.notify_closing = self.closing
 		self.protocol = None
 		self.recvbuff = neubot.network.recvbuff()
-		self.sendbuff = neubot.network.sendbuff()
 		self.sendqueue = collections.deque()
 		self.parsers = collections.deque()
 		self.chunkstate = -1
@@ -139,11 +138,12 @@ class adaptor:
 				continue
 		raise (Exception("Reading chunks: internal error"))
 
-	def _sent_data(self, connection=None, octets=None):
-		if octets:
-			self.protocol.sent_data(octets)
-		# TODO This function needs to be rewritten
-		while (len(self.sendbuff) == 0):
+	def _sent_data(self, connection, octets):
+		self.protocol.sent_data(octets)
+		self._do_send()
+
+	def _do_send(self):
+		while True:
 			if (len(self.sendqueue) == 0):
 				self.protocol.sent_all()
 				return
@@ -195,9 +195,7 @@ class adaptor:
 
 	def send(self, filelike):
 		self.sendqueue.append(filelike)
-                # XXX Quirk to avoid logging twice the message headers.
-                if len(self.sendqueue) == 2:
-		    self._sent_data()
+		self._do_send()
 
 	def __del__(self):
 		pass

@@ -16,9 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+import StringIO
+import collections
 import logging
+import os
 
 import neubot
+
+SMALLMESSAGE = 64000
 
 PROTOCOLS = [ "HTTP/1.1", "HTTP/1.0" ]
 TIMEOUT   = 300
@@ -135,8 +140,24 @@ class protocol:
 		self.adaptor.close()
 
 	def sendmessage(self, msg):
-		self.adaptor.send(msg.serialize_headers())
-		self.adaptor.send(msg.serialize_body())
+            queue = collections.deque()
+            queue.append(msg.serialize_headers())
+            queue.append(msg.serialize_body())
+            length = 0
+            for stringio in queue:
+                stringio.seek(0, os.SEEK_END)
+                length += stringio.tell()
+                stringio.seek(0, os.SEEK_SET)
+            if length <= SMALLMESSAGE:
+                vector = []
+                while len(queue) > 0:
+                    stringio = queue.popleft()
+                    vector.append(stringio.read())
+                content = "".join(vector)
+                stringio = StringIO.StringIO(content)
+                queue.append(stringio)
+            for stringio in queue:
+                self.adaptor.send(stringio)
 
 	def donthavebody(self):
 		self.have_body = False
