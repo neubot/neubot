@@ -107,6 +107,14 @@ class Receiver:
                     body.append('     %s\n' % neubot.config.state)
                     body.append("    </TD>\n")
                     body.append("   </TR>\n")
+                    body.append("   <TR>\n")
+                    body.append("    <TD>\n")
+                    body.append('     <a href="/force">force</a>\n')
+                    body.append("    </TD>\n")
+                    body.append("    <TD>\n")
+                    body.append("     %d\n" % neubot.config.force)
+                    body.append("    </TD>\n")
+                    body.append("   </TR>\n")
                     body.append("  </TABLE>\n")
                     body.append(" </BODY>\n")
                     body.append("</HTML>\n")
@@ -115,6 +123,7 @@ class Receiver:
                     body.append("logs = %d lines\r\n" % len(neubot.log.getlines()))
                     body.append("results = %d lines\r\n" % len(neubot.database.export()))
                     body.append("state = %s\r\n" % neubot.config.state)
+                    body.append("force = %d\r\n" % neubot.config.force)
                 else:
                     raise Exception("Internal error")
                 body = "".join(body)
@@ -301,6 +310,84 @@ class Receiver:
             else:
                 m1 = neubot.http.reply(m, code="405",
                  reason="Method Not Allowed")
+        elif m.uri == "/force":
+            if m.method == "PUT":
+                if m["content-type"] == "text/plain":
+                    body = m.body.read().strip()
+                    if body == "0":
+                        neubot.config.force = False
+                    else:
+                        neubot.config.force = True
+                    m1 = neubot.http.reply(m, code="204",
+                     reason="No Content")
+                else:
+                    m1 = neubot.http.reply(m, code="415",
+                     reason="Unsupported Media Type")
+            elif m.method == "GET":
+                mimetype = neubot.http.negotiate_mime(m, ["text/html",
+                 "text/plain"], "text/plain")
+                body = []
+                if mimetype == "text/html":
+                    body.append("<HTML>\n")
+                    body.append(" <HEAD>\n")
+                    body.append("  <TITLE>Neubot force</TITLE>\n")
+                    body.append(" </HEAD>\n")
+                    body.append(" <BODY>\n")
+                    body.append("  <TABLE>\n")
+                    body.append("   <TR>\n")
+                    body.append("    <TD>\n")
+                    body.append("     force")
+                    body.append("    </TD>\n")
+                    body.append("    <TD>\n")
+                    body.append("     %d" % neubot.config.force)
+                    body.append("    </TD>\n")
+                    body.append("   </TR>\n")
+                    body.append("  </TABLE>\n")
+                    body.append('  <FORM action="/force" method="post">\n')
+                    if neubot.config.force:
+                        body.append('   <INPUT type="hidden" name="action" value="disable">\n')
+                        body.append('   <INPUT type="submit" value="Disable">\n')
+                    else:
+                        body.append('   <INPUT type="hidden" name="action" value="enable">\n')
+                        body.append('   <INPUT type="submit" value="Enable">\n')
+                    body.append("  </FORM>\n")
+                    body.append(" </BODY>\n")
+                    body.append("</HTML>\n")
+                elif mimetype == "text/plain":
+                    body.append("%d\n" % neubot.config.force)
+                else:
+                    raise Exception("Internal error")
+                body = "".join(body)
+                stringio = StringIO.StringIO(body)
+                m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+                 reason="Ok", body=stringio)
+            elif m.method == "POST":
+                if m["content-type"] == "application/x-www-form-urlencoded":
+                    body = m.body.read()
+                    if body == "action=disable" or body == "action=enable":
+                        if body == "action=disable":
+                            neubot.config.force = False
+                        else:
+                            neubot.config.force = True
+                        m1 = neubot.http.reply(m, code="303",
+                                          reason="See Other")
+                        location = []
+                        location.append("http://")
+                        location.append(address)
+                        location.append(":")
+                        location.append(port)
+                        location.append("/force")
+                        m1["location"] = "".join(location)
+                    else:
+                        m1 = neubot.http.reply(m, code="500",
+                         reason="Internal Server Error")
+                else:
+                    m1 = neubot.http.reply(m, code="415",
+                     reason="Unsupported Media Type")
+            else:
+                m1 = neubot.http.reply(m, code="405",
+                 reason="Method Not Allowed")
+                m1["allow"] = "GET, PUT, POST"
         else:
             m1 = neubot.http.reply(m, code="404", reason="Not Found")
         # We need to improve our support for keepalive
