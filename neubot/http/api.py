@@ -286,6 +286,7 @@ class Send:
     #
 
     def _sendmessage(self):
+        neubot.http.prettyprinter(logging.debug, "> ", self.message)
         self.message._proto.attach(self)
         if self.trysend:
             self.trysend(self.message)
@@ -306,14 +307,12 @@ class Send:
         raise Exception("Internal error")
 
     #
-    # TODO We probably need something like `metadata_sent()'
     # XXX We must clear _protocol.application *before* invoking
     #  self.sent because self.sent might override the application
     #  and we don't want to loose the reference in this case.
     #
 
     def message_sent(self, protocol):
-        neubot.http.prettyprinter(logging.debug, "> ", self.message)
         self.message._proto.application = None
         if self.sent:
             self.sent(self.message)
