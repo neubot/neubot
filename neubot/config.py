@@ -20,5 +20,8 @@
 # Most of the variables you can configure via UI
 #
 
+# Force neubot to do things (such as testing when rendez-vous is slow)
+force = False
+
 # A string describing the state of the program
 state = "UNKNOWN"

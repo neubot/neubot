@@ -148,7 +148,8 @@ def main(argv):
                                          version, updateuri))
             if after - before > 1:
                 logging.warning("Rendez-vous was too slow! Not doing tests")
-                continue
+                if not neubot.config.force:
+                    continue
             if not enabled:
                 continue
             neubot.config.state = "NEGOTIATE"
