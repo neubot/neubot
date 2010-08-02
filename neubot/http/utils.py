@@ -73,7 +73,7 @@ def parse_accept(accept):
         else:
             continue
         result.append((quality, type))
-    return sorted(result)
+    return sorted(result, reverse=True)
 
 def select_mime(accept, available):
     for quality, type in accept:
