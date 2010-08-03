@@ -107,7 +107,7 @@ class adaptor:
 					vector = line.split()
 					length = vector[0]
 					self.chunklength = int(length, 16)
-				except:
+				except (IndexError, ValueError):
 					self.chunklength = -1
 				if (self.chunklength < 0):
 					raise (Exception("Protocol error"))
