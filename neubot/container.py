@@ -86,7 +86,12 @@ class container:
             func = self.funcs[uri]
             try:
                 func(protocol, response)
-            except Exception:
+            except:
+                #
+                # In the common case this piece of code should run in
+                # background and so, probably, here we don't need to
+                # special-case KeyboardInterrupt treatment.
+                #
                 neubot.utils.prettyprint_exception()
                 response = self._http_response(protocol="HTTP/1.1",
                   code="500", reason="Internal Server Error")
