@@ -295,11 +295,7 @@ def main(argv):
         elif name == "--server":
             servermode = True
         elif name == "--uri":
-            try:
-                urlparse.urlsplit(value)
-            except:
-                sys.stderr.write("Bad argument to --uri\n")
-                sys.exit(1)
+            urlparse.urlsplit(value)
             testuri = value
     poller = neubot.network.poller()
     if servermode:
