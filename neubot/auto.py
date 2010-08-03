@@ -157,7 +157,7 @@ def main(argv):
                 # below problem that we must convert manually.
                 #
                 negotiateuri = str(negotiateuri)
-            except Exception:
+            except KeyError:
                 logging.warning("There are no available test I can perform")
                 continue
             collecturi = todolist.collecturi
@@ -192,7 +192,14 @@ def main(argv):
             client = neubot.collect.client(poller, collecturi, octets)
             while not client.done:
                 poller.dispatch()
-        except Exception:
+        except:
+            #
+            # FIXME Not sure whether here we need to special case
+            # KeyboardInterrupt treatment or not--probably we should
+            # read the documentation to find whether it's possible
+            # for this exception to be raised when we're running in
+            # background.
+            #
             neubot.utils.prettyprint_exception()
 
 if (__name__ == "__main__"):
