@@ -39,14 +39,16 @@ class database:
             path = configparser.get("DEFAULT", "database.path")
             try:
                 if path != "-":
+                    #
+                    # We don't lock the database file because we append
+                    # the current date and time to the file name skele-
+                    # ton in bin/*/neubot--and so it seems very unlike-
+                    # ly that we open two files with the same name.
+                    #
                     f = open(path, "ab")
                     self.outfile = f
                     if os.isatty(sys.stderr.fileno()):
                         sys.stderr.write("Database file: %s\n" % path)
-                    logging.warning(
-"This neubot release does not lock your local database file.")
-                    logging.warning(
-"So, you SHOULD NOT run more than one neubot instance at once.")
             except IOError:
                 logging.warning("Could not open database.path %s" % path)
                 logging.warning("Using standard output instead")

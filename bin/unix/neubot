@@ -56,10 +56,14 @@ USAGE +                                                                 \
 "neubot internals.  If so, try `neubot help' for more help.\n"
 
 def databasename():
+    t = time.localtime()
+    timeinfo = "%d%02d%02d%02d%02d%02d" % (t.tm_year, t.tm_mon,
+     t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
+    name = "database-" + timeinfo + ".txt"
     if os.getuid() == 0:
-        name = "/var/neubot/database.txt"
+        name = "/var/neubot/" + name
     elif os.environ.has_key("HOME"):
-        name = os.environ["HOME"] + "/.neubot/database.txt"
+        name = os.environ["HOME"] + "/.neubot/" + name
     else:
         name = "-"
     return name
