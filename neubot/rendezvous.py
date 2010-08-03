@@ -322,7 +322,7 @@ def main(argv):
         elif name == "--add-available-test":
             try:
                 testname, testuri = value.split(",", 1)
-            except:
+            except ValueError:
                 sys.stderr.write("Bad %s parameter %s" % (name, value))
                 sys.stderr.write(USAGE)
                 sys.exit(1)
@@ -335,7 +335,7 @@ def main(argv):
         elif name == "--provide-test":
             try:
                 testname, testuri = value.split(",", 1)
-            except:
+            except ValueError:
                 sys.stderr.write("Bad %s parameter %s" % (name, value))
                 sys.stderr.write(USAGE)
                 sys.exit(1)
