@@ -87,12 +87,9 @@ class Poller:
             del self.writeset[stream.fileno()]
 
     def close(self, stream):
-        try:
-            self.unset_readable(stream)
-            self.unset_writable(stream)
-            stream.closing()
-        except:
-            self.notify_except()
+        self.unset_readable(stream)
+        self.unset_writable(stream)
+        stream.closing()
 
     #
     # We are very careful when accessing readset and writeset because
@@ -118,20 +115,12 @@ class Poller:
     def _readable(self, fileno):
         if self.readset.has_key(fileno):                                # XXX
             stream = self.readset[fileno]
-            try:
-                stream.readable()
-            except:
-                self.notify_except()
-                self.close(stream)
+            stream.readable()
 
     def _writable(self, fileno):
         if self.writeset.has_key(fileno):                               # XXX
             stream = self.writeset[fileno]
-            try:
-                stream.writable()
-            except:
-                self.notify_except()
-                self.close(stream)
+            stream.writable()
 
     #
     # Welcome to the core loop.
