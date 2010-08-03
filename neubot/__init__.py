@@ -23,6 +23,7 @@ import config
 import log
 
 import net
+import notify
 import http
 
 import auto
