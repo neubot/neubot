@@ -183,6 +183,8 @@ def main(argv):
             client.identifier = identifier                              # XXX
             while not client.done:
                 poller.dispatch()
+            if not enabled:
+                continue
             #
             # Collect
             #

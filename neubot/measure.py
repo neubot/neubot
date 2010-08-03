@@ -273,6 +273,9 @@ class clientcontext:
     def progress(self, ticks):
         if os.isatty(sys.stderr.fileno()):
             sys.stderr.write(".")
+        if not neubot.auto.enabled:
+            logging.warning("Disabled!  Aborting the test")
+            self.protocol.close()
 
     def got_message(self, protocol):
         if os.isatty(sys.stderr.fileno()):
