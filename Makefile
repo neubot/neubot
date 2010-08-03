@@ -20,7 +20,7 @@
 # Makefile
 #
 
-VERSION	= 0.1.5
+VERSION	= 0.1.6
 
 DEB     = dist/neubot-$(VERSION)-1_all.deb
 DESTDIR =
