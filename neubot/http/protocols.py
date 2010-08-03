@@ -177,11 +177,11 @@ class protocol:
 	def got_data(self, octets):
 		try:
 			self.application.got_data(self, octets)
-		except:
+		except AttributeError:
 			pass
 
 	def sent_data(self, octets):
 		try:
 			self.application.sent_data(self, octets)
-		except:
+		except AttributeError:
 			pass
