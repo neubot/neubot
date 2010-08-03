@@ -178,6 +178,7 @@ MYFILE      = None
 class client:
     def __init__(self, poller, uri, family=FAMILY, connections=CONNECTIONS,
                  myfile=None, head=HEAD):
+        self.done = False
         self.poller = poller
         self.uri = uri
         self.family = family
@@ -197,13 +198,14 @@ class client:
 
     def aborted(self, connector):
         logging.error("Connection to '%s' failed" % connector)
+        self.done = True
 
     def connected(self, connector, protocol):
         logging.debug("Connected to '%s'" % connector)
         clientcontext(protocol, self)
 
     def probe_done(self):
-        pass
+        self.done = True                                                # XXX
 
 class clientcontext:
     def __init__(self, protocol, client):

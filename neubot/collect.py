@@ -45,6 +45,7 @@ class servlet:
 
 class client:
     def __init__(self, poller, uri, octets, family=socket.AF_INET):
+        self.done = False
         self.poller = poller
         scheme, address, port, self.path = neubot.http.urlsplit(uri)
         secure =  scheme == "https"
@@ -55,6 +56,7 @@ class client:
 
     def aborted(self, connector):
         logging.error("Connection to '%s' failed" % connector)
+        self.done = True
 
     def connected(self, connector, protocol):
         logging.debug("Connected to '%s'" % connector)
@@ -98,6 +100,7 @@ class client:
 
     def closing(self, protocol):
         logging.debug("Connection to '%s' closed" % protocol)
+        self.done = True
 
 USAGE = 								\
 "Usage:\n"								\

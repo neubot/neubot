@@ -55,16 +55,6 @@ HELP =                                                                  \
 
 enabled = True
 
-# I don't like this thread solution--but see below.
-import threading
-class UI_thread(threading.Thread):
-    def run(self):
-        # XXX Here we must use the default poller
-        neubot.ui.init()
-        neubot.net.loop()
-def spawn_ui_thread():
-    UI_thread().start()
-
 def main(argv):
     count = -1
     sleeptime = 300
@@ -100,15 +90,8 @@ def main(argv):
         sys.exit(1)
     elif len(arguments) == 1:
         rendezvousuri = arguments[0]
-    #
-    # FIXME Yes, it's ugly to spawn a thread to handle the UI,
-    # and this is particularly bad because I don't have even
-    # thought at possible race issues--but at this point I am
-    # a bit short of time, and I feel it is a bit more impor-
-    # tant to focus on improving the UI.
-    #
-    poller = neubot.net.pollers.create_poller()
-    spawn_ui_thread()
+    poller = neubot.network.poller()
+    neubot.ui.init()
     if os.isatty(sys.stderr.fileno()):
         sys.stderr.write(
 "Measuring the time required to send request and get the response.\n")
@@ -119,7 +102,11 @@ def main(argv):
             if (os.isatty(sys.stderr.fileno())):
                 sys.stderr.write(WAITING % sleeptime)
             neubot.config.state = "SLEEPING"
-            time.sleep(sleeptime)
+            begin = time.time()
+            while True:
+                poller.dispatch()
+                if time.time() - begin >= sleeptime:
+                    break
             iters = iters + 1
             if iters == 3:
                 iters = 0
@@ -128,12 +115,16 @@ def main(argv):
         if count > 0:
             count = count -1
         try:
+            #
+            # Rendez-vous
+            #
             neubot.config.state = "RENDEZVOUS"
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
             client.set_version(neubot.version)
             before = time.time()
-            poller.loop()
+            while not client.done:
+                poller.dispatch()
             after = time.time()
             todolist = client.responsebody
             if (todolist.versioninfo.has_key(u"version") and
@@ -152,6 +143,9 @@ def main(argv):
                     continue
             if not enabled:
                 continue
+            #
+            # Negotiate
+            #
             neubot.config.state = "NEGOTIATE"
             try:
                 negotiateuri = todolist.available["http"]
@@ -171,7 +165,11 @@ def main(argv):
             client = neubot.negotiate.client(poller, negotiateuri)
             client.set_direction("download")
             client.set_length((1<<16))
-            poller.loop()
+            while not client.done:
+                poller.dispatch()
+            #
+            # Testing
+            #
             neubot.config.state = "TESTING"
             identifier = client.identifier
             params = client.params
@@ -183,12 +181,17 @@ def main(argv):
             client = neubot.measure.client(poller, uri, connections=1,
                                            head=latency)
             client.identifier = identifier                              # XXX
-            poller.loop()
+            while not client.done:
+                poller.dispatch()
+            #
+            # Collect
+            #
             neubot.config.state = "COLLECT"
             octets = neubot.table.stringify_entry(identifier)
             neubot.table.remove_entry(identifier)
-            neubot.collect.client(poller, collecturi, octets)
-            poller.loop()
+            client = neubot.collect.client(poller, collecturi, octets)
+            while not client.done:
+                poller.dispatch()
         except Exception:
             neubot.utils.prettyprint_exception()
 

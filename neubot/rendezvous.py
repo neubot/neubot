@@ -175,6 +175,7 @@ class servlet:
 class client:
     def __init__(self, poller, family=socket.AF_INET,
       uri="http://master.neubot.org:9773/rendez-vous/1.0/"):
+        self.done = False
         self.poller = poller
         scheme, address, port, self.path = neubot.http.urlsplit(uri)
         logging.info("Begin rendez-vous with %s" % address)
@@ -197,6 +198,7 @@ class client:
 
     def aborted(self, connector):
         logging.error("Connection to '%s' failed" % connector)
+        self.done = True
 
     def connected(self, connector, protocol):
         logging.debug("Connected to '%s'" % connector)
@@ -256,6 +258,7 @@ class client:
 
     def closing(self, protocol):
         logging.debug("Connection to '%s' closed" % protocol)
+        self.done = True
 
 USAGE =									\
 "Usage:\n"								\
