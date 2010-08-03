@@ -41,9 +41,6 @@ class acceptor:
 		self.application.aborted(self)
 
 	def _accepted(self, connection):
-		try:
-			adaptor = neubot.http.adaptor(connection)
-			protocol = neubot.http.protocol(adaptor)
-			self.application.got_client(protocol)
-		except:
-			neubot.utils.prettyprint_exception()
+		adaptor = neubot.http.adaptor(connection)
+		protocol = neubot.http.protocol(adaptor)
+		self.application.got_client(protocol)
