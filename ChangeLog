@@ -1,3 +1,17 @@
+Neubot 0.1.6 [2010-08-01]
+	* Makefile: sha256sum is not always available, so don't use it
+	* bin/unix/neubot: Remember to enter in verbose mode if -v is specified
+	* neubot.http: Send small messages using a single send()
+	* neubot.config: Add 'force' variable to configuration
+	* neubot.ui: Correct the methods allowed on "/enable"
+	* neubot.ui: Export '/force' option via RESTful API
+	* neubot.database: Simple work-around to file locking problem
+	* neubot.http: print message before trying to send it
+	* neubot.http: Bugfix MIME type negotiation
+	* neubot.net: Allow running just one iteration of the poller loop
+	* neubot.statusicon: Manage status icon in the notification area
+	* neubot.auto: Roll-out a thread-less solution
+
 Neubot 0.1.5 [2010-08-01]
 	* neubot.http: Add message-oriented API
 	* neubot.http: Add code for MIME type negotiation
