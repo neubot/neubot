@@ -196,3 +196,4 @@ def create_poller(timeout=1, get_ticks=ticks,
 poller = create_poller()
 dispatch = poller.dispatch
 loop = poller.loop
+register_periodic = poller.register_periodic
