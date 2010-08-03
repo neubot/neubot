@@ -102,6 +102,7 @@ def main(argv):
             if (os.isatty(sys.stderr.fileno())):
                 sys.stderr.write(WAITING % sleeptime)
             neubot.config.state = "SLEEPING"
+            neubot.notify.publish(neubot.notify.STATECHANGE)
             begin = time.time()
             while True:
                 poller.dispatch()
@@ -119,6 +120,7 @@ def main(argv):
             # Rendez-vous
             #
             neubot.config.state = "RENDEZVOUS"
+            neubot.notify.publish(neubot.notify.STATECHANGE)
             client = neubot.rendezvous.client(poller, uri=rendezvousuri)
             client.accept_test("http")
             client.set_version(neubot.version)
@@ -147,6 +149,7 @@ def main(argv):
             # Negotiate
             #
             neubot.config.state = "NEGOTIATE"
+            neubot.notify.publish(neubot.notify.STATECHANGE)
             try:
                 negotiateuri = todolist.available["http"]
                 #
@@ -171,6 +174,7 @@ def main(argv):
             # Testing
             #
             neubot.config.state = "TESTING"
+            neubot.notify.publish(neubot.notify.STATECHANGE)
             identifier = client.identifier
             params = client.params
             uri = params.uri
@@ -189,6 +193,7 @@ def main(argv):
             # Collect
             #
             neubot.config.state = "COLLECT"
+            neubot.notify.publish(neubot.notify.STATECHANGE)
             octets = neubot.table.stringify_entry(identifier)
             neubot.table.remove_entry(identifier)
             client = neubot.collect.client(poller, collecturi, octets)

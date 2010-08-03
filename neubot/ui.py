@@ -63,6 +63,7 @@ class Receiver:
     #
 
     def received(self, m):
+        m1 = None
         if m.uri == "/":
             if m.method == "GET":
                 mimetype = neubot.http.negotiate_mime(m, ["text/html",
@@ -388,11 +389,48 @@ class Receiver:
                 m1 = neubot.http.reply(m, code="405",
                  reason="Method Not Allowed")
                 m1["allow"] = "GET, PUT, POST"
+        elif m.uri == "/state/change":
+            neubot.notify.subscribe(neubot.notify.STATECHANGE,
+             self.statechanged, m)
         else:
             m1 = neubot.http.reply(m, code="404", reason="Not Found")
+        if m1:
         # We need to improve our support for keepalive
-        m1["connection"] = "close"
+            m1["connection"] = "close"
+            neubot.http.send(m1)
+
+    def statechanged(self, event, m):
+        m1 = self.compose_state(m)
         neubot.http.send(m1)
+
+    def compose_state(self, m):
+        if m.method == "GET":
+            mimetype = neubot.http.negotiate_mime(m, ["text/html",
+             "text/plain"], "text/plain")
+            body = []
+            if mimetype == "text/html":
+                body.append("<HTML>\n")
+                body.append(" <HEAD>\n")
+                body.append("  <TITLE>Neubot state</TITLE>\n")
+                body.append(" </HEAD>\n")
+                body.append(" <BODY>\n")
+                body.append("  %s\n" % neubot.config.state)
+                body.append(" </BODY>\n")
+                body.append("</HTML>\n")
+            elif mimetype == "text/plain":
+                body.append(neubot.config.state)
+                body.append("\n")
+            else:
+                raise Exception("Internal error")
+            body = "".join(body)
+            stringio = StringIO.StringIO(body)
+            m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+             reason="Ok", body=stringio)
+        else:
+            m1 = neubot.http.reply(m, code="405",
+             reason="Method Not Allowed")
+            m1["allow"] = "GET"
+        return m1
 
 receiver = Receiver()
 init = receiver.init
