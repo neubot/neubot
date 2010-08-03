@@ -64,7 +64,7 @@ class Publisher:
 			try:
 				if (path in self.names):
 					f = open(path, "rb")
-			except:
+			except IOError:
 				pass
 			if (f):
 				response.code, response.reason = "200", "Ok"
