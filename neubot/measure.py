@@ -119,7 +119,7 @@ class servercontext:
                 if self.server.myfile:
                     try:
                         myfile = open(self.server.myfile, "rb")
-                    except:
+                    except IOError:
                         myfile = None
                     if myfile:
                         # TODO Support Content-Range for more flexible testing
@@ -223,7 +223,7 @@ class clientcontext:
             self.request.method = "PUT"
             try:
                 myfile = open(self.client.myfile, "rb")
-            except:
+            except IOError:
                 myfile = None
             if myfile:
                 myfile.seek(0, os.SEEK_END)
