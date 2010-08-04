@@ -1,4 +1,22 @@
-Neubot 0.1.6 [2010-08-01]
+Neubot 0.1.7 [2010-08-04]
+	* neubot.http: protocols.py: Catch a specific exception, not all
+	* neubot.http: acceptors.py: Rm unneeded exception handling code
+	* neubot.http: adaptors.py: Catch specific exceptions, not all
+	* neubot.net: poller: Remove unneeded catch-all clauses
+	* neubot.measure: Catch a specific exception, not all
+	* neubot.negotiate: urlparse.urlsplit() should not raise exceptions
+	* neubot.rendezvous: Catch a specific exception, not all
+	* testing.publish: Catch a specific exception, not all
+	* neubot.container: Don't need to special case KeyboardInterrupt
+	* neubot.auto: Improve and comment exception handling
+	* neubot.net: Export register_periodic
+	* neubot.auto, neubot.measure: Make it possible to interrupt testing
+	* neubot.notify: Publish/subscribe mechanism
+	* neubot.ui: Export state change via comet
+	* neubot.ui: Add follow command
+	* neubot.statusicon: Use comet to track neubot state
+
+Neubot 0.1.6 [2010-08-03]
 	* Makefile: sha256sum is not always available, so don't use it
 	* bin/unix/neubot: Remember to enter in verbose mode if -v is specified
 	* neubot.http: Send small messages using a single send()
