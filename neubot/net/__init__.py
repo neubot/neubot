@@ -21,3 +21,5 @@ from neubot.net.listeners  import listen
 from neubot.net.pollers    import dispatch
 from neubot.net.pollers    import loop
 from neubot.net.pollers    import register_periodic
+from neubot.net.pollers    import sched
+from neubot.net.pollers    import unsched

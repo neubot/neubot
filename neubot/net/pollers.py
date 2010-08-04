@@ -48,6 +48,11 @@ class Pollable:
     def writetimeout(self, now):
         return False
 
+class PollerTask:
+    def __init__(self, time, func):
+        self.time = time
+        self.func = func
+
 class Poller:
     def __init__(self, timeout, get_ticks, notify_except):
         self.timeout = timeout
@@ -58,9 +63,42 @@ class Poller:
         self.readset = {}
         self.writeset = {}
         self.last = self.get_ticks()
+        self.added = set()
+        self.registered = {}
+        self.tasks = []
 
     def __del__(self):
         pass
+
+    #
+    # Unsched() does not remove a task, but it just marks it as "dead",
+    # and this means that (a) it sets its func member to None, and (b)
+    # its time to -1.  The (a) step breks the reference from the task
+    # to the object that registered the task (and so the object could
+    # possibly be collected).  The (b) step causes the dead task to be
+    # moved at the beginning of the list, and we do that because we
+    # don't want a dead task to linger in the list for some time (in
+    # other words we optimize for memory rather than for speed).
+    #
+
+    def sched(self, delta, func):
+        if self.registered.has_key(func):
+            task = self.registered[func]
+            task.time = self.get_ticks() + delta
+        else:
+            self.added.add((delta, func))
+
+    def unsched(self, delta, func):
+        if self.registered.has_key(func):
+            task = self.registered[func]
+            task.func = None
+            task.time = -1
+            del self.registered[func]
+        else:
+            # Not sure whether this could happen
+            entry = (delta, func)
+            if entry in self.added:
+                self.added.remove(entry)
 
     def register_periodic(self, periodic):
         self.periodic.add(periodic)
@@ -137,14 +175,16 @@ class Poller:
     #
 
     def loop(self):
-        while self.funcs or self.readset or self.writeset:
+        while self.added or self.tasks or self.funcs or self.readset or self.writeset:
             self.run_once_funcs()
+            self.update_tasks()
             self.dispatch_events()
             self.check_timeout()
 
     def dispatch(self):
-        if self.funcs or self.readset or self.writeset:
+        if self.added or self.tasks or self.funcs or self.readset or self.writeset:
             self.run_once_funcs()
+            self.update_tasks()
             self.dispatch_events()
             self.check_timeout()
 
@@ -153,6 +193,36 @@ class Poller:
         self.funcs = set()
         for func in copy:
             func()
+
+    #
+    # Tests shows that update_tasks() would be slower if we kept tasks
+    # sorted in reverse order--yes, with this arrangement it would be
+    # faster to delete elements (because it would be just a matter of
+    # shrinking the list), but the sort would be slower, and, our tests
+    # suggest that we loose more with the sort than we gain with the
+    # delete.
+    #
+
+    def update_tasks(self):
+        now = self.get_ticks()
+        if self.added:
+            for delta, func in self.added:
+                task = PollerTask(now + delta, func)
+                self.tasks.append(task)
+                self.registered[func] = task
+            self.added.clear()
+        if self.tasks:
+            self.tasks.sort(key=lambda task: task.time)
+            index = 0
+            for task in self.tasks:
+                if task.time > 0:
+                    if task.time > now:
+                        break
+                    if task.func:                       # redundant
+                        del self.registered[task.func]
+                        task.func()
+                index = index + 1
+            del self.tasks[:index]
 
     def dispatch_events(self):
         if self.readset or self.writeset:
@@ -168,7 +238,7 @@ class Poller:
                     self._readable(fileno)
                 for fileno in res[1]:
                     self._writable(fileno)
-        elif not self.funcs:
+        elif not self.tasks and not self.funcs:
             logging.warning("Nothing to do--this is probably a bug")
             time.sleep(self.timeout)
 
@@ -197,3 +267,5 @@ poller = create_poller()
 dispatch = poller.dispatch
 loop = poller.loop
 register_periodic = poller.register_periodic
+sched = poller.sched
+unsched = poller.unsched
