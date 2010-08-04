@@ -48,11 +48,13 @@ import gobject
 import neubot
 
 TIMEOUT = 250
-URI = "http://127.0.0.1:9774/state"
+STATECHANGE = "http://127.0.0.1:9774/state/change"
+STATE = "http://127.0.0.1:9774/state"
 
 class TrayIcon:
     def __init__(self):
         self.needsend = True
+        self.havestate = False
         self.tray = gtk.StatusIcon()
         self.tray.set_from_icon_name(gtk.STOCK_NETWORK)                 # XXX
         self.tray.connect("popup-menu", self.on_popup_menu)
@@ -68,13 +70,18 @@ class TrayIcon:
 
     def update(self):
         if self.needsend:
-            m = neubot.http.compose(method="GET", uri=URI, keepalive=False)
+            uri = STATE
+            if self.havestate:
+                uri = STATECHANGE
+            m = neubot.http.compose(method="GET", uri=uri, keepalive=False)
             neubot.http.send(m, sent=self.sent, cantsend=self.cantsend)
         neubot.net.dispatch()
         gobject.timeout_add(TIMEOUT, self.update)
 
     def cantsend(self, m):
         self.needsend = True
+        self.tray.set_visible(False)
+        self.havestate = False
 
     def sent(self, m):
         neubot.http.recv(m, received=self.received, cantrecv=self.cantrecv)
@@ -82,13 +89,20 @@ class TrayIcon:
     def received(self, m):
         if m.code == "200":
             body = m.body.read().strip()                                # XXX
+            if not self.havestate:
+                self.havestate = True
             if body != "SLEEPING":
                 self.tray.set_visible(True)
                 #self.tray.set_blinking(True)
+                self.tray.set_tooltip("neubot: " + body.lower())
+            else:
+                self.tray.set_visible(False)
         self.needsend = True
 
     def cantrecv(self, m):
         self.needsend = True
+        self.tray.set_visible(False)
+        self.havestate = False
 
 if __name__ == "__main__":
     gtk.gdk.threads_init()
