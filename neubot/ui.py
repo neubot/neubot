@@ -447,15 +447,63 @@ def got_response(m):
 def sent_request(m):
     neubot.http.recv(m, received=got_response)
 
+def makeuri(address, port, variable):
+    return "http://" + address + ":" + port + "/" + variable
+
 def doget(vector):
     if len(vector) == 1:
         variable = vector[0]
-        uri = "http://" + address + ":" + port + "/" + variable
+        uri = makeuri(address, port, variable)
         m = neubot.http.compose(method="GET", uri=uri, keepalive=False)
         neubot.http.send(m, sent=sent_request)
         neubot.net.loop()
     else:
         sys.stderr.write("Usage: get variable\n")
+
+class FollowerError(Exception):
+    pass
+
+class Follower:
+    def __init__(self, vector):
+        if len(vector) == 1:
+            self.variable = vector[0]
+            sys.stdout.write("Following '%s'..." % self.variable)
+            try:
+                uri = makeuri(address, port, self.variable)
+                m = neubot.http.compose(method="GET",
+                 uri=uri, keepalive=False)
+                neubot.http.send(m, sent=self.sent_request)
+                neubot.net.loop()
+                uri = makeuri(address, port, self.variable + "/change")
+                while True:
+                    m = neubot.http.compose(method="GET",
+                     uri=uri, keepalive=False)
+                    neubot.http.send(m, sent=self.sent_request)
+                    neubot.net.loop()
+            except KeyboardInterrupt:
+                sys.stdout.write("\n")
+            except FollowerError:
+                pass
+        else:
+            sys.stderr.write("Usage: follow variable\n")
+
+    def sent_request(self, m):
+        neubot.http.recv(m, received=self.got_response)
+
+    def got_response(self, m):
+        if m.code[0] == "2":
+            body = m.body.read().strip()
+            sys.stdout.write("\r")
+            sys.stdout.write(" " * 80)
+            sys.stdout.write("\rFollowing '%s'... " % self.variable)
+            sys.stdout.write("%s" % body)
+            sys.stdout.flush()
+        else:
+            sys.stderr.write("\nERROR: %s %s\n" % (m.code, m.reason))
+            raise FollowerError
+
+def dofollow(vector):
+    Follower(vector)
 
 def dols(vector):
     if len(vector) == 0:
@@ -483,6 +531,7 @@ def doset(vector):
 def dohelp(vector):
     if len(vector) == 0:
         sys.stdout.write("Commands:\n")
+        sys.stdout.write("    follow variable\n")
         sys.stdout.write("    get variable\n")
         sys.stdout.write("    help [command]\n")
         sys.stdout.write("    ls\n")
@@ -490,7 +539,10 @@ def dohelp(vector):
         sys.stdout.write("    source file\n")
     elif len(vector) == 1:
         name = vector[0]
-        if name == "get":
+        if name == "follow":
+            sys.stdout.write("follow variable\n")
+            sys.stdout.write("    Follow variable evolution over time\n")
+        elif name == "get":
             sys.stdout.write("get variable\n")
             sys.stdout.write("    Get the value of variable\n")
         elif name == "help":
@@ -528,7 +580,9 @@ def docommand(vector):
     if len(vector) > 0:
         command = vector[0]
         arguments = vector[1:]
-        if command == "get":
+        if command == "follow":
+            dofollow(arguments)
+        elif command == "get":
             doget(arguments)
         elif command == "help":
             dohelp(arguments)
