@@ -129,12 +129,14 @@ class Poller:
         self.writeset[stream.fileno()] = stream
 
     def unset_readable(self, stream):
-        if self.readset.has_key(stream.fileno()):
-            del self.readset[stream.fileno()]
+        fileno = stream.fileno()
+        if self.readset.has_key(fileno):
+            del self.readset[fileno]
 
     def unset_writable(self, stream):
-        if self.writeset.has_key(stream.fileno()):
-            del self.writeset[stream.fileno()]
+        fileno = stream.fileno()
+        if self.writeset.has_key(fileno):
+            del self.writeset[fileno]
 
     def close(self, stream):
         self.unset_readable(stream)
