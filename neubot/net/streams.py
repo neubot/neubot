@@ -35,20 +35,6 @@ TIMEOUT = 300
 # To improve this class we can:
 #   1. Update .ticks after a partial send() for more precise timeout
 #      calculation.
-#   2. Address the case when the caller is doing something like:
-#        ...
-#        def send_data(self, stream, octets):
-#            data = self.get_data()
-#            stream.send(data, self.send_data)
-#        ...
-#      The problem is that our code unset_writable() before invoking
-#      the user defined callback (in this case send_data()), but the
-#      callback invokes send() which in turn invokes set_writable().
-#      We should optimize for this case, and then measure whether it
-#      is worth doing that.  By the way, it seems feasible to write
-#      the optimization, because we already detect when the callback
-#      for send() invokes send() again (self.issending == True.)
-#      Of course, we have the same problem with recv().
 #
 
 class Stream(Pollable):
