@@ -43,6 +43,8 @@ class Stream(Pollable):
         self._fileno = fileno
         self.myname = myname
         self.peername = peername
+        self.readable = None
+        self.writable = None
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
@@ -92,12 +94,6 @@ class Stream(Pollable):
     def fileno(self):
         return self._fileno
 
-    def readable(self):
-        raise Exception("Should have been overriden")
-
-    def writable(self):
-        raise Exception("Should have been overriden")
-
     #
     # When the user issues an active close we need to reset
     # the state of async send() and recv() to avoid calling
@@ -145,6 +141,28 @@ class Stream(Pollable):
     # discarded) or because of EOF (and so the message is good.)
     #
 
+    def set_readable(self, func):
+        if not self.readable:
+            self.poller.set_readable(self)
+        if self.readable != func:
+            self.readable = func
+
+    def set_writable(self, func):
+        if not self.writable:
+            self.poller.set_writable(self)
+        if self.writable != func:
+            self.writable = func
+
+    def unset_readable(self):
+        if self.readable:
+            self.poller.unset_readable(self)
+            self.readable = None
+
+    def unset_writable(self):
+        if self.writable:
+            self.poller.unset_writable(self)
+            self.writable = None
+
     def recv(self, maxlen, recv_success, recv_error=None):
         if not self.isclosing:
             self.recv_maxlen = maxlen
@@ -161,11 +179,9 @@ class Stream(Pollable):
             panic = ""
             if self.sendblocked:
                 if self.send_pending:
-                    self.poller.set_writable(self)
-                    self.writable = self._do_send
+                    self.set_writable(self._do_send)
                 else:
-                    self.poller.unset_writable(self)
-                    self.writable = None
+                    self.unset_writable()
                 # Unblock send() because we restored writable()
                 self.sendblocked = False
             status, octets = self.sorecv(self.recv_maxlen)
@@ -182,20 +198,16 @@ class Stream(Pollable):
                     # Notify() might invoke send() that might block recv()
                     if not self.recvblocked:
                         if not self.recv_pending:
-                            self.poller.unset_readable(self)
-                            self.readable = None
+                            self.unset_readable()
                         else:
-                            self.poller.set_readable(self)
-                            self.readable = self._do_recv
+                            self.set_readable(self._do_recv)
                 else:
                     self.eof = True
                     self.poller.close(self)
             elif status == WANT_READ:
-                self.poller.set_readable(self)
-                self.readable = self._do_recv
+                self.set_readable(self._do_recv)
             elif status == WANT_WRITE:
-                self.poller.set_writable(self)
-                self.writable = self._do_recv
+                self.set_writable(self._do_recv)
                 # Block send() because we changed writable()
                 self.sendblocked = True
             elif status == ERROR:
@@ -223,11 +235,9 @@ class Stream(Pollable):
             panic = ""
             if self.recvblocked:
                 if self.recv_pending:
-                    self.poller.set_readable(self)
-                    self.readable = self._do_recv
+                    self.set_readable(self._do_recv)
                 else:
-                    self.poller.unset_readable(self)
-                    self.readable = None
+                    self.unset_readable()
                 # Unblock recv() because we restored readable()
                 self.recvblocked = False
             subset = buffer(self.send_octets, self.send_pos)
@@ -236,8 +246,7 @@ class Stream(Pollable):
                 if count > 0:
                     self.send_pos += count
                     if self.send_pos < len(self.send_octets):
-                        self.poller.set_writable(self)
-                        self.writable = self._do_send
+                        self.set_writable(self._do_send)
                     elif self.send_pos == len(self.send_octets):
                         notify = self.send_success
                         octets = self.send_octets
@@ -252,21 +261,17 @@ class Stream(Pollable):
                         # Notify() might invoke recv() that might block send()
                         if not self.sendblocked:
                             if not self.send_pending:
-                                self.poller.unset_writable(self)
-                                self.writable = None
+                                self.unset_writable()
                             else:
-                                self.poller.set_writable(self)
-                                self.writable = self._do_send
+                                self.set_writable(self._do_send)
                     else:
                         panic = "Internal error"
                 else:
                     panic = "Unexpected count value"
             elif status == WANT_WRITE:
-                self.poller.set_writable(self)
-                self.writable = self._do_send
+                self.set_writable(self._do_send)
             elif status == WANT_READ:
-                self.poller.set_readable(self)
-                self.readable = self._do_send
+                self.set_readable(self._do_send)
                 # Block recv() because we changed readable()
                 self.recvblocked = True
             elif status == ERROR:
