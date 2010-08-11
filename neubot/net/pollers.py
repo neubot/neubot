@@ -49,9 +49,11 @@ class Pollable:
         return False
 
 class PollerTask:
-    def __init__(self, time, func):
+    def __init__(self, time, func, periodic, delta):
         self.time = time
         self.func = func
+        self.periodic = periodic
+        self.delta = delta
 
 class Poller:
     def __init__(self, timeout, get_ticks, notify_except):
@@ -81,12 +83,13 @@ class Poller:
     # other words we optimize for memory rather than for speed).
     #
 
-    def sched(self, delta, func):
+    def sched(self, delta, func, periodic=False):
         if self.registered.has_key(func):
             task = self.registered[func]
             task.time = self.get_ticks() + delta
+            task.periodic = periodic
         else:
-            self.added.add((delta, func))
+            self.added.add((delta, func, periodic))
 
     def unsched(self, delta, func):
         if self.registered.has_key(func):
@@ -206,8 +209,8 @@ class Poller:
     def update_tasks(self):
         now = self.get_ticks()
         if self.added:
-            for delta, func in self.added:
-                task = PollerTask(now + delta, func)
+            for delta, func, periodic in self.added:
+                task = PollerTask(now + delta, func, periodic, delta)
                 self.tasks.append(task)
                 self.registered[func] = task
             self.added.clear()
@@ -220,7 +223,11 @@ class Poller:
                         break
                     if task.func:                       # redundant
                         del self.registered[task.func]
-                        task.func()
+                        if task.periodic:
+                            task.func(now)
+                            self.sched(task.delta, task.func, True)
+                        else:
+                            task.func()
                 index = index + 1
             del self.tasks[:index]
 
