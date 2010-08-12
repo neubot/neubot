@@ -28,6 +28,8 @@ import time
 from neubot.utils import prettyprint_exception
 from neubot.utils import ticks
 
+import neubot
+
 # Base class for every socket managed by the poller
 class Pollable:
     def closing(self):
@@ -60,14 +62,12 @@ class Poller:
         self.timeout = timeout
         self.get_ticks = get_ticks
         self.notify_except = notify_except
-        self.periodic = set()
-        self.funcs = set()
         self.readset = {}
         self.writeset = {}
-        self.last = self.get_ticks()
         self.added = set()
         self.registered = {}
         self.tasks = []
+        self.sched(self.timeout, self.check_timeout)
 
     def __del__(self):
         pass
@@ -103,15 +103,24 @@ class Poller:
             if entry in self.added:
                 self.added.remove(entry)
 
+    #
+    # BEGIN deprecated functions
+    # Use the sched() / unsched() interface instead
+
     def register_periodic(self, periodic):
-        self.periodic.add(periodic)
+        neubot.log.debug("register_periodic() is deprecated")
+        self.sched(self.timeout, periodic, True)
 
     def unregister_periodic(self, periodic):
-        if periodic in self.periodic:
-            self.periodic.remove(periodic)
+        neubot.log.debug("unregister_periodic() is deprecated")
+        self.unsched(self.timeout, periodic)
 
     def register_func(self, func):
-        self.funcs.add(func)
+        neubot.log.debug("register_func() is deprecated")
+        self.sched(0, func)
+
+    # END deprecated functions
+    #
 
     def set_readable(self, stream):
         self.readset[stream.fileno()] = stream
@@ -178,24 +187,14 @@ class Poller:
     #
 
     def loop(self):
-        while self.added or self.tasks or self.funcs or self.readset or self.writeset:
-            self.run_once_funcs()
+        while self.added or self.tasks or self.readset or self.writeset:
             self.update_tasks()
             self.dispatch_events()
-            self.check_timeout()
 
     def dispatch(self):
-        if self.added or self.tasks or self.funcs or self.readset or self.writeset:
-            self.run_once_funcs()
+        if self.added or self.tasks or self.readset or self.writeset:
             self.update_tasks()
             self.dispatch_events()
-            self.check_timeout()
-
-    def run_once_funcs(self):
-        copy = self.funcs.copy()
-        self.funcs = set()
-        for func in copy:
-            func()
 
     #
     # Tests shows that update_tasks() would be slower if we kept tasks
@@ -245,13 +244,14 @@ class Poller:
                     self._readable(fileno)
                 for fileno in res[1]:
                     self._writable(fileno)
-        elif not self.tasks and not self.funcs:
+        elif not self.tasks:
             logging.warning("Nothing to do--this is probably a bug")
             time.sleep(self.timeout)
 
     def check_timeout(self):
-        now = self.get_ticks()
-        if now - self.last > self.timeout:
+        if self.readset or self.writeset:
+            self.sched(self.timeout, self.check_timeout)
+            now = self.get_ticks()
             x = self.readset.values()
             for stream in x:
                 if stream.readtimeout(now):
@@ -260,11 +260,6 @@ class Poller:
             for stream in x:
                 if stream.writetimeout(now):
                     self.close(stream)
-            if self.periodic:
-                copy = self.periodic.copy()
-                for periodic in copy:
-                    periodic(now)
-            self.last = now
 
 def create_poller(timeout=1, get_ticks=ticks,
         notify_except=prettyprint_exception):
