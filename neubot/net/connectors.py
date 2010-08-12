@@ -39,18 +39,27 @@ from neubot.net.pollers import Pollable, poller
 # we don't have to test the [EINPROGRESS, EWOULDBLOCK] corner case.
 #
 
+CONNECTARGS = {
+    "cantconnect" : lambda: None,
+    "connecting"  : lambda: None,
+    "conntimeo"   : 10,
+    "family"      : socket.AF_INET,
+    "poller"      : poller,
+    "secure"      : False,
+}
+
 class Connector(Pollable):
-    def __init__(self, address, port, connected, connecting, cantconnect,
-                 poller, family, secure, conntimeo):
+    def __init__(self, address, port, connected, **kwargs):
         self.address = address
         self.port = port
         self.connected = connected
-        self.connecting = connecting
-        self.cantconnect = cantconnect
-        self.poller = poller
-        self.family = family
-        self.secure = secure
-        self.conntimeo = conntimeo
+        self.kwargs = neubot.utils.fixkwargs(kwargs, CONNECTARGS)
+        self.connecting = self.kwargs["connecting"]
+        self.cantconnect = self.kwargs["cantconnect"]
+        self.poller = self.kwargs["poller"]
+        self.family = self.kwargs["family"]
+        self.secure = self.kwargs["secure"]
+        self.conntimeo = self.kwargs["conntimeo"]
         self.begin = 0
         self.sock = None
         self._connect()
@@ -73,20 +82,17 @@ class Connector(Pollable):
                     self.sock = sock
                     self.begin = self.poller.get_ticks()
                     self.poller.set_writable(self)
-                    if self.connecting:
-                        self.connecting()
+                    self.connecting()
                     break
                 except socket.error:
                     neubot.utils.prettyprint_exception()
         except socket.error:
             neubot.utils.prettyprint_exception()
         if not self.sock:
-            if self.cantconnect:
-                self.cantconnect()
+            self.cantconnect()
 
     def closing(self):
-        if self.cantconnect:
-            self.cantconnect()
+        self.cantconnect()
 
     def fileno(self):
         return self.sock.fileno()
@@ -108,17 +114,13 @@ class Connector(Pollable):
                 x = self.sock
             stream = create_stream(x, self.poller, self.sock.fileno(),
                      self.sock.getsockname(), self.sock.getpeername())
-            if self.connected:
-                self.connected(stream)
+            self.connected(stream)
         except (socket.error, ssl.SSLError):
             neubot.utils.prettyprint_exception()
-            if self.cantconnect:
-                self.cantconnect()
+            self.cantconnect()
 
     def writetimeout(self, now):
         return now - self.begin > self.conntimeo
 
-def connect(address, port, connected, connecting=None, cantconnect=None,
-            poller=poller, family=socket.AF_INET, secure=False, conntimeo=10):
-    Connector(address, port, connected, connecting, cantconnect,
-              poller, family, secure, conntimeo)
+def connect(address, port, connected, **kwargs):
+    Connector(address, port, connected, **kwargs)
