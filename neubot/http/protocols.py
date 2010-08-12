@@ -16,65 +16,76 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-import StringIO
-import collections
-import logging
-import os
-
 import neubot
+from neubot.http.handlers import Receiver
 
-SMALLMESSAGE = 64000
-
-PROTOCOLS = [ "HTTP/1.1", "HTTP/1.0" ]
 TIMEOUT   = 300
 
-class protocol:
-	def __init__(self, adaptor):
-		self.adaptor = adaptor
-		self.adaptor.attach(self)
+class protocol(Receiver):
+	def __init__(self, handler):
+		self.handler = handler
+		self.handler.attach(self)
 		self.message = None
 		self.application = None
 		self.sockname = reduce(neubot.network.concatname,
-		    adaptor.connection.myname)
+		    handler.stream.myname)
 		self.peername = reduce(neubot.network.concatname,
-		    adaptor.connection.peername)
+		    handler.stream.peername)
 		self.begin = neubot.utils.ticks()
-		self.poller = self.adaptor.connection.poller
-		self.poller.register_periodic(self.periodic)
+		neubot.net.register_periodic(self.periodic)
 		self.have_body = True
 		self.timeout = TIMEOUT
-		self.waitingclose = False
 
 	def __str__(self):
 		return self.peername
 
 	def periodic(self, now):
 		if now - self.begin > self.timeout:
-			logging.warning("Watchdog timeout")
-			self.poller.register_func(self.close)
-
-        #
-        # In passive close mode we wait for the client to close the
-        # connection, and, if this does not happen for one second,
-        # we close the connection.  We read a message because we want
-        # the poller to check the socket for readability--indeed the
-        # socket becomes readable when the other end closes the conn-
-        # ection.
-        # XXX Do not lower the timeout to one second because that caused
-        # measurements to fail when running from an home connection such
-        # as my home ADSL.
-        #
+			neubot.log.warning("Watchdog timeout")
+			neubot.net.register_func(self.close)
 
 	def passiveclose(self):
-		#self.timeout = 1
-		self.waitingclose = True
-		self.recvmessage()
+		self.handler.passiveclose()
 
-	def closing(self):
-		self.poller.unregister_periodic(self.periodic)
-		self.adaptor = None
+	def oclosing(self):
+		neubot.net.unregister_periodic(self.periodic)
+		self.handler = None
                 if self.application:
 			self.application.closing(self)
+
+	# ___ Begin neubot.http.Receiver impl. ___
+
+	def closing(self):
+		self.oclosing()
+
+	def progress(self, data):
+		self.got_data(data)
+
+	def got_request_line(self, method, uri, protocol):
+                self.message = neubot.http.message()
+		self.message.method = method
+		self.message.uri = uri
+		self.message.protocol = protocol
+
+	def got_response_line(self, protocol, code, reason):
+                self.message = neubot.http.message()
+		self.message.protocol = protocol
+		self.message.code = code
+		self.message.reason = reason
+
+	def got_header(self, key, value):
+		self.message[key] = value
+
+	def end_of_headers(self):
+		return self.got_metadata()
+
+	def got_piece(self, piece):
+		self.got_body_part(piece)
+
+	def end_of_body(self):
+		self.got_body()
+
+	# ___ End neubot.http.Receiver impl. ___
 
 	def got_body(self):
 		if self.application:
@@ -83,41 +94,11 @@ class protocol:
 	def got_body_part(self, octets):
 		self.message.body.write(octets)
 
-	def got_metadata(self, metadata):
-		if self.waitingclose:
-		    logging.warning("Client should have closed the connection")
-		    return
-		self.message = neubot.http.message()
-		headers = metadata.split("\r\n")
-		for line in headers:
-			if (line == ""):
-				break
-			if (not self.message.protocol):
-				vector = line.split(" ", 2)
-				if (len(vector) != 3):
-					raise (Exception("Invalid line"))
-				if (vector[0] in PROTOCOLS):
-					self.message.protocol = vector[0]
-					self.message.code = vector[1]
-					self.message.reason = vector[2]
-				elif (vector[2] in PROTOCOLS):
-					self.message.method = vector[0]
-					self.message.uri = vector[1]
-					self.message.protocol = vector[2]
-				else:
-					raise (Exception("Invalid line"))
-			else:
-				vector = line.split(":", 1)		# XXX
-				if (len(vector) != 2):
-					raise (Exception("Invalid line"))
-				key, value = vector
-				key, value = key.strip(), value.strip()
-				self.message[key] = value
+	def got_metadata(self):
 		self.application.got_metadata(self)
 		if self.have_body:
 			if (self.message["transfer-encoding"] == "chunked"):
-				self.adaptor.get_chunked_body()
-				return
+				return neubot.http.CHUNK_LENGTH, 0
 			if (self.message["content-length"]):
 				value = self.message["content-length"]
 				try:
@@ -125,13 +106,12 @@ class protocol:
 				except ValueError:
 					length = -1
 				if (length < 0):
-					raise (Exception("Invalid line"))
-				self.adaptor.get_bounded_body(length)
-				return
+					return neubot.http.ERROR, 0
+				return neubot.http.BOUNDED, length
 			if (self.application.is_message_unbounded(self)):
-				self.adaptor.get_unbounded_body()
-				return
+				return neubot.http.UNBOUNDED, 8000
 		self.application.got_message(self)
+		return neubot.http.IDLE, 0
 
 	def sent_all(self):
 		self.application.message_sent(self)
@@ -140,33 +120,18 @@ class protocol:
 		self.application = application
 
 	def close(self):
-		self.adaptor.close()
+		self.handler.close()
 
 	def sendmessage(self, msg):
-            queue = collections.deque()
-            queue.append(msg.serialize_headers())
-            queue.append(msg.serialize_body())
-            length = 0
-            for stringio in queue:
-                stringio.seek(0, os.SEEK_END)
-                length += stringio.tell()
-                stringio.seek(0, os.SEEK_SET)
-            if length <= SMALLMESSAGE:
-                vector = []
-                while len(queue) > 0:
-                    stringio = queue.popleft()
-                    vector.append(stringio.read())
-                content = "".join(vector)
-                stringio = StringIO.StringIO(content)
-                queue.append(stringio)
-            for stringio in queue:
-                self.adaptor.send(stringio)
+            self.handler.bufferize(msg.serialize_headers())
+            self.handler.bufferize(msg.serialize_body())
+            self.handler.flush(self.sent_all, flush_progress=self.sent_data)
 
 	def donthavebody(self):
 		self.have_body = False
 
 	def recvmessage(self):
-		self.adaptor.get_metadata()
+		pass
 
 	def __del__(self):
 		pass

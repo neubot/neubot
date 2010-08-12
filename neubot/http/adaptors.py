@@ -19,6 +19,19 @@
 import collections
 import neubot
 
+#
+# New code.
+# The adaptor class is deprecated--this is the magic that lets the
+# old code use the new Handler class instead of the old adaptor.
+#
+
+def adaptor(stream):
+    return neubot.http.Handler(stream)
+
+#
+# Old code.
+#
+
 MAXLENGTH = (1<<23)
 PIECE = (1<<20)
 
@@ -27,7 +40,7 @@ READING_CHUNK = 1
 READING_END = 2
 READING_TRAILERS = 3
 
-class adaptor:
+class oadaptor:
 	def __init__(self, connection):
 		self.connection = connection
 		self.connection.notify_closing = self.closing
