@@ -28,18 +28,29 @@ import neubot
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
 
+LISTENARGS = {
+    "cantbind"   : lambda: None,
+    "certfile"   : None,
+    "family"     : socket.AF_INET,
+    "listening"  : lambda: None,
+#   "maxclients" : 7,
+#   "maxconns"   : 4,
+    "poller"     : poller,
+    "secure"     : False,
+}
+
 class Listener(Pollable):
-    def __init__(self, address, port, accepted, listening, cantbind,
-                 poller, family, secure, certfile):
+    def __init__(self, address, port, accepted, **kwargs):
         self.address = address
         self.port = port
         self.accepted = accepted
-        self.listening = listening
-        self.cantbind = cantbind
-        self.poller = poller
-        self.family = family
-        self.secure = secure
-        self.certfile = certfile
+        self.kwargs = neubot.utils.fixkwargs(kwargs, LISTENARGS)
+        self.listening = self.kwargs["listening"]
+        self.cantbind = self.kwargs["cantbind"]
+        self.poller = self.kwargs["poller"]
+        self.family = self.kwargs["family"]
+        self.secure = self.kwargs["secure"]
+        self.certfile = self.kwargs["certfile"]
         self.sock = None
         self._listen()
 
@@ -60,16 +71,14 @@ class Listener(Pollable):
                     sock.listen(128)
                     self.sock = sock
                     self.poller.set_readable(self)
-                    if self.listening:
-                        self.listening()
+                    self.listening()
                     break
                 except socket.error:
                     neubot.utils.prettyprint_exception()
         except socket.error:
             neubot.utils.prettyprint_exception()
         if not self.sock:
-            if self.cantbind:
-                self.cantbind()
+            self.cantbind()
 
     def fileno(self):
         return self.sock.fileno()
@@ -88,18 +97,9 @@ class Listener(Pollable):
                 x = sock
             stream = create_stream(x, self.poller, sock.fileno(),
                           sock.getsockname(), sock.getpeername())
-            if self.accepted:
-                self.accepted(stream)
+            self.accepted(stream)
         except (socket.error, ssl.SSLError):
             neubot.utils.prettyprint_exception()
 
-#
-# TODO
-#   (1) Maxclient, maxconns are not yet implemented
-#
-
-def listen(address, port, accepted, listening=None, cantbind=None,
-           poller=poller, family=socket.AF_INET, secure=False,
-           certfile=None, maxclients=7, maxconns=4):
-    Listener(address, port, accepted, listening, cantbind, poller,
-             family, secure, certfile)
+def listen(address, port, accepted, **kwargs):
+    Listener(address, port, accepted, **kwargs)
