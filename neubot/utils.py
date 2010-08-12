@@ -43,6 +43,12 @@ def prettyprint_json(write, prefix, octets, eol=""):
     for line in lines.splitlines():
         write(prefix + line + eol)
 
+def fixkwargs(kwargs, defaults):
+    for key in defaults.keys():
+        if not kwargs.has_key(key):
+            kwargs[key] = defaults[key]
+    return kwargs
+
 #
 # neubot.utils.timestamp()
 #   Suitable for timestamping, returns an *integer* representing the
