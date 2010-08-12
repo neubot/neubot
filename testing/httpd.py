@@ -20,6 +20,10 @@
 # A very stripped-down httpd(1)
 #
 
+import sys
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
 import StringIO, neubot
 
 def received(message):
