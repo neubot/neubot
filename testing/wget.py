@@ -20,7 +20,11 @@
 # A very stripped-down wget(1)
 #
 
-import neubot, sys
+import sys
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
+import neubot
 
 def received(message):
     sys.stdout.write(message.body.read())
