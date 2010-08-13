@@ -196,7 +196,7 @@ class Stream(Pollable):
                     if notify:
                         notify(self, octets)
                     # Notify() might invoke send() that might block recv()
-                    if not self.recvblocked:
+                    if not self.recvblocked and not self.isclosing:
                         if not self.recv_pending:
                             self.unset_readable()
                         else:
@@ -259,7 +259,7 @@ class Stream(Pollable):
                         if notify:
                             notify(self, octets)
                         # Notify() might invoke recv() that might block send()
-                        if not self.sendblocked:
+                        if not self.sendblocked and not self.isclosing:
                             if not self.send_pending:
                                 self.unset_writable()
                             else:
