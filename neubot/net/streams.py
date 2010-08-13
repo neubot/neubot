@@ -69,28 +69,6 @@ class Stream(Pollable):
     def __del__(self):
         pass
 
-    #
-    # When .closing() is invoked the poller has already removed any
-    # reference to this object.
-    # For passive close (e.g. connection closed by remote host)
-    # we expect recv_error() and send_error() to remove any extra
-    # reference to this object.
-    # Notify_closing() propagates the "closing" event and is an
-    # alternative to send_error and recv_error.
-    #
-
-    def closing(self):
-        self.isclosing = True
-        self.soclose()
-        if self.recv_error:
-            self.recv_error(self)
-        if self.send_error:
-            self.send_error(self)
-        self.readable = None
-        self.writable = None
-        if self.notify_closing:
-            self.notify_closing()
-
     def fileno(self):
         return self._fileno
 
@@ -103,18 +81,32 @@ class Stream(Pollable):
     #
 
     def close(self):
+        self._do_close()
+
+    def _do_close(self):
         if not self.isclosing:
+            self.isclosing = True
+            if self.recv_error:
+                self.recv_error(self)
+                self.recv_error = None
+            if self.send_error:
+                self.send_error(self)
+                self.send_error = None
+            if self.notify_closing:
+                self.notify_closing()
+                self.notify_closing = None
             self.send_octets = None
             self.send_success = None
             self.send_ticks = 0
             self.send_pos = 0
             self.send_pending = False
-            self.send_error = None
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
             self.recv_pending = False
-            self.recv_error = None
+            self.readable = None
+            self.writable = None
+            self.soclose()
             self.poller.close(self)
 
     def readtimeout(self, now):
@@ -203,7 +195,7 @@ class Stream(Pollable):
                             self.set_readable(self._do_recv)
                 else:
                     self.eof = True
-                    self.poller.close(self)
+                    self._do_close()
             elif status == WANT_READ:
                 self.set_readable(self._do_recv)
             elif status == WANT_WRITE:
@@ -211,7 +203,7 @@ class Stream(Pollable):
                 # Block send() because we changed writable()
                 self.sendblocked = True
             elif status == ERROR:
-                self.poller.close(self)
+                self._do_close()
             else:
                 panic = "Unexpected status value"
             self.isreceiving = False
@@ -275,7 +267,7 @@ class Stream(Pollable):
                 # Block recv() because we changed readable()
                 self.recvblocked = True
             elif status == ERROR:
-                self.poller.close(self)
+                self._do_close()
             else:
                 panic = "Unexpected status value"
             self.issending = False

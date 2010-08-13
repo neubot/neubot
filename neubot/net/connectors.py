@@ -91,9 +91,6 @@ class Connector(Pollable):
         if not self.sock:
             self.cantconnect()
 
-    def closing(self):
-        self.cantconnect()
-
     def fileno(self):
         return self.sock.fileno()
 

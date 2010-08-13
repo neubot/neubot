@@ -32,9 +32,6 @@ import neubot
 
 # Base class for every socket managed by the poller
 class Pollable:
-    def closing(self):
-        pass
-
     def fileno(self):
         raise Exception("You must override this method")
 
@@ -141,7 +138,6 @@ class Poller:
     def close(self, stream):
         self.unset_readable(stream)
         self.unset_writable(stream)
-        stream.closing()
 
     #
     # We are very careful when accessing readset and writeset because

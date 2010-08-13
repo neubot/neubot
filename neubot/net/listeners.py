@@ -83,9 +83,6 @@ class Listener(Pollable):
     def fileno(self):
         return self.sock.fileno()
 
-    def closing(self):
-        self.sock.close()
-
     def readable(self):
         try:
             sock, sockaddr = self.sock.accept()
