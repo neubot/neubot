@@ -235,7 +235,7 @@ class Recv:
 
 def recv(message, received=None, trylisten=None, cantbind=None,
          listening=None, tryrecv=None, receiving=None, cantrecv=None,
-         nochunks=True, maxclients=7, maxconn=4, recvtimeo=300,
+         nochunks=False, maxclients=7, maxconn=4, recvtimeo=300,
          maxlength=-1, nounbounded=False):
     Recv(message, received, trylisten, cantbind, listening, tryrecv, receiving,
          cantrecv, nochunks, maxclients, maxconn, recvtimeo, maxlength,
