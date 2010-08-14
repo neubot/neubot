@@ -60,10 +60,13 @@ class protocol:
         # the poller to check the socket for readability--indeed the
         # socket becomes readable when the other end closes the conn-
         # ection.
+        # XXX Do not lower the timeout to one second because that caused
+        # measurements to fail when running from an home connection such
+        # as my home ADSL.
         #
 
 	def passiveclose(self):
-		self.timeout = 1
+		#self.timeout = 1
 		self.waitingclose = True
 		self.recvmessage()
 
