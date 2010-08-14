@@ -246,9 +246,6 @@ class Poller:
                     self._readable(fileno)
                 for fileno in res[1]:
                     self._writable(fileno)
-        elif not self.tasks:
-            logging.warning("Nothing to do--this is probably a bug")
-            time.sleep(self.timeout)
 
     def check_timeout(self):
         if self.readset or self.writeset:
