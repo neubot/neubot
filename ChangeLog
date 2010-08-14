@@ -1,3 +1,19 @@
+Neubot 0.1.8 [2010-08-14]
+	* neubot.net: streams: Remove an obsolete comment
+	* neubot.utils: Add support for keyword arguments
+	* neubot.net: connectors: Use keyword arguments
+	* neubot.net: listeners: Use keyword arguments
+	* neubot.net: pollers: Implement a task scheduler into the poller
+	* neubot.net: pollers: Modify the task scheduler to support periodic()
+	* testing/httpd.py: Automatically prepend "." to sys.path
+	* testing/wget.py: Automatically prepend "." to sys.path
+	* neubot.net: pollers: Re-implement periodics, funcs with task scheduler
+	* neubot.http: api: Chunks were disabled by mistake
+	* neubot.net: pollers: Avoid invoking fileno() twice
+	* neubot.net: streams: Optimize readable and writable management
+	* neubot.http: protocols: Do not lower timeout for passiveclose
+	* neubot.net: pollers: Remove 'Nothing to do' warning and sleep
+
 Neubot 0.1.7 [2010-08-04]
 	* neubot.http: protocols.py: Catch a specific exception, not all
 	* neubot.http: acceptors.py: Rm unneeded exception handling code
