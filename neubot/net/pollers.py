@@ -177,11 +177,6 @@ class Poller:
     # one single complex function, but written in this
     # way it is simpler to deal with reference counting
     # issues.
-    # When iterating overs sets & co. we make a (shallow)
-    # copy of each set so that it is possible to modify
-    # the original during the iteration.  Or, as happens
-    # with run-once functions, after the copy, we clear
-    # the original.
     #
 
     def loop(self):
