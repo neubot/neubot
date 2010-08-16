@@ -180,12 +180,12 @@ class Poller:
     #
 
     def loop(self):
-        while self.added or self.tasks or self.readset or self.writeset:
+        while self.readset or self.writeset:
             self.update_tasks()
             self.dispatch_events()
 
     def dispatch(self):
-        if self.added or self.tasks or self.readset or self.writeset:
+        if self.readset or self.writeset:
             self.update_tasks()
             self.dispatch_events()
 
