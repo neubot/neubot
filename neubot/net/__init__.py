@@ -23,3 +23,4 @@ from neubot.net.pollers    import loop
 from neubot.net.pollers    import register_periodic
 from neubot.net.pollers    import sched
 from neubot.net.pollers    import unsched
+from neubot.net.pollers    import unregister_periodic

@@ -270,3 +270,4 @@ loop = poller.loop
 register_periodic = poller.register_periodic
 sched = poller.sched
 unsched = poller.unsched
+unregister_periodic = poller.unregister_periodic
