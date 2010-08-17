@@ -143,32 +143,23 @@ class Poller:
 
     #
     # We are very careful when accessing readset and writeset because
-    # we cannot be sure that there is an entry for fileno even if there
-    # was an entry when we started select().  Consider the following
-    # case: We have a stream that is both readable and writable and so
-    # when select() returns we have the stream fileno both in the res[0]
-    # (readable) and in the res[1] (writable) sets.  Then, we iterate
-    # over res[0], we map each fileno to its stream using readset, and
-    # we invoke each stream's readable() method.  When we invoke the
-    # readable() method of our stream, there in an exception, and such
-    # exception is caught, self.close(stream) is invoked, and eventually
-    # our stream is garbage collected.  But its fileno still is in the
-    # res[1] set, because select() found our stream writable!  So, when
-    # we loop over res[1] (writable filenos) we eventually hit the fileno
-    # of our stream, even if such stream has already been closed.
-    # Hence, the self.writeset.has_key() check [The check in _readable()
-    # is needless, but we keep it in place for robustness and for
-    # simmetry with _writable().]  Hope this explains the couple of XXX
-    # below.
+    # it's possible that the fileno makes reference to a stream that
+    # does not exist anymore.  Consider the following example: There is
+    # a stream that is both readable and writable, and so its fileno
+    # is both in res[0] and res[1].  But, when we invoke the stream's
+    # readable() callback there is a protocol violation and so the
+    # high-level code invokes close(), and the stream is closed, and
+    # hence removed from readset and writeset.  And then the stream
+    # does not exist anymore, but its fileno still is in res[1].
     #
 
     def _readable(self, fileno):
-        if self.readset.has_key(fileno):                                # XXX
+        if self.readset.has_key(fileno):
             stream = self.readset[fileno]
             stream.readable()
 
     def _writable(self, fileno):
-        if self.writeset.has_key(fileno):                               # XXX
+        if self.writeset.has_key(fileno):
             stream = self.writeset[fileno]
             stream.writable()
 
