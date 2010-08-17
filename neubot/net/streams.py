@@ -28,7 +28,7 @@ import neubot
 
 from neubot.net.pollers import Pollable
 
-SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0, 4)
+SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
 
 #
@@ -115,24 +115,6 @@ class Stream(Pollable):
     def writetimeout(self, now):
         return self.send_pending and now - self.send_ticks > self.timeout
 
-    #
-    # With SSL sockets it is possible for .sorecv() to return
-    # WANT_WRITE and for .sosend() to return WANT_READ.
-    # The code for send() and recv() deals with this problem
-    # temporarily blocking recv() when send() wants to read,
-    # and, similarly, blocking send() when recv() wants to
-    # write.
-    # When there is an error we close the stream immediately
-    # rather than registering a delayed close and, this way,
-    # we avoid the complexity of getting I/O events on a stream
-    # that is already closed.
-    # We set self.eof when we get EOF when reading because there
-    # are protocols that use EOF as ``end of record'', and, of
-    # course, they need a way to tell whether the connection was
-    # closed because of an error (and so the message should be
-    # discarded) or because of EOF (and so the message is good.)
-    #
-
     def set_readable(self, func):
         if not self.readable:
             self.poller.set_readable(self)
@@ -154,6 +136,24 @@ class Stream(Pollable):
         if self.writable:
             self.poller.unset_writable(self)
             self.writable = None
+
+    #
+    # With SSL sockets it is possible for .sorecv() to return
+    # WANT_WRITE and for .sosend() to return WANT_READ.
+    # The code for send() and recv() deals with this problem
+    # temporarily blocking recv() when send() wants to read,
+    # and, similarly, blocking send() when recv() wants to
+    # write.
+    # When there is an error we close the stream immediately
+    # rather than registering a delayed close and, this way,
+    # we avoid the complexity of getting I/O events on a stream
+    # that is already closed.
+    # We set self.eof when we get EOF when reading because there
+    # are protocols that use EOF as ``end of record'', and, of
+    # course, they need a way to tell whether the connection was
+    # closed because of an error (and so the message should be
+    # discarded) or because of EOF (and so the message is good.)
+    #
 
     def recv(self, maxlen, recv_success, recv_error=None):
         if not self.isclosing:
