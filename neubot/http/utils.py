@@ -45,6 +45,11 @@ def urlsplit(uri):
         pathquery = pathquery + "?" + query
     return scheme, address, port, pathquery
 
+#
+# response_unbounded() is less accurate than nextstate() and will
+# be removed together with http.protocol
+#
+
 def response_unbounded(request, response):
     if (request.method != "HEAD"
      and response["content-type"]
@@ -89,3 +94,66 @@ def negotiate_mime(m, available, default):
     if mimetype == None:
         mimetype = default
     return mimetype
+
+#
+# Quoting from RFC2616, sect. 4.3:
+#
+#   "The presence of a message-body in a request is signaled by the
+#    inclusion of a Content-Length or Transfer-Encoding header field
+#    in the request's message-headers. [...] A server SHOULD read and
+#    forward a message-body on any request; if the request method does
+#    not include defined semantics for an entity-body, then the message
+#    -body SHOULD be ignored when handling the request."
+#
+#   "[...] All responses to the HEAD request method MUST NOT include a
+#    message-body, even though the presence of entity-header fields might
+#    lead one to believe they do. All 1xx (informational), 204 (no content),
+#    and 304 (not modified) responses MUST NOT include a message-body.  All
+#    other responses do include a message-body, although it MAY be of zero
+#    length."
+#
+
+from neubot.http.handlers import BOUNDED
+from neubot.http.handlers import CHUNK_LENGTH
+from neubot.http.handlers import ERROR
+from neubot.http.handlers import FIRSTLINE
+from neubot.http.handlers import UNBOUNDED
+
+def nextstate(request, response=None):
+    if response == None:
+        if request["transfer-encoding"] == "chunked":
+            return CHUNK_LENGTH, 0
+        elif request["content-length"]:
+            return _parselength(request)
+        else:
+            return FIRSTLINE, 0
+    else:
+        if (request.method == "HEAD" or response.code[0] == "1" or
+         response.code == "204" or response.code == "304"):
+            return FIRSTLINE, 0
+        elif response["transfer-encoding"] == "chunked":
+            return CHUNK_LENGTH, 0
+        elif response["content-length"]:
+            return _parselength(response)
+        else:
+            # make sure the server *will* close the connection
+            if response.protocol == "HTTP/1.0":
+                return UNBOUNDED, 8000
+            elif response["connection"] == "close":
+                return UNBOUNDED, 8000
+            else:
+                return FIRSTLINE, 0
+
+def _parselength(message):
+    value = message["content-length"]
+    try:
+        length = int(value)
+    except ValueError:
+        return ERROR, 0
+    else:
+        if length < 0:
+            return ERROR, 0
+        elif length == 0:
+            return FIRSTLINE, 0
+        else:
+            return BOUNDED, length
