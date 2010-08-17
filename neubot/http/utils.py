@@ -20,42 +20,42 @@ import email.utils
 import urlparse
 
 def prettyprinter(write, direction, msg, eol=""):
-	stringio = msg.serialize_headers()
-	content = stringio.read()
-	headers = content.split("\r\n")
-	for line in headers:
-		write(direction + line + eol)
-		if (line == ""):
-			break
+    stringio = msg.serialize_headers()
+    content = stringio.read()
+    headers = content.split("\r\n")
+    for line in headers:
+        write(direction + line + eol)
+        if line == "":
+            break
 
 def urlsplit(uri):
-	scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
-	if (scheme != "http" and scheme != "https"):
-		raise (Exception("Unknown scheme"))
-	if (":" in netloc):
-		address, port = netloc.split(":", 1)
-	elif (scheme == "https"):
-		address, port = netloc, "443"
-	else:
-		address, port = netloc, "80"
-	if (not path):
-		path = "/"
-	pathquery = path
-	if (query):
-		pathquery = pathquery + "?" + query
-	return (scheme, address, port, pathquery)
+    scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
+    if scheme != "http" and scheme != "https":
+        raise Exception("Unknown scheme")
+    if ":" in netloc:
+        address, port = netloc.split(":", 1)
+    elif scheme == "https":
+        address, port = netloc, "443"
+    else:
+        address, port = netloc, "80"
+    if not path:
+        path = "/"
+    pathquery = path
+    if query:
+        pathquery = pathquery + "?" + query
+    return scheme, address, port, pathquery
 
 def response_unbounded(request, response):
-	if (request.method != "HEAD"
-	    and response["content-type"]
-	    and not response["transfer-encoding"]
-	    and not response["content-length"]):
-		return (True)
-	else:
-		return (False)
+    if (request.method != "HEAD"
+     and response["content-type"]
+     and not response["transfer-encoding"]
+     and not response["content-length"]):
+        return True
+    else:
+        return False
 
 def date():
-	return (email.utils.formatdate(usegmt=True))
+    return email.utils.formatdate(usegmt=True)
 
 def parse_accept(accept):
     if accept == "":
