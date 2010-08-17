@@ -20,6 +20,7 @@ from acceptors import *
 from adaptors import *
 from api import *
 from connectors import *
+from handlers import *
 from messages import *
 from protocols import *
 from utils import *
