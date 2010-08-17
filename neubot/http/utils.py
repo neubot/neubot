@@ -65,20 +65,20 @@ def parse_accept(accept):
     for entry in pass1:
         pass2 = entry.split(";")
         if len(pass2) == 2:
-            type = pass2[0]
+            mimetype = pass2[0]
             quality = float(pass2[1].replace("q=", ""))
         elif len(pass2) == 1:
-            type = pass2[0]
+            mimetype = pass2[0]
             quality = 1.0
         else:
             continue
-        result.append((quality, type))
+        result.append((quality, mimetype))
     return sorted(result, reverse=True)
 
 def select_mime(accept, available):
-    for quality, type in accept:
-        if type in available:
-            return type
+    for quality, mimetype in accept:
+        if mimetype in available:
+            return mimetype
     return None
 
 def negotiate_mime(m, available, default):
