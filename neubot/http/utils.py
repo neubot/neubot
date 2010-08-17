@@ -76,10 +76,12 @@ def parse_accept(accept):
     return sorted(result, reverse=True)
 
 def select_mime(accept, available):
+    ret = None
     for quality, mimetype in accept:
         if mimetype in available:
-            return mimetype
-    return None
+            ret = mimetype
+            break
+    return ret
 
 def negotiate_mime(m, available, default):
     accept = parse_accept(m["accept"])
