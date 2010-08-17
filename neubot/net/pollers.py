@@ -54,6 +54,9 @@ class PollerTask:
         self.periodic = periodic
         self.delta = delta
 
+# Interval between each check for timed-out I/O operations
+CHECK_TIMEOUT = 10
+
 class Poller:
     def __init__(self, timeout, get_ticks, notify_except):
         self.timeout = timeout
@@ -64,7 +67,7 @@ class Poller:
         self.added = set()
         self.registered = {}
         self.tasks = []
-        self.sched(self.timeout, self.check_timeout)
+        self.sched(CHECK_TIMEOUT, self.check_timeout)
 
     def __del__(self):
         pass
@@ -239,7 +242,7 @@ class Poller:
 
     def check_timeout(self):
         if self.readset or self.writeset:
-            self.sched(self.timeout, self.check_timeout)
+            self.sched(CHECK_TIMEOUT, self.check_timeout)
             now = self.get_ticks()
             x = self.readset.values()
             for stream in x:
