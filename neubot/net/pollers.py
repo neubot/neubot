@@ -88,15 +88,14 @@ class Poller:
         else:
             self.added.add((delta, func, periodic))
 
-    def unsched(self, delta, func):
+    def unsched(self, delta, func, periodic=False):
         if self.registered.has_key(func):
             task = self.registered[func]
             task.func = None
             task.time = -1
             del self.registered[func]
         else:
-            # Not sure whether this could happen
-            entry = (delta, func)
+            entry = (delta, func, periodic)
             if entry in self.added:
                 self.added.remove(entry)
 
@@ -110,7 +109,7 @@ class Poller:
 
     def unregister_periodic(self, periodic):
         neubot.log.debug("unregister_periodic() is deprecated")
-        self.unsched(self.timeout, periodic)
+        self.unsched(self.timeout, periodic, True)
 
     def register_func(self, func):
         neubot.log.debug("register_func() is deprecated")
