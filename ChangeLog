@@ -1,3 +1,20 @@
+Neubot 0.1.9 [2010-08-18]
+	* neubot.net: streams: notify() might invoke close()
+	* neubot.net: export unregister_periodic from pollers
+	* neubot.http: messages: Make the code PEP8-compliant
+	* neubot.http: utils: Make the code PEP8-compliant
+	* neubot.http: utils: Rename type variable because shadows builtin
+	* neubot.http: utils: Rewrite select_mime() to silence pychecker
+	* neubot.net: pollers: Remove .closing() from Pollable
+	* neubot.net: pollers: Cosmetic changes
+	* neubot.net: pollers: remove obsolete comment
+	* neubot.net: pollers: stop when there is no I/O to dispatch
+	* neubot.net: pollers: Make sure unsched() builds a 3-tuple
+	* neubot.net: pollers: Increase interval between check_timeout()
+	* neubot.net: pollers: Update why-we-are-careful comment
+	* neubot.http: Add new sub-module: handlers.py
+	* neubot.http: protocol: Use Handler rather than adaptor
+
 Neubot 0.1.8 [2010-08-14]
 	* neubot.net: streams: Remove an obsolete comment
 	* neubot.utils: Add support for keyword arguments
