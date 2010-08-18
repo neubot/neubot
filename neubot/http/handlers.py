@@ -95,9 +95,9 @@ class Handler:
         if not self.isclosed:
             self.isclosed = True
             neubot.net.unsched(30, self.close)
-            if check_eof and self.stream.eof and self.state == UNBOUNDED:
-                self.receiver.end_of_body()
             if self.receiver:
+                if check_eof and self.stream.eof and self.state == UNBOUNDED:
+                    self.receiver.end_of_body()
                 self.receiver.closing()
                 self.receiver = None
             if self.flush_error:
