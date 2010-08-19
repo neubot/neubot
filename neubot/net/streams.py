@@ -73,11 +73,9 @@ class Stream(Pollable):
         return self._fileno
 
     #
-    # When the user issues an active close we need to reset
-    # the state of async send() and recv() to avoid calling
-    # back .send_error() or .recv_error() in .closing()
-    # The caller should remove any extra reference to the
-    # object just after close() returns.
+    # When you keep a reference to the stream in your class,
+    # remember to point stream.notify_closing to a function
+    # that removes such reference.
     #
 
     def close(self):
