@@ -299,6 +299,11 @@ class Stream(Pollable):
             if panic:
                 raise Exception(panic)
 
+    #
+    # These are the methods that an "underlying socket"
+    # implementation should override.
+    #
+
     def soclose(self):
         raise Exception("You must override this method")
 
