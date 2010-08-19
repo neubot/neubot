@@ -212,10 +212,10 @@ class Stream(Pollable):
                     if notify:
                         notify(self, octets)
                     if not self.recvblocked and not self.isclosed:
-                        if not self.recv_pending:
-                            self.unset_readable()
-                        else:
+                        if self.recv_pending:
                             self.set_readable(self._do_recv)
+                        else:
+                            self.unset_readable()
                 else:
                     self.eof = True
                     self._do_close()
@@ -278,10 +278,10 @@ class Stream(Pollable):
                         if notify:
                             notify(self, octets)
                         if not self.sendblocked and not self.isclosed:
-                            if not self.send_pending:
-                                self.unset_writable()
-                            else:
+                            if self.send_pending:
                                 self.set_writable(self._do_send)
+                            else:
+                                self.unset_writable()
                     else:
                         panic = "Internal error"
                 else:
