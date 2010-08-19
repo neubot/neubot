@@ -174,7 +174,6 @@ class Stream(Pollable):
                     self.set_writable(self._do_send)
                 else:
                     self.unset_writable()
-                # Unblock send() because we restored writable()
                 self.sendblocked = False
             status, octets = self.sorecv(self.recv_maxlen)
             if status == SUCCESS:
@@ -187,7 +186,6 @@ class Stream(Pollable):
                     self.recv_error = None
                     if notify:
                         notify(self, octets)
-                    # Notify() might invoke send() that might block recv()
                     if not self.recvblocked and not self.isclosing:
                         if not self.recv_pending:
                             self.unset_readable()
@@ -200,7 +198,6 @@ class Stream(Pollable):
                 self.set_readable(self._do_recv)
             elif status == WANT_WRITE:
                 self.set_writable(self._do_recv)
-                # Block send() because we changed writable()
                 self.sendblocked = True
             elif status == ERROR:
                 self._do_close()
@@ -230,7 +227,6 @@ class Stream(Pollable):
                     self.set_readable(self._do_recv)
                 else:
                     self.unset_readable()
-                # Unblock recv() because we restored readable()
                 self.recvblocked = False
             subset = buffer(self.send_octets, self.send_pos)
             status, count = self.sosend(subset)
@@ -250,7 +246,6 @@ class Stream(Pollable):
                         self.send_error = None
                         if notify:
                             notify(self, octets)
-                        # Notify() might invoke recv() that might block send()
                         if not self.sendblocked and not self.isclosing:
                             if not self.send_pending:
                                 self.unset_writable()
@@ -264,7 +259,6 @@ class Stream(Pollable):
                 self.set_writable(self._do_send)
             elif status == WANT_READ:
                 self.set_readable(self._do_send)
-                # Block recv() because we changed readable()
                 self.recvblocked = True
             elif status == ERROR:
                 self._do_close()
