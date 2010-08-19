@@ -113,6 +113,12 @@ class Stream(Pollable):
     def writetimeout(self, now):
         return self.send_pending and now - self.send_ticks > self.timeout
 
+    #
+    # Make sure that we set/unset readable/writable only if
+    # needed, because the operation is a bit expensive (you
+    # add/remove entries to/from an hash table).
+    #
+
     def set_readable(self, func):
         if not self.readable:
             self.poller.set_readable(self)
