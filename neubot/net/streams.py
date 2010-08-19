@@ -64,7 +64,7 @@ class Stream(Pollable):
         self.timeout = TIMEOUT
         self.notify_closing = None
         self.context = None
-        self.isclosing = False
+        self.isclosed = False
 
     def __del__(self):
         pass
@@ -82,8 +82,8 @@ class Stream(Pollable):
         self._do_close()
 
     def _do_close(self):
-        if not self.isclosing:
-            self.isclosing = True
+        if not self.isclosed:
+            self.isclosed = True
             if self.recv_error:
                 self.recv_error(self)
                 self.recv_error = None
@@ -181,7 +181,7 @@ class Stream(Pollable):
     #
 
     def recv(self, maxlen, recv_success, recv_error=None):
-        if not self.isclosing:
+        if not self.isclosed:
             self.recv_maxlen = maxlen
             self.recv_success = recv_success
             self.recv_ticks = self.poller.get_ticks()
@@ -211,7 +211,7 @@ class Stream(Pollable):
                     self.recv_error = None
                     if notify:
                         notify(self, octets)
-                    if not self.recvblocked and not self.isclosing:
+                    if not self.recvblocked and not self.isclosed:
                         if not self.recv_pending:
                             self.unset_readable()
                         else:
@@ -239,7 +239,7 @@ class Stream(Pollable):
     #
 
     def send(self, octets, send_success, send_error=None):
-        if not self.isclosing:
+        if not self.isclosed:
             self.send_octets = octets
             self.send_pos = 0
             self.send_success = send_success
@@ -277,7 +277,7 @@ class Stream(Pollable):
                         self.send_error = None
                         if notify:
                             notify(self, octets)
-                        if not self.sendblocked and not self.isclosing:
+                        if not self.sendblocked and not self.isclosed:
                             if not self.send_pending:
                                 self.unset_writable()
                             else:
