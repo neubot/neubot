@@ -170,6 +170,13 @@ class Poller:
     # one single complex function, but written in this
     # way it is simpler to deal with reference counting
     # issues.
+    # If there aren't readable or writable filenos we break
+    # the loop, regardless of the scheduled tasks.  And this
+    # happens because: (i) neubot is not ready to do everything
+    # inside the poller loop(), and it assumes that the loop
+    # will break as soon as I/O is complete; and (ii) there
+    # are some tasks that re-schedule self forever, like the
+    # one of neubot/notify.py.
     #
 
     def loop(self):
