@@ -142,21 +142,42 @@ class Stream(Pollable):
             self.writable = None
 
     #
-    # With SSL sockets it is possible for .sorecv() to return
-    # WANT_WRITE and for .sosend() to return WANT_READ.
-    # The code for send() and recv() deals with this problem
-    # temporarily blocking recv() when send() wants to read,
-    # and, similarly, blocking send() when recv() wants to
-    # write.
-    # When there is an error we close the stream immediately
-    # rather than registering a delayed close and, this way,
-    # we avoid the complexity of getting I/O events on a stream
-    # that is already closed.
-    # We set self.eof when we get EOF when reading because there
-    # are protocols that use EOF as ``end of record'', and, of
-    # course, they need a way to tell whether the connection was
-    # closed because of an error (and so the message should be
-    # discarded) or because of EOF (and so the message is good.)
+    # When we are closing this stream recv() MUST NOT run because
+    # it might self.poller.set_readable(self) and so the stream
+    # would not be closed and garbage collected.
+    # When we invoke recv() the code tries immediatly to receive
+    # from the underlying socket and will only set_readable if
+    # the operation returns WANT_READ.  This is called "optimistic"
+    # I/O because we initially assume that the operation will be
+    # successful.
+    # When a receive is successful we invoke the recv_success
+    # callback but we don't want this callback to be able to
+    # issue another optimistic recv() because this might lead
+    # to recursion and prevents other streams to get their chance
+    # of receiving.  And so we employ .isreceiving to avoid
+    # nesting optimistic recv()s.
+    # The variable .recv_pending is True when the user wants to
+    # receive from the socket.  We set this variable to False
+    # after a successful recv, before invoking the recv_success
+    # callback.  But we don't unset_readable before invoking
+    # the callback, because the callback might want to receive
+    # again (and it would be a waste to unset and suddenly set
+    # readable again).  Instead, we check .recv_pending value
+    # AFTER the callback: if it's False we unset readable, and
+    # if it's True it means that the user invoked recv() from
+    # the callback, and then we set_readable (we don't know at
+    # this point whether we are already readable because of the
+    # optimistic I/O).
+    # With SSL sockets, recv() might also return WANT_WRITE and
+    # this is treated as a special case.  While normally it is
+    # possible for recv() and send() to go in parallel, in this
+    # case we (i) set .writable to point to ._do_recv and (ii)
+    # use .sendblocked to block send (if we don't send might be
+    # invoked and might modify writable).  Then, when the under-
+    # lying socket becomes writable and eventually ._do_recv()
+    # is invoked, we check whether send was blocked, and, if so,
+    # we unblock it, and we properly set/unset writable depending
+    # on the value of .send_pending.
     #
 
     def recv(self, maxlen, recv_success, recv_error=None):
@@ -210,6 +231,12 @@ class Stream(Pollable):
             self.isreceiving = False
             if panic:
                 raise Exception(panic)
+
+    #
+    # To get more insights on this implementation, refer to
+    # the comment before recv().  What is said there is also
+    # applicable here.
+    #
 
     def send(self, octets, send_success, send_error=None):
         if not self.isclosing:
