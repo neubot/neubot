@@ -39,11 +39,9 @@ def reply(message, method="", uri="", scheme="", address="", port="",
 # not guess that there is an unbounded response.
 #
 
-def compose(method="", uri="", scheme="", address="", port="", pathquery="",
-            code="", reason="", version="HTTP/1.1", nocache=True, body=None,
-            mimetype="", date=True, keepalive=True, inreplyto=None,
-            family=socket.AF_INET, certfile=None):
-    m = neubot.http.message()
+def compose_(m, method="", uri="", scheme="", address="", port="", pathquery="",
+             code="", reason="", protocol="HTTP/1.1", nocache=True, body=None,
+             mimetype="", date=True, keepalive=True, family=socket.AF_INET):
     m.method = method
     if uri:
         m.uri = uri
@@ -56,8 +54,7 @@ def compose(method="", uri="", scheme="", address="", port="", pathquery="",
         m.pathquery = pathquery
     m.code = code
     m.reason = reason
-    # TODO Rename protocol to version
-    m.protocol = version
+    m.protocol = protocol
     if nocache:
         if method:
             m["pragma"] = "no-cache"
@@ -76,10 +73,20 @@ def compose(method="", uri="", scheme="", address="", port="", pathquery="",
             m["content-type"] = mimetype
     else:
         m["content-length"] = "0"
+    m.family = family
+
+def compose(method="", uri="", scheme="", address="", port="", pathquery="",
+            code="", reason="", version="HTTP/1.1", nocache=True, body=None,
+            mimetype="", date=True, keepalive=True, inreplyto=None,
+            family=socket.AF_INET, certfile=None):
+    m = neubot.http.message()
+    compose_(m, method=method, uri=uri, scheme=scheme, address=address,
+             port=port, pathquery=pathquery, code=code, reason=reason,
+             protocol=version, nocache=nocache, body=body, mimetype=mimetype,
+             date=date, keepalive=keepalive, family=family)
     if inreplyto:
         m._proto = inreplyto._proto
         m.context = inreplyto.context
-    m.family = family
     m.certfile = certfile
     return m
 
