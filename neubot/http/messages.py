@@ -38,6 +38,16 @@ class Message:
         if self.method and self.code:
             raise ValueError("Both method and code are set")
 
+    #
+    # The client code saves the whole uri in self.uri and then
+    # splits the URI in pieces and, after that, self.pathquery
+    # contains path+query.  The server code, instead, saves in
+    # self.uri the URI and does not split it.  So we must con-
+    # sider both self.pathquery and self.uri, and we must give
+    # precedence to self.pathquery--or we will send requests
+    # that some web servers do not accept.
+    #
+
     def serialize_headers(self):
         if not self.method and not self.code:
             raise Exception("Not initialized")
@@ -45,13 +55,12 @@ class Message:
         if self.method:
             lst.append(self.method)
             lst.append(" ")
-            if not self.uri.startswith("/"):
-                if self.pathquery.startswith("/"):
-                    lst.append(self.pathquery)
-                else:
-                    lst.append("/")
-            else:
+            if self.pathquery:
+                lst.append(self.pathquery)
+            elif self.uri:
                 lst.append(self.uri)
+            else:
+                lst.append("/")
             lst.append(" ")
             lst.append(self.protocol)
         else:
