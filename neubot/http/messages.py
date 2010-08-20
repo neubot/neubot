@@ -101,6 +101,73 @@ class Message:
             del self.headers[key]
 
 #
+# Note that compose() is meant for composing request messages
+# from client-side and response messages from server-side.
+# If the body is not present we explicitly set Content-Length at
+# zero.  It costs nothing and the gain is that the browser does
+# not guess that there is an unbounded response.
+#
+
+from neubot.http.utils import date
+from neubot.http.utils import urlsplit
+from neubot.utils import fixkwargs
+from os import SEEK_SET, SEEK_END
+from socket import AF_INET
+
+COMPOSEARGS = {
+    "method"     : "",
+    "uri"        : "",
+    "scheme"     : "",
+    "address"    : "",
+    "port"       : "",
+    "pathquery"  : "",
+    "code"       : "",
+    "reason"     : "",
+    "protocol"   : "HTTP/1.1",
+    "nocache"    : True,
+    "body"       : None,
+    "mimetype"   : "",
+    "date"       : True,
+    "keepalive"  : True,
+    "family"     : AF_INET,
+}
+
+def compose(m, **kwargs):
+    fixkwargs(kwargs, COMPOSEARGS)
+    m.method = kwargs["method"]
+    if kwargs["uri"]:
+        m.uri = kwargs["uri"]
+        m.scheme, m.address, m.port, m.pathquery = urlsplit(m.uri)
+        m["host"] = m.address + ":" + m.port
+    else:
+        m.scheme = kwargs["scheme"]
+        m.address = kwargs["address"]
+        m.port = kwargs["port"]
+        m.pathquery = kwargs["pathquery"]
+    m.code = kwargs["code"]
+    m.reason = kwargs["reason"]
+    m.protocol = kwargs["protocol"]
+    if kwargs["nocache"]:
+        if m.method:
+            m["pragma"] = "no-cache"
+        m["cache-control"] = "no-cache"
+    if kwargs["date"]:
+        m["date"] = date()
+    if not kwargs["keepalive"]:
+        m["connection"] = "close"
+    if kwargs["body"]:
+        m.body = kwargs["body"]
+        m.body.seek(0, SEEK_END)
+        length = m.body.tell()
+        m.body.seek(0, SEEK_SET)
+        m["content-length"] = str(length)
+        if kwargs["mimetype"]:
+            m["content-type"] = kwargs["mimetype"]
+    else:
+        m["content-length"] = "0"
+    m.family = kwargs["family"]
+
+#
 # For compatibility with existing code
 #
 
