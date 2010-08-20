@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-import StringIO
-import types
+from StringIO import StringIO
+from types import StringType
 
 class Message:
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
@@ -27,7 +27,7 @@ class Message:
         self.reason = reason
         self.protocol = protocol
         self.headers = {}
-        self.body = StringIO.StringIO("")
+        self.body = StringIO("")
         self._proto = None
         self.scheme = ""
         self.address = ""
@@ -77,13 +77,13 @@ class Message:
             lst.append("\r\n")
         lst.append("\r\n")
         octets = "".join(lst)
-        return StringIO.StringIO(octets)
+        return StringIO(octets)
 
     def serialize_body(self):
         return self.body
 
     def __getitem__(self, key):
-        if type(key) != types.StringType:
+        if type(key) != StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
@@ -91,7 +91,7 @@ class Message:
         return ""
 
     def __setitem__(self, key, value):
-        if type(key) != types.StringType:
+        if type(key) != StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
@@ -99,7 +99,7 @@ class Message:
         self.headers[key] = value
 
     def __delitem__(self, key):
-        if type(key) != types.StringType:
+        if type(key) != StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
