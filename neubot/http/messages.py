@@ -107,3 +107,5 @@ class Message:
 
 # For compatibility with existing code
 message = Message
+
+__all__ = [ "message" ]
