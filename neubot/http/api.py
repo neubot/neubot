@@ -39,41 +39,61 @@ def reply(message, method="", uri="", scheme="", address="", port="",
 # not guess that there is an unbounded response.
 #
 
-def compose_(m, method="", uri="", scheme="", address="", port="", pathquery="",
-             code="", reason="", protocol="HTTP/1.1", nocache=True, body=None,
-             mimetype="", date=True, keepalive=True, family=socket.AF_INET):
-    m.method = method
-    if uri:
-        m.uri = uri
-        m.scheme, m.address, m.port, m.pathquery = neubot.http.urlsplit(uri)
+from neubot.utils import fixkwargs
+from socket import AF_INET
+
+COMPOSEARGS = {
+    "method"     : "",
+    "uri"        : "",
+    "scheme"     : "",
+    "address"    : "",
+    "port"       : "",
+    "pathquery"  : "",
+    "code"       : "",
+    "reason"     : "",
+    "protocol"   : "HTTP/1.1",
+    "nocache"    : True,
+    "body"       : None,
+    "mimetype"   : "",
+    "date"       : True,
+    "keepalive"  : True,
+    "family"     : AF_INET,
+}
+
+def compose_(m, **kwargs):
+    fixkwargs(kwargs, COMPOSEARGS)
+    m.method = kwargs["method"]
+    if kwargs["uri"]:
+        m.uri = kwargs["uri"]
+        m.scheme, m.address, m.port, m.pathquery = neubot.http.urlsplit(m.uri)
         m["host"] = m.address + ":" + m.port
     else:
-        m.scheme = scheme
-        m.address = address
-        m.port = port
-        m.pathquery = pathquery
-    m.code = code
-    m.reason = reason
-    m.protocol = protocol
-    if nocache:
-        if method:
+        m.scheme = kwargs["scheme"]
+        m.address = kwargs["address"]
+        m.port = kwargs["port"]
+        m.pathquery = kwargs["pathquery"]
+    m.code = kwargs["code"]
+    m.reason = kwargs["reason"]
+    m.protocol = kwargs["protocol"]
+    if kwargs["nocache"]:
+        if m.method:
             m["pragma"] = "no-cache"
         m["cache-control"] = "no-cache"
-    if date:
+    if kwargs["date"]:
         m["date"] = neubot.http.date()
-    if not keepalive:
+    if not kwargs["keepalive"]:
         m["connection"] = "close"
-    if body:
-        m.body = body
+    if kwargs["body"]:
+        m.body = kwargs["body"]
         m.body.seek(0, os.SEEK_END)
         length = m.body.tell()
         m.body.seek(0, os.SEEK_SET)
         m["content-length"] = str(length)
-        if mimetype:
-            m["content-type"] = mimetype
+        if kwargs["mimetype"]:
+            m["content-type"] = kwargs["mimetype"]
     else:
         m["content-length"] = "0"
-    m.family = family
+    m.family = kwargs["family"]
 
 def compose(method="", uri="", scheme="", address="", port="", pathquery="",
             code="", reason="", version="HTTP/1.1", nocache=True, body=None,
