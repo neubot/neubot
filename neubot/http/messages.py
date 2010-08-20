@@ -113,21 +113,21 @@ class Message:
 #
 
 COMPOSEARGS = {
-    "method"     : "",
-    "uri"        : "",
-    "scheme"     : "",
     "address"    : "",
+    "body"       : None,
+    "code"       : "",
+    "date"       : True,
+    "family"     : AF_INET,
+    "keepalive"  : True,
+    "method"     : "",
+    "mimetype"   : "",
+    "nocache"    : True,
     "port"       : "",
     "pathquery"  : "",
-    "code"       : "",
-    "reason"     : "",
     "protocol"   : "HTTP/1.1",
-    "nocache"    : True,
-    "body"       : None,
-    "mimetype"   : "",
-    "date"       : True,
-    "keepalive"  : True,
-    "family"     : AF_INET,
+    "reason"     : "",
+    "scheme"     : "",
+    "uri"        : "",
 }
 
 def compose(m, **kwargs):
