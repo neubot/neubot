@@ -35,10 +35,8 @@ def reply(message, method="", uri="", scheme="", address="", port="",
 
 #
 # If the body is not present we explicitly set Content-Length at
-# zero so that the browser does not attempt to read a response
-# body, possibly assuming that it's up to EOF--indeed there are
-# many status codes that imply a body (such as 200) but there
-# are cases where we just want to return success/failure.
+# zero.  It costs nothing and the gain is that the browser does
+# not guess that there is an unbounded response.
 #
 
 def compose(method="", uri="", scheme="", address="", port="", pathquery="",
