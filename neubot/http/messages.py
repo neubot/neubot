@@ -17,6 +17,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 from StringIO import StringIO
+from socket import AF_UNSPEC
 from types import StringType
 
 class Message:
@@ -28,13 +29,11 @@ class Message:
         self.protocol = protocol
         self.headers = {}
         self.body = StringIO("")
-        self._proto = None
         self.scheme = ""
         self.address = ""
         self.port = ""
         self.pathquery = ""
-        self.family = 0
-        self.context = None
+        self.family = AF_UNSPEC
         if self.method and self.code:
             raise ValueError("Both method and code are set")
 
@@ -105,7 +104,16 @@ class Message:
         if self.headers.has_key(key):
             del self.headers[key]
 
+#
 # For compatibility with existing code
-message = Message
+#
+
+class Messagexxx(Message):
+    def __init__(self, method="", uri="", code="", reason="", protocol=""):
+        Message.__init__(self, method, uri, code, reason, protocol)
+        self._proto = None
+        self.context = None
+
+message = Messagexxx
 
 __all__ = [ "message" ]
