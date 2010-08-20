@@ -34,8 +34,6 @@ class Message:
         self.port = ""
         self.pathquery = ""
         self.family = AF_UNSPEC
-        if self.method and self.code:
-            raise ValueError("Both method and code are set")
 
     #
     # The client code saves the whole uri in self.uri and then
@@ -48,8 +46,6 @@ class Message:
     #
 
     def serialize_headers(self):
-        if not self.method and not self.code:
-            raise Exception("Not initialized")
         lst = []
         if self.method:
             lst.append(self.method)
