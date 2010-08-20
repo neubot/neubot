@@ -17,7 +17,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 from StringIO import StringIO
-from socket import AF_UNSPEC
+from neubot.http.utils import date
+from neubot.http.utils import urlsplit
+from neubot.utils import fixkwargs
+from os import SEEK_END, SEEK_SET
+from socket import AF_INET, AF_UNSPEC
 from types import StringType
 
 class Message:
@@ -107,12 +111,6 @@ class Message:
 # zero.  It costs nothing and the gain is that the browser does
 # not guess that there is an unbounded response.
 #
-
-from neubot.http.utils import date
-from neubot.http.utils import urlsplit
-from neubot.utils import fixkwargs
-from os import SEEK_SET, SEEK_END
-from socket import AF_INET
 
 COMPOSEARGS = {
     "method"     : "",
