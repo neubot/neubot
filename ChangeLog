@@ -1,3 +1,29 @@
+Neubot 0.2.0 [2010-08-23]
+	* net.pollers: Explain why we break loop() regardless of tasks
+	* http.utils: Add rules to decide the nextstate after headers
+	* http.handlers: self.receiver might be None in close()
+	* net.streams: cosmetics: Remove one-line comments
+	* net.streams: cosmetics: Fix the comment before close()
+	* net.streams: cosmetics: Add comment before set_readable etc
+	* net.streams: cosmetics: Rewrite the comment in front of recv()
+	* net.streams: cosmetics: Rename .isclosing to .isclosed
+	* net.streams: cosmetics: Swap check and then/else accordingly
+	* net.streams: cosmetics: Add comment before so*() methods
+	* http.messages: Improve serialize-headers algorithm
+	* http.messages: For now we don't want to export Message
+	* http.messages: Use 'from ... import' rather than 'import'
+	* http.messages: Move some to-be-removed fields out of Message
+	* http.messages: Remove slightly-paranoid checks
+	* http.api: Rewrite comment before compose()
+	* http.api: compose_(): compose an already existing message
+	* http.api: compose_(): Use keyword arguments
+	* http: Move compose_() from api to messages
+	* http.message: Put all imports at the beginning
+	* http.messages: compose(): Sort COMPOSEARGS by key
+	* http.messages: Improve 'content-length: 0' explanation
+	* http.handlers: Do not start receiving automatically on attach()
+	* http.clients: New module that implements HTTP client
+
 Neubot 0.1.9 [2010-08-18]
 	* neubot.net: streams: notify() might invoke close()
 	* neubot.net: export unregister_periodic from pollers
