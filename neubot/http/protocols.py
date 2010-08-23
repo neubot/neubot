@@ -25,6 +25,8 @@ class protocol(Receiver):
 	def __init__(self, handler):
 		self.handler = handler
 		self.handler.attach(self)
+		# delayed because we need to finish initialization first
+		neubot.net.sched(0, self.handler.start_receiving)
 		self.message = None
 		self.application = None
 		self.sockname = reduce(neubot.network.concatname,

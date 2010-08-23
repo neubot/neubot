@@ -204,6 +204,8 @@ class Handler:
     def attach(self, receiver):
         self.receiver = receiver
         self.state = FIRSTLINE
+
+    def start_receiving(self):
         self.stream.recv(8000, self._got_data)
 
     def _got_data(self, stream, data):
