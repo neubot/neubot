@@ -109,7 +109,8 @@ class Message:
 # from client-side and response messages from server-side.
 # If the body is not present we explicitly set Content-Length at
 # zero.  It costs nothing and the gain is that the browser does
-# not guess that there is an unbounded response.
+# not guess that there is an unbounded response when we send a
+# "200 Ok" response with no attached body.
 #
 
 COMPOSEARGS = {
