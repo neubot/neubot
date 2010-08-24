@@ -254,7 +254,7 @@ class Handler:
 
     def _got_line(self, line):
         if self.state == FIRSTLINE:
-            vector = line.split()
+            vector = line.strip().split(None, 2)
             if len(vector) == 3:
                 if line.startswith("HTTP"):
                     protocol, code, reason = vector
