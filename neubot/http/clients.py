@@ -206,6 +206,7 @@ class SimpleClient(Receiver):
         self._got_response()
 
     def _got_response(self):
+        self.response.body.seek(0)
         request, response = self.request, self.response
         self.request, self.response = None, None
         if response["connection"] == "close":
