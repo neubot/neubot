@@ -385,7 +385,7 @@ HELP = USAGE +								\
 "  --help     : Print this help screen and exit.\n"			\
 "  -I         : Use HEAD to retrieve HTTP headers only.\n"		\
 "  -o outfile : GET uri and save response body in outfile.\n"		\
-"  -s         : Be silent and do not print stats.\n"			\
+"  -s         : Do not print per-request statistics.\n"			\
 "  -T infile  : PUT uri and read request body from infile.\n"		\
 "  -V         : Print version number and exit.\n"			\
 "  -v         : Run the program in verbose mode.\n"
