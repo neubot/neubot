@@ -57,6 +57,41 @@ class PollerTask:
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
 
+KiB = 1024.0
+MiB = KiB * 1024.0
+GiB = MiB * 1024.0
+
+def formatbytes(count):
+    if count >= GiB:
+        count /= GiB
+        suffix = "G"
+    elif count >= MiB:
+        count /= MiB
+        suffix = "M"
+    elif count >= KiB:
+        count /= KiB
+        suffix = "K"
+    else:
+        suffix = ""
+    count = "%.1f" % count
+    return count + " " + suffix + "iB"
+
+class Stats:
+    def __init__(self, name):
+        self.name = name
+        self.count = 0
+        self.avg = 0.0
+
+    def __str__(self):
+        return self.name + ": " + formatbytes(self.avg) + "/s"
+
+    def update(self):
+        self.avg = 0.2 * self.avg + 0.8 * self.count
+        self.count = 0
+
+    def account(self, count):
+        self.count += count
+
 class Poller:
     def __init__(self, timeout, get_ticks, notify_except):
         self.timeout = timeout
@@ -68,6 +103,9 @@ class Poller:
         self.registered = {}
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
+        self.receiving = Stats("receiving")
+        self.sending = Stats("sending")
+        self.sched(1, self._update_stats)
 
     def __del__(self):
         pass
@@ -250,6 +288,13 @@ class Poller:
             for stream in x:
                 if stream.writetimeout(now):
                     self.close(stream)
+
+    def _update_stats(self):
+        self.sched(1, self._update_stats)
+        self.sending.update()
+        self.receiving.update()
+        neubot.log.debug("stats: %s - %s" %
+         (self.sending, self.receiving))
 
 def create_poller(timeout=1, get_ticks=ticks,
         notify_except=prettyprint_exception):

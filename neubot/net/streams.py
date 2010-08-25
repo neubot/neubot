@@ -203,6 +203,7 @@ class Stream(Pollable):
             status, octets = self.sorecv(self.recv_maxlen)
             if status == SUCCESS:
                 if octets:
+                    self.poller.receiving.account(len(octets))
                     notify = self.recv_success
                     self.recv_maxlen = 0
                     self.recv_success = None
@@ -263,6 +264,7 @@ class Stream(Pollable):
             status, count = self.sosend(subset)
             if status == SUCCESS:
                 if count > 0:
+                    self.poller.sending.account(count)
                     self.send_pos += count
                     if self.send_pos < len(self.send_octets):
                         self.set_writable(self._do_send)
