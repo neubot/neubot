@@ -65,7 +65,11 @@ def response_unbounded(request, response):
 def date():
     return email.utils.formatdate(usegmt=True)
 
-def parse_accept(accept):
+#
+# Functions to negotiate MIME type
+#
+
+def _parse_accept(accept):
     if accept == "":
         return [(1.0, "*/*")]
     result = []
@@ -83,7 +87,10 @@ def parse_accept(accept):
         result.append((quality, mimetype))
     return sorted(result, reverse=True)
 
-def select_mime(accept, available):
+# compat
+parse_accept = _parse_accept
+
+def _select_mime(accept, available):
     ret = None
     for quality, mimetype in accept:
         if mimetype in available:
@@ -91,9 +98,12 @@ def select_mime(accept, available):
             break
     return ret
 
+# compat
+select_mime = _select_mime
+
 def negotiate_mime(m, available, default):
-    accept = parse_accept(m["accept"])
-    mimetype = select_mime(accept, available)
+    accept = _parse_accept(m["accept"])
+    mimetype = _select_mime(accept, available)
     if mimetype == None:
         mimetype = default
     return mimetype
