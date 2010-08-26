@@ -249,6 +249,8 @@ class Timer:
 
     def begin(self):
         self.start = ticks()
+        self.stop = 0
+        self.length = 0
 
     def end(self):
         self.stop = ticks()
