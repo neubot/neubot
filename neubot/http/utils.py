@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+from neubot.http.handlers import BOUNDED
+from neubot.http.handlers import CHUNK_LENGTH
+from neubot.http.handlers import ERROR
+from neubot.http.handlers import FIRSTLINE
+from neubot.http.handlers import UNBOUNDED
+
 import email.utils
 import urlparse
 
@@ -125,12 +131,6 @@ def negotiate_mime(m, available, default):
 #    other responses do include a message-body, although it MAY be of zero
 #    length."
 #
-
-from neubot.http.handlers import BOUNDED
-from neubot.http.handlers import CHUNK_LENGTH
-from neubot.http.handlers import ERROR
-from neubot.http.handlers import FIRSTLINE
-from neubot.http.handlers import UNBOUNDED
 
 def nextstate(request, response=None):
     if response == None:
