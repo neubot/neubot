@@ -20,9 +20,9 @@
 # Subscribe/publish events
 #
 
-import collections
-import logging
-import neubot
+from collections import deque
+from neubot.net.pollers import sched
+from neubot import log
 
 INTERVAL = 15
 
@@ -30,12 +30,12 @@ STATECHANGE = "statechange"
 
 class Notifier:
     def __init__(self):
-        neubot.net.sched(INTERVAL, self.periodic)
+        sched(INTERVAL, self.periodic)
         self.subscribers = {}
 
     def subscribe(self, event, func, context):
         if not self.subscribers.has_key(event):
-            queue = collections.deque()
+            queue = deque()
             self.subscribers[event] = queue
         else:
             queue = self.subscribers[event]
@@ -59,19 +59,19 @@ class Notifier:
                 try:
                     func(event, context)
                 except:
-                    logging.warning("Possible Comet-after-close problem")
-                    neubot.utils.prettyprint_exception()
+                    log.warning("Possible Comet-after-close problem")
+                    log.exception()
             del self.subscribers[event]
 
     def periodic(self):
-        neubot.net.sched(INTERVAL, self.periodic)
+        sched(INTERVAL, self.periodic)
         for event, queue in self.subscribers.items():
             for func, context in queue:
                 try:
                     func(event, context)
                 except:
-                    logging.warning("Possible Comet-after-close problem")
-                    neubot.utils.prettyprint_exception()
+                    log.warning("Possible Comet-after-close problem")
+                    log.exception()
         self.subscribers = {}
 
 notifier = Notifier()
