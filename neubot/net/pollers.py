@@ -239,8 +239,8 @@ class Poller:
                     self._writable(fileno)
 
     def check_timeout(self):
+        self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
-            self.sched(CHECK_TIMEOUT, self.check_timeout)
             now = self.get_ticks()
             x = self.readset.values()
             for stream in x:
