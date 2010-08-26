@@ -222,9 +222,9 @@ class SimpleClient(Receiver):
 # below should be moved in some shared place.
 #
 
-KiB = 1024
-MiB = KiB * 1024
-GiB = MiB * 1024
+KiB = 1024.0
+MiB = KiB * 1024.0
+GiB = MiB * 1024.0
 
 def formatbytes(count):
     if count >= GiB:
