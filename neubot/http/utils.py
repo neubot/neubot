@@ -19,7 +19,7 @@
 import email.utils
 import urlparse
 
-def prettyprinter(write, direction, msg, eol=""):
+def prettyprint(write, direction, msg, eol=""):
     stringio = msg.serialize_headers()
     content = stringio.read()
     headers = content.split("\r\n")
@@ -27,6 +27,9 @@ def prettyprinter(write, direction, msg, eol=""):
         write(direction + line + eol)
         if line == "":
             break
+
+# compat
+prettyprinter = prettyprint
 
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
