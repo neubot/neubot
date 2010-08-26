@@ -24,9 +24,11 @@ from sys import path as PATH
 if __name__ == "__main__":
     PATH.insert(0, ".")
 
+from os.path import exists
 from getopt import GetoptError
 from getopt import getopt
 from neubot import log
+from os import unlink, SEEK_SET, SEEK_END
 from neubot import version as VERSION
 from neubot.http.handlers import ERROR
 from neubot.http.handlers import FIRSTLINE
@@ -39,6 +41,7 @@ from neubot.http.utils import prettyprinter
 from neubot.net.connectors import connect
 from neubot.net.pollers import loop
 from neubot.utils import ticks
+from neubot.http import make_filename
 from sys import stdin, stdout, stderr
 from sys import argv
 
@@ -370,18 +373,188 @@ class Client(SimpleClient):
     def got_response(self, request, response):
         self.receiving.end()
         if self.notify_success:
-            self.notify_success(self)
+            self.notify_success(self, request, response)
+
+#
+# This class tries to employ two connections to download a
+# resource, and this might speed-up the download when the
+# round-trip delay is high and the available bandwidth is
+# significant.
+#
+
+class DownloadManager:
+    def __init__(self, uri, filename=None):
+        self.uri = uri
+        if not filename:
+            filename = make_filename(uri, "index.html")
+        self.filename = filename
+        self.filenames = {}
+        self._get_resource_length()
+
+    #
+    # We send an HEAD request to retrieve resource meta-
+    # data.  We can split the work between two clients if
+    # the response contains the resource length and the
+    # origin server advertises byte-range support (it is
+    # "not required to do so", per RFC 2616, but we don't
+    # want to send a byte-range request when we are not
+    # sure).
+    # In case of two-clients download we need to open the
+    # output file in append mode, and so, if the output
+    # file already exists, we must unlink it.
+    # We don't set keepalive=False in the first message
+    # because we would like to re-use the connection for
+    # the subsequent GET request.
+    #
+
+    def _get_resource_length(self):
+        client = Client()
+        request = Message()
+        compose(request, method="HEAD", uri=self.uri)
+        client.notify_success = self._got_resource_length
+        client.send(request)
+
+    def _got_resource_length(self, client, request, response):
+        if (response.code == "200" and response["content-length"]
+         and response["accept-ranges"] == "bytes"):
+            length = response["content-length"]
+            try:
+                length = int(length)
+            except ValueError:
+                length = -1
+            if length >= 0:
+                if exists(self.filename):
+                    unlink(self.filename)
+                self._get_resource_piece(0, [0, length/2-1], client)
+                self._get_resource_piece(1, [length/2, length-1], None)
+            else:
+                log.error("Bad content-length")
+        else:
+            self._get_resource(client)
+
+    #
+    # GET a resource the traditional way, with a single
+    # request, and saving the result directly in the out-
+    # put file.
+    # XXX Rather than using the .responsebody hack it would
+    # be better to pass the client the response with the body
+    # field already set.
+    # Some OSes does not allow to remove an opened file and
+    # so we close the body before trying unlink().
+    #
+
+    def _get_resource(self, client):
+        try:
+            afile = open(self.filename, "wb")
+        except IOError:
+            log.error("Can't open file: %s" % self.filename)
+            log.exception()
+        else:
+            request = Message()
+            compose(request, method="GET", uri=self.uri, keepalive=False)
+            client.notify_success = self._got_resource
+            client.responsebody = afile
+            client.send(request)
+
+    def _got_resource(self, client, request, response):
+        if response.code != "200":
+            log.error("Response: %s %s" % (response.code, response.reason))
+            response.body.close()
+            unlink(self.filename)
+
+    #
+    # We accept the response if the range in the response
+    # is the same range we requested for.  Once we got both
+    # halves, we cat them to re-construct the resource.
+    # Some OSes does not allow to remove an opened file and
+    # so we close the body before trying unlink.
+    # XXX Rather than using the .responsebody hack it would
+    # be better to pass the client the response with the body
+    # field already set.
+    #
+
+    def _get_resource_piece(self, index, rangev, client=None):
+        filename = "%s.%d" % (self.filename, index)
+        byterange = "%d-%d" % (rangev[0], rangev[1])
+        self.filenames[byterange] = filename
+        try:
+            afile = open(filename, "wb")
+        except IOError:
+            log.error("Can't open file: %s" % filename)
+            log.exception()
+        else:
+            request = Message()
+            compose(request, method="GET", uri=self.uri, keepalive=False)
+            request["range"] = "bytes=%s" % byterange
+            if not client:
+                client = Client()
+            client.notify_success = self._got_resource_piece
+            client.responsebody = afile
+            client.send(request)
+
+    def _got_resource_piece(self, client, request, response):
+        response.body.close()
+        # parse
+        value = response["content-range"]
+        vector = value.split()
+        if len(vector) != 2 or vector[0] != "bytes":
+            log.error("Bad content-range")
+            return
+        value = vector[1]
+        vector = value.split("/")
+        if len(vector) != 2:
+            log.error("Bad content-range")
+            return
+        # check
+        byterange = vector[0]
+        if not self.filenames.has_key(byterange):
+            log.error("Unexpected content-range")
+            return
+        # fopen
+        try:
+            afile = open(self.filename, "ab")
+        except IOError:
+            log.error("Can't open file: %s" % self.filename)
+            log.exception()
+            return
+        response.body.close()
+        filename = self.filenames[byterange]
+        try:
+            response.body = open(filename, "rb")
+        except IOError:
+            log.error("Can't open file: %s" % filename)
+            log.exception()
+            return
+        # unpack
+        try:
+            vector = byterange.split("-")
+            lower, upper = map(int, vector)
+        except ValueError:
+            log.exception()
+            return
+        # copy
+        afile.seek(lower, SEEK_SET)
+        while True:
+            octets = response.body.read(262144)
+            if not octets:
+                break
+            afile.write(octets)
+        # cleanup
+        afile.close()
+        response.body.close()
+        unlink(filename)
 
 #
 # Rather than inventing random command line arguments for what
-# we want to do, let's re-use instead a subset of the switches
-# accepted by curl(1).
+# we want to do, let's re-use as many switches accepted by curl(1)
+# as possible.
 #
 
-USAGE = "Usage: %s [-IsVv] [--help] [-o outfile] [-T infile] uri\n"
+USAGE = "Usage: %s [-2IsVv] [--help] [-o outfile] [-T infile] uri\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
+"  -2         : Try to download using two connections.\n"		\
 "  --help     : Print this help screen and exit.\n"			\
 "  -I         : Use HEAD to retrieve HTTP headers only.\n"		\
 "  -o outfile : GET uri and save response body in outfile.\n"		\
@@ -391,7 +564,7 @@ HELP = USAGE +								\
 "  -v         : Run the program in verbose mode.\n"
 
 # response body goes on stdout by default, so use stderr
-def print_stats(client):
+def print_stats(client, request, response):
     stderr.write("connect-time: %f s\n" % client.connecting.diff())
     stderr.write("send-count: %s\n" % formatbytes(client.sending.length))
     stderr.write("send-time: %f s\n" % client.sending.diff())
@@ -413,14 +586,17 @@ def main(args):
     method = client.get
     infile = stdin
     outfile = stdout
+    two = False
     # parse command line
     try:
-        options, arguments = getopt(args[1:], "Io:sT:Vv", ["help"])
+        options, arguments = getopt(args[1:], "2Io:sT:Vv", ["help"])
     except GetoptError:
         stderr.write(USAGE % args[0])
         exit(1)
     for name, value in options:
-        if name == "--help":
+        if name == "-2":
+            two = True
+        elif name == "--help":
             stdout.write(HELP % args[0])
             exit(0)
         elif name == "-I":
@@ -456,7 +632,17 @@ def main(args):
         stderr.write(USAGE % args[0])
         exit(1)
     # run client
-    method(arguments[0], infile, outfile)
+    if two:
+        if method == client.head:
+            log.error("Can't use -2 together with -I")
+            exit(1)
+        if method == client.put:
+            log.error("Can't use -2 together with -T")
+            exit(1)
+        uri = arguments[0]
+        DownloadManager(uri)
+    else:
+        method(arguments[0], infile, outfile)
     loop()
 
 if __name__ == "__main__":
