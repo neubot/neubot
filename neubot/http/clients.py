@@ -428,7 +428,7 @@ def main(args):
         elif name == "-o":
             method = client.get
             if value == "-":
-                # this means 'use stdout'
+                outfile = stdout
                 continue
             try:
                 outfile = open(value, "wb")
