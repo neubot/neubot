@@ -440,7 +440,7 @@ def main(args):
         elif name == "-T":
             method = client.put
             if value == "-":
-                # this means 'use stdin'
+                infile = stdin
                 continue
             try:
                 infile = open(value, "rb")
