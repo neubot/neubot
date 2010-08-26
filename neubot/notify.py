@@ -30,8 +30,7 @@ STATECHANGE = "statechange"
 
 class Notifier:
     def __init__(self):
-        self.last = neubot.utils.ticks()
-        neubot.net.register_periodic(self.periodic)
+        neubot.net.sched(INTERVAL, self.periodic)
         self.subscribers = {}
 
     def subscribe(self, event, func, context):
@@ -64,17 +63,16 @@ class Notifier:
                     neubot.utils.prettyprint_exception()
             del self.subscribers[event]
 
-    def periodic(self, now):
-        if now - self.last >= INTERVAL:
-            self.last = now
-            for event, queue in self.subscribers.items():
-                for func, context in queue:
-                    try:
-                        func(event, context)
-                    except:
-                        logging.warning("Possible Comet-after-close problem")
-                        neubot.utils.prettyprint_exception()
-            self.subscribers = {}
+    def periodic(self):
+        neubot.net.sched(INTERVAL, self.periodic)
+        for event, queue in self.subscribers.items():
+            for func, context in queue:
+                try:
+                    func(event, context)
+                except:
+                    logging.warning("Possible Comet-after-close problem")
+                    neubot.utils.prettyprint_exception()
+        self.subscribers = {}
 
 notifier = Notifier()
 subscribe = notifier.subscribe
