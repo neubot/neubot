@@ -157,3 +157,12 @@ def _parselength(message):
             return FIRSTLINE, 0
         else:
             return BOUNDED, length
+
+def make_filename(uri, default):
+    ret = default
+    index = uri.rfind("/")
+    if index >= 0:
+        ret = uri[index+1:]
+        if not ret:
+            ret = default
+    return ret
