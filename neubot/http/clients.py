@@ -111,6 +111,10 @@ class SimpleClient(Receiver):
     # We are attached to an handler when we flush(), and so we don't need
     # to pass flush() an error-handling callback because closing() will be
     # invoked in case of errors.
+    # When connect() completes we attach the handler and start receiving,
+    # and so, if the connection has been closed by the remote host, our
+    # closing method is invoked, and self.handler is cleared.  This is the
+    # reason why we check for self.handler before invoking _do_send().
     #
 
     def send(self, message):
@@ -131,7 +135,8 @@ class SimpleClient(Receiver):
         self.handler = Handler(stream)
         self.handler.attach(self)
         self.handler.start_receiving()
-        self._do_send()
+        if self.handler:
+            self._do_send()
 
     def _do_send(self):
         self.handler.bufferize(self.request.serialize_headers())
