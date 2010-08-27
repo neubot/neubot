@@ -437,79 +437,90 @@ init = receiver.init
 
 USAGE = "Usage: neubot [options] ui [command [arguments]]\n"
 
-def got_response(m):
-    if m.code[0] == "2":
-        body = m.body.read()
-        sys.stdout.write(body)
-    else:
-        sys.stderr.write("ERROR: %s %s\n" % (m.code, m.reason))
+#
+# Simple client capable of GETting and PUTting
+# fine-grained text/plain variables.
+#
 
-def sent_request(m):
-    neubot.http.recv(m, received=got_response)
+from neubot.http.clients import SimpleClient
+from neubot.http.messages import Message
+from neubot.http.messages import compose
 
 def makeuri(address, port, variable):
     return "http://" + address + ":" + port + "/" + variable
 
+class TextClient(SimpleClient):
+    def __init__(self, address, port):
+        SimpleClient.__init__(self)
+        self.following = None
+        self.address = address
+        self.port = port
+
+    def follow(self, variable):
+        self.following = variable
+        m = Message()
+        uri = makeuri(self.address, self.port, variable)
+        compose(m, method="GET", uri=uri)
+        self.send(m)
+
+    def get(self, variable):
+        self.following = None
+        m = Message()
+        uri = makeuri(self.address, self.port, variable)
+        compose(m, method="GET", uri=uri)
+        self.send(m)
+
+    def set(self, variable, value):
+        self.following = None
+        m = Message()
+        uri = makeuri(self.address, self.port, variable)
+        compose(m, method="PUT", uri=uri, mimetype="text/plain",
+                body=StringIO.StringIO(value))
+        self.send(m)
+
+    def got_response(self, request, response):
+        if response.code == "200":
+            value = response.body.read()
+            if self.following:
+                sys.stdout.write(" " * 80)
+                sys.stdout.write("\r" + value.strip())
+                m = Message()
+                uri = makeuri(self.address, self.port,
+                              self.following+"/change")
+                compose(m, method="GET", uri=uri)
+                self.send(m)
+            else:
+                sys.stdout.write(value)
+        else:
+            sys.stderr.write("Error: %s %s\n" %
+             (response.code, response.reason))
+
+textclient = TextClient(address, port)
+
+#
+# Commands
+#
+
+def dofollow(vector):
+    if len(vector) == 1:
+        variable = vector[0]
+        textclient.follow(variable)
+        neubot.net.loop()
+    else:
+        dohelp(["follow"], ofile=sys.stderr)
+
+
 def doget(vector):
     if len(vector) == 1:
         variable = vector[0]
-        uri = makeuri(address, port, variable)
-        m = neubot.http.compose(method="GET", uri=uri, keepalive=False)
-        neubot.http.send(m, sent=sent_request)
+        textclient.get(variable)
         neubot.net.loop()
     else:
         dohelp(["get"], ofile=sys.stderr)
 
-class FollowerError(Exception):
-    pass
-
-class Follower:
-    def __init__(self, vector):
-        if len(vector) == 1:
-            self.variable = vector[0]
-            sys.stdout.write("Following '%s'..." % self.variable)
-            try:
-                uri = makeuri(address, port, self.variable)
-                m = neubot.http.compose(method="GET",
-                 uri=uri, keepalive=False)
-                neubot.http.send(m, sent=self.sent_request)
-                neubot.net.loop()
-                uri = makeuri(address, port, self.variable + "/change")
-                while True:
-                    m = neubot.http.compose(method="GET",
-                     uri=uri, keepalive=False)
-                    neubot.http.send(m, sent=self.sent_request)
-                    neubot.net.loop()
-            except KeyboardInterrupt:
-                sys.stdout.write("\n")
-            except FollowerError:
-                pass
-        else:
-            sys.stderr.write("Usage: follow variable\n")
-
-    def sent_request(self, m):
-        neubot.http.recv(m, received=self.got_response)
-
-    def got_response(self, m):
-        if m.code[0] == "2":
-            body = m.body.read().strip()
-            sys.stdout.write("\r")
-            sys.stdout.write(" " * 80)
-            sys.stdout.write("\rFollowing '%s'... " % self.variable)
-            sys.stdout.write("%s" % body)
-            sys.stdout.flush()
-        else:
-            sys.stderr.write("\nERROR: %s %s\n" % (m.code, m.reason))
-            raise FollowerError
-
-def dofollow(vector):
-    Follower(vector)
-
 def dols(vector):
     if len(vector) == 0:
-        uri = "http://" + address + ":" + port + "/"
-        m = neubot.http.compose(method="GET", uri=uri, keepalive=False)
-        neubot.http.send(m, sent=sent_request)
+        textclient.get("")
         neubot.net.loop()
     else:
         dohelp(["ls"], ofile=sys.stderr)
@@ -517,13 +528,9 @@ def dols(vector):
 def doset(vector):
     if len(vector) == 2:
         variable = vector[0]
-        uri = "http://" + address + ":" + port + "/" + variable
         value = vector[1]
         value = value + "\n"
-        stringio = StringIO.StringIO(value)
-        m = neubot.http.compose(method="PUT", uri=uri, keepalive=False,
-                                mimetype="text/plain", body=stringio)
-        neubot.http.send(m, sent=sent_request)
+        textclient.set(variable, value)
         neubot.net.loop()
     else:
         dohelp(["set"], ofile=sys.stderr)
