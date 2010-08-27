@@ -653,7 +653,10 @@ def main(argv):
             if not line:
                 break
             vector = shlex.split(line)
-            docommand(vector)
+            try:
+                docommand(vector)
+            except:
+                neubot.log.exception()
     else:
         vector = argv[1:]
         docommand(vector)
