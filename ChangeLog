@@ -1,3 +1,25 @@
+Neubot 0.2.1 [2010-08-27]
+	* http.servers: New module that implements HTTP server
+	* http.utils: Add function to extract filename from URI
+	* http.utils: Rename prettyprinter() to prettyprint()
+	* http.clients: Remember to rewind response-body
+	* http.handlers: Improve algorithm to split first-line
+	* http.clients: Timer: Auto-reset on begin()
+	* http.clients: formatbytes: Use floating point numbers
+	* http.clients: USAGE: Better -s explanation
+	* net.pollers: Always re-sched self.check_timeout()
+	* http.clients: Fix for '-oFILE -o-' corner-case
+	* http.clients: Fix for '-iFILE -i-' corner-case
+	* notify: Use sched() rather than register_periodic()
+	* notify: Use 'from..import' rather than 'import'
+	* neubot.net: pollers: Measure average upload/dload speed
+	* http.utils: Hide negotiate_mime() helpers
+	* http.utils: Move all the imports at the beginning
+	* http.clients: Support for download using two connections
+	* http.clients: Avoid race between _do_send() and closing()
+	* http.servers: Avoid race between constructors and handler
+	* Careful error checking when seek(0) fails on a file object
+
 Neubot 0.2.0 [2010-08-23]
 	* net.pollers: Explain why we break loop() regardless of tasks
 	* http.utils: Add rules to decide the nextstate after headers
