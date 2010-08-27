@@ -458,7 +458,7 @@ def doget(vector):
         neubot.http.send(m, sent=sent_request)
         neubot.net.loop()
     else:
-        sys.stderr.write("Usage: get variable\n")
+        dohelp(["get"], ofile=sys.stderr)
 
 class FollowerError(Exception):
     pass
@@ -512,7 +512,7 @@ def dols(vector):
         neubot.http.send(m, sent=sent_request)
         neubot.net.loop()
     else:
-        sys.stderr.write("Usage: ls\n")
+        dohelp(["ls"], ofile=sys.stderr)
 
 def doset(vector):
     if len(vector) == 2:
@@ -526,23 +526,23 @@ def doset(vector):
         neubot.http.send(m, sent=sent_request)
         neubot.net.loop()
     else:
-        sys.stderr.write("Usage: set variable value\n")
+        dohelp(["set"], ofile=sys.stderr)
 
-def dohelp(vector):
+def dohelp(vector, ofile=sys.stdout):
     if len(vector) == 0:
-        sys.stdout.write("Commands:\n")
+        ofile.write("Commands:\n")
         for dictionary in COMMANDS.values():
-            sys.stdout.write("    %s\n" % dictionary["usage"])
+            ofile.write("    %s\n" % dictionary["usage"])
     elif len(vector) == 1:
         name = vector[0]
         if COMMANDS.has_key(name):
             dictionary = COMMANDS[name]
-            sys.stdout.write("Usage: %s\n" % dictionary["usage"])
-            sys.stdout.write("    %s\n" % dictionary["descr"])
+            ofile.write("Usage: %s\n" % dictionary["usage"])
+            ofile.write("    %s\n" % dictionary["descr"])
         else:
-            sys.stderr.write("help: Unknown command\n")
+            ofile.write("Unknown command: %s\n" % name)
     else:
-        sys.stderr.write("Usage: help [command]\n")
+        dohelp(["help"], ofile=sys.stderr)
 
 def dosource(vector):
     if len(vector) == 1:
@@ -556,7 +556,7 @@ def dosource(vector):
             main(["<<internal>>"])
         sys.stdin = stdin
     else:
-        sys.stderr.write("Usage: source file\n")
+        dohelp(["source"], ofile=sys.stderr)
 
 COMMANDS = {
     "follow": {
@@ -600,7 +600,7 @@ def docommand(vector):
             docommand = dictionary["func"]
             docommand(arguments)
         else:
-            dohelp([])
+            dohelp([], ofile=sys.stderr)
 
 def main(argv):
     if len(argv) == 1:
