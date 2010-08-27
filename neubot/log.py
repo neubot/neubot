@@ -50,6 +50,9 @@ class Logger:
     def verbose(self):
         self._verbose = True
 
+    def quiet(self):
+        self._verbose = False
+
     #
     # Some more work -probably- needs to be done in order to
     # redirect logs to a logging file when running under the
@@ -96,6 +99,7 @@ class Logger:
 log = Logger(MAXQUEUE)
 
 verbose = log.verbose
+quiet = log.quiet
 redirect = log.redirect
 exception = log.exception
 error = log.error
