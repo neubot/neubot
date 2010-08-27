@@ -435,8 +435,6 @@ class Receiver:
 receiver = Receiver()
 init = receiver.init
 
-USAGE = "Usage: neubot [options] ui [command [arguments]]\n"
-
 #
 # Simple client capable of GETting and PUTting
 # fine-grained text/plain variables.
@@ -643,8 +641,39 @@ def docommand(vector):
         else:
             dohelp([], ofile=sys.stderr)
 
-def main(argv):
-    if len(argv) == 1:
+#
+# Main
+#
+
+from getopt import GetoptError
+from getopt import getopt
+
+USAGE = "Usage: %s [-vV] [--help] [command [arguments]]\n"
+
+HELP = USAGE +								\
+"Options:\n"								\
+"  --help : Print this help screen and exit.\n"				\
+"  -v     : Run the program in verbose mode.\n"				\
+"  -V     : Print version number and exit.\n"
+
+def main(args):
+    # parse
+    try:
+        options, arguments = getopt(args[1:], "vV", ["help"])
+    except GetoptError:
+        sys.stderr.write(USAGE % args[0])
+    # options
+    for name, value in options:
+        if name == "--help":
+            sys.stdout.write(HELP)
+            exit(0)
+        elif name == "-v":
+            neubot.log.verbose()
+        elif name == "-V":
+            sys.stdout.write(neubot.version+"\n")
+            exit(0)
+    # arguments
+    if not arguments:
         while True:
             if os.isatty(sys.stdin.fileno()):
                 sys.stdout.write("neubot> ")
@@ -658,8 +687,7 @@ def main(argv):
             except:
                 neubot.log.exception()
     else:
-        vector = argv[1:]
-        docommand(vector)
+        docommand(arguments)
 
 if __name__ == "__main__":
     main(sys.argv)
