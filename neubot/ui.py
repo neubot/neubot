@@ -531,32 +531,14 @@ def doset(vector):
 def dohelp(vector):
     if len(vector) == 0:
         sys.stdout.write("Commands:\n")
-        sys.stdout.write("    follow variable\n")
-        sys.stdout.write("    get variable\n")
-        sys.stdout.write("    help [command]\n")
-        sys.stdout.write("    ls\n")
-        sys.stdout.write("    set variable value\n")
-        sys.stdout.write("    source file\n")
+        for dictionary in COMMANDS.values():
+            sys.stdout.write("    %s\n" % dictionary["usage"])
     elif len(vector) == 1:
         name = vector[0]
-        if name == "follow":
-            sys.stdout.write("follow variable\n")
-            sys.stdout.write("    Follow variable evolution over time\n")
-        elif name == "get":
-            sys.stdout.write("get variable\n")
-            sys.stdout.write("    Get the value of variable\n")
-        elif name == "help":
-            sys.stdout.write("help [command]\n")
-            sys.stdout.write("    Get generic help or help on command\n")
-        elif name == "ls":
-            sys.stdout.write("ls\n")
-            sys.stdout.write("    List all available variables\n")
-        elif name == "set":
-            sys.stdout.write("set variable value\n")
-            sys.stdout.write("    Set the value of variable\n")
-        elif name == "source":
-            sys.stdout.write("source file\n")
-            sys.stdout.write("    Read commands from file\n")
+        if COMMANDS.has_key(name):
+            dictionary = COMMANDS[name]
+            sys.stdout.write("Usage: %s\n" % dictionary["usage"])
+            sys.stdout.write("    %s\n" % dictionary["descr"])
         else:
             sys.stderr.write("help: Unknown command\n")
     else:
@@ -576,22 +558,47 @@ def dosource(vector):
     else:
         sys.stderr.write("Usage: source file\n")
 
+COMMANDS = {
+    "follow": {
+        "descr": "Follow variable evolution over time",
+        "func": dofollow,
+        "usage": "follow variable",
+    },
+    "get": {
+        "descr": "Get the value of variable",
+        "func": doget,
+        "usage": "get variable",
+    },
+    "help": {
+        "descr": "Get generic help or help on command",
+        "func": dohelp,
+        "usage": "help [variable]",
+    },
+    "ls": {
+        "descr": "List all available variables",
+        "func": dols,
+        "usage": "ls",
+    },
+    "set": {
+        "descr": "Set the value of variable",
+        "func": doset,
+        "usage": "set variable value",
+    },
+    "source": {
+        "descr": "Read commands from file",
+        "func": dosource,
+        "usage": "source file",
+    },
+}
+
 def docommand(vector):
     if len(vector) > 0:
         command = vector[0]
         arguments = vector[1:]
-        if command == "follow":
-            dofollow(arguments)
-        elif command == "get":
-            doget(arguments)
-        elif command == "help":
-            dohelp(arguments)
-        elif command == "ls":
-            dols(arguments)
-        elif command == "set":
-            doset(arguments)
-        elif command == "source":
-            dosource(arguments)
+        if COMMANDS.has_key(command):
+            dictionary = COMMANDS[command]
+            docommand = dictionary["func"]
+            docommand(arguments)
         else:
             dohelp([])
 
