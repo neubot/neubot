@@ -32,22 +32,22 @@ import os
 import shlex
 import socket
 
-address = "127.0.0.1"
-family = socket.AF_INET
-port = "9774"
+ADDRESS = "127.0.0.1"
+FAMILY = socket.AF_INET
+PORT = "9774"
 
 class Receiver:
     def init(self):
         logging.debug("ui: starting up")
-        m = neubot.http.compose(address=address, port=port, family=family)
+        m = neubot.http.compose(address=ADDRESS, port=PORT, family=FAMILY)
         neubot.http.recv(m, listening=self.listening,
          cantbind=self.cantbind, received=self.received)
 
     def cantbind(self, m):
-        logging.error("ui: can't bind '%s:%s'" % (address, port))
+        logging.error("ui: can't bind '%s:%s'" % (ADDRESS, PORT))
 
     def listening(self, m):
-        logging.info("ui: listening at '%s:%s'" % (address, port))
+        logging.info("ui: listening at '%s:%s'" % (ADDRESS, PORT))
 
     #
     # When negotiating the MIME type of the response we follow
@@ -198,9 +198,9 @@ class Receiver:
                                           reason="See Other")
                         location = []
                         location.append("http://")
-                        location.append(address)
+                        location.append(ADDRESS)
                         location.append(":")
-                        location.append(port)
+                        location.append(PORT)
                         location.append("/enabled")
                         m1["location"] = "".join(location)
                     else:
@@ -374,9 +374,9 @@ class Receiver:
                                           reason="See Other")
                         location = []
                         location.append("http://")
-                        location.append(address)
+                        location.append(ADDRESS)
                         location.append(":")
-                        location.append(port)
+                        location.append(PORT)
                         location.append("/force")
                         m1["location"] = "".join(location)
                     else:
@@ -495,7 +495,7 @@ class TextClient(SimpleClient):
             sys.stderr.write("Error: %s %s\n" %
              (response.code, response.reason))
 
-textclient = TextClient(address, port)
+textclient = TextClient(ADDRESS, PORT)
 
 #
 # Remote commands
