@@ -73,10 +73,12 @@ class SimpleConnection(Receiver):
         self.keepalive = True
         self.nleft = 7
         self.handler.attach(self)
-        self.handler.start_receiving()
 
     def __del__(self):
         pass
+
+    def start_receiving(self):
+        self.handler.start_receiving()
 
     #
     # Override these functions if you are interested in being notified of
@@ -383,7 +385,8 @@ class Server:
          certfile=self.certfile)
 
     def _got_connection(self, stream):
-        self.new_connection(self, Handler(stream))
+        connection = self.new_connection(self, Handler(stream))
+        connection.start_receiving()
 
     def notify_closed(self, connection):
         pass
