@@ -531,7 +531,8 @@ def doset(vector):
 def dohelp(vector, ofile=sys.stdout):
     if len(vector) == 0:
         ofile.write("Commands:\n")
-        for dictionary in COMMANDS.values():
+        for name in sorted(COMMANDS.keys()):
+            dictionary = COMMANDS[name]
             ofile.write("    %s\n" % dictionary["usage"])
     elif len(vector) == 1:
         name = vector[0]
