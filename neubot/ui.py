@@ -565,6 +565,18 @@ def doversion(vector):
     else:
         dohelp(["version"], ofile=sys.stderr)
 
+def doquiet(vector):
+    if len(vector) == 0:
+        neubot.log.quiet()
+    else:
+        dohelp(["quiet"], ofile=sys.stderr)
+
+def doverbose(vector):
+    if len(vector) == 0:
+        neubot.log.verbose()
+    else:
+        dohelp(["verbose"], ofile=sys.stderr)
+
 COMMANDS = {
     "follow": {
         "descr": "Follow variable evolution over time",
@@ -586,6 +598,11 @@ COMMANDS = {
         "func": dols,
         "usage": "ls",
     },
+    "quiet": {
+        "descr": "Become quiet",
+        "func": doquiet,
+        "usage": "quiet",
+    },
     "set": {
         "descr": "Set the value of variable",
         "func": doset,
@@ -595,6 +612,11 @@ COMMANDS = {
         "descr": "Read commands from file",
         "func": dosource,
         "usage": "source file",
+    },
+    "verbose": {
+        "descr": "Become verbose",
+        "func": doverbose,
+        "usage": "verbose",
     },
     "version": {
         "descr": "Print neubot version",
