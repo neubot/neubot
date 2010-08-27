@@ -36,18 +36,14 @@ ADDRESS = "127.0.0.1"
 FAMILY = socket.AF_INET
 PORT = "9774"
 
-class Receiver:
-    def init(self):
-        logging.debug("ui: starting up")
-        m = neubot.http.compose(address=ADDRESS, port=PORT, family=FAMILY)
-        neubot.http.recv(m, listening=self.listening,
-         cantbind=self.cantbind, received=self.received)
+from neubot.http.servers import Server
+from neubot.http.servers import SimpleConnection
+from neubot.http.messages import Message
+from neubot.http.messages import compose
 
-    def cantbind(self, m):
-        logging.error("ui: can't bind '%s:%s'" % (ADDRESS, PORT))
-
-    def listening(self, m):
-        logging.info("ui: listening at '%s:%s'" % (ADDRESS, PORT))
+class UIConnection(SimpleConnection):
+    def __init__(self, parent, handler):
+        SimpleConnection.__init__(self, parent, handler)
 
     #
     # When negotiating the MIME type of the response we follow
@@ -62,8 +58,8 @@ class Receiver:
     # the user preferences.
     #
 
-    def received(self, m):
-        m1 = None
+    def got_request(self, m):
+        m1 = Message()
         if m.uri == "/":
             if m.method == "GET":
                 mimetype = neubot.http.negotiate_mime(m, ["text/html",
@@ -129,11 +125,10 @@ class Receiver:
                     raise Exception("Internal error")
                 body = "".join(body)
                 stringio = StringIO.StringIO(body)
-                m1 = neubot.http.reply(m, mimetype=mimetype,
-                 code="200", reason="Ok", body=stringio)
+                compose(m1, mimetype=mimetype, code="200",
+                        reason="Ok", body=stringio)
             else:
-                m1 = neubot.http.reply(m, code="405",
-                 reason="Method Not Allowed")
+                compose(m1, code="405", reason="Method Not Allowed")
                 m1["allow"] = "GET"
         elif m.uri == "/enabled":
             if m.method == "PUT":
@@ -143,11 +138,9 @@ class Receiver:
                         neubot.auto.enabled = False
                     else:
                         neubot.auto.enabled = True
-                    m1 = neubot.http.reply(m, code="204",
-                     reason="No Content")
+                    compose(m1, code="204", reason="No Content")
                 else:
-                    m1 = neubot.http.reply(m, code="415",
-                     reason="Unsupported Media Type")
+                    compose(m1, code="415", reason="Unsupported Media Type")
             elif m.method == "GET":
                 mimetype = neubot.http.negotiate_mime(m, ["text/html",
                  "text/plain"], "text/plain")
@@ -184,7 +177,7 @@ class Receiver:
                     raise Exception("Internal error")
                 body = "".join(body)
                 stringio = StringIO.StringIO(body)
-                m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+                compose(m1, code="200", mimetype=mimetype,
                  reason="Ok", body=stringio)
             elif m.method == "POST":
                 if m["content-type"] == "application/x-www-form-urlencoded":
@@ -194,8 +187,7 @@ class Receiver:
                             neubot.auto.enabled = False
                         else:
                             neubot.auto.enabled = True
-                        m1 = neubot.http.reply(m, code="303",
-                                          reason="See Other")
+                        compose(m1, code="303", reason="See Other")
                         location = []
                         location.append("http://")
                         location.append(ADDRESS)
@@ -207,11 +199,9 @@ class Receiver:
                         m1 = neubot.http.reply(m, code="500",
                          reason="Internal Server Error")
                 else:
-                    m1 = neubot.http.reply(m, code="415",
-                     reason="Unsupported Media Type")
+                    compose(m1, code="415", reason="Unsupported Media Type")
             else:
-                m1 = neubot.http.reply(m, code="405",
-                 reason="Method Not Allowed")
+                compose(m1, code="405", reason="Method Not Allowed")
                 m1["allow"] = "GET, PUT, POST"
         elif m.uri == "/logs":
             if m.method == "GET":
@@ -245,11 +235,10 @@ class Receiver:
                     raise Exception("Internal error")
                 body = "".join(body)
                 stringio = StringIO.StringIO(body)
-                m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+                compose(m1, code="200", mimetype=mimetype,
                  reason="Ok", body=stringio)
             else:
-                m1 = neubot.http.reply(m, code="405",
-                 reason="Method Not Allowed")
+                compose(m1, code="405", reason="Method Not Allowed")
                 m1["allow"] = "GET"
         elif m.uri == "/results":
             if m.method == "GET":
@@ -280,11 +269,10 @@ class Receiver:
                     raise Exception("Internal error")
                 body = "".join(body)
                 stringio = StringIO.StringIO(body)
-                m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+                compose(m1, code="200", mimetype=mimetype,
                  reason="Ok", body=stringio)
             else:
-                m1 = neubot.http.reply(m, code="405",
-                 reason="Method Not Allowed")
+                compose(m1, code="405", reason="Method Not Allowed")
         elif m.uri == "/state":
             if m.method == "GET":
                 mimetype = neubot.http.negotiate_mime(m, ["text/html",
@@ -306,11 +294,10 @@ class Receiver:
                     raise Exception("Internal error")
                 body = "".join(body)
                 stringio = StringIO.StringIO(body)
-                m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+                compose(m1, code="200", mimetype=mimetype,
                  reason="Ok", body=stringio)
             else:
-                m1 = neubot.http.reply(m, code="405",
-                 reason="Method Not Allowed")
+                compose(m1, code="405", reason="Method Not Allowed")
         elif m.uri == "/force":
             if m.method == "PUT":
                 if m["content-type"] == "text/plain":
@@ -319,11 +306,9 @@ class Receiver:
                         neubot.config.force = False
                     else:
                         neubot.config.force = True
-                    m1 = neubot.http.reply(m, code="204",
-                     reason="No Content")
+                    compose(m1, code="204", reason="No Content")
                 else:
-                    m1 = neubot.http.reply(m, code="415",
-                     reason="Unsupported Media Type")
+                    compose(m1, code="415", reason="Unsupported Media Type")
             elif m.method == "GET":
                 mimetype = neubot.http.negotiate_mime(m, ["text/html",
                  "text/plain"], "text/plain")
@@ -360,7 +345,7 @@ class Receiver:
                     raise Exception("Internal error")
                 body = "".join(body)
                 stringio = StringIO.StringIO(body)
-                m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+                compose(m1, code="200", mimetype=mimetype,
                  reason="Ok", body=stringio)
             elif m.method == "POST":
                 if m["content-type"] == "application/x-www-form-urlencoded":
@@ -370,8 +355,7 @@ class Receiver:
                             neubot.config.force = False
                         else:
                             neubot.config.force = True
-                        m1 = neubot.http.reply(m, code="303",
-                                          reason="See Other")
+                        compose(m1, code="303", reason="See Other")
                         location = []
                         location.append("http://")
                         location.append(ADDRESS)
@@ -380,30 +364,28 @@ class Receiver:
                         location.append("/force")
                         m1["location"] = "".join(location)
                     else:
-                        m1 = neubot.http.reply(m, code="500",
-                         reason="Internal Server Error")
+                        compose(m1, code="500", reason="Internal Server Error")
                 else:
-                    m1 = neubot.http.reply(m, code="415",
-                     reason="Unsupported Media Type")
+                    compose(m1, code="415", reason="Unsupported Media Type")
             else:
-                m1 = neubot.http.reply(m, code="405",
-                 reason="Method Not Allowed")
+                compose(m1, code="405", reason="Method Not Allowed")
                 m1["allow"] = "GET, PUT, POST"
         elif m.uri == "/state/change":
             neubot.notify.subscribe(neubot.notify.STATECHANGE,
              self.statechanged, m)
         else:
-            m1 = neubot.http.reply(m, code="404", reason="Not Found")
-        if m1:
-        # We need to improve our support for keepalive
+            compose(m1, code="404", reason="Not Found")
+        if m1.code:
+            # We need to improve our support for keepalive
             m1["connection"] = "close"
-            neubot.http.send(m1)
+            self.reply(m, m1)
 
     def statechanged(self, event, m):
         m1 = self.compose_state(m)
-        neubot.http.send(m1)
+        self.reply(m, m1)
 
     def compose_state(self, m):
+        m1 = Message()
         if m.method == "GET":
             mimetype = neubot.http.negotiate_mime(m, ["text/html",
              "text/plain"], "text/plain")
@@ -424,16 +406,28 @@ class Receiver:
                 raise Exception("Internal error")
             body = "".join(body)
             stringio = StringIO.StringIO(body)
-            m1 = neubot.http.reply(m, code="200", mimetype=mimetype,
+            compose(m1, code="200", mimetype=mimetype,
              reason="Ok", body=stringio)
         else:
-            m1 = neubot.http.reply(m, code="405",
-             reason="Method Not Allowed")
+            compose(m1, code="405", reason="Method Not Allowed")
             m1["allow"] = "GET"
         return m1
 
-receiver = Receiver()
-init = receiver.init
+class UIServer(Server):
+    def __init__(self):
+        Server.__init__(self, ADDRESS, port=PORT, family=FAMILY)
+        self.new_connection = UIConnection
+
+    def bind_failed(self):
+        exit(1)
+
+uiserver = UIServer()
+init = uiserver.listen
+
+def douiserver(vector):
+    if len(vector) == 0:
+        uiserver.listen()
+        neubot.net.loop()
 
 #
 # Simple client capable of GETting and PUTting fine-grained
@@ -443,8 +437,6 @@ init = receiver.init
 #
 
 from neubot.http.clients import SimpleClient
-from neubot.http.messages import Message
-from neubot.http.messages import compose
 
 def makeuri(address, port, variable):
     return "http://" + address + ":" + port + "/" + variable
@@ -638,6 +630,11 @@ COMMANDS = {
         "descr": "Read commands from file",
         "func": dosource,
         "usage": "source file",
+    },
+    "uiserver": {
+        "descr": "Run UI server for testing purpose",
+        "func": douiserver,
+        "usage": "uiserver",
     },
     "verbose": {
         "descr": "Become verbose",
