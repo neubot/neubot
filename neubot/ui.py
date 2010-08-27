@@ -436,8 +436,10 @@ receiver = Receiver()
 init = receiver.init
 
 #
-# Simple client capable of GETting and PUTting
-# fine-grained text/plain variables.
+# Simple client capable of GETting and PUTting fine-grained
+# text/plain variables.
+# Yes, web-services should be coarse-grained, but this fine-
+# grained API is valuable to test selected neubot bits.
 #
 
 from neubot.http.clients import SimpleClient
@@ -496,7 +498,9 @@ class TextClient(SimpleClient):
 textclient = TextClient(address, port)
 
 #
-# Commands
+# Remote commands
+# These commands send a request to a remote neubot and print
+# the response on the standard output.
 #
 
 def dofollow(vector):
@@ -532,6 +536,14 @@ def doset(vector):
         neubot.net.loop()
     else:
         dohelp(["set"], ofile=sys.stderr)
+
+#
+# Local commands
+# These commands do not open a connection with a remote neubot
+# but have just a local effect.
+# The source() command is hackish because replaces standard
+# input and re-runs main() using a fake argv.
+#
 
 def dohelp(vector, ofile=sys.stdout):
     if len(vector) == 0:
@@ -581,6 +593,15 @@ def doverbose(vector):
         neubot.log.verbose()
     else:
         dohelp(["verbose"], ofile=sys.stderr)
+
+#
+# Dispatch table
+# This table contains all the available commands.  Each command
+# should check whether the user supplied enough arguments and, if
+# not, the command should invoke dohelp() as follows:
+#
+#   dohelp(["command-name"], ofile=sys.stderr)
+#
 
 COMMANDS = {
     "follow": {
@@ -643,6 +664,10 @@ def docommand(vector):
 
 #
 # Main
+# Process command line arguments and dispatch control to the
+# specified command.  If no command is specified then enter in
+# interactive mode and read commands from standard input until
+# the user enters EOF.
 #
 
 from getopt import GetoptError
