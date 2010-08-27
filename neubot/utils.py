@@ -25,6 +25,8 @@ import traceback
 
 import neubot
 
+from os import SEEK_SET
+
 def prettyprint_exception(write=logging.error, eol=""):
     neubot.log.exception()
 
@@ -66,3 +68,17 @@ if sys.platform == 'win32':
     ticks = time.clock
 else:
     ticks = time.time
+
+#
+# When stdin, stdout, stderr are attached to console, seek(0)
+# fails because it's not possible to rewind a console device.
+# So, do not re-raise the Exception if the offending file was
+# one of stdin, stdout, stderr.
+#
+
+def safe_seek(afile, offset, whence=SEEK_SET):
+    try:
+        afile.seek(offset, whence)
+    except IOError:
+        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
+            raise

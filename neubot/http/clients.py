@@ -41,6 +41,7 @@ from neubot.http.utils import prettyprinter
 from neubot.net.connectors import connect
 from neubot.net.pollers import loop
 from neubot.utils import ticks
+from neubot.utils import safe_seek
 from neubot.http import make_filename
 from sys import stdin, stdout, stderr
 from sys import argv
@@ -214,7 +215,7 @@ class SimpleClient(Receiver):
         self._got_response()
 
     def _got_response(self):
-        self.response.body.seek(0)
+        safe_seek(self.response.body, 0)
         request, response = self.request, self.response
         self.request, self.response = None, None
         if response["connection"] == "close":

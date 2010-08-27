@@ -37,6 +37,7 @@ from sys import stdin, stdout, stderr
 from neubot.net.listeners import listen
 from neubot.utils import fixkwargs
 from neubot import version as VERSION
+from neubot.utils import safe_seek
 from neubot.net import loop
 from types import StringType
 from getopt import GetoptError
@@ -198,7 +199,7 @@ class SimpleConnection(Receiver):
         self._got_request()
 
     def _got_request(self):
-        self.message.body.seek(0)
+        safe_seek(self.message.body, 0)
         message = self.message
         self.message = None
         if message["connection"] == "close" or message.protocol == "HTTP/1.0":
@@ -318,7 +319,7 @@ class Connection(SimpleConnection):
                  body=afile, mimetype="text/plain")
                 if message.method == "HEAD":
                     # empty body
-                    afile.seek(0, SEEK_END)
+                    safe_seek(afile, 0, SEEK_END)
         elif message.method == "PUT":
             m = Message()
             compose(m, code="200", reason="Ok")
