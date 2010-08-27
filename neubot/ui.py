@@ -558,6 +558,12 @@ def dosource(vector):
     else:
         dohelp(["source"], ofile=sys.stderr)
 
+def doversion(vector):
+    if len(vector) == 0:
+        sys.stdout.write(neubot.version + "\n")
+    else:
+        dohelp(["version"], ofile=sys.stderr)
+
 COMMANDS = {
     "follow": {
         "descr": "Follow variable evolution over time",
@@ -588,6 +594,11 @@ COMMANDS = {
         "descr": "Read commands from file",
         "func": dosource,
         "usage": "source file",
+    },
+    "version": {
+        "descr": "Print neubot version",
+        "func": doversion,
+        "usage": "version",
     },
 }
 
