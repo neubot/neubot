@@ -149,13 +149,13 @@ class SimpleConnection(Receiver):
          x.tm_year, x.tm_hour, x.tm_min, x.tm_sec)
         requestline = "%s %s %s" % (request.method,request.uri,request.protocol)
         statuscode = response.code
-        bytes = "-"
+        nbytes = "-"
         if response["content-length"]:
-            bytes = response["content-length"]
-            if bytes == "0":
-                bytes = "-"
+            nbytes = response["content-length"]
+            if nbytes == "0":
+                nbytes = "-"
         log.info("%s - - [%s] \"%s\" %s %s" % (address, time, requestline,
-         statuscode, bytes))
+         statuscode, nbytes))
 
     #
     # We notify we got_request() if nextstate is FIRSTLINE because the
