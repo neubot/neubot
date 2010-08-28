@@ -127,8 +127,9 @@ class Connector(Pollable):
                 x = wrap_socket(self.sock, do_handshake_on_connect=False)
             else:
                 x = self.sock
+            logname = "with %s:%s" % self.name
             stream = create_stream(x, self.poller, self.sock.fileno(),
-                     self.sock.getsockname(), self.sock.getpeername())
+             self.sock.getsockname(), self.sock.getpeername(), logname)
             log.debug("* Connected to %s:%s!" % self.name)
             self.connected(stream)
         except (SocketError, SSLError):

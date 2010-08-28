@@ -109,8 +109,9 @@ class Listener(Pollable):
                  certfile=self.certfile, server_side=True)
             else:
                 x = sock
+            logname = "with %s" % str(sock.getpeername())
             stream = create_stream(x, self.poller, sock.fileno(),
-                          sock.getsockname(), sock.getpeername())
+             sock.getsockname(), sock.getpeername(), logname)
             log.debug("* Got connection from %s" % str(sock.getpeername()))
             self.accepted(stream)
         except (SocketError, SSLError):

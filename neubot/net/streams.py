@@ -33,11 +33,12 @@ TIMEOUT = 300
 #
 
 class Stream(Pollable):
-    def __init__(self, poller, fileno, myname, peername):
+    def __init__(self, poller, fileno, myname, peername, logname):
         self.poller = poller
         self._fileno = fileno
         self.myname = myname
         self.peername = peername
+        self.logname = logname
         self.readable = None
         self.writable = None
         self.send_octets = None
@@ -78,6 +79,7 @@ class Stream(Pollable):
 
     def _do_close(self):
         if not self.isclosed:
+            log.debug("* Closing connection %s" % self.logname)
             self.isclosed = True
             if self.recv_error:
                 self.recv_error(self)
@@ -213,6 +215,7 @@ class Stream(Pollable):
                         else:
                             self.unset_readable()
                 else:
+                    log.debug("* Connection %s: EOF" % self.logname)
                     self.eof = True
                     self._do_close()
             elif status == WANT_READ:
@@ -221,6 +224,8 @@ class Stream(Pollable):
                 self.set_writable(self._do_recv)
                 self.sendblocked = True
             elif status == ERROR:
+                log.error("* Connection %s: recv error" % self.logname)
+                log.exception()
                 self._do_close()
             else:
                 panic = "Unexpected status value"
@@ -289,6 +294,8 @@ class Stream(Pollable):
                 self.set_readable(self._do_send)
                 self.recvblocked = True
             elif status == ERROR:
+                log.error("* Connection %s: send error" % self.logname)
+                log.exception()
                 self._do_close()
             else:
                 panic = "Unexpected status value"
@@ -315,9 +322,9 @@ from ssl import SSL_ERROR_WANT_READ
 from ssl import SSL_ERROR_WANT_WRITE
 
 class StreamSSL(Stream):
-    def __init__(self, ssl_sock, poller, fileno, myname, peername):
+    def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
         self.ssl_sock = ssl_sock
-        Stream.__init__(self, poller, fileno, myname, peername)
+        Stream.__init__(self, poller, fileno, myname, peername, logname)
         self.need_handshake = True
 
     def __del__(self):
@@ -339,7 +346,6 @@ class StreamSSL(Stream):
             elif code == SSL_ERROR_WANT_WRITE:
                 return WANT_WRITE, ""
             else:
-                log.exception()
                 return ERROR, ""
 
     def sosend(self, octets):
@@ -355,16 +361,15 @@ class StreamSSL(Stream):
             elif code == SSL_ERROR_WANT_WRITE:
                 return WANT_WRITE, 0
             else:
-                log.exception()
                 return ERROR, 0
 
 from socket import error as SocketError
 from errno import EAGAIN, EWOULDBLOCK
 
 class StreamSocket(Stream):
-    def __init__(self, sock, poller, fileno, myname, peername):
+    def __init__(self, sock, poller, fileno, myname, peername, logname):
         self.sock = sock
-        Stream.__init__(self, poller, fileno, myname, peername)
+        Stream.__init__(self, poller, fileno, myname, peername, logname)
 
     def __del__(self):
         Stream.__del__(self)
@@ -380,7 +385,6 @@ class StreamSocket(Stream):
             if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_READ, ""
             else:
-                log.exception()
                 return ERROR, ""
 
     def sosend(self, octets):
@@ -391,17 +395,16 @@ class StreamSocket(Stream):
             if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_WRITE, 0
             else:
-                log.exception()
                 return ERROR, 0
 
 from ssl import SSLSocket
 from socket import SocketType
 
-def create_stream(sock, poller, fileno, myname, peername):
+def create_stream(sock, poller, fileno, myname, peername, logname):
     if type(sock) == SSLSocket:
-        stream = StreamSSL(sock, poller, fileno, myname, peername)
+        stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
     elif type(sock) == SocketType:
-        stream = StreamSocket(sock, poller, fileno, myname, peername)
+        stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
     else:
         raise ValueError("Unknown socket type")
     return stream
