@@ -20,15 +20,20 @@
 # Non-blocking connect for stream sockets
 #
 
-import errno
-import os
-import socket
-import ssl
-
-import neubot
-
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
+from neubot.utils import fixkwargs
+from socket import error as SocketError
+from ssl import wrap_socket, SSLError
+from socket import SOCK_STREAM
+from errno import EINPROGRESS
+from errno import EWOULDBLOCK
+from socket import getaddrinfo
+from errno import ENOTCONN
+from socket import AF_INET
+from socket import socket
+from neubot import log
+from os import strerror
 
 #
 # We have the same code path for connect_ex() returning 0 and returning
@@ -43,7 +48,7 @@ CONNECTARGS = {
     "cantconnect" : lambda: None,
     "connecting"  : lambda: None,
     "conntimeo"   : 10,
-    "family"      : socket.AF_INET,
+    "family"      : AF_INET,
     "poller"      : poller,
     "secure"      : False,
 }
@@ -53,7 +58,7 @@ class Connector(Pollable):
         self.address = address
         self.port = port
         self.connected = connected
-        self.kwargs = neubot.utils.fixkwargs(kwargs, CONNECTARGS)
+        self.kwargs = fixkwargs(kwargs, CONNECTARGS)
         self.connecting = self.kwargs["connecting"]
         self.cantconnect = self.kwargs["cantconnect"]
         self.poller = self.kwargs["poller"]
@@ -69,25 +74,25 @@ class Connector(Pollable):
 
     def _connect(self):
         try:
-            addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
-                                                      socket.SOCK_STREAM, 0, 0)
+            addrinfo = getaddrinfo(self.address, self.port,
+                                   self.family, SOCK_STREAM)
             for family, socktype, protocol, cannonname, sockaddr in addrinfo:
                 try:
-                    sock = socket.socket(family, socktype, protocol)
+                    sock = socket(family, socktype, protocol)
                     sock.setblocking(False)
                     error = sock.connect_ex(sockaddr)
                     # Winsock returns EWOULDBLOCK
-                    if error not in [0, errno.EINPROGRESS, errno.EWOULDBLOCK]:
-                        raise socket.error(error, os.strerror(error))
+                    if error not in [0, EINPROGRESS, EWOULDBLOCK]:
+                        raise SocketError(error, strerror(error))
                     self.sock = sock
                     self.begin = self.poller.get_ticks()
                     self.poller.set_writable(self)
                     self.connecting()
                     break
-                except socket.error:
-                    neubot.utils.prettyprint_exception()
-        except socket.error:
-            neubot.utils.prettyprint_exception()
+                except SocketError:
+                    log.exception()
+        except SocketError:
+            log.exception()
         if not self.sock:
             self.cantconnect()
 
@@ -100,20 +105,20 @@ class Connector(Pollable):
             # See http://cr.yp.to/docs/connect.html
             try:
                 self.sock.getpeername()
-            except socket.error, (code, reason):
-                if code == errno.ENOTCONN:
+            except SocketError, (code, reason):
+                if code == ENOTCONN:
                     self.sock.recv(8000)
                 else:
                     raise
             if self.secure:
-                x = ssl.wrap_socket(self.sock,do_handshake_on_connect=False)
+                x = wrap_socket(self.sock, do_handshake_on_connect=False)
             else:
                 x = self.sock
             stream = create_stream(x, self.poller, self.sock.fileno(),
                      self.sock.getsockname(), self.sock.getpeername())
             self.connected(stream)
-        except (socket.error, ssl.SSLError):
-            neubot.utils.prettyprint_exception()
+        except (SocketError, SSLError):
+            log.exception()
             self.cantconnect()
 
     def writetimeout(self, now):
