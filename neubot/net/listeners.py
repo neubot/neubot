@@ -20,18 +20,23 @@
 # Non-blocking listen() and accept() for stream sockets
 #
 
-import socket
-import ssl
-
-import neubot
-
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
+from socket import SOCK_STREAM, AI_PASSIVE
+from socket import error as SocketError
+from ssl import wrap_socket, SSLError
+from neubot.utils import fixkwargs
+from socket import getaddrinfo
+from socket import SO_REUSEADDR
+from socket import SOL_SOCKET
+from socket import socket
+from socket import AF_INET
+from neubot import log
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
     "certfile"   : None,
-    "family"     : socket.AF_INET,
+    "family"     : AF_INET,
     "listening"  : lambda: None,
 #   "maxclients" : 7,
 #   "maxconns"   : 4,
@@ -44,7 +49,7 @@ class Listener(Pollable):
         self.address = address
         self.port = port
         self.accepted = accepted
-        self.kwargs = neubot.utils.fixkwargs(kwargs, LISTENARGS)
+        self.kwargs = fixkwargs(kwargs, LISTENARGS)
         self.listening = self.kwargs["listening"]
         self.cantbind = self.kwargs["cantbind"]
         self.poller = self.kwargs["poller"]
@@ -59,12 +64,12 @@ class Listener(Pollable):
 
     def _listen(self):
         try:
-            addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
-                                      socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+            addrinfo = getaddrinfo(self.address, self.port, self.family,
+                                   SOCK_STREAM, 0, AI_PASSIVE)
             for family, socktype, protocol, canonname, sockaddr in addrinfo:
                 try:
-                    sock = socket.socket(family, socktype, protocol)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    sock = socket(family, socktype, protocol)
+                    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
                     sock.setblocking(False)
                     sock.bind(sockaddr)
                     # Probably the backlog here is too big
@@ -73,10 +78,10 @@ class Listener(Pollable):
                     self.poller.set_readable(self)
                     self.listening()
                     break
-                except socket.error:
-                    neubot.utils.prettyprint_exception()
-        except socket.error:
-            neubot.utils.prettyprint_exception()
+                except SocketError:
+                    log.exception()
+        except SocketError:
+            log.exception()
         if not self.sock:
             self.cantbind()
 
@@ -88,15 +93,15 @@ class Listener(Pollable):
             sock, sockaddr = self.sock.accept()
             sock.setblocking(False)
             if self.secure:
-                x = ssl.wrap_socket(sock, do_handshake_on_connect=False,
-                               certfile=self.certfile, server_side=True)
+                x = wrap_socket(sock, do_handshake_on_connect=False,
+                 certfile=self.certfile, server_side=True)
             else:
                 x = sock
             stream = create_stream(x, self.poller, sock.fileno(),
                           sock.getsockname(), sock.getpeername())
             self.accepted(stream)
-        except (socket.error, ssl.SSLError):
-            neubot.utils.prettyprint_exception()
+        except (SocketError, SSLError):
+            log.exception()
 
 def listen(address, port, accepted, **kwargs):
     Listener(address, port, accepted, **kwargs)
