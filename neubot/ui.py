@@ -631,14 +631,14 @@ class TextClient(SimpleClient):
         self.following = variable
         m = Message()
         uri = makeuri(self.address, self.port, variable)
-        compose(m, method="GET", uri=uri)
+        compose(m, method="GET", uri=uri, keepalive=False)
         self.send(m)
 
     def get(self, variable):
         self.following = None
         m = Message()
         uri = makeuri(self.address, self.port, variable)
-        compose(m, method="GET", uri=uri)
+        compose(m, method="GET", uri=uri, keepalive=False)
         self.send(m)
 
     def set(self, variable, value):
@@ -646,7 +646,7 @@ class TextClient(SimpleClient):
         m = Message()
         uri = makeuri(self.address, self.port, variable)
         compose(m, method="PUT", uri=uri, mimetype="text/plain",
-                body=StringIO.StringIO(value))
+                body=StringIO.StringIO(value), keepalive=False)
         self.send(m)
 
     def got_response(self, request, response):
@@ -658,7 +658,7 @@ class TextClient(SimpleClient):
                 m = Message()
                 uri = makeuri(self.address, self.port,
                               self.following+"/change")
-                compose(m, method="GET", uri=uri)
+                compose(m, method="GET", uri=uri, keepalive=False)
                 self.send(m)
             else:
                 sys.stdout.write(value)
