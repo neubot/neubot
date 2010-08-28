@@ -122,7 +122,7 @@ class Connector(Pollable):
             self.cantconnect()
 
     def writetimeout(self, now):
-        return now - self.begin > self.conntimeo
+        return now - self.begin >= self.conntimeo
 
 def connect(address, port, connected, **kwargs):
     Connector(address, port, connected, **kwargs)
