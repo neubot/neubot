@@ -20,6 +20,10 @@
 # Non-blocking listen() and accept() for stream sockets
 #
 
+from sys import path as PATH
+if __name__ == "__main__":
+    PATH.insert(0, ".")
+
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
 from socket import SOCK_STREAM, AI_PASSIVE
@@ -48,6 +52,7 @@ class Listener(Pollable):
     def __init__(self, address, port, accepted, **kwargs):
         self.address = address
         self.port = port
+        self.name = (self.address, self.port)
         self.accepted = accepted
         self.kwargs = fixkwargs(kwargs, LISTENARGS)
         self.listening = self.kwargs["listening"]
@@ -63,11 +68,13 @@ class Listener(Pollable):
         pass
 
     def _listen(self):
+        log.debug("* About to bind %s:%s" % self.name)
         try:
             addrinfo = getaddrinfo(self.address, self.port, self.family,
                                    SOCK_STREAM, 0, AI_PASSIVE)
             for family, socktype, protocol, canonname, sockaddr in addrinfo:
                 try:
+                    log.debug("* Trying with %s..." % str(sockaddr))
                     sock = socket(family, socktype, protocol)
                     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
                     sock.setblocking(False)
@@ -76,13 +83,18 @@ class Listener(Pollable):
                     sock.listen(128)
                     self.sock = sock
                     self.poller.set_readable(self)
+                    log.debug("* Bound with %s" % str(sockaddr))
+                    log.debug("* Listening at %s:%s..." % self.name)
                     self.listening()
                     break
                 except SocketError:
+                    log.error("* bind() with %s failed" % str(sockaddr))
                     log.exception()
         except SocketError:
+            log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
         if not self.sock:
+            log.error("* Can't bind %s:%s" % self.name)
             self.cantbind()
 
     def fileno(self):
@@ -99,9 +111,69 @@ class Listener(Pollable):
                 x = sock
             stream = create_stream(x, self.poller, sock.fileno(),
                           sock.getsockname(), sock.getpeername())
+            log.debug("* Got connection from %s" % str(sock.getpeername()))
             self.accepted(stream)
         except (SocketError, SSLError):
             log.exception()
 
 def listen(address, port, accepted, **kwargs):
     Listener(address, port, accepted, **kwargs)
+
+#
+# Test unit
+#
+
+from socket import AF_INET6
+from neubot.net.pollers import loop
+from neubot import version
+from getopt import GetoptError
+from getopt import getopt
+from sys import stdout
+from sys import stderr
+from sys import argv
+
+USAGE = "Usage: %s [-6Vv] [-S certfile] [--help] address port\n"
+
+HELP = USAGE +								\
+"Options:\n"								\
+"  -6          : Use IPv6 rather than IPv4.\n"				\
+"  --help      : Print this help screen and exit.\n"			\
+"  -S certfile : Use OpenSSL and the specified certfile.\n"		\
+"  -V          : Print version number and exit.\n"			\
+"  -v          : Run the program in verbose mode.\n"
+
+def accepted(stream):
+    stream.close()
+
+def main(args):
+    family = AF_INET
+    secure = False
+    certfile = None
+    try:
+        options, arguments = getopt(args[1:], "6S:Vv", ["help"])
+    except GetoptError:
+        stderr.write(USAGE % args[0])
+        exit(1)
+    for name, value in options:
+        if name == "-6":
+            family = AF_INET6
+        elif name == "--help":
+            stdout.write(HELP % args[0])
+            exit(0)
+        elif name == "-S":
+            secure = True
+            certfile = value
+        elif name == "-V":
+            stdout.write(version + "\n")
+            exit(0)
+        elif name == "-v":
+            log.verbose()
+    if len(arguments) != 2:
+        stderr.write(USAGE % args[0])
+        exit(1)
+    listen(arguments[0], arguments[1], accepted, family=family,
+     secure=secure, certfile=certfile)
+    loop()
+
+if __name__ == "__main__":
+    main(argv)
