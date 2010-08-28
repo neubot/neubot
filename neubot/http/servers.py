@@ -117,9 +117,15 @@ class SimpleConnection(Receiver):
     # too many requests over this connection.
     # Reply receives request and response and so we can update acc-
     # ess log.  We use Common Log Format (CLF) for access log.
+    # In case of comet response the client might already have closed
+    # the connection and we can detect that because in this case the
+    # handler is None.
     #
 
     def reply(self, request, response):
+        if self.handler == None:
+            log.debug("Detected comet-after-close")
+            return
         if not self.keepalive:
             response["connection"] = "close"
         self.handler.bufferize(response.serialize_headers())
