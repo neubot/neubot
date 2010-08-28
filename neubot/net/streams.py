@@ -26,12 +26,6 @@ from neubot import log
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
 
-#
-# To improve this class we can:
-#   1. Update .ticks after a partial send() for more precise timeout
-#      calculation.
-#
-
 class Stream(Pollable):
     def __init__(self, poller, fileno, myname, peername, logname):
         self.poller = poller
@@ -267,6 +261,7 @@ class Stream(Pollable):
                     self.poller.sending.account(count)
                     self.send_pos += count
                     if self.send_pos < len(self.send_octets):
+                        self.send_ticks = self.poller.get_ticks()
                         self.set_writable(self._do_send)
                     elif self.send_pos == len(self.send_octets):
                         notify = self.send_success
