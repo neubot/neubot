@@ -219,11 +219,7 @@ class SimpleConnection(Receiver):
     def got_request(self, message):
         pass
 
-#
-# Import stuff from clients (not very clean)
-#
-
-from neubot.http.clients import formatbytes
+from neubot.net.pollers import formatbytes
 from neubot.http.clients import Timer
 
 #
