@@ -655,6 +655,7 @@ class TextClient(SimpleClient):
             if self.following:
                 sys.stdout.write(" " * 80)
                 sys.stdout.write("\r" + value.strip())
+                sys.stdout.flush()
                 m = Message()
                 uri = makeuri(self.address, self.port,
                               self.following+"/change")
