@@ -20,13 +20,8 @@
 # Asynchronous I/O for non-blocking sockets (and SSL)
 #
 
-import errno
-import socket
-import ssl
-
-import neubot
-
 from neubot.net.pollers import Pollable
+from neubot import log
 
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
@@ -307,13 +302,17 @@ class Stream(Pollable):
     #
 
     def soclose(self):
-        raise Exception("You must override this method")
+        raise NotImplementedError
 
     def sorecv(self, maxlen):
-        raise Exception("You must override this method")
+        raise NotImplementedError
 
     def sosend(self, octets):
-        raise Exception("You must override this method")
+        raise NotImplementedError
+
+from ssl import SSLError
+from ssl import SSL_ERROR_WANT_READ
+from ssl import SSL_ERROR_WANT_WRITE
 
 class StreamSSL(Stream):
     def __init__(self, ssl_sock, poller, fileno, myname, peername):
@@ -334,13 +333,13 @@ class StreamSSL(Stream):
                 self.need_handshake = False
             octets = self.ssl_sock.read(maxlen)
             return SUCCESS, octets
-        except ssl.SSLError, (code, reason):
-            if code == ssl.SSL_ERROR_WANT_READ:
+        except SSLError, (code, reason):
+            if code == SSL_ERROR_WANT_READ:
                 return WANT_READ, ""
-            elif code == ssl.SSL_ERROR_WANT_WRITE:
+            elif code == SSL_ERROR_WANT_WRITE:
                 return WANT_WRITE, ""
             else:
-                neubot.utils.prettyprint_exception()
+                log.exception()
                 return ERROR, ""
 
     def sosend(self, octets):
@@ -350,14 +349,17 @@ class StreamSSL(Stream):
                 self.need_handshake = False
             count = self.ssl_sock.write(octets)
             return SUCCESS, count
-        except ssl.SSLError, (code, reason):
-            if code == ssl.SSL_ERROR_WANT_READ:
+        except SSLError, (code, reason):
+            if code == SSL_ERROR_WANT_READ:
                 return WANT_READ, 0
-            elif code == ssl.SSL_ERROR_WANT_WRITE:
+            elif code == SSL_ERROR_WANT_WRITE:
                 return WANT_WRITE, 0
             else:
-                neubot.utils.prettyprint_exception()
+                log.exception()
                 return ERROR, 0
+
+from socket import error as SocketError
+from errno import EAGAIN, EWOULDBLOCK
 
 class StreamSocket(Stream):
     def __init__(self, sock, poller, fileno, myname, peername):
@@ -374,29 +376,32 @@ class StreamSocket(Stream):
         try:
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
-        except socket.error, (code, reason):
-            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+        except SocketError, (code, reason):
+            if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_READ, ""
             else:
-                neubot.utils.prettyprint_exception()
+                log.exception()
                 return ERROR, ""
 
     def sosend(self, octets):
         try:
             count = self.sock.send(octets)
             return SUCCESS, count
-        except socket.error, (code, reason):
-            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+        except SocketError, (code, reason):
+            if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_WRITE, 0
             else:
-                neubot.utils.prettyprint_exception()
+                log.exception()
                 return ERROR, 0
 
+from ssl import SSLSocket
+from socket import SocketType
+
 def create_stream(sock, poller, fileno, myname, peername):
-    if type(sock) == ssl.SSLSocket:
+    if type(sock) == SSLSocket:
         stream = StreamSSL(sock, poller, fileno, myname, peername)
-    elif type(sock) == socket.SocketType:
+    elif type(sock) == SocketType:
         stream = StreamSocket(sock, poller, fileno, myname, peername)
     else:
-        raise Exception("Unknown socket type")
+        raise ValueError("Unknown socket type")
     return stream
