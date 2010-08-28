@@ -231,24 +231,7 @@ class SimpleClient(Receiver):
 # below should be moved in some shared place.
 #
 
-KiB = 1024.0
-MiB = KiB * 1024.0
-GiB = MiB * 1024.0
-
-def formatbytes(count):
-    if count >= GiB:
-        count /= GiB
-        suffix = "G"
-    elif count >= MiB:
-        count /= MiB
-        suffix = "M"
-    elif count >= KiB:
-        count /= KiB
-        suffix = "K"
-    else:
-        suffix = ""
-    count = "%.1f" % count
-    return count + " " + suffix + "iB"
+from neubot.net.pollers import formatbytes
 
 class Timer:
     def __init__(self):
