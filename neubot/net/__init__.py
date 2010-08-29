@@ -25,3 +25,5 @@ from neubot.net.pollers    import register_periodic
 from neubot.net.pollers    import sched
 from neubot.net.pollers    import unsched
 from neubot.net.pollers    import unregister_periodic
+from neubot.net.pollers    import disable_stats
+from neubot.net.pollers    import enable_stats

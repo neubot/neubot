@@ -23,6 +23,7 @@
 import errno
 import logging
 import select
+import sys
 import time
 
 from neubot.utils import prettyprint_exception
@@ -97,6 +98,7 @@ class Poller:
         self.timeout = timeout
         self.get_ticks = get_ticks
         self.notify_except = notify_except
+        self.printstats = False
         self.readset = {}
         self.writeset = {}
         self.added = set()
@@ -289,12 +291,24 @@ class Poller:
                 if stream.writetimeout(now):
                     self.close(stream)
 
+    def disable_stats(self):
+        if self.printstats:
+            sys.stdout.write("\n")
+        self.printstats = False
+
+    def enable_stats(self):
+        self.printstats = True
+
     def _update_stats(self):
         self.sched(1, self._update_stats)
         self.sending.update()
         self.receiving.update()
-        neubot.log.debug("stats: %s - %s" %
-         (self.sending, self.receiving))
+        if self.printstats:
+            stats = "\r    %s | %s" % (self.sending, self.receiving)
+            if len(stats) < 80:
+                stats += " " * (80 - len(stats))
+            sys.stdout.write(stats)
+            sys.stdout.flush()
 
 def create_poller(timeout=1, get_ticks=ticks,
         notify_except=prettyprint_exception):
@@ -308,3 +322,5 @@ register_periodic = poller.register_periodic
 sched = poller.sched
 unsched = poller.unsched
 unregister_periodic = poller.unregister_periodic
+disable_stats = poller.disable_stats
+enable_stats = poller.enable_stats
