@@ -53,6 +53,14 @@ STATECHANGE = "http://127.0.0.1:9774/state/change"
 STATE = "http://127.0.0.1:9774/state"
 
 class TrayIcon:
+
+    #
+    # For now we just use one of the stock icons to notify the
+    # user that we are performing network activity.
+    # TODO We need to fill the code that generates the popup menu
+    # and we need to decide what to do when we are activated.
+    #
+
     def __init__(self):
         self.needsend = True
         self.havestate = False
@@ -69,6 +77,18 @@ class TrayIcon:
     def on_activate(self, *args):
         pass
 
+    #
+    # The base principle to nest our loop and Gtk's one is that
+    # we are periodically invoked by Gtk.  This is not efficient
+    # but should be enough because (as I understand it) the main
+    # purpose of the status icon is the one of providing users
+    # a way to stop a running test--then it's Ok to update every
+    # 1/4 of second.  [And probably we should pop the icon out
+    # only if the test lasts for more than one second, because a
+    # test that lasts less than one second should not be a problem
+    # for most users.]
+    #
+
     def update(self):
         if self.needsend:
             uri = STATE
@@ -78,6 +98,14 @@ class TrayIcon:
             send(m, sent=self.sent, cantsend=self.cantsend)
         dispatch()
         gobject.timeout_add(TIMEOUT, self.update)
+
+    #
+    # We need to be careful and we must hide the icon in case
+    # of errors.
+    # When we receive the response we read the whole body at
+    # once, and this is not so safe--we should check that it
+    # its not too big, instead.
+    #
 
     def cantsend(self, m):
         self.needsend = True
