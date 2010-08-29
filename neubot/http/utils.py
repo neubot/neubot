@@ -21,6 +21,7 @@ from neubot.http.handlers import CHUNK_LENGTH
 from neubot.http.handlers import ERROR
 from neubot.http.handlers import FIRSTLINE
 from neubot.http.handlers import UNBOUNDED
+from os.path import exists
 
 import email.utils
 import urlparse
@@ -171,7 +172,7 @@ def _parselength(message):
         else:
             return BOUNDED, length
 
-def make_filename(uri, default):
+def _make_filename(uri, default):
     ret = default
     index = uri.rfind("/")
     if index >= 0:
@@ -179,3 +180,13 @@ def make_filename(uri, default):
         if not ret:
             ret = default
     return ret
+
+def make_filename(uri, default):
+    filename = _make_filename(uri, default)
+    index = 0
+    temp = filename
+    while exists(temp):
+        temp = filename + "." + str(index)
+        index = index + 1
+    filename = temp
+    return filename
