@@ -24,6 +24,7 @@ from sys import path as PATH
 if __name__ == "__main__":
     PATH.insert(0, ".")
 
+from StringIO import StringIO
 from os.path import exists
 from getopt import GetoptError
 from getopt import getopt
@@ -539,7 +540,7 @@ class DownloadManager:
 # as possible.
 #
 
-USAGE = "Usage: %s [-2IsVv] [--help] [-o outfile] [-T infile] uri\n"
+USAGE = "Usage: %s [-2IsVv] [--help] [-o outfile] [-T infile] uri...\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
@@ -579,7 +580,7 @@ def main(args):
     # defaults
     new_client = VerboseClient
     infile = stdin
-    outfile = stdout
+    outfile = None
     method = GET
     # parse command line
     try:
@@ -622,21 +623,82 @@ def main(args):
             exit(0)
         elif name == "-v":
             log.verbose()
-    if len(arguments) == 0 or len(arguments) > 1:
+    # sanity
+    if len(arguments) == 0:
         stderr.write(USAGE % args[0])
         exit(1)
     # run
     if method == TWOCONN:
-        DownloadManager(arguments[0])
+        #
+        # XXX The download manager will fail if invoked more than
+        # once for the SAME download.  I don't want to fix this
+        # problem because it is not relevant for my tests, and so,
+        # just don't do that :).
+        #
+        for uri in arguments:
+            DownloadManager(uri)
+        loop()
     else:
-        client = new_client()
         if method == GET:
-            client.get(arguments[0], outfile=outfile)
+            #
+            # If the output file is not specified we are able to download
+            # all the URIs concurrently.
+            # If the output file is the standard output or the user specified
+            # an output file, we download each URI sequentially because we do
+            # not want pieces of different files to mix.
+            #
+            for uri in arguments:
+                if outfile == None:
+                    try:
+                        filename = make_filename(uri, "index.html")
+                        ofile = open(filename, "wb")
+                    except IOError:
+                        log.exception()
+                        continue
+                else:
+                    ofile = outfile
+                client = new_client()
+                client.get(uri, outfile=ofile)
+                if outfile != None:
+                    loop()
+                    if outfile != stdout:
+                        #
+                        # The SimpleClient code rewind()s the file because
+                        # it assumes that the user is interested in reading
+                        # the body.  This is not what we want here, because
+                        # we are appending to a single output file, and so
+                        # undo the rewind().
+                        #
+                        outfile.seek(0, SEEK_END)
+                    else:
+                        outfile.flush()
+            if outfile == None:
+                loop()
         elif method == HEAD:
-            client.head(arguments[0])
+            for uri in arguments:
+                client = new_client()
+                client.head(uri)
+            loop()
         elif method == PUT:
-            client.put(arguments[0], infile=infile)
-    loop()
+            #
+            # To keep things simple, we PUT each URI sequentially,
+            # and so we just need to rewind the input stream after
+            # each PUT.
+            # Given this strategy, when the input stream is the
+            # standard input and there are multiple URIs, we have
+            # to read stdin until EOF and wrap the content into
+            # a StringIO, because it's not possible to rewind the
+            # standard input (and we issue a warning because we
+            # might run out-of-memory because of that).
+            #
+            if len(arguments) > 1 and infile == stdin:
+                log.warning("Trying to bufferize standard input")
+                infile = StringIO(stdin.read())
+            for uri in arguments:
+                client = new_client()
+                client.put(uri, infile=infile)
+                loop()
+                infile.seek(0, SEEK_SET)
 
 if __name__ == "__main__":
     main(argv)
