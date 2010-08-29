@@ -37,15 +37,16 @@
 # Status icon for notification area
 #
 
-import sys
-
+from sys import path
 if __name__ == "__main__":
-    sys.path.insert(0, ".")
+    path.insert(0, ".")
 
 import gtk
 import gobject
 
-import neubot
+from neubot.net.pollers import dispatch
+from neubot.http.api import compose
+from neubot.http.api import send, recv
 
 TIMEOUT = 250
 STATECHANGE = "http://127.0.0.1:9774/state/change"
@@ -73,9 +74,9 @@ class TrayIcon:
             uri = STATE
             if self.havestate:
                 uri = STATECHANGE
-            m = neubot.http.compose(method="GET", uri=uri, keepalive=False)
-            neubot.http.send(m, sent=self.sent, cantsend=self.cantsend)
-        neubot.net.dispatch()
+            m = compose(method="GET", uri=uri, keepalive=False)
+            send(m, sent=self.sent, cantsend=self.cantsend)
+        dispatch()
         gobject.timeout_add(TIMEOUT, self.update)
 
     def cantsend(self, m):
@@ -84,7 +85,7 @@ class TrayIcon:
         self.havestate = False
 
     def sent(self, m):
-        neubot.http.recv(m, received=self.received, cantrecv=self.cantrecv)
+        recv(m, received=self.received, cantrecv=self.cantrecv)
 
     def received(self, m):
         if m.code == "200":
