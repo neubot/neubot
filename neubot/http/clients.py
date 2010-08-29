@@ -552,30 +552,35 @@ HELP = USAGE +								\
 "  -V         : Print version number and exit.\n"			\
 "  -v         : Run the program in verbose mode.\n"
 
-# response body goes on stdout by default, so use stderr
-def print_stats(client, request, response):
-    stderr.write("connect-time: %f s\n" % client.connecting.diff())
-    stderr.write("send-count: %s\n" % formatbytes(client.sending.length))
-    stderr.write("send-time: %f s\n" % client.sending.diff())
-    stderr.write("send-speed: %s/s\n" % formatbytes(client.sending.speed()))
-    stderr.write("recv-count: %s\n" % formatbytes(client.receiving.length))
-    stderr.write("recv-time: %f s\n" % client.receiving.diff())
-    stderr.write("recv-speed: %s/s\n" % formatbytes(client.receiving.speed()))
-    stderr.write("rr-time: %f s\n"%(client.receiving.stop-client.sending.start))
+class VerboseClient(Client):
+    def __init__(self):
+        Client.__init__(self)
+
+    # response body goes on stdout by default, so use stderr
+    def got_response(self, request, response):
+        Client.got_response(self, request, response)
+        stderr.write("connect-time: %f s\n" % self.connecting.diff())
+        stderr.write("send-count: %s\n" % formatbytes(self.sending.length))
+        stderr.write("send-time: %f s\n" % self.sending.diff())
+        stderr.write("send-speed: %s/s\n" % formatbytes(self.sending.speed()))
+        stderr.write("recv-count: %s\n" % formatbytes(self.receiving.length))
+        stderr.write("recv-time: %f s\n" % self.receiving.diff())
+        stderr.write("recv-speed: %s/s\n" % formatbytes(self.receiving.speed()))
+        stderr.write("rr-time: %f s\n"%(self.receiving.stop-self.sending.start))
 
 #
 # There is a function named main() because we want to be able to
 # run this module from neubot(1).
 #
 
+GET, HEAD, PUT, TWOCONN = range(0,4)
+
 def main(args):
     # defaults
-    client = Client()
-    client.notify_success = print_stats
-    method = client.get
+    new_client = VerboseClient
     infile = stdin
     outfile = stdout
-    two = False
+    method = GET
     # parse command line
     try:
         options, arguments = getopt(args[1:], "2Io:sT:Vv", ["help"])
@@ -584,14 +589,14 @@ def main(args):
         exit(1)
     for name, value in options:
         if name == "-2":
-            two = True
+            method = TWOCONN
         elif name == "--help":
             stdout.write(HELP % args[0])
             exit(0)
         elif name == "-I":
-            method = client.head
+            method = HEAD
         elif name == "-o":
-            method = client.get
+            method = GET
             if value == "-":
                 outfile = stdout
                 continue
@@ -601,9 +606,9 @@ def main(args):
                 log.exception()
                 exit(1)
         elif name == "-s":
-            client.notify_success = None
+            new_client = Client
         elif name == "-T":
-            method = client.put
+            method = PUT
             if value == "-":
                 infile = stdin
                 continue
@@ -620,18 +625,17 @@ def main(args):
     if len(arguments) == 0 or len(arguments) > 1:
         stderr.write(USAGE % args[0])
         exit(1)
-    # run client
-    if two:
-        if method == client.head:
-            log.error("Can't use -2 together with -I")
-            exit(1)
-        if method == client.put:
-            log.error("Can't use -2 together with -T")
-            exit(1)
-        uri = arguments[0]
-        DownloadManager(uri)
+    # run
+    if method == TWOCONN:
+        DownloadManager(arguments[0])
     else:
-        method(arguments[0], infile, outfile)
+        client = new_client()
+        if method == GET:
+            client.get(arguments[0], outfile=outfile)
+        elif method == HEAD:
+            client.head(arguments[0])
+        elif method == PUT:
+            client.put(arguments[0], infile=infile)
     loop()
 
 if __name__ == "__main__":
