@@ -21,6 +21,8 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from StringIO import StringIO
+from neubot.net import disable_stats
+from neubot.net import enable_stats
 from neubot.http.messages import Message
 from neubot.net.pollers import formatbytes
 from neubot.http.messages import compose
@@ -236,6 +238,7 @@ class VerboseClient(SpeedtestClient):
         SpeedtestClient.__init__(self, uri, nclients, flags)
 
     def speedtest_complete(self):
+        disable_stats()
         stdout.write("Timestamp: %d\n" % timestamp())
         stdout.write("URI: %s\n" % self.uri)
         # latency
@@ -271,6 +274,7 @@ FLAGS = {
 def main(args):
     flags = 0
     new_client = VerboseClient
+    silent = False
     nclients = 1
     # parse
     try:
@@ -298,6 +302,7 @@ def main(args):
                 exit(1)
         elif name == "-s":
             new_client = SpeedtestClient
+            silent = True
         elif name == "-V":
             stdout.write(version + "\n")
             exit(0)
@@ -310,6 +315,8 @@ def main(args):
     if flags == 0:
         flags = FLAG_ALL
     # run
+    if not silent:
+        enable_stats()
     new_client(arguments[0], nclients, flags)
     loop()
 
