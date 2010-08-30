@@ -1,3 +1,44 @@
+Neubot 0.2.2 [2010-08-30]
+	* http.servers: Detect and handle comet-after-close
+	* ui: It is wrong to append "." to sys.path
+	* ui: Use dispatch table for known commands
+	* ui: dohelp(): Adjust stdout/stderr usage
+	* ui: Add 'version' command
+	* ui: dohelp(): Make sure we sort commands by name
+	* ui: Add quiet and verbose commands
+	* ui: Rewrite the client part using SimpleClient
+	* ui: In interactive mode we must catch all exceptions
+	* ui: Process command line arguments
+	* ui: Provide some more documentation comments
+	* ui: Use uppercase for global variables
+	* ui: Re-write UI server using Server and SimpleConnection
+	* ui: Rewritten UIServer in order to rationalize its implementation
+	* ui: Do not assume that UIServer will close the connection
+	* ui: UIClient: Remember to flush() stdout when we follow
+	* net.connectors: Update code and codying style
+	* net.connectors: timeout when the delay equals the timeout
+	* net.connectors: Add debug statements and implement unit testing
+	* net.listeners.py: Update code and codying style
+	* net.listeners: Add debug statements and implement unit testing
+	* net.streams: Update code and codying style
+	* http.clients: Import formatbytes() from neubot.net.pollers
+	* http.servers: Import formatbytes() from neubot.net.pollers
+	* http.servers: bytes shadows builtin, use nbytes instead
+	* http.adaptors: Remove unused oadaptor class
+	* http.clients: Add VerboseClient and improve main()
+	* http.utils: make_filename(): Deal with name collisions
+	* http.clients: Add support for dload/upload/head of multiple URIs
+	* net.stream: Add debug statements and propagate changes
+	* net.streams: Update .send_ticks after a partial send()
+	* net.pollers: formatbytes(): Remove space between value and unit
+	* speedtest: Test HTTP latency, download, and upload speed
+	* speedtest: Use net.pollers enable/disable stats mechanism
+	* net.pollers: Make sure that we export register_func
+	* http.handlers: start_receiving(): Be careful before using stream
+	* log: Add support for quiet()
+	* net.pollers: Simple mechanism to print upload/dload stats
+	* http.servers: Add support for POST because speedtest needs it
+
 Neubot 0.2.1 [2010-08-27]
 	* http.servers: New module that implements HTTP server
 	* http.utils: Add function to extract filename from URI
