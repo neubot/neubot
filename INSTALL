@@ -19,7 +19,7 @@ copies our program in ``Program Files``, creates the proper links in the
 Start menu, and adds an entry to "Add or Remove programs" in the Control
 Panel.  You can download the latest installer at::
 
-  http://www.neubot.org:8080/Neubot_Setup_0.2.1.exe
+  http://www.neubot.org:8080/Neubot_Setup_0.2.2.exe
 
 Debian, Ubuntu, LinuxMint
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -40,12 +40,12 @@ password because installing a package is a privileged operation.)
 
 You can find the latest Neubot package here::
 
-    http://www.neubot.org:8080/neubot-0.2.1-1_all.deb
+    http://www.neubot.org:8080/neubot-0.2.2-1_all.deb
 
 An alternate procedure requires you to open the terminal, become root,
 and type the following command::
 
-    # dpkg -i neubot-0.2.1-1_all.deb
+    # dpkg -i neubot-0.2.2-1_all.deb
 
 Optionally, you might also want to download the project public key, so
 that your package manager does not complain that the Neubot repository
