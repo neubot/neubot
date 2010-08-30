@@ -301,6 +301,7 @@ def create_poller(timeout=1, get_ticks=ticks,
     return Poller(timeout, get_ticks, notify_except)
 
 poller = create_poller()
+register_func = poller.register_func
 dispatch = poller.dispatch
 loop = poller.loop
 register_periodic = poller.register_periodic
