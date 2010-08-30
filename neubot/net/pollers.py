@@ -74,7 +74,7 @@ def formatbytes(count):
     else:
         suffix = ""
     count = "%.1f" % count
-    return count + " " + suffix + "iB"
+    return count + suffix + "iB"
 
 class Stats:
     def __init__(self, name):
