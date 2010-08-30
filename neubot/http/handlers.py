@@ -199,6 +199,9 @@ class Handler:
     # In case of protocol error the higher layers will invoke close()
     # and so we must check .isclosed after each iteration in the loop
     # that processes incoming data.
+    # Between attach() and start_receiving() the underlying stream could
+    # become None because the client might close the connection.  So, be
+    # very careful before using the stream.
     #
 
     def attach(self, receiver):
@@ -206,7 +209,8 @@ class Handler:
         self.state = FIRSTLINE
 
     def start_receiving(self):
-        self.stream.recv(8000, self._got_data)
+        if self.stream:
+            self.stream.recv(8000, self._got_data)
 
     def _got_data(self, stream, data):
         self.receiver.progress(data)
