@@ -223,9 +223,10 @@ from neubot.net.pollers import formatbytes
 from neubot.http.clients import Timer
 
 #
-# Add SimpleConnection timing information and implement standard
-# methods like GET, HEAD, and PUT.  Both additions are required to
-# implement the transmission tests using the HTTP protocol.
+# Add SimpleConnection timing information and implement
+# standard methods like GET, HEAD, POST, and PUT.  Both
+# additions are required to implement the transmission
+# tests using the HTTP protocol.
 #
 
 class Connection(SimpleConnection):
@@ -322,13 +323,13 @@ class Connection(SimpleConnection):
                 if message.method == "HEAD":
                     # empty body
                     safe_seek(afile, 0, SEEK_END)
-        elif message.method == "PUT":
+        elif message.method in [ "POST", "PUT" ]:
             m = Message()
             compose(m, code="200", reason="Ok")
         else:
             m = Message()
             compose(m, code="405", reason="Method Not Allowed")
-            m["allow"] = "GET, HEAD, PUT"
+            m["allow"] = "GET, HEAD, POST, PUT"
         self.reply(message, m)
 
 #
