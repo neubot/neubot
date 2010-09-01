@@ -557,7 +557,7 @@ class VerboseClient(Client):
     def __init__(self):
         Client.__init__(self)
 
-    # response body goes on stdout by default, so use stderr
+    # response body might go on stdout, so use stderr
     def got_response(self, request, response):
         Client.got_response(self, request, response)
         stderr.write("connect-time: %f s\n" % self.connecting.diff())
