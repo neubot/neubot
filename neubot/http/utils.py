@@ -102,9 +102,6 @@ def _select_mime(accept, available):
             break
     return ret
 
-# compat
-select_mime = _select_mime
-
 def negotiate_mime(m, available, default):
     accept = _parse_accept(m["accept"])
     mimetype = _select_mime(accept, available)
