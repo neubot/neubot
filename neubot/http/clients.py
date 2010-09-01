@@ -38,7 +38,7 @@ from neubot.http.handlers import Receiver
 from neubot.http.messages import Message
 from neubot.http.messages import compose
 from neubot.http.utils import nextstate
-from neubot.http.utils import prettyprinter
+from neubot.http.utils import prettyprint
 from neubot.net.connectors import connect
 from neubot.net.pollers import loop
 from neubot.utils import ticks
@@ -143,7 +143,7 @@ class SimpleClient(Receiver):
     def _do_send(self):
         self.handler.bufferize(self.request.serialize_headers())
         self.handler.bufferize(self.request.serialize_body())
-        prettyprinter(log.debug, "> ", self.request)
+        prettyprint(log.debug, "> ", self.request)
         self.begin_sending()
         self.handler.flush(flush_progress=self.send_progress,
                            flush_success=self.sent_request)
@@ -200,7 +200,7 @@ class SimpleClient(Receiver):
         self.response[key] = value
 
     def end_of_headers(self):
-        prettyprinter(log.debug, "< ", self.response)
+        prettyprint(log.debug, "< ", self.response)
         state, length = self.nextstate(self.request, self.response)
         if state == FIRSTLINE:
             self._got_response()
