@@ -43,16 +43,18 @@ class Notifier:
 
     def publish(self, event):
         if self.subscribers.has_key(event):
-            for func, context in self.subscribers[event]:
-                func(event, context)
+            queue = self.subscribers[event]
             del self.subscribers[event]
+            for func, context in queue:
+                func(event, context)
 
     def periodic(self):
         sched(INTERVAL, self.periodic)
-        for event, queue in self.subscribers.items():
+        subscribers = self.subscribers
+        self.subscribers = {}
+        for event, queue in subscribers.items():
             for func, context in queue:
                 func(event, context)
-        self.subscribers = {}
 
 notifier = Notifier()
 subscribe = notifier.subscribe
