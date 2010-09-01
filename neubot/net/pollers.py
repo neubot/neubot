@@ -87,7 +87,8 @@ class Stats:
         return self.name + ": " + formatbytes(self.avg) + "/s"
 
     def update(self):
-        self.avg = 0.2 * self.avg + 0.8 * self.count
+        # assuming an update every second
+        self.avg = self.count
         self.count = 0
 
     def account(self, count):
