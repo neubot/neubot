@@ -41,37 +41,17 @@ class Notifier:
             queue = self.subscribers[event]
         queue.append((func, context))
 
-    #
-    # XXX Below we surround func() with try..except and this is
-    # intended to work-around the fact that the server will crash
-    # if there is a pending comet response for which the client
-    # has closed the connection.  The right solution is to modify
-    # the existing code to deal with this new case--but, for now,
-    # it is sufficient to intercept the issue here.
-    # We define this problem Comet-after-close because it happens
-    # when we try to send a comet response _and_ the peer has al-
-    # ready closed the connection.
-    #
-
     def publish(self, event):
         if self.subscribers.has_key(event):
             for func, context in self.subscribers[event]:
-                try:
-                    func(event, context)
-                except:
-                    log.warning("Possible Comet-after-close problem")
-                    log.exception()
+                func(event, context)
             del self.subscribers[event]
 
     def periodic(self):
         sched(INTERVAL, self.periodic)
         for event, queue in self.subscribers.items():
             for func, context in queue:
-                try:
-                    func(event, context)
-                except:
-                    log.warning("Possible Comet-after-close problem")
-                    log.exception()
+                func(event, context)
         self.subscribers = {}
 
 notifier = Notifier()
