@@ -44,13 +44,59 @@ if __name__ == "__main__":
 import gtk
 import gobject
 
+from neubot.http.clients import SimpleClient
+from neubot.http.messages import Message
+from neubot.http.messages import compose
 from neubot.net.pollers import dispatch
-from neubot.http.api import compose
-from neubot.http.api import send, recv
+from neubot.net.pollers import sched
 
+# milliseconds between each dispatch() call
 TIMEOUT = 250
-STATECHANGE = "http://127.0.0.1:9774/state/change"
-STATE = "http://127.0.0.1:9774/state"
+
+#
+# Track the value of state, using GET /state the first time and
+# then GET /state/change later (in the latter case the UI server
+# employs comet and so we are notified only when the state changes
+# or a certain timeout expires).
+# If we cannot connect or the connection is lost for some reason,
+# we try again five seconds in the future (just to avoid wasting
+# tons of resources when Neubot is down for some reason).
+#
+
+class StateTracker(SimpleClient):
+    def __init__(self):
+        self.state = None
+        self._update()
+
+    def _update(self):
+        m = Message()
+        compose(m, method="GET", uri="http://127.0.0.1:9774/state")
+        self.send(m)
+
+    def connect_error(self):
+        self.state = None
+        sched(5, self._update)
+
+    def sendrecv_error(self):
+        self.state = None
+        sched(5, self._update)
+
+    def got_response(self, request, response):
+        if response.code == "200":
+            self.state = response.body.read().strip()
+            m = Message()
+            compose(m, method="GET", uri="http://127.0.0.1:9774/state/change")
+            self.send(m)
+        else:
+            self.state = None
+
+#
+# The icon in the notification area.
+# We can't use Tk here because it seems that there is not notification
+# are support into it.
+# So we employ Gtk because it's installed in Ubuntu which is one of
+# the systems we want to provide an user friendly interface for.
+#
 
 class TrayIcon:
 
@@ -62,14 +108,13 @@ class TrayIcon:
     #
 
     def __init__(self):
-        self.needsend = True
-        self.havestate = False
+        self.tracker = StateTracker()
         self.tray = gtk.StatusIcon()
         self.tray.set_from_icon_name(gtk.STOCK_NETWORK)                 # XXX
         self.tray.connect("popup-menu", self.on_popup_menu)
         self.tray.connect("activate", self.on_activate)
         self.tray.set_visible(False)
-        self.update()
+        self._update()
 
     def on_popup_menu(self, status, button, time):
         pass
@@ -89,49 +134,15 @@ class TrayIcon:
     # for most users.]
     #
 
-    def update(self):
-        if self.needsend:
-            uri = STATE
-            if self.havestate:
-                uri = STATECHANGE
-            m = compose(method="GET", uri=uri, keepalive=False)
-            send(m, sent=self.sent, cantsend=self.cantsend)
+    def _update(self):
         dispatch()
-        gobject.timeout_add(TIMEOUT, self.update)
-
-    #
-    # We need to be careful and we must hide the icon in case
-    # of errors.
-    # When we receive the response we read the whole body at
-    # once, and this is not so safe--we should check that it
-    # its not too big, instead.
-    #
-
-    def cantsend(self, m):
-        self.needsend = True
-        self.tray.set_visible(False)
-        self.havestate = False
-
-    def sent(self, m):
-        recv(m, received=self.received, cantrecv=self.cantrecv)
-
-    def received(self, m):
-        if m.code == "200":
-            body = m.body.read().strip()                                # XXX
-            if not self.havestate:
-                self.havestate = True
-            if body != "SLEEPING":
-                self.tray.set_visible(True)
-                #self.tray.set_blinking(True)
-                self.tray.set_tooltip("neubot: " + body.lower())
-            else:
-                self.tray.set_visible(False)
-        self.needsend = True
-
-    def cantrecv(self, m):
-        self.needsend = True
-        self.tray.set_visible(False)
-        self.havestate = False
+        gobject.timeout_add(TIMEOUT, self._update)
+        if self.tracker.state and self.tracker.state != "SLEEPING":
+            self.tray.set_tooltip("Neubot: " + self.tracker.state)
+#           self.tray.set_blinking(True)
+            self.tray.set_visible(True)
+        else:
+            self.tray.set_visible(False)
 
 if __name__ == "__main__":
     gtk.gdk.threads_init()
