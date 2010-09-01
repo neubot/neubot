@@ -719,18 +719,25 @@ def doset(vector):
 
 def dohelp(vector, ofile=sys.stderr):
     if len(vector) == 0:
-        ofile.write("Commands:\n")
+        line = "Commands:"
         for name in sorted(COMMANDS.keys()):
-            dictionary = COMMANDS[name]
-            ofile.write("    %s\n" % dictionary["usage"])
+            if len(line) + len(name) + 1 >= 80:
+                ofile.write(line + "\n")
+                line = " " * len("Commands:")
+            else:
+                line += " " + name
+        if line:
+            ofile.write(line + "\n")
+        ofile.write("Try `help <command>' for more help.\n")
     elif len(vector) == 1:
         name = vector[0]
         if COMMANDS.has_key(name):
             dictionary = COMMANDS[name]
             ofile.write("Usage: %s\n" % dictionary["usage"])
-            ofile.write("    %s\n" % dictionary["descr"])
+            ofile.write("Description: %s\n" % dictionary["descr"])
         else:
             ofile.write("Unknown command: %s\n" % name)
+            ofile.write("Try `help' to get a list of commands.\n")
     else:
         dohelp(["help"])
 
@@ -852,7 +859,8 @@ def docommand(vector):
             docommand = dictionary["func"]
             docommand(arguments)
         else:
-            dohelp([])
+            sys.stderr.write("Unknown command: %s\n" % command)
+            sys.stderr.write("Try `help' to get a list of commands.\n")
 
 #
 # Main
