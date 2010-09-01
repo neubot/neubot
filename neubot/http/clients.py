@@ -684,15 +684,15 @@ def main(args):
             # To keep things simple, we PUT each URI sequentially,
             # and so we just need to rewind the input stream after
             # each PUT.
-            # Given this strategy, when the input stream is the
-            # standard input and there are multiple URIs, we have
+            # When the input stream is the standard input, we have
             # to read stdin until EOF and wrap the content into
-            # a StringIO, because it's not possible to rewind the
-            # standard input (and we issue a warning because we
+            # a StringIO, because we need to know stardard input
+            # length in advance (and we issue a warning because we
             # might run out-of-memory because of that).
             #
-            if len(arguments) > 1 and infile == stdin:
+            if infile == stdin:
                 log.warning("Trying to bufferize standard input")
+                log.warning("We might run out of memory because of that")
                 infile = StringIO(stdin.read())
             for uri in arguments:
                 client = new_client()
