@@ -548,7 +548,7 @@ class UIServer(Server):
                 handler.reply(m, m1)
                 return
             # ok
-            location = "http://%s:%s%s" % (ADDRESS,PORT,m.uri)
+            location = "http://%s:%s%s" % (self.address,self.port,m.uri)
             compose(m1, code="303", reason="See Other")
             m1["location"] = location
             handler.reply(m, m1)
