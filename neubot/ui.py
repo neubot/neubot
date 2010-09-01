@@ -681,7 +681,7 @@ def dofollow(vector):
         textclient.follow(variable)
         neubot.net.loop()
     else:
-        dohelp(["follow"], ofile=sys.stderr)
+        dohelp(["follow"])
 
 
 def doget(vector):
@@ -690,14 +690,14 @@ def doget(vector):
         textclient.get(variable)
         neubot.net.loop()
     else:
-        dohelp(["get"], ofile=sys.stderr)
+        dohelp(["get"])
 
 def dols(vector):
     if len(vector) == 0:
         textclient.get("")
         neubot.net.loop()
     else:
-        dohelp(["ls"], ofile=sys.stderr)
+        dohelp(["ls"])
 
 def doset(vector):
     if len(vector) == 2:
@@ -707,7 +707,7 @@ def doset(vector):
         textclient.set(variable, value)
         neubot.net.loop()
     else:
-        dohelp(["set"], ofile=sys.stderr)
+        dohelp(["set"])
 
 #
 # Local commands
@@ -717,7 +717,7 @@ def doset(vector):
 # input and re-runs main() using a fake argv.
 #
 
-def dohelp(vector, ofile=sys.stdout):
+def dohelp(vector, ofile=sys.stderr):
     if len(vector) == 0:
         ofile.write("Commands:\n")
         for name in sorted(COMMANDS.keys()):
@@ -732,7 +732,7 @@ def dohelp(vector, ofile=sys.stdout):
         else:
             ofile.write("Unknown command: %s\n" % name)
     else:
-        dohelp(["help"], ofile=sys.stderr)
+        dohelp(["help"])
 
 def dosource(vector):
     if len(vector) == 1:
@@ -746,25 +746,25 @@ def dosource(vector):
             main(["<<internal>>"])
         sys.stdin = stdin
     else:
-        dohelp(["source"], ofile=sys.stderr)
+        dohelp(["source"])
 
 def doversion(vector):
     if len(vector) == 0:
         sys.stdout.write(neubot.version + "\n")
     else:
-        dohelp(["version"], ofile=sys.stderr)
+        dohelp(["version"])
 
 def doquiet(vector):
     if len(vector) == 0:
         neubot.log.quiet()
     else:
-        dohelp(["quiet"], ofile=sys.stderr)
+        dohelp(["quiet"])
 
 def doverbose(vector):
     if len(vector) == 0:
         neubot.log.verbose()
     else:
-        dohelp(["verbose"], ofile=sys.stderr)
+        dohelp(["verbose"])
 
 #
 # Dispatch table
@@ -772,7 +772,11 @@ def doverbose(vector):
 # should check whether the user supplied enough arguments and, if
 # not, the command should invoke dohelp() as follows:
 #
-#   dohelp(["command-name"], ofile=sys.stderr)
+#   dohelp(["command-name"])
+#
+# This will print the result on the standard error.  Below, we
+# wrap dohelp() with a lambda function to ensure that it prints
+# on the standard output when invoked as a command.
 #
 
 COMMANDS = {
@@ -788,7 +792,7 @@ COMMANDS = {
     },
     "help": {
         "descr": "Get generic help or help on command",
-        "func": dohelp,
+        "func": lambda x: dohelp(x, ofile=sys.stdout),
         "usage": "help [variable]",
     },
     "ls": {
@@ -837,7 +841,7 @@ def docommand(vector):
             docommand = dictionary["func"]
             docommand(arguments)
         else:
-            dohelp([], ofile=sys.stderr)
+            dohelp([])
 
 #
 # Main
