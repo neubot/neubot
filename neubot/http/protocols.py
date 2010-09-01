@@ -122,7 +122,8 @@ class protocol(Receiver):
 		self.application = application
 
 	def close(self):
-		self.handler.close()
+		if self.handler:
+			self.handler.close()
 
 	def sendmessage(self, msg):
             self.handler.bufferize(msg.serialize_headers())
