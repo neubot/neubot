@@ -663,6 +663,16 @@ class TextClient(SimpleClient):
                 self.send(m)
             else:
                 sys.stdout.write(value)
+        elif response.code == "303":
+            if response["location"]:
+                location = response["location"]
+                neubot.log.debug("* Redirected to: %s" % location)
+                m = Message()
+                compose(m, method="GET", uri=location, keepalive=False)
+                self.send(m)
+            else:
+                sys.stderr.write("Error: %s %s\n" %
+                 (response.code, response.reason))
         else:
             sys.stderr.write("Error: %s %s\n" %
              (response.code, response.reason))
