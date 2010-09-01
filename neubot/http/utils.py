@@ -94,9 +94,6 @@ def _parse_accept(accept):
         result.append((quality, mimetype))
     return sorted(result, reverse=True)
 
-# compat
-parse_accept = _parse_accept
-
 def _select_mime(accept, available):
     ret = None
     for quality, mimetype in accept:
