@@ -127,8 +127,11 @@ class DivContent:
         self.vector.append("<a href=\"%s\">%s</a>" % (uri, name))
         self.vector.append("</span>")
 
-    def append_text(self, text):
-        self.vector.append("<span>")
+    def append_text(self, text, id=None):
+        if id:
+            self.vector.append("<span id=\"%s\">" % id)
+        else:
+            self.vector.append("<span>")
         self.vector.append(text)
         self.vector.append("</span>")
 
@@ -141,12 +144,15 @@ class DivContent:
         self.vector.append("</span>")
 
 class XHTMLComposer(BaseComposer):
-    def __init__(self, title):
+    def __init__(self, title, *scripts):
         BaseComposer.__init__(self)
         self.vector.append(DOCTYPE)
         self.vector.append("<html>")
         self.vector.append("<head>")
         self.vector.append("<title> %s </title>" % title)
+        for x in scripts:
+            self.vector.append("<script type=\"text/javascript\" src=\"%s\">"%x)
+            self.vector.append("</script>")
         self.vector.append("</head>")
         self.vector.append("<body>")
 
@@ -295,14 +301,19 @@ class UIServer(Server):
         "name": "state",
         "uri": "/state",
         "reader": lambda: neubot.config.state,
+        "id": "state"
     }]
 
     def root_get_html(self, uri):
-        composer = XHTMLComposer("%s on neubot" % uri)
+        composer = XHTMLComposer("%s on neubot" % uri,
+         "/js/jquery.js", "/js/state.js")
         for dictionary in self.ROOT:
             div = composer.append_div()
             div.append_link(dictionary["name"], dictionary["uri"])
-            div.append_text(dictionary["reader"]())
+            if dictionary.has_key("id"):
+                div.append_text(dictionary["reader"](), dictionary["id"])
+            else:
+                div.append_text(dictionary["reader"]())
         return composer.stringio()
 
     def root_get_plain(self, uri):
@@ -410,8 +421,9 @@ class UIServer(Server):
     #
 
     def state_get_html(self, uri):
-        composer = XHTMLComposer("%s on neubot" % uri)
-        composer.append_div().append_text(neubot.config.state)
+        composer = XHTMLComposer("%s on neubot" % uri,
+         "/js/jquery.js", "/js/state.js")
+        composer.append_div().append_text(neubot.config.state, "state")
         return composer.stringio()
 
     def state_get_plain(self, uri):
@@ -512,7 +524,42 @@ class UIServer(Server):
         handler, m = atuple
         self.got_request(handler, m, True)
 
+    #XXX
+    def _do_javascript(self, handler, m):
+        m1 = Message()
+        if m.uri == "/js/jquery.js":
+            #they have if-modified-since
+            x="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"
+            compose(m1, code="302", reason="Found")
+            m1["location"] = x
+        elif m.uri == "/js/state.js":
+            #should put a copy on the filesystem instead?
+            vector = []
+            vector.append("neubot_update_state = function() {\r\n")
+            vector.append("  $.ajax({\r\n")
+            vector.append("    url: '/state/change',\r\n")
+            vector.append("    success: function(m) {\r\n")
+            vector.append("      $('#state').html(m);\r\n")
+            vector.append("      neubot_update_state();\r\n")
+            vector.append("    },\r\n")
+            vector.append("    error: function(m) {\r\n")
+            vector.append("      $.delay(3000, neubot_update_state)\r\n")
+            vector.append("    }\r\n")
+            vector.append("  });\r\n")
+            vector.append("}\r\n")
+            vector.append("$(document).ready(neubot_update_state);\r\n")
+            stringio = StringIO.StringIO("".join(vector))
+            compose(m1, code="200", reason="Ok", body=stringio,
+                    mimetype="text/javascript")
+        else:
+            compose(m1, code="404", reason="Not Found")
+        handler.reply(m, m1)
+
     def got_request(self, handler, m, recurse=False):
+        # js
+        if m.uri.startswith("/js/"):
+            self._do_javascript(handler, m)
+            return
         # comet
         if self.COMETs.has_key(m.uri) and not recurse:
             event = self.COMETs[m.uri]
