@@ -867,7 +867,7 @@ def main(args):
     # options
     for name, value in options:
         if name == "--help":
-            sys.stdout.write(HELP)
+            sys.stdout.write(HELP % args[0])
             exit(0)
         elif name == "-v":
             neubot.log.verbose()
