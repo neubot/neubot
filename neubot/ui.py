@@ -766,6 +766,12 @@ def doverbose(vector):
     else:
         dohelp(["verbose"])
 
+def doexit(vector):
+    if len(vector) == 0:
+        sys.exit(0)
+    else:
+        dohelp(["exit"])
+
 #
 # Dispatch table
 # This table contains all the available commands.  Each command
@@ -780,6 +786,11 @@ def doverbose(vector):
 #
 
 COMMANDS = {
+    "exit" : {
+        "descr": "Exit from the program",
+        "func": doexit,
+        "usage": "exit",
+    },
     "follow": {
         "descr": "Follow variable evolution over time",
         "func": dofollow,
@@ -890,6 +901,8 @@ def main(args):
             vector = shlex.split(line)
             try:
                 docommand(vector)
+            except SystemExit:
+                raise
             except:
                 neubot.log.exception()
     else:
