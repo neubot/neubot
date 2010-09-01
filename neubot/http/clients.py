@@ -557,17 +557,35 @@ class VerboseClient(Client):
     def __init__(self):
         Client.__init__(self)
 
-    # response body might go on stdout, so use stderr
+    #
+    # If the user specified -I we must print headers we have
+    # read on the standard output, and then the statistics
+    # must go on the standard error.
+    # If the output file is the standard output we must print
+    # stats on the standard error as well (or the output will
+    # become an horrible mess).
+    # Otherwise it's fine to use standard output.
+    #
+
     def got_response(self, request, response):
         Client.got_response(self, request, response)
-        stderr.write("connect-time: %f s\n" % self.connecting.diff())
-        stderr.write("send-count: %s\n" % formatbytes(self.sending.length))
-        stderr.write("send-time: %f s\n" % self.sending.diff())
-        stderr.write("send-speed: %s/s\n" % formatbytes(self.sending.speed()))
-        stderr.write("recv-count: %s\n" % formatbytes(self.receiving.length))
-        stderr.write("recv-time: %f s\n" % self.receiving.diff())
-        stderr.write("recv-speed: %s/s\n" % formatbytes(self.receiving.speed()))
-        stderr.write("rr-time: %f s\n"%(self.receiving.stop-self.sending.start))
+        if request.method == "HEAD" or response.body == stdout:
+            self._print_stats(stderr)
+        else:
+            self._print_stats(stdout)
+
+    def _print_stats(self, f):
+        f.write("connect-time: %f s\n" % self.connecting.diff())
+        f.write("send-count: %s\n" % formatbytes(self.sending.length))
+        f.write("send-time: %f s\n" % self.sending.diff())
+        f.write("send-speed: %s/s\n" % formatbytes(self.sending.speed()))
+        f.write("recv-count: %s\n" % formatbytes(self.receiving.length))
+        f.write("recv-time: %f s\n" % self.receiving.diff())
+        f.write("recv-speed: %s/s\n" % formatbytes(self.receiving.speed()))
+        f.write("rr-time: %f s\n"%(self.receiving.stop-self.sending.start))
+
+def print_headers(client, request, response):
+    prettyprint(stdout.write, "", response, eol="\r\n")
 
 #
 # There is a function named main() because we want to be able to
@@ -677,6 +695,7 @@ def main(args):
         elif method == HEAD:
             for uri in arguments:
                 client = new_client()
+                client.notify_success = print_headers
                 client.head(uri)
             loop()
         elif method == PUT:
