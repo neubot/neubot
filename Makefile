@@ -43,11 +43,11 @@ PHONIES += release
 
 _all: help
 _archive:
-	@install -d dist/neubot-$$ATAG
+	@install -d dist/
 	@git archive --format=tar --prefix=neubot-$$ATAG/ $$ATAG        \
-            | gzip -9 > dist/neubot-$$ATAG/neubot-$$ATAG.tar.gz
+            | gzip -9 > dist/neubot-$$ATAG.tar.gz
 	@git archive --format=zip --prefix=neubot-$$ATAG/ $$ATAG        \
-            > dist/neubot-$$ATAG/neubot-$$ATAG.zip
+            > dist/neubot-$$ATAG.zip
 _docs:
 	@echo "[DOCS]"
 	@cd doc && for DIA in *.dia; do					\
