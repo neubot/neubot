@@ -37,7 +37,6 @@ PHONIES += deb
 PHONIES += help
 PHONIES += install
 PHONIES += lint
-PHONIES += patches
 PHONIES += release
 
 .PHONY: $(PHONIES)
@@ -119,11 +118,6 @@ install:
 lint:
 	@echo "[LINT]"
 	@find . -type f -name \*.py -exec pychecker --limit 256 {} \;
-patches:
-	@echo "[PATCHES] dist/patches.tar.gz"
-	@rm -rf dist/
-	@git format-patch -o dist/ $(TAG) 1>/dev/null
-	@cd dist && tar czf patches.tar.gz *.patch
 release:
 	@echo "[RELEASE] dist/neubot-$(TAG)/"
 	@rm -rf dist/
