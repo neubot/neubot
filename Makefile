@@ -120,3 +120,4 @@ release:
 	@echo "[RELEASE] dist/neubot-$(TAG)/"
 	@rm -rf dist/
 	@make _archive ATAG=$(TAG)
+	@make _deb
