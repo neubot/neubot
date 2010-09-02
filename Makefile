@@ -31,8 +31,9 @@ PHONIES += _all
 PHONIES += _archive
 PHONIES += _docs
 PHONIES += _install
-PHONIES += clean
 PHONIES += _deb
+
+PHONIES += clean
 PHONIES += help
 PHONIES += install
 PHONIES += lint
@@ -72,10 +73,6 @@ _install:
 	@install -d $(DESTDIR)$(PREFIX)/man/man3
 	@pod2man -c"Neubot manual" -r"Neubot $(VERSION)" -s3 -n"NEUBOT.NET" \
          doc/neubot.net.3.pod > $(DESTDIR)/$(PREFIX)/man/man3/neubot.net.3
-clean:
-	@echo "[CLEAN]"
-	@find . -type f -name \*.pyc -exec rm -f {} \;
-	@rm -rf -- dist/
 _deb:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@# XXX Work-around using BSD convention for installing manual page
@@ -96,6 +93,11 @@ _deb:
 	@cd dist/control && tar czf ../control.tar.gz ./*
 	@echo '2.0' > dist/debian-binary
 	@ar r $(DEB) dist/debian-binary dist/*.tar.gz
+
+clean:
+	@echo "[CLEAN]"
+	@find . -type f -name \*.pyc -exec rm -f {} \;
+	@rm -rf -- dist/
 help:
 	@echo -n "Targets:"
 	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
