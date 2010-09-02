@@ -119,6 +119,11 @@ lint:
 release:
 	@echo "[RELEASE]"
 	@make clean
+#	#Create Win32 installer using Wine (not yet)
+#	@install -d dist
+#	@wine cmd /c Build.bat
+#	@cd dist && rm -rf library.zip neubot.exe w9xpopen.exe
+#	@mv Neubot_Setup_* dist/
 	@make _deb
 	@cd dist && dpkg-scanpackages . > Packages
 	@cd dist && gzip --stdout -9 Packages > Packages.gz
