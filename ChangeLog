@@ -1,3 +1,45 @@
+Neubot 0.2.3 [2010-09-02]
+	* http.utils: Remove deprecated parse_accept()
+	* http.utils: Remove deprecated select_mime()
+	* testing: Remove getter.py httpd.py publish.py wget.py
+	* net.pollers: Stats: Do not weight the average value
+	* http.servers: Use prettyprint() instead of prettyprinter()
+	* http.utils: make_filename(): Make sure we don't loop forever
+	* http.protocols: Avoid crash in case of comet-after-close
+	* notify: Remove guards against comet-after-close
+	* notify: Increase robustness of publishing algorithm
+	* http.clients: Use prettyprint() instead of prettyprinter()
+	* http.clients: We always need to bufferize standard input
+	* http.clients: VerboseClient: Adjust comment before got_response
+	* http.clients: Improve -I and usage of stdout/stderr for stats
+	* ui: Make sure we print the program name on --help
+	* ui: UIServer: Do not use ADDRESS and PORT directly
+	* ui: dohelp(): By default use the standard error
+	* ui: Implement the exit command into the shell
+	* ui: Improve the output of the `help' command
+	* ui: TestClient: Follow '303 See Other' redirection
+	* ui: UIServer: Simple javascript support for tracking state
+	* statusicon: It is wrong to append "." to sys.path
+	* statusicon: Use 'from..import' rather than 'import'
+	* statusicon: Provide some more comments
+	* statusicon: Use SimpleClient rather than neubot.http.api
+	* statusicon: Add support for command-line options
+	* Makefile: make help: More compact help message
+	* Makefile: make patches: Removed unused target
+	* Makefile: make archive: Remove unused target
+	* Makefile: [release+deb] Make the deb target private
+	* Makefile: [release+deb] Group all the hidden targets together
+	* Makefile: [release+deb] make _deb: Auto-calculate installed-size
+	* Makefile: [release+deb] make _deb: Remember to cleanup
+	* Makefile: [release+deb] make _archive: Don't create subdir
+	* Makefile: [release+deb] make release: Invoke `make _deb'
+	* Makefile: make release: Invoke make clean rather than rm -rf dist/
+	* Makefile: make release: Adjust verbose message
+	* Makefile: make release: Do some work to update apt repository
+	* Makefile: Add commented-out rules to create installer using Wine
+	* release.sh: Script that automatically makes a new release
+	* Release neubot/0.2.3
+
 Neubot 0.2.2 [2010-08-30]
 	* http.servers: Detect and handle comet-after-close
 	* ui: It is wrong to append "." to sys.path
