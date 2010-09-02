@@ -118,6 +118,6 @@ lint:
 	@find . -type f -name \*.py -exec pychecker --limit 256 {} \;
 release:
 	@echo "[RELEASE] dist/neubot-$(TAG)/"
-	@rm -rf dist/
+	@make clean
 	@make _archive ATAG=$(TAG)
 	@make _deb
