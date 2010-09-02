@@ -95,6 +95,7 @@ _deb:
 	@cd dist/control && tar czf ../control.tar.gz ./*
 	@echo '2.0' > dist/debian-binary
 	@ar r $(DEB) dist/debian-binary dist/*.tar.gz
+	@rm -rf dist/control* dist/data* dist/debian-binary
 
 clean:
 	@echo "[CLEAN]"
