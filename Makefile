@@ -105,8 +105,13 @@ deb:
 	@echo '2.0' > dist/debian-binary
 	@ar r $(DEB) dist/debian-binary dist/*.tar.gz
 help:
-	@echo "[HELP] Available targets"
-	@cat Makefile|grep '^[a-zA-Z0-9]*:'|sed 's/:.*$$//'|sed 's/^/  /'
+	@echo -n "Targets:"
+	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
+	     if echo $$TARGET|grep -qv ^_; then				\
+	         echo -n " $$TARGET";					\
+	     fi;							\
+	 done
+	@echo ""
 install:
 	@echo "[INSTALL]"
 	@make -f Makefile _install
