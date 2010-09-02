@@ -119,5 +119,15 @@ lint:
 release:
 	@echo "[RELEASE]"
 	@make clean
-	@make _archive ATAG=$(TAG)
 	@make _deb
+	@cd dist && dpkg-scanpackages . > Packages
+	@cd dist && gzip --stdout -9 Packages > Packages.gz
+	@cp debian/Release dist/
+	@for FILE in Packages Packages.gz; do				\
+	     SHASUM=`sha256sum dist/$$FILE | awk '{print $$1}'` &&	\
+	     KBYTES=`wc -c dist/$$FILE | awk '{print $$1}'` &&		\
+	     echo " $$SHASUM $$KBYTES $$FILE" >> dist/Release;		\
+	 done
+	@gpg -abs -o dist/Release.gpg dist/Release
+	@make _archive ATAG=$(TAG)
+	@cd dist && sha256sum neubot-* >> SHA256.inc
