@@ -32,7 +32,7 @@ PHONIES += _archive
 PHONIES += _docs
 PHONIES += _install
 PHONIES += clean
-PHONIES += deb
+PHONIES += _deb
 PHONIES += help
 PHONIES += install
 PHONIES += lint
@@ -76,9 +76,7 @@ clean:
 	@echo "[CLEAN]"
 	@find . -type f -name \*.pyc -exec rm -f {} \;
 	@rm -rf -- dist/
-deb:
-	@echo "[DEB] $(DEB)"
-	@rm -rf dist/
+_deb:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@# XXX Work-around using BSD convention for installing manual page
 	@mv dist/data/usr/man dist/data/usr/share/
