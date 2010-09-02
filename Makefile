@@ -90,6 +90,8 @@ _deb:
 	@for file in postinst prerm; do					\
 	    install debian/$$file dist/control/;			\
 	done
+	@SIZE=`du -s dist/data/|cut -f1` && sed -i "s/@SIZE@/$$SIZE/"	\
+	                                        dist/control/control
 	@cd dist/control && tar czf ../control.tar.gz ./*
 	@echo '2.0' > dist/debian-binary
 	@ar r $(DEB) dist/debian-binary dist/*.tar.gz
