@@ -31,7 +31,6 @@ PHONIES += _all
 PHONIES += _archive
 PHONIES += _docs
 PHONIES += _install
-PHONIES += archive
 PHONIES += clean
 PHONIES += deb
 PHONIES += help
@@ -73,10 +72,6 @@ _install:
 	@install -d $(DESTDIR)$(PREFIX)/man/man3
 	@pod2man -c"Neubot manual" -r"Neubot $(VERSION)" -s3 -n"NEUBOT.NET" \
          doc/neubot.net.3.pod > $(DESTDIR)/$(PREFIX)/man/man3/neubot.net.3
-archive:
-	@echo "[ARCHIVE] dist/neubot-HEAD/"
-	@rm -rf dist/
-	@make _archive ATAG=HEAD
 clean:
 	@echo "[CLEAN]"
 	@find . -type f -name \*.pyc -exec rm -f {} \;
