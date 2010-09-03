@@ -26,7 +26,6 @@ if __name__ == "__main__":
    sys.path.insert(0, ".")
 
 import StringIO
-import logging
 import neubot
 import os
 import shlex
