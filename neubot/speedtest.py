@@ -65,6 +65,7 @@ class SpeedtestClient:
     #
 
     def __init__(self, uri, nclients, flags):
+        self.length = (1<<16)
         self.repeat = {}
         self.clients = []
         self.complete = 0
@@ -149,8 +150,6 @@ class SpeedtestClient:
     # Measure download speed
     # We use N connections and this should mitigate a bit the effect
     # of distance (in terms of RTT) from the origin server.
-    # The remote file size is fixed and this is definitely something
-    # that should be improved in the future.
     #
 
     def _measure_download(self, client=None):
@@ -159,41 +158,54 @@ class SpeedtestClient:
         self.repeat[client] = 2
         m = Message()
         compose(m, method="GET", uri=self.uri + "download")
+        m["range"] = "bytes=0-%d" % self.length
         client.notify_success = self._measured_download
         client.send(m)
 
     def _measured_download(self, client, request, response):
-        if response.code == "200":
+        if response.code in ["200", "206"]:
             speed = client.receiving.speed()
             self.download.append(speed)
             self.repeat[client] = self.repeat[client] -1
             if self.repeat[client] == 0:
-                self._download_complete(client)
+                self._download_complete(client, response)
             else:
                 client.send(request)
         else:
             log.error("Response: %s %s" % (response.code, response.reason))
 
-    def _download_complete(self, client):
+    def _download_complete(self, client, response):
         self.clients.append(client)
         self.complete = self.complete + 1
         if self.complete == self.nclients:
             self.complete = 0
             clients = self.clients
             self.clients = []
+            if clients[0].receiving.diff() < 1:
+                self.download = []
+                self.length <<= 1
+                for client in clients:
+                    self._measure_download(client)
+                return
+            if self.flags & FLAG_UPLOAD:
+                body = response.body.read()
+                # there are many ADSLs around
+                body = body[:len(body)/4]
+                log.debug("Using %d bytes for upload" % len(body))
+            else:
+                body = None
             for client in clients:
                 if self.flags & FLAG_UPLOAD:
-                    self._measure_upload(client)
+                    self._measure_upload(client, StringIO(body))
                 else:
                     self._speedtest_complete(client)
 
     #
     # Measure upload speed
-    # For now, if possible, upload the same body we downloaded
-    # or generate and send a sequence of zeroes.  As we already
-    # said when commenting download, the body size should be some
-    # function of the connection speed.  In addition, it would
-    # be better to send random bytes rather than zeroes.
+    # If we passed for download we receive a body that is 1/4
+    # of the one we downloaded (because there are many ADSLs
+    # around).  Otherwise, send a sequence of zeroes, even if
+    # it should be better to send random bytes.
     #
 
     def _measure_upload(self, client=None, body=None):
@@ -272,6 +284,7 @@ class VerboseClient(SpeedtestClient):
         disable_stats()
         stdout.write("Timestamp: %d\n" % timestamp())
         stdout.write("URI: %s\n" % self.uri)
+        stdout.write("Length: %d\n" % self.length)
         # latency
         if self.flags & FLAG_LATENCY:
             stdout.write("Connect:")
