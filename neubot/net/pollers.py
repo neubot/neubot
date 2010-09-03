@@ -77,7 +77,7 @@ def formatbytes(count):
     count = "%.1f" % count
     return count + suffix + "iB"
 
-class Stats:
+class SimpleStats:
     def __init__(self, name):
         self.last = ticks()
         self.name = name
@@ -100,6 +100,11 @@ class Stats:
     def account(self, count):
         self.count += count
 
+class Stats:
+    def __init__(self, name):
+        self.send = SimpleStats(name + "/send)
+        self.recv = SimpleStats(name + "/recv")
+
 class Poller:
     def __init__(self, timeout, get_ticks, notify_except):
         self.timeout = timeout
@@ -112,8 +117,7 @@ class Poller:
         self.registered = {}
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
-        self.receiving = Stats("receiving")
-        self.sending = Stats("sending")
+        self.stats = Stats("poller")
         self.sched(1, self._update_stats)
 
     def __del__(self):
@@ -306,10 +310,10 @@ class Poller:
 
     def _update_stats(self):
         self.sched(1, self._update_stats)
-        self.sending.update()
-        self.receiving.update()
+        self.stats.send.update()
+        self.stats.recv.update()
         if self.printstats:
-            stats = "\r    %s | %s" % (self.sending, self.receiving)
+            stats = "\r    %s | %s" % (self.stats.send, self.stats.recv)
             if len(stats) < 80:
                 stats += " " * (80 - len(stats))
             sys.stdout.write(stats)

@@ -55,6 +55,8 @@ class Stream(Pollable):
         self.notify_closing = None
         self.context = None
         self.isclosed = False
+        self.stats = []
+        self.stats.append(self.poller.stats)
 
     def __del__(self):
         pass
@@ -194,7 +196,8 @@ class Stream(Pollable):
             status, octets = self.sorecv(self.recv_maxlen)
             if status == SUCCESS:
                 if octets:
-                    self.poller.receiving.account(len(octets))
+                    for stats in self.stats:
+                        stats.recv.account(len(octets))
                     notify = self.recv_success
                     self.recv_maxlen = 0
                     self.recv_success = None
@@ -258,7 +261,8 @@ class Stream(Pollable):
             status, count = self.sosend(subset)
             if status == SUCCESS:
                 if count > 0:
-                    self.poller.sending.account(count)
+                    for stats in self.stats:
+                        stats.send.account(count)
                     self.send_pos += count
                     if self.send_pos < len(self.send_octets):
                         self.send_ticks = self.poller.get_ticks()
