@@ -84,10 +84,20 @@ class Logger:
         if self._verbose:
             self._log(self.logger.debug, message)
 
-    def _log(self, printlog, message):
+    #
+    # XXX We don't want access logs to be saved into the queue, or
+    # the client making a request for /logs will cause a new log to
+    # be written, and that's not sane.
+    #
+
+    def log_access(self, message):
+        self._log(self.logger.info, message, False)
+
+    def _log(self, printlog, message, enqueue=True):
         if message[-1] == "\n":
             message = message[:-1]
-        self.queue.append((time.time(), message))
+        if enqueue:
+            self.queue.append((time.time(), message))
         printlog(message)
 
     def getlines(self):
@@ -98,6 +108,7 @@ class Logger:
 
 log = Logger(MAXQUEUE)
 
+log_access = log.log_access
 verbose = log.verbose
 quiet = log.quiet
 redirect = log.redirect

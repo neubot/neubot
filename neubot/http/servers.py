@@ -154,7 +154,7 @@ class SimpleConnection(Receiver):
             nbytes = response["content-length"]
             if nbytes == "0":
                 nbytes = "-"
-        log.info("%s - - [%s] \"%s\" %s %s" % (address, time, requestline,
+        log.log_access("%s - - [%s] \"%s\" %s %s" % (address, time, requestline,
          statuscode, nbytes))
 
     #
