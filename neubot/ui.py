@@ -243,6 +243,7 @@ class UIConnection(SimpleConnection):
         except KeyboardInterrupt:
             raise
         except:
+            neubot.log.exception()
             m1 = Message()
             compose(m1, code="500", reason="Internal Server Error")
             self.reply(m, m1)
