@@ -291,27 +291,27 @@ INDEX_HTML =								\
  <body>
 
   <div>
-   <form action="/enabled" method="post">
+   <form action="/" method="post">
     <span>
      enabled
     </span>
     <span id="enabled">
      @ENABLED@
     </span>
-    <input type="hidden" name="toggle"\>
+    <input type="hidden" name="toggle" value="enabled"\>
     <input type="submit" value="Toggle"\>
    </form>
   </div>
 
   <div>
-   <form action="/force" method="post">
+   <form action="/" method="post">
     <span>
      force
     </span>
     <span id="force">
      @FORCE@
     </span>
-    <input type="hidden" name="toggle"\>
+    <input type="hidden" name="toggle" value="force"\>
     <input type="submit" value="Toggle"\>
    </form>
   </div>
@@ -421,6 +421,17 @@ class UIServer(Server):
         for dictionary in self.ROOT:
             composer.append_header(dictionary["name"], dictionary["reader"]())
         return composer.stringio()
+
+    def root_post(self, body):
+        body = body.strip()
+        if body == "toggle=enabled":
+            neubot.auto.enabled = not neubot.auto.enabled
+            return True
+        elif body == "toggle=force":
+            neubot.config.force = not neubot.config.force
+            return True
+        else:
+            return False
 
     #
     # Handler for /enabled
@@ -560,6 +571,9 @@ class UIServer(Server):
                 "GET": {
                     "text/html": self.root_get_html,
                     "text/plain": self.root_get_plain,
+                },
+                "POST": {
+                    "application/x-www-form-urlencoded": self.root_post,
                 },
             },
             "/enabled": {
