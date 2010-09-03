@@ -136,7 +136,7 @@ class Poller:
             task.time = self.get_ticks() + delta
             task.periodic = periodic
         else:
-            self.added.add((delta, func, periodic))
+            self.added.add((self.get_ticks() + delta, func, periodic))
 
     def unsched(self, delta, func, periodic=False):
         if self.registered.has_key(func):
@@ -145,9 +145,7 @@ class Poller:
             task.time = -1
             del self.registered[func]
         else:
-            entry = (delta, func, periodic)
-            if entry in self.added:
-                self.added.remove(entry)
+            neubot.log.debug("Task not found")                          #XXX
 
     #
     # BEGIN deprecated functions
@@ -249,7 +247,7 @@ class Poller:
         now = self.get_ticks()
         if self.added:
             for delta, func, periodic in self.added:
-                task = PollerTask(now + delta, func, periodic, delta)
+                task = PollerTask(delta, func, periodic, delta)
                 self.tasks.append(task)
                 self.registered[func] = task
             self.added.clear()
