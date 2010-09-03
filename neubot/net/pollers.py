@@ -114,7 +114,7 @@ class Poller:
         self.printstats = False
         self.readset = {}
         self.writeset = {}
-        self.added = set()
+        self.pending = []
         self.registered = {}
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
@@ -133,6 +133,8 @@ class Poller:
     # moved at the beginning of the list, and we do that because we
     # don't want a dead task to linger in the list for some time (in
     # other words we optimize for memory rather than for speed).
+    # XXX Throughout the scheduler code we employ func() as if it was
+    # unique, but this is True for bound functions only!
     #
 
     def sched(self, delta, func, periodic=False):
@@ -141,7 +143,8 @@ class Poller:
             task.time = self.get_ticks() + delta
             task.periodic = periodic
         else:
-            self.added.add((self.get_ticks() + delta, func, periodic))
+            task = PollerTask(self.get_ticks()+delta,func,periodic,delta)
+            self.pending.append(task)
 
     def unsched(self, delta, func, periodic=False):
         if self.registered.has_key(func):
@@ -150,7 +153,11 @@ class Poller:
             task.time = -1
             del self.registered[func]
         else:
-            neubot.log.debug("Task not found")                          #XXX
+            for task in self.pending:
+                if task.func == func:
+                    # delete while pending
+                    task.func = None
+                    task.time = -1
 
     #
     # BEGIN deprecated functions
@@ -250,12 +257,14 @@ class Poller:
 
     def update_tasks(self):
         now = self.get_ticks()
-        if self.added:
-            for delta, func, periodic in self.added:
-                task = PollerTask(delta, func, periodic, delta)
+        if self.pending:
+            for task in self.pending:
+                if task.time == -1 or task.func == None:
+                    # deleted while pending
+                    continue
                 self.tasks.append(task)
-                self.registered[func] = task
-            self.added.clear()
+                self.registered[task.func] = task
+            self.pending = []
         if self.tasks:
             self.tasks.sort(key=lambda task: task.time)
             index = 0
