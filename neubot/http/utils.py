@@ -167,10 +167,11 @@ def _parselength(message):
             return BOUNDED, length
 
 def _make_filename(uri, default):
+    scheme, address, port, pathquery = urlsplit(uri)
     ret = default
-    index = uri.rfind("/")
+    index = pathquery.rfind("/")
     if index >= 0:
-        ret = uri[index+1:]
+        ret = pathquery[index+1:]
         if not ret:
             ret = default
     return ret
