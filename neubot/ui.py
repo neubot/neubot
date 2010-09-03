@@ -532,6 +532,7 @@ class UIServer(Server):
 
     def logs_get_html(self, uri):
         composer = XHTMLComposer("%s on neubot" % uri)
+        composer.append_div().append_text('<a href="/">Back</a>')
         for timestamp, line in neubot.log.getlines():
             composer.append_div().append_text(line)
         return composer.stringio()
@@ -548,6 +549,7 @@ class UIServer(Server):
 
     def results_get_html(self, uri):
         composer = XHTMLComposer("%s on neubot" % uri)
+        composer.append_div().append_text('<a href="/">Back</a>')
         for line in neubot.database.export():
             composer.append_div().append_text(line)
         return composer.stringio()
