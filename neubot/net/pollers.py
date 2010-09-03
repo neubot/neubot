@@ -21,10 +21,8 @@
 #
 
 import errno
-import logging
 import select
 import sys
-import time
 
 from neubot.utils import prettyprint_exception
 from neubot.utils import ticks
