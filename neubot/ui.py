@@ -254,8 +254,7 @@ class UIConnection(SimpleConnection):
 
 # Template for /neubot.js
 NEUBOT_JS =								\
-'''
-/* neubot.js */
+'''/* neubot.js */
 /*-
  * Copyright (c) 2010 NEXA Center for Internet & Society.
  * License: GNU GPLv3
@@ -312,8 +311,7 @@ STATE_COMET =								\
 
 # Template for /index.html
 INDEX_HTML =								\
-'''
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+'''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
  <head>
