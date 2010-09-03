@@ -249,6 +249,105 @@ class UIConnection(SimpleConnection):
             self.reply(m, m1)
 
 #
+# Templates
+#
+
+# Template for /neubot.js
+NEUBOT_JS =								\
+'''
+/* neubot.js */
+/*-
+ * Copyright (c) 2010 NEXA Center for Internet & Society.
+ * License: GNU GPLv3
+ */
+
+neubot_update = function() {
+  $.ajax({
+    url: '/state/change',
+    success: function(m) {
+      $('#state').html(m);
+      neubot_update();
+    },
+    error: function(m) {
+      $.delay(3000, neubot_update)
+    }
+  });
+}
+
+$(document).ready(neubot_update);
+'''
+
+# Template for /index.html
+INDEX_HTML =								\
+'''
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+ <head>
+  <script type="text/javascript" src="/js/jquery.js"></script>
+  <script type="text/javascript" src="/js/neubot.js"></script>
+  <title>Neubot 0.2.3</title>
+ </head>
+ <body>
+
+  <div>
+   <form action="/enabled" method="post">
+    <span>
+     enabled
+    </span>
+    <span id="enabled">
+     @ENABLED@
+    </span>
+    <input type="hidden" name="toggle"\>
+    <input type="submit" value="Toggle"\>
+   </form>
+  </div>
+
+  <div>
+   <form action="/force" method="post">
+    <span>
+     force
+    </span>
+    <span id="force">
+     @FORCE@
+    </span>
+    <input type="hidden" name="toggle"\>
+    <input type="submit" value="Toggle"\>
+   </form>
+  </div>
+
+  <div>
+   <span>
+    <a href="/logs"> logs </a>
+   </span>
+   <span id="logs">
+    @LOGS@
+   </span>
+  </div>
+
+  <div>
+   <span>
+    <a href="/results"> results </a>
+   </span>
+   <span id="results">
+    @RESULTS@
+   </span>
+  </div>
+
+  <div>
+   <span>
+    state
+   </span>
+   <span id="state">
+    @STATE@
+   </span>
+  </div>
+
+ </body>
+</html>
+'''
+
+#
 # UIServer
 # This class listens for incoming connections and process incoming
 # requests.
@@ -285,36 +384,37 @@ class UIServer(Server):
         "name": "enabled",
         "uri": "/enabled",
         "reader": lambda: str(neubot.auto.enabled),
+        "placeholder": "@ENABLED@",
     },{
         "name": "force",
         "uri": "/force",
         "reader": lambda: str(neubot.config.force),
+        "placeholder": "@FORCE@",
     },{
         "name": "logs",
         "uri": "/logs",
-        "reader": lambda: str(len(neubot.log.getlines())) + " lines"
+        "reader": lambda: str(len(neubot.log.getlines())) + " lines",
+        "placeholder": "@LOGS@",
     },{
         "name": "results",
         "uri": "/results",
-        "reader": lambda: str(len(neubot.database.export())) + " lines"
+        "reader": lambda: str(len(neubot.database.export())) + " lines",
+        "placeholder": "@RESULTS@",
     },{
         "name": "state",
         "uri": "/state",
         "reader": lambda: neubot.config.state,
-        "id": "state"
+        "id": "state",
+        "placeholder": "@STATE@",
     }]
 
     def root_get_html(self, uri):
-        composer = XHTMLComposer("%s on neubot" % uri,
-         "/js/jquery.js", "/js/state.js")
+        page = INDEX_HTML
         for dictionary in self.ROOT:
-            div = composer.append_div()
-            div.append_link(dictionary["name"], dictionary["uri"])
-            if dictionary.has_key("id"):
-                div.append_text(dictionary["reader"](), dictionary["id"])
-            else:
-                div.append_text(dictionary["reader"]())
-        return composer.stringio()
+            placeholder = dictionary["placeholder"]
+            value = dictionary["reader"]()
+            page = page.replace(placeholder, value)
+        return StringIO.StringIO(page)
 
     def root_get_plain(self, uri):
         composer = TextPlainComposer()
@@ -549,6 +649,10 @@ class UIServer(Server):
             vector.append("}\r\n")
             vector.append("$(document).ready(neubot_update_state);\r\n")
             stringio = StringIO.StringIO("".join(vector))
+            compose(m1, code="200", reason="Ok", body=stringio,
+                    mimetype="text/javascript")
+        elif m.uri == "/js/neubot.js":
+            stringio = StringIO.StringIO(NEUBOT_JS)
             compose(m1, code="200", reason="Ok", body=stringio,
                     mimetype="text/javascript")
         else:
