@@ -66,6 +66,7 @@ class SpeedtestClient:
 
     def __init__(self, uri, nclients, flags):
         self.repeat = {}
+        self.clients = []
         self.complete = 0
         self.connect = []
         self.latency = []
@@ -123,16 +124,26 @@ class SpeedtestClient:
             self.latency.append(latency)
             self.repeat[client] = self.repeat[client] -1
             if self.repeat[client] == 0:
+                self._latency_complete(client)
+            else:
+                client.send(request)
+        else:
+            log.error("Response: %s %s" % (response.code, response.reason))
+
+    def _latency_complete(self, client):
+        self.clients.append(client)
+        self.complete = self.complete + 1
+        if self.complete == self.nclients:
+            self.complete = 0
+            clients = self.clients
+            self.clients = []
+            for client in clients:
                 if self.flags & FLAG_DOWNLOAD:
                     self._measure_download(client)
                 elif self.flags & FLAG_UPLOAD:
                     self._measure_upload(client)
                 else:
                     self._speedtest_complete(client)
-            else:
-                client.send(request)
-        else:
-            log.error("Response: %s %s" % (response.code, response.reason))
 
     #
     # Measure download speed
@@ -157,14 +168,24 @@ class SpeedtestClient:
             self.download.append(speed)
             self.repeat[client] = self.repeat[client] -1
             if self.repeat[client] == 0:
-                if self.flags & FLAG_UPLOAD:
-                    self._measure_upload(client, response.body)
-                else:
-                    self._speedtest_complete(client)
+                self._download_complete(client)
             else:
                 client.send(request)
         else:
             log.error("Response: %s %s" % (response.code, response.reason))
+
+    def _download_complete(self, client):
+        self.clients.append(client)
+        self.complete = self.complete + 1
+        if self.complete == self.nclients:
+            self.complete = 0
+            clients = self.clients
+            self.clients = []
+            for client in clients:
+                if self.flags & FLAG_UPLOAD:
+                    self._measure_upload(client)
+                else:
+                    self._speedtest_complete(client)
 
     #
     # Measure upload speed
@@ -193,13 +214,23 @@ class SpeedtestClient:
             self.upload.append(speed)
             self.repeat[client] = self.repeat[client] -1
             if self.repeat[client] == 0:
-                self._speedtest_complete(client)
+                self._upload_complete(client)
             else:
                 # need to rewind the body
                 request.body.seek(0)
                 client.send(request)
         else:
             log.error("Response: %s %s" % (response.code, response.reason))
+
+    def _upload_complete(self, client):
+        self.clients.append(client)
+        self.complete = self.complete + 1
+        if self.complete == self.nclients:
+            self.complete = 0
+            clients = self.clients
+            self.clients = []
+            for client in clients:
+                self._speedtest_complete(client)
 
     #
     # Speedtest complete
