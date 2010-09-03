@@ -233,29 +233,10 @@ class SimpleClient(Receiver):
 #
 
 from neubot.net.pollers import formatbytes
+from neubot.net.pollers import SimpleStats
 
-class Timer:
-    def __init__(self):
-        self.start = 0
-        self.stop = 0
-        self.length = 0
-
-    def begin(self):
-        self.start = ticks()
-        self.stop = 0
-        self.length = 0
-
-    def end(self):
-        self.stop = ticks()
-
-    def update(self, length):
-        self.length += length
-
-    def diff(self):
-        return self.stop - self.start
-
-    def speed(self):
-        return self.length / self.diff()
+# compat
+Timer = SimpleStats
 
 #
 # Add the SimpleClient timing information and convenience
