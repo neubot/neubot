@@ -262,19 +262,52 @@ NEUBOT_JS =								\
  */
 
 neubot_update = function() {
-  $.ajax({
-    url: '/state/change',
-    success: function(m) {
-      $('#state').html(m);
-      neubot_update();
-    },
-    error: function(m) {
-      $.delay(3000, neubot_update)
-    }
-  });
+    $.ajax({
+        type: 'GET',
+        dataType: 'xml',
+        url: '/state/xml/comet',
+        success: function(m) {
+            neubot_update();
+            // enabled
+            $(m).find('Enabled').each(function() {
+                $('#enabled').html($(this).text());
+            });
+            // force
+            $(m).find('Force').each(function() {
+                $('#force').html($(this).text());
+            });
+            // logs
+            $(m).find('Logs').each(function() {
+                $('#logs').html($(this).text());
+            });
+            // results
+            $(m).find('Results').each(function() {
+                $('#results').html($(this).text());
+            });
+            // state
+            $(m).find('State').each(function() {
+                $('#state').html($(this).text());
+            });
+        },
+        error: function(m) {
+            $.delay(3000, neubot_update)
+        }
+    });
 }
 
 $(document).ready(neubot_update);
+'''
+
+# Template for /state/xml
+STATE_COMET =								\
+'''<?xml version="1.0" encoding="utf-8"?>
+<State>
+ <Enabled>@ENABLED@</Enabled>
+ <Force>@FORCE@</Force>
+ <Logs>@LOGS@</Logs>
+ <Results>@RESULTS@</Results>
+ <State>@STATE@</State>
+</State>
 '''
 
 # Template for /index.html
@@ -543,6 +576,18 @@ class UIServer(Server):
         return composer.stringio()
 
     #
+    # Handler for /state/xml
+    #
+
+    def state_xml_get(self, uri):
+        page = STATE_COMET
+        for dictionary in self.ROOT:
+            placeholder = dictionary["placeholder"]
+            value = dictionary["reader"]()
+            page = page.replace(placeholder, value)
+        return StringIO.StringIO(page)
+
+    #
     #  ____          _ _                 _       _
     # |___ \      __| (_)___ _ __   __ _| |_ ___| |__
     #   __) |    / _` | / __| '_ \ / _` | __/ __| '_ \
@@ -565,6 +610,7 @@ class UIServer(Server):
     def _init_tables(self):
         self.COMETs = {
             "/state/change": neubot.notify.STATECHANGE,
+            "/state/xml/comet": neubot.notify.STATECHANGE,
         }
         self.URIs = {
             "/": {
@@ -616,6 +662,18 @@ class UIServer(Server):
                 "GET": {
                     "text/html": self.state_get_html,
                     "text/plain": self.state_get_plain,
+                },
+            },
+            "/state/xml": {
+                "GET": {
+                    "application/xml": self.state_xml_get,
+                    "text/plain": self.state_xml_get,
+                },
+            },
+            "/state/xml/comet": {
+                "GET": {
+                    "application/xml": self.state_xml_get,
+                    "text/plain": self.state_xml_get,
                 },
             },
             "/state/change": {
