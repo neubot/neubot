@@ -79,6 +79,7 @@ def formatbytes(count):
 
 class Stats:
     def __init__(self, name):
+        self.last = ticks()
         self.name = name
         self.count = 0
         self.avg = 0.0
@@ -87,8 +88,13 @@ class Stats:
         return self.name + ": " + formatbytes(self.avg) + "/s"
 
     def update(self):
-        # assuming an update every second
-        self.avg = self.count
+        now = ticks()
+        diff = now - self.last
+        if diff > 0:
+            self.avg = self.count / diff
+        else:
+            self.avg = 0.0
+        self.last = now
         self.count = 0
 
     def account(self, count):
