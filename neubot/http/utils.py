@@ -181,9 +181,9 @@ def make_filename(uri, default):
     index = 0
     temp = filename
     while exists(temp):
+        if index == 100:
+            raise ValueError("Can't generate unique filename")
         temp = filename + "." + str(index)
         index = index + 1
-        if index > 100:
-            raise ValueError("Can't generate unique filename")
     filename = temp
     return filename
