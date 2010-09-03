@@ -219,8 +219,8 @@ to read just the Neubot-related messages, e.g. with Ubuntu::
 Uninstall Neubot
 ----------------
 
-Assuming that you have installed Neubot below ``/opt``, as show by the
-above example, you can take the following steps in order to uninstall it:
+Assuming that you have installed Neubot below ``/usr/local``, you can
+take the following steps in order to uninstall it:
 
 1. Become ``root``.
 
@@ -230,18 +230,18 @@ above example, you can take the following steps in order to uninstall it:
 
 3. Remove the neubot command::
 
-     rm /opt/bin/neubot
+     rm /usr/local/bin/neubot
 
 4. Remove the rest of the program::
 
-     rm -rf /opt/share/neubot/
+     rm -rf /usr/local/share/neubot/
 
 In addition, if you amended your system to invoke Neubot at startup,
 perform the following steps:
 
 5. Remove the following line from ``/etc/rc.local``::
 
-     test -x /opt/bin/neubot && /opt/bin/neubot -b
+     test -x /usr/local/bin/neubot && /usr/local/bin/neubot -b
 
 6. Remove the ``_neubot`` user::
 
