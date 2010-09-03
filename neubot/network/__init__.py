@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from buffers import *
 from connections import *
 from pollers import *
 from utils import *
