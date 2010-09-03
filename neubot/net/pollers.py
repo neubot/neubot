@@ -78,32 +78,33 @@ def formatbytes(count):
     return count + suffix + "iB"
 
 class SimpleStats:
-    def __init__(self, name):
-        self.last = ticks()
-        self.name = name
-        self.count = 0
-        self.avg = 0.0
+    def __init__(self):
+        self.begin()
 
-    def __str__(self):
-        return self.name + ": " + formatbytes(self.avg) + "/s"
+    def begin(self):
+        self.start = ticks()
+        self.stop = 0
+        self.length = 0
 
-    def update(self):
-        now = ticks()
-        diff = now - self.last
-        if diff > 0:
-            self.avg = self.count / diff
-        else:
-            self.avg = 0.0
-        self.last = now
-        self.count = 0
+    def end(self):
+        self.stop = ticks()
 
     def account(self, count):
-        self.count += count
+        self.length += count
+
+    # compat with http.clients.Timer
+    update = account
+
+    def diff(self):
+        return self.stop - self.start
+
+    def speed(self):
+        return self.length / self.diff()
 
 class Stats:
-    def __init__(self, name):
-        self.send = SimpleStats(name + "/send)
-        self.recv = SimpleStats(name + "/recv")
+    def __init__(self):
+        self.send = SimpleStats()
+        self.recv = SimpleStats()
 
 class Poller:
     def __init__(self, timeout, get_ticks, notify_except):
@@ -117,7 +118,7 @@ class Poller:
         self.registered = {}
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
-        self.stats = Stats("poller")
+        self.stats = Stats()
         self.sched(1, self._update_stats)
 
     def __del__(self):
@@ -310,10 +311,18 @@ class Poller:
 
     def _update_stats(self):
         self.sched(1, self._update_stats)
-        self.stats.send.update()
-        self.stats.recv.update()
         if self.printstats:
-            stats = "\r    %s | %s" % (self.stats.send, self.stats.recv)
+            # send
+            self.stats.send.end()
+            send = self.stats.send.speed()
+            self.stats.send.begin()
+            # recv
+            self.stats.recv.end()
+            recv = self.stats.recv.speed()
+            self.stats.recv.begin()
+            # print
+            stats = "\r    send: %s | recv: %s" % (formatbytes(send),
+             formatbytes(recv))
             if len(stats) < 80:
                 stats += " " * (80 - len(stats))
             sys.stdout.write(stats)
