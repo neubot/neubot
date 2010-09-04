@@ -25,6 +25,9 @@ import logging
 import time
 import traceback
 
+from os import isatty
+from sys import stderr
+
 #
 # We save recent messages into a circular queue, together with
 # their timestamp, and we do that because we want to return to
@@ -46,6 +49,8 @@ class Logger:
         self.logger.addHandler(self.handler)
         self.logger.setLevel(logging.DEBUG)
         self.queue = collections.deque(maxlen=maxqueue)
+        self.message = None
+        self._tty = True
 
     def verbose(self):
         self._verbose = True
@@ -65,6 +70,52 @@ class Logger:
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
         self.logger.setLevel(logging.DEBUG)
+        self._tty = False
+
+    #
+    # In some cases it makes sense to print progress during a
+    # long operation, as follows::
+    #
+    #   Download in progress......... done
+    #
+    # This makes sense when: (i) the program is not running in
+    # verbose mode; (ii) logs are directed to the stderr and the
+    # stderr is attached to a TTY.  If the progream is running
+    # in verbose mode, there might be many messages between
+    # the 'in progress...' and 'done'.  And if the logs are not
+    # directed to stderr or stderr is re-directed to a file,
+    # then it does not make sense to print progress as well.
+    # So, in these cases, the output will look like::
+    #
+    #   Download in progress...
+    #    [here we might have many debug messages]
+    #   Download complete.
+    #
+
+    def _interactive(self):
+        return (not self._verbose and self._tty and isatty(stderr.fileno()))
+
+    def start(self, message):
+        if not self._interactive():
+            self.info(message + " in progress...")
+            self.message = message
+        else:
+            stderr.write(message + "...")
+
+    def progress(self):
+        if self._interactive():
+            stderr.write(".")
+
+    def complete(self):
+        if not self._interactive():
+            self.info(self.message + ": complete")
+            self.message = None
+        else:
+            stderr.write(" done\n")
+
+    #
+    # Log functions
+    #
 
     def exception(self):
         content = traceback.format_exc()
@@ -116,6 +167,9 @@ exception = log.exception
 error = log.error
 warning = log.warning
 info = log.info
+start = log.start
+progress = log.progress
+complete = log.complete
 debug = log.debug
 getlines = log.getlines
 
