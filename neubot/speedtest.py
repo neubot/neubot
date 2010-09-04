@@ -277,7 +277,7 @@ class SpeedtestClient:
 # Test unit
 #
 
-USAGE = "Usage: %s [-sVv] [-a test] [-n count] [--help] base-uri\n"
+USAGE = "Usage: %s [-sVv] [-a test] [-n count] [--help] [base-URI]\n"
 
 HELP = USAGE +								\
 "Tests: all*, download, latency, upload.\n"				\
@@ -327,6 +327,9 @@ FLAGS = {
     "upload": FLAG_UPLOAD,
 }
 
+# should be 'http://speedtest.neubot.org/'
+URI = "http://www.neubot.org:8080/"
+
 def main(args):
     flags = 0
     new_client = VerboseClient
@@ -363,13 +366,17 @@ def main(args):
         elif name == "-v":
             log.verbose()
     # sanity
-    if len(arguments) != 1:
+    if len(arguments) > 1:
         stderr.write(USAGE % args[0])
         exit(1)
+    elif len(arguments) == 1:
+        uri = arguments[0]
+    else:
+        uri = URI
     if flags == 0:
         flags = FLAG_ALL
     # run
-    new_client(arguments[0], nclients, flags)
+    new_client(uri, nclients, flags)
     loop()
 
 if __name__ == "__main__":
