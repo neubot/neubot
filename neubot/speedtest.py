@@ -82,10 +82,13 @@ class SpeedtestClient:
         if self.uri[-1] != "/":
             self.uri = self.uri + "/"
         if self.flags & FLAG_LATENCY:
+            log.start("* Latency")
             func = self._measure_latency
         elif self.flags & FLAG_DOWNLOAD:
+            log.start("* Download %d bytes" % self.length)
             func = self._measure_download
         elif self.flags & FLAG_UPLOAD:
+            log.start("* Upload")
             func = self._measure_upload
         else:
             func = self._speedtest_complete
@@ -135,9 +138,14 @@ class SpeedtestClient:
         self.clients.append(client)
         self.complete = self.complete + 1
         if self.complete == self.nclients:
+            log.complete()
             self.complete = 0
             clients = self.clients
             self.clients = []
+            if self.flags & FLAG_DOWNLOAD:
+                log.start("* Download %d bytes" % self.length)
+            elif self.flags & FLAG_UPLOAD:
+                log.start("* Upload")
             for client in clients:
                 if self.flags & FLAG_DOWNLOAD:
                     self._measure_download(client)
@@ -178,12 +186,14 @@ class SpeedtestClient:
         self.clients.append(client)
         self.complete = self.complete + 1
         if self.complete == self.nclients:
+            log.complete()
             self.complete = 0
             clients = self.clients
             self.clients = []
             if clients[0].receiving.diff() < 1:
                 self.download = []
                 self.length <<= 1
+                log.start("* Download %d bytes" % self.length)
                 for client in clients:
                     self._measure_download(client)
                 return
@@ -194,6 +204,8 @@ class SpeedtestClient:
                 log.debug("Using %d bytes for upload" % len(body))
             else:
                 body = None
+            if self.flags & FLAG_UPLOAD:
+                log.start("* Upload")
             for client in clients:
                 if self.flags & FLAG_UPLOAD:
                     self._measure_upload(client, StringIO(body))
@@ -238,6 +250,7 @@ class SpeedtestClient:
         self.clients.append(client)
         self.complete = self.complete + 1
         if self.complete == self.nclients:
+            log.complete()
             self.complete = 0
             clients = self.clients
             self.clients = []
@@ -281,7 +294,6 @@ class VerboseClient(SpeedtestClient):
         SpeedtestClient.__init__(self, uri, nclients, flags)
 
     def speedtest_complete(self):
-        disable_stats()
         stdout.write("Timestamp: %d\n" % timestamp())
         stdout.write("URI: %s\n" % self.uri)
         stdout.write("Length: %d\n" % self.length)
@@ -318,7 +330,6 @@ FLAGS = {
 def main(args):
     flags = 0
     new_client = VerboseClient
-    silent = False
     nclients = 1
     # parse
     try:
@@ -346,7 +357,6 @@ def main(args):
                 exit(1)
         elif name == "-s":
             new_client = SpeedtestClient
-            silent = True
         elif name == "-V":
             stdout.write(version + "\n")
             exit(0)
@@ -359,8 +369,6 @@ def main(args):
     if flags == 0:
         flags = FLAG_ALL
     # run
-    if not silent:
-        enable_stats()
     new_client(arguments[0], nclients, flags)
     loop()
 
