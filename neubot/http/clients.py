@@ -521,7 +521,14 @@ class DownloadManager:
 # as possible.
 #
 
-USAGE = "Usage: %s [-2IsVv] [--help] [-o outfile] [-T infile] uri...\n"
+USAGE =									\
+"Usage: @PROGNAME@ -V\n"						\
+"       @PROGNAME@ --help\n"						\
+"       @PROGNAME@ -2 [-v] http://host[:port]/resource ...\n"		\
+"       @PROGNAME@ -I [-sv] http://host[:port]/resource ...\n"		\
+"       @PROGNAME@ -o outfile [-sv] http://host[:port]/resource ...\n"	\
+"       @PROGNAME@ -T infile [-sv] http://host[:port]/resource ...\n"	\
+"       @PROGNAME@ [-sv] http://host[:port]/resource ...\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
@@ -585,13 +592,13 @@ def main(args):
     try:
         options, arguments = getopt(args[1:], "2Io:sT:Vv", ["help"])
     except GetoptError:
-        stderr.write(USAGE % args[0])
+        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
     for name, value in options:
         if name == "-2":
             method = TWOCONN
         elif name == "--help":
-            stdout.write(HELP % args[0])
+            stdout.write(HELP.replace("@PROGNAME@", args[0]))
             exit(0)
         elif name == "-I":
             method = HEAD
@@ -624,7 +631,7 @@ def main(args):
             log.verbose()
     # sanity
     if len(arguments) == 0:
-        stderr.write(USAGE % args[0])
+        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
     # run
     if method == TWOCONN:
