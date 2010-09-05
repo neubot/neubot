@@ -24,7 +24,7 @@ from StringIO import StringIO
 from neubot.net import disable_stats
 from neubot.net import enable_stats
 from neubot.http.messages import Message
-from neubot.net.pollers import formatbytes
+from neubot.utils import unit_formatter
 from neubot.http.messages import compose
 from neubot.http.clients import Client
 from neubot.net.pollers import loop
@@ -277,14 +277,16 @@ class SpeedtestClient:
 # Test unit
 #
 
-USAGE = "Usage: %s [-sVv] [-a test] [-n count] [--help] [base-URI]\n"
+USAGE = "Usage: %s [-sVv] [-a test] [-n count] [-O fmt] [--help] [base-URI]\n"
 
 HELP = USAGE +								\
 "Tests: all*, download, latency, upload.\n"				\
+"Fmts: bits*, bytes, raw.\n"						\
 "Options:\n"								\
 "  -a test  : Add test to the list of tests.\n"				\
 "  --help   : Print this help screen and exit.\n"			\
 "  -n count : Use count HTTP connections.\n"				\
+"  -O fmt   : Format output numbers using fmt.\n"			\
 "  -s       : Do not print speedtest statistics.\n"			\
 "  -V       : Print version number and exit.\n"				\
 "  -v       : Run the program in verbose mode.\n"
@@ -292,6 +294,7 @@ HELP = USAGE +								\
 class VerboseClient(SpeedtestClient):
     def __init__(self, uri, nclients, flags):
         SpeedtestClient.__init__(self, uri, nclients, flags)
+        self.formatter = None
 
     def speedtest_complete(self):
         stdout.write("Timestamp: %d\n" % timestamp())
@@ -311,13 +314,13 @@ class VerboseClient(SpeedtestClient):
         if self.flags & FLAG_DOWNLOAD:
             stdout.write("Download:")
             for x in self.download:
-                stdout.write(" %s/s" % formatbytes(x))
+                stdout.write(" %s" % self.formatter(x))
             stdout.write("\n")
         # upload
         if self.flags & FLAG_UPLOAD:
             stdout.write("Upload:")
             for x in self.upload:
-                stdout.write(" %s/s" % formatbytes(x))
+                stdout.write(" %s" % self.formatter(x))
             stdout.write("\n")
 
 FLAGS = {
@@ -327,16 +330,23 @@ FLAGS = {
     "upload": FLAG_UPLOAD,
 }
 
+FORMATTERS = {
+    "raw": lambda n: " %fiB/s" % n,
+    "bits": lambda n: unit_formatter(n*8, base10=True, unit="bps"),
+    "bytes": lambda n: unit_formatter(n, unit="B/s"),
+}
+
 # should be 'http://speedtest.neubot.org/'
 URI = "http://www.neubot.org:8080/"
 
 def main(args):
     flags = 0
     new_client = VerboseClient
+    fmt = "bits"
     nclients = 1
     # parse
     try:
-        options, arguments = getopt(args[1:], "a:n:sVv", ["help"])
+        options, arguments = getopt(args[1:], "a:n:O:sVv", ["help"])
     except GetoptError:
         stderr.write(USAGE % args[0])
         exit(1)
@@ -358,6 +368,11 @@ def main(args):
             if nclients <= 0:
                 log.error("Invalid argument to -n: %s" % value)
                 exit(1)
+        elif name == "-O":
+            if not value in FORMATTERS.keys():
+                log.error("Invalid argument to -O: %s" % value)
+                exit(1)
+            fmt = value
         elif name == "-s":
             new_client = SpeedtestClient
         elif name == "-V":
@@ -376,7 +391,9 @@ def main(args):
     if flags == 0:
         flags = FLAG_ALL
     # run
-    new_client(uri, nclients, flags)
+    client = new_client(uri, nclients, flags)
+    if new_client == VerboseClient:
+        client.formatter = FORMATTERS[fmt]
     loop()
 
 if __name__ == "__main__":

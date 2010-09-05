@@ -82,3 +82,30 @@ def safe_seek(afile, offset, whence=SEEK_SET):
     except IOError:
         if afile not in [sys.stdin, sys.stdout, sys.stderr]:
             raise
+
+#
+# Unit formatter
+#
+
+# base 2
+KIBI = (1024.0, "Ki")
+GIBI = (1073741824.0, "Gi")
+MEBI = (1048576.0, "Mi")
+
+# base 10
+KILO = (1000.0, "K")
+GIGA = (1000000000.0, "G")
+MEGA = (1000000.0, "M")
+
+def _unit_formatter(n, v, unit):
+    for k, s in v:
+        if n >= k:
+            n /= k
+            return "%.1f%s%s" % (n, s, unit)
+    return "%.1f%s" % (n, unit)
+
+def unit_formatter(n, base10=False, unit=""):
+    if base10:
+        return _unit_formatter(n, [GIGA,MEGA,KILO], unit)
+    else:
+        return _unit_formatter(n, [GIBI,MEBI,KIBI], unit)

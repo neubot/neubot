@@ -56,24 +56,10 @@ class PollerTask:
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
 
-KiB = 1024.0
-MiB = KiB * 1024.0
-GiB = MiB * 1024.0
+from neubot.utils import unit_formatter
 
 def formatbytes(count):
-    if count >= GiB:
-        count /= GiB
-        suffix = "G"
-    elif count >= MiB:
-        count /= MiB
-        suffix = "M"
-    elif count >= KiB:
-        count /= KiB
-        suffix = "K"
-    else:
-        suffix = ""
-    count = "%.1f" % count
-    return count + suffix + "iB"
+    return unit_formatter(count, unit="B")
 
 class SimpleStats:
     def __init__(self):
