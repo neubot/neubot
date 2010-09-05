@@ -88,8 +88,9 @@ class Handler:
         pass
 
     def passiveclose(self):
-        neubot.net.sched(30, self.close)
-        self.state = IDLE
+        if not self.isclosed:
+            neubot.net.sched(30, self.close)
+            self.state = IDLE
 
     def close(self, check_eof=False):
         if not self.isclosed:
@@ -201,15 +202,16 @@ class Handler:
     # that processes incoming data.
     # Between attach() and start_receiving() the underlying stream could
     # become None because the client might close the connection.  So, be
-    # very careful before using the stream.
+    # very careful and check self.isclosed before using the stream.
     #
 
     def attach(self, receiver):
-        self.receiver = receiver
-        self.state = FIRSTLINE
+        if not self.isclosed:
+            self.receiver = receiver
+            self.state = FIRSTLINE
 
     def start_receiving(self):
-        if self.stream:
+        if not self.isclosed:
             self.stream.recv(8000, self._got_data)
 
     def _got_data(self, stream, data):
@@ -238,12 +240,11 @@ class Handler:
                 offset = index
                 self._got_line(line)
             if self.isclosed:
-                break
+                return
         if length > 0:
             remainder = data[offset:]
             self.incoming.append(remainder)
-        if not self.isclosed:
-            self.stream.recv(8000, self._got_data)
+        self.stream.recv(8000, self._got_data)
 
     #
     # The code below implements a MECHANISM for reading HTTP, but the POLICY
