@@ -37,101 +37,143 @@
 # Status icon for notification area
 #
 
-from sys import path
 if __name__ == "__main__":
+    from sys import path
     path.insert(0, ".")
 
-import gobject
-import gtk
-
-from getopt import getopt, GetoptError
-from neubot.http.clients import SimpleClient
-from neubot.http.messages import Message
-from neubot.http.messages import compose
-from neubot.net.pollers import dispatch
-from neubot.net.pollers import sched
-from neubot import version
+from threading import Thread
+from httplib import HTTPConnection
+from httplib import HTTPException
+from getopt import GetoptError
+from getopt import getopt
+from os import isatty
 from sys import stdout
 from sys import stderr
-from neubot import log
 from sys import argv
+from time import sleep
 
-# milliseconds between each dispatch() call
-TIMEOUT = 250
+import traceback
+import socket
+#import gobject
+import signal
+import gtk
 
 # default address and port
 ADDRESS = "127.0.0.1"
 PORT = "9774"
+VERSION = "0.2.3"
 
 #
-# Track the value of state, using GET /state the first time and
-# then GET /state/change later (in the latter case the UI server
-# employs comet and so we are notified only when the state changes
-# or a certain timeout expires).
-# If we cannot connect or the connection is lost for some reason,
-# we try again five seconds in the future (just to avoid wasting
-# tons of resources when Neubot is down for some reason).
+# Track neubot(1) state using GET once to get the state value and
+# then using long-polling to update the value when it changes.
+# We don't want to meld StateTracker and StateTrackerThread because
+# it might be useful to run StateTracker from the main thread, for
+# example for testing purpose.  BTW, this is also the reason why
+# the reference to the status-icon is optional (it's not possible
+# to run this class in the same thread of the status-icon).
+# We don't use neubot.http(3) here for various reasons, including
+# problems integrating it with Gtk's main loop, and pygtk being
+# compiled for Python 2.5 on my OS (while neubot, at the moment of
+# writing is Python 2.6+).
 #
 
-class StateTracker(SimpleClient):
-    def __init__(self, address, port):
-        SimpleClient.__init__(self)
-        self.host = "%s:%s" % (address, port)
+class StateTracker:
+    def __init__(self, address, port, icon=None, verbose=False):
+        self.address = address
+        self.port = port
+        self.icon = icon
+        self.verbose = verbose
         self.state = None
-        self._update()
 
-    def _update(self):
-        m = Message()
-        compose(m, method="GET", uri="http://%s/state" % self.host)
-        self.send(m)
-
-    def connect_error(self):
-        self.state = None
-        sched(5, self._update)
-
-    def sendrecv_error(self):
-        self.state = None
-        sched(5, self._update)
-
-    def got_response(self, request, response):
-        if response.code == "200":
-            self.state = response.body.read().strip()
-            m = Message()
-            compose(m, method="GET", uri="http://%s/state/change" % self.host)
-            self.send(m)
-        else:
+    def update_state(self):
+        error = False
+        connection = None
+        try:
+            connection = HTTPConnection(self.address, self.port)
+            if self.verbose:
+                connection.set_debuglevel(1)
+            uri = "/state"
+            # XXX using obsolete '/change' suffix (better to use '/comet')
+            if self.state:
+                uri += "/change"
+            connection.request("GET", uri)
+            response = connection.getresponse()
+            if response.status == 200:
+                self.state = response.read().strip()
+                if self.icon:
+                    self.icon.update_state(self.state)
+                else:
+                    stdout.write("%s\n" % self.state)
+            else:
+                error = True
+                if isatty(stderr.fileno()):
+                    stderr.write("Response: %s\n" % response.status)
+        except (HTTPException, socket.error):
+            error = True
+            if isatty(stderr.fileno()):
+                traceback.print_exc()
+        if connection:
+            del connection
+        if error:
             self.state = None
+            # to blank the tooltip
+            if self.icon:
+                self.icon.update_state(self.state)
+        return error
 
-#
-# The icon in the notification area.
-# We can't use Tk here because it seems that there is not notification
-# are support into it.
-# So we employ Gtk because it's installed in Ubuntu which is one of
-# the systems we want to provide an user friendly interface for.
-#
-
-class TrayIcon:
+class StateTrackerThread(Thread):
+    def __init__(self, address, port, icon=None, verbose=False):
+        Thread.__init__(self)
+        self.statetracker = StateTracker(address, port, icon, verbose)
 
     #
-    # For now we just use one of the stock icons to notify the
-    # user that we are performing network activity.
+    # Here we ASSUME that we are running a *detached* thread
+    # of execution--in other words the main program is going
+    # to exit even if this thread is still running--and for
+    # this reason we feel free to invoke sleep().
+    # The sleep(3) is here because I am Gtk-ignorant and I
+    # want to be sure that we don't update_state() before we
+    # enter into gtk.main(), since I don't know whether it
+    # is harmless or not.
+    # When there is an error in updating the state we sleep
+    # for a while to avoid consuming too much CPU (think for
+    # example at the case when neubot(1) is not running and
+    # in each iteration the connection is refused).
+    #
+
+    def run(self):
+        sleep(3)
+        while True:
+            error = self.statetracker.update_state()
+            if error:
+                sleep(5)
+
+#
+# The icon in the notification area employs Gtk because I was not
+# able to find a way to implement it using Tk (if there is a clean
+# way to do that, please let me know).  So, I decided to use Gtk
+# because it is installed by default under Ubuntu, which is one of
+# the most common GNU/Linux distros.
+#
+
+class StatusIcon:
+
+    #
+    # We use the stock icon that represents network activity but
+    # it would be better to design and ship an icon for Neubot.
     # TODO We need to fill the code that generates the popup menu
     # and we need to decide what to do when we are activated.
     #
 
-    def __init__(self, address, port, blink, nohide):
-        self.address = address
-        self.port = port
+    def __init__(self, blink, nohide):
         self.blink = blink
         self.nohide = nohide
-        self.tracker = StateTracker(self.address, self.port)
-        self.tray = gtk.StatusIcon()
-        self.tray.set_from_icon_name(gtk.STOCK_NETWORK)                 # XXX
-        self.tray.connect("popup-menu", self.on_popup_menu)
-        self.tray.connect("activate", self.on_activate)
+        self.icon = gtk.StatusIcon()
+        self.icon.set_from_icon_name(gtk.STOCK_NETWORK)                 # XXX
+        self.icon.connect("popup-menu", self.on_popup_menu)
+        self.icon.connect("activate", self.on_activate)
         if not self.nohide:
-            self.tray.set_visible(False)
-        self._update()
+            self.icon.set_visible(False)
 
     def on_popup_menu(self, status, button, time):
         pass
@@ -140,54 +182,57 @@ class TrayIcon:
         pass
 
     #
-    # The base principle to nest our loop and Gtk's one is that
-    # we are periodically invoked by Gtk.  This is not efficient
-    # but should be enough because (as I understand it) the main
-    # purpose of the status icon is the one of providing users
-    # a way to stop a running test--then it's Ok to update every
-    # 1/4 of second.  [And probably we should pop the icon out
-    # only if the test lasts for more than one second, because a
-    # test that lasts less than one second should not be a problem
-    # for most users.]
+    # Here we need to surround the code with threads_enter() and
+    # threads_leave() because this function is called from another
+    # thread context.
+    # See: http://bit.ly/hp8Ot [operationaldynamics.com]
     #
 
-    def _update(self):
-        dispatch()
-        gobject.timeout_add(TIMEOUT, self._update)
-        if self.tracker.state:
-            self.tray.set_tooltip("Neubot: " + self.tracker.state)
-            if self.tracker.state != "SLEEPING":
+    def update_state(self, state):
+        gtk.gdk.threads_enter()
+        if state:
+            self.icon.set_tooltip("Neubot: " + state)
+            if state not in [ "SLEEPING", "UNKNOWN" ]:
                 if self.blink:
-                    self.tray.set_blinking(True)
+                    self.icon.set_blinking(True)
                 if not self.nohide:
-                    self.tray.set_visible(True)
+                    self.icon.set_visible(True)
             else:
                 if not self.nohide:
-                    self.tray.set_visible(False)
+                    self.icon.set_visible(False)
                 if self.blink:
-                    self.tray.set_blinking(False)
+                    self.icon.set_blinking(False)
         else:
-            self.tray.set_tooltip("Neubot: ???")
+            self.icon.set_tooltip("Neubot: ???")
             if not self.nohide:
-                self.tray.set_visible(False)
+                self.icon.set_visible(False)
             if self.blink:
-                self.tray.set_blinking(False)
+                self.icon.set_blinking(False)
+        gtk.gdk.threads_leave()
 
 #
-# Test unit
+# Main program
+# By default the icon is not visible because IIUC the
+# notification area should be used for transient state
+# notification only--and so the icon is visible only when
+# neubot is performing some transmission test.
+# Of course, YMMV and so there are: a switch to keep the
+# icon always visible; and a switch to blink the icon when
+# neubot is performing some transmission test.
 #
 
 USAGE = "Usage: %s [-BnVv] [--help] [[address] port]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
-"  -B     : Blink the icon when neubot is running.\n"			\
+"  -B     : Blink the icon when performing a test.\n"			\
 "  --help : Print this help screen and exit.\n"				\
-"  -n     : Do not hide the icon when neubot is asleep.\n"		\
+"  -n     : Do not hide the icon when neubot is idle.\n"		\
 "  -V     : Print version number and exit.\n"				\
 "  -v     : Run the program in verbose mode.\n"
 
 def main(args):
+    verbose = False
     blink = False
     nohide = False
     # parse
@@ -205,10 +250,10 @@ def main(args):
         elif name == "-n":
             nohide = True
         elif name == "-V":
-            stderr.write(version + "\n")
+            stderr.write(VERSION + "\n")
             exit(0)
         else:
-            log.verbose()
+            verbose = True
     # arguments
     if len(arguments) >= 3:
         stderr.write(USAGE % args[0])
@@ -224,8 +269,24 @@ def main(args):
         port = PORT
     # run
     gtk.gdk.threads_init()
-    TrayIcon(address, port, blink, nohide)
+    icon = StatusIcon(blink, nohide)
+    tracker = StateTrackerThread(address, port, icon, verbose)
+    tracker.daemon = True
+    tracker.start()
+    # See: http://bit.ly/hp8Ot [operationaldynamics.com]
+    gtk.gdk.threads_enter()
     gtk.main()
+    gtk.gdk.threads_leave()
+
+#
+# When we are invoked directly we need to set-up a custom
+# signal handler because we want Ctrl-C to break Gtk's main
+# loop (see http://bit.ly/c2mbSl [faq.pygtk.org]).
+# OTOH when neubot(1) invokes the main() function we don't
+# need to do that because neubot(1) already installs its
+# custom signal handler for SIGINT.
+#
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     main(argv)
