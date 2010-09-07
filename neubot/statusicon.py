@@ -35,6 +35,11 @@
 
 #
 # Status icon for notification area
+# BTW we might also consider using alternate mechanisms
+# because in certain environments notification area is
+# being deprecated, e.g.:
+#
+#     http://bit.ly/dxI7vi [design.canonical.com]
 #
 
 if __name__ == "__main__":
