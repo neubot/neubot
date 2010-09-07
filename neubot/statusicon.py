@@ -53,6 +53,7 @@ from sys import argv
 from time import sleep
 
 import traceback
+import webbrowser
 import socket
 #import gobject
 import signal
@@ -125,6 +126,7 @@ class StateTrackerThread(Thread):
     def __init__(self, address, port, icon=None, verbose=False):
         Thread.__init__(self)
         self.statetracker = StateTracker(address, port, icon, verbose)
+        self.stop = False
 
     #
     # Here we ASSUME that we are running a *detached* thread
@@ -143,7 +145,7 @@ class StateTrackerThread(Thread):
 
     def run(self):
         sleep(3)
-        while True:
+        while not self.stop:                                            # XXX
             error = self.statetracker.update_state()
             if error:
                 sleep(5)
@@ -165,7 +167,10 @@ class StatusIcon:
     # and we need to decide what to do when we are activated.
     #
 
-    def __init__(self, blink, nohide):
+    def __init__(self, address, port, blink, nohide):
+        self.address = address
+        self.port = port
+        self.menu = False
         self.blink = blink
         self.nohide = nohide
         self.icon = gtk.StatusIcon()
@@ -176,7 +181,28 @@ class StatusIcon:
             self.icon.set_visible(False)
 
     def on_popup_menu(self, status, button, time):
-        pass
+        if not self.menu:
+            self.menu = gtk.Menu()
+            # open neubot
+            item = gtk.MenuItem(label="Open neubot")
+            item.connect("activate", self._do_open_browser)
+            self.menu.add(item)
+            # quit
+            item = gtk.MenuItem(label="Quit")
+            item.connect("activate", self._do_quit)
+            self.menu.add(item)
+            # done
+            self.menu.show_all()
+        self.menu.popup(None, None, gtk.status_icon_position_menu,
+                        button, time, self.icon)
+
+    def _do_open_browser(self, *args):
+        uri = "http://%s:%s/" % (self.address, self.port)
+        # XXX This call might be blocking with certain browsers
+        webbrowser.open(uri, new=2)
+
+    def _do_quit(self, *args):
+        gtk.main_quit()
 
     def on_activate(self, *args):
         pass
@@ -269,7 +295,7 @@ def main(args):
         port = PORT
     # run
     gtk.gdk.threads_init()
-    icon = StatusIcon(blink, nohide)
+    icon = StatusIcon(address, port, blink, nohide)
     tracker = StateTrackerThread(address, port, icon, verbose)
     tracker.daemon = True
     tracker.start()
@@ -277,6 +303,7 @@ def main(args):
     gtk.gdk.threads_enter()
     gtk.main()
     gtk.gdk.threads_leave()
+    tracker.stop = True
 
 #
 # When we are invoked directly we need to set-up a custom
