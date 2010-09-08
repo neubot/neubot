@@ -67,7 +67,7 @@ import gtk
 # default address and port
 ADDRESS = "127.0.0.1"
 PORT = "9774"
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 #
 # Track neubot(1) state using GET once to get the state value and

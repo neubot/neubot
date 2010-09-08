@@ -1,3 +1,40 @@
+Neubot 0.2.4 [2010-09-08]
+	* network: Remove unused buffers module
+	* http.utils: make sure make_filename() operates on pathquery
+	* http.utils: make_filename() is now more readable
+	* log: We don't want access-logs to be part of /logs
+	* Makefile: Update commented-out rules to create installer using Wine
+	* ui: Remove unused import statement
+	* ui: UIConnection: Print the offending exception and its stacktrace
+	* ui: UIServer: Use multi-line strings for HTML and JS templates
+	* ui: UIServer: Handle toggle requests in /
+	* ui: UIServer: Mechanism to pull XML updates
+	* ui: UIServer: Don't leave an empty line before / and /neubot.js
+	* ui: UIServer: Add backlink to /logs and /results
+	* net.pollers: Do not assume an update every second
+	* net.pollers: sched(): Bugfix scheduling algorithm
+	* net: Add support for group-of-streams stats
+	* net.pollers: Prepare SimpleStats to replace Timer
+	* http.clients: Use SimpleStats rather than Timer
+	* net.pollers: Better solution for 'delete while pending'
+	* net.pollers: Remove some unused imports
+	* doc: INSTALL: uninstall: Use /usr/local rather than /opt
+	* speedtest: Wait for stage X to complete before we enter stage X+1
+	* speedtest: Speed-adaptive download/upload procedure
+	* log: Add support for pretty-printing progress
+	* speedtest: Print information on the operation in progress
+	* speedtest: By default use a server of the neubot project
+	* speedtest: Let the user decide the output format
+	* http.handlers: Better protection vs. comet-after-close
+	* http.clients: Make sure usage string is easier to understand
+	* statusicon: Rewritten using httplib and threading
+	* statusicon: Initial implementation of the popup menu
+	* statusicon: Ubuntu has deprecated status-icon usage
+	* notify: Increase interval between each check for pending events
+	* main: Add a new speedtest command that invokes speedtest.main()
+	* neubot: Make sure we employ safe_seek() in new code
+	* Release neubot/0.2.4
+
 Neubot 0.2.3 [2010-09-02]
 	* http.utils: Remove deprecated parse_accept()
 	* http.utils: Remove deprecated select_mime()
