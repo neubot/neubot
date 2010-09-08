@@ -116,13 +116,25 @@ install:
 lint:
 	@echo "[LINT]"
 	@find . -type f -name \*.py -exec pychecker --limit 256 {} \;
+
+#
+# XXX Probably this piece of code should be moved into some
+# admin/release.sh script because it's unlikely that it works
+# on machines different by mine, and so it should not be that
+# easy to invoke it.
+#
+
 release:
 	@echo "[RELEASE]"
 	@make clean
-#	#Create Win32 installer using Wine (not yet)
+#	@#Create Win32 installer using Wine
 #	@install -d dist
+#	@cp $$HOME/.wine/drive_c/windows/system32/python27.dll dist/
 #	@wine cmd /c Build.bat
-#	@cd dist && rm -rf library.zip neubot.exe w9xpopen.exe
+#	@install -d dist/neubot-$(VERSION)
+#	@cd dist && mv *.zip *.exe *.dll neubot-$(VERSION)/
+#	@cd dist && zip -r neubot-win32-$(VERSION).zip neubot-$(VERSION)/
+#	@cd dist && rm -rf neubot-$(VERSION)/
 #	@mv Neubot_Setup_* dist/
 	@make _deb
 	@cd dist && dpkg-scanpackages . > Packages
