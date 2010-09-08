@@ -39,6 +39,7 @@ from neubot.http.servers import Server
 from neubot.http.servers import SimpleConnection
 from neubot.http.messages import Message
 from neubot.http.messages import compose
+from neubot.utils import safe_seek
 
 #
 # BaseComposer.
@@ -781,7 +782,7 @@ class UIServer(Server):
         stringio = method[mimetype](m.uri)
         compose(m1, code="200", reason="Ok", body=stringio, mimetype=mimetype)
         if m.method == "HEAD":
-            stringio.seek(0, os.SEEK_END)
+            safe_seek(stringio, 0, os.SEEK_END)
         handler.reply(m, m1)
         return
 

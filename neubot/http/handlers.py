@@ -20,6 +20,8 @@
 # Protocol handler
 #
 
+from neubot.utils import safe_seek
+
 import StringIO
 import collections
 import neubot
@@ -148,9 +150,9 @@ class Handler:
             self.flush_error = flush_error
             length = 0
             for stringio in self.sendqueue:
-                stringio.seek(0, os.SEEK_END)
+                safe_seek(stringio, 0, os.SEEK_END)
                 length += stringio.tell()
-                stringio.seek(0, os.SEEK_SET)
+                safe_seek(stringio, 0, os.SEEK_SET)
             if length <= 8000:
                 data = []
                 for stringio in self.sendqueue:

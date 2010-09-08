@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+from neubot.utils import safe_seek
 from StringIO import StringIO
 from neubot.http.utils import date
 from neubot.http.utils import urlsplit
@@ -156,9 +157,9 @@ def compose(m, **kwargs):
         m["connection"] = "close"
     if kwargs["body"]:
         m.body = kwargs["body"]
-        m.body.seek(0, SEEK_END)
+        safe_seek(m.body, 0, SEEK_END)
         length = m.body.tell()
-        m.body.seek(0, SEEK_SET)
+        safe_seek(m.body, 0, SEEK_SET)
         m["content-length"] = str(length)
         if kwargs["mimetype"]:
             m["content-type"] = kwargs["mimetype"]

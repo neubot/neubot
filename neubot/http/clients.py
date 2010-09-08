@@ -504,7 +504,7 @@ class DownloadManager:
             log.exception()
             return
         # copy
-        afile.seek(lower, SEEK_SET)
+        safe_seek(afile, lower, SEEK_SET)
         while True:
             octets = response.body.read(262144)
             if not octets:
@@ -675,7 +675,7 @@ def main(args):
                         # we are appending to a single output file, and so
                         # undo the rewind().
                         #
-                        outfile.seek(0, SEEK_END)
+                        safe_seek(outfile, 0, SEEK_END)
                     else:
                         outfile.flush()
             if outfile == None:
@@ -705,7 +705,7 @@ def main(args):
                 client = new_client()
                 client.put(uri, infile=infile)
                 loop()
-                infile.seek(0, SEEK_SET)
+                safe_seek(infile, 0, SEEK_SET)
 
 if __name__ == "__main__":
     main(argv)

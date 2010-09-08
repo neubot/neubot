@@ -20,6 +20,7 @@ from sys import path
 if __name__ == "__main__":
     path.insert(0, ".")
 
+from neubot.utils import safe_seek
 from StringIO import StringIO
 from neubot.net import disable_stats
 from neubot.net import enable_stats
@@ -241,7 +242,7 @@ class SpeedtestClient:
                 self._upload_complete(client)
             else:
                 # need to rewind the body
-                request.body.seek(0)
+                safe_seek(request.body, 0)
                 client.send(request)
         else:
             log.error("Response: %s %s" % (response.code, response.reason))
