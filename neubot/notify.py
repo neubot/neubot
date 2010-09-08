@@ -24,7 +24,7 @@ from collections import deque
 from neubot.net.pollers import sched
 from neubot import log
 
-INTERVAL = 15
+INTERVAL = 60
 
 STATECHANGE = "statechange"
 
