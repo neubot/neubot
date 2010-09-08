@@ -21,7 +21,10 @@ import sys
 
 import neubot
 
+from neubot import speedtest
+
 maintbl = {
+    "speedtest"   : speedtest.main,
     "auto"        : neubot.auto.main,
     "rendezvous"  : neubot.rendezvous.main,
     "measure"     : neubot.measure.main,
