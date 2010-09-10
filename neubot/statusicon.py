@@ -118,8 +118,6 @@ class StateTracker:
             error = True
             if isatty(stderr.fileno()):
                 traceback.print_exc()
-        if connection:
-            del connection
         if error:
             self.state = None
             # to blank the tooltip
