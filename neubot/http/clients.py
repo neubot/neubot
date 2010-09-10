@@ -232,7 +232,7 @@ class SimpleClient(Receiver):
 # below should be moved in some shared place.
 #
 
-from neubot.net.pollers import formatbytes
+from neubot.utils import unit_formatter
 from neubot.net.pollers import SimpleStats
 
 #
@@ -561,12 +561,12 @@ class VerboseClient(Client):
 
     def _print_stats(self, f):
         f.write("connect-time: %f s\n" % self.connecting.diff())
-        f.write("send-count: %s\n" % formatbytes(self.sending.length))
+        f.write("send-count: %sB\n" % unit_formatter(self.sending.length))
         f.write("send-time: %f s\n" % self.sending.diff())
-        f.write("send-speed: %s/s\n" % formatbytes(self.sending.speed()))
-        f.write("recv-count: %s\n" % formatbytes(self.receiving.length))
+        f.write("send-speed: %sB/s\n" % unit_formatter(self.sending.speed()))
+        f.write("recv-count: %sB\n" % unit_formatter(self.receiving.length))
         f.write("recv-time: %f s\n" % self.receiving.diff())
-        f.write("recv-speed: %s/s\n" % formatbytes(self.receiving.speed()))
+        f.write("recv-speed: %sB/s\n" % unit_formatter(self.receiving.speed()))
         f.write("rr-time: %f s\n"%(self.receiving.stop-self.sending.start))
 
 def print_headers(client, request, response):

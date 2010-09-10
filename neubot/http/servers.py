@@ -219,7 +219,7 @@ class SimpleConnection(Receiver):
     def got_request(self, message):
         pass
 
-from neubot.net.pollers import formatbytes
+from neubot.utils import unit_formatter
 from neubot.net.pollers import SimpleStats
 
 #
@@ -406,12 +406,12 @@ class NoisyConnection(Connection):
 
     def sent_response(self):
         Connection.sent_response(self)
-        stderr.write("send-count: %s\n" % formatbytes(self.sending.length))
+        stderr.write("send-count: %sB\n" % unit_formatter(self.sending.length))
         stderr.write("send-time: %f s\n" % self.sending.diff())
-        stderr.write("send-speed: %s/s\n" % formatbytes(self.sending.speed()))
-        stderr.write("recv-count: %s\n" % formatbytes(self.receiving.length))
+        stderr.write("send-speed: %sB/s\n" % unit_formatter(self.sending.speed()))
+        stderr.write("recv-count: %sB\n" % unit_formatter(self.receiving.length))
         stderr.write("recv-time: %f s\n" % self.receiving.diff())
-        stderr.write("recv-speed: %s/s\n" % formatbytes(self.receiving.speed()))
+        stderr.write("recv-speed: %sB/s\n" % unit_formatter(self.receiving.speed()))
         stderr.write("rr-time: %f s\n"%(self.sending.stop-self.receiving.start))
         stderr.write("\n")
 

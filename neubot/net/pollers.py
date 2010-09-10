@@ -58,9 +58,6 @@ CHECK_TIMEOUT = 10
 
 from neubot.utils import unit_formatter
 
-def formatbytes(count):
-    return unit_formatter(count, unit="B")
-
 class SimpleStats:
     def __init__(self):
         self.begin()
@@ -311,8 +308,9 @@ class Poller:
             recv = self.stats.recv.speed()
             self.stats.recv.begin()
             # print
-            stats = "\r    send: %s | recv: %s" % (formatbytes(send),
-             formatbytes(recv))
+            stats = "\r    send: %s | recv: %s" % (
+             unit_formatter(send, unit="B/s"),
+             unit_formatter(recv, unit="B/s"))
             if len(stats) < 80:
                 stats += " " * (80 - len(stats))
             sys.stdout.write(stats)
