@@ -235,9 +235,6 @@ class SimpleClient(Receiver):
 from neubot.net.pollers import formatbytes
 from neubot.net.pollers import SimpleStats
 
-# compat
-Timer = SimpleStats
-
 #
 # Add the SimpleClient timing information and convenience
 # functions for GET, HEAD, and PUT.  Both additions are
@@ -257,9 +254,9 @@ class Client(SimpleClient):
         self.notify_success = None
 #       self.notify_failure = None
         self.responsebody = None
-        self.sending = Timer()
-        self.connecting = Timer()
-        self.receiving = Timer()
+        self.sending = SimpleStats()
+        self.connecting = SimpleStats()
+        self.receiving = SimpleStats()
 
     #
     # Convenience methods for measurements--they all have the
@@ -320,7 +317,7 @@ class Client(SimpleClient):
         self.sending.begin()
 
     def send_progress(self, data):
-        self.sending.update(len(data))
+        self.sending.account(len(data))
 
     def sent_request(self):
         self.sending.end()
@@ -339,7 +336,7 @@ class Client(SimpleClient):
             self.response.body = self.responsebody
 
     def recv_progress(self, data):
-        self.receiving.update(len(data))
+        self.receiving.account(len(data))
 
     def got_response(self, request, response):
         self.receiving.end()

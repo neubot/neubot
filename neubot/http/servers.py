@@ -220,7 +220,7 @@ class SimpleConnection(Receiver):
         pass
 
 from neubot.net.pollers import formatbytes
-from neubot.http.clients import Timer
+from neubot.net.pollers import SimpleStats
 
 #
 # Add SimpleConnection timing information and implement
@@ -232,8 +232,8 @@ from neubot.http.clients import Timer
 class Connection(SimpleConnection):
     def __init__(self, parent, handler):
         SimpleConnection.__init__(self, parent, handler)
-        self.receiving = Timer()
-        self.sending = Timer()
+        self.receiving = SimpleStats()
+        self.sending = SimpleStats()
 
     #
     # Sending
@@ -243,7 +243,7 @@ class Connection(SimpleConnection):
         self.sending.begin()
 
     def send_progress(self, data):
-        self.sending.update(len(data))
+        self.sending.account(len(data))
 
     def sent_response(self):
         self.sending.end()
@@ -259,7 +259,7 @@ class Connection(SimpleConnection):
         self.receiving.begin()
 
     def recv_progress(self, data):
-        self.receiving.update(len(data))
+        self.receiving.account(len(data))
 
     # override to manage an incoming body
     def nextstate(self, request):

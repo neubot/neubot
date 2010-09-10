@@ -76,9 +76,6 @@ class SimpleStats:
     def account(self, count):
         self.length += count
 
-    # compat with http.clients.Timer
-    update = account
-
     def diff(self):
         return self.stop - self.start
 
