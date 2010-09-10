@@ -34,6 +34,9 @@ import os
 # Accepted HTTP protocols
 PROTOCOLS = ["HTTP/1.0", "HTTP/1.1"]
 
+# Maximum allowed line length
+MAXLINE = 1<<19
+
 class Receiver:
     def closing(self):
         pass
@@ -235,6 +238,9 @@ class Handler:
             else:
                 index = data.find("\n", offset)
                 if index == -1:
+                    if length > MAXLINE:
+                        self.close()
+                        return
                     break
                 index = index + 1
                 line = data[offset:index]
