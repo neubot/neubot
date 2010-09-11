@@ -187,3 +187,17 @@ def make_filename(uri, default):
         index = index + 1
     filename = temp
     return filename
+
+#
+# Parse 'range:' header
+# Here we don't care of Exceptions as long as these exceptions
+# are ValueErrors, because the caller expects this function to
+# succed OR to raise ValueError.
+#
+
+def parse_range(message):
+    vector = message["range"].replace("bytes=", "").strip().split("-")
+    first, last = map(int, vector)
+    if first < 0 or last < 0 or last < first:
+        raise ValueError("Cannot parse range header")
+    return first, last
