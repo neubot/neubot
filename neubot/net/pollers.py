@@ -20,19 +20,18 @@
 # Poll() and dispatch I/O events (such as "socket readable")
 #
 
-import errno
-import select
-import sys
-
-from neubot.utils import prettyprint_exception
+from select import error
+from neubot.utils import unit_formatter
 from neubot.utils import ticks
-
-import neubot
+from select import select
+from sys import stdout
+from errno import EINTR
+from neubot import log
 
 # Base class for every socket managed by the poller
 class Pollable:
     def fileno(self):
-        raise Exception("You must override this method")
+        raise NotImplementedError
 
     def readable(self):
         pass
@@ -58,8 +57,6 @@ class PollerTask:
 
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
-
-from neubot.utils import unit_formatter
 
 class SimpleStats:
     def __init__(self):
@@ -88,10 +85,9 @@ class Stats:
         self.recv = SimpleStats()
 
 class Poller:
-    def __init__(self, timeout, get_ticks, notify_except):
+    def __init__(self, timeout, get_ticks):
         self.timeout = timeout
         self.get_ticks = get_ticks
-        self.notify_except = notify_except
         self.printstats = False
         self.readset = {}
         self.writeset = {}
@@ -145,15 +141,15 @@ class Poller:
     # Use the sched() / unsched() interface instead
 
     def register_periodic(self, periodic):
-        neubot.log.debug("register_periodic() is deprecated")
+        log.debug("register_periodic() is deprecated")
         self.sched(self.timeout, periodic, True)
 
     def unregister_periodic(self, periodic):
-        neubot.log.debug("unregister_periodic() is deprecated")
+        log.debug("unregister_periodic() is deprecated")
         self.unsched(self.timeout, periodic, True)
 
     def register_func(self, func):
-        neubot.log.debug("register_func() is deprecated")
+        log.debug("register_func() is deprecated")
         self.sched(0, func)
 
     # END deprecated functions
@@ -200,7 +196,7 @@ class Poller:
             except KeyboardInterrupt:
                 raise
             except:
-                neubot.log.exception()
+                log.exception()
                 self.close(stream)
 
     def _writable(self, fileno):
@@ -211,7 +207,7 @@ class Poller:
             except KeyboardInterrupt:
                 raise
             except:
-                neubot.log.exception()
+                log.exception()
                 self.close(stream)
 
     #
@@ -274,7 +270,7 @@ class Poller:
                             except KeyboardInterrupt:
                                 raise
                             except:
-                                neubot.log.exception()
+                                log.exception()
                             self.sched(task.delta, task.func, True)
                         else:
                             try:
@@ -282,18 +278,18 @@ class Poller:
                             except KeyboardInterrupt:
                                 raise
                             except:
-                                neubot.log.exception()
+                                log.exception()
                 index = index + 1
             del self.tasks[:index]
 
     def dispatch_events(self):
         if self.readset or self.writeset:
             try:
-                res = select.select(self.readset.keys(),
-                    self.writeset.keys(), [], self.timeout)
-            except select.error, (code, reason):
-                if code != errno.EINTR:
-                    self.notify_except()
+                res = select(self.readset.keys(), self.writeset.keys(),
+                 [], self.timeout)
+            except error, (code, reason):
+                if code != EINTR:
+                    log.exception()
                     raise
             else:
                 for fileno in res[0]:
@@ -316,7 +312,7 @@ class Poller:
 
     def disable_stats(self):
         if self.printstats:
-            sys.stdout.write("\n")
+            stdout.write("\n")
         self.printstats = False
 
     def enable_stats(self):
@@ -339,14 +335,11 @@ class Poller:
              unit_formatter(recv, unit="B/s"))
             if len(stats) < 80:
                 stats += " " * (80 - len(stats))
-            sys.stdout.write(stats)
-            sys.stdout.flush()
+            stdout.write(stats)
+            stdout.flush()
 
-def create_poller(timeout=1, get_ticks=ticks,
-        notify_except=prettyprint_exception):
-    return Poller(timeout, get_ticks, notify_except)
+poller = Poller(1, ticks)
 
-poller = create_poller()
 register_func = poller.register_func
 dispatch = poller.dispatch
 loop = poller.loop
