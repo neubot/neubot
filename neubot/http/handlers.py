@@ -20,12 +20,12 @@
 # Protocol handler
 #
 
-from neubot.utils import safe_seek
-
-import StringIO
-import collections
-import neubot
-import os
+from StringIO import StringIO
+from neubot.utils import file_length
+from neubot.net.pollers import unsched
+from neubot.net.pollers import sched
+from collections import deque
+from neubot import log
 
 # Possible states of the receiver
 (IDLE, BOUNDED, UNBOUNDED, CHUNK, CHUNK_END, FIRSTLINE,
@@ -79,7 +79,7 @@ class Handler:
         self.stream.notify_closing = self._closing
         self.isclosed = False
         # sending
-        self.sendqueue = collections.deque()
+        self.sendqueue = deque()
         self.flush_success = None
         self.flush_progress = None
         self.flush_error = None
@@ -94,13 +94,13 @@ class Handler:
 
     def passiveclose(self):
         if not self.isclosed:
-            neubot.net.sched(30, self.close)
+            sched(30, self.close)
             self.state = IDLE
 
     def close(self, check_eof=False):
         if not self.isclosed:
             self.isclosed = True
-            neubot.net.unsched(30, self.close)
+            unsched(30, self.close)
             if self.receiver:
                 if check_eof and self.stream.eof and self.state == UNBOUNDED:
                     self.receiver.end_of_body()
@@ -153,15 +153,13 @@ class Handler:
             self.flush_error = flush_error
             length = 0
             for stringio in self.sendqueue:
-                safe_seek(stringio, 0, os.SEEK_END)
-                length += stringio.tell()
-                safe_seek(stringio, 0, os.SEEK_SET)
+                length = file_length(stringio)
             if length <= 8000:
                 data = []
                 for stringio in self.sendqueue:
                     data.append(stringio.read())
                 data = "".join(data)
-                stringio = StringIO.StringIO(data)
+                stringio = StringIO(data)
                 self.sendqueue.clear()
                 self.sendqueue.append(stringio)
             self._do_flush()
@@ -323,7 +321,7 @@ class Handler:
                 # Ignoring trailers
                 pass
         else:
-            neubot.log.debug("Not expecting a line")
+            log.debug("Not expecting a line")
             self.close()
 
     def _got_piece(self, piece):
@@ -340,5 +338,5 @@ class Handler:
             if self.left == 0:
                 self.state = CHUNK_END
         else:
-            neubot.log.debug("Not expecting a piece")
+            log.debug("Not expecting a piece")
             self.close()
