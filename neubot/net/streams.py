@@ -33,8 +33,8 @@ class Stream(Pollable):
         self.myname = myname
         self.peername = peername
         self.logname = logname
-        self.readable = None
-        self.writable = None
+        self.handleReadable = None
+        self.handleWritable = None
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
@@ -98,8 +98,8 @@ class Stream(Pollable):
             self.recv_success = None
             self.recv_ticks = 0
             self.recv_pending = False
-            self.readable = None
-            self.writable = None
+            self.handleReadable = None
+            self.handleWritable = None
             self.soclose()
             self.poller.close(self)
 
@@ -115,27 +115,33 @@ class Stream(Pollable):
     # add/remove entries to/from an hash table).
     #
 
+    def readable(self):
+        self.handleReadable()
+
+    def writable(self):
+        self.handleWritable()
+
     def set_readable(self, func):
-        if not self.readable:
+        if not self.handleReadable:
             self.poller.set_readable(self)
-        if self.readable != func:
-            self.readable = func
+        if self.handleReadable != func:
+            self.handleReadable = func
 
     def set_writable(self, func):
-        if not self.writable:
+        if not self.handleWritable:
             self.poller.set_writable(self)
-        if self.writable != func:
-            self.writable = func
+        if self.handleWritable != func:
+            self.handleWritable = func
 
     def unset_readable(self):
-        if self.readable:
+        if self.handleReadable:
             self.poller.unset_readable(self)
-            self.readable = None
+            self.handleReadable = None
 
     def unset_writable(self):
-        if self.writable:
+        if self.handleWritable:
             self.poller.unset_writable(self)
-            self.writable = None
+            self.handleWritable = None
 
     #
     # When we are closing this stream recv() MUST NOT run because
