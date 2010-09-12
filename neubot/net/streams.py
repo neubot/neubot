@@ -70,6 +70,9 @@ class Stream(Pollable):
     # that removes such reference.
     #
 
+    def closing(self):
+        self._do_close()
+
     def close(self):
         self._do_close()
 

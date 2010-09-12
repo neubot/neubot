@@ -46,6 +46,9 @@ class Pollable:
     def writetimeout(self, now):
         return False
 
+    def closing(self):
+        pass
+
 class PollerTask:
     def __init__(self, time, func, periodic, delta):
         self.time = time
@@ -175,6 +178,7 @@ class Poller:
     def close(self, stream):
         self.unset_readable(stream)
         self.unset_writable(stream)
+        stream.closing()
 
     #
     # We are very careful when accessing readset and writeset because
@@ -191,12 +195,24 @@ class Poller:
     def _readable(self, fileno):
         if self.readset.has_key(fileno):
             stream = self.readset[fileno]
-            stream.readable()
+            try:
+                stream.readable()
+            except KeyboardInterrupt:
+                raise
+            except:
+                neubot.log.exception()
+                self.close(stream)
 
     def _writable(self, fileno):
         if self.writeset.has_key(fileno):
             stream = self.writeset[fileno]
-            stream.writable()
+            try:
+                stream.writable()
+            except KeyboardInterrupt:
+                raise
+            except:
+                neubot.log.exception()
+                self.close(stream)
 
     #
     # Welcome to the core loop.
@@ -253,10 +269,20 @@ class Poller:
                     if task.func:                       # redundant
                         del self.registered[task.func]
                         if task.periodic:
-                            task.func(now)
+                            try:
+                                task.func(now)
+                            except KeyboardInterrupt:
+                                raise
+                            except:
+                                neubot.log.exception()
                             self.sched(task.delta, task.func, True)
                         else:
-                            task.func()
+                            try:
+                                task.func()
+                            except KeyboardInterrupt:
+                                raise
+                            except:
+                                neubot.log.exception()
                 index = index + 1
             del self.tasks[:index]
 
