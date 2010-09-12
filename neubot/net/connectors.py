@@ -20,9 +20,9 @@
 # Non-blocking connect for stream sockets
 #
 
-from sys import path as PATH
 if __name__ == "__main__":
-    PATH.insert(0, ".")
+    from sys import path
+    path.insert(0, ".")
 
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
