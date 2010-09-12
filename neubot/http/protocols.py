@@ -44,7 +44,7 @@ class protocol(Receiver):
 	def periodic(self, now):
 		if now - self.begin > self.timeout:
 			neubot.log.warning("Watchdog timeout")
-			neubot.net.register_func(self.close)
+			neubot.net.sched(0, self.close)
 
 	def passiveclose(self):
 		self.handler.passiveclose()

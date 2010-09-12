@@ -18,7 +18,6 @@
 
 from neubot.net.connectors import connect
 from neubot.net.listeners  import listen
-from neubot.net.pollers    import register_func
 from neubot.net.pollers    import dispatch
 from neubot.net.pollers    import loop
 from neubot.net.pollers    import register_periodic

@@ -148,10 +148,6 @@ class Poller:
         log.debug("unregister_periodic() is deprecated")
         self.unsched(self.timeout, periodic, True)
 
-    def register_func(self, func):
-        log.debug("register_func() is deprecated")
-        self.sched(0, func)
-
     # END deprecated functions
     #
 
@@ -340,7 +336,6 @@ class Poller:
 
 poller = Poller(1, ticks)
 
-register_func = poller.register_func
 dispatch = poller.dispatch
 loop = poller.loop
 register_periodic = poller.register_periodic
