@@ -23,10 +23,12 @@ import sys
 
 import neubot
 
+from neubot.compat import deque_appendleft
+
 class database:
     def __init__(self):
         self.outfile = sys.stdout
-        self.queue = collections.deque(maxlen=100)
+        self.queue = collections.deque()
 
     def export(self):
         result = []
@@ -56,7 +58,7 @@ class database:
                 neubot.utils.prettyprint_exception(write=logging.warning)
 
     def writes(self, octets):
-        self.queue.appendleft(octets)
+        deque_appendleft(self.queue, 100, octets)
         self.outfile.write(octets)
         self.outfile.write("\r\n")
         self.outfile.flush()

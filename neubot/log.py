@@ -25,6 +25,7 @@ import logging
 import time
 import traceback
 
+from neubot.compat import deque_append
 from os import isatty
 from sys import stderr
 
@@ -48,8 +49,9 @@ class Logger:
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
         self.logger.setLevel(logging.DEBUG)
-        self.queue = collections.deque(maxlen=maxqueue)
+        self.queue = collections.deque()
         self.message = None
+        self.maxqueue = maxqueue
         self._tty = True
 
     def verbose(self):
@@ -148,7 +150,7 @@ class Logger:
         if message[-1] == "\n":
             message = message[:-1]
         if enqueue:
-            self.queue.append((time.time(), message))
+            deque_append(self.queue, self.maxqueue, (time.time(), message))
         printlog(message)
 
     def getlines(self):
