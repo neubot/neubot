@@ -1,3 +1,22 @@
+Neubot 0.2.5 [2010-09-15]
+	* Globally replace Timer with SimpleStats
+	* http.handlers: Add maximum-line-length check
+	* Globally replace format_bytes() with unit_formatter()
+	* statusicon: Zap redundant "del connection" statement
+	* utils: Implement file_length()
+	* http.utils: Add parse_range()
+	* net.pollers: It was a mistake to remove catch-all clauses
+	* net.pollers: Random updates and cosmetic changes
+	* Globally remove deprecated register_func()
+	* net.connectors: Cosmetic changes
+	* net.listeners: Cosmetic changes
+	* compat: Compatibility with Python2.5's deque()
+	* log, database: Python2.5-compatible deque usage
+	* net: Do not assume that the ssl module is available
+	* net.streams: Avoid pychecker warning
+	* http.handlers: Use from..import rather than import
+	* Release neubot/0.2.5
+
 Neubot 0.2.4 [2010-09-08]
 	* network: Remove unused buffers module
 	* http.utils: make sure make_filename() operates on pathquery

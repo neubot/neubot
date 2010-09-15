@@ -318,7 +318,7 @@ INDEX_HTML =								\
  <head>
   <script type="text/javascript" src="/js/jquery.js"></script>
   <script type="text/javascript" src="/js/neubot.js"></script>
-  <title>Neubot 0.2.4</title>
+  <title>Neubot 0.2.5</title>
  </head>
  <body>
 
