@@ -26,6 +26,15 @@ from neubot import log
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
 
+ISCLOSED = 1<<0
+SEND_PENDING = 1<<1
+SENDBLOCKED = 1<<2
+RECV_PENDING = 1<<3
+RECVBLOCKED = 1<<4
+ISSENDING = 1<<5
+ISRECEIVING = 1<<6
+EOF = 1<<7
+
 class Stream(Pollable):
     def __init__(self, poller, fileno, myname, peername, logname):
         self.poller = poller
@@ -39,24 +48,18 @@ class Stream(Pollable):
         self.send_success = None
         self.send_ticks = 0
         self.send_pos = 0
-        self.send_pending = False
         self.send_error = None
         self.recv_maxlen = 0
         self.recv_success = None
         self.recv_ticks = 0
-        self.recv_pending = False
         self.recv_error = None
         self.eof = False
-        self.isreceiving = False
-        self.issending = False
-        self.recvblocked = False
-        self.sendblocked = False
         self.timeout = TIMEOUT
         self.notify_closing = None
         self.context = None
-        self.isclosed = False
         self.stats = []
         self.stats.append(self.poller.stats)
+        self.flags = 0
 
     def __del__(self):
         pass
@@ -77,9 +80,9 @@ class Stream(Pollable):
         self._do_close()
 
     def _do_close(self):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             log.debug("* Closing connection %s" % self.logname)
-            self.isclosed = True
+            self.flags |= ISCLOSED
             if self.recv_error:
                 self.recv_error(self)
                 self.recv_error = None
@@ -93,21 +96,21 @@ class Stream(Pollable):
             self.send_success = None
             self.send_ticks = 0
             self.send_pos = 0
-            self.send_pending = False
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
-            self.recv_pending = False
             self.handleReadable = None
             self.handleWritable = None
             self.soclose()
             self.poller.close(self)
 
     def readtimeout(self, now):
-        return self.recv_pending and now - self.recv_ticks > self.timeout
+        return (self.flags & RECV_PENDING and
+         (now - self.recv_ticks) > self.timeout)
 
     def writetimeout(self, now):
-        return self.send_pending and now - self.send_ticks > self.timeout
+        return (self.flags & SEND_PENDING and
+         (now - self.send_ticks) > self.timeout)
 
     #
     # Make sure that we set/unset readable/writable only if
@@ -143,65 +146,44 @@ class Stream(Pollable):
             self.poller.unset_writable(self)
             self.handleWritable = None
 
-    #
-    # When we are closing this stream recv() MUST NOT run because
-    # it might self.poller.set_readable(self) and so the stream
-    # would not be closed and garbage collected.
-    # When we invoke recv() the code tries immediatly to receive
-    # from the underlying socket and will only set_readable if
-    # the operation returns WANT_READ.  This is called "optimistic"
-    # I/O because we initially assume that the operation will be
-    # successful.
-    # When a receive is successful we invoke the recv_success
-    # callback but we don't want this callback to be able to
-    # issue another optimistic recv() because this might lead
-    # to recursion and prevents other streams to get their chance
-    # of receiving.  And so we employ .isreceiving to avoid
-    # nesting optimistic recv()s.
-    # The variable .recv_pending is True when the user wants to
-    # receive from the socket.  We set this variable to False
-    # after a successful recv, before invoking the recv_success
-    # callback.  But we don't unset_readable before invoking
-    # the callback, because the callback might want to receive
-    # again (and it would be a waste to unset and suddenly set
-    # readable again).  Instead, we check .recv_pending value
-    # AFTER the callback: if it's False we unset readable, and
-    # if it's True it means that the user invoked recv() from
-    # the callback, and then we set_readable (we don't know at
-    # this point whether we are already readable because of the
-    # optimistic I/O).
-    # With SSL sockets, recv() might also return WANT_WRITE and
-    # this is treated as a special case.  While normally it is
-    # possible for recv() and send() to go in parallel, in this
-    # case we (i) set .writable to point to ._do_recv and (ii)
-    # use .sendblocked to block send (if we don't send might be
-    # invoked and might modify writable).  Then, when the under-
-    # lying socket becomes writable and eventually ._do_recv()
-    # is invoked, we check whether send was blocked, and, if so,
-    # we unblock it, and we properly set/unset writable depending
-    # on the value of .send_pending.
-    #
-
     def recv(self, maxlen, recv_success, recv_error=None):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             self.recv_maxlen = maxlen
             self.recv_success = recv_success
             self.recv_ticks = self.poller.get_ticks()
-            self.recv_pending = True
+            self.flags |= RECV_PENDING
             self.recv_error = recv_error
-            if not self.isreceiving:
+            #
+            # ISRECEIVING means we're already inside _do_recv().
+            # We don't want to invoke _do_recv() again, in this
+            # case, because there' the risk of infinite recursion.
+            #
+            if not (self.flags & ISRECEIVING):
                 self._do_recv()
 
     def _do_recv(self):
-        if not self.recvblocked:
-            self.isreceiving = True
+        #
+        # RECVBLOCKED means that the underlying socket is SSL,
+        # _and_ that SSL_write() returned WANT_READ, so we need
+        # to wait for the underlying socket to become readable
+        # to invoke SSL_write() again--and of course we can't
+        # recv() until this happens.
+        #
+        if not (self.flags & RECVBLOCKED):
+            self.flags |= ISRECEIVING
             panic = ""
-            if self.sendblocked:
-                if self.send_pending:
+            if self.flags & SENDBLOCKED:
+                #
+                # SENDBLOCKED is the symmetrical of RECVBLOCKED.
+                # If we're here it means that SSL_read() returned
+                # WANT_WRITE and we temporarily needed to block
+                # send().
+                #
+                if self.flags & SEND_PENDING:
                     self.set_writable(self._do_send)
                 else:
                     self.unset_writable()
-                self.sendblocked = False
+                self.flags &= ~SENDBLOCKED
             status, octets = self.sorecv(self.recv_maxlen)
             if status == SUCCESS:
                 if octets:
@@ -211,61 +193,72 @@ class Stream(Pollable):
                     self.recv_maxlen = 0
                     self.recv_success = None
                     self.recv_ticks = 0
-                    self.recv_pending = False
+                    #
+                    # Unset RECV_PENDING but wait before unsetting
+                    # readable because notify() might invoke recv()
+                    # again--and so we check RECV_PENDING again
+                    # after notify().
+                    #
+                    self.flags &= ~RECV_PENDING
                     self.recv_error = None
                     if notify:
                         notify(self, octets)
-                    if not self.recvblocked and not self.isclosed:
-                        if self.recv_pending:
+                    #
+                    # Be careful because notify() is an user-defined
+                    # callback that might invoke send()--which might
+                    # need to block recv()--or close().
+                    #
+                    if not (self.flags & (RECVBLOCKED|ISCLOSED)):
+                        if self.flags & RECV_PENDING:
                             self.set_readable(self._do_recv)
                         else:
                             self.unset_readable()
                 else:
                     log.debug("* Connection %s: EOF" % self.logname)
+                    self.flags |= EOF
                     self.eof = True
                     self._do_close()
             elif status == WANT_READ:
                 self.set_readable(self._do_recv)
             elif status == WANT_WRITE:
                 self.set_writable(self._do_recv)
-                self.sendblocked = True
+                self.flags |= SENDBLOCKED
             elif status == ERROR:
                 log.error("* Connection %s: recv error" % self.logname)
                 log.exception()
                 self._do_close()
             else:
                 panic = "Unexpected status value"
-            self.isreceiving = False
+            self.flags &= ~ISRECEIVING
             if panic:
                 raise Exception(panic)
 
     #
-    # To get more insights on this implementation, refer to
-    # the comment before recv().  What is said there is also
-    # applicable here.
+    # send() is symmetrical to recv() and so to the comments
+    # to recv()'s implementation are also applicable here.
     #
 
     def send(self, octets, send_success, send_error=None):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             self.send_octets = octets
             self.send_pos = 0
             self.send_success = send_success
             self.send_ticks = self.poller.get_ticks()
-            self.send_pending = True
+            self.flags |= SEND_PENDING
             self.send_error = send_error
-            if not self.issending:
+            if not (self.flags & ISSENDING):
                 self._do_send()
 
     def _do_send(self):
-        if not self.sendblocked:
-            self.issending = True
+        if not (self.flags & SENDBLOCKED):
+            self.flags |= ISSENDING
             panic = ""
-            if self.recvblocked:
-                if self.recv_pending:
+            if self.flags & RECVBLOCKED:
+                if self.flags & RECV_PENDING:
                     self.set_readable(self._do_recv)
                 else:
                     self.unset_readable()
-                self.recvblocked = False
+                self.flags &= ~RECVBLOCKED
             subset = buffer(self.send_octets, self.send_pos)
             status, count = self.sosend(subset)
             if status == SUCCESS:
@@ -283,12 +276,12 @@ class Stream(Pollable):
                         self.send_pos = 0
                         self.send_success = None
                         self.send_ticks = 0
-                        self.send_pending = False
+                        self.flags &= ~SEND_PENDING
                         self.send_error = None
                         if notify:
                             notify(self, octets)
-                        if not self.sendblocked and not self.isclosed:
-                            if self.send_pending:
+                        if not (self.flags & (SENDBLOCKED|ISCLOSED)):
+                            if self.flags & SEND_PENDING:
                                 self.set_writable(self._do_send)
                             else:
                                 self.unset_writable()
@@ -300,14 +293,14 @@ class Stream(Pollable):
                 self.set_writable(self._do_send)
             elif status == WANT_READ:
                 self.set_readable(self._do_send)
-                self.recvblocked = True
+                self.flags |= RECVBLOCKED
             elif status == ERROR:
                 log.error("* Connection %s: send error" % self.logname)
                 log.exception()
                 self._do_close()
             else:
                 panic = "Unexpected status value"
-            self.issending = False
+            self.flags &= ~ISSENDING
             if panic:
                 raise Exception(panic)
 
@@ -417,7 +410,8 @@ from socket import SocketType
 def create_stream(sock, poller, fileno, myname, peername, logname):
     if HAVE_SSL:
         if type(sock) == SSLSocket:
-            return StreamSSL(sock, poller, fileno, myname, peername, logname)
+            stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
+            return stream
     if type(sock) == SocketType:
         stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
     else:
