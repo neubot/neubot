@@ -66,19 +66,19 @@ MONTH = [
 ]
 
 class SimpleConnection(Receiver):
-    def __init__(self, parent, handler):
+    def __init__(self, parent):
         self.begun_receiving = False
         self.parent = parent
-        self.handler = handler
+        self.handler = None
         self.message = None
         self.keepalive = True
         self.nleft = 7
-        self.handler.attach(self)
 
     def __del__(self):
         pass
 
-    def start_receiving(self):
+    def attach(self, handler):
+        self.handler = handler
         self.handler.start_receiving()
 
     #
@@ -230,8 +230,8 @@ from neubot.net.pollers import SimpleStats
 #
 
 class Connection(SimpleConnection):
-    def __init__(self, parent, handler):
-        SimpleConnection.__init__(self, parent, handler)
+    def __init__(self, parent):
+        SimpleConnection.__init__(self, parent)
         self.receiving = SimpleStats()
         self.sending = SimpleStats()
 
@@ -389,8 +389,8 @@ class Server:
          certfile=self.certfile)
 
     def _got_connection(self, stream):
-        connection = self.new_connection(self, Handler(stream))
-        connection.start_receiving()
+        connection = self.new_connection(self)
+        connection.attach(Handler(stream, connection))
 
     def notify_closed(self, connection):
         pass
@@ -401,8 +401,8 @@ class Server:
 #
 
 class NoisyConnection(Connection):
-    def __init__(self, parent, handler):
-        Connection.__init__(self, parent, handler)
+    def __init__(self, parent):
+        Connection.__init__(self, parent)
 
     def sent_response(self):
         Connection.sent_response(self)

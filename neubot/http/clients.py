@@ -134,8 +134,7 @@ class SimpleClient(Receiver):
 
     def _connect_success(self, stream):
         self.end_connect()
-        self.handler = Handler(stream)
-        self.handler.attach(self)
+        self.handler = Handler(stream, self)
         self.handler.start_receiving()
         if self.handler:
             self._do_send()

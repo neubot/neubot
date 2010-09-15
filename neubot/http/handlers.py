@@ -77,7 +77,7 @@ class Handler:
     # I will spend some effort to learn the reason soon.
     #
 
-    def __init__(self, stream):
+    def __init__(self, stream, receiver):
         self.stream = stream
         self.stream.notify_closing = self._closing
         self.flags = 0
@@ -88,9 +88,9 @@ class Handler:
         self.flush_error = None
         # receiving
         self.incoming = []
-        self.receiver = None
+        self.receiver = receiver
         self.left = 0
-        self.state = IDLE
+        self.state = FIRSTLINE
 
     def __del__(self):
         pass
@@ -194,17 +194,6 @@ class Handler:
         if self.flush_progress:
             self.flush_progress(data)
         self._do_flush()
-
-    #
-    # Between attach() and start_receiving() the underlying stream could
-    # become None because the client might close the connection.  So, be
-    # very careful and check self.isclosed before using the stream.
-    #
-
-    def attach(self, receiver):
-        if not (self.flags & ISCLOSED):
-            self.receiver = receiver
-            self.state = FIRSTLINE
 
     #
     # receive
