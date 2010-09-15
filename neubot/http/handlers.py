@@ -153,7 +153,7 @@ class Handler:
             self.flush_error = flush_error
             length = 0
             for stringio in self.sendqueue:
-                length = file_length(stringio)
+                length += file_length(stringio)
             if length <= 8000:
                 data = []
                 for stringio in self.sendqueue:
