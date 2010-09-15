@@ -20,9 +20,9 @@
 # HTTP client
 #
 
-from sys import path as PATH
 if __name__ == "__main__":
-    PATH.insert(0, ".")
+    from sys import path
+    path.insert(0, ".")
 
 from StringIO import StringIO
 from os.path import exists
@@ -66,25 +66,13 @@ class SimpleClient(Receiver):
         pass
 
     #
-    # Error handling--subclasses should override this two functions to
-    # be notified of problems when connecting or when exchanging data
-    # with the server.  Note that sendrecv_error() might be invoked in
-    # case of network error as well as in case of protocol error.
+    # Notifications--These functions are empty and could be ovveriden
+    # in subclasses; the DATA parameter is the string that, respectively,
+    # has been received from or sent to the underlying stream socket.
     #
 
-    def connect_error(self):
+    def connection_failed(self):
         pass
-
-    def sendrecv_error(self):
-        pass
-
-    #
-    # Notifications--These functions are empty and could be ovveriden in
-    # subclasses if there is interest in, say, measuring the incoming
-    # or outgoing data rate.  The DATA parameter is the string that,
-    # respectively, has been received from or sent to the underlying
-    # stream socket.
-    #
 
     def begin_connect(self):
         pass
@@ -98,6 +86,9 @@ class SimpleClient(Receiver):
     def recv_progress(self, data):
         pass
 
+    def got_response(self, request, response):
+        pass
+
     def begin_sending(self):
         pass
 
@@ -107,20 +98,19 @@ class SimpleClient(Receiver):
     def sent_request(self):
         pass
 
+    def connection_lost(self):
+        pass
+
     #
-    # Code for sending--If the client is not connected to the server we
-    # use the information in the message to establish a connection.
-    # We are attached to an handler when we flush(), and so we don't need
-    # to pass flush() an error-handling callback because closing() will be
-    # invoked in case of errors.
-    # When connect() completes we attach the handler and start receiving,
-    # and so, if the connection has been closed by the remote host, our
-    # closing method is invoked, and self.handler is cleared.  This is the
-    # reason why we check for self.handler before invoking _do_send().
+    # This is the most important method of the client, that starts
+    # the send/recv cycle.  Note that it makes sense to provide a
+    # response message when you want to save the response body into
+    # an already opened file.
     #
 
-    def send(self, message):
+    def sendrecv(self, message, response=None):
         self.request = message
+        self.response = response
         if not self.handler:
             self._do_connect()
         else:
@@ -129,13 +119,19 @@ class SimpleClient(Receiver):
     def _do_connect(self):
         self.begin_connect()
         connect(self.request.address, self.request.port, self._connect_success,
-                cantconnect=self.connect_error, secure=SECURE(self.request),
+                cantconnect=self.connection_failed, secure=SECURE(self.request),
                 family=self.request.family)
 
     def _connect_success(self, stream):
         self.end_connect()
         self.handler = Handler(stream, self)
         self.handler.start_receiving()
+        #
+        # self.handler.start_receiving() starts reading from
+        # the underlying socket.  So, if the server has already
+        # closed the connection self.handler will be None when
+        # start_receiving() returns.
+        #
         if self.handler:
             self._do_send()
 
@@ -147,37 +143,9 @@ class SimpleClient(Receiver):
         self.handler.flush(flush_progress=self.send_progress,
                            flush_success=self.sent_request)
 
-    #
-    # In closing we dispatch send/recv errors only if there is a pending
-    # request, otherwise (i) either closing() is running because we have
-    # invoked handler.close() in _got_response(), (ii) or we ASSUME that
-    # the server closed the connection due to timeout.  BTW this is not
-    # 100% correct because we invoke sendrecv_error() even when there has
-    # been a protocol error.  We need to refine this a bit.
-    # We assume that we will receive a response for each request we send,
-    # and so we close the connection if we receive a response when there
-    # is not a pending request.  This might cause problems if we receive
-    # a 100-continue response, because the 100-continue will be treated as
-    # the actual response, and the actual response will therefore be not
-    # expected.  That said, this is not a pratical issue because we don't
-    # send 'expect: 100-continue' and so we don't expect the server to send
-    # back a 100-continue interim response.
-    # We notify we got_response() if nextstate is FIRSTLINE because the
-    # handler does not invoke end_of_body() when there is not an attached
-    # body.
-    # If you want to filter incoming responses depending on their headers,
-    # you can override self.nextstate()--the overriden function should
-    # return (ERROR, 0) when the incoming response seems not acceptable,
-    # and, otherwise, the return value of nextstate().
-    # If 'connection: close' we must self.handler.close() AFTER we have
-    # cleared self.request, or closing() will generate a sendrecv_error.
-    #
-
     def closing(self):
+        self.connection_lost()
         self.handler = None
-        if self.request:
-            self.sendrecv_error()
-        # conservative
         self.request = None
         self.response = None
 
@@ -188,11 +156,17 @@ class SimpleClient(Receiver):
         self.recv_progress(data)
 
     def got_request_line(self, method, uri, protocol):
+        # We are a client and not a server!
         self.handler.close()
 
     def got_response_line(self, protocol, code, reason):
-        self.response = Message(protocol=protocol, code=code, reason=reason)
+        if not self.response:
+            self.response = Message()
+        self.response.protocol = protocol
+        self.response.code = code
+        self.response.reason = reason
         if not self.request:
+            # We are not waiting for a response!
             self.handler.close()
 
     def got_header(self, key, value):
@@ -202,9 +176,15 @@ class SimpleClient(Receiver):
         prettyprint(log.debug, "< ", self.response)
         state, length = self.nextstate(self.request, self.response)
         if state == FIRSTLINE:
+            #
+            # The handler does not recognize a transition
+            # from reading headers to first-line as the end
+            # of the response.  We do.
+            #
             self._got_response()
         return state, length
 
+    # Override this function to filter incoming headers
     def nextstate(self, request, response):
         return nextstate(request, response)
 
@@ -218,13 +198,11 @@ class SimpleClient(Receiver):
         safe_seek(self.response.body, 0)
         request, response = self.request, self.response
         self.request, self.response = None, None
-        if response["connection"] == "close":
-            self.handler.close()
         self.begun_receiving = False
         self.got_response(request, response)
-
-    def got_response(self, request, response):
-        pass
+        if (request["connection"] == "close" or
+            response["connection"] == "close"):
+            self.handler.close()
 
 #
 # When we'll measure more than one protocol, the code
@@ -239,78 +217,24 @@ from neubot.net.pollers import SimpleStats
 # functions for GET, HEAD, and PUT.  Both additions are
 # required to implement the transmission tests using the
 # HTTP protocol.
-# To notify success/failure we employ a couple of optional
-# callbacks instead of some boolean variables.  And we do
-# that because with the former solution we can use loop(),
-# rather than dispatch().  We prefer loop() to dispatch()
-# because it is cleaner to do everthying from inside the
-# event loop, for an event-based program.
 #
 
 class Client(SimpleClient):
-    def __init__(self):
+    def __init__(self, parent):
         SimpleClient.__init__(self)
-        self.notify_success = None
-#       self.notify_failure = None
-        self.responsebody = None
         self.sending = SimpleStats()
         self.connecting = SimpleStats()
         self.receiving = SimpleStats()
+        self.parent = parent
 
-    #
-    # Convenience methods for measurements--they all have the
-    # same API and this allows to write simpler code (see for
-    # example the usage of the method() reference, below, in
-    # main()).
-    #
-
-    def get(self, uri, infile=None, outfile=None, keepalive=False):
-        self.responsebody = outfile
-        request = Message()
-        compose(request, method="GET", uri=uri, keepalive=keepalive)
-        self.send(request)
-
-    def put(self, uri, infile=None, outfile=None, keepalive=False):
-        request = Message()
-        compose(request, method="PUT", uri=uri,
-                body=infile, keepalive=keepalive)
-        self.send(request)
-
-    def head(self, uri, infile=None, outfile=None, keepalive=False):
-        request = Message()
-        compose(request, method="HEAD", uri=uri, keepalive=keepalive)
-        self.send(request)
-
-    #
-    # *Cough* *cough* we still need to do some work to notify
-    # that there has been an error.
-    #
-
-#   def connect_error(self):
-#       if self.notify_failure:
-#           self.notify_failure(self)
-
-#   def protocol_error(self):
-#       if self.notify_failure:
-#           self.notify_failure(self)
-
-#   def sendrecv_error(self):
-#       if self.notify_failure:
-#           self.notify_failure(self)
-
-    #
-    # Resolv & connect()
-    #
+    def connection_failed(self):
+        self.parent.connection_failed(self)
 
     def begin_connect(self):
         self.connecting.begin()
 
     def end_connect(self):
         self.connecting.end()
-
-    #
-    # Send
-    #
 
     def begin_sending(self):
         self.sending.begin()
@@ -321,26 +245,36 @@ class Client(SimpleClient):
     def sent_request(self):
         self.sending.end()
 
-    #
-    # Recv
-    #
-
     def begin_receiving(self):
         self.receiving.begin()
-
-    # Override because of self.responsebody
-    def got_response_line(self, protocol, code, reason):
-        SimpleClient.got_response_line(self, protocol, code, reason)
-        if self.responsebody:
-            self.response.body = self.responsebody
 
     def recv_progress(self, data):
         self.receiving.account(len(data))
 
+    def nextstate(self, request, response):
+        if not self.parent.got_response_headers(self, request, response):
+            return ERROR, 0
+        return SimpleClient.nextstate(self, request, response)
+
     def got_response(self, request, response):
         self.receiving.end()
-        if self.notify_success:
-            self.notify_success(self, request, response)
+        self.parent.got_response(self, request, response)
+
+    def connection_lost(self):
+        self.parent.connection_lost(self)
+
+class ClientController:
+    def connection_lost(self, client):
+        pass
+
+    def connection_failed(self, client):
+        pass
+
+    def got_response_headers(self, client, request, response):
+        return True
+
+    def got_response(self, client, request, response):
+        pass
 
 #
 # This class tries to employ two connections to download a
@@ -349,14 +283,33 @@ class Client(SimpleClient):
 # significant.
 #
 
-class DownloadManager:
+DM_LENGTH = 1<<0
+DM_SINGLE = 1<<1
+DM_TWO    = 1<<2
+
+class DownloadManager(ClientController):
     def __init__(self, uri, filename=None):
         self.uri = uri
         if not filename:
             filename = make_filename(uri, "index.html")
         self.filename = filename
         self.filenames = {}
+        self.flags = 0
         self._get_resource_length()
+
+    #
+    # Interface with client
+    #
+
+    def got_response(self, client, request, response):
+        if self.flags & DM_LENGTH:
+            self._got_resource_length(client, request, response)
+        elif self.flags & DM_SINGLE:
+            self._got_resource(client, request, response)
+        elif self.flags & DM_TWO:
+            self._got_resource_piece(client, request, response)
+        else:
+            raise Exception("Bad flags")
 
     #
     # We send an HEAD request to retrieve resource meta-
@@ -375,13 +328,14 @@ class DownloadManager:
     #
 
     def _get_resource_length(self):
-        client = Client()
+        client = Client(self)
         request = Message()
         compose(request, method="HEAD", uri=self.uri)
-        client.notify_success = self._got_resource_length
-        client.send(request)
+        self.flags |= DM_LENGTH
+        client.sendrecv(request)
 
     def _got_resource_length(self, client, request, response):
+        self.flags &= ~DM_LENGTH
         if (response.code == "200" and response["content-length"]
          and response["accept-ranges"] == "bytes"):
             length = response["content-length"]
@@ -392,6 +346,7 @@ class DownloadManager:
             if length >= 0:
                 if exists(self.filename):
                     unlink(self.filename)
+                self.flags |= DM_TWO
                 self._get_resource_piece(0, [0, length/2-1], client)
                 self._get_resource_piece(1, [length/2, length-1], None)
             else:
@@ -419,9 +374,10 @@ class DownloadManager:
         else:
             request = Message()
             compose(request, method="GET", uri=self.uri, keepalive=False)
-            client.notify_success = self._got_resource
-            client.responsebody = afile
-            client.send(request)
+            self.flags |= DM_SINGLE
+            response = Message()
+            response.body = afile
+            client.sendrecv(request, response)
 
     def _got_resource(self, client, request, response):
         if response.code != "200":
@@ -454,10 +410,10 @@ class DownloadManager:
             compose(request, method="GET", uri=self.uri, keepalive=False)
             request["range"] = "bytes=%s" % byterange
             if not client:
-                client = Client()
-            client.notify_success = self._got_resource_piece
-            client.responsebody = afile
-            client.send(request)
+                client = Client(self)
+            response = Message()
+            response.body = afile
+            client.sendrecv(request, response)
 
     def _got_resource_piece(self, client, request, response):
         response.body.close()
@@ -537,9 +493,17 @@ HELP = USAGE +								\
 "  -V         : Print version number and exit.\n"			\
 "  -v         : Run the program in verbose mode.\n"
 
-class VerboseClient(Client):
+class DefaultController(ClientController):
     def __init__(self):
-        Client.__init__(self)
+        self.print_headers = None
+
+    def got_response(self, client, request, response):
+        if self.print_headers:
+            self.print_headers(client, request, response)
+
+class VerboseController(DefaultController):
+    def __init__(self):
+        self.print_headers = None
 
     #
     # If the user specified -I we must print headers we have
@@ -551,22 +515,22 @@ class VerboseClient(Client):
     # Otherwise it's fine to use standard output.
     #
 
-    def got_response(self, request, response):
-        Client.got_response(self, request, response)
+    def got_response(self, client, request, response):
         if request.method == "HEAD" or response.body == stdout:
-            self._print_stats(stderr)
+            self._print_stats(client, stderr)
         else:
-            self._print_stats(stdout)
+            self._print_stats(client, stdout)
+        DefaultController.got_response(self, client, request, response)
 
-    def _print_stats(self, f):
-        f.write("connect-time: %f s\n" % self.connecting.diff())
-        f.write("send-count: %sB\n" % unit_formatter(self.sending.length))
-        f.write("send-time: %f s\n" % self.sending.diff())
-        f.write("send-speed: %sB/s\n" % unit_formatter(self.sending.speed()))
-        f.write("recv-count: %sB\n" % unit_formatter(self.receiving.length))
-        f.write("recv-time: %f s\n" % self.receiving.diff())
-        f.write("recv-speed: %sB/s\n" % unit_formatter(self.receiving.speed()))
-        f.write("rr-time: %f s\n"%(self.receiving.stop-self.sending.start))
+    def _print_stats(self, client, f):
+        f.write("connect-time: %f s\n" % client.connecting.diff())
+        f.write("send-count: %sB\n" % unit_formatter(client.sending.length))
+        f.write("send-time: %f s\n" % client.sending.diff())
+        f.write("send-speed: %sB/s\n" % unit_formatter(client.sending.speed()))
+        f.write("recv-count: %sB\n" % unit_formatter(client.receiving.length))
+        f.write("recv-time: %f s\n" % client.receiving.diff())
+        f.write("recv-speed: %sB/s\n" % unit_formatter(client.receiving.speed()))
+        f.write("rr-time: %f s\n"%(client.receiving.stop-client.sending.start))
 
 def print_headers(client, request, response):
     prettyprint(stdout.write, "", response, eol="\r\n")
@@ -580,7 +544,7 @@ GET, HEAD, PUT, TWOCONN = range(0,4)
 
 def main(args):
     # defaults
-    new_client = VerboseClient
+    new_controller = VerboseController
     infile = stdin
     outfile = None
     method = GET
@@ -609,7 +573,7 @@ def main(args):
                 log.exception()
                 exit(1)
         elif name == "-s":
-            new_client = Client
+            new_controller = DefaultController
         elif name == "-T":
             method = PUT
             if value == "-":
@@ -641,6 +605,7 @@ def main(args):
             DownloadManager(uri)
         loop()
     else:
+        controller = new_controller()
         if method == GET:
             #
             # If the output file is not specified we are able to download
@@ -659,8 +624,12 @@ def main(args):
                         continue
                 else:
                     ofile = outfile
-                client = new_client()
-                client.get(uri, outfile=ofile)
+                client = Client(controller)
+                request = Message()
+                compose(request, method="GET", uri=uri, keepalive=False)
+                response = Message()
+                response.body = ofile
+                client.sendrecv(request, response)
                 if outfile != None:
                     loop()
                     if outfile != stdout:
@@ -678,9 +647,11 @@ def main(args):
                 loop()
         elif method == HEAD:
             for uri in arguments:
-                client = new_client()
-                client.notify_success = print_headers
-                client.head(uri)
+                client = Client(controller)
+                controller.print_headers = print_headers
+                request = Message()
+                compose(request, method="HEAD", uri=uri, keepalive=False)
+                client.sendrecv(request)
             loop()
         elif method == PUT:
             #
@@ -698,8 +669,10 @@ def main(args):
                 log.warning("We might run out of memory because of that")
                 infile = StringIO(stdin.read())
             for uri in arguments:
-                client = new_client()
-                client.put(uri, infile=infile)
+                client = Client(controller)
+                request = Message()
+                compose(request, method="PUT", uri=uri, keepalive=False)
+                client.sendrecv(request)
                 loop()
                 safe_seek(infile, 0, SEEK_SET)
 
