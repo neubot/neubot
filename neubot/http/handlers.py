@@ -142,9 +142,9 @@ class Handler:
     # we don't want to delay OTHER writable streams' send().
     #
 
-    def bufferize(self, stringio):
+    def bufferize(self, x):
         if not self.isclosed:
-            self.sendqueue.append(stringio)
+            self.sendqueue.append(x)
 
     def flush(self, flush_success, flush_progress=None, flush_error=None):
         if not self.isclosed:
@@ -152,16 +152,21 @@ class Handler:
             self.flush_progress = flush_progress
             self.flush_error = flush_error
             length = 0
-            for stringio in self.sendqueue:
-                length += file_length(stringio)
+            for x in self.sendqueue:
+                if isinstance(x, basestring):
+                    length += len(x)
+                    continue
+                length += file_length(x)
             if length <= 8000:
                 data = []
-                for stringio in self.sendqueue:
-                    data.append(stringio.read())
+                for x in self.sendqueue:
+                    if isinstance(x, basestring):
+                        data.append(x)
+                        continue
+                    data.append(x.read())
                 data = "".join(data)
-                stringio = StringIO(data)
                 self.sendqueue.clear()
-                self.sendqueue.append(stringio)
+                self.sendqueue.append(data)
             self._do_flush()
         else:
             if flush_error:
@@ -177,8 +182,12 @@ class Handler:
                 if notify:
                     notify()
                 break
-            stringio = self.sendqueue[0]
-            data = stringio.read(262144)
+            x = self.sendqueue[0]
+            if isinstance(x, basestring):
+                self.sendqueue.popleft()
+                self.stream.send(x, self._flush_progress)
+                break
+            data = x.read(262144)
             if not data:
                 self.sendqueue.popleft()
                 continue
