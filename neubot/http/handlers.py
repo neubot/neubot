@@ -27,16 +27,6 @@ from neubot.net.pollers import sched
 from collections import deque
 from neubot import log
 
-# Possible states of the receiver
-(IDLE, BOUNDED, UNBOUNDED, CHUNK, CHUNK_END, FIRSTLINE,
- HEADER, CHUNK_LENGTH, TRAILER, ERROR) = range(0,10)
-
-# Accepted HTTP protocols
-PROTOCOLS = ["HTTP/1.0", "HTTP/1.1"]
-
-# Maximum allowed line length
-MAXLINE = 1<<19
-
 class Receiver:
     def closing(self):
         pass
@@ -62,6 +52,19 @@ class Receiver:
     def end_of_body(self):
         pass
 
+# Possible states of the receiver
+(IDLE, BOUNDED, UNBOUNDED, CHUNK, CHUNK_END, FIRSTLINE,
+ HEADER, CHUNK_LENGTH, TRAILER, ERROR) = range(0,10)
+
+# Accepted HTTP protocols
+PROTOCOLS = ["HTTP/1.0", "HTTP/1.1"]
+
+# Maximum allowed line length
+MAXLINE = 1<<19
+
+# flags
+ISCLOSED = 1<<0
+
 class Handler:
 
     #
@@ -77,7 +80,7 @@ class Handler:
     def __init__(self, stream):
         self.stream = stream
         self.stream.notify_closing = self._closing
-        self.isclosed = False
+        self.flags = 0
         # sending
         self.sendqueue = deque()
         self.flush_success = None
@@ -93,13 +96,13 @@ class Handler:
         pass
 
     def passiveclose(self):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             sched(30, self.close)
             self.state = IDLE
 
     def close(self, check_eof=False):
-        if not self.isclosed:
-            self.isclosed = True
+        if not (self.flags & ISCLOSED):
+            self.flags |= ISCLOSED
             unsched(30, self.close)
             if self.receiver:
                 if check_eof and self.stream.eof and self.state == UNBOUNDED:
@@ -119,38 +122,25 @@ class Handler:
         self.close(check_eof=True)
 
     #
-    # The code below compacts small messages.  And this is done
-    # because we want to pass the socket layer a single buffer
-    # that contains the whole message, rather than some few very
-    # small buffers (and so the socket layer might send one single
-    # small packet instead of two very small packets.)
-    # In _do_flush() we read pieces up to 256 KiB from each string-
-    # io or file that is appended to our sendqueue.  The value of
-    # 256 KiB is a compromise--a small value is not likely to block
-    # the read(2) when reading from the disk, but might slow down
-    # the transfer speed (between neubot/0.1.2 and neubot/0.1.4 we
-    # used 8000 B and that caused *major* slowdowns).  Probably the
-    # best solution here is not to rely on "magic" numbers but to
-    # use non-blocking I/O for files.
-    # For delayed responses where the client has already closed the
-    # connection, close() should already have been invoked by the
-    # stream code, but the class should be alive because of the ref
-    # kept in neubot/notify.py.  And when the notify code invokes
-    # bufferize and flushes the senqueue nothing harmful will happen
-    # because .isclosed is protecting us.
-    # In _do_flush() we don't loop after a successful send because
-    # we don't want to delay OTHER writable streams' send().
+    # bufferize/flush
     #
 
     def bufferize(self, x):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             self.sendqueue.append(x)
 
     def flush(self, flush_success, flush_progress=None, flush_error=None):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             self.flush_success = flush_success
             self.flush_progress = flush_progress
             self.flush_error = flush_error
+            #
+            # Compact small messages expecially when both headers and
+            # body are in memory and hope that the message is so small
+            # that takes just a single L2 packet, and so the protocol
+            # might be able to suck up the message with just a single
+            # recv().
+            #
             length = 0
             for x in self.sendqueue:
                 if isinstance(x, basestring):
@@ -181,18 +171,24 @@ class Handler:
                 self.flush_error = None
                 if notify:
                     notify()
-                break
+                return
             x = self.sendqueue[0]
             if isinstance(x, basestring):
                 self.sendqueue.popleft()
                 self.stream.send(x, self._flush_progress)
-                break
+                return
+            #
+            # This used to be 8 KiB, but when reading
+            # from a StringIO the transfer was very slow
+            # and so I've raised it to 256 KiB, which
+            # yields more reasonable speeds.
+            #
             data = x.read(262144)
             if not data:
                 self.sendqueue.popleft()
                 continue
             self.stream.send(data, self._flush_progress)
-            break
+            return
 
     def _flush_progress(self, stream, data):
         if self.flush_progress:
@@ -200,30 +196,22 @@ class Handler:
         self._do_flush()
 
     #
-    # The more we bufferize the slower we are--and so try to consume
-    # as much as possible of each incoming piece of data.
-    # By default we read line-by-line, unless we know the size of the
-    # next body piece--and that's exactly how HTTP works from a low
-    # abstraction level's perspective: you read headers (a sequence of
-    # lines) and then you decide the body length (either via content-
-    # length or reading the chunk-length, which is another line), and
-    # at this point you know the length of the next piece, you read it,
-    # and so forth.
-    # In case of protocol error the higher layers will invoke close()
-    # and so we must check .isclosed after each iteration in the loop
-    # that processes incoming data.
     # Between attach() and start_receiving() the underlying stream could
     # become None because the client might close the connection.  So, be
     # very careful and check self.isclosed before using the stream.
     #
 
     def attach(self, receiver):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             self.receiver = receiver
             self.state = FIRSTLINE
 
+    #
+    # receive
+    #
+
     def start_receiving(self):
-        if not self.isclosed:
+        if not (self.flags & ISCLOSED):
             self.stream.recv(8000, self._got_data)
 
     def _got_data(self, stream, data):
@@ -232,9 +220,20 @@ class Handler:
             self.incoming.append(data)
             data = "".join(self.incoming)
             del self.incoming[:]
+        #
+        # The less we bufferize and the faster we are because we
+        # don't suffer slowdowns copying data around and we don't
+        # cause too much fragmentation.  So, the strategy is that
+        # we consume as much as possible of each incoming piece.
+        #
         offset = 0
         length = len(data)
         while length > 0:
+            #
+            # When reading HTTP either you know the length (of the
+            # whole body, of a chunk, etc.) or you need to read at
+            # least one line (an header, the chunk-lenght, etc).
+            #
             if self.left > 0:
                 count = min(self.left, length)
                 piece = buffer(data, offset, count)
@@ -254,7 +253,12 @@ class Handler:
                 length -= (index - offset)
                 offset = index
                 self._got_line(line)
-            if self.isclosed:
+            #
+            # Be careful because both _got_piece() and _got_line()
+            # might invoke self.close()--this happens for example
+            # in case of protocol error.
+            #
+            if self.flags & ISCLOSED:
                 return
         if length > 0:
             remainder = data[offset:]
