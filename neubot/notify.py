@@ -18,11 +18,14 @@
 
 #
 # Subscribe/publish events
+# Initially an event has a timestamp of zero, and each time
+# you publish an event its timestamp is updated to the current
+# time, using ticks().
 #
 
 from collections import deque
 from neubot.net.pollers import sched
-from neubot import log
+from neubot.utils import ticks
 
 INTERVAL = 10
 
@@ -32,9 +35,11 @@ STATECHANGE = "statechange"
 class Notifier:
     def __init__(self):
         sched(INTERVAL, self.periodic)
+        self.timestamps = {}
         self.subscribers = {}
 
     def subscribe(self, event, func, context):
+        #print "SUBSCRIBE", event, func, context
         if not self.subscribers.has_key(event):
             queue = deque()
             self.subscribers[event] = queue
@@ -43,6 +48,8 @@ class Notifier:
         queue.append((func, context))
 
     def publish(self, event):
+        #print "PUBLISH", event
+        self.timestamps[event] = int(1000 * ticks())
         if self.subscribers.has_key(event):
             queue = self.subscribers[event]
             del self.subscribers[event]
@@ -54,10 +61,34 @@ class Notifier:
         subscribers = self.subscribers
         self.subscribers = {}
         for event, queue in subscribers.items():
+            #print "FORCE-PUBLISH", event
             for func, context in queue:
                 func(event, context)
+
+    def get_event_timestamp(self, event):
+        if self.timestamps.has_key(event):
+            return str(self.timestamps[event])
+        else:
+            return "0"
+
+    #
+    # XXX Note that the following function will raise
+    # a ValueError exception when it fails to convert the
+    # timestamp parameter into a number.  We don't catch
+    # it because we assume the caller will catch unhandled
+    # exceptions and return '500 Internal Server Error'
+    # to the client.
+    #
+
+    def needs_publish(self, event, timestamp):
+        if self.timestamps.has_key(event):
+            return int(timestamp) < self.timestamps[event]
+        else:
+            return False
 
 notifier = Notifier()
 subscribe = notifier.subscribe
 publish = notifier.publish
 periodic = notifier.periodic
+get_event_timestamp = notifier.get_event_timestamp
+needs_publish = notifier.needs_publish
