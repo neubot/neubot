@@ -26,6 +26,7 @@ from neubot import log
 
 INTERVAL = 10
 
+RENEGOTIATE = "renegotiate"
 STATECHANGE = "statechange"
 
 class Notifier:
