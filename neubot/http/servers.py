@@ -72,7 +72,7 @@ class SimpleConnection(Receiver):
         self.handler = None
         self.message = None
         self.keepalive = True
-        self.nleft = 7
+        self.nleft = 128
 
     def __del__(self):
         pass
