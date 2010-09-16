@@ -57,7 +57,7 @@ _install:
 	@for D in `find neubot/ -type d`; do				\
 	    install -m755 -d $(DESTDIR)$(PREFIX)/share/$$D || exit 1;	\
 	done
-	@for F in `find neubot/ -type f -name \*.py`; do		\
+	@for F in `find neubot/ -type f`; do				\
 	    install -m644 $$F $(DESTDIR)$(PREFIX)/share/$$F || exit 1;	\
 	done
 	@install -d $(DESTDIR)/etc/neubot
