@@ -143,7 +143,7 @@ class SimpleConnection(Receiver):
     def _access_log(self, request, response):
         address = self.handler.stream.peername[0]
         x = gmtime()
-        time = "%02d/%s/%04d:%02d:%02d:%02d -0000" % (x.tm_mday,MONTH[x.tm_mon],
+        xt = "%02d/%s/%04d:%02d:%02d:%02d -0000" % (x.tm_mday,MONTH[x.tm_mon],
          x.tm_year, x.tm_hour, x.tm_min, x.tm_sec)
         requestline = "%s %s %s" % (request.method,request.uri,request.protocol)
         statuscode = response.code
@@ -152,7 +152,7 @@ class SimpleConnection(Receiver):
             nbytes = response["content-length"]
             if nbytes == "0":
                 nbytes = "-"
-        log.log_access("%s - - [%s] \"%s\" %s %s" % (address, time, requestline,
+        log.log_access("%s - - [%s] \"%s\" %s %s" % (address, xt, requestline,
          statuscode, nbytes))
 
     def closing(self):
