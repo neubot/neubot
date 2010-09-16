@@ -35,6 +35,7 @@ from sys import argv
 from neubot import log
 from neubot import version
 from getopt import GetoptError
+from neubot.state import state
 from getopt import getopt
 from sys import stderr
 
@@ -733,14 +734,21 @@ class SpeedtestClient(ClientController):
 
     def _update_speedtest(self):
         if self.flags & FLAG_NEGOTIATE:
+            state.set_activity("negotiate").commit()
             self.negotiate.start()
         elif self.flags & FLAG_LATENCY:
+            state.set_activity("test", ["latency", "download", "upload"],
+                               "speedtest")
+            state.set_task("latency").commit()
             self.latency.start()
         elif self.flags & FLAG_DOWNLOAD:
+            state.set_task("download").commit()
             self.download.start()
         elif self.flags & FLAG_UPLOAD:
+            state.set_task("upload").commit()
             self.upload.start()
         elif self.flags & FLAG_COLLECT:
+            state.set_activity("collect").commit()
             self.collect.start()
         else:
             self.flags |= FLAG_SUCCESS
