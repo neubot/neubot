@@ -16,11 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from sys import path
 if __name__ == "__main__":
+    from sys import path
     path.insert(0, ".")
 
-from neubot.utils import safe_seek
 from StringIO import StringIO
 from neubot.net import disable_stats
 from neubot.net import enable_stats
@@ -28,6 +27,7 @@ from neubot.http.messages import Message
 from neubot.utils import unit_formatter
 from neubot.http.messages import compose
 from neubot.http.clients import Client
+from neubot.http.clients import ClientController
 from neubot.net.pollers import loop
 from neubot.utils import timestamp
 from sys import stdout
@@ -38,6 +38,303 @@ from getopt import GetoptError
 from getopt import getopt
 from sys import stderr
 
+from os import environ
+from neubot.utils import ticks
+from neubot.net.pollers import sched
+from neubot.notify import publish
+from neubot.notify import subscribe
+from neubot.notify import RENEGOTIATE
+from ConfigParser import RawConfigParser
+from neubot.http.servers import Connection
+from xml.etree.ElementTree import ElementTree
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
+from neubot.http.utils import nextstate
+from neubot.http.utils import parse_range
+from neubot.http.handlers import ERROR
+from neubot.http.servers import Server
+from neubot.utils import file_length
+from time import time
+from uuid import UUID
+from uuid import uuid4
+
+def XML_get_scalar(tree, name):
+    elements = tree.findall(name)
+    if len(elements) > 1:
+        raise ValueError("More than one '%s' element" % name)
+    if len(elements) == 0:
+        return ""
+    element = elements[0]
+    return element.text
+
+def XML_get_vector(tree, name):
+    vector = []
+    elements = tree.findall(name)
+    for element in elements:
+        vector.append(element.text)
+    return vector
+
+#
+# <SpeedtestCollect>
+#     <timestamp>1283790303</timestamp>
+#     <internalAddress>192.168.0.3</internalAddress>
+#     <realAddress>130.192.47.76</realAddress>
+#     <remoteAddress>130.192.47.84</remoteAddress>
+#     <connectTime>0.8</connectTime>
+#     <connectTime>0.9</connectTime>
+#     <latency>0.93</latency>
+#     <latency>0.92</latency>
+#     <downloadSpeed>23</downloadSpeed>
+#     <downloadSpeed>22</downloadSpeed>
+#     <uploadSpeed>7.0</uploadSpeed>
+#     <uploadSpeed>7.1</uploadSpeed>
+# </SpeedtestCollect>
+#
+
+class SpeedtestCollect:
+    def __init__(self):
+        self.timestamp = 0
+        self.internalAddress = ""
+        self.realAddress = ""
+        self.remoteAddress = ""
+        self.connectTime = []
+        self.latency = []
+        self.downloadSpeed = []
+        self.uploadSpeed = []
+
+    def parse(self, stringio):
+        tree = ElementTree()
+        try:
+            tree.parse(stringio)
+        except:
+            raise ValueError("Can't parse XML body")
+        else:
+            self.timestamp = XML_get_scalar(tree, "timestamp")
+            self.internalAddress = XML_get_scalar(tree, "internalAddress")
+            self.realAddress = XML_get_scalar(tree, "realAddress")
+            self.remoteAddress = XML_get_scalar(tree, "remoteAddress")
+            self.connectTime = XML_get_vector(tree, "connectTime")
+            self.latency = XML_get_vector(tree, "latency")
+            self.downloadSpeed = XML_get_vector(tree, "downloadSpeed")
+            self.uploadSpeed = XML_get_vector(tree, "uploadSpeed")
+
+RESTRICTED = [
+    "/speedtest/latency",
+    "/speedtest/download",
+    "/speedtest/upload",
+    "/speedtest/collect",
+]
+
+class SpeedtestServer(Server):
+    def __init__(self, config):
+        self.config = config
+        Server.__init__(self, address=config.address, port=config.port)
+        self.tokens = set()
+        self.timestamp = 0
+        self.table = {}
+        self._init_table()
+        sched(5, self._do_prune_tokens)
+
+    def _init_table(self):
+        self.table["/speedtest/negotiate"] = self._do_negotiate
+        self.table["/speedtest/latency"] = self._do_latency
+        self.table["/speedtest/download"] = self._do_download
+        self.table["/speedtest/upload"] = self._do_upload
+        self.table["/speedtest/collect"] = self._do_collect
+
+    def bind_failed(self):
+        exit(1)
+
+    def got_request_headers(self, connection, request):
+        ret = True
+        if self.config.only_auth and request.uri in RESTRICTED:
+            auth = request["Authorization"]
+            if not auth in self.tokens:
+                log.warning("* Connection %s: Forbidden" % (
+                 connection.handler.stream.logname))
+                ret = False
+        return ret
+
+    def got_request(self, connection, request):
+        try:
+            self.process_request(connection, request)
+        except KeyboardInterrupt:
+            raise
+        except:
+            log.exception()
+            response = Message()
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
+
+    def process_request(self, connection, request):
+        try:
+            self.table[request.uri](connection, request)
+        except KeyError:
+            response = Message()
+            compose(response, code="404", reason="Not Found")
+            connection.reply(request, response)
+
+    #
+    # A client is allowed to access restricted URIs if: (i) either
+    # only_auth is False, (ii) or the authorization token is valid.
+    # Here we decide how to give clients authorization tokens.
+    # We start with a very simple (to implement) rule.  We give the
+    # client a token and we remove the token after 30+ seconds, or
+    # when the authorized client uploads the results.
+    # Wish list:
+    # - Revoke auth on connection lost. (?)
+    # - Guarantee FIFO service.
+    # - Return queue position too.
+    #
+
+    def _do_renegotiate(self, event, atuple):
+        connection, request = atuple
+        self._do_negotiate(connection, request, True)
+
+    def _do_prune_tokens(self):
+        sched(5, self._do_prune_tokens)
+        if ticks() - self.timestamp > 30:
+            self.tokens.clear()
+            self.timestamp = 0
+            publish(RENEGOTIATE)
+
+    def _do_negotiate(self, connection, request, recurse=False):
+        if len(self.tokens) >= 1:
+            if recurse:
+                root = Element("SpeedtestNegotiate_Response")
+                tree = ElementTree(root)
+                #
+                # NOTE Now the Handler supports sending a body that
+                # is not a StringIO, so it should be nice to tweak
+                # Message() to support that as well, so we can avoid
+                # to wrap the body using a StringIO.
+                #
+                stringio = StringIO()
+                tree.write(stringio, encoding="utf-8")
+                stringio.seek(0)
+                response = Message()
+                compose(response, code="200", reason="Ok",
+                 body=stringio, mimetype="application/xml")
+                connection.reply(request, response)
+                return
+            subscribe(RENEGOTIATE, self._do_renegotiate,
+                      (connection, request))
+            return
+        # auth
+        token = str(uuid4())
+        self.tokens.add(token)
+        self.timestamp = ticks()
+        # XML
+        root = Element("SpeedtestNegotiate_Response")
+        authorization = SubElement(root, "authorization")
+        authorization.text = token
+        tree = ElementTree(root)
+        stringio = StringIO()
+        tree.write(stringio, encoding="utf-8")
+        stringio.seek(0)
+        response = Message()
+        compose(response, code="200", reason="Ok",
+         body=stringio, mimetype="application/xml")
+        connection.reply(request, response)
+
+    def _do_latency(self, connection, request):
+        response = Message()
+        compose(response, code="200", reason="Ok")
+        connection.reply(request, response)
+
+    def _do_download(self, connection, request):
+        response = Message()
+        # open
+        try:
+            body = open(self.config.path, "rb")
+        except (IOError, OSError):
+            log.exception()
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
+            return
+        # range
+        if request["range"]:
+            total = file_length(body)
+            # parse
+            try:
+                first, last = parse_range(request)
+            except ValueError:
+                log.exception()
+                compose(response, code="400", reason="Bad Request")
+                connection.reply(request, response)
+                return
+            # XXX read() assumes there is enough core
+            body.seek(first)
+            partial = body.read(last - first + 1)
+            response["content-range"] = "bytes %d-%d/%d" % (first, last, total)
+            body = StringIO(partial)
+            code, reason = "206", "Partial Content"
+        else:
+            code, reason = "200", "Ok"
+        compose(response, code=code, reason=reason, body=body,
+                mimetype="application/octet-stream")
+        connection.reply(request, response)
+
+    def _do_upload(self, connection, request):
+        response = Message()
+        compose(response, code="200", reason="Ok")
+        connection.reply(request, response)
+
+    def _do_collect(self, connection, request):
+        response = Message()
+        collect = SpeedtestCollect()
+        try:
+            collect.parse(request.body)
+        except ValueError:
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
+            return
+#       database.storeCollect(collect)
+        compose(response, code="200", reason="Ok")
+        connection.reply(request, response)
+        # de-auth
+        self.tokens.clear()
+        self.timestamp = 0
+        publish(RENEGOTIATE)
+
+#
+# [speedtest]
+# address: 0.0.0.0
+# only_auth: False
+# path: /nonexistent
+# port: 80
+#
+
+class SpeedtestConfig:
+    def __init__(self):
+        self.address = "0.0.0.0"
+        self.only_auth = False
+        self.path = ""
+        self.port = "80"
+
+#   def check(self):
+#       pass
+
+    def readfp(self, stringio):
+        parser = RawConfigParser()
+        parser.readfp(stringio)
+        if parser.has_option("speedtest", "address"):
+            self.address = parser.get("speedtest", "address")
+        if parser.has_option("speedtest", "only_auth"):
+            self.only_auth = parser.getboolean("speedtest", "only_auth")
+        if parser.has_option("speedtest", "path"):
+            self.path = parser.get("speedtest", "path")
+        if parser.has_option("speedtest", "port"):
+            self.port = parser.get("speedtest", "port")
+
+    def read(self, filename):
+        try:
+            afile = open(filename, "r")
+        except (IOError, OSError):
+            pass
+        else:
+            self.readfp(afile)
+
 #
 # The purpose of this class is that of emulating the behavior of the
 # test you can perform at speedtest.net.  As you can see, there is
@@ -46,281 +343,523 @@ from sys import stderr
 # (ii) improve our upload strategy.
 #
 
+class SpeedtestHelper:
+    def __init__(self, speedtest):
+        self.speedtest = speedtest
+
+    def start(self):
+        pass
+
+    def got_response(self, client, response):
+        pass
+
+    def cleanup(self):
+        self.speedtest = None
+
+#
+# Here we measure the time required to retrieve just the headers of a
+# resource, and this is an in some way related to the round-trip-time
+# between the client and the server.
+#
+
+REPEAT = 10
+
+class Latency(SpeedtestHelper):
+    def __init__(self, speedtest):
+        SpeedtestHelper.__init__(self, speedtest)
+        self.connect = []
+        self.complete = []
+        self.latency = []
+        self.repeat = 1
+
+    def start(self):
+        log.start("* Latency run #%d" % self.repeat)
+        for client in self.speedtest.clients:
+            self._start_one(client)
+
+    def _start_one(self, client):
+        m = Message()
+        compose(m, method="HEAD", uri=self.speedtest.uri + "latency")
+        if self.speedtest.negotiate.authorization:
+            m["authorization"] = self.speedtest.negotiate.authorization
+        client.sendrecv(m)
+
+    def got_response(self, client, response):
+        if response.code != "200":
+            self.speedtest.bad_response(response)
+            return
+        if client.connecting.diff() > 0:
+            self.connect.append(client.connecting.diff())
+            client.connecting.start = client.connecting.stop = 0
+        latency = client.receiving.stop - client.sending.start
+        self.latency.append(latency)
+        self.complete.append(client)
+        if len(self.complete) == len(self.speedtest.clients):
+            self._pass_complete()
+
+    def _pass_complete(self):
+        log.complete()
+        self.repeat = self.repeat + 1
+        if self.repeat <= REPEAT:
+            del self.complete[:]
+            self.start()
+            return
+        self.speedtest.complete()
+
+#
+# Here we measure download speed.  Note that it is possible to employ
+# more than one connection to reduce the effect of distance (in terms
+# of RTT) from the origin server.
+# This implementation is still rather prototypal and indeed we need to
+# follow-up with the following improvements:
+#
+# 1. Do not measure the speed as the average of the speed seen by each
+#    connection because this might become inaccurate if connections do
+#    not start and finish nearly at the same time.
+#
+
+MIN_DOWNLOAD = 1<<16
+MAX_DOWNLOAD = 1<<26
+
+class Download(SpeedtestHelper):
+    def __init__(self, speedtest):
+        SpeedtestHelper.__init__(self, speedtest)
+        self.length = MIN_DOWNLOAD
+        self.complete = []
+        self.time = []
+        self.speed = []
+
+    def start(self):
+        log.start("* Download %d bytes" % self.length)
+        for client in self.speedtest.clients:
+            self._start_one(client)
+
+    def _start_one(self, client):
+        m = Message()
+        compose(m, method="GET", uri=self.speedtest.uri + "download")
+        m["range"] = "bytes=0-%d" % self.length
+        if self.speedtest.negotiate.authorization:
+            m["authorization"] = self.speedtest.negotiate.authorization
+        client.sendrecv(m)
+
+    def got_response(self, client, response):
+        if response.code not in ["200", "206"]:
+            self.speedtest.bad_response(response)
+            return
+        self.time.append(client.receiving.diff())
+        self.speed.append(client.receiving.speed())
+        self.complete.append(client)
+        if len(self.complete) == len(self.speedtest.clients):
+            self.speedtest.upload.body = response.body.read()
+            self._pass_complete()
+
+    def _pass_complete(self):
+        log.complete()
+        # time
+        dtime = sum(self.time)
+        dtime /= len(self.time)
+        if dtime < 1 and self.length < MAX_DOWNLOAD:
+            self.length <<= 1
+            del self.complete[:]
+            del self.time[:]
+            del self.speed[:]
+            self.start()
+            return
+        del self.time[:]
+        self.time.append(dtime)
+        # speed
+        speed = sum(self.speed)
+        del self.speed[:]
+        self.speed.append(speed)
+        # done
+        self.speedtest.complete()
+
+#
+# Here we measure upload speed.  Note that it is possible to employ
+# more than one connection to reduce the effect of distance (in terms
+# of RTT) from the origin server.
+# This implementation is still rather prototypal and indeed we need to
+# follow-up with the following improvements:
+#
+# 1. Do not measure the speed as the average of the speed seen by each
+#    connection because this might become inaccurate if connections do
+#    not start and finish nearly at the same time.
+#
+
+MIN_UPLOAD = 1<<15
+#MAX_UPLOAD = 1<<25
+
+class Upload(SpeedtestHelper):
+    def __init__(self, speedtest):
+        SpeedtestHelper.__init__(self, speedtest)
+        self.length = MIN_UPLOAD
+        self.body = "\0" * 1048576
+        self.complete = []
+        self.time = []
+        self.speed = []
+
+    def start(self):
+        log.start("* Upload %d bytes" % self.length)
+        for client in self.speedtest.clients:
+            self._start_one(client)
+
+    def _start_one(self, client):
+        m = Message()
+        body = StringIO(self.body[:self.length])
+        compose(m, method="POST", uri=self.speedtest.uri + "upload",
+                body=body, mimetype="application/octet-stream")
+        if self.speedtest.negotiate.authorization:
+            m["authorization"] = self.speedtest.negotiate.authorization
+        client.sendrecv(m)
+
+    def got_response(self, client, response):
+        if response.code != "200":
+            self.speedtest.bad_response(response)
+            return
+        self.time.append(client.sending.diff())
+        self.speed.append(client.sending.speed())
+        self.complete.append(client)
+        if len(self.complete) == len(self.speedtest.clients):
+            self._pass_complete()
+
+    def _pass_complete(self):
+        log.complete()
+        # time
+        utime = sum(self.time)
+        utime /= len(self.time)
+        if utime < 1 and self.length < len(self.body):
+            self.length <<= 1
+            del self.complete[:]
+            del self.time[:]
+            del self.speed[:]
+            self.start()
+            return
+        del self.time[:]
+        self.time.append(utime)
+        # speed
+        speed = sum(self.speed)
+        del self.speed[:]
+        self.speed.append(speed)
+        # done
+        self.speedtest.complete()
+
+#
+# <SpeedtestNegotiate_Response>
+#     <authorization>ac2fcbf3-a1db-4bdb-836d-533c2aee9677</authorization>
+#     <queuePos>7</queuePos>
+#     <queueLen>21</queueLen>
+# </SpeedtestNegotiate_Response>
+#
+# Note that the response should contain either an authorization token
+# or the current position in the queue.  Also note that parse() should
+# raise ValueError if the message is not well-formed, for example b/c
+# the authorization is not an UUID.
+#
+
+class SpeedtestNegotiate_Response:
+    def __init__(self):
+        self.authorization = ""
+        self.queuePos = 0
+        self.queueLen = 0
+
+    def parse(self, stringio):
+        tree = ElementTree()
+        try:
+            tree.parse(stringio)
+        except:
+            raise ValueError("Can't parse XML body")
+        else:
+            authorization = XML_get_scalar(tree, "authorization")
+            if authorization:
+                self.authorization = UUID(authorization)
+            queuePos = XML_get_scalar(tree, "queuePos")
+            if queuePos:
+                self.queuePos = int(queuePos)
+            queueLen = XML_get_scalar(tree, "queueLen")
+            if queueLen:
+                self.queueLen = int(queueLen)
+
+class Negotiate(SpeedtestHelper):
+    def __init__(self, speedtest):
+        SpeedtestHelper.__init__(self, speedtest)
+        self.authorization = ""
+
+    def start(self):
+        client = self.speedtest.clients[0]
+        log.start("* Negotiate permission to take the test")
+        m = Message()
+        compose(m, method="GET", uri=self.speedtest.uri + "negotiate")
+        client.sendrecv(m)
+
+    def got_response(self, client, response):
+        if response.code != "200":
+            self.speedtest.bad_response(response)
+            return
+        log.complete()
+        negotiation = SpeedtestNegotiate_Response()
+        try:
+            negotiation.parse(response.body)
+        except ValueError:
+            log.error("* Bad response message")
+            log.exception()
+            self.speedtest.bad_response(response)
+            return
+        if not negotiation.authorization:
+            log.info("* No authorization, waiting for our turn")
+            self.start()
+            return
+        self.authorization = str(negotiation.authorization)
+        log.info("* Authorization: %s" % self.authorization)
+        self.speedtest.complete()
+
+class Collect(SpeedtestHelper):
+    def __init__(self, speedtest):
+        SpeedtestHelper.__init__(self, speedtest)
+
+    def start(self):
+        client = self.speedtest.clients[0]
+        log.start("* Collecting results")
+        # XML
+        root = Element("SpeedtestCollect")
+        timestamp = SubElement(root, "timestamp")
+        timestamp.text = str(time())
+        internalAddress = SubElement(root, "internalAddress")
+        internalAddress.text = client.handler.stream.myname[0]          # XXX
+#       realAddress = SubElement(root, "realAddress")
+#       realAddress.text = ...
+        remoteAddress = SubElement(root, "remoteAddress")
+        remoteAddress.text = client.handler.stream.peername[0]          # XXX
+        for t in self.speedtest.latency.connect:
+            connectTime = SubElement(root, "connectTime")
+            connectTime.text = str(t)
+        for t in self.speedtest.latency.latency:
+            latency = SubElement(root, "latency")
+            latency.text = str(t)
+        for s in self.speedtest.download.speed:
+            downloadSpeed = SubElement(root, "downloadSpeed")
+            downloadSpeed.text = str(s)
+        for s in self.speedtest.upload.speed:
+            uploadSpeed = SubElement(root, "uploadSpeed")
+            uploadSpeed.text = str(s)
+        tree = ElementTree(root)
+        stringio = StringIO()
+        tree.write(stringio, encoding="utf-8")
+        stringio.seek(0)
+        # HTTP
+        m = Message()
+        compose(m, method="POST", uri=self.speedtest.uri + "collect",
+                body=stringio, mimetype="application/xml")
+        if self.speedtest.negotiate.authorization:
+            m["authorization"] = self.speedtest.negotiate.authorization
+        client.sendrecv(m)
+
+    def got_response(self, client, response):
+        if response.code != "200":
+            self.speedtest.bad_response(response)
+            return
+        log.complete()
+        self.speedtest.complete()
+
+#
+# We assume that the webserver contains two empty resources,
+# named "/latency" and "/upload" and one BIG resource named
+# "/download".  The user has the freedom to choose the base
+# URI, and so different servers might put these three files
+# at diffent places.
+#
+
 FLAG_LATENCY = (1<<0)
 FLAG_DOWNLOAD = (1<<1)
 FLAG_UPLOAD = (1<<2)
 FLAG_ALL = FLAG_LATENCY|FLAG_DOWNLOAD|FLAG_UPLOAD
 
-class SpeedtestClient:
+#
+# These two flags are set automatically unless we are running
+# in debug mode (option -x).  The purpose of the debug mode is
+# that of testing the speedtest without having to pass through
+# the negotiation and the collect phases.  Of course by default
+# we DON'T run in debug mode.
+#
+FLAG_NEGOTIATE = (1<<3)
+FLAG_COLLECT = (1<<4)
+
+#
+# Other internal flags
+#
+FLAG_CLEANUP = (1<<5)
+FLAG_SUCCESS = (1<<6)
+
+class SpeedtestClient(ClientController):
+    def __init__(self, uri, nclients, flags, debug=False):
+        self.negotiate = Negotiate(self)
+        self.latency = Latency(self)
+        self.download = Download(self)
+        self.upload = Upload(self)
+        self.collect = Collect(self)
+        self.clients = []
+        self.uri = uri
+        self.flags = flags
+        if not debug:
+            self.flags |= FLAG_NEGOTIATE|FLAG_COLLECT
+        self._start_speedtest(nclients)
+
+    def _doCleanup(self):
+        if self.flags & FLAG_CLEANUP:
+            return
+        self.flags |= FLAG_CLEANUP
+        for client in self.clients:
+            if client.handler:
+                client.handler.close()
+        self.negotiate.cleanup()
+        self.latency.cleanup()
+        self.download.cleanup()
+        self.upload.cleanup()
+        self.collect.cleanup()
 
     #
-    # We assume that the webserver contains two empty resources,
-    # named "/latency" and "/upload" and one BIG resource named
-    # "/download".  The user has the freedom to choose the base
-    # URI, and so different servers might put these three files
-    # at diffent places.
     # We make sure that the URI ends with "/" because below
     # we need to append "latency", "download" and "upload" to
     # it and we don't want the result to contain consecutive
     # slashes.
     #
 
-    def __init__(self, uri, nclients, flags):
-        self.length = (1<<16)
-        self.repeat = {}
-        self.clients = []
-        self.complete = 0
-        self.connect = []
-        self.latency = []
-        self.download = []
-        self.upload = []
-        self.uri = uri
-        self.nclients = nclients
-        self.flags = flags
-        self._start_speedtest()
-
-    def _start_speedtest(self):
+    def _start_speedtest(self, nclients):
         if self.uri[-1] != "/":
             self.uri = self.uri + "/"
-        if self.flags & FLAG_LATENCY:
-            log.start("* Latency")
-            func = self._measure_latency
+        while nclients > 0:
+            self.clients.append(Client(self))
+            nclients = nclients - 1
+        self._update_speedtest()
+
+    def _update_speedtest(self):
+        if self.flags & FLAG_NEGOTIATE:
+            self.negotiate.start()
+        elif self.flags & FLAG_LATENCY:
+            self.latency.start()
         elif self.flags & FLAG_DOWNLOAD:
-            log.start("* Download %d bytes" % self.length)
-            func = self._measure_download
+            self.download.start()
         elif self.flags & FLAG_UPLOAD:
-            log.start("* Upload")
-            func = self._measure_upload
+            self.upload.start()
+        elif self.flags & FLAG_COLLECT:
+            self.collect.start()
         else:
-            func = self._speedtest_complete
-        count = 0
-        while count < self.nclients:
-            count = count + 1
-            func()
+            self.flags |= FLAG_SUCCESS
+            self._speedtest_complete()
 
-    #
-    # Measure latency
-    # We connect to the server using N different connections and
-    # we measure (i) the time required to connect and (ii) the time
-    # required to get the response to an HEAD request.
-    # We measure the time required to connect() only here and not
-    # in download or upload because we assume that the webserver
-    # supports (and whish to use) keep-alive, and so we hope to
-    # re-use the connection.
-    # XXX I am not sure whether we can define that latency or the
-    # name is incorrect/misleading.
-    #
+    def _speedtest_complete(self):
+        self._doCleanup()
+        self.speedtest_complete()
 
-    def _measure_latency(self, client=None):
-        if not client:
-            client = Client()
-        m = Message()
-        compose(m, method="HEAD", uri=self.uri + "latency")
-        client.notify_success = self._measured_latency
-        client.send(m)
-        self.repeat[client] = 5
-
-    def _measured_latency(self, client, request, response):
-        if response.code == "200":
-            if client.connecting.diff() > 0:
-                self.connect.append(client.connecting.diff())
-                client.connecting.start = client.connecting.stop = 0
-            latency = client.receiving.stop - client.sending.start
-            self.latency.append(latency)
-            self.repeat[client] = self.repeat[client] -1
-            if self.repeat[client] == 0:
-                self._latency_complete(client)
-            else:
-                client.send(request)
-        else:
-            log.error("Response: %s %s" % (response.code, response.reason))
-
-    def _latency_complete(self, client):
-        self.clients.append(client)
-        self.complete = self.complete + 1
-        if self.complete == self.nclients:
-            log.complete()
-            self.complete = 0
-            clients = self.clients
-            self.clients = []
-            if self.flags & FLAG_DOWNLOAD:
-                log.start("* Download %d bytes" % self.length)
-            elif self.flags & FLAG_UPLOAD:
-                log.start("* Upload")
-            for client in clients:
-                if self.flags & FLAG_DOWNLOAD:
-                    self._measure_download(client)
-                elif self.flags & FLAG_UPLOAD:
-                    self._measure_upload(client)
-                else:
-                    self._speedtest_complete(client)
-
-    #
-    # Measure download speed
-    # We use N connections and this should mitigate a bit the effect
-    # of distance (in terms of RTT) from the origin server.
-    #
-
-    def _measure_download(self, client=None):
-        if not client:
-            client = Client()
-        self.repeat[client] = 2
-        m = Message()
-        compose(m, method="GET", uri=self.uri + "download")
-        m["range"] = "bytes=0-%d" % self.length
-        client.notify_success = self._measured_download
-        client.send(m)
-
-    def _measured_download(self, client, request, response):
-        if response.code in ["200", "206"]:
-            speed = client.receiving.speed()
-            self.download.append(speed)
-            self.repeat[client] = self.repeat[client] -1
-            if self.repeat[client] == 0:
-                self._download_complete(client, response)
-            else:
-                client.send(request)
-        else:
-            log.error("Response: %s %s" % (response.code, response.reason))
-
-    def _download_complete(self, client, response):
-        self.clients.append(client)
-        self.complete = self.complete + 1
-        if self.complete == self.nclients:
-            log.complete()
-            self.complete = 0
-            clients = self.clients
-            self.clients = []
-            if clients[0].receiving.diff() < 1:
-                self.download = []
-                self.length <<= 1
-                log.start("* Download %d bytes" % self.length)
-                for client in clients:
-                    self._measure_download(client)
-                return
-            if self.flags & FLAG_UPLOAD:
-                body = response.body.read()
-                # there are many ADSLs around
-                body = body[:len(body)/4]
-                log.debug("Using %d bytes for upload" % len(body))
-            else:
-                body = None
-            if self.flags & FLAG_UPLOAD:
-                log.start("* Upload")
-            for client in clients:
-                if self.flags & FLAG_UPLOAD:
-                    self._measure_upload(client, StringIO(body))
-                else:
-                    self._speedtest_complete(client)
-
-    #
-    # Measure upload speed
-    # If we passed for download we receive a body that is 1/4
-    # of the one we downloaded (because there are many ADSLs
-    # around).  Otherwise, send a sequence of zeroes, even if
-    # it should be better to send random bytes.
-    #
-
-    def _measure_upload(self, client=None, body=None):
-        if not client:
-            client = Client()
-        if not body:
-            body = StringIO("\0" * 1048576)
-        self.repeat[client] = 2
-        m = Message()
-        compose(m, method="POST", uri=self.uri + "upload",
-         body=body, mimetype="application/octet-stream")
-        client.notify_success = self._measured_upload
-        client.send(m)
-
-    def _measured_upload(self, client, request, response):
-        if response.code == "200":
-            speed = client.sending.speed()
-            self.upload.append(speed)
-            self.repeat[client] = self.repeat[client] -1
-            if self.repeat[client] == 0:
-                self._upload_complete(client)
-            else:
-                # need to rewind the body
-                safe_seek(request.body, 0)
-                client.send(request)
-        else:
-            log.error("Response: %s %s" % (response.code, response.reason))
-
-    def _upload_complete(self, client):
-        self.clients.append(client)
-        self.complete = self.complete + 1
-        if self.complete == self.nclients:
-            log.complete()
-            self.complete = 0
-            clients = self.clients
-            self.clients = []
-            for client in clients:
-                self._speedtest_complete(client)
-
-    #
-    # Speedtest complete
-    # Here we wait for all the clients to terminate the test and
-    # we collect/print the results.
-    #
-
-    def _speedtest_complete(self, client=None):
-        if client and client.handler:
-            client.handler.close()
-        self.complete = self.complete + 1
-        if self.complete == self.nclients:
-            self.speedtest_complete()
-
+    # override in sub-classes
     def speedtest_complete(self):
         pass
+
+    def complete(self):
+        if self.flags & FLAG_NEGOTIATE:
+            self.flags &= ~FLAG_NEGOTIATE
+        elif self.flags & FLAG_LATENCY:
+            self.flags &= ~FLAG_LATENCY
+        elif self.flags & FLAG_DOWNLOAD:
+            self.flags &= ~FLAG_DOWNLOAD
+        elif self.flags & FLAG_UPLOAD:
+            self.flags &= ~FLAG_UPLOAD
+        elif self.flags & FLAG_COLLECT:
+            self.flags &= ~FLAG_COLLECT
+        else:
+            raise RuntimeError("Bad flags")
+        self._update_speedtest()
+
+    def bad_response(self, response):
+        log.error("* Bad response: aborting speedtest")
+        self._doCleanup()
+
+    #
+    # Here we manage callbacks from clients.
+    # The management of connection_failed() and connection_lost()
+    # is quite raw and could be refined a bit--expecially if we
+    # consider the fact that after a certain amount of HTTP requests
+    # the server might close the connection.
+    #
+
+    def connection_failed(self, client):
+        log.error("* Connection failed: aborting speedtest")
+        self._doCleanup()
+
+    def connection_lost(self, client):
+        if self.flags & FLAG_SUCCESS:
+            return
+        log.error("* Connection lost: aborting speedtest")
+        self._doCleanup()
+
+    def got_response(self, client, request, response):
+        if self.flags & FLAG_NEGOTIATE:
+            self.negotiate.got_response(client, response)
+        elif self.flags & FLAG_LATENCY:
+            self.latency.got_response(client, response)
+        elif self.flags & FLAG_DOWNLOAD:
+            self.download.got_response(client, response)
+        elif self.flags & FLAG_UPLOAD:
+            self.upload.got_response(client, response)
+        elif self.flags & FLAG_COLLECT:
+            self.collect.got_response(client, response)
+        else:
+            raise RuntimeError("Bad flags")
 
 #
 # Test unit
 #
 
-USAGE = "Usage: %s [-sVv] [-a test] [-n count] [-O fmt] [--help] [base-URI]\n"
+USAGE =									\
+"Usage: @PROGNAME@ --help\n"						\
+"       @PROGNAME@ -V\n"						\
+"       @PROGNAME@ [-svx] [-a test] [-n count] [-O fmt] [base-URI]\n"	\
+"       @PROGNAME@ -S [-v] [-D name=value]\n"
 
 HELP = USAGE +								\
 "Tests: all*, download, latency, upload.\n"				\
 "Fmts: bits*, bytes, raw.\n"						\
 "Options:\n"								\
-"  -a test  : Add test to the list of tests.\n"				\
-"  --help   : Print this help screen and exit.\n"			\
-"  -n count : Use count HTTP connections.\n"				\
-"  -O fmt   : Format output numbers using fmt.\n"			\
-"  -s       : Do not print speedtest statistics.\n"			\
-"  -V       : Print version number and exit.\n"				\
-"  -v       : Run the program in verbose mode.\n"
+"  -a test       : Add test to the list of tests.\n"			\
+"  -D name=value : Set configuration file property.\n"			\
+"  --help        : Print this help screen and exit.\n"			\
+"  -n count      : Use count HTTP connections.\n"			\
+"  -O fmt        : Format output numbers using fmt.\n"			\
+"  -S            : Run the program in server mode.\n"			\
+"  -s            : Do not print speedtest statistics.\n"		\
+"  -V            : Print version number and exit.\n"			\
+"  -v            : Run the program in verbose mode.\n"			\
+"  -x            : Avoid negotiation and collection.\n"
 
 class VerboseClient(SpeedtestClient):
-    def __init__(self, uri, nclients, flags):
-        SpeedtestClient.__init__(self, uri, nclients, flags)
+    def __init__(self, uri, nclients, flags, debug):
+        SpeedtestClient.__init__(self, uri, nclients, flags, debug)
         self.formatter = None
 
     def speedtest_complete(self):
         stdout.write("Timestamp: %d\n" % timestamp())
-        stdout.write("URI: %s\n" % self.uri)
-        stdout.write("Length: %d\n" % self.length)
-        # latency
-        if self.flags & FLAG_LATENCY:
+        stdout.write("Base-URI: %s\n" % self.uri)
+        # connect
+        if len(self.latency.connect) > 0:
             stdout.write("Connect:")
-            for x in self.connect:
+            for x in self.latency.connect:
                 stdout.write(" %f" % x)
             stdout.write("\n")
+        # latency
+        if len(self.latency.latency) > 0:
             stdout.write("Latency:")
-            for x in self.latency:
+            for x in self.latency.latency:
                 stdout.write(" %f" % x)
             stdout.write("\n")
         # download
-        if self.flags & FLAG_DOWNLOAD:
+        if len(self.download.speed) > 0:
             stdout.write("Download:")
-            for x in self.download:
+            for x in self.download.speed:
                 stdout.write(" %s" % self.formatter(x))
             stdout.write("\n")
         # upload
-        if self.flags & FLAG_UPLOAD:
+        if len(self.upload.speed) > 0:
             stdout.write("Upload:")
-            for x in self.upload:
+            for x in self.upload.speed:
                 stdout.write(" %s" % self.formatter(x))
             stdout.write("\n")
 
@@ -341,15 +880,19 @@ FORMATTERS = {
 URI = "http://www.neubot.org:8080/"
 
 def main(args):
+    fakerc = StringIO()
+    fakerc.write("[speedtest]\r\n")
+    servermode = False
+    xdebug = False
     flags = 0
     new_client = VerboseClient
     fmt = "bits"
     nclients = 1
     # parse
     try:
-        options, arguments = getopt(args[1:], "a:n:O:sVv", ["help"])
+        options, arguments = getopt(args[1:], "a:D:n:O:SsVvx", ["help"])
     except GetoptError:
-        stderr.write(USAGE % args[0])
+        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
     # options
     for name, value in options:
@@ -358,8 +901,10 @@ def main(args):
                 log.error("Invalid argument to -a: %s" % value)
                 exit(1)
             flags |= FLAGS[value]
+        elif name == "-D":
+            fakerc.write(value + "\n")
         elif name == "--help":
-            stdout.write(HELP % args[0])
+            stdout.write(HELP.replace("@PROGNAME@", args[0]))
             exit(0)
         elif name == "-n":
             try:
@@ -374,6 +919,8 @@ def main(args):
                 log.error("Invalid argument to -O: %s" % value)
                 exit(1)
             fmt = value
+        elif name == "-S":
+            servermode = True
         elif name == "-s":
             new_client = SpeedtestClient
         elif name == "-V":
@@ -381,9 +928,27 @@ def main(args):
             exit(0)
         elif name == "-v":
             log.verbose()
-    # sanity
+        elif name == "-x":
+            xdebug = True
+    # config
+    fakerc.seek(0)
+    config = SpeedtestConfig()
+    config.read("/etc/neubot/config")
+    if environ.has_key("HOME"):
+        config.read(environ["HOME"] + "/.neubot/config")
+    config.readfp(fakerc)
+    # server
+    if servermode:
+        if len(arguments) > 0:
+            stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+            exit(1)
+        server = SpeedtestServer(config)
+        server.listen()
+        loop()
+        exit(0)
+    # client
     if len(arguments) > 1:
-        stderr.write(USAGE % args[0])
+        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
     elif len(arguments) == 1:
         uri = arguments[0]
@@ -392,7 +957,7 @@ def main(args):
     if flags == 0:
         flags = FLAG_ALL
     # run
-    client = new_client(uri, nclients, flags)
+    client = new_client(uri, nclients, flags, xdebug)
     if new_client == VerboseClient:
         client.formatter = FORMATTERS[fmt]
     loop()
