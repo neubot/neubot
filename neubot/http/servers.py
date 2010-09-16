@@ -20,10 +20,11 @@
 # HTTP server
 #
 
-from sys import path as PATH
 if __name__ == "__main__":
-    PATH.insert(0, ".")
+    from sys import path
+    path.insert(0, ".")
 
+from neubot.http.handlers import ERROR
 from neubot.http.handlers import BOUNDED
 from neubot.http.handlers import CHUNK_LENGTH
 from neubot.http.handlers import FIRSTLINE
@@ -66,9 +67,8 @@ MONTH = [
 ]
 
 class SimpleConnection(Receiver):
-    def __init__(self, parent):
+    def __init__(self):
         self.begun_receiving = False
-        self.parent = parent
         self.handler = None
         self.message = None
         self.keepalive = True
@@ -86,17 +86,18 @@ class SimpleConnection(Receiver):
     # send/recv errors and of send/recv progress. The DATA parameter is the
     # string that, respectively, has been received from or sent to the
     # underlying stream socket.
-    # Currently we do not provide a callback for recv_error and this should
-    # be fixed, but with low priority because it is not a major issue.
     #
 
-    def send_error(self):
+    def connection_lost(self):
         pass
 
     def begin_receiving(self):
         pass
 
     def recv_progress(self, data):
+        pass
+
+    def got_request(self, message):
         pass
 
     def begin_sending(self):
@@ -109,12 +110,6 @@ class SimpleConnection(Receiver):
         pass
 
     #
-    # Code for sending--We register flush_success callback because
-    # we cannot enter in passiveclose mode before we have finished
-    # sending the response.
-    # We don't keepalive when the client use HTTP/1.0 or the client
-    # explicitly requests to close the connection or we have served
-    # too many requests over this connection.
     # Reply receives request and response and so we can update acc-
     # ess log.  We use Common Log Format (CLF) for access log.
     # In case of comet response the client might already have closed
@@ -124,7 +119,6 @@ class SimpleConnection(Receiver):
 
     def reply(self, request, response):
         if self.handler == None:
-            log.debug("Detected comet-after-close")
             return
         if not self.keepalive:
             response["connection"] = "close"
@@ -134,8 +128,12 @@ class SimpleConnection(Receiver):
         self._access_log(request, response)
         self.begin_sending()
         self.handler.flush(flush_progress=self.send_progress,
-                           flush_success=self._send_success,
-                           flush_error=self.send_error)
+                           flush_success=self._send_success)
+
+    #
+    # We cannot enter in passiveclose mode before we have finished
+    # sending the response.
+    #
 
     def _send_success(self):
         self.sent_response()
@@ -157,21 +155,10 @@ class SimpleConnection(Receiver):
         log.log_access("%s - - [%s] \"%s\" %s %s" % (address, time, requestline,
          statuscode, nbytes))
 
-    #
-    # We notify we got_request() if nextstate is FIRSTLINE because the
-    # handler doesn't invoke end_of_body() when there isn't an attached
-    # body.
-    # If you want to filter incoming requests depending on their headers,
-    # you can override self.nextstate()--the overriden function should
-    # return (ERROR, 0) when the incoming request seems not acceptable,
-    # and, otherwise, the return value of nextstate().
-    #
-
     def closing(self):
+        self.connection_lost()
         self.handler = None
         self.message = None
-        self.parent.notify_closed(self)
-        self.parent = None
 
     def progress(self, data):
         if not self.begun_receiving:
@@ -183,6 +170,7 @@ class SimpleConnection(Receiver):
         self.message = Message(method=method, uri=uri, protocol=protocol)
 
     def got_response_line(self, protocol, code, reason):
+        # We are a server and not a client!
         self.handler.close()
 
     def got_header(self, key, value):
@@ -192,9 +180,15 @@ class SimpleConnection(Receiver):
         prettyprint(log.debug, "< ", self.message)
         state, length = self.nextstate(self.message)
         if state == FIRSTLINE:
+            #
+            # The handler does not recognize a transition
+            # from reading headers to first-line as the end
+            # of the response.  We do.
+            #
             self._got_request()
         return state, length
 
+    # Override this function to filter incoming headers
     def nextstate(self, request):
         return nextstate(request)
 
@@ -204,20 +198,22 @@ class SimpleConnection(Receiver):
     def end_of_body(self):
         self._got_request()
 
+    #
+    # We don't keepalive when the client use HTTP/1.0 or the client
+    # explicitly requests to close the connection or we have served
+    # too many requests over this connection.
+    #
+
     def _got_request(self):
         safe_seek(self.message.body, 0)
         message = self.message
         self.message = None
-        if message["connection"] == "close" or message.protocol == "HTTP/1.0":
-            self.keepalive = False
         self.nleft = self.nleft - 1
-        if self.nleft == 0:
+        if (self.nleft == 0 or message["connection"] == "close"
+            or message.protocol == "HTTP/1.0"):
             self.keepalive = False
         self.begun_receiving = False
         self.got_request(message)
-
-    def got_request(self, message):
-        pass
 
 from neubot.utils import unit_formatter
 from neubot.net.pollers import SimpleStats
@@ -231,13 +227,10 @@ from neubot.net.pollers import SimpleStats
 
 class Connection(SimpleConnection):
     def __init__(self, parent):
-        SimpleConnection.__init__(self, parent)
+        SimpleConnection.__init__(self)
         self.receiving = SimpleStats()
         self.sending = SimpleStats()
-
-    #
-    # Sending
-    #
+        self.parent = parent
 
     def begin_sending(self):
         self.sending.begin()
@@ -248,89 +241,23 @@ class Connection(SimpleConnection):
     def sent_response(self):
         self.sending.end()
 
-    #
-    # Receiving
-    # Catch all exceptions to increase robustness but special-case
-    # KeyboardInterrupt in case the user is running this module from
-    # the command line.
-    #
-
     def begin_receiving(self):
         self.receiving.begin()
 
     def recv_progress(self, data):
         self.receiving.account(len(data))
 
-    # override to manage an incoming body
     def nextstate(self, request):
-        state, length = nextstate(request)
-        if state in [ CHUNK_LENGTH, BOUNDED ]:
-            # don't want to write on fs
-            request.body.write = lambda data: None
-        return state, length
+        if not self.parent.got_request_headers(self, request):
+            return ERROR, 0
+        return SimpleConnection.nextstate(self, request)
 
     def got_request(self, message):
         self.receiving.end()
-        try:
-            self.process_request(message)
-        except KeyboardInterrupt:
-            raise
-        except:
-            log.exception()
-            m = Message()
-            compose(m, code="500", reason="Internal Server Error")
-            self.reply(message, m)
+        self.parent.got_request(self, message)
 
-    #
-    # Process request
-    # We don't care of exceptions here because the caller
-    # already does.
-    #
-
-    def process_request(self, message):
-        # uri
-        if type(message.uri) != StringType:
-            # being defensive because not unicode-savvy
-            m = Message()
-            compose(m, code="500", reason="Internal Server Error")
-            self.reply(message, m)
-            return
-        vector = message.uri.split("/")
-        if ".." in vector:
-            m = Message()
-            compose(m, code="403", reason="Forbidden")
-            self.reply(message, m)
-            return
-        if message.uri[0] != "/":
-            m = Message()
-            compose(m, code="403", reason="Forbidden")
-            self.reply(message, m)
-            return
-        path = getcwd() + message.uri
-        if SEP != "/":
-            path = path.replace("/", SEP)
-        # method
-        if message.method in [ "GET", "HEAD" ]:
-            try:
-                afile = open(path, "rb")
-            except IOError:
-                m = Message()
-                compose(m, code="404", reason="Not Found")
-            else:
-                m = Message()
-                compose(m, code="200", reason="Ok",
-                 body=afile, mimetype="text/plain")
-                if message.method == "HEAD":
-                    # empty body
-                    safe_seek(afile, 0, SEEK_END)
-        elif message.method in [ "POST", "PUT" ]:
-            m = Message()
-            compose(m, code="200", reason="Ok")
-        else:
-            m = Message()
-            compose(m, code="405", reason="Method Not Allowed")
-            m["allow"] = "GET, HEAD, POST, PUT"
-        self.reply(message, m)
+    def connection_lost(self):
+        self.parent.connection_lost(self)
 
 #
 # Handles many client connections
@@ -344,13 +271,6 @@ SERVERARGS = {
 }
 
 class Server:
-
-    #
-    # You should override self.new_connection with a pointer to the
-    # constructor of your class, because if you leave-in the default
-    # value you end up with a very useless server.
-    #
-
     def __init__(self, address, **kwargs):
         self.address = address
         self.kwargs = fixkwargs(kwargs, SERVERARGS)
@@ -358,7 +278,7 @@ class Server:
         self.family = kwargs["family"]
         self.port = kwargs["port"]
         self.secure = kwargs["secure"]
-        self.new_connection = SimpleConnection
+        self.new_connection = Connection
 
     def bind_failed(self):
         pass
@@ -392,8 +312,80 @@ class Server:
         connection = self.new_connection(self)
         connection.attach(Handler(stream, connection))
 
-    def notify_closed(self, connection):
+    def connection_lost(self, connection):
         pass
+
+    def got_request_headers(self, connection, request):
+        return True
+
+    def got_request(self, connection, request):
+        pass
+
+# this should be a test-only class
+class WebServer(Server):
+    def __init__(self, address, **kwargs):
+        Server.__init__(self, address, **kwargs)
+
+    # don't want to write on fs
+    def got_request_headers(self, connection, request):
+        request.body.write = lambda data: None
+        return True
+
+    def got_request(self, connection, message):
+        try:
+            self.process_request(connection, message)
+        except KeyboardInterrupt:
+            raise
+        except:
+            log.exception()
+            m = Message()
+            compose(m, code="500", reason="Internal Server Error")
+            connection.reply(message, m)
+
+    def process_request(self, connection, message):
+        # uri
+        if type(message.uri) != StringType:
+            # being defensive
+            m = Message()
+            compose(m, code="500", reason="Internal Server Error")
+            connection.reply(message, m)
+            return
+        vector = message.uri.split("/")
+        if ".." in vector:
+            m = Message()
+            compose(m, code="403", reason="Forbidden")
+            connection.reply(message, m)
+            return
+        if message.uri[0] != "/":
+            m = Message()
+            compose(m, code="403", reason="Forbidden")
+            connection.reply(message, m)
+            return
+        path = getcwd() + message.uri
+        if SEP != "/":
+            path = path.replace("/", SEP)
+        # method
+        if message.method in [ "GET", "HEAD" ]:
+            try:
+                afile = open(path, "rb")
+            except IOError:
+                m = Message()
+                compose(m, code="404", reason="Not Found")
+            else:
+                m = Message()
+                compose(m, code="200", reason="Ok",
+                 body=afile, mimetype="text/plain")
+                if message.method == "HEAD":
+                    # empty body
+                    safe_seek(afile, 0, SEEK_END)
+        elif message.method in [ "POST", "PUT" ]:
+            m = Message()
+            compose(m, code="200", reason="Ok")
+        else:
+            m = Message()
+            compose(m, code="405", reason="Method Not Allowed")
+            m["allow"] = "GET, HEAD, POST, PUT"
+        connection.reply(message, m)
 
 #
 # Noisy connection that prints statistics at the end
@@ -431,7 +423,6 @@ HELP = USAGE +								\
 "  -v         : Run the program in verbose mode.\n"
 
 def main(args):
-    # defaults
     new_connection = NoisyConnection
     # cmdline
     try:
@@ -465,7 +456,7 @@ def main(args):
         address = None
         port = "8080"
     # run
-    server = Server(address, port=port)
+    server = WebServer(address, port=port)
     server.new_connection = new_connection
     server.listen()
     loop()
