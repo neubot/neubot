@@ -623,6 +623,9 @@ class Negotiate(SpeedtestHelper):
             return
         if not negotiation.unchoked:
             log.info("* Still choked, waiting for out turn")
+            if negotiation.queuePos and negotiation.queueLen:
+                state.set_queueInfo(negotiation.queuePos, negotiation.queueLen)
+                state.commit()
             self.start()
             return
         self.authorization = str(negotiation.authorization)
