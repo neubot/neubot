@@ -100,6 +100,11 @@ class State:
                     builder.start("task", {"state": self.tasks[task]})
                     builder.data(task)
                     builder.end("task")
+                if self.results:
+                    for tag, value, unit in self.results:
+                        builder.start("result", {"tag": tag, "unit": unit})
+                        builder.data(str(value))
+                        builder.end("result")
             elif self.current == "negotiate":
                 if self.queuePos > 0:
                     builder.start("queuePos", {})
@@ -132,6 +137,7 @@ class State:
         self.tasknames = []
         self.tasks = {}
         self.running = ""
+        self.results = []
         self.queuePos = 0
         self.queueLen = 0
         return self
@@ -139,12 +145,11 @@ class State:
     def set_activity(self, activity, tasks=[], name=""):
         if not activity in ACTIVITIES:
             raise ValueError("Invalid activity name: %s" % activity)
+        self.set_inactive()
         self.inactive = False
         self.current = activity
         self.tasknames = tasks
         self.currentname = name
-        self.tasks = {}
-        self.running = ""
         for task in tasks:
             self.tasks[task] = READY
         return self
@@ -159,6 +164,10 @@ class State:
     def set_queueInfo(self, queuePos, queueLen):
         self.queuePos = queuePos
         self.queueLen = queueLen
+        return self
+
+    def append_result(self, tag, value, unit):
+        self.results.append((tag, value, unit))
         return self
 
     def commit(self):
@@ -197,8 +206,11 @@ if __name__ == "__main__":
         PRINT()
         state.set_activity("test", TASKS).set_task("latency").commit()
         PRINT()
+        state.append_result("latency", 0.012, "s")
+        state.append_result("latency", 0.013, "s")
         state.set_task("download").commit()
         PRINT()
+        state.append_result("download", 11.1, "MB/s")
         state.set_task("upload").commit()
         PRINT()
         state.set_inactive()
