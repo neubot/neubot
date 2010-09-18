@@ -40,6 +40,7 @@ from getopt import getopt
 from sys import stderr
 
 from os import environ
+from collections import deque
 from neubot.utils import ticks
 from neubot.net.pollers import sched
 from neubot.notify import publish
@@ -130,7 +131,7 @@ class SpeedtestServer(Server):
     def __init__(self, config):
         self.config = config
         Server.__init__(self, address=config.address, port=config.port)
-        self.tokens = set()
+        self.queue = deque()
         self.timestamp = 0
         self.table = {}
         self._init_table()
@@ -149,8 +150,8 @@ class SpeedtestServer(Server):
     def got_request_headers(self, connection, request):
         ret = True
         if self.config.only_auth and request.uri in RESTRICTED:
-            auth = request["Authorization"]
-            if not auth in self.tokens:
+            token = request["authorization"]
+            if len(self.queue) == 0 or self.queue[0] != token:
                 log.warning("* Connection %s: Forbidden" % (
                  connection.handler.stream.logname))
                 ret = False
@@ -184,8 +185,7 @@ class SpeedtestServer(Server):
     # when the authorized client uploads the results.
     # Wish list:
     # - Revoke auth on connection lost. (?)
-    # - Guarantee FIFO service.
-    # - Return queue position too.
+    # - Avoid client synchronization
     #
 
     def _do_renegotiate(self, event, atuple):
@@ -194,45 +194,59 @@ class SpeedtestServer(Server):
 
     def _do_prune_tokens(self):
         sched(5, self._do_prune_tokens)
-        if ticks() - self.timestamp > 30:
-            self.tokens.clear()
-            self.timestamp = 0
-            publish(RENEGOTIATE)
+        if self.timestamp > 0 and ticks() - self.timestamp > 30:
+            self._publish_renegotiate()
+
+    def _publish_renegotiate(self):
+        self.queue.popleft()
+        self.timestamp = 0
+        publish(RENEGOTIATE)
 
     def _do_negotiate(self, connection, request, recurse=False):
-        if len(self.tokens) >= 1:
-            if recurse:
-                root = Element("SpeedtestNegotiate_Response")
-                tree = ElementTree(root)
-                #
-                # NOTE Now the Handler supports sending a body that
-                # is not a StringIO, so it should be nice to tweak
-                # Message() to support that as well, so we can avoid
-                # to wrap the body using a StringIO.
-                #
-                stringio = StringIO()
-                tree.write(stringio, encoding="utf-8")
-                stringio.seek(0)
-                response = Message()
-                compose(response, code="200", reason="Ok",
-                 body=stringio, mimetype="application/xml")
-                connection.reply(request, response)
+        queuePos = 0
+        unchoked = True
+        token = request["authorization"]
+        if not token:
+            token = str(uuid4())
+            request["authorization"] = token
+            self.queue.append(token)
+        if len(self.queue) > 0 and self.queue[0] != token:
+            if not recurse:
+                subscribe(RENEGOTIATE, self._do_renegotiate,
+                          (connection, request))
                 return
-            subscribe(RENEGOTIATE, self._do_renegotiate,
-                      (connection, request))
-            return
-        # auth
-        token = str(uuid4())
-        self.tokens.add(token)
-        self.timestamp = ticks()
-        # XML
+            queuePos = self._queuePos(token)
+            unchoked = False
+        if unchoked:
+            self.timestamp = ticks()
+        self._send_negotiate(connection, request, token, unchoked, queuePos)
+
+    # XXX horrible horrible O(length)!
+    def _queuePos(self, token):
+        queuePos = 0
+        for element in self.queue:
+            if element == token:
+                break
+            if queuePos >= 64:
+                break
+            queuePos = queuePos + 1
+        return queuePos
+
+    def _send_negotiate(self, connection, request, token, unchoked, queuePos):
         root = Element("SpeedtestNegotiate_Response")
-        authorization = SubElement(root, "authorization")
-        authorization.text = token
+        elem = SubElement(root, "authorization")
+        elem.text = token
+        elem = SubElement(root, "queueLen")
+        elem.text = str(len(self.queue))
+        elem = SubElement(root, "queuePos")
+        elem.text = str(queuePos)
+        elem = SubElement(root, "unchoked")
+        elem.text = str(unchoked)
         tree = ElementTree(root)
         stringio = StringIO()
         tree.write(stringio, encoding="utf-8")
         stringio.seek(0)
+        # HTTP
         response = Message()
         compose(response, code="200", reason="Ok",
          body=stringio, mimetype="application/xml")
@@ -293,10 +307,7 @@ class SpeedtestServer(Server):
 #       database.storeCollect(collect)
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
-        # de-auth
-        self.tokens.clear()
-        self.timestamp = 0
-        publish(RENEGOTIATE)
+        self._publish_renegotiate()
 
 #
 # [speedtest]
@@ -547,6 +558,7 @@ class Upload(SpeedtestHelper):
 #
 # <SpeedtestNegotiate_Response>
 #     <authorization>ac2fcbf3-a1db-4bdb-836d-533c2aee9677</authorization>
+#     <unchoked>True</unchoked>
 #     <queuePos>7</queuePos>
 #     <queueLen>21</queueLen>
 # </SpeedtestNegotiate_Response>
@@ -560,6 +572,7 @@ class Upload(SpeedtestHelper):
 class SpeedtestNegotiate_Response:
     def __init__(self):
         self.authorization = ""
+        self.unchoked = False
         self.queuePos = 0
         self.queueLen = 0
 
@@ -573,6 +586,9 @@ class SpeedtestNegotiate_Response:
             authorization = XML_get_scalar(tree, "authorization")
             if authorization:
                 self.authorization = UUID(authorization)
+            unchoked = XML_get_scalar(tree, "unchoked")
+            if unchoked.lower() == "true":
+                self.unchoked = True
             queuePos = XML_get_scalar(tree, "queuePos")
             if queuePos:
                 self.queuePos = int(queuePos)
@@ -605,12 +621,12 @@ class Negotiate(SpeedtestHelper):
             log.exception()
             self.speedtest.bad_response(response)
             return
-        if not negotiation.authorization:
-            log.info("* No authorization, waiting for our turn")
+        if not negotiation.unchoked:
+            log.info("* Still choked, waiting for out turn")
             self.start()
             return
         self.authorization = str(negotiation.authorization)
-        log.info("* Authorization: %s" % self.authorization)
+        log.info("* Now unchoked, can take the test")
         self.speedtest.complete()
 
 class Collect(SpeedtestHelper):
