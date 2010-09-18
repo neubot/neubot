@@ -28,7 +28,9 @@ from neubot.notify import STATECHANGE
 from neubot.notify import get_event_timestamp
 from xml.etree.ElementTree import ElementTree
 from xml.etree.ElementTree import TreeBuilder
+from neubot.utils import versioncmp
 from neubot.notify import publish
+from neubot import version
 from StringIO import StringIO
 
 ACTIVITIES = [
@@ -44,8 +46,19 @@ RUNNING = "running"
 DONE = "done"
 
 class State:
+
+    #
+    # We put versioninfo in the constructor because
+    # it should always be visible and should never be
+    # cleared when we change activity.
+    #
+
     def __init__(self):
+        self.versioninfo = ()
         self.set_inactive()
+
+    def set_versioninfo(self, ver, uri):
+        self.versioninfo = (ver, uri)
 
     #
     # <state t="1284818634023">
@@ -66,11 +79,20 @@ class State:
     def marshal(self):
         builder = TreeBuilder()
         builder.start("state", {"t": get_event_timestamp(STATECHANGE)})
+        self.marshal_versioninfo(builder)
         self.marshal_inactive(builder)
         for activity in ACTIVITIES:
             self.marshal_activity(builder, activity)
         builder.end("state")
         return self.make_xml(builder.close())
+
+    def marshal_versioninfo(self, builder):
+        if len(self.versioninfo) == 2:
+            ver, uri = self.versioninfo
+            if versioncmp(ver, version) > 0:
+                builder.start("update", {"uri": uri})
+                builder.data(ver)
+                builder.end("update")
 
     def marshal_inactive(self, builder):
         builder.start("active", {})
@@ -198,6 +220,7 @@ if __name__ == "__main__":
     PRINT = lambda: _XML_prettyprint(state.marshal().read())
     TASKS = ["latency", "download", "upload"]
     count = 0
+    state.set_versioninfo("0.7.3", "http://packages.neubot.org/latest")
     PRINT()
     while count < 2:
         state.set_activity("negotiate").set_queueInfo("2", "3").commit()
