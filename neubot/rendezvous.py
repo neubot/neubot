@@ -16,375 +16,434 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-import StringIO
-import collections
-import getopt
-import json
-import logging
-import socket
-import sys
-import types
+#
+# Rendez-vous with master node to discover other peers and to
+# get information on available software updates.
+# This is the command that is executed by default if you don't
+# pass a command to neubot(1).
+#
 
-import neubot
+if __name__ == "__main__":
+    from sys import path
+    path.insert(0, ".")
 
-class request:
-    def __init__(self, octets=""):
-        self.accepts = []
-        self.provides = {}
-        self.version = u""
-        if octets:
-            dictionary = json.loads(octets)
-            if type(dictionary) != types.DictType:
-                raise ValueError("Bad json message")
-            if dictionary.has_key(u"accepts"):
-                for accept in dictionary[u"accepts"]:
-                    if type(accept) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    self.accepts.append(accept)
-            if dictionary.has_key(u"provides"):
-                provides = dictionary[u"provides"]
-                if type(provides) != types.DictType:
-                    raise ValueError("Bad json message")
-                for name, uri in provides.items():
-                    if type(name) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    if type(uri) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    self.provides[name] = uri
-            if dictionary.has_key(u"version"):
-                version = dictionary[u"version"]
-                if type(version) != types.UnicodeType:
-                    raise ValueError("Bad json message")
-                self.version = version
+from neubot.http.servers import Server
+from neubot.http.messages import Message
+from neubot.http.clients import Client
+from neubot.http.clients import ClientController
+from neubot.speedtest import SpeedtestController
+from neubot.speedtest import SpeedtestClient
+from xml.etree.ElementTree import ElementTree
+from xml.etree.ElementTree import TreeBuilder
+from neubot.http.messages import compose
+from ConfigParser import SafeConfigParser
+from neubot.net.pollers import sched
+from neubot.database import database
+from neubot.speedtest import speedtest
+from neubot.utils import versioncmp
+from neubot.net.pollers import loop
+from xml.dom import minidom
+from StringIO import StringIO
+from neubot import version
+from neubot.ui import ui
+from neubot import log
+from getopt import GetoptError
+from getopt import getopt
+from neubot.state import state
+from os import environ
+from sys import argv
+from sys import stdout
+from sys import stderr
 
-    def __str__(self):
-        dictionary = {}
-        if len(self.accepts) > 0:
-            dictionary[u"accepts"] = self.accepts
-        if len(self.provides) > 0:
-            dictionary[u"provides"] = self.provides
-        if len(self.version) > 0:
-            dictionary[u"version"] = self.version
-        octets = json.dumps(dictionary, ensure_ascii=True)
-        return octets
+# unclean
+from neubot.speedtest import XML_get_scalar
+from neubot.speedtest import XML_get_vector
 
-    def accept_test(self, name):
-        self.accepts.append(unicode(name))
+#
+# <rendezvous>
+#  <accept>speedtest</accept>
+#  <accept>bittorrent</accept>
+#  <version>0.2.3</version>
+# </rendezvous>
+#
 
-    def provide_test(self, name, uri):
-        self.provides[unicode(name)] = unicode(uri)
+class XMLRendezvous:
+    def __init__(self):
+        self.accept = []
+        self.version = ""
 
-    def set_version(self, version):
-        self.version = unicode(version)
+    def parse(self, stringio):
+        tree = ElementTree()
+        try:
+            tree.parse(stringio)
+        except:
+            raise ValueError("Can't parse XML body")
+        else:
+            self.accept = XML_get_vector(tree, "accept")
+            self.version = XML_get_scalar(tree, "version")
 
-class response:
-    def __init__(self, octets=""):
-        self.versioninfo = {}
-        self.available = {}
-        self.collecturi = u""
-        if octets:
-            dictionary = json.loads(octets)
-            if type(dictionary) != types.DictType:
-                raise ValueError("Bad json message")
-            if dictionary.has_key(u"versioninfo"):
-                versioninfo = dictionary[u"versioninfo"]
-                if type(versioninfo) != types.DictType:
-                    raise ValueError("Bad json message")
-                for key, value in versioninfo.items():
-                    if type(key) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    if type(value) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    self.versioninfo[key] = value
-            if dictionary.has_key(u"available"):
-                available = dictionary[u"available"]
-                if type(available) != types.DictType:
-                    raise ValueError("Bad json message")
-                for name, uri in available.items():
-                    if type(name) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    if type(uri) != types.UnicodeType:
-                        raise ValueError("Bad json message")
-                    self.available[name] = uri
-            if dictionary.has_key(u"collecturi"):
-                collecturi = dictionary[u"collecturi"]
-                if type(collecturi) != types.UnicodeType:
-                    raise ValueError("Bad json message")
-                self.collecturi = collecturi
+class RendezvousServer(Server):
+    def __init__(self, config):
+        self.config = config
+        Server.__init__(self, config.address, port=config.port)
 
-    def __str__(self):
-        dictionary = {}
-        if len(self.versioninfo) > 0:
-            dictionary[u"versioninfo"] = self.versioninfo
-        if len(self.available) > 0:
-            dictionary[u"available"] = self.available
-        if self.collecturi:
-            dictionary[u"collecturi"] = self.collecturi
-        octets = json.dumps(dictionary, ensure_ascii=True)
-        return octets
+    def bind_failed(self):
+        log.error("Is another neubot(1) running?")
+        exit(1)
 
-    def set_versioninfo(self, version, uri):
-        self.versioninfo[u"version"] = unicode(version)
-        self.versioninfo[u"uri"] = unicode(uri)
+    def got_request(self, connection, request):
+        try:
+            self.process_request(connection, request)
+        except KeyboardInterrupt:
+            raise
+        except:
+            log.exception()
+            response = Message()
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
 
-    def add_available(self, name, uri):
-        self.available[unicode(name)] = unicode(uri)
+    def process_request(self, connection, request):
+        if request.uri == "/rendezvous":
+            self._do_rendezvous(connection, request)
+            return
+        response = Message()
+        compose(response, code="403", reason="Forbidden")
+        connection.reply(request, response)
 
-    def set_collecturi(self, collecturi):
-        self.collecturi = unicode(collecturi)
+    def _do_rendezvous(self, connection, request):
+        builder = TreeBuilder()
+        m = XMLRendezvous()
+        m.parse(request.body)
+        builder.start("rendezvous_response", {})
+        if m.version:
+            if versioncmp(version, m.version) > 0:
+                builder.start("update", {"uri": self.config.update_uri})
+                builder.data(version)
+                builder.end("update")
+        if "speedtest" in m.accept:
+            builder.start("available", {"name": "speedtest"})
+            builder.start("uri", {})
+#           builder.data("http://speedtest1.neubot.org/speedtest")
+#           builder.data("http://speedtest2.neubot.org/speedtest")
+            builder.data(self.config.test_uri)
+            builder.end("uri")
+            builder.end("available")
+        builder.end("rendezvous_response")
+        root = builder.close()
+        tree = ElementTree(root)
+        stringio = StringIO()
+        tree.write(stringio, encoding="utf-8")
+        stringio.seek(0)
+        # HTTP
+        response = Message()
+        compose(response, code="200", reason="Ok",
+                mimetype="text/xml", body=stringio)
+        connection.reply(request, response)
 
-class servlet:
+#
+# [rendezvous]
+# address: 0.0.0.0
+# update_uri: http://releases.neubot.org/latest
+# test_uri: http://speedtest1.neubot.org/speedtest
+# port: 9773
+#
+
+#
+# TODO Still unsure about the URI that should be used
+# here by default.
+#
+
+class RendezvousConfig(SafeConfigParser):
+    def __init__(self):
+        SafeConfigParser.__init__(self)
+        self.address = "0.0.0.0"
+        self.update_uri = "http://releases.neubot.org/latest"
+        self.test_uri = "http://speedtest1.neubot.org/speedtest"
+        self.port = "9773"
+
+#   def check(self):
+#       pass
+
+    def readfp(self, fp, filename=None):
+        SafeConfigParser.readfp(self, fp, filename)
+        self._do_parse()
+
+    def _do_parse(self):
+        if self.has_option("rendezvous", "address"):
+            self.address = self.get("rendezvous", "address")
+        if self.has_option("rendezvous", "update_uri"):
+            self.update_uri = self.get("rendezvous", "update_uri")
+        if self.has_option("rendezvous", "test_uri"):
+            self.test_uri = self.get("rendezvous", "test_uri")
+        if self.has_option("rendezvous", "port"):
+            self.port = self.get("rendezvous", "port")
+
+    def read(self, filenames):
+        SafeConfigParser.read(self, filenames)
+        self._do_parse()
+
+class RendezvousModule:
+    def __init__(self):
+        self.config = RendezvousConfig()
+        self.server = None
+
+    def configure(self, filenames, fakerc):
+        self.config.read(filenames)
+        self.config.readfp(fakerc)
+        # XXX other modules need to read() it too
+        fakerc.seek(0)
+
+    def start(self):
+        self.server = RendezvousServer(self.config)
+        self.server.listen()
+
+rendezvous = RendezvousModule()
+
+#
+# <rendezvous_response>
+#  <available name="speedtest">
+#   <uri>http://speedtest1.neubot.org/speedtest</uri>
+#   <uri>http://speedtest2.neubot.org/speedtest</uri>
+#  </available>
+#  <update uri="http://releases.neubot.org/neubot-0.2.4.exe">0.2.4</update>
+# </rendezvous_response>
+#
+
+def _XML_parse_available(tree):
+    available = {}
+    elements = tree.findall("available")
+    for element in elements:
+        name = element.get("name")
+        if not name:
+            continue
+        vector = []
+        uris = element.findall("uri")
+        for uri in uris:
+            vector.append(uri.text)
+        if not uris:
+            continue
+        available[name] = vector
+    return available
+
+# sloppy
+def _XML_parse_update(tree):
+    update = {}
+    elements = tree.findall("update")
+    for element in elements:
+        uri = element.get("uri")
+        if not uri:
+            continue
+        ver = element.text
+        update[ver] = uri
+    return update
+
+class XMLRendezvous_Response:
     def __init__(self):
         self.available = {}
-        self.version = neubot.version
-        self.uri = "http://www.neubot.org:8080/"
-        self.collecturi = "http://master.neubot.org:9773/collect/1.0/"
+        self.update = {}
 
-    def add_available(self, name, value):
-        self.available[name] = value
+    def parse(self, stringio):
+        tree = ElementTree()
+        try:
+            tree.parse(stringio)
+        except:
+            log.exception()
+            raise ValueError("Can't parse XML body")
+        else:
+            self.available = _XML_parse_available(tree)
+            self.update = _XML_parse_update(tree)
 
-    def set_versioninfo(self, version, uri):
-        self.version = version
-        self.uri = uri
+#
+# Not the best prettyprint in the world because it would
+# be way more nice to have the tags of text-only elements
+# on the same line of the text itself, e.g.:
+#  <tag>texttexttext</tag>
+# But better than spitting out a linearized XML.
+#
 
-    def set_collecturi(self, collecturi):
-        self.collecturi = collecturi
+def _XML_prettyprint(stringio):
+    stringio.seek(0)
+    document = minidom.parse(stringio)
+    stringio.seek(0)
+    return document.toprettyxml(indent=" ",
+     newl="\r\n", encoding="utf-8")
 
-    def main(self, protocol, response):
-        if protocol.message.method != "POST":
-            response.code, response.reason = "204", "No Content"
+FLAG_TESTING = 1<<0
+
+class RendezvousClient(ClientController, SpeedtestController):
+    def __init__(self, server_uri, interval, dontloop, xdebug):
+        self.server_uri = server_uri
+        self.interval = interval
+        self.dontloop = dontloop
+        self.xdebug = xdebug
+        self.flags = 0
+
+    def _reschedule(self):
+        state.set_inactive()
+        if self.flags & FLAG_TESTING:
             return
-        protocol.message.body.seek(0)
-        octets = protocol.message.body.read()
-        requestbody = neubot.rendezvous.request(octets)
-        responsebody = neubot.rendezvous.response()
-        if len(requestbody.version) > 0:
-            version = requestbody.version
-            if neubot.utils.versioncmp(neubot.version, version) > 0:
-                responsebody.set_versioninfo(self.version, self.uri)
-        for name in requestbody.accepts:
-            if name in self.available.keys():
-                responsebody.add_available(name, self.available[name])
-        responsebody.set_collecturi(self.collecturi)
-        response.code, response.reason = "200", "Ok"
-        response["content-type"] = "application/json"
-        octets = str(responsebody)
-        response["content-length"] = str(len(octets))
-        response.body = StringIO.StringIO(octets)
+        if self.dontloop:
+            return
+        log.info("* Next rendezvous in %d seconds" % self.interval)
+        sched(self.interval, self.rendezvous)
 
-class client:
-    def __init__(self, poller, family=socket.AF_INET,
-      uri="http://master.neubot.org:9773/rendez-vous/1.0/"):
-        self.done = False
-        self.poller = poller
-        scheme, address, port, self.path = neubot.http.urlsplit(uri)
-        logging.info("Begin rendez-vous with %s" % address)
-        secure =  scheme == "https"
-        neubot.http.connector(self, poller, address, port, family, secure)
-        self.provides = {}
-        self.accepts = set()
-        self.version = neubot.version
-        self.request = None
-        self.responsebody = None
+    def connection_failed(self, client):
+        self._reschedule()
 
-    def accept_test(self, name):
-        self.accepts.add(name)
+    def connection_lost(self, client):
+        self._reschedule()
 
-    def provide_test(self, name, uri):
-        self.provides[name] = uri
+    def rendezvous(self):
+        state.set_activity("rendezvous")
+        self._prepare_tree()
 
-    def set_version(self, version):
-        self.version = version
+    def _prepare_tree(self):
+        builder = TreeBuilder()
+        builder.start("rendezvous", {})
+        builder.start("accept", {})
+        builder.data("speedtest")
+        builder.end("accept")
+        builder.end("rendezvous")
+        root = builder.close()
+        self._serialize_tree(root)
 
-    def aborted(self, connector):
-        logging.error("Connection to '%s' failed" % connector)
-        self.done = True
+    def _serialize_tree(self, root):
+        tree = ElementTree(root)
+        stringio = StringIO()
+        tree.write(stringio, encoding="utf-8")
+        stringio.seek(0)
+        if self.xdebug:
+            stdout.write(_XML_prettyprint(stringio))
+        self._send_http_request(stringio)
 
-    def connected(self, connector, protocol):
-        logging.debug("Connected to '%s'" % connector)
-        protocol.attach(self)
-        logging.debug("Pretty-printing the request")
-        self.request = neubot.http.message(method="POST",
-          uri=self.path, protocol="HTTP/1.1")
-        self.request["date"] = neubot.http.date()
-        self.request["cache-control"] = "no-cache"
-        self.request["connection"] = "close"
-        self.request["host"] = str(protocol)
-        self.request["pragma"] = "no-cache"
-        requestbody = neubot.rendezvous.request()
-        requestbody.set_version(self.version)
-        for name, uri in self.provides.items():
-            requestbody.provide_test(name, uri)
-        for name in self.accepts:
-            requestbody.accept_test(name)
-        octets = str(requestbody)
-        self.request["content-type"] = "application/json"
-        self.request["content-length"] = str(len(octets))
-        self.request.body = StringIO.StringIO(octets)
-        neubot.http.prettyprinter(logging.debug, "  ", self.request)
-        neubot.utils.prettyprint_json(logging.debug, "  ", octets)
-        logging.debug("Start sending the request")
-        protocol.sendmessage(self.request)
+    def _send_http_request(self, stringio):
+        request = Message()
+        compose(request, method="GET", uri=self.server_uri,
+         mimetype="text/xml", body=stringio, keepalive=False)
+        client = Client(self)
+        client.sendrecv(request)
 
-    def message_sent(self, protocol):
-        logging.debug("Done sending request to '%s'" % protocol)
-        logging.debug("Waiting for response from '%s'" % protocol)
-        protocol.recvmessage()
-
-    def got_metadata(self, protocol):
-        logging.debug("Pretty-printing response")
-        response = protocol.message
-        neubot.http.prettyprinter(logging.debug, "  ", response)
-        response.body = StringIO.StringIO()
+    def got_response(self, client, request, response):
         if response.code != "200":
-            raise Exception("Unexpected response code")
-        if response["content-type"] != "application/json":
-            raise Exception("Unexpected content-type")
-        if response["transfer-encoding"] == "chunked":
-            raise Exception("Unexpected chunked response")
+            log.error("Error: %s %s" % (response.code, response.reason))
+            self._reschedule()
+            return
+        self._parse_response(response)
 
-    def is_message_unbounded(self, protocol):
-       if neubot.http.response_unbounded(self.request, protocol.message):
-            raise Exception("Unexpected unbounded response")
+    def _parse_response(self, response):
+        if self.xdebug:
+            stdout.write(_XML_prettyprint(response.body))
+        m = XMLRendezvous_Response()
+        try:
+            m.parse(response.body)
+        except ValueError:
+            log.exception()
+            self._reschedule()
+        else:
+            self._do_followup(m)
 
-    def got_message(self, protocol):
-        response = protocol.message
-        response.body.seek(0)
-        octets = response.body.read()
-        neubot.utils.prettyprint_json(logging.debug, "  ", octets)
-        self.responsebody = neubot.rendezvous.response(octets)
-        protocol.close()
-        logging.info("Rendez-vous completed successfully")
+    def _do_followup(self, m):
+        if m.update:
+            for ver, uri in m.update.items():
+                log.warning("Version %s available at %s" % (ver, uri))
+        if self.xdebug:
+            self._reschedule()
+            return
+        if m.available.has_key("speedtest"):
+            uri = m.available["speedtest"][0]
+            self.flags |= FLAG_TESTING
+            self.start_speedtest_simple(uri)
 
-    def closing(self, protocol):
-        logging.debug("Connection to '%s' closed" % protocol)
-        self.done = True
+    def speedtest_complete(self):
+        self.flags &= ~FLAG_TESTING
+        self._reschedule()
 
-USAGE =									\
-"Usage:\n"								\
-"  neubot [options] rendezvous --server [options] [[address] port]\n"	\
-"  neubot [options] rendezvous [options] [uri]\n"			\
-"\n"									\
-"Try `neubot rendezvous --help' for more help.\n"
+USAGE = 								\
+"Usage: @PROGNAME@ -V\n"						\
+"       @PROGNAME@ --help\n"						\
+"       @PROGNAME@ [-nvx] [-T interval] [master-URI]\n"			\
+"       @PROGNAME@ -S [-v] [-D name=value]\n"
 
-LONGOPTS = [
-    "accept-test=",
-    "add-available-test=",
-    "collecturi=",
-    "help",
-    "provide-test=",
-    "server",
-    "set-update-uri=",
-    "set-version=",
-]
-
-HELP =									\
-"Usage:\n"								\
-"  neubot [options] rendezvous --server [options] [[address] port]\n"	\
-"  neubot [options] rendezvous [options] [uri]\n"			\
-"\n"									\
+HELP = USAGE +								\
 "Options:\n"								\
-"  --accept-test NAME\n"						\
-"      Add NAME to the list of tests the client will accept.\n"		\
-"  --add-available-test NAME,URI\n"					\
-"      Add test NAME provided by URI to the list of tests that the\n"	\
-"      server is aware of (provided by TestServers or other Neubots.)\n"\
-"  --collecturi URI\n"                                                 \
-"      Uri to send results to.\n"                                       \
-"  --help\n"								\
-"      Print this help screen.\n"					\
-"  --provide-test NAME,URI\n"						\
-"      Add test NAME provided by URI to the list of tests that the\n"	\
-"      client provides to other clients (i.e. in peer-to-peer mode.)\n"	\
-"  --server\n"								\
-"      Run in server mode.\n"						\
-"  --set-update-uri URI\n"						\
-"      Tell clients they could retrieve updated versions at URI.\n"	\
-"  --set-version VERSION\n"						\
-"      Override neubot version with VERSION.\n"
+"  -D name=value : Set configuration file property.\n"			\
+"  --help        : Print this help screen and exit.\n"			\
+"  -n            : Don't loop, just rendez-vous once.\n"		\
+"  -S            : Run the program in server mode.\n"			\
+"  -T interval   : Interval between each rendez-vous.\n"		\
+"  -V            : Print version number and exit.\n"			\
+"  -v            : Run the program in verbose mode.\n"			\
+"  -x            : Debug mode, don't run any test.\n"
 
-def main(argv):
-    try:
-        options, arguments = getopt.getopt(argv[1:], "", LONGOPTS)
-    except getopt.error:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
-    acceptlist = collections.deque()
-    availablelist = collections.deque()
-    providelist = collections.deque()
-    updateuri = "http://www.neubot.org:8080/"
-    collecturi = "http://master.neubot.org:9773/collect/1.0/"
-    version = neubot.version
+def main(args):
+    fakerc = StringIO()
+    fakerc.write("[rendezvous]\n")
+    dontloop = False
     servermode = False
+    interval = 300
+    xdebug = False
+    # parse
+    try:
+        options, arguments = getopt(args[1:], "D:nST:Vvx", ["help"])
+    except GetoptError:
+        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        exit(1)
+    # options
     for name, value in options:
-        if name == "--accept-test":
-            acceptlist.append(value)
-        elif name == "--add-available-test":
-            try:
-                testname, testuri = value.split(",", 1)
-            except ValueError:
-                sys.stderr.write("Bad %s parameter %s" % (name, value))
-                sys.stderr.write(USAGE)
-                sys.exit(1)
-            availablelist.append((testname, testuri))
-        elif name == "--collecturi":
-            collecturi = value
+        if name == "-D":
+            fakerc.write(value + "\n")
         elif name == "--help":
-            sys.stdout.write(HELP)
-            sys.exit(0)
-        elif name == "--provide-test":
-            try:
-                testname, testuri = value.split(",", 1)
-            except ValueError:
-                sys.stderr.write("Bad %s parameter %s" % (name, value))
-                sys.stderr.write(USAGE)
-                sys.exit(1)
-            providelist.append((testname, testuri))
-        elif name == "--server":
+            stdout.write(HELP.replace("@PROGNAME@", args[0]))
+            exit(1)
+        elif name == "-n":
+            dontloop = True
+        elif name == "-S":
             servermode = True
-        elif name == "--set-update-uri":
-            updateuri = value
-        elif name == "--set-version":
-            version = value
-    poller = neubot.network.poller()
+        elif name == "-T":
+            try:
+                interval = int(value)
+            except ValueError:
+                interval = -1
+            if interval <= 0:
+                log.error("Invalid argument to -T: %s" % value)
+                exit(1)
+        elif name == "-V":
+            stdout.write(version + "\n")
+            exit(0)
+        elif name == "-v":
+            log.verbose()
+        elif name == "-x":
+            xdebug = True
+    # options
+    fakerc.seek(0)
+    filenames = ["/etc/neubot/config"]
+    if environ.has_key("HOME"):
+        filenames.append(environ["HOME"] + "/.neubot/config")
+    database.configure(filenames, fakerc)
+    rendezvous.configure(filenames, fakerc)
+    speedtest.configure(filenames, fakerc)
+    ui.configure(filenames, fakerc)
+    # server
     if servermode:
-        if len(arguments) >= 3:
-            sys.stderr.write(USAGE)
-            sys.exit(1)
-        elif len(arguments) == 2:
-            address = arguments[0]
-            port = arguments[1]
-        elif len(arguments) == 1:
-            address = "0.0.0.0"
-            port = arguments[0]
-        else:
-            address = "0.0.0.0"
-            port = "9773"
-        slet = neubot.rendezvous.servlet()
-        for name, value in availablelist:
-            slet.add_available(name, value)
-        slet.set_versioninfo(version, updateuri)
-        slet.set_collecturi(collecturi)
-        container = neubot.container.container(poller,
-          address=address, port=port)
-        container.register("/rendez-vous/1.0/", slet.main)
-    else:
-        if len(arguments) >= 2:
-            sys.stderr.write(USAGE)
-            sys.exit(1)
-        elif len(arguments) == 1:
-            uri = arguments[0]
-        else:
-            uri = "http://master.neubot.org:9773/rendez-vous/1.0/"
-        clnt = neubot.rendezvous.client(poller, uri=uri)
-        for name in acceptlist:
-            clnt.accept_test(name)
-        for name, value in providelist:
-            clnt.provide_test(name, value)
-        clnt.set_version(version)
-    poller.loop()
+        if len(arguments) > 0:
+            stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+            exit(1)
+        database.start()
+        rendezvous.start()
+        speedtest.start()
+        loop()
+        exit(0)
+    # client
+    if len(arguments) != 1:
+        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        exit(1)
+    uri = arguments[0]
+    database.start()
+    if not dontloop and not xdebug:
+        ui.start()
+    client = RendezvousClient(uri, interval, dontloop, xdebug)
+    client.rendezvous()
+    loop()
 
-if (__name__ == "__main__"):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    main(sys.argv)
+if __name__ == "__main__":
+    main(argv)
