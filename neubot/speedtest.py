@@ -375,8 +375,8 @@ speedtest = SpeedtestModule()
 #
 
 class SpeedtestHelper:
-    def __init__(self, speedtest):
-        self.speedtest = speedtest
+    def __init__(self, parent):
+        self.speedtest = parent
 
     def start(self):
         pass
@@ -396,8 +396,8 @@ class SpeedtestHelper:
 REPEAT = 10
 
 class Latency(SpeedtestHelper):
-    def __init__(self, speedtest):
-        SpeedtestHelper.__init__(self, speedtest)
+    def __init__(self, parent):
+        SpeedtestHelper.__init__(self, parent)
         self.connect = []
         self.complete = []
         self.latency = []
@@ -454,8 +454,8 @@ MIN_DOWNLOAD = 1<<16
 MAX_DOWNLOAD = 1<<26
 
 class Download(SpeedtestHelper):
-    def __init__(self, speedtest):
-        SpeedtestHelper.__init__(self, speedtest)
+    def __init__(self, parent):
+        SpeedtestHelper.__init__(self, parent)
         self.length = MIN_DOWNLOAD
         self.complete = []
         self.time = []
@@ -523,8 +523,8 @@ MIN_UPLOAD = 1<<15
 #MAX_UPLOAD = 1<<25
 
 class Upload(SpeedtestHelper):
-    def __init__(self, speedtest):
-        SpeedtestHelper.__init__(self, speedtest)
+    def __init__(self, parent):
+        SpeedtestHelper.__init__(self, parent)
         self.length = MIN_UPLOAD
         self.body = "\0" * 1048576
         self.complete = []
@@ -619,8 +619,8 @@ class SpeedtestNegotiate_Response:
                 self.queueLen = int(queueLen)
 
 class Negotiate(SpeedtestHelper):
-    def __init__(self, speedtest):
-        SpeedtestHelper.__init__(self, speedtest)
+    def __init__(self, parent):
+        SpeedtestHelper.__init__(self, parent)
         self.authorization = ""
 
     def start(self):
@@ -655,8 +655,8 @@ class Negotiate(SpeedtestHelper):
         self.speedtest.complete()
 
 class Collect(SpeedtestHelper):
-    def __init__(self, speedtest):
-        SpeedtestHelper.__init__(self, speedtest)
+    def __init__(self, parent):
+        SpeedtestHelper.__init__(self, parent)
 
     def start(self):
         client = self.speedtest.clients[0]
