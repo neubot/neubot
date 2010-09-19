@@ -23,6 +23,7 @@ if __name__ == "__main__":
 from StringIO import StringIO
 from neubot.net import disable_stats
 from neubot.net import enable_stats
+from neubot.database import database
 from neubot.http.messages import Message
 from neubot.utils import unit_formatter
 from neubot.http.messages import compose
@@ -46,7 +47,7 @@ from neubot.net.pollers import sched
 from neubot.notify import publish
 from neubot.notify import subscribe
 from neubot.notify import RENEGOTIATE
-from ConfigParser import RawConfigParser
+from ConfigParser import SafeConfigParser
 from neubot.http.servers import Connection
 from xml.etree.ElementTree import ElementTree
 from xml.etree.ElementTree import Element
@@ -304,7 +305,9 @@ class SpeedtestServer(Server):
             compose(response, code="500", reason="Internal Server Error")
             connection.reply(request, response)
             return
-#       database.storeCollect(collect)
+        if database.dbm:
+            request.body.seek(0)
+            database.dbm.save_result("speedtest", request.body.read())
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
         self._publish_renegotiate()
@@ -317,8 +320,9 @@ class SpeedtestServer(Server):
 # port: 80
 #
 
-class SpeedtestConfig:
+class SpeedtestConfig(SafeConfigParser):
     def __init__(self):
+        SafeConfigParser.__init__(self)
         self.address = "0.0.0.0"
         self.only_auth = False
         self.path = ""
@@ -327,25 +331,40 @@ class SpeedtestConfig:
 #   def check(self):
 #       pass
 
-    def readfp(self, stringio):
-        parser = RawConfigParser()
-        parser.readfp(stringio)
-        if parser.has_option("speedtest", "address"):
-            self.address = parser.get("speedtest", "address")
-        if parser.has_option("speedtest", "only_auth"):
-            self.only_auth = parser.getboolean("speedtest", "only_auth")
-        if parser.has_option("speedtest", "path"):
-            self.path = parser.get("speedtest", "path")
-        if parser.has_option("speedtest", "port"):
-            self.port = parser.get("speedtest", "port")
+    def readfp(self, fp, filename=None):
+        SafeConfigParser.readfp(self, fp, filename)
+        self._do_parse()
 
-    def read(self, filename):
-        try:
-            afile = open(filename, "r")
-        except (IOError, OSError):
-            pass
-        else:
-            self.readfp(afile)
+    def _do_parse(self):
+        if self.has_option("speedtest", "address"):
+            self.address = self.get("speedtest", "address")
+        if self.has_option("speedtest", "only_auth"):
+            self.only_auth = self.getboolean("speedtest", "only_auth")
+        if self.has_option("speedtest", "path"):
+            self.path = self.get("speedtest", "path")
+        if self.has_option("speedtest", "port"):
+            self.port = self.get("speedtest", "port")
+
+    def read(self, filenames):
+        SafeConfigParser.read(self, filenames)
+        self._do_parse()
+
+class SpeedtestModule:
+    def __init__(self):
+        self.config = SpeedtestConfig()
+        self.server = None
+
+    def configure(self, filenames, fakerc):
+        self.config.read(filenames)
+        self.config.readfp(fakerc)
+        # XXX other modules need to read() it too
+        fakerc.seek(0)
+
+    def start(self):
+        self.server = SpeedtestServer(self.config)
+        self.server.listen()
+
+speedtest = SpeedtestModule()
 
 #
 # The purpose of this class is that of emulating the behavior of the
@@ -668,6 +687,10 @@ class Collect(SpeedtestHelper):
         stringio = StringIO()
         tree.write(stringio, encoding="utf-8")
         stringio.seek(0)
+        # DB
+        if database.dbm:
+            database.dbm.save_result("speedtest", stringio.read())
+            stringio.seek(0)
         # HTTP
         m = Message()
         compose(m, method="POST", uri=self.speedtest.uri + "collect",
@@ -961,18 +984,16 @@ def main(args):
             xdebug = True
     # config
     fakerc.seek(0)
-    config = SpeedtestConfig()
-    config.read("/etc/neubot/config")
+    filenames = ["/etc/neubot/config"]
     if environ.has_key("HOME"):
-        config.read(environ["HOME"] + "/.neubot/config")
-    config.readfp(fakerc)
+        filenames.append(environ["HOME"] + "/.neubot/config")
+    speedtest.configure(filenames, fakerc)
     # server
     if servermode:
         if len(arguments) > 0:
             stderr.write(USAGE.replace("@PROGNAME@", args[0]))
             exit(1)
-        server = SpeedtestServer(config)
-        server.listen()
+        speedtest.start()
         loop()
         exit(0)
     # client
