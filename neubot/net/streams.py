@@ -21,6 +21,7 @@
 #
 
 from neubot.net.pollers import Pollable
+from types import UnicodeType
 from neubot import log
 
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
@@ -240,6 +241,15 @@ class Stream(Pollable):
 
     def send(self, octets, send_success, send_error=None):
         if not (self.flags & ISCLOSED):
+            #
+            # Make sure we don't start sending an Unicode string
+            # because _do_send() assumes 8 bits encoding and would
+            # go very likely to 'Internal error' state if passed
+            # an unicode encoding.
+            #
+            if type(octets) == UnicodeType:
+                log.warning("* send: Working-around Unicode input")
+                octets = octets.encode("utf-8")
             self.send_octets = octets
             self.send_pos = 0
             self.send_success = send_success
