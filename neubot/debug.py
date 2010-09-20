@@ -31,6 +31,9 @@ class Profiler:
     def _getfilename(self, frame):
         if frame.f_globals.has_key("__file__"):
             name = frame.f_globals["__file__"]
+            if not name:
+                # XXX this is quite unexpected
+                name = "???"
             if name.endswith(".pyc") or name.endswith(".pyo"):
                 name = name[:-1]
             for pattern in ["neubot/", "testing/", "python2.6/", "python/"]:
