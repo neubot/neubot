@@ -242,6 +242,9 @@ class XMLRendezvous_Response:
         self.available = {}
         self.update = {}
 
+    def __del__(self):
+        pass
+
     def parse(self, stringio):
         tree = ElementTree()
         try:
@@ -277,6 +280,9 @@ class RendezvousClient(ClientController, SpeedtestController):
         self.dontloop = dontloop
         self.xdebug = xdebug
         self.flags = 0
+
+    def __del__(self):
+        pass
 
     def _reschedule(self):
         state.set_inactive()
