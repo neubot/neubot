@@ -16,11 +16,4 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from acceptors import *
-from adaptors import *
-from api import *
-from connectors import *
-from handlers import *
-from messages import *
-from protocols import *
-from utils import *
+pass

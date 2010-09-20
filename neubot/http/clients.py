@@ -43,7 +43,7 @@ from neubot.net.connectors import connect
 from neubot.net.pollers import loop
 from neubot.utils import ticks
 from neubot.utils import safe_seek
-from neubot.http import make_filename
+from neubot.http.utils import make_filename
 from sys import stdin, stdout, stderr
 from sys import argv
 

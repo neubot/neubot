@@ -39,7 +39,7 @@ from neubot.net.listeners import listen
 from neubot.utils import fixkwargs
 from neubot import version as VERSION
 from neubot.utils import safe_seek
-from neubot.net import loop
+from neubot.net.pollers import loop
 from types import StringType
 from getopt import GetoptError
 from getopt import getopt

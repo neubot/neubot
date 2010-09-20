@@ -17,30 +17,3 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 version = "0.2.5"
-
-import config
-
-import log
-
-import net
-import notify
-import http
-
-import auto
-import collect
-import container
-import coordinate
-import database
-import debug
-import measure
-import negotiate
-import network
-import rendezvous
-import table
-import utils
-import whitelist
-
-import ui
-
-# Must be the last import
-import main

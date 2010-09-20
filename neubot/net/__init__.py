@@ -16,13 +16,4 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-from neubot.net.connectors import connect
-from neubot.net.listeners  import listen
-from neubot.net.pollers    import dispatch
-from neubot.net.pollers    import loop
-from neubot.net.pollers    import register_periodic
-from neubot.net.pollers    import sched
-from neubot.net.pollers    import unsched
-from neubot.net.pollers    import unregister_periodic
-from neubot.net.pollers    import disable_stats
-from neubot.net.pollers    import enable_stats
+pass
