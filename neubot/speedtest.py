@@ -378,6 +378,9 @@ class SpeedtestHelper:
     def __init__(self, parent):
         self.speedtest = parent
 
+    def __del__(self):
+        pass
+
     def start(self):
         pass
 
@@ -402,6 +405,9 @@ class Latency(SpeedtestHelper):
         self.complete = []
         self.latency = []
         self.repeat = 1
+
+    def __del__(self):
+        SpeedtestHelper.__del__(self)
 
     def start(self):
         log.start("* Latency run #%d" % self.repeat)
@@ -460,6 +466,9 @@ class Download(SpeedtestHelper):
         self.complete = []
         self.time = []
         self.speed = []
+
+    def __del__(self):
+        SpeedtestHelper.__del__(self)
 
     def start(self):
         log.start("* Download %d bytes" % self.length)
@@ -531,6 +540,9 @@ class Upload(SpeedtestHelper):
         self.time = []
         self.speed = []
 
+    def __del__(self):
+        SpeedtestHelper.__del__(self)
+
     def start(self):
         log.start("* Upload %d bytes" % self.length)
         for client in self.speedtest.clients:
@@ -598,6 +610,9 @@ class SpeedtestNegotiate_Response:
         self.queuePos = 0
         self.queueLen = 0
 
+    def __del__(self):
+        pass
+
     def parse(self, stringio):
         tree = ElementTree()
         try:
@@ -622,6 +637,9 @@ class Negotiate(SpeedtestHelper):
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
         self.authorization = ""
+
+    def __del__(self):
+        SpeedtestHelper.__del__(self)
 
     def start(self):
         client = self.speedtest.clients[0]
@@ -657,6 +675,9 @@ class Negotiate(SpeedtestHelper):
 class Collect(SpeedtestHelper):
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
+
+    def __del__(self):
+        SpeedtestHelper.__del__(self)
 
     def start(self):
         client = self.speedtest.clients[0]
@@ -750,6 +771,9 @@ class SpeedtestClient(ClientController):
         self.parent = parent
         self._start_speedtest(nclients)
 
+    def __del__(self):
+        pass
+
     def _doCleanup(self):
         if self.flags & FLAG_CLEANUP:
             return
@@ -757,11 +781,17 @@ class SpeedtestClient(ClientController):
         for client in self.clients:
             if client.handler:
                 client.handler.close()
+        self.clients = []
         self.negotiate.cleanup()
+        self.negotiate = None
         self.latency.cleanup()
+        self.latency = None
         self.download.cleanup()
+        self.download = None
         self.upload.cleanup()
+        self.upload = None
         self.collect.cleanup()
+        self.collect = None
         if self.parent:
             self.parent.speedtest_complete()
             self.parent = None
@@ -898,6 +928,9 @@ class VerboseClient(SpeedtestClient):
     def __init__(self, uri, nclients, flags, debug, parent=None):
         SpeedtestClient.__init__(self, uri, nclients, flags, debug, parent)
         self.formatter = None
+
+    def __del__(self):
+        pass
 
     def speedtest_complete(self):
         stdout.write("Timestamp: %d\n" % timestamp())
