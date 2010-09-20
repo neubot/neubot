@@ -115,7 +115,7 @@ install:
 	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
 lint:
 	@echo "[LINT]"
-	@find . -type f -name \*.py -exec pychecker --limit 256 {} \;
+	@find . -type f -name \*.py -exec pychecker {} \;
 
 #
 # XXX Probably this piece of code should be moved into some
