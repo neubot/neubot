@@ -736,7 +736,7 @@ FLAG_CLEANUP = (1<<5)
 FLAG_SUCCESS = (1<<6)
 
 class SpeedtestClient(ClientController):
-    def __init__(self, uri, nclients, flags, debug=False):
+    def __init__(self, uri, nclients, flags, debug=False, parent=None):
         self.negotiate = Negotiate(self)
         self.latency = Latency(self)
         self.download = Download(self)
@@ -747,6 +747,7 @@ class SpeedtestClient(ClientController):
         self.flags = flags
         if not debug:
             self.flags |= FLAG_NEGOTIATE|FLAG_COLLECT
+        self.parent = parent
         self._start_speedtest(nclients)
 
     def _doCleanup(self):
@@ -761,6 +762,9 @@ class SpeedtestClient(ClientController):
         self.download.cleanup()
         self.upload.cleanup()
         self.collect.cleanup()
+        if self.parent:
+            self.parent.speedtest_complete()
+            self.parent = None
 
     #
     # We make sure that the URI ends with "/" because below
@@ -858,6 +862,13 @@ class SpeedtestClient(ClientController):
         else:
             raise RuntimeError("Bad flags")
 
+class SpeedtestController:
+    def start_speedtest_simple(self, uri):
+        SpeedtestClient(uri, 2, FLAG_ALL, False, self)
+
+    def speedtest_complete(self):
+        pass
+
 #
 # Test unit
 #
@@ -884,8 +895,8 @@ HELP = USAGE +								\
 "  -x            : Avoid negotiation and collection.\n"
 
 class VerboseClient(SpeedtestClient):
-    def __init__(self, uri, nclients, flags, debug):
-        SpeedtestClient.__init__(self, uri, nclients, flags, debug)
+    def __init__(self, uri, nclients, flags, debug, parent=None):
+        SpeedtestClient.__init__(self, uri, nclients, flags, debug, parent)
         self.formatter = None
 
     def speedtest_complete(self):
