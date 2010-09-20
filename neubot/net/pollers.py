@@ -55,12 +55,18 @@ class PollerTask:
         self.periodic = periodic
         self.delta = delta
 
+    def __del__(self):
+        pass
+
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
 
 class SimpleStats:
     def __init__(self):
         self.begin()
+
+    def __del__(self):
+        pass
 
     def begin(self):
         self.start = ticks()

@@ -227,6 +227,9 @@ class Client(SimpleClient):
         self.receiving = SimpleStats()
         self.parent = parent
 
+    def __del__(self):
+        SimpleClient.__del__(self)
+
     def connection_failed(self):
         self.parent.connection_failed(self)
 

@@ -40,6 +40,9 @@ class Message:
         self.pathquery = ""
         self.family = AF_UNSPEC
 
+    def __del__(self):
+        pass
+
     #
     # The client code saves the whole uri in self.uri and then
     # splits the URI in pieces and, after that, self.pathquery
