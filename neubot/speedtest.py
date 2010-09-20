@@ -21,8 +21,8 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from StringIO import StringIO
-from neubot.net import disable_stats
-from neubot.net import enable_stats
+from neubot.net.pollers import disable_stats
+from neubot.net.pollers import enable_stats
 from neubot.database import database
 from neubot.http.messages import Message
 from neubot.utils import unit_formatter
