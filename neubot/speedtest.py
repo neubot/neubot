@@ -133,10 +133,8 @@ class SpeedtestServer(Server):
         self.config = config
         Server.__init__(self, address=config.address, port=config.port)
         self.queue = deque()
-        self.timestamp = 0
         self.table = {}
         self._init_table()
-        sched(5, self._do_prune_tokens)
 
     def _init_table(self):
         self.table["/speedtest/negotiate"] = self._do_negotiate
@@ -193,15 +191,12 @@ class SpeedtestServer(Server):
         connection, request = atuple
         self._do_negotiate(connection, request, True)
 
-    def _do_prune_tokens(self):
-        sched(5, self._do_prune_tokens)
-        if self.timestamp > 0 and ticks() - self.timestamp > 30:
-            self._publish_renegotiate()
-
-    def _publish_renegotiate(self):
-        self.queue.popleft()
-        self.timestamp = 0
-        publish(RENEGOTIATE)
+    def _publish_renegotiate(self, timeout=True):
+        if self.queue:
+            token = self.queue.popleft()
+            if timeout:
+                log.info("* Test %s: timed-out" % token)
+            publish(RENEGOTIATE)
 
     def _do_negotiate(self, connection, request, recurse=False):
         queuePos = 0
@@ -219,7 +214,7 @@ class SpeedtestServer(Server):
             queuePos = self._queuePos(token)
             unchoked = False
         if unchoked:
-            self.timestamp = ticks()
+            sched(30, self._publish_renegotiate)
         self._send_negotiate(connection, request, token, unchoked, queuePos)
 
     # XXX horrible horrible O(length)!
@@ -310,7 +305,7 @@ class SpeedtestServer(Server):
             database.dbm.save_result("speedtest", request.body.read())
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
-        self._publish_renegotiate()
+        self._publish_renegotiate(False)
 
 #
 # [speedtest]
