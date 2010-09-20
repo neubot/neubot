@@ -646,6 +646,8 @@ class Negotiate(SpeedtestHelper):
         log.start("* Negotiate permission to take the test")
         m = Message()
         compose(m, method="GET", uri=self.speedtest.uri + "negotiate")
+        if self.authorization:
+            m["authorization"] = self.authorization
         client.sendrecv(m)
 
     def got_response(self, client, response):
@@ -661,15 +663,16 @@ class Negotiate(SpeedtestHelper):
             log.exception()
             self.speedtest.bad_response(response)
             return
+        self.authorization = str(negotiation.authorization)
         if not negotiation.unchoked:
-            log.info("* Still choked, waiting for out turn")
             if negotiation.queuePos and negotiation.queueLen:
+                log.info("* Waiting in queue: %d/%d" % (negotiation.queuePos,
+                                                        negotiation.queueLen))
                 state.set_queueInfo(negotiation.queuePos, negotiation.queueLen)
                 state.commit()
             self.start()
             return
-        self.authorization = str(negotiation.authorization)
-        log.info("* Now unchoked, can take the test")
+        log.info("* Authorized to take the test!")
         self.speedtest.complete()
 
 class Collect(SpeedtestHelper):
