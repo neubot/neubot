@@ -102,6 +102,7 @@ class DatabaseManager:
     def __init__(self, config):
         self.config = config
         self.queue = deque()
+        self.connection = None
         self._do_connect()
         self._autoprune()
         self._do_init_queue()
