@@ -29,5 +29,5 @@ if (os.name != "posix"):
         version="0.2.5",
         author="Simone Basso",
         author_email="bassosimone@gmail.com",
-        console=[{"script": "bin/win32/neubot"}],
+        console=[{"script": "bin/neubot"}],
         url="http://nexa.polito.it/neubot")
