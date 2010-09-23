@@ -368,12 +368,12 @@ class RendezvousClient(ClientController, SpeedtestController):
 USAGE = 								\
 "Usage: @PROGNAME@ -V\n"						\
 "       @PROGNAME@ --help\n"						\
-"       @PROGNAME@ [-nvx] [-T interval] [master-URI]\n"			\
+"       @PROGNAME@ [-dnvx] [-T interval] [master-URI]\n"		\
 "       @PROGNAME@ -S [-dv] [-D name=value]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
-"  -d            : Don't daemonize the server.\n"			\
+"  -d            : Debug mode, don't become a daemon.\n"		\
 "  -D name=value : Set configuration file property.\n"			\
 "  --help        : Print this help screen and exit.\n"			\
 "  -n            : Don't loop, just rendez-vous once.\n"		\
@@ -457,6 +457,8 @@ def main(args):
     else:
         uri = URI
     database.start()
+    if daemonize:
+        become_daemon()
     if not dontloop and not xdebug:
         ui.start()
     client = RendezvousClient(uri, interval, dontloop, xdebug)
