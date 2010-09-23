@@ -36,6 +36,7 @@ from neubot.speedtest import SpeedtestClient
 from xml.etree.ElementTree import ElementTree
 from xml.etree.ElementTree import TreeBuilder
 from neubot.http.messages import compose
+from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
 from neubot.net.pollers import sched
 from neubot.database import database
@@ -368,10 +369,11 @@ USAGE = 								\
 "Usage: @PROGNAME@ -V\n"						\
 "       @PROGNAME@ --help\n"						\
 "       @PROGNAME@ [-nvx] [-T interval] [master-URI]\n"			\
-"       @PROGNAME@ -S [-v] [-D name=value]\n"
+"       @PROGNAME@ -S [-dv] [-D name=value]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
+"  -d            : Don't daemonize the server.\n"			\
 "  -D name=value : Set configuration file property.\n"			\
 "  --help        : Print this help screen and exit.\n"			\
 "  -n            : Don't loop, just rendez-vous once.\n"		\
@@ -388,15 +390,18 @@ def main(args):
     servermode = False
     interval = 300
     xdebug = False
+    daemonize = True
     # parse
     try:
-        options, arguments = getopt(args[1:], "D:nST:Vvx", ["help"])
+        options, arguments = getopt(args[1:], "dD:nST:Vvx", ["help"])
     except GetoptError:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
     # options
     for name, value in options:
-        if name == "-D":
+        if name == "-d":
+            daemonize = True
+        elif name == "-D":
             fakerc.write(value + "\n")
         elif name == "--help":
             stdout.write(HELP.replace("@PROGNAME@", args[0]))
@@ -437,6 +442,8 @@ def main(args):
         database.start()
         rendezvous.start()
         speedtest.start()
+        if daemonize:
+            become_daemon()
         loop()
         exit(0)
     # client
