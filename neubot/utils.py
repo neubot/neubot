@@ -25,8 +25,10 @@ from sys import stdout
 from sys import stderr
 
 import signal
-import pwd
 import os
+
+if os.name == "posix":
+    import pwd
 
 def prettyprint_exception(write=log.error, eol=""):
     log.exception()
