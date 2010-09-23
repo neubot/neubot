@@ -383,6 +383,8 @@ HELP = USAGE +								\
 "  -v            : Run the program in verbose mode.\n"			\
 "  -x            : Debug mode, don't run any test.\n"
 
+URI = "http://master.neubot.org:9773/rendezvous"
+
 def main(args):
     fakerc = StringIO()
     fakerc.write("[rendezvous]\n")
@@ -447,10 +449,13 @@ def main(args):
         loop()
         exit(0)
     # client
-    if len(arguments) != 1:
+    if len(arguments) > 1:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
-    uri = arguments[0]
+    elif len(arguments) == 1:
+        uri = arguments[0]
+    else:
+        uri = URI
     database.start()
     if not dontloop and not xdebug:
         ui.start()
