@@ -39,6 +39,7 @@ from getopt import GetoptError
 from neubot.state import state
 from getopt import getopt
 from sys import stderr
+from sys import exit
 
 from os import environ
 from collections import deque

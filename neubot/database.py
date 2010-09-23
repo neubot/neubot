@@ -39,6 +39,7 @@ from getopt import getopt
 from os import environ
 from neubot import log
 from time import time
+from sys import exit
 from sys import stderr
 from sys import stdout
 from sys import argv

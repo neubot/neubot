@@ -42,6 +42,7 @@ from socket import SO_REUSEADDR
 from socket import SOL_SOCKET
 from socket import socket
 from socket import AF_INET
+from sys import exit
 from neubot import log
 
 LISTENARGS = {

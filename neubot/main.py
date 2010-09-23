@@ -31,6 +31,7 @@ from sys import setprofile
 from neubot import log
 from sys import argv
 from os import environ
+from sys import exit
 
 # cheating a bit
 from neubot.http import clients as http

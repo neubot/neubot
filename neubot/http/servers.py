@@ -48,6 +48,7 @@ from os import sep as SEP
 from time import gmtime
 from neubot import log
 from sys import argv
+from sys import exit
 from os import getcwd
 
 from socket import AF_INET

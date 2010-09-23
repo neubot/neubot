@@ -45,6 +45,7 @@ from socket import AF_INET6
 from socket import AF_INET
 from socket import socket
 from neubot import log
+from sys import exit
 from os import strerror
 from sys import argv
 

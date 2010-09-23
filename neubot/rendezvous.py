@@ -51,6 +51,7 @@ from neubot import log
 from getopt import GetoptError
 from getopt import getopt
 from neubot.state import state
+from sys import exit
 from os import environ
 from sys import argv
 from sys import stdout

@@ -45,6 +45,7 @@ from neubot.utils import ticks
 from neubot.utils import safe_seek
 from neubot.http.utils import make_filename
 from sys import stdin, stdout, stderr
+from sys import exit
 from sys import argv
 
 def SECURE(message):

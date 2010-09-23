@@ -52,6 +52,7 @@ from sys import stdout
 from sys import stdin
 from os import isatty
 from os import environ
+from sys import exit
 from shlex import split
 from sys import argv
 

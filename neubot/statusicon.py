@@ -56,6 +56,7 @@ from sys import stdout
 from sys import stderr
 from sys import argv
 from time import sleep
+from sys import exit
 
 import traceback
 import webbrowser
