@@ -89,6 +89,10 @@ def main(args):
         args.insert(1, DEFAULT)
         _do_main(args, added_command=True)
         return
+    if command.startswith("http://"):
+        args.insert(1, DEFAULT)
+        _do_main(args, added_command=True)
+        return
     _do_main(args)
 
 #
