@@ -196,12 +196,12 @@ Now (assuming that you have installed Neubot below ``/opt``, as shown
 in the above example) add near the bottom of ``/etc/rc.local`` the
 following line::
 
-  test -x /opt/bin/neubot && /opt/bin/neubot -b
+  test -x /opt/bin/neubot && /opt/bin/neubot
 
 Finally, if you don't want to reboot your machine, start Neubot immediatly
 with::
 
-  /opt/bin/neubot -b
+  /opt/bin/neubot
 
 Invoked that way, it will detach from the shell, running in background,
 logging messages through ``syslog(8)``.  The actual log file employed
@@ -241,7 +241,7 @@ perform the following steps:
 
 5. Remove the following line from ``/etc/rc.local``::
 
-     test -x /usr/local/bin/neubot && /usr/local/bin/neubot -b
+     test -x /usr/local/bin/neubot && /usr/local/bin/neubot
 
 6. Remove the ``_neubot`` user::
 
