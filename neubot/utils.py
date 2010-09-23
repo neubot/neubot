@@ -16,19 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-import logging.handlers
-import sys
-import time
-import traceback
+from time import clock
+from time import sleep
+from time import time
+from neubot import log
+from sys import stdin
+from sys import stdout
+from sys import stderr
 
-import neubot
+import signal
+import pwd
+import os
 
-from os import SEEK_END
-from os import SEEK_SET
-
-def prettyprint_exception(write=logging.error, eol=""):
-    neubot.log.exception()
+def prettyprint_exception(write=log.error, eol=""):
+    log.exception()
 
 def versioncmp(left, right):
     left = map(int, left.split("."))
@@ -46,22 +47,22 @@ def fixkwargs(kwargs, defaults):
     return kwargs
 
 #
-# neubot.utils.timestamp()
+# timestamp()
 #   Suitable for timestamping, returns an *integer* representing the
 #   number of seconds elapsed since the epoch, in UTC.
 #
-# neubot.utils.ticks()
+# ticks()
 #   An very precise monotonic clock, that might not be suitable for
 #   timestamping (depending on the plaform.)  It should only be used
 #   to calculate the time elapsed between two events.
 #
 
-timestamp = lambda: int(time.time())
+timestamp = lambda: int(time())
 
-if sys.platform == 'win32':
-    ticks = time.clock
+if os.name == 'nt':
+    ticks = clock
 else:
-    ticks = time.time
+    ticks = time
 
 #
 # When stdin, stdout, stderr are attached to console, seek(0)
@@ -70,11 +71,11 @@ else:
 # one of stdin, stdout, stderr.
 #
 
-def safe_seek(afile, offset, whence=SEEK_SET):
+def safe_seek(afile, offset, whence=os.SEEK_SET):
     try:
         afile.seek(offset, whence)
     except IOError:
-        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
+        if afile not in [stdin, stdout, stderr]:
             raise
 
 #
@@ -89,9 +90,9 @@ def safe_seek(afile, offset, whence=SEEK_SET):
 #
 
 def file_length(afile):
-    afile.seek(0, SEEK_END)
+    afile.seek(0, os.SEEK_END)
     length = afile.tell()
-    afile.seek(0, SEEK_SET)
+    afile.seek(0, os.SEEK_SET)
     return length
 
 #
@@ -120,3 +121,76 @@ def unit_formatter(n, base10=False, unit=""):
         return _unit_formatter(n, [GIGA,MEGA,KILO], unit)
     else:
         return _unit_formatter(n, [GIBI,MEBI,KIBI], unit)
+
+#
+# Daemonize
+#
+
+DAEMON_SYSLOG = 1<<0
+DAEMON_CHDIR = 1<<1
+DAEMON_DETACH = 1<<2
+DAEMON_SIGNAL = 1<<3
+DAEMON_PIDFILE = 1<<4
+DAEMON_DROP = 1<<5
+
+DAEMON_ALL = (DAEMON_SYSLOG|DAEMON_CHDIR|DAEMON_DETACH|DAEMON_SIGNAL|
+              DAEMON_PIDFILE|DAEMON_DROP)
+
+def become_daemon(flags=DAEMON_ALL):
+    if os.name == "posix":
+        try:
+            if flags & DAEMON_SYSLOG:
+                log.debug("* Redirect logs to syslog(3)")
+                log.redirect()
+                for descriptor in range(0,3):
+                    os.close(descriptor)
+                devnull = os.open("/dev/null", os.O_RDWR)
+                for descriptor in range(1,3):
+                    os.dup2(devnull, descriptor)
+            if flags & DAEMON_CHDIR:
+                log.debug("* Move working directory to /")
+                os.chdir("/")
+            if flags & DAEMON_DETACH:
+                log.debug("* Detach from controlling tty")
+                if os.fork() > 0:
+                    os._exit(0)
+                log.debug("* Become leader of a new session")
+                os.setsid()
+                log.debug("* Detach from controlling session")
+                if os.fork() > 0:
+                    os._exit(0)
+            if flags & DAEMON_SIGNAL:
+                log.debug("* Ignoring the SIGINT signal")
+                signal.signal(signal.SIGINT, signal.SIG_IGN)
+            if flags & DAEMON_PIDFILE:
+                pidfiles = ["/var/run/neubot.pid"]
+                if os.environ.has_key("HOME"):
+                    pidfiles.append(os.environ["HOME"] + "/.neubot/pidfile")
+                for pidfile in pidfiles:
+                    try:
+                        f = open(pidfile, "wb")
+                        f.write(str(os.getpid()) + "\n")
+                        f.close()
+                        log.debug("* Written pidfile: %s" % pidfile)
+                        break
+                    except (IOError, OSError):
+                        pass
+            if flags & DAEMON_DROP and os.getuid() == 0:
+                users = ["_neubot", "nobody"]
+                passwd = None
+                for user in users:
+                    try:
+                        passwd = pwd.getpwnam(user)
+                    except KeyError:
+                        pass
+                if not passwd:
+                    log.error("* Can't getpwnam for: %s" % str(users))
+                    os._exit(1)
+                os.setgid(passwd.pw_gid)
+                os.setuid(passwd.pw_uid)
+        except:
+            log.error("fatal: become_daemon() failed")
+            log.exception()
+            os._exit(1)
+    else:
+        pass
