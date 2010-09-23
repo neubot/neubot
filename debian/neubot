@@ -36,8 +36,8 @@ case $1 in
                 exit 1
             fi
         fi
-        echo "Starting neubot: /usr/bin/neubot -b"
-        /usr/bin/neubot -b
+        echo "Starting neubot: /usr/bin/neubot"
+        /usr/bin/neubot
         ;;
     "stop")
         if [ -f /var/run/neubot.pid ]; then
