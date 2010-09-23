@@ -21,6 +21,7 @@
 #
 
 import collections
+import logging.handlers
 import logging
 import time
 import traceback
@@ -67,7 +68,7 @@ class Logger:
     #
 
     def redirect(self):
-        self.logger.removeHandler(self.handler)
+#       self.logger.removeHandler(self.handler)
         self.handler = logging.handlers.SysLogHandler("/dev/log")
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
