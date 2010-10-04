@@ -351,7 +351,7 @@ def main(args):
         if name == "-D":
             fakerc.write(value + "\n")
         elif name == "--help":
-            stdout.write(USAGE.replace("@PROGNAME@", args[0]))
+            stdout.write(HELP.replace("@PROGNAME@", args[0]))
             exit(0)
         elif name == "-i":
             action = INIT
