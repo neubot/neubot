@@ -27,6 +27,7 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
+from neubot import pathnames
 from neubot.http.servers import Server
 from neubot.http.messages import Message
 from neubot.http.clients import Client
@@ -52,7 +53,6 @@ from getopt import GetoptError
 from getopt import getopt
 from neubot.state import state
 from sys import exit
-from os import environ
 from sys import argv
 from sys import stdout
 from sys import stderr
@@ -430,13 +430,10 @@ def main(args):
             xdebug = True
     # options
     fakerc.seek(0)
-    filenames = ["/etc/neubot/config"]
-    if environ.has_key("HOME"):
-        filenames.append(environ["HOME"] + "/.neubot/config")
-    database.configure(filenames, fakerc)
-    rendezvous.configure(filenames, fakerc)
-    speedtest.configure(filenames, fakerc)
-    ui.configure(filenames, fakerc)
+    database.configure(pathnames.CONFIG, fakerc)
+    rendezvous.configure(pathnames.CONFIG, fakerc)
+    speedtest.configure(pathnames.CONFIG, fakerc)
+    ui.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len(arguments) > 0:

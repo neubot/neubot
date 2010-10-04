@@ -63,6 +63,8 @@ _install:
 	@install -d $(DESTDIR)/etc/neubot
 	@install -d $(DESTDIR)/var/neubot
 	@install -d $(DESTDIR)$(PREFIX)/bin
+	@sed 's!@PREFIX@!$(PREFIX)!' neubot/pathnames.py		\
+	    > $(DESTDIR)$(PREFIX)/share/neubot/pathnames.py
 	@sed 's!/usr/local!$(PREFIX)!' bin/unix/neubot > binunixneubot
 	@install binunixneubot $(DESTDIR)$(PREFIX)/bin/neubot
 	@rm binunixneubot

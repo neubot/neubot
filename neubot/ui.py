@@ -51,7 +51,7 @@ from sys import stderr
 from sys import stdout
 from sys import stdin
 from os import isatty
-from os import environ
+from neubot import pathnames
 from sys import exit
 from shlex import split
 from sys import argv
@@ -197,7 +197,7 @@ class UIConfig(SafeConfigParser):
     def __init__(self):
         SafeConfigParser.__init__(self)
         self.address = "127.0.0.1"
-        self.document_root = "/usr/local/neubot/www/"
+        self.document_root = pathnames.WWW
         self.port = "9774"
 
 #   def check(self):
@@ -470,10 +470,7 @@ def main(args):
             exit(0)
     # config
     fakerc.seek(0)
-    filenames = ["/etc/neubot/config"]
-    if environ.has_key("HOME"):
-        filenames.append(environ["HOME"] + "/.neubot/config")
-    ui.configure(filenames, fakerc)
+    ui.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len (arguments) > 0:

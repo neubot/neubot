@@ -41,7 +41,7 @@ from getopt import getopt
 from sys import stderr
 from sys import exit
 
-from os import environ
+from neubot import pathnames
 from collections import deque
 from neubot.utils import ticks
 from neubot.net.pollers import sched
@@ -1027,10 +1027,7 @@ def main(args):
             xdebug = True
     # config
     fakerc.seek(0)
-    filenames = ["/etc/neubot/config"]
-    if environ.has_key("HOME"):
-        filenames.append(environ["HOME"] + "/.neubot/config")
-    speedtest.configure(filenames, fakerc)
+    speedtest.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len(arguments) > 0:

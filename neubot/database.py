@@ -28,6 +28,7 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from collections import deque
+from neubot import pathnames
 from neubot.compat import deque_appendleft
 from ConfigParser import SafeConfigParser
 from StringIO import StringIO
@@ -36,7 +37,6 @@ from getopt import GetoptError
 from sqlite3 import Error
 from neubot import version
 from getopt import getopt
-from os import environ
 from neubot import log
 from time import time
 from sys import exit
@@ -276,7 +276,7 @@ class DatabaseConfig(SafeConfigParser):
         SafeConfigParser.__init__(self)
         self.auto_prune = True
         self.maxcache = 256
-        self.path = "/var/neubot/database.sqlite3"
+        self.path = pathnames.DATABASE
         self.client = True
 
     def readfp(self, fp, filename=None):
@@ -364,11 +364,8 @@ def main(args):
         elif name == "-z":
             action = PRUNE
     # config
-    filenames = ["/etc/neubot/config"]
-    if environ.has_key("HOME"):
-        filenames.append(environ["HOME"] + "/.neubot/config")
     fakerc.seek(0)
-    database.configure(filenames, fakerc)
+    database.configure(pathnames.CONFIG, fakerc)
     # arguments
     if len(arguments) >= 2:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
