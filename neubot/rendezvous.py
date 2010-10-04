@@ -403,7 +403,7 @@ def main(args):
     # options
     for name, value in options:
         if name == "-d":
-            daemonize = True
+            daemonize = False
         elif name == "-D":
             fakerc.write(value + "\n")
         elif name == "--help":
