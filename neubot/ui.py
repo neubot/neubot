@@ -88,6 +88,14 @@ class UIServer(Server):
             self._api_request(connection, request)
             return
         if uri.startswith("/"):
+            if uri == "/":
+                response = Message()
+                compose(response, code="301", reason="Moved Permanently")
+                location = "http://%s:%s/neubot.html" % (self.config.address,
+                                                         self.config.port)
+                response["location"] = location
+                connection.reply(request, response)
+                return
             filename = normpath(self.config.document_root + request.uri)
             log.debug("* Normalized path: %s" % filename)
             if filename.startswith(self.config.document_root):
