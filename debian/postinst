@@ -18,9 +18,82 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+#
+# Portions of this file are a derivative work of portions of
+# the /etc/cron.daily/google-chrome script, released under the
+# following license:
+#
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# [content of the LICENSE file follows]
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#    * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#    * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+install_key() {
+  APT_KEY="`which apt-key 2> /dev/null`"
+  if [ -x "$APT_KEY" ]; then
+    "$APT_KEY" add - >/dev/null 2>&1 <<KEYDATA
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+mQMuBEwOZBERCAC6Hs/+xjJQXu2whf3jsPCHGzHsG9bcLAN80CvsGuSMsiqpCDOr
+HQ7ET5W5Kk/kzf6K9orbKDE1K65SAqbDt2TIxBgvBzgDaDaUNTUWvdx+4r7AXnxe
+Jq0wlg4VL/RQ0InHCtmE3dmQTZh5d/kBdbRpc8h3NlDUKRHCzqkHZqUlgK64yM5v
+Y0Qm6TYIlnuZr85OrB9TcqzaAOtbQR/1uZ/Tz//OTrstSGa95ZvSuotaeu93chS3
+JZ/KjggdDRzhoRLjcYh/y1o//y39w+p7btjvZ7rOsEg/yfnWkEY6aUKyF+jw5miK
+deHdif5bqVPsSbHdrNkC0I1j+ZtT2MUxmDiLAQC+B7wepNhNWLUGOvVRLAAdgfqj
+Hen21IvTGwvSsgLKYQgAlKKW4AwgxI5oJAAoTqXAgocn13x9SM9hMITtCADeMEvW
+EYSKTTAqNX6PQH2wDx2KoiBQ+mBo9MAs1nXT+ikkDfjWhiUdkD/L4lU0z/JEMLC4
+A3e1DRF31kfH2WYGmxGoBGeCDq612BBk5i/V2lYsQj4kdcc/LUyzH4rhAXV5I3x4
+aMn0WH3E2/JJpFZMLcC6tV6Wui1Zy4+pmAovL1E44LMWc8imogvrNTuPqll/X8fY
+lFGXXCHTKZ6mtkwgCRz1feO2yXBZstjvF3pE2rFzIRdEjUlrL62HMr+MAJDtnv6e
+kowF4+1jx9nCskKbx2XIDGkOwEYAmISBdQiiqTuVdwgAguEFbg4TnTY8v8Y8DrDv
+mQdRVQVQswPT8p1eGOZbw6Q8SX+MOu3/Mah+xz9Tj+qUkgAVGmvAoV86opfYESZF
+wrMDSShPGsIhnaJCoN6rlJtfUfgpeiNCQ4cty5g7iL9TUuKAOFBXlk6B0AVLP5TU
+vVbCaYxUY7Q6lBvd8j/M5Tk9b4mqAx1itLtWTJYabrEkgiEA0zgILVsHtl3SwHO5
+vjElPNwYUpkKNIbKnLja52xvJd0FOGF84WWklEHTkaVmCfvf9IyectzZtFM4wubU
+D6C0E2eXwfO32YunCH4QfWrrE0kaovo9WCpqPwJGokmuZDkbVKZnQ6In7eQOI2IR
+OrQkU2ltb25lIEJhc3NvIDxiYXNzb3NpbW9uZUBnbWFpbC5jb20+iIAEExEIACgF
+AkwOZBECGwMFCQHhM4AGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAAoJEJX5anr2
+jRqtJnwA/Rx/lzXBAkkO9U4jQjXdPYM39//Tx63TPuFOyHe5xW/dAP4o9iIyj0bt
+Bk40Wo7hAULv02aolppTQMv2vHcWa4oUPg==
+=ouU4
+-----END PGP PUBLIC KEY BLOCK-----
+KEYDATA
+  fi
+}
+
 set -e
 python -m compileall -q /usr/share/neubot
 groupadd _neubot
 useradd -d/ -g_neubot -s/bin/false _neubot
 update-rc.d neubot defaults 99
 /etc/init.d/neubot start
+install_key
