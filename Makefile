@@ -29,7 +29,6 @@ TAG     = `git tag|grep -v ^_|tail -n1`
 
 PHONIES += _all
 PHONIES += _archive
-PHONIES += _docs
 PHONIES += _install
 PHONIES += _deb
 
@@ -48,11 +47,6 @@ _archive:
             | gzip -9 > dist/neubot-$$ATAG.tar.gz
 	@git archive --format=zip --prefix=neubot-$$ATAG/ $$ATAG        \
             > dist/neubot-$$ATAG.zip
-_docs:
-	@echo "[DOCS]"
-	@cd doc && for DIA in *.dia; do					\
-	    dia --filter=png $$DIA;					\
-	done
 _install:
 	@for D in `find neubot/ -type d`; do				\
 	    install -m755 -d $(DESTDIR)$(PREFIX)/share/$$D || exit 1;	\
