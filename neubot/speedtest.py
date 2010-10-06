@@ -468,7 +468,9 @@ class Download(SpeedtestHelper):
         SpeedtestHelper.__init__(self, parent)
         self.length = MIN_DOWNLOAD
         self.complete = []
-        self.time = []
+        self.begin = []
+        self.end = []
+        self.total = 0
         self.speed = []
 
     def __del__(self):
@@ -491,8 +493,9 @@ class Download(SpeedtestHelper):
         if response.code not in ["200", "206"]:
             self.speedtest.bad_response(response)
             return
-        self.time.append(client.receiving.diff())
-        self.speed.append(client.receiving.speed())
+        self.begin.append(client.receiving.start)
+        self.end.append(client.receiving.stop)
+        self.total += client.receiving.length
         self.complete.append(client)
         if len(self.complete) == len(self.speedtest.clients):
             self.speedtest.upload.body = response.body.read()
@@ -501,20 +504,17 @@ class Download(SpeedtestHelper):
     def _pass_complete(self):
         log.complete()
         # time
-        dtime = sum(self.time)
-        dtime /= len(self.time)
+        dtime = max(self.end) - min(self.begin)
         if dtime < 1 and self.length < MAX_DOWNLOAD:
             self.length <<= 1
             del self.complete[:]
-            del self.time[:]
-            del self.speed[:]
+            del self.begin[:]
+            del self.end[:]
+            self.total = 0
             self.start()
             return
-        del self.time[:]
-        self.time.append(dtime)
         # speed
-        speed = sum(self.speed)
-        del self.speed[:]
+        speed = self.total / dtime
         self.speed.append(speed)
         # done
         state.append_result("download", speed, "iB/s")
@@ -541,7 +541,9 @@ class Upload(SpeedtestHelper):
         self.length = MIN_UPLOAD
         self.body = "\0" * 1048576
         self.complete = []
-        self.time = []
+        self.begin = []
+        self.end = []
+        self.total = 0
         self.speed = []
 
     def __del__(self):
@@ -565,8 +567,9 @@ class Upload(SpeedtestHelper):
         if response.code != "200":
             self.speedtest.bad_response(response)
             return
-        self.time.append(client.sending.diff())
-        self.speed.append(client.sending.speed())
+        self.begin.append(client.sending.start)
+        self.end.append(client.sending.stop)
+        self.total += client.sending.length
         self.complete.append(client)
         if len(self.complete) == len(self.speedtest.clients):
             self._pass_complete()
@@ -574,20 +577,17 @@ class Upload(SpeedtestHelper):
     def _pass_complete(self):
         log.complete()
         # time
-        utime = sum(self.time)
-        utime /= len(self.time)
+        utime = max(self.end) - min(self.begin)
         if utime < 1 and self.length < len(self.body):
             self.length <<= 1
             del self.complete[:]
-            del self.time[:]
-            del self.speed[:]
+            del self.begin[:]
+            del self.end[:]
+            self.total = 0
             self.start()
             return
-        del self.time[:]
-        self.time.append(utime)
         # speed
-        speed = sum(self.speed)
-        del self.speed[:]
+        speed = self.total / utime
         self.speed.append(speed)
         # done
         state.append_result("upload", speed, "iB/s")
