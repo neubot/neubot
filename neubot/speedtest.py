@@ -239,6 +239,8 @@ class SpeedtestServer(Server):
         elem.text = str(queuePos)
         elem = SubElement(root, "unchoked")
         elem.text = str(unchoked)
+        elem = SubElement(root, "publicAddress")
+        elem.text = str(connection.handler.stream.peername[0])          # XXX
         tree = ElementTree(root)
         stringio = StringIO()
         tree.write(stringio, encoding="utf-8")
@@ -588,6 +590,7 @@ class Upload(SpeedtestHelper):
 #
 # <SpeedtestNegotiate_Response>
 #     <authorization>ac2fcbf3-a1db-4bdb-836d-533c2aee9677</authorization>
+#     <publicAddress>130.192.47.84</publicAddress>
 #     <unchoked>True</unchoked>
 #     <queuePos>7</queuePos>
 #     <queueLen>21</queueLen>
@@ -602,6 +605,7 @@ class Upload(SpeedtestHelper):
 class SpeedtestNegotiate_Response:
     def __init__(self):
         self.authorization = ""
+        self.publicAddress = ""
         self.unchoked = False
         self.queuePos = 0
         self.queueLen = 0
@@ -619,6 +623,9 @@ class SpeedtestNegotiate_Response:
             authorization = XML_get_scalar(tree, "authorization")
             if authorization:
                 self.authorization = UUID(authorization)
+            publicAddress = XML_get_scalar(tree, "publicAddress")
+            if publicAddress:
+                self.publicAddress = publicAddress
             unchoked = XML_get_scalar(tree, "unchoked")
             if unchoked.lower() == "true":
                 self.unchoked = True
@@ -632,6 +639,7 @@ class SpeedtestNegotiate_Response:
 class Negotiate(SpeedtestHelper):
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
+        self.publicAddress = ""
         self.authorization = ""
 
     def __del__(self):
@@ -660,6 +668,7 @@ class Negotiate(SpeedtestHelper):
             self.speedtest.bad_response(response)
             return
         self.authorization = str(negotiation.authorization)
+        self.publicAddress = negotiation.publicAddress
         if not negotiation.unchoked:
             if negotiation.queuePos and negotiation.queueLen:
                 log.info("* Waiting in queue: %d/%d" % (negotiation.queuePos,
@@ -687,8 +696,8 @@ class Collect(SpeedtestHelper):
         timestamp.text = str(time())
         internalAddress = SubElement(root, "internalAddress")
         internalAddress.text = client.handler.stream.myname[0]          # XXX
-#       realAddress = SubElement(root, "realAddress")
-#       realAddress.text = ...
+        realAddress = SubElement(root, "realAddress")
+        realAddress.text = self.speedtest.negotiate.publicAddress
         remoteAddress = SubElement(root, "remoteAddress")
         remoteAddress.text = client.handler.stream.peername[0]          # XXX
         for t in self.speedtest.latency.connect:
