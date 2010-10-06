@@ -25,10 +25,8 @@ VERSION	= 0.2.5
 DEB     = dist/neubot-$(VERSION)-1_all.deb
 DESTDIR =
 PREFIX  = /usr/local
-TAG     = `git tag|grep -v ^_|tail -n1`
 
 PHONIES += _all
-PHONIES += _archive
 PHONIES += _install
 PHONIES += _deb
 
@@ -41,12 +39,6 @@ PHONIES += release
 .PHONY: $(PHONIES)
 
 _all: help
-_archive:
-	@install -d dist/
-	@git archive --format=tar --prefix=neubot-$$ATAG/ $$ATAG        \
-            | gzip -9 > dist/neubot-$$ATAG.tar.gz
-	@git archive --format=zip --prefix=neubot-$$ATAG/ $$ATAG        \
-            > dist/neubot-$$ATAG.zip
 _install:
 	@for D in `find neubot/ -type d`; do				\
 	    install -m755 -d $(DESTDIR)$(PREFIX)/share/$$D || exit 1;	\
@@ -142,5 +134,8 @@ release:
 	     echo " $$SHASUM $$KBYTES $$FILE" >> dist/Release;		\
 	 done
 	@gpg -abs -o dist/Release.gpg dist/Release
-	@make _archive ATAG=$(TAG)
+	@git archive --format=tar --prefix=neubot-$(VERSION)/ HEAD	\
+            | gzip -9 > dist/neubot-$(VERSION).tar.gz
+	@git archive --format=zip --prefix=neubot-$(VERSION)/ HEAD	\
+            > dist/neubot-$(VERSION).zip
 	@cd dist && sha256sum neubot-* >> SHA256.inc
