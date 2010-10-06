@@ -84,9 +84,7 @@ def XML_get_vector(tree, name):
 #     <internalAddress>192.168.0.3</internalAddress>
 #     <realAddress>130.192.47.76</realAddress>
 #     <remoteAddress>130.192.47.84</remoteAddress>
-#     <connectTime>0.8</connectTime>
 #     <connectTime>0.9</connectTime>
-#     <latency>0.93</latency>
 #     <latency>0.92</latency>
 #     <downloadSpeed>23</downloadSpeed>
 #     <downloadSpeed>22</downloadSpeed>
@@ -440,6 +438,14 @@ class Latency(SpeedtestHelper):
             del self.complete[:]
             self.start()
             return
+        if len(self.latency) > 0:
+            latency = sum(self.latency) / len(self.latency)
+            del self.latency[:]
+            self.latency.append(latency)
+        if len(self.connect) > 0:
+            connect = sum(self.connect) / len(self.connect)
+            del self.connect[:]
+            self.connect.append(connect)
         self.speedtest.complete()
 
 #
