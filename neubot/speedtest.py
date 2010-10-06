@@ -842,8 +842,8 @@ class SpeedtestClient(ClientController):
             self._speedtest_complete()
 
     def _speedtest_complete(self):
-        self._doCleanup()
         self.speedtest_complete()
+        self._doCleanup()
 
     # override in sub-classes
     def speedtest_complete(self):
