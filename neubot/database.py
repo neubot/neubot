@@ -263,6 +263,12 @@ class DatabaseManager:
             self.connection.commit()
         cursor.close()
 
+    def delete(self):
+        cursor = self.connection.cursor()
+        cursor.execute("DELETE FROM results;")
+        cursor.close()
+        self.connection.commit()
+
 #
 # [database]
 # auto_prune = True
@@ -322,19 +328,20 @@ database = DatabaseModule()
 USAGE =									\
 "Usage: @PROGNAME@ -V\n"						\
 "       @PROGNAME@ --help\n"						\
-"       @PROGNAME@ [-ilvz] [-D name=value] [database]\n"
+"       @PROGNAME@ [-dilvz] [-D name=value] [database]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
 "  -D name=value : Set configuration file property.\n"			\
 "  --help        : Print this help screen and exit.\n"			\
+"  -d            : Delete all the results in the database.\n"		\
 "  -i            : Create and init the specified database.\n"		\
 "  -l            : List all the results in the database.\n"		\
 "  -V            : Print version number and exit.\n"			\
 "  -v            : Run the program in verbose mode.\n"			\
 "  -z            : Compress database pruning old results.\n"
 
-BRIEF, INIT, LIST, PRUNE = range(0,4)
+BRIEF, DELETE, INIT, LIST, PRUNE = range(0,5)
 
 def main(args):
     fakerc = StringIO()
@@ -342,7 +349,7 @@ def main(args):
     action = BRIEF
     # parse
     try:
-        options, arguments = getopt(args[1:], "D:ilVvz", ["help"])
+        options, arguments = getopt(args[1:], "D:dilVvz", ["help"])
     except GetoptError:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
@@ -350,6 +357,8 @@ def main(args):
     for name, value in options:
         if name == "-D":
             fakerc.write(value + "\n")
+        elif name == "-d":
+            action = DELETE
         elif name == "--help":
             stdout.write(HELP.replace("@PROGNAME@", args[0]))
             exit(0)
@@ -382,6 +391,8 @@ def main(args):
             config = database.dbm.get_config()
             for key in sorted(config.keys()):
                 stdout.write("%s\t: %s\n" % (key, config[key]))
+        elif action == DELETE:
+            database.dbm.delete()
         elif action == LIST:
             results = database.dbm.get_results()
             if results:
