@@ -578,14 +578,15 @@ class Upload(SpeedtestHelper):
         log.complete()
         # time
         utime = max(self.end) - min(self.begin)
-        if utime < 1 and self.length < len(self.body):
+        if utime < 1:
             self.length <<= 1
-            del self.complete[:]
-            del self.begin[:]
-            del self.end[:]
-            self.total = 0
-            self.start()
-            return
+            if self.length <= len(self.body):
+                del self.complete[:]
+                del self.begin[:]
+                del self.end[:]
+                self.total = 0
+                self.start()
+                return
         # speed
         speed = self.total / utime
         self.speed.append(speed)
