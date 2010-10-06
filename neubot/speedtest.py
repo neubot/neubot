@@ -568,7 +568,17 @@ class Upload(SpeedtestHelper):
             self.speedtest.bad_response(response)
             return
         self.begin.append(client.sending.start)
-        self.end.append(client.sending.stop)
+        #
+        # The commented out line understates the sending speed because
+        # it does not account the time required to empty the TCP send
+        # buffer. And the error is not negligible in many cases.
+        # So, we overstate the send speed and some tests show that in
+        # this case the error very small.
+        # BTW, I should read again bits of "TCP/IP Illustrated vol. 2"
+        # because it's not obvious to me what's going on here.
+        #
+        self.end.append(client.receiving.start)
+        #self.end.append(client.sending.stop)
         self.total += client.sending.length
         self.complete.append(client)
         if len(self.complete) == len(self.speedtest.clients):
