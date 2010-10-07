@@ -29,25 +29,12 @@
 
 case $1 in
     "start")
-        if [ -f /var/run/neubot.pid ]; then
-            PID=`cat /var/run/neubot.pid`
-            if kill -0 $PID; then
-                echo "error: neubot already running with pid $PID."
-                exit 1
-            fi
-        fi
-        echo "Starting neubot: /usr/bin/neubot"
-        /usr/bin/neubot
+        echo "Starting neubot: /usr/bin/neubot start"
+        /usr/bin/neubot start
         ;;
     "stop")
-        if [ -f /var/run/neubot.pid ]; then
-            PID=`cat /var/run/neubot.pid`
-            if kill -0 $PID; then
-                echo "Stopping neubot: kill -QUIT $PID"
-                kill -QUIT $PID
-            fi
-            rm -rf /var/run/neubot.pid
-        fi
+        echo "Stopping neubot: /usr/bin/neubot stop"
+        /usr/bin/neubot stop
         ;;
     "restart")
         /etc/init.d/neubot stop
