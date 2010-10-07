@@ -67,6 +67,7 @@ class UIServer(Server):
         self.table["/api/config"] = self._do_api_config
         self.table["/api/results"] = self._do_api_results
         self.table["/api/state"] = self._do_api_state
+        self.table["/api/version"] = self._do_api_version
 
     def bind_failed(self):
         log.error("Is another neubot(1) instance running?")
@@ -184,6 +185,13 @@ class UIServer(Server):
         response = Message()
         compose(response, code="200", reason="Ok",
                 body=stringio, mimetype="text/xml")
+        connection.reply(request, response)
+
+    def _do_api_version(self, connection, request, query, recurse=False):
+        response = Message()
+        stringio = StringIO("Neubot/" + version + "\r\n")
+        compose(response, code="200", reason="Ok",
+                body=stringio, mimetype="text/plain")
         connection.reply(request, response)
 
 #
