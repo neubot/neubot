@@ -28,9 +28,9 @@ if __name__ == "__main__":
 
 from neubot import debug
 from sys import setprofile
+from neubot import pathnames
 from neubot import log
 from sys import argv
-from os import environ
 from sys import exit
 
 # cheating a bit
@@ -41,6 +41,8 @@ from neubot import database
 from neubot import rendezvous
 from neubot import speedtest
 from neubot import ui
+
+import os.path
 
 TABLE = {
     "database"   : database.main,
@@ -74,17 +76,31 @@ else:
 DEFAULT = "rendezvous"
 
 #
+# Without arguments try to guess "the right thing to do"
+# depending on the operating system and on the available
+# environment.
+#
+
+def main(args):
+    if len(args) == 1:
+        conf = ui.UIConfig()
+        conf.read(pathnames.CONFIG)
+        if not daemon_running(conf.address, conf.port):
+            start_daemon(args)
+        uri = "http://%s:%s/" % (conf.address, conf.port)
+        if os.name != "posix" or os.environ.has_key("DISPLAY"):
+            webbrowser.open(uri)
+    else:
+        _main_with_args(args)
+
+#
 # Make sure that _do_main() always receives
 # the program name as the first argument and
 # a command (not an option) as the second
 # argument.
 #
 
-def main(args):
-    if len(args) == 1:
-        args.append(DEFAULT)
-        _do_main(args, added_command=True)
-        return
+def _main_with_args(args):
     command = args[1]
     if command.startswith("-"):
         args.insert(1, DEFAULT)
@@ -137,7 +153,7 @@ def _do_fixup_and_invoke(func, args, added_command):
 
 def _do_invoke(func, args):
     try:
-        if environ.has_key("NEUBOT_TRACE"):
+        if os.environ.has_key("NEUBOT_TRACE"):
             setprofile(debug.trace)
         func(args)
     except SystemExit, e:
@@ -146,6 +162,44 @@ def _do_invoke(func, args):
     except:
         log.exception()
         exit(1)
+
+#
+# Daemon functions
+# Here there is code to guess whether an instance of neubot
+# is already running and code to start a background instance
+# if needed.
+#
+
+import webbrowser
+import subprocess
+import httplib
+import socket
+
+def daemon_running(address, port):
+    isrunning = False
+    try:
+        connection = httplib.HTTPConnection(address, port)
+        connection.request("GET", "/api/version")
+        response = connection.getresponse()
+        if response.status == 200:
+            isrunning = True
+        connection.close()
+    except (httplib.HTTPException, socket.error):
+        pass
+    return isrunning
+
+def start_daemon(args):
+    args[0] = os.path.abspath(args[0])
+    args.append("rendezvous")
+    #
+    # With UNIX we use call() because we know that
+    # the called instance of neubot is going to fork
+    # in background.
+    #
+    if os.name != "posix":
+        subprocess.Popen(args)
+    else:
+        subprocess.call(args)
 
 if __name__ == "__main__":
     main(argv)
