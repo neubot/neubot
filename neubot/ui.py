@@ -273,9 +273,10 @@ class UIClient(ClientController):
     def set(self, variable, value):
         self.following = None
         request = Message()
-        uri = self.makeuri("config")
+        uri = self.makeuri(variable)
         stringio = StringIO()
-        stringio.write(urlencode({variable: value}))
+        # TODO here we should enforce url-encoding
+        stringio.write(value)
         stringio.seek(0)
         compose(request, method="POST", uri=uri, body=stringio, keepalive=False,
          mimetype="application/x-www-form-urlencoded")
