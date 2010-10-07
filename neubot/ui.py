@@ -51,6 +51,7 @@ from sys import stderr
 from sys import stdout
 from sys import stdin
 from os import isatty
+from os import _exit
 from neubot import pathnames
 from sys import exit
 from shlex import split
@@ -65,6 +66,7 @@ class UIServer(Server):
 
     def _initialize(self):
         self.table["/api/config"] = self._do_api_config
+        self.table["/api/exit"] = self._do_api_exit
         self.table["/api/results"] = self._do_api_results
         self.table["/api/state"] = self._do_api_state
         self.table["/api/version"] = self._do_api_version
@@ -193,6 +195,14 @@ class UIServer(Server):
         compose(response, code="200", reason="Ok",
                 body=stringio, mimetype="text/plain")
         connection.reply(request, response)
+
+    #
+    # Not the cleanest way to exit(): It would be better
+    # to tell the main loop() to quit.
+    #
+
+    def _do_api_exit(self, connection, request, query, recurse=False):
+        _exit(0)
 
 #
 # [ui]
