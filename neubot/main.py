@@ -31,6 +31,7 @@ from sys import setprofile
 from neubot import pathnames
 from neubot import log
 from sys import stderr
+from sys import stdout
 from sys import argv
 from sys import exit
 
@@ -59,6 +60,34 @@ def dohelp(args):
          stderr.write("%s%s\n" % (" " * 20, line))
      stderr.write("Try `neubot COMMAND --help' for more help on COMMAND\n")
 
+def dostart(args):
+    if len(args) == 2 and args[1] == "--help":
+        stdout.write("Start the background neubot instance.\n")
+        stdout.write("Usage: %s\n" % args[0])
+        exit(0)
+    if len(args) > 1:
+        stderr.write("Usage: %s\n" % args[0])
+        exit(1)
+    conf = ui.UIConfig()
+    conf.read(pathnames.CONFIG)
+    if not daemon_running(conf.address, conf.port):
+        # need to remove the command from the program name
+        args[0] = args[0].replace(" start", "")
+        start_daemon(args)
+
+def dostop(args):
+    if len(args) == 2 and args[1] == "--help":
+        stdout.write("Stop the background neubot instance.\n")
+        stdout.write("Usage: %s\n" % args[0])
+        exit(0)
+    if len(args) > 1:
+        stderr.write("Usage: %s\n" % args[0])
+        exit(1)
+    conf = ui.UIConfig()
+    conf.read(pathnames.CONFIG)
+    if daemon_running(conf.address, conf.port):
+        stop_daemon(conf.address, conf.port)
+
 TABLE = {
     "database"   : database.main,
     "help"       : dohelp,
@@ -66,6 +95,8 @@ TABLE = {
     "httpd"      : httpd.main,
     "rendezvous" : rendezvous.main,
     "speedtest"  : speedtest.main,
+    "start"      : dostart,
+    "stop"       : dostop,
     "ui"         : ui.main,
 }
 
@@ -214,6 +245,15 @@ def start_daemon(args):
         subprocess.Popen(args)
     else:
         subprocess.call(args)
+
+def stop_daemon(address, port):
+    try:
+        connection = httplib.HTTPConnection(address, port)
+        connection.request("POST", "/api/exit")
+        response = connection.getresponse()
+        connection.close()
+    except (httplib.HTTPException, socket.error):
+        pass
 
 if __name__ == "__main__":
     main(argv)
