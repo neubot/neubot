@@ -30,6 +30,7 @@ from neubot import debug
 from sys import setprofile
 from neubot import pathnames
 from neubot import log
+from sys import stderr
 from sys import argv
 from sys import exit
 
@@ -42,10 +43,25 @@ from neubot import rendezvous
 from neubot import speedtest
 from neubot import ui
 
+import textwrap
 import os.path
+
+#
+# Internal commands
+#
+
+def dohelp(args):
+     stderr.write("Available commands: ")
+     commands = " ".join(sorted(TABLE.keys()))
+     lines = textwrap.wrap(commands, 50)
+     stderr.write("%s\n" % lines[0])
+     for line in lines[1:]:
+         stderr.write("%s%s\n" % (" " * 20, line))
+     stderr.write("Try `neubot COMMAND --help' for more help on COMMAND\n")
 
 TABLE = {
     "database"   : database.main,
+    "help"       : dohelp,
     "http"       : http.main,
     "httpd"      : httpd.main,
     "rendezvous" : rendezvous.main,
@@ -122,10 +138,8 @@ def _do_main(args, added_command=False):
     try:
         func = TABLE[command]
     except KeyError:
-        log.error("The '%s' command does not exist." % command)
-        log.info("Here's a list of available commands:")
-        for key in sorted(TABLE.keys()):
-            log.info("  %s" % key)
+        stderr.write("The '%s' command does not exist\n" % command)
+        dohelp(args)
         exit(1)
     _do_fixup_and_invoke(func, args, added_command)
 
