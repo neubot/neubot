@@ -287,11 +287,11 @@ class RendezvousClient(ClientController, SpeedtestController):
         pass
 
     def _reschedule(self):
-        state.set_inactive()
         if self.flags & FLAG_TESTING:
             return
         if self.dontloop:
             return
+        state.set_inactive().commit()
         log.info("* Next rendezvous in %d seconds" % self.interval)
         sched(self.interval, self.rendezvous)
 
@@ -302,7 +302,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         self._reschedule()
 
     def rendezvous(self):
-        state.set_activity("rendezvous")
+        state.set_activity("rendezvous").commit()
         self._prepare_tree()
 
     def _prepare_tree(self):
