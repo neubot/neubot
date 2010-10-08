@@ -127,7 +127,6 @@ class StatusIcon:
     #
     # We use the stock icon that represents network activity but
     # it would be better to design and ship an icon for Neubot.
-    # TODO We need to decide what to do when we are activated.
     #
 
     def __init__(self, address, port, blink, nohide):
@@ -166,7 +165,7 @@ class StatusIcon:
         gtk.main_quit()
 
     def on_activate(self, *args):
-        pass
+        self._do_open_browser()
 
     #
     # Here we need to surround the code with threads_enter() and
