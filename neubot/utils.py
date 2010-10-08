@@ -196,3 +196,19 @@ def become_daemon(flags=DAEMON_ALL):
             os._exit(1)
     else:
         pass
+
+#
+# XML
+#
+
+def XML_text(node):
+    vector = []
+    if node.nodeType != node.ELEMENT_NODE:
+        raise ValueError("Bad node type")
+    element = node
+    for node in element.childNodes:
+        if node.nodeType != node.TEXT_NODE:
+            continue
+        text = node
+        vector.append(text.data)
+    return "".join(vector).strip()
