@@ -103,6 +103,8 @@ install:
 	@echo "[INSTALL]"
 	@make -f Makefile _install
 	@python2.6 -m compileall -q $(DESTDIR)$(PREFIX)/share/neubot
+	@find $(DESTDIR)$(PREFIX)/share/neubot -type f -name \*.pyc	\
+	                    -exec chmod go+r {} \;
 lint:
 	@echo "[LINT]"
 	@find . -type f -name \*.py -exec pychecker {} \;
