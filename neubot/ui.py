@@ -254,6 +254,159 @@ class UIModule:
 
 ui = UIModule()
 
+#
+# State tracker
+# The SimpleStateTracker is a mechanism to track the state
+# of the local neubot daemon.  The StateTracker is a consumer
+# that prints the state on the standard output.
+# The reason why there is a clean separation between the two
+# classes is that I plan to attach other consumers to the
+# SimpleStateTracker, such as the StatusIcon or a class that
+# uses PyNotify ...
+#
+
+from xml.dom import minidom
+from neubot.utils import XML_text
+from time import sleep
+
+class SimpleStateTracker(ClientController):
+    def __init__(self, address, port):
+        self.timestamp = 0
+        self.address = address
+        self.port = port
+        self.stop = False
+
+    #
+    # The StatusIcon employs two threads of execution, one for
+    # the Gtk application and the other that runs this class, and
+    # that's why here we have a loop() and a mechanism to break
+    # out of the loop.
+    #
+
+    def interrupt(self):
+        self.stop = True
+
+    def loop(self):
+        while not self.stop:
+            self._sendrequest()
+            loop()
+            # We should land here on errors only
+            sleep(3)
+
+    def _sendrequest(self, client=None):
+        request = Message()
+        compose(request, method="GET", uri=self._makeuri())
+        if not client:
+            client = Client(self)
+        client.sendrecv(request)
+
+    def _makeuri(self):
+        return "http://%s:%s/api/state?t=%d" % (self.address, self.port,
+                                                self.timestamp)
+
+    def got_response(self, client, request, response):
+        if response.code == "200" and response["content-type"] == "text/xml":
+            try:
+                document = minidom.parse(response.body)
+            except KeyboardInterrupt:
+                raise
+            except:
+                log.exception()
+            else:
+                try:
+                    self._processbody(document)
+                except ValueError:
+                    log.exception()
+        self._sendrequest(client)
+
+    def _processbody(self, document):
+        self.clear()
+        # <state>
+        root = document.documentElement
+        if root.nodeType != root.ELEMENT_NODE:
+            raise ValueError("Bad node type")
+        if root.tagName != "state":
+            raise ValueError("Bad tag name")
+        self.timestamp = int(root.getAttribute("t"))
+        for node in root.childNodes:
+            if node.nodeType != node.ELEMENT_NODE:
+                continue
+            element = node
+            # <active>
+            if element.tagName == "active":
+                self.set_active(XML_text(element))
+                continue
+            # <activity>
+            if element.tagName == "activity":
+                current = element.getAttribute("current")
+                if current.lower() == "true":
+                    self.set_current_activity(XML_text(element))
+                continue
+            # <current>
+            if element.tagName == "current":
+                for node in element.childNodes:
+                    if node.nodeType != node.ELEMENT_NODE:
+                        continue
+                    element = node
+                    # <task>
+                    if element.tagName == "task":
+                        state = element.getAttribute("state")
+                        if state.lower() == "running":
+                            self.set_extra("task", XML_text(element))
+                        continue
+                    # <name> or <queuePos> or <queueLen>
+                    if element.tagName in ["name", "queuePos", "queueLen"]:
+                        self.set_extra(element.tagName, XML_text(element))
+                        continue
+                continue
+        self.write()
+
+    def clear(self):
+        pass
+
+    def set_active(self, active):
+        pass
+
+    def set_current_activity(self, activity):
+        pass
+
+    def set_extra(self, name, value):
+        pass
+
+    def write(self):
+        pass
+
+class StateTracker(SimpleStateTracker):
+    def __init__(self, address, port):
+        SimpleStateTracker.__init__(self, address, port)
+        self.clear()
+
+    def clear(self):
+        self.active = False
+        self.activity = ""
+        self.extra = {}
+
+    def set_active(self, active):
+        if active.lower() == "true":
+            self.active = True
+
+    def set_current_activity(self, activity):
+        self.activity = activity
+
+    def set_extra(self, name, value):
+        self.extra[name] = value
+
+    def write(self):
+        stdout.write("[%d] " % self.timestamp)
+        if not self.active:
+            stdout.write("inactive\n")
+            return
+        stdout.write("%s %s\n" % (self.activity, self.extra))
+
+#
+# Client
+#
+
 class UIClient(ClientController):
     def __init__(self, address, port):
         self.address = address
@@ -293,6 +446,13 @@ class UIClient(ClientController):
         log.error("Error: %s %s" % (response.code, response.reason))
 
 uiclient = UIClient("127.0.0.1", "9774")
+
+def dotrack(vector):
+    if len(vector) == 0:
+        tracker = StateTracker(ui.config.address, ui.config.port)
+        tracker.loop()
+    else:
+        dohelp(["track"])
 
 def doget(vector):
     if len(vector) == 1:
@@ -413,6 +573,11 @@ COMMANDS = {
         "descr": "Read commands from file",
         "func": dosource,
         "usage": "source file",
+    },
+    "track": {
+        "descr": "Track neubot state",
+        "func": dotrack,
+        "usage": "track"
     },
     "verbose": {
         "descr": "Become verbose",
