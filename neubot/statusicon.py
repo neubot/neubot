@@ -140,8 +140,7 @@ class StatusIcon:
         self.icon.set_from_icon_name(gtk.STOCK_NETWORK)                 # XXX
         self.icon.connect("popup-menu", self.on_popup_menu)
         self.icon.connect("activate", self.on_activate)
-        if not self.nohide:
-            self.icon.set_visible(False)
+        self.icon.set_visible(self.nohide)
 
     def on_popup_menu(self, status, button, time):
         if not self.menu:
