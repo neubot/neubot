@@ -183,6 +183,7 @@ def become_daemon(flags=DAEMON_ALL):
                 for user in users:
                     try:
                         passwd = pwd.getpwnam(user)
+                        break
                     except KeyError:
                         pass
                 if not passwd:
