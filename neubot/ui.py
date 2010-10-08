@@ -207,7 +207,7 @@ class UIServer(Server):
 #
 # [ui]
 # address: 127.0.0.1
-# document_root: /usr/local/neubot/www/
+# document_root: /usr/local/share/neubot/www/
 # port: 9774
 #
 

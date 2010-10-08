@@ -54,7 +54,7 @@ else:
         if os.getuid() > 0:
             DATABASE = home + "/.neubot/database.sqlite3"
         DIRS.append(home + "/.neubot")
-    WWW = PREFIX + "/neubot/www"
+    WWW = PREFIX + "/share/neubot/www"
 
 def printfiles():
     log.debug("Directories   : %s" % str(DIRS))
