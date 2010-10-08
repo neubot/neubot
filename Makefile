@@ -65,6 +65,8 @@ _deb:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@# XXX Work-around using BSD convention for installing manual page
 	@mv dist/data/usr/man dist/data/usr/share/
+	@install -d -m755 dist/data/usr/share/applications/
+	@install -m644 debian/neubot.desktop dist/data/usr/share/applications/
 	@install -d -m755 dist/data/etc/init.d
 	@install -m755 debian/neubot dist/data/etc/init.d/
 	@install -d -m755 dist/data/etc/apt/sources.list.d/

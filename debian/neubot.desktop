@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Neubot (Network Neutrality Bot)
+Comment=Open Neubot Web Interface
+Type=Application
+Exec=/usr/bin/neubot
+Terminal=False
+Categories=GNOME;Network;
+StartupNotify=True
