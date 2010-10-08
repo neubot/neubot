@@ -46,21 +46,18 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
+from neubot import log
 from threading import Thread
-from httplib import HTTPConnection
-from httplib import HTTPException
+from neubot.ui import SimpleStateTracker
 from getopt import GetoptError
 from getopt import getopt
-from os import isatty
 from sys import stdout
 from sys import stderr
 from sys import argv
 from time import sleep
 from sys import exit
 
-import traceback
 import webbrowser
-import socket
 #import gobject
 import signal
 import gtk
@@ -70,67 +67,33 @@ ADDRESS = "127.0.0.1"
 PORT = "9774"
 VERSION = "0.2.5"
 
-#
-# Track neubot(1) state using GET once to get the state value and
-# then using long-polling to update the value when it changes.
-# We don't want to meld StateTracker and StateTrackerThread because
-# it might be useful to run StateTracker from the main thread, for
-# example for testing purpose.  BTW, this is also the reason why
-# the reference to the status-icon is optional (it's not possible
-# to run this class in the same thread of the status-icon).
-# We don't use neubot.http(3) here for various reasons, including
-# problems integrating it with Gtk's main loop, and pygtk being
-# compiled for Python 2.5 on my OS (while neubot, at the moment of
-# writing is Python 2.6+).
-#
-
-class StateTracker:
-    def __init__(self, address, port, icon=None, verbose=False):
-        self.address = address
-        self.port = port
-        self.icon = icon
-        self.verbose = verbose
+class StateTrackerAdapter(SimpleStateTracker):
+    def __init__(self, icon, address, port):
+        SimpleStateTracker.__init__(self, address, port)
         self.state = None
+        self.icon = icon
 
-    def update_state(self):
-        error = False
-        connection = None
-        try:
-            connection = HTTPConnection(self.address, self.port)
-            if self.verbose:
-                connection.set_debuglevel(1)
-            uri = "/state"
-            # XXX using obsolete '/change' suffix (better to use '/comet')
-            if self.state:
-                uri += "/change"
-            connection.request("GET", uri)
-            response = connection.getresponse()
-            if response.status == 200:
-                self.state = response.read().strip()
-                if self.icon:
-                    self.icon.update_state(self.state)
-                else:
-                    stdout.write("%s\n" % self.state)
-            else:
-                error = True
-                if isatty(stderr.fileno()):
-                    stderr.write("Response: %s\n" % response.status)
-        except (HTTPException, socket.error):
-            error = True
-            if isatty(stderr.fileno()):
-                traceback.print_exc()
-        if error:
-            self.state = None
-            # to blank the tooltip
-            if self.icon:
-                self.icon.update_state(self.state)
-        return error
+    def clear(self):
+        self.icon.update_state(None)
+
+    def set_active(self, active):
+        if active.lower() != "true":
+            self.state = "SLEEPING"
+
+    def set_current_activity(self, activity):
+        self.state = activity.upper()
+
+#   def set_extra(self, name, value):
+#       pass
+
+    def write(self):
+        self.icon.update_state(self.state)
 
 class StateTrackerThread(Thread):
-    def __init__(self, address, port, icon=None, verbose=False):
+    def __init__(self, icon, address, port):
         Thread.__init__(self)
-        self.statetracker = StateTracker(address, port, icon, verbose)
-        self.stop = False
+        self.adapter = StateTrackerAdapter(icon, address, port)
+        self.interrupt = self.adapter.interrupt
 
     #
     # Here we ASSUME that we are running a *detached* thread
@@ -149,10 +112,7 @@ class StateTrackerThread(Thread):
 
     def run(self):
         sleep(3)
-        while not self.stop:                                            # XXX
-            error = self.statetracker.update_state()
-            if error:
-                sleep(5)
+        self.adapter.loop()
 
 #
 # The icon in the notification area employs Gtk because I was not
@@ -167,8 +127,7 @@ class StatusIcon:
     #
     # We use the stock icon that represents network activity but
     # it would be better to design and ship an icon for Neubot.
-    # TODO We need to fill the code that generates the popup menu
-    # and we need to decide what to do when we are activated.
+    # TODO We need to decide what to do when we are activated.
     #
 
     def __init__(self, address, port, blink, nohide):
@@ -202,7 +161,6 @@ class StatusIcon:
 
     def _do_open_browser(self, *args):
         uri = "http://%s:%s/" % (self.address, self.port)
-        # XXX This call might be blocking with certain browsers
         webbrowser.open(uri, new=2)
 
     def _do_quit(self, *args):
@@ -262,7 +220,6 @@ HELP = USAGE +								\
 "  -v     : Run the program in verbose mode.\n"
 
 def main(args):
-    verbose = False
     blink = False
     nohide = False
     # parse
@@ -283,7 +240,7 @@ def main(args):
             stderr.write(VERSION + "\n")
             exit(0)
         else:
-            verbose = True
+            log.verbose()
     # arguments
     if len(arguments) >= 3:
         stderr.write(USAGE % args[0])
@@ -300,14 +257,14 @@ def main(args):
     # run
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)
-    tracker = StateTrackerThread(address, port, icon, verbose)
+    tracker = StateTrackerThread(icon, address, port)
     tracker.daemon = True
     tracker.start()
     # See: http://bit.ly/hp8Ot [operationaldynamics.com]
     gtk.gdk.threads_enter()
     gtk.main()
     gtk.gdk.threads_leave()
-    tracker.stop = True
+    tracker.interrupt()
 
 #
 # When we are invoked directly we need to set-up a custom
