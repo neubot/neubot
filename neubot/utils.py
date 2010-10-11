@@ -125,6 +125,18 @@ def unit_formatter(n, base10=False, unit=""):
     else:
         return _unit_formatter(n, [GIBI,MEBI,KIBI], unit)
 
+def time_formatter(n):
+    if n >= 1.0:
+        return "%.1f s" % n
+    elif n >= 0.001:
+        n *= 1000
+        return "%.1f ms" % n
+    elif n >= 0.000001:
+        n *= 1000000
+        return "%.1f us" % n
+    else:
+        return "%f" % n
+
 #
 # Daemonize
 #
