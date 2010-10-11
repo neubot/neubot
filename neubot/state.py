@@ -26,12 +26,96 @@ if __name__ == "__main__":
 
 from neubot.notify import STATECHANGE
 from neubot.notify import get_event_timestamp
-from xml.etree.ElementTree import ElementTree
-from xml.etree.ElementTree import TreeBuilder
 from neubot.utils import versioncmp
+from neubot.utils import XML_to_stringio
+from xml.dom import minidom
 from neubot.notify import publish
 from neubot import version
-from StringIO import StringIO
+
+class StateNegotiate:
+    def __init__(self):
+        self.queuePos = 0
+        self.queueLen = 0
+
+    #
+    # ...
+    #   <queuePos>7</queuePos>
+    #   <queueLen>21</queueLen>
+    # ...
+    #
+
+    def marshal(self, document, parent):
+        element = document.createElement("queuePos")
+        text = document.createTextNode(str(self.queuePos))
+        element.appendChild(text)
+        parent.appendChild(element)
+        element = document.createElement("queueLen")
+        text = document.createTextNode(str(self.queueLen))
+        element.appendChild(text)
+        parent.appendChild(element)
+
+    def set_queueInfo(self, queuePos, queueLen):
+        self.queuePos = queuePos
+        self.queueLen = queueLen
+
+# states
+READY = "ready"
+RUNNING = "running"
+DONE = "done"
+
+class StateTest:
+    def __init__(self, name, tasks=[]):
+        self.current = None
+        self.name = name
+        self.states = {}
+        for task in tasks:
+            self.states[task] = READY
+        self.tasks = tasks
+        self.results = []
+
+    def complete(self):
+        self.states[self.current] = DONE
+        self.current = None
+
+    def set_task(self, task):
+        if self.current:
+            self.states[self.current] = DONE
+        self.states[task] = RUNNING
+        self.current = task
+
+    def append_result(self, tag, value, unit):
+        self.results.append((tag, value, unit))
+
+    #
+    # ...
+    #   <name>speedtest</name>
+    #   <task state="done">latency</task>
+    #   <task state="running">download</task>
+    #   <task state="ready">upload</task>
+    #   <result tag="latency" unit="s">0.0012</result>
+    # ...
+    #
+
+    def marshal(self, document, parent):
+        if self.name:
+            element = document.createElement("name")
+            text = document.createTextNode(self.name)
+            element.appendChild(text)
+            parent.appendChild(element)
+        for task in self.tasks:
+            statex = self.states[task]
+            element = document.createElement("task")
+            element.setAttribute("state", statex)
+            text = document.createTextNode(task)
+            element.appendChild(text)
+            parent.appendChild(element)
+        for tag, value, unit in self.results:
+            element = document.createElement("result")
+            element.setAttribute("tag", tag)
+            element.setAttribute("unit", unit)
+            text = document.createTextNode(str(value))
+            element.appendChild(text)
+            parent.appendChild(element)
 
 ACTIVITIES = [
     "rendezvous",
@@ -39,11 +123,6 @@ ACTIVITIES = [
     "test",
     "collect",
 ]
-
-# states
-READY = "ready"
-RUNNING = "running"
-DONE = "done"
 
 class State:
 
@@ -55,96 +134,66 @@ class State:
 
     def __init__(self):
         self.versioninfo = ()
-        self.set_inactive()
+        self.activity = None
+        self.negotiate = None
+        self.test = None
 
     def set_versioninfo(self, ver, uri):
         self.versioninfo = (ver, uri)
+        return self
 
     #
     # <state t="1284818634023">
     #  <active>True</active>
-    #  <activity>rendez-vous</activity>
+    #  <activity>rendezvous</activity>
     #  <activity>negotiate</activity>
-    #  <activity current="true">testing</activity>
+    #  <activity current="true">test</activity>
     #  <activity>collect</activity>
-    #  <current>
-    #   <name>speedtest</name>
-    #   <task state="done">latency</task>
-    #   <task state="running">speedtest</task>
-    #   <task state="ready">upload</task>
-    #  </current>
+    #  <negotiate>
+    #    ...
+    #  </negotiate>
+    #  <test>
+    #    ...
+    #  </test>
     # </state>
     #
 
     def marshal(self):
-        builder = TreeBuilder()
-        builder.start("state", {"t": get_event_timestamp(STATECHANGE)})
-        self.marshal_versioninfo(builder)
-        self.marshal_inactive(builder)
-        for activity in ACTIVITIES:
-            self.marshal_activity(builder, activity)
-        builder.end("state")
-        return self.make_xml(builder.close())
-
-    def marshal_versioninfo(self, builder):
+        timestamp = get_event_timestamp(STATECHANGE)
+        document = minidom.parseString("<state/>")
+        root = document.documentElement
+        root.setAttribute("t", timestamp)
         if len(self.versioninfo) == 2:
             ver, uri = self.versioninfo
             if versioncmp(ver, version) > 0:
-                builder.start("update", {"uri": uri})
-                builder.data(ver)
-                builder.end("update")
-
-    def marshal_inactive(self, builder):
-        builder.start("active", {})
-        if self.inactive:
-            builder.data("false")
+                element = document.createElement("update")
+                element.setAttribute("uri", uri)
+                text = document.createTextNode(ver)
+                element.appendChild(text)
+                root.appendChild(element)
+        element = document.createElement("active")
+        if not self.activity:
+            text = document.createTextNode("false")
         else:
-            builder.data("true")
-        builder.end("active")
-
-    def marshal_activity(self, builder, activity):
-        dictionary = {}
-        current = (activity == self.current)
-        if current:
-            dictionary = {"current": "true"}
-        builder.start("activity", dictionary)
-        builder.data(activity)
-        builder.end("activity")
-        if current:
-            builder.start("current", {})
-            # XXX hook/hack
-            if self.current == "test":
-                if self.currentname:
-                    builder.start("name", {})
-                    builder.data(self.currentname)
-                    builder.end("name")
-                for task in self.tasknames:
-                    builder.start("task", {"state": self.tasks[task]})
-                    builder.data(task)
-                    builder.end("task")
-                if self.results:
-                    for tag, value, unit in self.results:
-                        builder.start("result", {"tag": tag, "unit": unit})
-                        builder.data(str(value))
-                        builder.end("result")
-            elif self.current == "negotiate":
-                if self.queuePos > 0:
-                    builder.start("queuePos", {})
-                    builder.data(str(self.queuePos))
-                    builder.end("queuePos")
-                if self.queueLen > 0:
-                    builder.start("queueLen", {})
-                    builder.data(str(self.queueLen))
-                    builder.end("queueLen")
-            builder.end("current")
-
-    def make_xml(self, root):
-        tree = ElementTree(root)
-        stringio = StringIO()
-        # damn! the output is not pretty
-        tree.write(stringio, encoding="utf-8")
-        stringio.seek(0)
-        return stringio
+            text = document.createTextNode("true")
+        element.appendChild(text)
+        root.appendChild(element)
+        for activity in ACTIVITIES:
+            element = document.createElement("activity")
+            if activity == self.activity:
+                element.setAttribute("current", "true")
+            text = document.createTextNode(activity)
+            element.appendChild(text)
+            root.appendChild(element)
+        if self.negotiate:
+            element = document.createElement("negotiate")
+            self.negotiate.marshal(document, element)
+            root.appendChild(element)
+        if self.test:
+            element = document.createElement("test")
+            self.test.marshal(document, element)
+            root.appendChild(element)
+        return XML_to_stringio(document)
 
     #
     # Return self because we want to combine
@@ -153,43 +202,36 @@ class State:
     #
 
     def set_inactive(self):
-        self.inactive = True
-        self.currentname = ""
-        self.current = ""
-        self.tasknames = []
-        self.tasks = {}
-        self.running = ""
-        self.results = []
-        self.queuePos = 0
-        self.queueLen = 0
+        self.activity = None
+        self.negotiate = None
+        self.test = None
         return self
 
     def set_activity(self, activity, tasks=[], name=""):
         if not activity in ACTIVITIES:
             raise ValueError("Invalid activity name: %s" % activity)
-        self.set_inactive()
-        self.inactive = False
-        self.current = activity
-        self.tasknames = tasks
-        self.currentname = name
-        for task in tasks:
-            self.tasks[task] = READY
+        self.activity = activity
+        if activity == "negotiate":
+            self.negotiate = StateNegotiate()
+        elif activity == "test":
+            self.test = StateTest(name, tasks)
+        elif activity == "collect":
+            self.test.complete()
         return self
 
     def set_task(self, task):
-        if self.running:
-            self.tasks[self.running] = DONE
-        self.tasks[task] = RUNNING
-        self.running = task
+        if self.test:
+            self.test.set_task(task)
         return self
 
     def set_queueInfo(self, queuePos, queueLen):
-        self.queuePos = queuePos
-        self.queueLen = queueLen
+        if self.negotiate:
+            self.negotiate.set_queueInfo(queuePos, queueLen)
         return self
 
     def append_result(self, tag, value, unit):
-        self.results.append((tag, value, unit))
+        if self.test:
+            self.test.append_result(tag, value, unit)
         return self
 
     def commit(self):
@@ -209,15 +251,10 @@ state = State()
 # Unit testing
 #
 
-from xml.dom import minidom
 from sys import stdout
 
-def _XML_prettyprint(bytes):
-    stdout.write(minidom.parseString(bytes).toprettyxml(
-     indent="  ", newl="\n", encoding="utf-8") + "\n")
-
 if __name__ == "__main__":
-    PRINT = lambda: _XML_prettyprint(state.marshal().read())
+    PRINT = lambda: stdout.write(state.marshal().read() + "\n")
     TASKS = ["latency", "download", "upload"]
     count = 0
     state.set_versioninfo("0.7.3", "http://packages.neubot.org/latest")
@@ -229,12 +266,14 @@ if __name__ == "__main__":
         PRINT()
         state.set_activity("test", TASKS).set_task("latency").commit()
         PRINT()
-        state.append_result("latency", 0.012, "s")
         state.append_result("latency", 0.013, "s")
         state.set_task("download").commit()
         PRINT()
-        state.append_result("download", 11.1, "MB/s")
+        state.append_result("download", 11.1, "Mbps")
         state.set_task("upload").commit()
+        PRINT()
+        state.append_result("upload", 9.8, "Mbps")
+        state.set_activity("collect").commit()
         PRINT()
         state.set_inactive()
         PRINT()
