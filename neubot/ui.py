@@ -343,19 +343,33 @@ class SimpleStateTracker(ClientController):
                     self.set_current_activity(XML_text(element))
                 continue
             # <current>
-            if element.tagName == "current":
+            if element.tagName == "test":
                 for node in element.childNodes:
                     if node.nodeType != node.ELEMENT_NODE:
                         continue
                     element = node
                     # <task>
                     if element.tagName == "task":
-                        state = element.getAttribute("state")
-                        if state.lower() == "running":
+                        statex = element.getAttribute("state")
+                        if statex.lower() == "running":
                             self.set_extra("task", XML_text(element))
                         continue
-                    # <name> or <queuePos> or <queueLen>
-                    if element.tagName in ["name", "queuePos", "queueLen"]:
+                    # <name>
+                    if element.tagName == "name":
+                        self.set_extra(element.tagName, XML_text(element))
+                        continue
+                    # <result>
+                    if element.tagName == "result":
+                        unit = element.getAttribute("unit")
+                        tag = element.getAttribute("tag")
+                        self.set_extra(tag, XML_text(element) + " " + unit)
+                continue
+            if element.tagName == "negotiate":
+                for node in element.childNodes:
+                    if node.nodeType != node.ELEMENT_NODE:
+                        continue
+                    element = node
+                    if element.tagName in ["queuePos", "queueLen"]:
                         self.set_extra(element.tagName, XML_text(element))
                         continue
                 continue
