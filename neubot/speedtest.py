@@ -426,7 +426,6 @@ class Latency(SpeedtestHelper):
             client.connecting.start = client.connecting.stop = 0
         latency = client.receiving.stop - client.sending.start
         self.latency.append(latency)
-        state.append_result("latency", latency, "s")
         self.complete.append(client)
         if len(self.complete) == len(self.speedtest.clients):
             self._pass_complete()
@@ -442,6 +441,7 @@ class Latency(SpeedtestHelper):
             latency = sum(self.latency) / len(self.latency)
             del self.latency[:]
             self.latency.append(latency)
+            state.append_result("latency", latency, "s")
         if len(self.connect) > 0:
             connect = sum(self.connect) / len(self.connect)
             del self.connect[:]
