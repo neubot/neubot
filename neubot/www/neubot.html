@@ -1,144 +1,35 @@
+<!--
+ neubot/www/neubot.html
+ Copyright (c) 2010 NEXA Center for Internet & Society
+ License: GNU GPLv3
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-<script src="jquery.loadingdotdotdot.js"></script>
-<style>
-body {
-	margin: 15px;
-	padding: 0px;
-	font-family: verdana;
-	font-size: medium;
-}
-
-#logo {
-	background-image: url("header.png");
-	background-repeat: repeat-x;
-}
-
-#content {
-	padding: 10px;
-	border-style: none solid solid solid; 
-	border-width: 2px;
-	border-color: #D4D4D4;
-	padding-bottom: 2em;
-
-}
-
-#content h2 {
-	font-size: medium;
-	font-weight: bold;
-	margin: 0px; padding: 0px;
-}
-
-#content ul {
-	margin: 0px; padding-left: 46px; padding-right: 46px;
-	line-height: 3em;
-	list-style:none outside none;
-}
-
-#content ul.l-squared {
-	list-style-type:square;
-}
-
-#content ul.l-squared li#running {
-	background-image: url('loading/loading.gif') ;
-}
-
-#content ul ul {
-	padding-bottom: 0.5em;
-	line-height: normal;
-}
-
-
-ul.hlist li
-{
-	display: inline;
-	list-style-type: none;
-	margin-right: 1em;
-	text-decoration: none;
-	color: #D4D4D4;
-}
-
-ul.hlist li#active
-{
-	border-bottom: 4px solid #000;
-	background: transparent;
-	color: #000;
-}
-
-
-.gray {
-	color: #D4D4D4;
-}
-
-.boxed {
-	border:solid 1px #D4D4D4;
-	background:#EFEFEF;
-	padding-left: 1em;
-	margin-top: 0.5em;
-	margin-left: -1em;
-	margin-right: -1em;
-}
-
-#testname {
-	font-style: italic; font-weight: normal;
-}
-
-</style>
-<link rel="stylesheet" type="text/css" href="projectseven-uberlist.css" />
-<script>
-$(document).ready(function() {
-	$.get('state.xml', function(data) {
-		$('#state').empty();
-		var html = '<h2>Current Neubot state</h2>';
-		html += '<ul class="hlist gray">';
-		$(data).find('name').each(function() {
-			var $entry = $(this);
-			var id = "";
-			($entry.attr('status') == "active") ? id = 'id="active"' : id = '';
-//			console.log(id);
-			html += '<li ' + id + ' >' + $entry.text() + '</li>';
-		});
-		html += '</ul>';
-		$('#state').append($(html));
-	});
-
-	$("#running").Loadingdotdotdot({
-    		"speed": 400,
-		"maxDots": 10
-	});
-});
-
-</script>
+<script src="jquery-1.4.2.min.js" type="text/javascript"></script>
+<script src="jquery.loadingdotdotdot.js" type="text/javascript"></script>
+<script src="neubot.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="neubot.css">
+<link rel="stylesheet" type="text/css" href="projectseven-uberlist.css">
+<title>Neubot</title>
 </head>
 <body>
 <div id="header">
   <div id="logo">
-    <img src="neubot-logo.png" height="15" width="100"/>
+    <img src="neubot-logo.png" height="50" alt="Neubot logo">
   </div>
 </div>
 <div id="content">
   <ul>
     <li id="daemon">
-      <h2>Neubot is currently running/stopped.</h2>
+      <!-- nothing -->
     </li>
     <li id="state">
-      <h2>Current Neubot state</h2>
-      <ul class="hlist gray">
-        <li>sleeping</li> 
-        <li>rendezvous</li> 
-        <li id="active">negotiate</li> 
-        <li>testing</li> 
-        <li>collect</li> 
-      </ul>
+      <!-- nothing -->
     </li>
     <li class="boxed" id="detail">
-      <h2>Details on testing: <span id="testname">currently running Speedtest</span></h2>
-      <ul class="projectseven-uberlist">
-        <li id="done">Latency test done.</li>
-        <li id="running">Download test in progress</li>
-        <li id="ready">Upload test ready.</li>
-      </ul>
+      <!-- nothing -->
     </li>
   </ul>
 </div>
