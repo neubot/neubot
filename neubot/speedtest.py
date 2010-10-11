@@ -48,6 +48,7 @@ from neubot.net.pollers import sched
 from neubot.notify import publish
 from neubot.notify import subscribe
 from neubot.notify import RENEGOTIATE
+from neubot.utils import time_formatter
 from ConfigParser import SafeConfigParser
 from neubot.http.servers import Connection
 from xml.etree.ElementTree import ElementTree
@@ -441,7 +442,8 @@ class Latency(SpeedtestHelper):
             latency = sum(self.latency) / len(self.latency)
             del self.latency[:]
             self.latency.append(latency)
-            state.append_result("latency", latency, "s")
+            latency = time_formatter(latency)
+            state.append_result("latency", latency, "")
         if len(self.connect) > 0:
             connect = sum(self.connect) / len(self.connect)
             del self.connect[:]
@@ -517,7 +519,8 @@ class Download(SpeedtestHelper):
         speed = self.total / dtime
         self.speed.append(speed)
         # done
-        state.append_result("download", speed, "iB/s")
+        speed = unit_formatter(speed * 8, base10=True, unit="bps")
+        state.append_result("download", speed, "")
         self.speedtest.complete()
 
 #
@@ -601,7 +604,8 @@ class Upload(SpeedtestHelper):
         speed = self.total / utime
         self.speed.append(speed)
         # done
-        state.append_result("upload", speed, "iB/s")
+        speed = unit_formatter(speed * 8, base10=True, unit="bps")
+        state.append_result("upload", speed, "")
         self.speedtest.complete()
 
 #
