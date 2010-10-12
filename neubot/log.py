@@ -22,7 +22,6 @@
 
 import collections
 import logging.handlers
-import logging
 import time
 import traceback
 
@@ -54,6 +53,7 @@ class Logger:
         self.message = None
         self.maxqueue = maxqueue
         self._tty = True
+        self.prefix = None
 
     def verbose(self):
         self._verbose = True
@@ -74,6 +74,7 @@ class Logger:
         self.logger.addHandler(self.handler)
         self.logger.setLevel(logging.DEBUG)
         self._tty = False
+        self.prefix = "neubot: "
 
     #
     # In some cases it makes sense to print progress during a
@@ -152,6 +153,8 @@ class Logger:
             message = message[:-1]
         if enqueue:
             deque_append(self.queue, self.maxqueue, (time.time(), message))
+        if self.prefix:
+            message = self.prefix + message
         printlog(message)
 
     def getlines(self):
