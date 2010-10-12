@@ -203,13 +203,23 @@ class State:
 
     def set_inactive(self):
         self.activity = None
-        self.negotiate = None
-        self.test = None
         return self
 
     def set_activity(self, activity, tasks=[], name=""):
         if not activity in ACTIVITIES:
             raise ValueError("Invalid activity name: %s" % activity)
+        #
+        # When there is an Idle -> Busy transition we forget
+        # the results of the previous test. We keep them while
+        # we're idle so: (a) if an UI attaches while we are
+        # idle it could show something; (b) there is not a race
+        # condition between the browser and the Collect ->
+        # Idle transition (that used to be the place where we
+        # forgot the results).
+        #
+        if self.activity == None:
+            self.negotiate = None
+            self.test = None
         self.activity = activity
         if activity == "negotiate":
             self.negotiate = StateNegotiate()
