@@ -48,6 +48,7 @@ if __name__ == "__main__":
 
 from neubot import log
 from threading import Thread
+from neubot.utils import become_daemon
 from neubot.ui import SimpleStateTracker
 from getopt import GetoptError
 from getopt import getopt
@@ -207,28 +208,32 @@ class StatusIcon:
 # neubot is performing some transmission test.
 #
 
-USAGE = "Usage: %s [-BnVv] [--help] [[address] port]\n"
+USAGE = "Usage: %s [-BdnVv] [--help] [[address] port]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
 "  -B     : Blink the icon when performing a test.\n"			\
+"  -d     : Debug mode, don't detach from shell.\n"			\
 "  --help : Print this help screen and exit.\n"				\
 "  -n     : Do not hide the icon when neubot is idle.\n"		\
 "  -V     : Print version number and exit.\n"				\
 "  -v     : Run the program in verbose mode.\n"
 
 def main(args):
+    daemonize = True
     blink = False
     nohide = False
     # parse
     try:
-        options, arguments = getopt(args[1:], "BnVv", ["help"])
+        options, arguments = getopt(args[1:], "BdnVv", ["help"])
     except GetoptError:
         stderr.write(USAGE % args[0])
         exit(1)
     for name, value in options:
         if name == "-B":
             blink = True
+        elif name == "-d":
+            daemonize = False
         elif name == "--help":
             stdout.write(HELP % args[0])
             exit(0)
@@ -252,6 +257,8 @@ def main(args):
     else:
         address = ADDRESS
         port = PORT
+    if daemonize:
+        become_daemon()
     # run
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)
