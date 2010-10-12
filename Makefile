@@ -422,3 +422,7 @@ __release:
 #
 	@make archive
 	@cd dist && sha256sum neubot-* >> SHA256.inc
+#
+#	Fix permissions
+#
+	@cd dist && chmod 644 *
