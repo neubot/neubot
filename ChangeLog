@@ -1,3 +1,114 @@
+Neubot 0.2.6 [2010-10-12]
+	* Makefile: don't assume pychecker provides --limit option
+	* debug: The name might be None
+	* notify: Reduce the interval between each periodic()
+	* net.streams: Update the code
+	* http.handlers: Bugfix queue length calculation
+	* http.handlers: bufferize(): Allow also strings
+	* http.handlers: Update the code
+	* http.handler: Pass to Handler() a reference to the receiver
+	* http.clients: Update the code
+	* http.server: Update the code
+	* http.servers: Avoid pychecker warning, rename 'time' variable
+	* http.servers: Increase max-request-per-conn to help speedtest
+	* net.streams: send: Reliable behavior if passed an unicode string
+	* Help debugging adding explicit destructors
+	* notify: Add RENEGOTIATE event for speedtest
+	* notify: Attach a timestamp to each event
+	* neubot.state: Track, export, and publish neubot state
+	* state: Support to pass partial result to the client
+	* state: Inform the user/client of an available update
+	* database: Rewritten to use sqlite3 as backend
+	* fake-db.py: Simple python script to help testing neubot.database
+	* speedtest: Add SpeedtestServer and enhance SpeedtestClient
+	* speedtest: Notify state changes to the state module
+	* speedtest: Guarantee FIFO service and return queue position
+	* speedtest: Tell the state module our position in the queue
+	* speedtest: Pass the state module our partial results
+	* speedtest: client mode: Adjust the default URI
+	* speedtest: Integrate with (and borrow code from) database
+	* speedtest: Rename variable to avoid pychecker warning
+	* speedtest: Let rendezvous control the speedtest
+	* speedtest: Import from the file name and not from the module name
+	* speedtest: Make sure there are not circular dependencies
+	* speedtest: Bugfix client-side negotiation
+	* speedtest: Fix deadlock on client disconnection during test
+	* config: Rewritten to add interface for UI
+	* neubot/www: The static files part of our WebGUI
+	* ui: Completely rewritten the user interface
+	* rendezvous: Rewritten to use XML rather than JSON
+	* rendezvous: Help debugging adding explicit destructors
+	* Removed all the deprecated files
+	* ui: redirect to /neubot.html if the request is for /
+	* main: Rewritten and now referencing the new commands
+	* bin/neubot: Simple startup script for neubot
+	* utils: Do not import json
+	* log: Add some missing bits when going in background
+	* utils: Add the code to go in background
+	* rendezvous: Add the code to go in background
+	* main: Do NOT exchange by mistake an URI and a command
+	* rendezvous: Use a default URI if no URI was provided
+	* rendezvous: The client too must background by default
+	* debian: The -b option is no longer available
+	* INSTALL: The -b option is no longer available
+	* setup.py: For win32 too use the new bin/neubot startup script
+	* utils: Do not attempt to import pwd under Windows
+	* database: Make sure connection always exists
+	* The frozen executable does not support exit()
+	* rendezvous: Make sure that -d works correctly
+	* database: Make sure we print help on --help
+	* pathnames: Provide system-dependent path names
+	* debian: Update the content of the control file
+	* debian: updated the fqdn in neubot.list
+	* debian: add postinst the code to trust our pgp key
+	* Makefile: Install bin/neubot instead of bin/unix/neubot
+	* speedtest: Pass the client its real network address
+	* speedtest: make sure we print stats before we cleanup
+	* speedtest: average latency and time to connect
+	* database: add command to delete all the results
+	* speedtest: improve algorithm to calculate xfer speed
+	* speedtest: make sure self.length always <= len(self.body)
+	* speedtest: alternate approach for upload speed measurement
+	* bin: removed the old commands for unix and win32
+	* Makefile: remove the unused target _docs
+	* Makefile: make release: put the same content in deb and tarball
+	* ui: add /api/version uri that returns neubot version
+	* main: Without arguments try to do the right thing
+	* main: Add the "help" internal command
+	* ui: add /api/exit uri that exits from the program
+	* main: implement start and stop commands
+	* debian/neubot: use start and stop commands
+	* ui: Make sure that the set command works as expected
+	* rendezvous: Improve the way we publish state changes
+	* utils: add XML_text(): join the text nodes child of an element node
+	* ui: add code to track the state of the local neubot daemon
+	* statusicon: Use ui.SimpleStateTracker to track the state
+	* statusicon: make sure -n works as expected
+	* statusicon: open browser on "activate"
+	* debian: create entry into the GNOME menu
+	* ui, pathnames: adjust the path where static files are installed
+	* Makefile: make sure we install *.pyc with umask 022
+	* utils: become_daemon: use the first available unpriv user
+	* Add a copy of the manual pages
+	* debian: move files into directories to simplify makefile
+	* Makefile: written in a more modular way and commented the code
+	* speedtest: results += latency's MEAN instead of += N measurements
+	* utils: add code to string{,io}-ify DOM
+	* state: modify XML format, delegate work to helpers, rework the code
+	* ui: update state tracker because XML file format changed
+	* utils: add simple/stupid formatter for time units
+	* speedtest: pass the web interface formatted units
+	* www: updated again the web-pages
+	* state: keep latest test results until we start next test
+	* statusicon: by default detach from shell and run in background
+	* ui: print error on 404 rather than debug message always
+	* log: prefix "neubot: " when we're using syslog
+	* pathnames: always ignore $HOME when running as root
+	* Makefile: make release: chmod 644 stuff in dist
+	* Build.bat: add web user interface files to dist/
+	* neubot.nsi: add *recursively* the content of dist/
+	* Release neubot/0.2.6
+
 Neubot 0.2.5 [2010-09-15]
 	* Globally replace Timer with SimpleStats
 	* http.handlers: Add maximum-line-length check
