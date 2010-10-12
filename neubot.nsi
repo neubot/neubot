@@ -21,7 +21,7 @@ outfile "Neubot_Setup_0.2.5.exe"
 installdir "$PROGRAMFILES\Neubot"
 section
     setoutpath "$INSTDIR"
-    file "dist\*.*"
+    file /r "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
     createdirectory "$SMPROGRAMS\Neubot"
     createshortcut "$SMPROGRAMS\Neubot\neubot.lnk" "$INSTDIR\neubot.exe"
