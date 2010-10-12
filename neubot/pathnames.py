@@ -48,11 +48,16 @@ else:
     DIRS.append("/etc/neubot")
     DATABASE = "/var/neubot/database.sqlite3"
     DIRS.append("/var/neubot")
-    if os.environ.has_key("HOME"):
+    #
+    # Do NOT consider HOME when running as root because
+    # this might cause issues when running e.g. sudo neubot
+    # and the current user has a neubot configuration file
+    # in $HOME.
+    #
+    if os.environ.has_key("HOME") and os.getuid() > 0:
         home = os.environ["HOME"]
         CONFIG.append(home + "/.neubot/config")
-        if os.getuid() > 0:
-            DATABASE = home + "/.neubot/database.sqlite3"
+        DATABASE = home + "/.neubot/database.sqlite3"
         DIRS.append(home + "/.neubot")
     WWW = PREFIX + "/share/neubot/www"
 
