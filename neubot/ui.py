@@ -101,7 +101,6 @@ class UIServer(Server):
                 connection.reply(request, response)
                 return
             filename = normpath(self.config.document_root + request.uri)
-            log.debug("* Normalized path: %s" % filename)
             if filename.startswith(self.config.document_root):
                 self._fs_request(connection, request, filename)
                 return
@@ -114,6 +113,7 @@ class UIServer(Server):
         try:
             body = open(filename, "rb")
         except (OSError, IOError):
+            log.error("* Not found: %s" % filename)
             compose(response, code="404", reason="Not Found")
         else:
             mimetype, encoding = guess_type(filename)
