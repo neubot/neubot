@@ -44,6 +44,10 @@ from sys import stderr
 from sys import stdout
 from sys import argv
 
+import os.path
+if os.name == "posix":
+    import pwd
+
 #
 # Config table.
 # The config table is like a dictionary and keeps some useful
@@ -114,6 +118,38 @@ class DatabaseManager:
 
     def _do_connect(self):
         log.debug("* Connecting to database: %s" % self.config.path)
+        #
+        # Make sure that we can access the database file or fail making
+        # noise (rationale: the error + stacktrace is likely to be less
+        # obscure than the one sqlite3 would print in this case).
+        #
+        try:
+            fp = open(self.config.path, "ab+")
+        except (IOError, OSError):
+            log.error("Can't open/access database file: %s" % self.config.path)
+            log.exception()
+            exit(1)
+        else:
+            fp.close()
+        if os.name == "posix" and os.getuid() == 0:
+            #
+            # Make sure that the sqlite3 module will be
+            # able to open/write the database after we drop
+            # root privileges.
+            #
+            # This duplicates code in neubot/utils.py
+            users = ["_neubot", "nobody"]
+            passwd = None
+            for user in users:
+                try:
+                    passwd = pwd.getpwnam(user)
+                    break
+                except KeyError:
+                    pass
+            if not passwd:
+                log.error("* Can't getpwnam for: %s" % str(users))
+                exit(1)
+            os.chown(self.config.path, passwd.pw_uid, passwd.pw_gid)
         self.connection = connect(self.config.path)
         cursor = self.connection.cursor()
         self._make_config(cursor)
