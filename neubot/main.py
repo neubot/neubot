@@ -51,14 +51,14 @@ import os.path
 # Internal commands
 #
 
-def dohelp(args):
-     stderr.write("Available commands: ")
+def dohelp(args, fp=stdout):
+     fp.write("Available commands: ")
      commands = " ".join(sorted(TABLE.keys()))
      lines = textwrap.wrap(commands, 50)
-     stderr.write("%s\n" % lines[0])
+     fp.write("%s\n" % lines[0])
      for line in lines[1:]:
-         stderr.write("%s%s\n" % (" " * 20, line))
-     stderr.write("Try `neubot COMMAND --help' for more help on COMMAND\n")
+         fp.write("%s%s\n" % (" " * 20, line))
+     fp.write("Try `neubot COMMAND --help' for more help on COMMAND\n")
 
 def dostart(args):
     if len(args) == 2 and args[1] == "--help":
@@ -170,7 +170,7 @@ def _do_main(args, added_command=False):
         func = TABLE[command]
     except KeyError:
         stderr.write("The '%s' command does not exist\n" % command)
-        dohelp(args)
+        dohelp(args, stderr)
         exit(1)
     _do_fixup_and_invoke(func, args, added_command)
 
