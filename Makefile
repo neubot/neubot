@@ -180,6 +180,8 @@ _install_bin:
 # The original sources contain the @DATADIR@ placeholder and
 # will use a sane default if they find the placeholder instead
 # of a valid path.
+# Note that we don't use ``sed -i`` below because at least
+# in OpenBSD this non-standard switch is not implemented.
 # FIXME Actually the sources contain PREFIX but it should use
 # DATADIR; however now we don't have time to fix that and so
 # the above comment is not (yet) right.
