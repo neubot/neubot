@@ -29,10 +29,12 @@ PREFIX = "@PREFIX@"
 if PREFIX.startswith("@"):
     PREFIX = "/usr/local"
 
-DIRS = []
 DATABASE = ""
 CONFIG = []
 WWW = ""
+
+userdirs = []
+sysdirs = []
 
 if os.name == "nt":
     if not os.environ.has_key("APPDATA"):
@@ -40,14 +42,14 @@ if os.name == "nt":
     appdata = os.environ["APPDATA"]
     CONFIG.append(appdata + "\\neubot\\config")
     DATABASE = appdata + "\\neubot\\database.sqlite3"
-    DIRS.append(appdata + "\\neubot")
+    userdirs.append(appdata + "\\neubot")
     WWW = os.path.dirname(os.path.abspath(argv[0])) + "\\www"
 else:
     # assume posix
     CONFIG.append("/etc/neubot/config")
-    DIRS.append("/etc/neubot")
+    sysdirs.append("/etc/neubot")
     DATABASE = "/var/neubot/database.sqlite3"
-    DIRS.append("/var/neubot")
+    sysdirs.append("/var/neubot")
     #
     # Do NOT consider HOME when running as root because
     # this might cause issues when running e.g. sudo neubot
@@ -58,14 +60,24 @@ else:
         home = os.environ["HOME"]
         CONFIG.append(home + "/.neubot/config")
         DATABASE = home + "/.neubot/database.sqlite3"
-        DIRS.append(home + "/.neubot")
+        userdirs.append(home + "/.neubot")
     WWW = PREFIX + "/share/neubot/www"
 
 def printfiles():
-    log.debug("Directories   : %s" % str(DIRS))
     log.debug("Config files  : %s" % str(CONFIG))
     log.debug("Database file : %s" % DATABASE)
     log.debug("WWW root      : %s" % WWW)
+
+def _makedirs(dirs, perms=0755):
+    for directory in dirs:
+        if not os.path.exists(directory):
+            log.info("* Create directory: %s" % directory)
+            os.mkdir(directory, perms)
+
+def checkdirs():
+    if os.name == "posix" and os.getuid() == 0:
+        _makedirs(sysdirs)
+    _makedirs(userdirs)
 
 if __name__ == "__main__":
     log.verbose()

@@ -129,6 +129,7 @@ DEFAULT = "rendezvous"
 #
 
 def main(args):
+    pathnames.checkdirs()
     if len(args) == 1:
         conf = ui.UIConfig()
         conf.read(pathnames.CONFIG)
