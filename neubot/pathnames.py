@@ -25,6 +25,9 @@ from sys import exit
 from sys import argv
 import os.path
 
+if os.name == "posix":
+    from neubot.utils import getpwnamlx
+
 PREFIX = "@PREFIX@"
 if PREFIX.startswith("@"):
     PREFIX = "/usr/local"
@@ -74,9 +77,20 @@ def _makedirs(dirs, perms=0755):
             log.info("* Create directory: %s" % directory)
             os.mkdir(directory, perms)
 
+#
+# We need to be the owner of /var/neubot because otherwise
+# sqlite3 fails to lock the database for writing.
+#
+# Read more at http://www.neubot.org/node/14
+#
+def _adjust_ownership():
+    passwd = getpwnamlx()
+    os.chown("/var/neubot", passwd.pw_uid, passwd.pw_gid)
+
 def checkdirs():
     if os.name == "posix" and os.getuid() == 0:
         _makedirs(sysdirs)
+        _adjust_ownership()
     _makedirs(userdirs)
 
 if __name__ == "__main__":
