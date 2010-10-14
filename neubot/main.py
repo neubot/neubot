@@ -242,9 +242,17 @@ def start_daemon(args):
     # in background.
     #
     if os.name != "posix":
-        subprocess.Popen(args)
+        call = subprocess.Popen
     else:
-        subprocess.call(args)
+        call = subprocess.call
+    try:
+        call(args)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        log.error("Can't exec: %s" % str(args))
+        log.exception()
+        exit(1)
 
 def stop_daemon(address, port):
     try:
