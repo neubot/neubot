@@ -173,6 +173,7 @@ _install_man:
 
 _install_bin:
 	@$(INSTALL) -m755 bin/neubot $(DESTDIR)$(BINDIR)
+	@$(INSTALL) -m755 bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
 
 #
 # After the install we need to edit the following files to
@@ -189,6 +190,7 @@ _install_bin:
 
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/pathnames.py
+NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 
 # New style:
 #
