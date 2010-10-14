@@ -151,6 +151,27 @@ DAEMON_DROP = 1<<5
 DAEMON_ALL = (DAEMON_SYSLOG|DAEMON_CHDIR|DAEMON_DETACH|DAEMON_SIGNAL|
               DAEMON_PIDFILE|DAEMON_DROP)
 
+USERS = ["_neubot", "nobody"]
+
+def getpwnaml(users=USERS):
+    if os.name == "posix":
+        for user in users:
+            try:
+                passwd = pwd.getpwnam(user)
+            except KeyError:
+                pass
+            else:
+                return passwd
+    return None
+
+def getpwnamlx(users=USERS):
+    passwd = getpwnaml(users)
+    if not passwd:
+        log.error("* Can't getpwnam for: %s" % str(users))
+        # XXX Because we catch SystemExit where we should not
+        os._exit(1)
+    return passwd
+
 def become_daemon(flags=DAEMON_ALL):
     if os.name == "posix":
         try:
@@ -191,17 +212,7 @@ def become_daemon(flags=DAEMON_ALL):
                     except (IOError, OSError):
                         pass
             if flags & DAEMON_DROP and os.getuid() == 0:
-                users = ["_neubot", "nobody"]
-                passwd = None
-                for user in users:
-                    try:
-                        passwd = pwd.getpwnam(user)
-                        break
-                    except KeyError:
-                        pass
-                if not passwd:
-                    log.error("* Can't getpwnam for: %s" % str(users))
-                    os._exit(1)
+                passwd = getpwnamlx()
                 os.setgid(passwd.pw_gid)
                 os.setuid(passwd.pw_uid)
         except:
