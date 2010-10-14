@@ -272,8 +272,8 @@ class DatabaseManager:
 
     def get_cached_results(self, filt=None, start=0, stop=-1):
         vector = []
+        vector.append("<results>")
         if self.queue:
-            vector.append("<results>")
             if stop == -1:
                 stop = len(self.queue)
             pos = 0
@@ -283,7 +283,7 @@ class DatabaseManager:
                 if pos >= start and (not filt or filt == tag):
                     vector.append(result)
                 pos = pos + 1
-            vector.append("</results>")
+        vector.append("</results>")
         body = "".join(vector)
         stringio = StringIO(body)
         return stringio
