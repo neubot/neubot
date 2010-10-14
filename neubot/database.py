@@ -46,7 +46,7 @@ from sys import argv
 
 import os.path
 if os.name == "posix":
-    import pwd
+    from neubot.utils import getpwnamlx
 
 #
 # Config table.
@@ -137,18 +137,7 @@ class DatabaseManager:
             # able to open/write the database after we drop
             # root privileges.
             #
-            # This duplicates code in neubot/utils.py
-            users = ["_neubot", "nobody"]
-            passwd = None
-            for user in users:
-                try:
-                    passwd = pwd.getpwnam(user)
-                    break
-                except KeyError:
-                    pass
-            if not passwd:
-                log.error("* Can't getpwnam for: %s" % str(users))
-                exit(1)
+            passwd = getpwnamlx()
             os.chown(self.config.path, passwd.pw_uid, passwd.pw_gid)
         self.connection = connect(self.config.path)
         cursor = self.connection.cursor()
