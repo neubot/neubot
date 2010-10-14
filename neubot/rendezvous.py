@@ -118,9 +118,9 @@ class RendezvousServer(Server):
         m.parse(request.body)
         builder.start("rendezvous_response", {})
         if m.version:
-            if versioncmp(version, m.version) > 0:
+            if versioncmp(self.config.update_version, m.version) > 0:
                 builder.start("update", {"uri": self.config.update_uri})
-                builder.data(version)
+                builder.data(self.config.update_version)
                 builder.end("update")
         if "speedtest" in m.accept:
             builder.start("available", {"name": "speedtest"})
@@ -145,21 +145,18 @@ class RendezvousServer(Server):
 #
 # [rendezvous]
 # address: 0.0.0.0
-# update_uri: http://releases.neubot.org/latest
+# update_uri: http://releases.neubot.org
+# update_version: 0.2.7
 # test_uri: http://speedtest1.neubot.org/speedtest
 # port: 9773
-#
-
-#
-# TODO Still unsure about the URI that should be used
-# here by default.
 #
 
 class RendezvousConfig(SafeConfigParser):
     def __init__(self):
         SafeConfigParser.__init__(self)
         self.address = "0.0.0.0"
-        self.update_uri = "http://releases.neubot.org/latest"
+        self.update_uri = "http://releases.neubot.org"
+        self.update_version = version
         self.test_uri = "http://speedtest1.neubot.org/speedtest"
         self.port = "9773"
 
@@ -175,6 +172,8 @@ class RendezvousConfig(SafeConfigParser):
             self.address = self.get("rendezvous", "address")
         if self.has_option("rendezvous", "update_uri"):
             self.update_uri = self.get("rendezvous", "update_uri")
+        if self.has_option("rendezvous", "update_version"):
+            self.update_version = self.get("rendezvous", "update_version")
         if self.has_option("rendezvous", "test_uri"):
             self.test_uri = self.get("rendezvous", "test_uri")
         if self.has_option("rendezvous", "port"):
@@ -308,6 +307,9 @@ class RendezvousClient(ClientController, SpeedtestController):
     def _prepare_tree(self):
         builder = TreeBuilder()
         builder.start("rendezvous", {})
+        builder.start("version", {})
+        builder.data(version)
+        builder.end("version")
         builder.start("accept", {})
         builder.data("speedtest")
         builder.end("accept")
@@ -354,6 +356,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         if m.update:
             for ver, uri in m.update.items():
                 log.warning("Version %s available at %s" % (ver, uri))
+                state.set_versioninfo(ver, uri)
         if self.xdebug:
             self._reschedule()
             return

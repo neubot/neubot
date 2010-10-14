@@ -73,9 +73,14 @@ class StateTrackerAdapter(SimpleStateTracker):
         SimpleStateTracker.__init__(self, address, port)
         self.state = None
         self.icon = icon
+        self.update = ()
 
     def clear(self):
-        self.icon.update_state(None)
+        self.icon.update_state(None, None)
+        self.update = ()
+
+    def set_update(self, ver, uri):
+        self.update = (ver, uri)
 
     def set_active(self, active):
         if active.lower() != "true":
@@ -88,7 +93,7 @@ class StateTrackerAdapter(SimpleStateTracker):
 #       pass
 
     def write(self):
-        self.icon.update_state(self.state)
+        self.icon.update_state(self.state, self.update)
 
 class StateTrackerThread(Thread):
     def __init__(self, icon, address, port):
@@ -141,6 +146,7 @@ class StatusIcon:
         self.icon.connect("popup-menu", self.on_popup_menu)
         self.icon.connect("activate", self.on_activate)
         self.icon.set_visible(self.nohide)
+        self.update_item = None
 
     def on_popup_menu(self, status, button, time):
         if not self.menu:
@@ -175,7 +181,7 @@ class StatusIcon:
     # See: http://bit.ly/hp8Ot [operationaldynamics.com]
     #
 
-    def update_state(self, state):
+    def update_state(self, state, update):
         gtk.gdk.threads_enter()
         if state:
             self.icon.set_tooltip("Neubot: " + state)
@@ -195,7 +201,22 @@ class StatusIcon:
                 self.icon.set_visible(False)
             if self.blink:
                 self.icon.set_blinking(False)
+        if update:
+            if not self.update_item:
+                ver, uri = update
+                item = gtk.MenuItem(label="Update to %s" % ver)
+                item.connect("activate", self._do_download_update, uri)
+                self.menu.add(item)
+                self.menu.show_all()
+                self.update_item = item
+        else:
+            if self.update_item:
+                self.menu.remove(self.update_item)
+                self.update_item = None
         gtk.gdk.threads_leave()
+
+    def _do_download_update(self, *args):
+        webbrowser.open(args[1])
 
 #
 # Main program

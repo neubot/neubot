@@ -37,6 +37,20 @@ function getcurstate(data) {
     }
 
     /*
+     * Available updates information
+     */
+
+    html = "";
+    var update = $(data).find("update");
+    if (update.text()) {
+        html = "<h2>New version " + $(update).text() + " available at ";
+        uri = update.attr("uri");
+        html += '<a href="' + uri + '">' + uri + "</a>";
+        html += "</h2>";
+        $("#update").html($(html));
+    }
+
+    /*
      * Get details of the current/latest test
      */
 

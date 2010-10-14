@@ -332,6 +332,11 @@ class SimpleStateTracker(ClientController):
             if node.nodeType != node.ELEMENT_NODE:
                 continue
             element = node
+            # <update>
+            if element.tagName == "update":
+                uri = element.getAttribute("uri")
+                self.set_update(XML_text(element), uri)
+                continue
             # <active>
             if element.tagName == "active":
                 self.set_active(XML_text(element))
@@ -378,6 +383,9 @@ class SimpleStateTracker(ClientController):
     def clear(self):
         pass
 
+    def set_update(self, ver, uri):
+        pass
+
     def set_active(self, active):
         pass
 
@@ -399,6 +407,10 @@ class StateTracker(SimpleStateTracker):
         self.active = False
         self.activity = ""
         self.extra = {}
+        self.update = ()
+
+    def set_update(self, ver, uri):
+        self.update = (ver, uri)
 
     def set_active(self, active):
         if active.lower() == "true":
@@ -412,6 +424,8 @@ class StateTracker(SimpleStateTracker):
 
     def write(self):
         stdout.write("[%d] " % self.timestamp)
+        if self.update:
+            stdout.write("{%s: %s} " % self.update)
         if not self.active:
             stdout.write("inactive\n")
             return
