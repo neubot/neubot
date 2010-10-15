@@ -132,9 +132,11 @@ class SpeedtestServer(Server):
     def __init__(self, config):
         self.config = config
         Server.__init__(self, address=config.address, port=config.port)
+        self.begin_test = 0
         self.queue = deque()
         self.table = {}
         self._init_table()
+        sched(3, self._speedtest_check_timeout)
 
     def _init_table(self):
         self.table["/speedtest/negotiate"] = self._do_negotiate
@@ -192,11 +194,19 @@ class SpeedtestServer(Server):
         if connection.handler:
             self._do_negotiate(connection, request, True)
 
-    def _publish_renegotiate(self, timeout=True):
+    def _speedtest_check_timeout(self):
+        sched(3, self._speedtest_check_timeout)
+        if self.queue:
+            now = ticks()
+            if now - self.begin_test > 30:
+                token = self.queue.popleft()
+                log.info("* TEST/timeout %s" % token)
+                publish(RENEGOTIATE)
+
+    def _speedtest_complete(self):
         if self.queue:
             token = self.queue.popleft()
-            if timeout:
-                log.info("* Test %s: timed-out" % token)
+            log.info("* TEST/done %s" % token)
             publish(RENEGOTIATE)
 
     def _do_negotiate(self, connection, request, nodelay=False):
@@ -216,7 +226,8 @@ class SpeedtestServer(Server):
             queuePos = self._queuePos(token)
             unchoked = False
         if unchoked:
-            sched(30, self._publish_renegotiate)
+            log.info("* TEST/begin %s" % token)
+            self.begin_test = ticks()
         self._send_negotiate(connection, request, token, unchoked, queuePos)
 
     # XXX horrible horrible O(length)!
@@ -309,7 +320,7 @@ class SpeedtestServer(Server):
             database.dbm.save_result("speedtest", request.body.read())
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
-        self._publish_renegotiate(False)
+        self._speedtest_complete()
 
 #
 # [speedtest]
