@@ -41,6 +41,7 @@ PHONIES += archive
 PHONIES += _install_skel
 PHONIES += _install_sources
 PHONIES += _install_www
+PHONIES += _install_etc
 PHONIES += _install_man
 PHONIES += _install_bin
 PHONIES += _install_edit
@@ -162,6 +163,9 @@ _install_www:
 	 $(INSTALL) -m644 $$WWW $(DESTDIR)$(DATADIR)/$$WWW; \
 	done
 
+_install_etc:
+	@$(INSTALL) -m644 etc/neubot/config $(DESTDIR)/$(SYSCONFDIR)/config
+
 #
 # We keep in the sources the manual page so that one that
 # does not have pod2man installed is still able to install
@@ -216,6 +220,7 @@ _install_compile:
 INSTALL_RULES += _install_skel
 INSTALL_RULES += _install_sources
 INSTALL_RULES += _install_www
+INSTALL_RULES += _install_etc
 INSTALL_RULES += _install_man
 INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_edit

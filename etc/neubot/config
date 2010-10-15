@@ -1,0 +1,85 @@
+# /etc/neubot/config
+
+# System-wide configuration file for neubot(1).
+# See http://docs.python.org/library/configparser.html
+
+#  ___       _        _
+# |   \ __ _| |_ __ _| |__  __ _ ___ ___
+# | |) / _` |  _/ _` | '_ \/ _` (_-</ -_)
+# |___/\__,_|\__\__,_|_.__/\__,_/__/\___|
+#
+# configure neubot/database.py
+#
+
+[database]
+#auto_prune = True
+#maxcache = 256
+#client = True
+
+#
+# This is system dependent. On UNIX its value is
+# /var/neubot/database.sqlite3 and on Windows the
+# value is $APPDATA\Neubot\database.sqlite3.
+#
+
+#path = <system dependent>
+
+#
+#  ___             _
+# | _ \___ _ _  __| |___ _____ _____ _  _ ___
+# |   / -_) ' \/ _` / -_)_ /\ V / _ \ || (_-<
+# |_|_\___|_||_\__,_\___/__| \_/\___/\_,_/__/
+#
+# configure neubot/rendezvous.py
+#
+
+[rendezvous]
+#address = 0.0.0.0
+#update_uri = http://releases.neubot.org
+#update_version = 0.2.7
+#test_uri = http://speedtest1.neubot.org/speedtest
+#port: 9773
+
+#
+#  ___                  _ _          _
+# / __|_ __  ___ ___ __| | |_ ___ __| |_
+# \__ \ '_ \/ -_) -_) _` |  _/ -_|_-<  _|
+# |___/ .__/\___\___\__,_|\__\___/__/\__|
+#     |_|
+#
+# configure neubot/speedtest.py
+#
+
+[speedtest]
+#address = 0.0.0.0
+#only_auth = False
+#port = 80
+
+#
+# Specify here the path of the large file for the
+# speedtest server or be prepared for a non-working
+# server.
+#
+
+#path =
+
+#
+#  _   _ _
+# | | | (_)
+# | |_| | |
+#  \___/|_|
+#
+# configure neubot/ui.py
+#
+
+[ui]
+#address = 127.0.0.1
+#port = 9774
+
+#
+# This is system dependent. On UNIX its value is
+# $(DATADIR)/neubot/www and on Windows we install
+# www root at $PROGRAMFILES\Neubot\www.
+#
+
+#document_root = <system-dependent>
