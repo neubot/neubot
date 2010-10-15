@@ -88,6 +88,26 @@ def dostop(args):
     if daemon_running(conf.address, conf.port):
         stop_daemon(conf.address, conf.port)
 
+#
+# Gtk bindings might not be installed and we don't want
+# to prevent the user running neubot in this case, but
+# just to warn she that some graphical features are not
+# available.
+# We lazy import Gtk because otherwise we will get an
+# ugly warning about $DISPLAY when starting the daemon
+# from /etc/rc.local.
+#
+
+def dostatusicon(args):
+    try:
+        import gtk
+    except ImportError:
+        log.error("fatal: Can't import Gtk bindings for Python.")
+        exit(1)
+    else:
+        from neubot import statusicon
+        statusicon.main(args)
+
 TABLE = {
     "database"   : database.main,
     "help"       : dohelp,
@@ -95,30 +115,11 @@ TABLE = {
     "httpd"      : httpd.main,
     "rendezvous" : rendezvous.main,
     "speedtest"  : speedtest.main,
+    "statusicon" : dostatusicon,
     "start"      : dostart,
     "stop"       : dostop,
     "ui"         : ui.main,
 }
-
-#
-# Gtk bindings might not be installed and we don't want
-# to prevent the user running neubot in this case, but
-# just to warn she that some graphical features are not
-# available.
-#
-
-def cannot_import_gtk(args):
-    command = args[0].split()[-1]
-    log.error("%s: fatal: Can't import Gtk bindings for Python." % command)
-    exit(1)
-
-try:
-    import gtk
-except ImportError:
-    TABLE["statusicon"] = cannot_import_gtk
-else:
-    from neubot import statusicon
-    TABLE["statusicon"] = statusicon.main
 
 DEFAULT = "rendezvous"
 
