@@ -1,3 +1,19 @@
+Neubot 0.2.7 [2010-10-15]
+	* Makefile: explain why we don't use sed -i
+	* main: dohelp(): use stdout/stderr depending on context
+	* INSTALL: reference the online documentation
+	* bin: add start-neubot-daemon script
+	* database: check sqlite3 file's existence and ownership
+	* main: print more details if we can't spawn a subprocess
+	* Make sure system and user directories exist
+	* database: make sure GET /api/results will never return an empty body
+	* Propagate and notify update information
+	* speedtest: adjust the uri employed by default
+	* utils: getpwnaml{,x}: factor out code to get user info
+	* database: use getpwnamlx instead of duplicating code
+	* pathnames: make sure the _neubot user owns /var/neubot
+	* Release neubot/0.2.7
+
 Neubot 0.2.6 [2010-10-12]
 	* Makefile: don't assume pychecker provides --limit option
 	* debug: The name might be None
