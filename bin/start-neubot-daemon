@@ -27,7 +27,15 @@ for BASEDIR in /usr/local/bin /usr/bin; do
     for VERSION in "" 2.6 2.5; do
         PYTHON=$BASEDIR/python$VERSION
         if [ -x $PYTHON ]; then
-            $PYTHON $PREFIX/bin/neubot start
+            #
+            # At this point we don't know whether python is in
+            # the PATH or not. So it might not be a good idea to
+            # run 'neubot start' because this command will try
+            # to re-execute $PREFIX/bin/neubot which assumes that
+            # python is in the PATH. Instead we run 'rendezvous'
+            # which will just fork(2) in background.
+            #
+            $PYTHON $PREFIX/bin/neubot rendezvous
             exit $?
         fi
     done
