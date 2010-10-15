@@ -199,7 +199,7 @@ class SpeedtestServer(Server):
                 log.info("* Test %s: timed-out" % token)
             publish(RENEGOTIATE)
 
-    def _do_negotiate(self, connection, request, recurse=False):
+    def _do_negotiate(self, connection, request, nodelay=False):
         queuePos = 0
         unchoked = True
         token = request["authorization"]
@@ -207,8 +207,9 @@ class SpeedtestServer(Server):
             token = str(uuid4())
             request["authorization"] = token
             self.queue.append(token)
+            nodelay = True
         if len(self.queue) > 0 and self.queue[0] != token:
-            if not recurse:
+            if not nodelay:
                 subscribe(RENEGOTIATE, self._do_renegotiate,
                           (connection, request))
                 return
