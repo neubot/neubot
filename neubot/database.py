@@ -172,9 +172,7 @@ class DatabaseManager:
 
     def _autoprune(self):
         if self.config.auto_prune:
-            log.start("* Database auto-prune")
             self.prune()
-            log.complete()
 
     #
     # XXX Assume that this is not going to be very slow
