@@ -189,7 +189,8 @@ class SpeedtestServer(Server):
 
     def _do_renegotiate(self, event, atuple):
         connection, request = atuple
-        self._do_negotiate(connection, request, True)
+        if connection.handler:
+            self._do_negotiate(connection, request, True)
 
     def _publish_renegotiate(self, timeout=True):
         if self.queue:
