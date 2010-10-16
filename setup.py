@@ -16,18 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
+#
+# Use py2exe to create neubot.exe
+#
+
 import distutils.core
 import os
 
-if (os.name != "posix"):
+if os.name != "posix":
     import py2exe
     distutils.core.setup(name="neubot",
-        description="Network Neutrality Bot (Neubot)",
-        license="GPL",
+        description="Network neutrality bot",
+        license="GPLv3",
         packages=["neubot"],
         package_dir={"neubot" : "."},
         version="0.2.7",
         author="Simone Basso",
         author_email="bassosimone@gmail.com",
         console=[{"script": "bin/neubot"}],
-        url="http://nexa.polito.it/neubot")
+        url="http://www.neubot.org")
