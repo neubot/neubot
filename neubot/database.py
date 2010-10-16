@@ -38,6 +38,7 @@ from sqlite3 import Error
 from neubot import version
 from getopt import getopt
 from neubot import log
+from uuid import uuid4
 from time import time
 from sys import exit
 from sys import stderr
@@ -51,22 +52,44 @@ if os.name == "posix":
 #
 # Config table.
 # The config table is like a dictionary and keeps some useful
-# variables.  So far the only variable it keeps is the version
-# of the database format, that might be useful in the future
-# to convert an old database to a new one, should we change the
-# format.
+# variables.  It keeps the version of the database format, that
+# might be useful in the future to convert an old database to
+# a new one, should we change the format.
+#
+# <on uuid and privacy>
+# It also keeps an unique identifier for each neubot client
+# which we believe would help data analysis, e.g. we could
+# review the measurement history of a given neubot looking for
+# certain patterns, such as the connection speed decreasing
+# near the end of the month because the user exceeded a
+# bandwidth cap.
+#
+# We believe this should have a negligible impact on privacy
+# because it would, at most, allow to say that neubot XYZ owner
+# changed IP address, and hence, possibly, provider and/or
+# location (and note that this information is functional to
+# our goal of building a network neutrality map organized by
+# geographic location and provider).
+#
+# So, we believe you should not be concerned by this issue,
+# but, in case you were, the way to go is `neubot database -f`
+# that forces neubot to generate and use A NEW uuid.
+# </on uuid and privacy>
 #
 
 CONFIG_MAKE = "CREATE TABLE config(name TEXT PRIMARY KEY, value TEXT);"
-CONFIG_FILL = "INSERT INTO config VALUES('version', '1.0');"
+CONFIG_UPDATE_UUID = "UPDATE config SET value=:ident WHERE name='uuid';"
+CONFIG_FILL_UUID = "INSERT INTO config VALUES('uuid', :ident);"
+CONFIG_FILL_VERSION = "INSERT INTO config VALUES('version', '1.1');"
 
 #
 # Results table.
-# Each result is a triple (tag, result, timestamp), where: the
+# Each result is a tuple (tag, result, timestamp, uuid), where:
 # tag is the name of the test that produced the result, and is
 # used to filter by producer; the result is the XML document
-# that contains all the test-dependent fields; and the timestamp
-# is used to filter just a subset of the results.
+# that contains all the test-dependent fields; timestamp is used
+# to filter just a subset of the results; and uuid is the unique
+# identifier of the client.
 # We don't provide a fine-grained schema for the result because
 # this instance of sqlite3 should only provide a convenient way
 # to store the results on disk.
@@ -76,11 +99,12 @@ CONFIG_FILL = "INSERT INTO config VALUES('version', '1.0');"
 #
 
 RESULTS_MAKE        = """CREATE TABLE results(id INTEGER PRIMARY KEY,
-                         tag TEXT, result TEXT, timestamp INTEGER);"""
+                         tag TEXT, result TEXT, timestamp INTEGER,
+                         uuid TEXT);"""
 RESULTS_PRUNE       = """DELETE FROM results WHERE id IN (
                          SELECT id FROM results LIMIT :count);"""
 RESULTS_SAVE        = """INSERT INTO results VALUES(null, :tag,
-                         :result, :timestamp);"""
+                         :result, :timestamp, :ident);"""
 
 #
 # Prune.
@@ -93,6 +117,38 @@ RESULTS_SAVE        = """INSERT INTO results VALUES(null, :tag,
 #
 
 MAXROWS = 4096
+
+#
+#        _               _
+#  _ __ (_)__ _ _ _ __ _| |_ ___
+# | '  \| / _` | '_/ _` |  _/ -_)
+# |_|_|_|_\__, |_| \__,_|\__\___|
+#         |___/
+#
+# code to migrate from one version to another
+#
+
+# add uuid to database
+def migrate_from__v1_0__to__v1_1(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "1.0":
+        log.info("* Migrating database from version 1.0 to 1.1")
+        cursor.execute("ALTER TABLE results ADD uuid TEXT;")
+        cursor.execute("""UPDATE config SET value='1.1'
+                          WHERE name='version';""")
+        cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid4())})
+        connection.commit()
+    cursor.close()
+
+MIGRATORS = [
+    migrate_from__v1_0__to__v1_1,
+]
+
+def migrate(connection):
+    for migrator in MIGRATORS:
+        migrator(connection)
 
 #
 # Database manager.
@@ -108,9 +164,12 @@ class DatabaseManager:
         self.config = config
         self.queue = deque()
         self.connection = None
+        self.ident = None
         self._do_connect()
         self._autoprune()
+        migrate(self.connection)
         self._do_init_queue()
+        self._do_fetch_ident()
 
     #
     # Init
@@ -156,7 +215,8 @@ class DatabaseManager:
     def _make_config(self, cursor):
         try:
             cursor.execute(CONFIG_MAKE)
-            cursor.execute(CONFIG_FILL)
+            cursor.execute(CONFIG_FILL_VERSION)
+            cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid4())})
             self.connection.commit()
         except Error, reason:
             if str(reason) != "table config already exists":
@@ -184,9 +244,16 @@ class DatabaseManager:
         if self.config.client:
             cursor = self.connection.cursor()
             cursor.execute("SELECT * from RESULTS;")
-            for rowid, tag, result, t in cursor:
+            for rowid, tag, result, t, ident in cursor:
                 deque_appendleft(self.queue, self.config.maxcache,
-                                 (tag, result, t))
+                                 (tag, result, t, ident))
+            cursor.close()
+
+    def _do_fetch_ident(self):
+        if self.config.client:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT value FROM config WHERE name='uuid';")
+            self.ident = cursor.fetchone()[0]
             cursor.close()
 
     #
@@ -205,16 +272,16 @@ class DatabaseManager:
     # API
     #
 
-    def save_result(self, tag, result):
+    def save_result(self, tag, result, ident):
         t = int(time())
         cursor = self.connection.cursor()
-        cursor.execute(RESULTS_SAVE, {"tag": tag,
-          "result": result, "timestamp": t})
+        cursor.execute(RESULTS_SAVE, {"tag": tag, "result": result,
+                       "timestamp": t, "ident": ident})
         self.connection.commit()
         cursor.close()
         if self.config.client:
             deque_appendleft(self.queue, self.config.maxcache,
-                             (tag, result, t))
+                             (tag, result, t, ident))
 
     def get_config(self):
         dictionary = {}
@@ -257,17 +324,18 @@ class DatabaseManager:
     # two arguments, e.g. range(0,10).
     #
 
-    def get_cached_results(self, filt=None, start=0, stop=-1):
+    def get_cached_results(self, filt=None, start=0, stop=-1, identif=None):
         vector = []
         vector.append("<results>")
         if self.queue:
             if stop == -1:
                 stop = len(self.queue)
             pos = 0
-            for tag, result, t in self.queue:
+            for tag, result, t, ident in self.queue:
                 if pos == stop:
                     break
-                if pos >= start and (not filt or filt == tag):
+                if (pos >= start and (not filt or filt == tag)
+                 and (not identif or identif == ident)):
                     vector.append(result)
                 pos = pos + 1
         vector.append("</results>")
@@ -289,6 +357,12 @@ class DatabaseManager:
     def delete(self):
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM results;")
+        cursor.close()
+        self.connection.commit()
+
+    def rebuild_uuid(self):
+        cursor = self.connection.cursor()
+        cursor.execute(CONFIG_UPDATE_UUID, {"ident": str(uuid4())})
         cursor.close()
         self.connection.commit()
 
@@ -351,20 +425,21 @@ database = DatabaseModule()
 USAGE =									\
 "Usage: @PROGNAME@ -V\n"						\
 "       @PROGNAME@ --help\n"						\
-"       @PROGNAME@ [-dilvz] [-D name=value] [database]\n"
+"       @PROGNAME@ [-dfilvz] [-D name=value] [database]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
 "  -D name=value : Set configuration file property.\n"			\
 "  --help        : Print this help screen and exit.\n"			\
 "  -d            : Delete all the results in the database.\n"		\
+"  -f            : Rebuild neubot unique identifier.\n"			\
 "  -i            : Create and init the specified database.\n"		\
 "  -l            : List all the results in the database.\n"		\
 "  -V            : Print version number and exit.\n"			\
 "  -v            : Run the program in verbose mode.\n"			\
 "  -z            : Compress database pruning old results.\n"
 
-BRIEF, DELETE, INIT, LIST, PRUNE = range(0,5)
+BRIEF, DELETE, INIT, LIST, PRUNE, REBUILD = range(0,6)
 
 def main(args):
     fakerc = StringIO()
@@ -372,7 +447,7 @@ def main(args):
     action = BRIEF
     # parse
     try:
-        options, arguments = getopt(args[1:], "D:dilVvz", ["help"])
+        options, arguments = getopt(args[1:], "D:dfilVvz", ["help"])
     except GetoptError:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
@@ -385,6 +460,8 @@ def main(args):
         elif name == "--help":
             stdout.write(HELP.replace("@PROGNAME@", args[0]))
             exit(0)
+        elif name == "-f":
+            action = REBUILD
         elif name == "-i":
             action = INIT
         elif name == "-l":
@@ -425,6 +502,8 @@ def main(args):
                 stdout.write("</results>\n")
         elif action == PRUNE:
             database.dbm.prune()
+        elif action == REBUILD:
+            database.dbm.rebuild_uuid()
 
 if __name__ == "__main__":
     main(argv)

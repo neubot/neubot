@@ -81,6 +81,7 @@ def XML_get_vector(tree, name):
 
 #
 # <SpeedtestCollect>
+#     <client>af5659e0-b2bd-4a4b-8062-e8437150f2c9</client>
 #     <timestamp>1283790303</timestamp>
 #     <internalAddress>192.168.0.3</internalAddress>
 #     <realAddress>130.192.47.76</realAddress>
@@ -96,6 +97,7 @@ def XML_get_vector(tree, name):
 
 class SpeedtestCollect:
     def __init__(self):
+        self.client = ""
         self.timestamp = 0
         self.internalAddress = ""
         self.realAddress = ""
@@ -112,6 +114,7 @@ class SpeedtestCollect:
         except:
             raise ValueError("Can't parse XML body")
         else:
+            self.client = XML_get_scalar(tree, "client")
             self.timestamp = XML_get_scalar(tree, "timestamp")
             self.internalAddress = XML_get_scalar(tree, "internalAddress")
             self.realAddress = XML_get_scalar(tree, "realAddress")
@@ -317,7 +320,8 @@ class SpeedtestServer(Server):
             return
         if database.dbm:
             request.body.seek(0)
-            database.dbm.save_result("speedtest", request.body.read())
+            database.dbm.save_result("speedtest", request.body.read(),
+                                     collect.client)
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
         self._speedtest_complete()
@@ -726,6 +730,9 @@ class Collect(SpeedtestHelper):
         log.start("* Collecting results")
         # XML
         root = Element("SpeedtestCollect")
+        if database.dbm:
+            element = SubElement(root, "client")
+            element.text = database.dbm.ident
         timestamp = SubElement(root, "timestamp")
         timestamp.text = str(time())
         internalAddress = SubElement(root, "internalAddress")
@@ -752,7 +759,8 @@ class Collect(SpeedtestHelper):
         stringio.seek(0)
         # DB
         if database.dbm:
-            database.dbm.save_result("speedtest", stringio.read())
+            database.dbm.save_result("speedtest", stringio.read(),
+                                     database.dbm.ident)
             stringio.seek(0)
         # HTTP
         m = Message()

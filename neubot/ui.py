@@ -151,7 +151,7 @@ class UIServer(Server):
 
     def _do_api_results(self, connection, request, query, recurse=False):
         dictionary = parse_qs(query)
-        filt, start, stop = None, 0, -1
+        filt, start, stop, ident = None, 0, -1, None
         # parse
         if dictionary.has_key("filter"):
             filt = dictionary["filter"][0]
@@ -163,13 +163,15 @@ class UIServer(Server):
             stop = int(dictionary["stop"][0])
             if stop < 0:
                 raise ValueError("Invalid query string")
+        if dictionary.has_key("ident"):
+            ident = dictionary["ident"][0]
         # XML+HTTP
         response = Message()
         if not database.dbm:
             compose(response, code="204", reason="No Content")
             connection.reply(request, response)
             return
-        stringio = database.dbm.get_cached_results(filt, start, stop)
+        stringio = database.dbm.get_cached_results(filt, start, stop, ident)
         compose(response, code="200", reason="Ok",
                 body=stringio, mimetype="text/xml")
         connection.reply(request, response)

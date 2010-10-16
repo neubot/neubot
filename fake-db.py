@@ -36,7 +36,7 @@ if __name__ == "__main__":
     cursor = connection.cursor()
     count = 0
     while count < 16384:
-        cursor.execute('insert into results values(null,"x","x",1);')
+        cursor.execute('insert into results values(null,"x","x",1,"x");')
         count = count + 1
     connection.commit()
     cursor.close()
