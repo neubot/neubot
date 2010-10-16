@@ -52,6 +52,7 @@ from neubot import log
 from getopt import GetoptError
 from getopt import getopt
 from neubot.state import state
+from random import random
 from sys import exit
 from sys import argv
 from sys import stdout
@@ -125,9 +126,18 @@ class RendezvousServer(Server):
         if "speedtest" in m.accept:
             builder.start("available", {"name": "speedtest"})
             builder.start("uri", {})
-#           builder.data("http://speedtest1.neubot.org/speedtest")
-#           builder.data("http://speedtest2.neubot.org/speedtest")
-            builder.data(self.config.test_uri)
+            #
+            # The first speedtest server should always be
+            # available; if the second server is available
+            # choose at random.
+            #
+            if self.config.test_uri2:
+                if random() >= 0.66:
+                    builder.data(self.config.test_uri2)
+                else:
+                    builder.data(self.config.test_uri)
+            else:
+                builder.data(self.config.test_uri)
             builder.end("uri")
             builder.end("available")
         builder.end("rendezvous_response")
@@ -147,6 +157,7 @@ class RendezvousServer(Server):
 # address: 0.0.0.0
 # update_uri: http://releases.neubot.org
 # update_version: 0.2.7
+# test_uri2:
 # test_uri: http://speedtest1.neubot.org/speedtest
 # port: 9773
 #
@@ -158,6 +169,7 @@ class RendezvousConfig(SafeConfigParser):
         self.update_uri = "http://releases.neubot.org"
         self.update_version = version
         self.test_uri = "http://speedtest1.neubot.org/speedtest"
+        self.test_uri2 = ""
         self.port = "9773"
 
 #   def check(self):
@@ -176,6 +188,8 @@ class RendezvousConfig(SafeConfigParser):
             self.update_version = self.get("rendezvous", "update_version")
         if self.has_option("rendezvous", "test_uri"):
             self.test_uri = self.get("rendezvous", "test_uri")
+        if self.has_option("rendezvous", "test_uri2"):
+            self.test_uri2 = self.get("rendezvous", "test_uri2")
         if self.has_option("rendezvous", "port"):
             self.port = self.get("rendezvous", "port")
 
