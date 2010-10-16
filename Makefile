@@ -50,7 +50,6 @@ PHONIES += _install
 PHONIES += _bdist
 PHONIES += bdist.tgz
 PHONIES += install
-PHONIES += man
 PHONIES += _deb_data
 PHONIES += _deb_data.tgz
 PHONIES += _deb_control_skel
@@ -168,7 +167,7 @@ _install_etc:
 
 #
 # We keep in the sources the manual page so that one that
-# does not have pod2man installed is still able to install
+# does not have rst2man installed is still able to install
 # neubot.
 #
 
@@ -247,20 +246,6 @@ bdist.tgz: bdist
 
 install:
 	@make -f Makefile _install INSTALL='install -o root'
-
-#  _ __ ___   __ _ _ __
-# | '_ ` _ \ / _` | '_ \
-# | | | | | | (_| | | | |
-# |_| |_| |_|\__,_|_| |_|
-#
-# Update manual pages
-#
-
-MKMAN = pod2man -c"Neubot manual" -r"Neubot $(VERSION)"
-
-man:
-	@$(MKMAN) doc/neubot.1.pod > man/man1/neubot.1
-	@$(MKMAN) -s3 -n"NEUBOT.NET" doc/neubot.net.3.pod >man/man3/neubot.net.3
 
 #      _      _
 #   __| | ___| |__
