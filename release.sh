@@ -22,7 +22,8 @@
 # Get current version number
 #
 
-CURRENT=`grep ^VERSION Makefile | sed 's/^VERSION[\t ]*=[\t ]*//'`
+# Note: the following line contains a couple of TABs
+CURRENT=`grep ^VERSION Makefile | sed 's/^VERSION[ 	]*=[ 	]*//'`
 CURRENT_MAJOR=`echo $CURRENT | cut -d. -f1`
 CURRENT_MINOR=`echo $CURRENT | cut -d. -f2`
 CURRENT_PATCH=`echo $CURRENT | cut -d. -f3`
@@ -58,17 +59,20 @@ fi
 
 #
 # Update ChangeLog.
-# We assume `sed -i' is valid.
-# XXX If there are not changes between the current HEAD and the
-# previous release there is a bug and we zap the date from the
-# ChangeLog.
+# We don't assume `sed -i' is valid.
 #
 
 DATE=`date +%F`
 printf "Neubot $NEW [$DATE]\n" > ChangeLog.in
-git shortlog $CURRENT..HEAD | sed -n '2,$p' >> ChangeLog.in
-sed -i '$d' ChangeLog.in
-sed -i '2,$s/^\ */	* /' ChangeLog.in
+COUNT=`git shortlog $CURRENT..HEAD | sed -n '2,$p'|wc -l`
+if [ $COUNT -gt 1 ]; then
+    git shortlog $CURRENT..HEAD | sed -n '2,$p' >> ChangeLog.in
+    sed '$d' ChangeLog.in > CLOG &&
+     cat CLOG > ChangeLog.in && rm CLOG
+    # Note: the following line contains a TAB
+    sed '2,$s/^\ */	* /' ChangeLog.in > CLOG &&
+     cat CLOG > ChangeLog.in && rm CLOG
+fi
 printf "\t* Release neubot/$NEW\n\n" >> ChangeLog.in
 cat ChangeLog >> ChangeLog.in
 mv ChangeLog.in ChangeLog
@@ -76,13 +80,14 @@ mv ChangeLog.in ChangeLog
 #
 # Update version number.
 # Make sure we don't touch the ChangeLog.
-# We assume `sed -i' is valid.
+# We don't assume `sed -i' is valid.
 #
 
 PATTERN="$CURRENT_MAJOR\\.$CURRENT_MINOR\\.$CURRENT_PATCH"
 FILES=`grep -Rn $PATTERN *|grep -v ^ChangeLog|awk -F: '{print $1}'|sort -u`
 for FILE in $FILES; do
-    sed -i s/$PATTERN/$NEW/g $FILE
+    sed s/$PATTERN/$NEW/g $FILE > $FILE.new &&
+     cat $FILE.new > $FILE && rm $FILE.new
 done
 
 #
