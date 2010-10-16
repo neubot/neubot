@@ -1,0 +1,201 @@
+neubot
+^^^^^^
+
+The network neutrality bot
+''''''''''''''''''''''''''
+
+:Manual section: 1
+:Date: @DATE@
+:Manual group: Neubot manual
+:Version: Neubot 0.2.8
+
+SYNOPSYS
+````````
+
+|   neubot
+|   neubot [-dnvx] [-T *interval*] [*URI*]
+|   neubot -S [-dv] [-D *option*]
+|   neubot --help
+|   neubot -V
+|   neubot help
+|   neubot *command* --help
+|   neubot *command* [*arguments*]
+|   neubot speedtest
+
+DESCRIPTION
+```````````
+
+Neubot is the network neutrality bot.  It silently runs in background
+and routinely performs transmission tests with either existing servers
+(*client/server* mode) or other running neubot instances (*peer-to-peer*
+mode), employing different network protocols, such as **HTTP** and
+**BitTorrent**, and measuring relevant QoS parameters. A set of central
+servers coordinates these tests, telling each neubot instance which test
+should be performed, and collects, analyzes, and publishes the results,
+trying to rebalance (at least in part) the deep information asymmetry
+regarding network neutrality that exists between ordinary users and
+internet service providers.
+
+This is a beta release of neubot that does not implement *peer-to-peer*
+mode and performs **HTTP** transmission tests only, using a measurement
+methodology inspired to the one of *http://www.speedtest.net*.
+
+The first form of the command will make sure that neubot *daemon* is
+running (and will start it if not), and then will open neubot *web user
+interface* directing the default browser to *http://127.0.0.1:9774*.
+Note that neubot will not attempt to start a web browser if there is
+not an available graphical environment (e.g. **DISPLAY** is not set.)
+
+The second form of the command starts neubot daemon, which will daemonize,
+eventually dropping root privileges, and then will routinely connect()
+to the *master* server to check for software updates and tests to
+be performed. The *interval* parameter could be used to control how
+frequently the daemon connects to the master server. The default master
+server URI is *http://master.neubot.org/rendezvous*, but it is possible
+to specify an alternate *URI*.
+
+The third form of the command starts the master server, which will
+daemonize, eventually dropping root privileges, and then will accept()
+connections from neubot daemons and will return information on available
+software updates and tests to be performed. The configuration of
+the master server is specified in the system-wide configuration file
+**/etc/neubot/config**, but it is possible to override its settings
+using the *-D option* switch, that allows to specify an option in the
+format used by the configuration file (see below).
+
+The fourth form of the command prints a subset of the program synopsys
+(just the second, third, fourth, and fifth form) and documents briefly
+the available options.
+
+The fifth form of the command prints neubot version.
+
+The sixth form of the command prints the available *sub-commands*
+list. Indeed, neubot is a modular software and many modules provide
+a main() function that could be invoked with arguments. For example,
+the *rendezvous* module is the one that implements the second, third,
+firth, and fifth form of the command.
+
+The seventh form of the command prints the synopys and documents briefly
+the available options of the selected sub-command *command*.
+
+The eight form of the command runs the sub-command *command* with
+zero or more *arguments*.
+
+The nineth form of the command runs a speed test, invoking the *speedtest*
+sub-command. We include this form here because you might want to start a
+speedtest from command line (for more info on the full synopsys of this
+command pass it the --help option).
+
+OPTIONS
+```````
+
+-D option	Set configuration file option. The accepted format is either
+                *name:value* or *name=value* (note that neubot will *strip()*
+                name and value and so you can add whitespaces at will).
+
+                FIXME The support for this command line switch is rather
+                buggy because it's only possible to specify options defined
+                by the *rendezvous* module (other options will be ignored).
+
+                We don't document the accepted options because they're likely
+                to change slightly when we'll fix the above mentioned bug, and
+                so we think it's better not to make promises here.
+
+-d		Debug mode, don't become a daemon.
+--help		Print an help screen and exits.
+-n		Just connect once to the master server.
+-S		Run the program in server mode.
+-T interval	Interval between each rendez-vous.
+-V		Print version number and exit.
+-v		Run the program in verbose mode.
+-x		Just retrieve information but don't run tests.
+
+EXAMPLES
+````````
+
+In this section we will follow the well-established convention of
+representing the unprivileged user prompt with *$* and the privileged
+user prompt with *#*.
+
+Perform a single speedtest:
+
+|
+|    $ neubot speedtest
+
+Stop neubot daemon:
+
+|
+|    $ neubot stop
+
+Debug neubot, running it in verbose mode and preventing it to become
+a daemon:
+
+|
+|    $ neubot -v -d
+
+Export results to XML:
+
+|
+|    # neubot database -l > output.xml
+
+Track neubot daemon state using the command line:
+
+|
+|    $ neubot ui track
+
+It is possible to run neubot from the sources directory without installing
+it, e.g.:
+
+|
+|    $ ./bin/neubot help
+
+FILES
+`````
+
+Neubot could be installed below many different prefixes (the most common
+ones being **/usr/local** and **/usr**). In this section of the manual
+we assume that it has been installed below **/usr/local**:
+
+/etc/neubot/config
+  System-wide configuration file that neubot reads at startup.
+
+/usr/local/bin/neubot
+  The neubot program, a simple python script that imports neubot and passes
+  the control to **neubot.main** module.
+
+/usr/local/share/neubot/*
+  Location where neubot python modules are installed.
+
+/var/neubot/database.sqlite3
+  System-wide results database, created when the neubot daemon starts
+  for the first time.
+
+In addition, if you run neubot as an unprivileged user:
+
+$HOME/.neubot/config
+  User-specific configuration file.
+
+$HOME/.neubot/database.sqlite3
+  User-specific results database.
+
+AUTHOR
+``````
+
+| Simone Basso <bassosimone@gmail.com>
+| Antonio Servetti <antonio.servertti@polito.it>
+
+COPYRIGHT
+`````````
+
+| Copyright (c) 2010 NEXA Center for Internet & Society.
+
+| Neubot is free software: you can redistribute it and/or
+| modify it under the terms of the GNU General Public License
+| as published by the Free Software Foundation, either version
+| 3 of the License, or (at your option) any later version.
+
+SEE ALSO
+````````
+
+| ``The network neutrality bot <http://www.neubot.org>``
+| ``The neubot project <http://nexa.polito.it/neubot>``
