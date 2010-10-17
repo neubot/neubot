@@ -21,23 +21,46 @@
 #
 
 name "neubot 0.2.7"
-outfile "Neubot_Setup_0.2.7.exe"
+outfile "neubot-0.2.7-setup.exe"
 installdir "$PROGRAMFILES\neubot"
+setcompressor lzma
 section
+    #
+    # XXX It's not very clean to blindly execute neubot.exe because
+    # neubot might not be installed, but luckily NSIS allows that :).
+    # XXX The original idea here was to (blindly) invoke uninstall.exe
+    # but unluckily this does not work.  So I decided to just stop a
+    # (possibly) running neubot so that overwriting the directory works.
+    # But, damn!, it's not clean at all to overwrite because we might
+    # leave old files around.
+    #
+    execwait '"$INSTDIR\neubot.exe" stop'
     setoutpath "$INSTDIR"
     file /r "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
     createdirectory "$SMPROGRAMS\neubot"
-    createshortcut "$SMPROGRAMS\neubot\neubot.lnk" "$INSTDIR\neubot.exe"
+    createshortcut "$SMPROGRAMS\neubot\neubot (gui).lnk"		\
+      "$INSTDIR\neubot-headless.exe"
+    createshortcut "$SMPROGRAMS\neubot\neubot (start).lnk"		\
+      "$INSTDIR\neubot-start.exe"
+    createshortcut "$SMPROGRAMS\neubot\neubot (stop).lnk"		\
+      "$INSTDIR\neubot-stop.exe"
     createshortcut "$SMPROGRAMS\neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
-      "DisplayName" "neubot"
+      "DisplayName" "neubot 0.2.7"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
 sectionend
 section "uninstall"
+    #
+    # We cannot use neubot-stop.exe because this program does not
+    # wait for neubot.exe to terminate and so there is the risk to
+    # issue the remove command while the file is already locked
+    # and the remove will fail.
+    #
+    execwait '"$INSTDIR\neubot.exe" stop'
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\neubot"
     deleteregkey HKLM                                                   \
