@@ -26,15 +26,15 @@ installdir "$PROGRAMFILES\neubot"
 setcompressor lzma
 section
     #
-    # XXX It's not very clean to blindly execute neubot.exe because
-    # neubot might not be installed, but luckily NSIS allows that :).
-    # XXX The original idea here was to (blindly) invoke uninstall.exe
-    # but unluckily this does not work.  So I decided to just stop a
-    # (possibly) running neubot so that overwriting the directory works.
-    # But, damn!, it's not clean at all to overwrite because we might
-    # leave old files around.
+    # If a previous version is already installed uninstall it. We need
+    # to pass uninstall.exe the magic argument below otherwise execwait
+    # will not wait for the uninstaller (see NSIS wiki).
+    # To be sure that the system is not locking anymore uninstall.exe
+    # so that we can overwrite it, we sleep for a while.
     #
-    execwait '"$INSTDIR\neubot.exe" stop'
+    iffileexists "$INSTDIR\uninstall.exe" 0 +3
+        execwait '"$INSTDIR\uninstall.exe" _?=$INSTDIR'
+        sleep 2000
     setoutpath "$INSTDIR"
     file /r "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
@@ -59,8 +59,11 @@ section "uninstall"
     # wait for neubot.exe to terminate and so there is the risk to
     # issue the remove command while the file is already locked
     # and the remove will fail.
+    # To be sure that the system is not locking anymore neubot.exe
+    # so that we can remove it, we sleep for a while.
     #
     execwait '"$INSTDIR\neubot.exe" stop'
+    sleep 2000
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\neubot"
     deleteregkey HKLM                                                   \
