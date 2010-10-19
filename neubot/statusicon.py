@@ -66,7 +66,7 @@ import gtk
 # default address and port
 ADDRESS = "127.0.0.1"
 PORT = "9774"
-VERSION = "0.2.7"
+VERSION = "0.2.8"
 
 class StateTrackerAdapter(SimpleStateTracker):
     def __init__(self, icon, address, port):

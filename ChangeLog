@@ -1,3 +1,36 @@
+Neubot 0.2.8 [2010-10-19]
+	* start-neubot-daemon: make sure it works once installed
+	* speedtest: don't abort renegotiation on already closed connection
+	* speedtest: don't linger negotiation if client does not hold a token
+	* speedtest: make timeout algorithm more robust
+	* start-neubot-daemon: don't assume neubot can re-execute self
+	* main: statusicon: lazy import Gtk to avoid ugly warning
+	* database: don't print a log message about auto-prune
+	* etc/neubot/config: add configuration file
+	* doc/manual.txt: new version of the manual using restructured text
+	* doc: remove old documentation referring version 0.1 of neubot
+	* man/man3: remove old manual page
+	* Makefile: remove rules referencing pod
+	* BUGS: Update the email address for reporting bugs
+	* TODO: remove old entries from the file
+	* updated the setup.py script
+	* setup.py: this should fix a py2exe warning
+	* update the neubot.nsi script
+	* release.sh: remove many limitations of this script
+	* README: update using bits of the manual page intro
+	* Build.but: document how win32 build system works
+	* move testing code into neubot.net and remove testing/
+	* rendezvous: add support for the second speedtest server
+	* database: support for identifying each neubot with a random UUID
+	* Revert "setup.py: this should fix a py2exe warning"
+	* Update win32 build process after today's mini-hackathon
+	* neubot.nsi: roll-out cleaner uninstall and reinstall
+	* doc: rename manual page because we might want to add other manpages
+	* Add menu entry to show status icon in the notification area
+	* Makefile: make sure /etc/init.d/neubot perms are 0755
+	* neubot.js: print neubot states in grey when sleeping
+	* Release neubot/0.2.8
+
 Neubot 0.2.7 [2010-10-15]
 	* Makefile: explain why we don't use sed -i
 	* main: dohelp(): use stdout/stderr depending on context
