@@ -16,24 +16,8 @@ function getcurstate(data) {
 
     if (active == "true") {
         $("#daemon").html("<h2>Neubot is currently running.</h2>");
-        html += "<h2>Current Neubot state is</h2>";
-        html += '<ul class="hlist gray">';
-        $(data).find("activity").each(function() {
-            var $entry = $(this);
-            var id = "";
-            var curr = $entry.attr("current");
-            var txt = $.trim($entry.text());
-            if (curr == "true") {
-                id = 'id="active"';
-                current = txt;
-            }
-            html += "<li " + id + " >" + txt + "</li>";
-        });
-        html += "</ul>";
-        $("#state").html($(html));
     } else {
         $("#daemon").html("<h2>Neubot is currently idle.</h2>");
-        $("#state").html($(""));
     }
 
     /*
@@ -49,6 +33,23 @@ function getcurstate(data) {
         html += "</h2>";
         $("#update").html($(html));
     }
+
+    html = "";
+    html += "<h2>Current Neubot state is</h2>";
+    html += '<ul class="hlist gray">';
+    $(data).find("activity").each(function() {
+        var $entry = $(this);
+        var id = "";
+        var curr = $entry.attr("current");
+        var txt = $.trim($entry.text());
+        if (curr == "true") {
+            id = 'id="active"';
+            current = txt;
+        }
+        html += "<li " + id + " >" + txt + "</li>";
+    });
+    html += "</ul>";
+    $("#state").html($(html));
 
     /*
      * Get details of the current/latest test
