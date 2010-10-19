@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Neubot (Network Neutrality Bot)
-Comment=Open Neubot Web Interface
+Name=Neubot (Open web UI)
+Comment=Open neubot web UI in the default browser
 Type=Application
 Exec=/usr/bin/neubot
 Terminal=False
