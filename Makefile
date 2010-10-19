@@ -269,7 +269,7 @@ DEB_DATA_FILES += usr/share/applications/neubot-status-icon.desktop
 DEB_DATA_FILES += etc/init.d/neubot
 DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
 
-# Files to chmod +x.
+# Files to chmod 755.
 DEB_DATA_EXEC += dist/data/etc/init.d/neubot
 
 _deb_data:
@@ -282,7 +282,7 @@ _deb_data:
 	 install -m644 debian/$$FILE dist/data/$$FILE; \
 	done
 	@for FILE in $(DEB_DATA_EXEC); do \
-	 chmod +x $$FILE; \
+	 chmod 755 $$FILE; \
 	done
 
 _deb_data.tgz: _deb_data
