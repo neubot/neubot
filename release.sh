@@ -22,7 +22,7 @@
 # Get current version number
 #
 
-# Note: the following line contains a couple of TABs
+# Note: the two char classes below contain a space and a tab
 CURRENT=`grep ^VERSION Makefile | sed 's/^VERSION[ 	]*=[ 	]*//'`
 CURRENT_MAJOR=`echo $CURRENT | cut -d. -f1`
 CURRENT_MINOR=`echo $CURRENT | cut -d. -f2`
@@ -38,19 +38,9 @@ if [ $# -eq 1 ]; then
     NEW_MINOR=`echo $NEW | cut -d. -f1`
     NEW_PATCH=`echo $NEW | cut -d. -f1`
 elif [ $# -eq 0 ]; then
-    if [ "$CURRENT_MINOR" -eq "9" ]; then
-        NEW_MAJOR=$(($CURRENT_MAJOR+1))
-        NEW_MINOR=0
-        NEW_PATCH=0
-    elif [ "$CURRENT_PATCH" -eq "9" ]; then
-        NEW_MAJOR=$CURRENT_MAJOR
-        NEW_MINOR=$(($CURRENT_MINOR+1))
-        NEW_PATCH=0
-    else
-        NEW_MAJOR=$CURRENT_MAJOR
-        NEW_MINOR=$CURRENT_MINOR
-        NEW_PATCH=$(($CURRENT_PATCH+1))
-    fi
+    NEW_MAJOR=$CURRENT_MAJOR
+    NEW_MINOR=$CURRENT_MINOR
+    NEW_PATCH=$(($CURRENT_PATCH+1))
     NEW="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
 else
     printf "Usage: %s [version]\n", $0 1>&2
@@ -69,7 +59,7 @@ if [ $COUNT -gt 1 ]; then
     git shortlog $CURRENT..HEAD | sed -n '2,$p' >> ChangeLog.in
     sed '$d' ChangeLog.in > CLOG &&
      cat CLOG > ChangeLog.in && rm CLOG
-    # Note: the following line contains a TAB
+    # Note: the pattern below contains a tab
     sed '2,$s/^\ */	* /' ChangeLog.in > CLOG &&
      cat CLOG > ChangeLog.in && rm CLOG
 fi
