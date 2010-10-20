@@ -178,16 +178,3 @@ progress = log.progress
 complete = log.complete
 debug = log.debug
 getlines = log.getlines
-
-#
-# XXX Replace the root logger with log.logger--this is intended as an
-# interim measure to use log without converting the existing code base
-# from logging.func() to neubot.log.func().
-#
-
-def install():
-    logging.root = log.logger
-    logging.debug = log.debug
-    logging.info = log.info
-    logging.warning = log.warning
-    logging.error = log.error
