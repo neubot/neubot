@@ -1,26 +1,12 @@
-neubot - The network neutrality bot
-```````````````````````````````````
+Neubot, the network neutrality bot
+``````````````````````````````````
 
 Neubot is a research project of the NEXA Center for Internet & Society,
-a research center of Dipartimento di Automatica e Informatica (DAUIN) at
-Politecnico di Torino.
+a research center of Dipartimento di Automatica e Informatica (DAUIN),
+at Politecnico di Torino, Italy. We develop the network neutrality bot,
+a lightweight open-source agent application that performs distributed
+Internet QoS measurements using different application-level protocols,
+and uploads results to our central servers, to allow constant monitoring
+of network neutrality.
 
-Neubot is the network neutrality bot.  It silently runs in background
-and routinely performs transmission tests with either existing servers
-(*client/server* mode) or other running neubot instances (*peer-to-peer*
-mode), employing different network protocols, such as **HTTP** and
-**BitTorrent**, and measuring relevant QoS parameters. A set of central
-servers coordinates these tests, telling each neubot instance which test
-should be performed, and collects, analyzes, and publishes the results,
-trying to rebalance (at least in part) the deep information asymmetry
-regarding network neutrality that exists between ordinary users and
-internet service providers.
-
-This is a beta release of neubot that does not implement *peer-to-peer*
-mode and performs **HTTP** transmission tests only, using a measurement
-methodology inspired to the one of http://www.speedtest.net.
-
-See also,
-  http://www.neubot.org (official website)
-  http://nexa.polito.it/neubot (neubot page at nexa.polito.it)
-  http://nexa.polito.it (the research center site)
+For more info, http://www.neubot.org
