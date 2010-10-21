@@ -1,8 +1,5 @@
-Install and uninstall instructions
-``````````````````````````````````
-
-You can find install and uninstall instructions here:
+We don't ship much documentation in the sources archive, because
+we prefer to focus on on-line documentation.  You can find install
+instructions here:
 
     http://www.neubot.org/documentation/install
-
-    http://www.neubot.org/documentation/uninstall
