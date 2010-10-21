@@ -17,7 +17,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 
 #
-# RESTful User Interface API
+# Web User Interface API
 #
 
 if __name__ == "__main__":
