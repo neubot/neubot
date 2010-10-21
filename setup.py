@@ -26,7 +26,7 @@ import os
 if os.name != "posix":
     import py2exe
     distutils.core.setup(name="neubot",
-        description="Network neutrality bot",
+        description="The network neutrality bot",
         license="GPLv3",
         packages=["neubot"],
         package_dir={"neubot" : "."},
