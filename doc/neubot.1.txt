@@ -25,20 +25,14 @@ SYNOPSYS
 DESCRIPTION
 ```````````
 
-Neubot is the network neutrality bot.  It silently runs in background
-and routinely performs transmission tests with either existing servers
-(*client/server* mode) or other running neubot instances (*peer-to-peer*
-mode), employing different network protocols, such as **HTTP** and
-**BitTorrent**, and measuring relevant QoS parameters. A set of central
-servers coordinates these tests, telling each neubot instance which test
-should be performed, and collects, analyzes, and publishes the results,
-trying to rebalance (at least in part) the deep information asymmetry
-regarding network neutrality that exists between ordinary users and
-internet service providers.
+Neubot is the network neutrality bot, a lightweight open-source agent
+application that performs distributed Internet QoS measurements using
+different application-level protocols, and uploads results to neubot.org
+central servers, to allow constant monitoring of network neutrality.
 
-This is a beta release of neubot that does not implement *peer-to-peer*
-mode and performs **HTTP** transmission tests only, using a measurement
-methodology inspired to the one of *http://www.speedtest.net*.
+This is a beta release of neubot that implements a simple client/server
+HTTP transmission test, using a measurement methodology inspired to the
+one of *http://www.speedtest.neubot*.
 
 The first form of the command will make sure that neubot *daemon* is
 running (and will start it if not), and then will open neubot *web user
@@ -197,5 +191,4 @@ COPYRIGHT
 SEE ALSO
 ````````
 
-| ``The network neutrality bot <http://www.neubot.org>``
-| ``The neubot project <http://nexa.polito.it/neubot>``
+| ``Neubot | The network neutrality bot <http://www.neubot.org>``
