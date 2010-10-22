@@ -54,6 +54,7 @@ section
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
+    exec "$INSTDIR\neubot-start.exe"
 sectionend
 section "uninstall"
     #
