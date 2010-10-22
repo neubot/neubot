@@ -46,6 +46,8 @@ section
     createshortcut "$SMPROGRAMS\neubot\neubot (stop).lnk"		\
       "$INSTDIR\neubot-stop.exe"
     createshortcut "$SMPROGRAMS\neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
+    createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
+      "$INSTDIR\neubot-start.exe"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "DisplayName" "neubot 0.2.8"
@@ -66,6 +68,7 @@ section "uninstall"
     sleep 2000
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\neubot"
+    delete "$SMSTARTUP\neubot (autostart).lnk"
     deleteregkey HKLM                                                   \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
 sectionend
