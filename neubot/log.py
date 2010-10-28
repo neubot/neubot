@@ -30,6 +30,76 @@ from os import isatty
 from sys import stderr
 
 #
+# Make sure we are running MacOS X and not a custom copy
+# of OpenDarwin.   XXX Probably this check should be refined
+# a bit (i.e., we might want to read the property file to
+# be really sure).
+# MacOS X is "posix" and "darwin" but is a bit different
+# from classical Unices, therefore we need to identify it
+# in order to adapt our behavior.
+# This code must be here because this is the root module,
+# i.e. all other modules import this one.
+# 
+
+from sys import platform
+from os import path
+
+class IsMacOSX:
+    def __init__(self):
+        self.ismacosx = (platform == "darwin" and (
+          path.exists("/System/Library/CoreServices/SystemVersion.plist")
+           or path.exists("/System/Library/CoreServices/ServerVersion.plist")))
+
+    def __call__(self):
+        return self.ismacosx
+
+ismacosx = IsMacOSX()
+
+#
+# SysLogHandler uses UDP by default.  Or you can configure it to
+# use a given UNIX domain socket.  The problem is that the socket
+# is /dev/log for most Unices, but not for MacOS X.
+#
+# Then, if we use SysLogHandler we have to know the path where
+# the UNIX domain socket is.  A more portable solution is to use
+# syslog wrapper.  Indeed, who wrote syslog for the current system
+# of course knows the mechanism employed (i.e., UDP or UNIX domain
+# socket), paths, and stuff.
+#
+# In the long term we want to use syslog wrapper for all Unices,
+# but, for now, let's apply the new behavior to MacOS X only.
+#
+
+if ismacosx():
+
+    from syslog import LOG_DAEMON
+    from syslog import LOG_PID
+
+    from syslog import LOG_ERR
+    from syslog import LOG_WARNING
+    from syslog import LOG_INFO
+    from syslog import LOG_DEBUG
+
+    from syslog import openlog
+    from syslog import syslog
+
+    class SyslogAdaptor:
+        def __init__(self):
+            openlog("neubot", LOG_DAEMON|LOG_PID)
+
+        def error(self, message):
+            syslog(LOG_ERR, message)
+
+        def warning(self, message):
+            syslog(LOG_WARNING, message)
+
+        def info(self, message):
+            syslog(LOG_INFO, message)
+
+        def debug(self, message):
+            syslog(LOG_DEBUG, message)
+
+#
 # We save recent messages into a circular queue, together with
 # their timestamp, and we do that because we want to return to
 # the user also the time when a certain message was generated.
@@ -69,6 +139,10 @@ class Logger:
 
     def redirect(self):
 #       self.logger.removeHandler(self.handler)
+        if ismacosx():
+            self.logger = SyslogAdaptor()
+            self._tty = False
+            return
         self.handler = logging.handlers.SysLogHandler("/dev/log")
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
