@@ -28,6 +28,7 @@ if __name__ == "__main__":
 
 from neubot import debug
 from sys import setprofile
+from neubot.log import ismacosx
 from neubot import pathnames
 from neubot import log
 from sys import stderr
@@ -137,7 +138,12 @@ def main(args):
         if not daemon_running(conf.address, conf.port):
             start_daemon(args)
         uri = "http://%s:%s/" % (conf.address, conf.port)
-        if os.name != "posix" or os.environ.has_key("DISPLAY"):
+        #
+        # MacOS X is "posix" and "darwin" but does not employ X
+        # and therefore $DISPLAY is not set.
+        #
+        if (os.name != "posix" or os.environ.has_key("DISPLAY")
+         or ismacosx()):
             webbrowser.open(uri)
     else:
         _main_with_args(args)
