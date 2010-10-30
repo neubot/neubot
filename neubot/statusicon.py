@@ -173,7 +173,7 @@ class StatusIcon:
 
     def _do_open_browser(self, *args):
         uri = "http://%s:%s/" % (self.address, self.port)
-        webbrowser.open(uri, new=2)
+        webbrowser.open(uri, new=2, autoraise=True)
 
     def _do_quit(self, *args):
         gtk.main_quit()
@@ -223,7 +223,7 @@ class StatusIcon:
         gtk.gdk.threads_leave()
 
     def _do_download_update(self, *args):
-        webbrowser.open(args[1])
+        webbrowser.open(args[1], new=2, autoraise=True)
 
 #
 # Main program
