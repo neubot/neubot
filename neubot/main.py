@@ -146,7 +146,7 @@ def main(args):
         #
         if (os.name != "posix" or os.environ.has_key("DISPLAY")
          or ismacosx()):
-            webbrowser.open(uri)
+            webbrowser.open(uri, new=2, autoraise=True)
     else:
         _main_with_args(args)
 
