@@ -660,7 +660,7 @@ HELP = USAGE +								\
 
 def main(args):
     fakerc = StringIO()
-    fakerc.write("[ui]")
+    fakerc.write("[ui]" + "\n")
     servermode = False
     # parse
     try:
