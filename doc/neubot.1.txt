@@ -7,7 +7,7 @@ The network neutrality bot
 :Manual section: 1
 :Date: @DATE@
 :Manual group: Neubot manual
-:Version: Neubot 0.2.8
+:Version: Neubot 0.3.0
 
 SYNOPSYS
 ````````

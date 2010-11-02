@@ -1,3 +1,29 @@
+Neubot 0.3.0 [2010-11-02]
+	* log: remove code that hijacks logging.foo() calls
+	* release.sh: by default make a new patch release
+	* README: up-to-date with http://www.neubot.org/about
+	* BUGS: updated, providing much more information
+	* INSTALL: updated
+	* debian: control: update description etc
+	* Update manual page merging from http://www.neubot.org/about
+	* setup.py: Update description
+	* ui: don't claim to be RESTful
+	* win32: use new icon
+	* neubot.nsi: remember to autostart neubot
+	* neubot.nsi: start-neubot.exe after install (simmetry with APT)
+	* win32: recomplied *.exe using the new neubot icon
+	* net.connectors: propagate error if connect() times out
+	* [www] neubot.css: cosmetics
+	* [www] add favicon
+	* [www] pages to display latest results
+	* [www] link from neubot.html to results.html
+	* [docs] README: update with /about
+	* [docs] INSTALL: do not reference a dead link
+	* [docs] debian: update with /about
+	* [docs] manpage updated with /about
+	* [docs] manpage typo
+	* Release neubot/0.3.0
+
 Neubot 0.2.8 [2010-10-19]
 	* start-neubot-daemon: make sure it works once installed
 	* speedtest: don't abort renegotiation on already closed connection

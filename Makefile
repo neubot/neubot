@@ -26,7 +26,7 @@
 # GIT a new release.
 #
 
-VERSION	= 0.2.8
+VERSION	= 0.3.0
 
 #
 # The list of .PHONY targets.  This is also used to build the

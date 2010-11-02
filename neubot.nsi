@@ -20,8 +20,8 @@
 # Use NSIS to create neubot installer
 #
 
-name "neubot 0.2.8"
-outfile "neubot-0.2.8-setup.exe"
+name "neubot 0.3.0"
+outfile "neubot-0.3.0-setup.exe"
 installdir "$PROGRAMFILES\neubot"
 setcompressor lzma
 section
@@ -50,7 +50,7 @@ section
       "$INSTDIR\neubot-start.exe"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
-      "DisplayName" "neubot 0.2.8"
+      "DisplayName" "neubot 0.3.0"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
