@@ -36,7 +36,7 @@ neutrality.
 
 This is a beta release of neubot that implements a simple client/server
 HTTP transmission test, using a measurement methodology inspired to the
-one of *http://www.speedtest.neubot*.
+one of *http://www.speedtest.net*.
 
 The first form of the command will make sure that neubot *daemon* is
 running (and will start it if not), and then will open neubot *web user
