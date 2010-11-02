@@ -11,6 +11,10 @@ body {
     font-size: medium;
 }
 
+.disabled {
+    color: gray;
+}
+
 #logo {
     background-image: url("header.png");
     background-repeat: repeat-x;
@@ -53,8 +57,7 @@ body {
     line-height: normal;
 }
 
-ul.hlist li
-{
+ul.hlist li {
     display: inline;
     list-style-type: none;
     margin-right: 1em;
@@ -62,13 +65,11 @@ ul.hlist li
     color: #D4D4D4;
 }
 
-ul.hlist li#active
-{
+ul.hlist li#active {
     border-bottom: 4px solid #000;
     background: transparent;
     color: #000;
 }
-
 
 .gray {
     color: #D4D4D4;
