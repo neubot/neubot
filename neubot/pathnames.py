@@ -21,6 +21,7 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from neubot import log
+from neubot.log import ismacosx
 from sys import exit
 from sys import argv
 import os.path
@@ -65,6 +66,9 @@ else:
         DATABASE = home + "/.neubot/database.sqlite3"
         userdirs.append(home + "/.neubot")
     WWW = PREFIX + "/share/neubot/www"
+    # We provide an App for MacOS X
+    if ismacosx():
+        WWW = "/Applications/neubot.app/Contents/Resources/neubot/neubot/www"
 
 def printfiles():
     log.debug("Config files  : %s" % str(CONFIG))
