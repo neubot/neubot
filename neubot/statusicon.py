@@ -128,6 +128,10 @@ class StateTrackerThread(Thread):
 # the most common GNU/Linux distros.
 #
 
+# TODO move in pathnames when we install icon for all Unices
+ICON = "/usr/share/icons/hicolor/scalable/apps/neubot.svg"
+import os.path
+
 class StatusIcon:
 
     #
@@ -142,7 +146,10 @@ class StatusIcon:
         self.blink = blink
         self.nohide = nohide
         self.icon = gtk.StatusIcon()
-        self.icon.set_from_icon_name(gtk.STOCK_NETWORK)                 # XXX
+        # The icon might not exist (e.g. running from sources)
+        self.icon.set_from_icon_name(gtk.STOCK_NETWORK)
+        if os.path.exists(ICON):
+            self.icon.set_from_file(ICON)
         self.icon.connect("popup-menu", self.on_popup_menu)
         self.icon.connect("activate", self.on_activate)
         self.icon.set_visible(self.nohide)
