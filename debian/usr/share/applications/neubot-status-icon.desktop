@@ -7,3 +7,4 @@ Exec=/usr/bin/neubot statusicon -n
 Terminal=False
 Categories=GNOME;Network;
 StartupNotify=True
+Icon=/usr/share/icons/hicolor/scalable/apps/neubot.svg
