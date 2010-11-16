@@ -86,9 +86,9 @@ class XMLRendezvous:
             self.version = XML_get_scalar(tree, "version")
 
 class RendezvousServer(Server):
-    def __init__(self, config):
+    def __init__(self, config, port):
         self.config = config
-        Server.__init__(self, config.address, port=config.port)
+        Server.__init__(self, config.address, port=port)
 
     def bind_failed(self):
         log.error("Is another neubot(1) running?")
@@ -160,6 +160,7 @@ class RendezvousServer(Server):
 # test_uri2:
 # test_uri: http://speedtest1.neubot.org/speedtest
 # port: 9773
+# alt-port: 8080
 #
 
 class RendezvousConfig(SafeConfigParser):
@@ -171,6 +172,7 @@ class RendezvousConfig(SafeConfigParser):
         self.test_uri = "http://speedtest1.neubot.org/speedtest"
         self.test_uri2 = ""
         self.port = "9773"
+        self.altport = "8080"
 
 #   def check(self):
 #       pass
@@ -201,6 +203,7 @@ class RendezvousModule:
     def __init__(self):
         self.config = RendezvousConfig()
         self.server = None
+        self.altserver = None
 
     def configure(self, filenames, fakerc):
         self.config.read(filenames)
@@ -208,9 +211,12 @@ class RendezvousModule:
         # XXX other modules need to read() it too
         fakerc.seek(0)
 
+    # XXX Migration from 9773 to 8080 because the former might be blocked
     def start(self):
-        self.server = RendezvousServer(self.config)
+        self.server = RendezvousServer(self.config, self.config.port)
         self.server.listen()
+        self.altserver = RendezvousServer(self.config, self.config.altport)
+        self.altserver.listen()
 
 rendezvous = RendezvousModule()
 
@@ -401,7 +407,7 @@ HELP = USAGE +								\
 "  -v            : Run the program in verbose mode.\n"			\
 "  -x            : Debug mode, don't run any test.\n"
 
-URI = "http://master.neubot.org:9773/rendezvous"
+URI = "http://master.neubot.org:8080/rendezvous"
 
 def main(args):
     fakerc = StringIO()

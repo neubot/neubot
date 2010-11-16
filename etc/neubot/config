@@ -40,6 +40,7 @@
 #test_uri2 = http://speedtest2.neubot.org:8080/speedtest
 #test_uri = http://speedtest1.neubot.org/speedtest
 #port: 9773
+#alt-port: 8080
 
 #
 #  ___                  _ _          _
