@@ -31,9 +31,6 @@ import os
 if os.name == "posix":
     import pwd
 
-def prettyprint_exception(write=log.error, eol=""):
-    log.exception()
-
 def versioncmp(left, right):
     left = map(int, left.split("."))
     right = map(int, right.split("."))

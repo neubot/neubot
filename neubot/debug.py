@@ -56,9 +56,7 @@ class Profiler:
     #
     # We also avoid diving into the logging module because this module
     # invokes loads of other functions of the standard python library,
-    # and we are not actually interested on those functions.  For the
-    # same reason, we don't dive into the prettyprint_exception() func
-    # of neubot.utils.
+    # and we are not actually interested on those functions.
     #
 
     def notify_event(self, frame, event, arg):
@@ -78,8 +76,7 @@ class Profiler:
                 buff = "%s%s %s:%d:%s()\n" % (prefix,event,fname,lineno,func)
                 sys.stderr.write(buff)
             if event == "call":
-                if self.enabled and (fname.startswith("logging/") or (fname
-                 == "neubot/utils.py" and func == "prettyprint_exception")):
+                if self.enabled and fname.startswith("logging/"):
                     self.enabled = False
                     self.depth = self.frameno
                 self.frameno += 1
