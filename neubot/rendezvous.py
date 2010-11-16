@@ -408,7 +408,7 @@ def main(args):
     fakerc.write("[rendezvous]\n")
     dontloop = False
     servermode = False
-    interval = 300
+    interval = 1500
     xdebug = False
     daemonize = True
     # parse
