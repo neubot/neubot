@@ -806,7 +806,7 @@ FLAG_COLLECT = (1<<4)
 FLAG_CLEANUP = (1<<5)
 FLAG_SUCCESS = (1<<6)
 
-class SpeedtestClient(ClientController):
+class SpeedtestClient1(ClientController):
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
         self.negotiate = Negotiate(self)
         self.latency = Latency(self)
@@ -974,41 +974,48 @@ HELP = USAGE +								\
 "  -v            : Run the program in verbose mode.\n"			\
 "  -x            : Avoid negotiation and collection.\n"
 
-class VerboseClient(SpeedtestClient):
-    def __init__(self, uri, nclients, flags, debug, parent=None):
-        SpeedtestClient.__init__(self, uri, nclients, flags, debug, parent)
-        self.formatter = None
+# TODO move this class near SpeedtestClient1
+class SpeedtestClient(SpeedtestClient1):
+    def __init__(self, uri, nclients, flags, debug=False, parent=None):
+        SpeedtestClient1.__init__(self, uri, nclients, flags, debug, parent)
+        self.formatter = lambda n: " %fiB/s" % n
 
     def __del__(self):
         pass
 
     def speedtest_complete(self):
-        stdout.write("Timestamp: %d\n" % timestamp())
-        stdout.write("Base-URI: %s\n" % self.uri)
+        log.info("*** Begin test result ***")
+        log.info("Timestamp: %d\n" % timestamp())
+        log.info("Base-URI: %s\n" % self.uri)
         # connect
+        v = []
         if len(self.latency.connect) > 0:
-            stdout.write("Connect:")
+            v.append("Connect:")
             for x in self.latency.connect:
-                stdout.write(" %f" % x)
-            stdout.write("\n")
+                v.append(" %f" % x)
+            log.info("".join(v))
         # latency
+        v = []
         if len(self.latency.latency) > 0:
-            stdout.write("Latency:")
+            v.append("Latency:")
             for x in self.latency.latency:
-                stdout.write(" %f" % x)
-            stdout.write("\n")
+                v.append(" %f" % x)
+            log.info("".join(v))
         # download
+        v = []
         if len(self.download.speed) > 0:
-            stdout.write("Download:")
+            v.append("Download:")
             for x in self.download.speed:
-                stdout.write(" %s" % self.formatter(x))
-            stdout.write("\n")
+                v.append(" %s" % self.formatter(x))
+            log.info("".join(v))
         # upload
+        v = []
         if len(self.upload.speed) > 0:
-            stdout.write("Upload:")
+            v.append("Upload:")
             for x in self.upload.speed:
-                stdout.write(" %s" % self.formatter(x))
-            stdout.write("\n")
+                v.append(" %s" % self.formatter(x))
+            log.info("".join(v))
+        log.info("*** End test result ***")
 
 FLAGS = {
     "all": FLAG_ALL,
@@ -1031,7 +1038,6 @@ def main(args):
     servermode = False
     xdebug = False
     flags = 0
-    new_client = VerboseClient
     fmt = "bits"
     nclients = 1
     # parse
@@ -1068,7 +1074,8 @@ def main(args):
         elif name == "-S":
             servermode = True
         elif name == "-s":
-            new_client = SpeedtestClient
+            # XXX for backward compatibility only
+            pass
         elif name == "-V":
             stdout.write(version + "\n")
             exit(0)
@@ -1098,9 +1105,8 @@ def main(args):
     if flags == 0:
         flags = FLAG_ALL
     # run
-    client = new_client(uri, nclients, flags, xdebug)
-    if new_client == VerboseClient:
-        client.formatter = FORMATTERS[fmt]
+    client = SpeedtestClient(uri, nclients, flags, xdebug)
+    client.formatter = FORMATTERS[fmt]
     loop()
 
 if __name__ == "__main__":
