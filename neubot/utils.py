@@ -151,6 +151,7 @@ DAEMON_ALL = (DAEMON_SYSLOG|DAEMON_CHDIR|DAEMON_DETACH|DAEMON_SIGNAL|
 USERS = ["_neubot", "nobody"]
 
 def getpwnaml(users=USERS):
+    passwd = None
     if os.name == "posix":
         for user in users:
             try:
@@ -158,8 +159,8 @@ def getpwnaml(users=USERS):
             except KeyError:
                 pass
             else:
-                return passwd
-    return None
+                break
+    return passwd
 
 def getpwnamlx(users=USERS):
     passwd = getpwnaml(users)
