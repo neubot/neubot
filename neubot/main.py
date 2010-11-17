@@ -37,6 +37,7 @@ from sys import argv
 from sys import exit
 
 # cheating a bit
+from neubot.bittorrent import wrapper as bittorrent
 from neubot.http import clients as http
 from neubot.http import servers as httpd
 
@@ -111,6 +112,7 @@ def dostatusicon(args):
 
 TABLE = {
     "database"   : database.main,
+    "bittorrent" : bittorrent.main,
     "help"       : dohelp,
     "http"       : http.main,
     "httpd"      : httpd.main,
