@@ -95,6 +95,16 @@ function getcurstate(data) {
     $.get("/api/state?t=" + curtime, getcurstate);
 }
 
-$(document).ready(function() {
+/*
+ * A little delay before starting long polling.  This way
+ * Google Chrome tab icon does not keep spinning.  For more
+ * info see http://bit.ly/a4x7Ct (stackoverflow.com).
+ */
+
+function getstate() {
     $.get("/api/state?t=0", getcurstate);
+}
+
+$(document).ready(function() {
+    setTimeout(getstate, 100);
 });
