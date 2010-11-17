@@ -5,10 +5,23 @@
  */
 
 function getcurstate(data) {
-    var curtime = $(data).find("state").attr("t") || 0;
+    var curtime = $(data).find("state").attr("t");
     var active = $.trim($(data).find("active").text());
     var current = "";
     var html = "";
+
+    /*
+     * Woah... either we are not talking with neubot or neubot
+     * is down for some reason.  Wait for some time before trying
+     * again.  Or we will overload the browser.
+     */
+
+    if (!curtime) {
+        setTimeout(function() {
+            $.get("/api/state?t=0", getcurstate);
+        }, 5000);
+        return;
+    }
 
     /*
      * Update the program state
