@@ -116,7 +116,7 @@ RESULTS_SAVE        = """INSERT INTO results VALUES(null, :tag,
 # space.
 #
 
-MAXROWS = 4096
+MAXROWS = 103680
 
 #
 #        _               _
