@@ -11,26 +11,39 @@
 <link rel="stylesheet" type="text/css" href="web20-table.css"/>
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 <script src="jquery-1.4.2.min.js" type="text/javascript"></script>
+<script language="javascript" type="text/javascript" src="jqplot/jquery.jqplot.min.js"></script>
+<link rel="stylesheet" type="text/css" href="jqplot/jquery.jqplot.css" />
 <!--
-<script src="jquery.numberformatter-1.2.1.min.js" type="text/javascript">
-</script>
+  TODO Remember to move all the stuff below in results.js
 -->
+<script type="text/javascript" src="jqplot/plugins/jqplot.axisLabelRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.cursor.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.highlighter.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
 <script src="results.js" type="text/javascript"></script>
-<link rel="stylesheet" type="text/css" href="neubot.css">
 <title>Neubot - results</title>
 </head>
 <body>
 <div id="header">
   <div id="logo">
-    <a href="/">
-      <img src="neubot-logo.png" height="50" alt="Neubot logo"
+    <a href="http://www.neubot.org/">
+      <img src="neubot-logo.png" height="50" alt="Neubot website"
            style="border-style: none;">
     </a>
   </div>
 </div>
-<div id="content">
-  <div id="results">
-    <!-- nothing -->
-  </div>
+<div id="content" style="text-align: center">
+  <ul>
+    <div style="float: right;">
+      <h2><a href="/neubot.html">Home</a></h2>
+    </div>
+    <h2>Speedtest results - <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a></h2>
+    <div id="chartdiv1" style="height:400px; width:100%;"></div>
+    <div id="results">
+      <!-- nothing -->
+    </div>
+  </ul>
 </div>
 </body>
