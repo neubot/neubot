@@ -35,10 +35,7 @@ CURRENT_PATCH=`echo $CURRENT | cut -d. -f3`
 if [ $# -eq 1 ]; then
     NEW=$1
 elif [ $# -eq 0 ]; then
-    NEW_MAJOR=$CURRENT_MAJOR
-    NEW_MINOR=$CURRENT_MINOR
-    NEW_PATCH=$(($CURRENT_PATCH+1))
-    NEW="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
+    NEW="$CURRENT_MAJOR.$CURRENT_MINOR.$(($CURRENT_PATCH +1))"
 else
     printf "Usage: %s [version]\n", $0 1>&2
     exit 1
