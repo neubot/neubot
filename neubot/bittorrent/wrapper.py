@@ -117,10 +117,10 @@ def main(args):
     # run
     bittorrent = BitTorrent()
     if servermode:
-        bittorrent.open_port("127.0.0.1", "6881")
+        bittorrent.open_port("0.0.0.0", "6881")
         loop()
         exit(0)
-    bittorrent.make_connection("127.0.0.1", "6881")
+    bittorrent.make_connection("master.neubot.org", "6881") # XXX
     loop()
 
 if __name__ == "__main__":
