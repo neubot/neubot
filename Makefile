@@ -423,3 +423,4 @@ __release:
 #	Fix permissions
 #
 	@cd dist && chmod 644 *
+	@chmod 777 dist
