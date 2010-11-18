@@ -164,7 +164,7 @@ function getresults(data){
       "chartdiv1",
       download.concat(upload), {
         axesDefaults: {
-          tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+          tickRenderer: $.jqplot.CanvasAxisTickRenderer
         },
         title: {
           text: "Download and Upload Rate"
