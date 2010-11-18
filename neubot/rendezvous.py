@@ -156,7 +156,7 @@ class RendezvousServer(Server):
 # [rendezvous]
 # address: 0.0.0.0
 # update_uri: http://releases.neubot.org
-# update_version: 0.3.0
+# update_version: 0.3.1
 # test_uri2:
 # test_uri: http://speedtest1.neubot.org/speedtest
 # port: 9773

@@ -4,9 +4,9 @@
 .PHONY: all
 all:
 	make -f Makefile archive
-	cp dist/neubot-0.3.0.tar.gz neubot.app/Contents/Resources/
+	cp dist/neubot-0.3.1.tar.gz neubot.app/Contents/Resources/
 	cd neubot.app/Contents/Resources && \
-	 tar xzf neubot-0.3.0.tar.gz && \
-	 rm -rf neubot-0.3.0.tar.gz && \
-	 ln -s neubot-0.3.0 neubot && \
+	 tar xzf neubot-0.3.1.tar.gz && \
+	 rm -rf neubot-0.3.1.tar.gz && \
+	 ln -s neubot-0.3.1 neubot && \
 	 rm -rf pax_global_header

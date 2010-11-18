@@ -1,3 +1,39 @@
+Neubot 0.3.1 [2010-11-18]
+	* [cleanups] remove unused code: prettyprint_exception
+	* [cleanups] streams: remove commented out code
+	* [fixes] ui: make sure -Dname=value works
+	* [fixes] utils: Avoid PyChecker warning
+	* [fixes] speedtest: send results through log.info()
+	* [fixes] rendezvous: raise number of seconds between each rendezvous
+	* [fixes] database: raise the value of MAXROWS
+	* [icons] Add neubot icons
+	* [icons] debian: Add and install SVG icon
+	* [icons] statusicon: Use neubot icon
+	* [macosx] log: use syslog wrapper instead of SysLogHandler
+	* [macosx] main: MacOS X does not set $DISPLAY
+	* [macosx] pathnames: Adjust WWW location
+	* [macosx] App skeleton
+	* [macosx] neubot.app: Quick and dirty Makefile to create the App
+	* [rendezvous8080] rendezvous: Use port 8080 because 9773 might be blocked
+	* [bittorent] bittorrent: initial experimental support for BitTorrent
+	* [bittorrent] bittorrent: link with neubot
+	* [www-misc] neubot.js: Make sure Chrome tab icon does not spin
+	* [www-misc] neubot.js: do not bring browser on its knees
+	* [www-misc] neubot.html: better links
+	* [www-jqplot] www/jqplot: add jqplot sources
+	* [www-jqplot] results: use jqplot and plot recent results
+	* [webbrowser] main: make sure that browser opens but does not annoy
+	* [webbrowser] statusicon: make sure that browser opens but does not annoy
+	* [testing] release.sh: modified code that updates ChangeLog
+	* [testing] Make-dist.bat: make sure we install images and jqplot
+	* [testing] www/results.js: avoid IE8 parsing error
+	* [testing] www/results.html: IE8 does not have Canvas
+	* [testing] release.sh: removed useless and wrong piece of code
+	* [testing] release.sh: simplify code to calculate next version number
+	* [testing] make sure `neubot bittorrent' pseudo-test works
+	* [testing] Makefile: allow user to write into dist/
+	* Release neubot/0.3.1
+
 Neubot 0.3.0 [2010-11-02]
 	* log: remove code that hijacks logging.foo() calls
 	* release.sh: by default make a new patch release
