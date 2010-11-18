@@ -49,20 +49,11 @@ fi
 
 #
 # Update ChangeLog.
-# We don't assume `sed -i' is valid.
 #
 
 DATE=`date +%F`
 printf "Neubot $NEW [$DATE]\n" > ChangeLog.in
-COUNT=`git shortlog $CURRENT..HEAD | sed -n '2,$p'|wc -l`
-if [ $COUNT -gt 1 ]; then
-    git shortlog $CURRENT..HEAD | sed -n '2,$p' >> ChangeLog.in
-    sed '$d' ChangeLog.in > CLOG &&
-     cat CLOG > ChangeLog.in && rm CLOG
-    # Note: the pattern below contains a tab
-    sed '2,$s/^\ */	* /' ChangeLog.in > CLOG &&
-     cat CLOG > ChangeLog.in && rm CLOG
-fi
+git log --oneline --reverse --format="%x09* %s" $CURRENT..HEAD >> ChangeLog.in
 printf "\t* Release neubot/$NEW\n\n" >> ChangeLog.in
 cat ChangeLog >> ChangeLog.in
 mv ChangeLog.in ChangeLog
