@@ -34,9 +34,6 @@ CURRENT_PATCH=`echo $CURRENT | cut -d. -f3`
 
 if [ $# -eq 1 ]; then
     NEW=$1
-    NEW_MAJOR=`echo $NEW | cut -d. -f1`
-    NEW_MINOR=`echo $NEW | cut -d. -f1`
-    NEW_PATCH=`echo $NEW | cut -d. -f1`
 elif [ $# -eq 0 ]; then
     NEW_MAJOR=$CURRENT_MAJOR
     NEW_MINOR=$CURRENT_MINOR
