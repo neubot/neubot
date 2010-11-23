@@ -44,6 +44,7 @@ PHONIES += _install_www
 PHONIES += _install_etc
 PHONIES += _install_man
 PHONIES += _install_bin
+PHONIES += _install_icon
 PHONIES += _install_edit
 PHONIES += _install_compile
 PHONIES += _install
@@ -139,6 +140,7 @@ PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 MANDIR = $(PREFIX)/man
+ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
 
 SUBDIRS = `find neubot/ -type d`
 SRCS = `find neubot/ -type f -name \*.py`
@@ -150,6 +152,7 @@ _install_skel:
 	@$(INSTALL) -d -m755 $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(MANDIR)/man1
+	@$(INSTALL) -d -m755 $(DESTDIR)$(ICONDIR)
 	@for SUBDIR in $(SUBDIRS); do \
 	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/$$SUBDIR; \
 	done
@@ -179,6 +182,9 @@ _install_man:
 _install_bin:
 	@$(INSTALL) -m755 bin/neubot $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -m755 bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
+
+_install_icon:
+	@$(INSTALL) -m644 icons/source.svg $(DESTDIR)$(ICONDIR)/neubot.svg
 
 #
 # After the install we need to edit the following files to
@@ -224,6 +230,7 @@ INSTALL_RULES += _install_www
 INSTALL_RULES += _install_etc
 INSTALL_RULES += _install_man
 INSTALL_RULES += _install_bin
+INSTALL_RULES += _install_icon
 INSTALL_RULES += _install_edit
 INSTALL_RULES += _install_compile
 
