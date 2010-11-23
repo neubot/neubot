@@ -131,7 +131,7 @@ class StateTrackerThread(Thread):
 # TODO move in pathnames when we install icon for all Unices
 ICON = "@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg"
 if ICON.startswith('@'):
-    ICON = "icons/source.svg"
+    ICON = "icons/neubot.svg"
 
 import os.path
 

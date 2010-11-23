@@ -184,7 +184,7 @@ _install_bin:
 	@$(INSTALL) -m755 bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
 
 _install_icon:
-	@$(INSTALL) -m644 icons/source.svg $(DESTDIR)$(ICONDIR)/neubot.svg
+	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
 
 #
 # After the install we need to edit the following files to
