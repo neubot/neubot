@@ -202,6 +202,7 @@ _install_icon:
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/pathnames.py
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
+NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 
 # New style:
 #

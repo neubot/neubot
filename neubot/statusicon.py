@@ -129,7 +129,10 @@ class StateTrackerThread(Thread):
 #
 
 # TODO move in pathnames when we install icon for all Unices
-ICON = "/usr/share/icons/hicolor/scalable/apps/neubot.svg"
+ICON = "@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg"
+if ICON.startswith('@'):
+    ICON = "icons/source.svg"
+
 import os.path
 
 class StatusIcon:
