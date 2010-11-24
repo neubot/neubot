@@ -183,28 +183,14 @@ RESTRICTED = [
     "/speedtest/collect",
 ]
 
-class SpeedtestServer(Server, _TestServerMixin):
+class _NegotiateServerMixin(object):
     def __init__(self, config):
         self.config = config
-        Server.__init__(self, address=config.address, port=config.port)
-        _TestServerMixin.__init__(self, config)
         self.begin_test = 0
         self.queue = deque()
-        self.table = {}
-        self._init_table()
         sched(3, self._speedtest_check_timeout)
 
-    def _init_table(self):
-        self.table["/speedtest/negotiate"] = self._do_negotiate
-        self.table["/speedtest/latency"] = self._do_latency
-        self.table["/speedtest/download"] = self._do_download
-        self.table["/speedtest/upload"] = self._do_upload
-        self.table["/speedtest/collect"] = self._do_collect
-
-    def bind_failed(self):
-        exit(1)
-
-    def got_request_headers(self, connection, request):
+    def check_request_headers(self, connection, request):
         ret = True
         if self.config.only_auth and request.uri in RESTRICTED:
             token = request["authorization"]
@@ -213,25 +199,6 @@ class SpeedtestServer(Server, _TestServerMixin):
                  connection.handler.stream.logname))
                 ret = False
         return ret
-
-    def got_request(self, connection, request):
-        try:
-            self.process_request(connection, request)
-        except KeyboardInterrupt:
-            raise
-        except:
-            log.exception()
-            response = Message()
-            compose(response, code="500", reason="Internal Server Error")
-            connection.reply(request, response)
-
-    def process_request(self, connection, request):
-        try:
-            self.table[request.uri](connection, request)
-        except KeyError:
-            response = Message()
-            compose(response, code="404", reason="Not Found")
-            connection.reply(request, response)
 
     #
     # A client is allowed to access restricted URIs if: (i) either
@@ -335,6 +302,47 @@ class SpeedtestServer(Server, _TestServerMixin):
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
         self._speedtest_complete()
+
+class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
+    def __init__(self, config):
+        self.config = config
+        Server.__init__(self, address=config.address, port=config.port)
+        _TestServerMixin.__init__(self, config)
+        _NegotiateServerMixin.__init__(self, config)
+        self.table = {}
+        self._init_table()
+
+    def _init_table(self):
+        self.table["/speedtest/negotiate"] = self._do_negotiate
+        self.table["/speedtest/latency"] = self._do_latency
+        self.table["/speedtest/download"] = self._do_download
+        self.table["/speedtest/upload"] = self._do_upload
+        self.table["/speedtest/collect"] = self._do_collect
+
+    def bind_failed(self):
+        exit(1)
+
+    def got_request_headers(self, connection, request):
+        return self.check_request_headers(connection, request)
+
+    def got_request(self, connection, request):
+        try:
+            self.process_request(connection, request)
+        except KeyboardInterrupt:
+            raise
+        except:
+            log.exception()
+            response = Message()
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
+
+    def process_request(self, connection, request):
+        try:
+            self.table[request.uri](connection, request)
+        except KeyError:
+            response = Message()
+            compose(response, code="404", reason="Not Found")
+            connection.reply(request, response)
 
 #
 # [speedtest]
