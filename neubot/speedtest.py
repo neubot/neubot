@@ -189,18 +189,86 @@ RESTRICTED = [
     "/speedtest/collect",
 ]
 
-class _NegotiateServerMixin(object):
+class SessionState:
+    active = False
+    timestamp = 0
+    identifier = None
+    queuepos = 0
+    negotiations = 0
+
+class _SessionTrackerMixin(object):
+    identifiers = {}
+    queue = deque()
+
+    def session_active(self, request):
+        identifier = request["authorization"]
+        if identifier in self.identifiers:
+            session = self.identifiers[identifier]
+            session.timestamp = timestamp()             # XXX
+            return session.active
+        return False
+
+    def session_prune(self):
+        stale = []
+        now = timestamp()
+        for session in self.queue:
+            if now - session.timestamp > 30:
+                stale.append(session)
+        if not stale:
+            return False
+        for session in stale:
+            self._do_remove(session)
+        return True
+
+    def session_delete(self, request):
+        identifier = request["authorization"]
+        if identifier in self.identifiers:
+            session = self.identifiers[identifier]
+            self._do_remove(session)
+
+    def session_negotiate(self, request):
+        identifier = request["authorization"]
+        if not identifier in self.identifiers:
+            session = SessionState()
+            # XXX collision is not impossible but very unlikely
+            session.identifier = str(uuid4())
+            request["authorization"] = session.identifier
+            session.timestamp = timestamp()
+            self._do_add(session)
+        else:
+            session = self.identifiers[identifier]
+        session.negotiations += 1
+        return session
+
+    def _do_add(self, session):
+        self.identifiers[session.identifier] = session
+        session.queuepos = len(self.queue)
+        self.queue.append(session)
+        self._do_update_queue()
+
+    def _do_remove(self, session):
+        del self.identifiers[session.identifier]
+        self.queue.remove(session)
+        self._do_update_queue()
+
+    def _do_update_queue(self):
+        pos = 1
+        for session in self.queue:
+            if pos <= 3 and not session.active:
+                session.active = True
+            session.queuepos = pos
+            pos = pos + 1
+
+class _NegotiateServerMixin(_SessionTrackerMixin):
     def __init__(self, config):
         self.config = config
         self.begin_test = 0
-        self.queue = deque()
         sched(3, self._speedtest_check_timeout)
 
     def check_request_headers(self, connection, request):
         ret = True
         if self.config.only_auth and request.uri in RESTRICTED:
-            token = request["authorization"]
-            if len(self.queue) == 0 or self.queue[0] != token:
+            if not self.session_active(request):
                 log.warning("* Connection %s: Forbidden" % (
                  connection.handler.stream.logname))
                 ret = False
@@ -225,50 +293,24 @@ class _NegotiateServerMixin(object):
 
     def _speedtest_check_timeout(self):
         sched(3, self._speedtest_check_timeout)
-        if self.queue:
-            now = ticks()
-            if now - self.begin_test > 30:
-                token = self.queue.popleft()
-                log.info("* TEST/timeout %s" % token)
-                publish(RENEGOTIATE)
-
-    def _speedtest_complete(self):
-        if self.queue:
-            token = self.queue.popleft()
-            log.info("* TEST/done %s" % token)
+        if self.session_prune():
             publish(RENEGOTIATE)
 
+    def _speedtest_complete(self, request):
+        self.session_delete(request)
+        publish(RENEGOTIATE)
+
     def do_negotiate(self, connection, request, nodelay=False):
-        queuePos = 0
-        unchoked = True
-        token = request["authorization"]
-        if not token:
-            token = str(uuid4())
-            request["authorization"] = token
-            self.queue.append(token)
+        session = self.session_negotiate(request)
+        if session.negotiations == 1:
             nodelay = True
-        if len(self.queue) > 0 and self.queue[0] != token:
+        if not session.active:
             if not nodelay:
                 subscribe(RENEGOTIATE, self._do_renegotiate,
                           (connection, request))
                 return
-            queuePos = self._queuePos(token)
-            unchoked = False
-        if unchoked:
-            log.info("* TEST/begin %s" % token)
-            self.begin_test = ticks()
-        self._send_negotiate(connection, request, token, unchoked, queuePos)
-
-    # XXX horrible horrible O(length)!
-    def _queuePos(self, token):
-        queuePos = 0
-        for element in self.queue:
-            if element == token:
-                break
-            if queuePos >= 64:
-                break
-            queuePos = queuePos + 1
-        return queuePos
+        self._send_negotiate(connection, request, session.identifier,
+         session.active, session.queuepos)
 
     def _send_negotiate(self, connection, request, token, unchoked, queuePos):
         root = Element("SpeedtestNegotiate_Response")
@@ -307,7 +349,7 @@ class _NegotiateServerMixin(object):
                                      collect.client)
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
-        self._speedtest_complete()
+        self._speedtest_complete(request)
 
 class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
     def __init__(self, config):
