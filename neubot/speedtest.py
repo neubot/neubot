@@ -129,6 +129,53 @@ class SpeedtestCollect:
             self.downloadSpeed = XML_get_vector(tree, "downloadSpeed")
             self.uploadSpeed = XML_get_vector(tree, "uploadSpeed")
 
+class _TestServerMixin(object):
+    def __init__(self, config):
+        self.config = config
+
+    def _do_latency(self, connection, request):
+        response = Message()
+        compose(response, code="200", reason="Ok")
+        connection.reply(request, response)
+
+    def _do_download(self, connection, request):
+        response = Message()
+        # open
+        try:
+            body = open(self.config.path, "rb")
+        except (IOError, OSError):
+            log.exception()
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
+            return
+        # range
+        if request["range"]:
+            total = file_length(body)
+            # parse
+            try:
+                first, last = parse_range(request)
+            except ValueError:
+                log.exception()
+                compose(response, code="400", reason="Bad Request")
+                connection.reply(request, response)
+                return
+            # XXX read() assumes there is enough core
+            body.seek(first)
+            partial = body.read(last - first + 1)
+            response["content-range"] = "bytes %d-%d/%d" % (first, last, total)
+            body = StringIO(partial)
+            code, reason = "206", "Partial Content"
+        else:
+            code, reason = "200", "Ok"
+        compose(response, code=code, reason=reason, body=body,
+                mimetype="application/octet-stream")
+        connection.reply(request, response)
+
+    def _do_upload(self, connection, request):
+        response = Message()
+        compose(response, code="200", reason="Ok")
+        connection.reply(request, response)
+
 RESTRICTED = [
     "/speedtest/latency",
     "/speedtest/download",
@@ -136,10 +183,11 @@ RESTRICTED = [
     "/speedtest/collect",
 ]
 
-class SpeedtestServer(Server):
+class SpeedtestServer(Server, _TestServerMixin):
     def __init__(self, config):
         self.config = config
         Server.__init__(self, address=config.address, port=config.port)
+        _TestServerMixin.__init__(self, config)
         self.begin_test = 0
         self.queue = deque()
         self.table = {}
@@ -269,49 +317,6 @@ class SpeedtestServer(Server):
         response = Message()
         compose(response, code="200", reason="Ok",
          body=stringio, mimetype="application/xml")
-        connection.reply(request, response)
-
-    def _do_latency(self, connection, request):
-        response = Message()
-        compose(response, code="200", reason="Ok")
-        connection.reply(request, response)
-
-    def _do_download(self, connection, request):
-        response = Message()
-        # open
-        try:
-            body = open(self.config.path, "rb")
-        except (IOError, OSError):
-            log.exception()
-            compose(response, code="500", reason="Internal Server Error")
-            connection.reply(request, response)
-            return
-        # range
-        if request["range"]:
-            total = file_length(body)
-            # parse
-            try:
-                first, last = parse_range(request)
-            except ValueError:
-                log.exception()
-                compose(response, code="400", reason="Bad Request")
-                connection.reply(request, response)
-                return
-            # XXX read() assumes there is enough core
-            body.seek(first)
-            partial = body.read(last - first + 1)
-            response["content-range"] = "bytes %d-%d/%d" % (first, last, total)
-            body = StringIO(partial)
-            code, reason = "206", "Partial Content"
-        else:
-            code, reason = "200", "Ok"
-        compose(response, code=code, reason=reason, body=body,
-                mimetype="application/octet-stream")
-        connection.reply(request, response)
-
-    def _do_upload(self, connection, request):
-        response = Message()
-        compose(response, code="200", reason="Ok")
         connection.reply(request, response)
 
     def _do_collect(self, connection, request):
