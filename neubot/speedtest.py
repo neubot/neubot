@@ -328,6 +328,8 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
         exit(1)
 
     def got_request_headers(self, connection, request):
+        # XXX cheat with http.Connection: we don't want client disconnection
+        self.nleft = 128
         return self.check_request_headers(connection, request)
 
     def got_request(self, connection, request):
