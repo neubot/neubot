@@ -129,16 +129,22 @@ class SpeedtestCollect:
             self.downloadSpeed = XML_get_vector(tree, "downloadSpeed")
             self.uploadSpeed = XML_get_vector(tree, "uploadSpeed")
 
+#
+# Code for speedtest server.  It's composed of two mixins.  The former
+# implements the actual tests and the latter implements negotiation, and
+# collection.
+#
+
 class _TestServerMixin(object):
     def __init__(self, config):
         self.config = config
 
-    def _do_latency(self, connection, request):
+    def do_latency(self, connection, request):
         response = Message()
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
 
-    def _do_download(self, connection, request):
+    def do_download(self, connection, request):
         response = Message()
         # open
         try:
@@ -171,7 +177,7 @@ class _TestServerMixin(object):
                 mimetype="application/octet-stream")
         connection.reply(request, response)
 
-    def _do_upload(self, connection, request):
+    def do_upload(self, connection, request):
         response = Message()
         compose(response, code="200", reason="Ok")
         connection.reply(request, response)
@@ -215,7 +221,7 @@ class _NegotiateServerMixin(object):
     def _do_renegotiate(self, event, atuple):
         connection, request = atuple
         if connection.handler:
-            self._do_negotiate(connection, request, True)
+            self.do_negotiate(connection, request, True)
 
     def _speedtest_check_timeout(self):
         sched(3, self._speedtest_check_timeout)
@@ -232,7 +238,7 @@ class _NegotiateServerMixin(object):
             log.info("* TEST/done %s" % token)
             publish(RENEGOTIATE)
 
-    def _do_negotiate(self, connection, request, nodelay=False):
+    def do_negotiate(self, connection, request, nodelay=False):
         queuePos = 0
         unchoked = True
         token = request["authorization"]
@@ -286,7 +292,7 @@ class _NegotiateServerMixin(object):
          body=stringio, mimetype="application/xml")
         connection.reply(request, response)
 
-    def _do_collect(self, connection, request):
+    def do_collect(self, connection, request):
         response = Message()
         collect = SpeedtestCollect()
         try:
@@ -305,7 +311,6 @@ class _NegotiateServerMixin(object):
 
 class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
     def __init__(self, config):
-        self.config = config
         Server.__init__(self, address=config.address, port=config.port)
         _TestServerMixin.__init__(self, config)
         _NegotiateServerMixin.__init__(self, config)
@@ -313,11 +318,11 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
         self._init_table()
 
     def _init_table(self):
-        self.table["/speedtest/negotiate"] = self._do_negotiate
-        self.table["/speedtest/latency"] = self._do_latency
-        self.table["/speedtest/download"] = self._do_download
-        self.table["/speedtest/upload"] = self._do_upload
-        self.table["/speedtest/collect"] = self._do_collect
+        self.table["/speedtest/negotiate"] = self.do_negotiate
+        self.table["/speedtest/latency"] = self.do_latency
+        self.table["/speedtest/download"] = self.do_download
+        self.table["/speedtest/upload"] = self.do_upload
+        self.table["/speedtest/collect"] = self.do_collect
 
     def bind_failed(self):
         exit(1)
