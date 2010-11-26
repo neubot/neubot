@@ -320,6 +320,12 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
     def do_negotiate(self, connection, request, nodelay=False):
         session = self.session_negotiate(request)
         if session.negotiations == 1:
+            # XXX make sure we track ALSO the first connection of the
+            # session (which is assigned an identifier in session_negotiate)
+            # or, should this connection fail, we would not be able to
+            # propagate quickly this information because unregister_connection
+            # would not find an entry in self.connections{}.
+            self.register_connection(connection, request)
             nodelay = True
         if not session.active:
             if not nodelay:
