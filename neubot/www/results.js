@@ -101,12 +101,12 @@ function getresults(data){
                         download[ipCounterN] = [];
                         upload[ipCounterN] = [];
                         downloadLabels[ipCounterN] = {
-                          label: "UP " + address,
+                          label: "DOWN " + address,
                           markerOptions: {style:'square'},
                           neighborThreshold: -1
                         };
                         uploadLabels[ipCounterN] = {
-                          label: "DOWN " + address,
+                          label: "UP " + address,
                           markerOptions:{style:'circle'},
                           neighborThreshold: -1
                         };
