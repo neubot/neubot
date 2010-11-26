@@ -24,6 +24,14 @@ if NEUBOT_HOME.startswith("@"):
 
 from os import environ
 from sys import path
+from sys import version_info
+from sys import stderr
+
+if version_info[0] > 2 or version_info[1] < 5:
+    stderr.write("fatal: wrong Python version\n")
+    stderr.write("please run neubot using Python >= 2.5 and < 3.0\n")
+    exit(1)
+
 if environ.has_key("NEUBOT_HOME"):
     NEUBOT_HOME = environ["NEUBOT_HOME"]
 path.insert(0, NEUBOT_HOME)
