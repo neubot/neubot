@@ -199,6 +199,7 @@ class SessionState:
 class _SessionTrackerMixin(object):
     identifiers = {}
     queue = deque()
+    connections = {}
 
     def session_active(self, request):
         identifier = request["authorization"]
@@ -259,6 +260,22 @@ class _SessionTrackerMixin(object):
             session.queuepos = pos
             pos = pos + 1
 
+    # connection tracking
+
+    def register_connection(self, connection, request):
+        if not connection in self.connections:
+            identifier = request["authorization"]
+            if identifier in self.identifiers:
+                self.connections[connection] = identifier
+
+    def unregister_connection(self, connection):
+        if connection in self.connections:
+            identifier = self.connections[connection]
+            del self.connections[connection]
+            if identifier in self.identifiers:
+                session = self.identifiers[identifier]
+                self._do_remove(session)
+
 class _NegotiateServerMixin(_SessionTrackerMixin):
     def __init__(self, config):
         self.config = config
@@ -267,6 +284,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
 
     def check_request_headers(self, connection, request):
         ret = True
+        self.register_connection(connection, request)
         if self.config.only_auth and request.uri in RESTRICTED:
             if not self.session_active(request):
                 log.warning("* Connection %s: Forbidden" % (
@@ -282,7 +300,6 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
     # client a token and we remove the token after 30+ seconds, or
     # when the authorized client uploads the results.
     # Wish list:
-    # - Revoke auth on connection lost. (?)
     # - Avoid client synchronization
     #
 
@@ -351,6 +368,10 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
         connection.reply(request, response)
         self._speedtest_complete(request)
 
+    def remove_connection(self, connection):
+        self.unregister_connection(connection)
+        publish(RENEGOTIATE)
+
 class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
     def __init__(self, config):
         Server.__init__(self, address=config.address, port=config.port)
@@ -392,6 +413,9 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
             response = Message()
             compose(response, code="404", reason="Not Found")
             connection.reply(request, response)
+
+    def connection_lost(self, connection):
+        self.remove_connection(connection)
 
 #
 # [speedtest]
