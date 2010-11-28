@@ -182,12 +182,6 @@ class Poller:
                 self.close(stream)
 
     #
-    # Welcome to the core loop.
-    #
-    # Probably the core loop was faster when it was just
-    # one single complex function, but written in this
-    # way it is simpler to deal with reference counting
-    # issues.
     # If there aren't readable or writable filenos we break
     # the loop, regardless of the scheduled tasks.  And this
     # happens because: (i) neubot is not ready to do everything
@@ -211,7 +205,7 @@ class Poller:
     # Tests shows that update_tasks() would be slower if we kept tasks
     # sorted in reverse order--yes, with this arrangement it would be
     # faster to delete elements (because it would be just a matter of
-    # shrinking the list), but the sort would be slower, and, our tests
+    # shrinking the list), but the sort would be slower, and our tests
     # suggest that we loose more with the sort than we gain with the
     # delete.
     #
