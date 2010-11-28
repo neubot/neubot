@@ -53,11 +53,22 @@ class Pollable:
         pass
 
 class PollerTask:
-    def __init__(self, time, func, periodic, delta):
-        self.time = time
+    def __init__(self, delta, func):
+        self.time = ticks() + delta
         self.func = func
-        self.periodic = periodic
-        self.delta = delta
+
+    #
+    # Set time to -1 so that sort() move the task at the beginning
+    # of the list.  And clear func to allow garbage collection of
+    # the referenced object.
+    #
+
+    def unsched(self):
+        self.time = -1
+        self.func = None
+
+    def resched(self, delta):
+        self.time = ticks() + delta
 
     def __del__(self):
         pass
@@ -102,7 +113,6 @@ class Poller:
         self.readset = {}
         self.writeset = {}
         self.pending = []
-        self.registered = {}
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         self.stats = Stats()
@@ -111,55 +121,10 @@ class Poller:
     def __del__(self):
         pass
 
-    #
-    # Unsched() does not remove a task, but it just marks it as "dead",
-    # and this means that (a) it sets its func member to None, and (b)
-    # its time to -1.  The (a) step breks the reference from the task
-    # to the object that registered the task (and so the object could
-    # possibly be collected).  The (b) step causes the dead task to be
-    # moved at the beginning of the list, and we do that because we
-    # don't want a dead task to linger in the list for some time (in
-    # other words we optimize for memory rather than for speed).
-    # XXX Throughout the scheduler code we employ func() as if it was
-    # unique, but this is True for bound functions only!
-    #
-
-    def sched(self, delta, func, periodic=False):
-        if self.registered.has_key(func):
-            task = self.registered[func]
-            task.time = self.get_ticks() + delta
-            task.periodic = periodic
-        else:
-            task = PollerTask(self.get_ticks()+delta,func,periodic,delta)
-            self.pending.append(task)
-
-    def unsched(self, delta, func, periodic=False):
-        if self.registered.has_key(func):
-            task = self.registered[func]
-            task.func = None
-            task.time = -1
-            del self.registered[func]
-        else:
-            for task in self.pending:
-                if task.func == func:
-                    # delete while pending
-                    task.func = None
-                    task.time = -1
-
-    #
-    # BEGIN deprecated functions
-    # Use the sched() / unsched() interface instead
-
-    def register_periodic(self, periodic):
-        log.debug("register_periodic() is deprecated")
-        self.sched(self.timeout, periodic, True)
-
-    def unregister_periodic(self, periodic):
-        log.debug("unregister_periodic() is deprecated")
-        self.unsched(self.timeout, periodic, True)
-
-    # END deprecated functions
-    #
+    def sched(self, delta, func):
+        task = PollerTask(delta, func)
+        self.pending.append(task)
+        return task
 
     def set_readable(self, stream):
         self.readset[stream.fileno()] = stream
@@ -256,35 +221,23 @@ class Poller:
         if self.pending:
             for task in self.pending:
                 if task.time == -1 or task.func == None:
-                    # deleted while pending
                     continue
                 self.tasks.append(task)
-                self.registered[task.func] = task
             self.pending = []
         if self.tasks:
             self.tasks.sort(key=lambda task: task.time)
             index = 0
             for task in self.tasks:
-                if task.time > 0:
-                    if task.time > now:
-                        break
-                    if task.func:                       # redundant
-                        del self.registered[task.func]
-                        if task.periodic:
-                            try:
-                                task.func(now)
-                            except KeyboardInterrupt:
-                                raise
-                            except:
-                                log.exception()
-                            self.sched(task.delta, task.func, True)
-                        else:
-                            try:
-                                task.func()
-                            except KeyboardInterrupt:
-                                raise
-                            except:
-                                log.exception()
+                if task.time == -1 or task.func == None:
+                    continue
+                if task.time > now:
+                    break
+                try:
+                    task.func()
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except:
+                    log.exception()
                 index = index + 1
             del self.tasks[:index]
 
@@ -348,9 +301,6 @@ poller = Poller(1, ticks)
 
 dispatch = poller.dispatch
 loop = poller.loop
-register_periodic = poller.register_periodic
 sched = poller.sched
-unsched = poller.unsched
-unregister_periodic = poller.unregister_periodic
 disable_stats = poller.disable_stats
 enable_stats = poller.enable_stats

@@ -26,7 +26,6 @@
 
 from StringIO import StringIO
 from neubot.utils import file_length
-from neubot.net.pollers import unsched
 from neubot.net.pollers import sched
 from collections import deque
 from neubot import log
@@ -85,6 +84,7 @@ class Handler:
         self.stream = stream
         self.stream.notify_closing = self._closing
         self.flags = 0
+        self.task = None
         # sending
         self.sendqueue = deque()
         self.flush_success = None
@@ -101,13 +101,15 @@ class Handler:
 
     def passiveclose(self):
         if not (self.flags & ISCLOSED):
-            sched(30, self.close)
+            self.task = sched(30, self.close)
             self.state = IDLE
 
     def close(self, check_eof=False):
         if not (self.flags & ISCLOSED):
             self.flags |= ISCLOSED
-            unsched(30, self.close)
+            if self.task:
+                self.task.unsched()
+                self.task = None
             if self.receiver:
                 if check_eof and self.stream.eof and self.state == UNBOUNDED:
                     self.receiver.end_of_body()
