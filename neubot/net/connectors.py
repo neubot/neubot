@@ -39,6 +39,7 @@ except ImportError:
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
 from neubot.utils import fixkwargs
+from neubot.utils import ticks
 from socket import error as SocketError
 from socket import SOCK_STREAM
 from errno import EINPROGRESS
@@ -106,7 +107,7 @@ class Connector(Pollable):
                     if error not in [0, EINPROGRESS, EWOULDBLOCK]:
                         raise SocketError(error, strerror(error))
                     self.sock = sock
-                    self.begin = self.poller.get_ticks()
+                    self.begin = ticks()
                     self.poller.set_writable(self)
                     log.debug("* Connection to %s in progress" % str(sockaddr))
                     self.connecting()

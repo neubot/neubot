@@ -106,9 +106,8 @@ class Stats:
         self.recv = SimpleStats()
 
 class Poller:
-    def __init__(self, timeout, get_ticks):
+    def __init__(self, timeout):
         self.timeout = timeout
-        self.get_ticks = get_ticks
         self.printstats = False
         self.readset = {}
         self.writeset = {}
@@ -211,7 +210,7 @@ class Poller:
     #
 
     def update_tasks(self):
-        now = self.get_ticks()
+        now = ticks()
         if self.pending:
             for task in self.pending:
                 if task.time == -1 or task.func == None:
@@ -253,7 +252,7 @@ class Poller:
     def check_timeout(self):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
-            now = self.get_ticks()
+            now = ticks()
             x = self.readset.values()
             for stream in x:
                 if stream.readtimeout(now):
@@ -291,7 +290,7 @@ class Poller:
             stdout.write(stats)
             stdout.flush()
 
-poller = Poller(1, ticks)
+poller = Poller(1)
 
 dispatch = poller.dispatch
 loop = poller.loop

@@ -26,6 +26,7 @@
 
 from neubot.net.pollers import Pollable
 from types import UnicodeType
+from neubot.utils import ticks
 from neubot import log
 
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
@@ -155,7 +156,7 @@ class Stream(Pollable):
         if not (self.flags & ISCLOSED):
             self.recv_maxlen = maxlen
             self.recv_success = recv_success
-            self.recv_ticks = self.poller.get_ticks()
+            self.recv_ticks = ticks()
             self.flags |= RECV_PENDING
             self.recv_error = recv_error
             #
@@ -256,7 +257,7 @@ class Stream(Pollable):
             self.send_octets = octets
             self.send_pos = 0
             self.send_success = send_success
-            self.send_ticks = self.poller.get_ticks()
+            self.send_ticks = ticks()
             self.flags |= SEND_PENDING
             self.send_error = send_error
             if not (self.flags & ISSENDING):
@@ -280,7 +281,7 @@ class Stream(Pollable):
                         stats.send.account(count)
                     self.send_pos += count
                     if self.send_pos < len(self.send_octets):
-                        self.send_ticks = self.poller.get_ticks()
+                        self.send_ticks = ticks()
                         self.set_writable(self._do_send)
                     elif self.send_pos == len(self.send_octets):
                         notify = self.send_success
