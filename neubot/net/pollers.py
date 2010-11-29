@@ -144,7 +144,12 @@ class Poller:
     def close(self, stream):
         self.unset_readable(stream)
         self.unset_writable(stream)
-        stream.closing()
+        try:
+            stream.closing()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            log.exception()
 
     #
     # We are very careful when accessing readset and writeset because
