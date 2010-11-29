@@ -50,6 +50,8 @@ PHONIES += _install
 PHONIES += _bdist
 PHONIES += bdist.tgz
 PHONIES += install
+PHONIES += app
+PHONIES += app.zip
 PHONIES += _deb_data
 PHONIES += _deb_data.tgz
 PHONIES += _deb_control_skel
@@ -246,6 +248,29 @@ bdist.tgz: bdist
 
 install:
 	@make -f Makefile _install INSTALL='install -o root'
+
+#   __ _ _ __  _ __
+#  / _` | '_ \| '_ \
+# | (_| | |_) | |_) |
+#  \__,_| .__/| .__/
+#       |_|   |_|
+#
+# Application for MacOS X >= Leopard (10.5)
+#
+
+APP_RESOURCES=neubot.app/Contents/Resources
+
+app:
+	@echo "[APP]"
+	@make -f Makefile archive
+	@cp -R MacOS/neubot.app dist/
+	@cd dist/$(APP_RESOURCES) && tar -xzf ../../../$(STEM).tar.gz && \
+         ln -s $(STEM) neubot && rm -rf pax_global_header
+
+app.zip:
+	@echo "[APP.ZIP]"
+	@make -f Makefile app
+	@cd dist && zip -q --symlinks -r neubot.app.zip neubot.app
 
 #      _      _
 #   __| | ___| |__
