@@ -63,6 +63,7 @@ from neubot.http.utils import parse_range
 from neubot.http.handlers import ERROR
 from neubot.http.servers import Server
 from neubot.utils import file_length
+from neubot.utils import become_daemon
 from time import time
 from uuid import UUID
 from uuid import uuid4
@@ -961,7 +962,7 @@ USAGE =									\
 "Usage: @PROGNAME@ --help\n"						\
 "       @PROGNAME@ -V\n"						\
 "       @PROGNAME@ [-svx] [-a test] [-n count] [-O fmt] [base-URI]\n"	\
-"       @PROGNAME@ -S [-v] [-D name=value]\n"
+"       @PROGNAME@ -S [-dv] [-D name=value]\n"
 
 HELP = USAGE +								\
 "Tests: all*, download, latency, upload.\n"				\
@@ -969,6 +970,7 @@ HELP = USAGE +								\
 "Options:\n"								\
 "  -a test       : Add test to the list of tests.\n"			\
 "  -D name=value : Set configuration file property.\n"			\
+"  -d            : Debug mode, don't become a daemon.\n"                \
 "  --help        : Print this help screen and exit.\n"			\
 "  -n count      : Use count HTTP connections.\n"			\
 "  -O fmt        : Format output numbers using fmt.\n"			\
@@ -1039,6 +1041,7 @@ URI = "http://speedtest1.neubot.org/speedtest"
 def main(args):
     fakerc = StringIO()
     fakerc.write("[speedtest]\r\n")
+    daemonize = True
     servermode = False
     xdebug = False
     flags = 0
@@ -1046,7 +1049,7 @@ def main(args):
     nclients = 2
     # parse
     try:
-        options, arguments = getopt(args[1:], "a:D:n:O:SsVvx", ["help"])
+        options, arguments = getopt(args[1:], "a:D:dn:O:SsVvx", ["help"])
     except GetoptError:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         exit(1)
@@ -1059,6 +1062,8 @@ def main(args):
             flags |= FLAGS[value]
         elif name == "-D":
             fakerc.write(value + "\n")
+        elif name == "-d":
+            daemonize = False
         elif name == "--help":
             stdout.write(HELP.replace("@PROGNAME@", args[0]))
             exit(0)
@@ -1089,13 +1094,17 @@ def main(args):
             xdebug = True
     # config
     fakerc.seek(0)
+    database.configure(pathnames.CONFIG, fakerc)
     speedtest.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len(arguments) > 0:
             stderr.write(USAGE.replace("@PROGNAME@", args[0]))
             exit(1)
+        database.start()
         speedtest.start()
+        if daemonize:
+            become_daemon()
         loop()
         exit(0)
     # client
