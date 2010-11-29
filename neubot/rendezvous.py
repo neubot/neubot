@@ -45,7 +45,6 @@ from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
 from neubot.net.pollers import sched
 from neubot.database import database
-from neubot.speedtest import speedtest
 from neubot.utils import versioncmp
 from neubot.net.pollers import loop
 from xml.dom import minidom
@@ -459,7 +458,6 @@ def main(args):
     fakerc.seek(0)
     database.configure(pathnames.CONFIG, fakerc)
     rendezvous.configure(pathnames.CONFIG, fakerc)
-    speedtest.configure(pathnames.CONFIG, fakerc)
     ui.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
@@ -468,7 +466,6 @@ def main(args):
             exit(1)
         database.start()
         rendezvous.start()
-        speedtest.start()
         if daemonize:
             become_daemon()
         loop()
