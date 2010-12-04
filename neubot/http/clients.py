@@ -41,6 +41,7 @@ from neubot.http.utils import nextstate
 from neubot.http.utils import prettyprint
 from neubot.net.connectors import connect
 from neubot.net.pollers import loop
+from neubot.net.pollers import enable_stats
 from neubot.utils import ticks
 from neubot.utils import safe_seek
 from neubot.http.utils import make_filename
@@ -593,6 +594,7 @@ def main(args):
             exit(0)
         elif name == "-v":
             log.verbose()
+            enable_stats()
     # sanity
     if len(arguments) == 0:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
