@@ -1,6 +1,6 @@
 # neubot/bittorrent/bitfield.py
-# Written by Bram Cohen, Uoti Urpala, and John Hoffman
 
+#
 # The contents of this file are subject to the Python Software Foundation
 # License Version 2.3 (the License).  You may not copy or use this file, in
 # either source code or executable form, except in compliance with the License.
@@ -10,6 +10,9 @@
 # WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the License
 # for the specific language governing rights and limitations under the
 # License.
+#
+# Written by Bram Cohen, Uoti Urpala, and John Hoffman
+#
 
 from array import array
 
