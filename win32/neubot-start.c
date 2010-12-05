@@ -1,8 +1,9 @@
 /*-
  * win32/neubot-start.c
- * Copyright (c) 2010 NEXA Center for Internet & Society
+ * Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+ *   NEXA Center for Internet & Society at Politecnico di Torino
  *
- * This file is part of Neubot.
+ * This file is part of Neubot <http://www.neubot.org/>.
  *
  * Neubot is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
