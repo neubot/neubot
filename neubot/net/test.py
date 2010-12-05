@@ -1,4 +1,4 @@
-# neubot/net/streams.py
+# neubot/net/test.py
 # Copyright (c) 2010 NEXA Center for Internet & Society
 
 # This file is part of Neubot.
