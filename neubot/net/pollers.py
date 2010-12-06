@@ -24,14 +24,14 @@
 # Poll() and dispatch I/O events (such as "socket readable")
 #
 
-from select import error
+import errno
+import select
+import sys
+
 from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot.utils import SimpleStats
 from neubot.utils import Stats
-from select import select
-from sys import stdout
-from errno import EINTR
 from neubot import log
 
 # Base class for every socket managed by the poller
@@ -207,10 +207,10 @@ class Poller:
     def dispatch_events(self):
         if self.readset or self.writeset:
             try:
-                res = select(self.readset.keys(), self.writeset.keys(),
+                res = select.select(self.readset.keys(), self.writeset.keys(),
                  [], self.timeout)
-            except error, (code, reason):
-                if code != EINTR:
+            except select.error, (code, reason):
+                if code != errno.EINTR:
                     log.exception()
                     raise
             else:
@@ -234,7 +234,7 @@ class Poller:
 
     def disable_stats(self):
         if self.printstats:
-            stdout.write("\n")
+            sys.stdout.write("\n")
         self.printstats = False
 
     def enable_stats(self):
@@ -257,8 +257,8 @@ class Poller:
              unit_formatter(recv, unit="B/s"))
             if len(stats) < 80:
                 stats += " " * (80 - len(stats))
-            stdout.write(stats)
-            stdout.flush()
+            sys.stdout.write(stats)
+            sys.stdout.flush()
 
 poller = Poller(1)
 
