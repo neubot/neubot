@@ -79,20 +79,19 @@ class Notifier:
         else:
             return "0"
 
-    #
-    # XXX Note that the following function will raise
-    # a ValueError exception when it fails to convert the
-    # timestamp parameter into a number.  We don't catch
-    # it because we assume the caller will catch unhandled
-    # exceptions and return '500 Internal Server Error'
-    # to the client.
-    #
+    # Be defensive and don't publish if timestamp is bad.
 
     def needs_publish(self, event, timestamp):
-        if self.timestamps.has_key(event):
-            return int(timestamp) < self.timestamps[event]
-        else:
+        try:
+            timestamp = int(timestamp)
+        except ValueError:
+            log.exception()
+            timestamp = -1
+        if timestamp < 0:
             return False
+        if not self.timestamps.has_key(event):
+            return False
+        return timestamp < self.timestamps[event]
 
 notifier = Notifier()
 subscribe = notifier.subscribe
