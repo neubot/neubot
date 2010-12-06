@@ -245,3 +245,36 @@ def XML_to_string(document):
 
 def XML_to_stringio(document):
     return StringIO(XML_to_string(document))
+
+#
+# Stats
+#
+
+class SimpleStats:
+    def __init__(self):
+        self.begin()
+
+    def __del__(self):
+        pass
+
+    def begin(self):
+        self.start = ticks()
+        self.stop = 0
+        self.length = 0
+
+    def end(self):
+        self.stop = ticks()
+
+    def account(self, count):
+        self.length += count
+
+    def diff(self):
+        return self.stop - self.start
+
+    def speed(self):
+        return self.length / self.diff()
+
+class Stats:
+    def __init__(self):
+        self.send = SimpleStats()
+        self.recv = SimpleStats()

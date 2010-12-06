@@ -27,6 +27,8 @@
 from select import error
 from neubot.utils import unit_formatter
 from neubot.utils import ticks
+from neubot.utils import SimpleStats
+from neubot.utils import Stats
 from select import select
 from sys import stdout
 from errno import EINTR
@@ -75,35 +77,6 @@ class PollerTask:
 
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
-
-class SimpleStats:
-    def __init__(self):
-        self.begin()
-
-    def __del__(self):
-        pass
-
-    def begin(self):
-        self.start = ticks()
-        self.stop = 0
-        self.length = 0
-
-    def end(self):
-        self.stop = ticks()
-
-    def account(self, count):
-        self.length += count
-
-    def diff(self):
-        return self.stop - self.start
-
-    def speed(self):
-        return self.length / self.diff()
-
-class Stats:
-    def __init__(self):
-        self.send = SimpleStats()
-        self.recv = SimpleStats()
 
 class Poller:
     def __init__(self, timeout):
