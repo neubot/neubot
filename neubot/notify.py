@@ -39,7 +39,6 @@ class Notifier:
         self.subscribers = {}
 
     def subscribe(self, event, func, context):
-        #print "SUBSCRIBE", event, func, context
         if not self.subscribers.has_key(event):
             queue = deque()
             self.subscribers[event] = queue
@@ -48,7 +47,6 @@ class Notifier:
         queue.append((func, context))
 
     def publish(self, event):
-        #print "PUBLISH", event
         self.timestamps[event] = int(1000 * ticks())
         if self.subscribers.has_key(event):
             queue = self.subscribers[event]
@@ -61,7 +59,6 @@ class Notifier:
         subscribers = self.subscribers
         self.subscribers = {}
         for event, queue in subscribers.items():
-            #print "FORCE-PUBLISH", event
             for func, context in queue:
                 func(event, context)
 
