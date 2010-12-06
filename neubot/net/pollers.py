@@ -159,22 +159,14 @@ class Poller:
                 self.close(stream)
 
     #
-    # If there aren't readable or writable filenos we break
-    # the loop, regardless of the scheduled tasks.  And this
-    # happens because: (i) neubot is not ready to do everything
-    # inside the poller loop(), and it assumes that the loop
-    # will break as soon as I/O is complete; and (ii) there
-    # are some tasks that re-schedule self forever, like the
-    # one of neubot/notify.py.
+    # Differently from Twisted, we might break out of the loop
+    # with registered tasks.  It is probably wiser to behave like
+    # Twisted, but this requires to update all the places where
+    # loop() is invoked and it might take some time.
     #
 
     def loop(self):
         while self.readset or self.writeset:
-            self.update_tasks()
-            self.dispatch_events()
-
-    def dispatch(self):
-        if self.readset or self.writeset:
             self.update_tasks()
             self.dispatch_events()
 
@@ -270,7 +262,6 @@ class Poller:
 
 poller = Poller(1)
 
-dispatch = poller.dispatch
 loop = poller.loop
 sched = poller.sched
 disable_stats = poller.disable_stats
