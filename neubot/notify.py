@@ -26,6 +26,7 @@
 from collections import deque
 from neubot.net.pollers import sched
 from neubot.utils import ticks
+from neubot import log
 
 INTERVAL = 10
 
@@ -52,7 +53,12 @@ class Notifier:
             queue = self.subscribers[event]
             del self.subscribers[event]
             for func, context in queue:
-                func(event, context)
+                try:
+                    func(event, context)
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except:
+                    log.exception()
 
     def periodic(self):
         sched(INTERVAL, self.periodic)
@@ -60,7 +66,12 @@ class Notifier:
         self.subscribers = {}
         for event, queue in subscribers.items():
             for func, context in queue:
-                func(event, context)
+                try:
+                    func(event, context)
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except:
+                    log.exception()
 
     def get_event_timestamp(self, event):
         if self.timestamps.has_key(event):
