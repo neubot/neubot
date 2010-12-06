@@ -168,7 +168,7 @@ class Poller:
             stream = self.readset[fileno]
             try:
                 stream.readable()
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except:
                 log.exception()
@@ -179,7 +179,7 @@ class Poller:
             stream = self.writeset[fileno]
             try:
                 stream.writable()
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except:
                 log.exception()
