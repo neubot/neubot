@@ -58,6 +58,7 @@ from sys import argv
 from time import sleep
 from sys import exit
 
+import os.path
 import webbrowser
 #import gobject
 import signal
@@ -128,20 +129,11 @@ class StateTrackerThread(Thread):
 # the most common GNU/Linux distros.
 #
 
-# TODO move in pathnames when we install icon for all Unices
 ICON = "@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg"
 if ICON.startswith('@'):
     ICON = "icons/neubot.svg"
 
-import os.path
-
 class StatusIcon:
-
-    #
-    # We use the stock icon that represents network activity but
-    # it would be better to design and ship an icon for Neubot.
-    #
-
     def __init__(self, address, port, blink, nohide):
         self.address = address
         self.port = port
@@ -149,7 +141,6 @@ class StatusIcon:
         self.blink = blink
         self.nohide = nohide
         self.icon = gtk.StatusIcon()
-        # The icon might not exist (e.g. running from sources)
         self.icon.set_from_icon_name(gtk.STOCK_NETWORK)
         if os.path.exists(ICON):
             self.icon.set_from_file(ICON)
@@ -161,15 +152,12 @@ class StatusIcon:
     def on_popup_menu(self, status, button, time):
         if not self.menu:
             self.menu = gtk.Menu()
-            # open neubot
             item = gtk.MenuItem(label="Open Web Interface")
             item.connect("activate", self._do_open_browser)
             self.menu.add(item)
-            # quit
             item = gtk.MenuItem(label="Close Status Icon")
             item.connect("activate", self._do_quit)
             self.menu.add(item)
-            # done
             self.menu.show_all()
         self.menu.popup(None, None, gtk.status_icon_position_menu,
                         button, time, self.icon)
