@@ -162,11 +162,11 @@ class StatusIcon:
         if not self.menu:
             self.menu = gtk.Menu()
             # open neubot
-            item = gtk.MenuItem(label="Open neubot")
+            item = gtk.MenuItem(label="Open Web Interface")
             item.connect("activate", self._do_open_browser)
             self.menu.add(item)
             # quit
-            item = gtk.MenuItem(label="Quit")
+            item = gtk.MenuItem(label="Close Status Icon")
             item.connect("activate", self._do_quit)
             self.menu.add(item)
             # done
@@ -194,7 +194,7 @@ class StatusIcon:
     def update_state(self, state, update):
         gtk.gdk.threads_enter()
         if state:
-            self.icon.set_tooltip("Neubot: " + state)
+            self.icon.set_tooltip("Neubot daemon state: " + state)
             if state not in [ "SLEEPING", "UNKNOWN" ]:
                 if self.blink:
                     self.icon.set_blinking(True)
@@ -206,7 +206,7 @@ class StatusIcon:
                 if self.blink:
                     self.icon.set_blinking(False)
         else:
-            self.icon.set_tooltip("Neubot: ???")
+            self.icon.set_tooltip("Neubot daemon state: ???")
             if not self.nohide:
                 self.icon.set_visible(False)
             if self.blink:
@@ -214,7 +214,7 @@ class StatusIcon:
         if update:
             if not self.update_item:
                 ver, uri = update
-                item = gtk.MenuItem(label="Update to %s" % ver)
+                item = gtk.MenuItem(label="Update neubot to %s" % ver)
                 item.connect("activate", self._do_download_update, uri)
                 self.menu.add(item)
                 self.menu.show_all()
