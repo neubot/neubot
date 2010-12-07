@@ -42,27 +42,22 @@
 #     http://bit.ly/dxI7vi [design.canonical.com]
 #
 
-if __name__ == "__main__":
-    from sys import path
-    path.insert(0, ".")
-
-from neubot import log
-from threading import Thread
-from neubot.utils import become_daemon
-from neubot.ui import SimpleStateTracker
-from getopt import GetoptError
-from getopt import getopt
-from sys import stdout
-from sys import stderr
-from sys import argv
-from time import sleep
-from sys import exit
-
+import sys
 import os.path
 import webbrowser
+import threading
 #import gobject
 import signal
 import gtk
+import getopt
+import time
+
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
+from neubot.utils import become_daemon
+from neubot.ui import SimpleStateTracker
+from neubot import log
 
 # default address and port
 ADDRESS = "127.0.0.1"
@@ -96,9 +91,9 @@ class StateTrackerAdapter(SimpleStateTracker):
     def write(self):
         self.icon.update_state(self.state, self.update)
 
-class StateTrackerThread(Thread):
+class StateTrackerThread(threading.Thread):
     def __init__(self, icon, address, port):
-        Thread.__init__(self)
+        threading.Thread.__init__(self)
         self.adapter = StateTrackerAdapter(icon, address, port)
         self.interrupt = self.adapter.interrupt
 
@@ -118,7 +113,7 @@ class StateTrackerThread(Thread):
     #
 
     def run(self):
-        sleep(3)
+        time.sleep(3)
         self.adapter.loop()
 
 #
@@ -248,31 +243,31 @@ def main(args):
     nohide = True
     # parse
     try:
-        options, arguments = getopt(args[1:], "BdnqVv", ["help"])
-    except GetoptError:
-        stderr.write(USAGE % args[0])
-        exit(1)
+        options, arguments = getopt.getopt(args[1:], "BdnqVv", ["help"])
+    except getopt.GetoptError:
+        sys.stderr.write(USAGE % args[0])
+        sys.exit(1)
     for name, value in options:
         if name == "-B":
             blink = True
         elif name == "-d":
             daemonize = False
         elif name == "--help":
-            stdout.write(HELP % args[0])
-            exit(0)
+            sys.stdout.write(HELP % args[0])
+            sys.exit(0)
         elif name == "-n":
             nohide = True
         elif name == "-q":
             nohide = False
         elif name == "-V":
-            stderr.write(VERSION + "\n")
-            exit(0)
+            sys.stderr.write(VERSION + "\n")
+            sys.exit(0)
         else:
             log.verbose()
     # arguments
     if len(arguments) >= 3:
-        stderr.write(USAGE % args[0])
-        exit(1)
+        sys.stderr.write(USAGE % args[0])
+        sys.exit(1)
     elif len(arguments) == 2:
         address = arguments[0]
         port = arguments[1]
@@ -307,4 +302,4 @@ def main(args):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    main(argv)
+    main(sys.argv)
