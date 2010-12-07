@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Neubot (Show status icon)
+Comment=Show neubot status icon in the notification area
+Type=Application
+Exec=@PREFIX@/bin/neubot statusicon -n
+Terminal=False
+Categories=GNOME;Network;
+StartupNotify=True
+Icon=@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg

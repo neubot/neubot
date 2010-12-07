@@ -45,6 +45,7 @@ PHONIES += _install_etc
 PHONIES += _install_man
 PHONIES += _install_bin
 PHONIES += _install_icon
+PHONIES += _install_menu
 PHONIES += _install_edit
 PHONIES += _install_compile
 PHONIES += _install
@@ -141,6 +142,7 @@ BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 MANDIR = $(PREFIX)/man
 ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
+MENUDIR = $(DATADIR)/applications
 
 SUBDIRS = `find neubot/ -type d`
 SRCS = `find neubot/ -type f -name \*.py`
@@ -153,6 +155,7 @@ _install_skel:
 	@$(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(MANDIR)/man1
 	@$(INSTALL) -d -m755 $(DESTDIR)$(ICONDIR)
+	@$(INSTALL) -d -m755 $(DESTDIR)$(MENUDIR)
 	@for SUBDIR in $(SUBDIRS); do \
 	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/$$SUBDIR; \
 	done
@@ -186,6 +189,11 @@ _install_bin:
 _install_icon:
 	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
 
+_install_menu:
+	@for F in `cd applications/ && ls`; do \
+	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F; \
+	done
+
 #
 # After the install we need to edit the following files to
 # tell neubot the path where it's installed.
@@ -203,6 +211,8 @@ NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/pathnames.py
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
+NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
+NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
 
 # New style:
 #
@@ -232,6 +242,7 @@ INSTALL_RULES += _install_etc
 INSTALL_RULES += _install_man
 INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_icon
+INSTALL_RULES += _install_menu
 INSTALL_RULES += _install_edit
 INSTALL_RULES += _install_compile
 
