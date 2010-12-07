@@ -230,33 +230,37 @@ class StatusIcon:
 
 #
 # Main program
-# By default the icon is not visible because IIUC the
-# notification area should be used for transient state
-# notification only--and so the icon is visible only when
-# neubot is performing some transmission test.
-# Of course, YMMV and so there are: a switch to keep the
-# icon always visible; and a switch to blink the icon when
-# neubot is performing some transmission test.
+# The icon is always visible in the notification area,
+# and we know that this is not what the notification area
+# is designed for in the first place.  But we need to
+# provide a simple and visual feedback that neubot daemon
+# is running.  If you prefer an even more aggressive
+# icon behavior, there is a switch that blinks the icon
+# while neubot is running a transmission test.  And if
+# you prefer the default "notification" semantic of the
+# area, there is a switch to silence the icon unless the
+# daemon is performing a transmission test.
 #
 
-USAGE = "Usage: %s [-BdnVv] [--help] [[address] port]\n"
+USAGE = "Usage: %s [-BdnqVv] [--help] [[address] port]\n"
 
 HELP = USAGE +								\
 "Options:\n"								\
 "  -B     : Blink the icon when performing a test.\n"			\
 "  -d     : Debug mode, don't detach from shell.\n"			\
 "  --help : Print this help screen and exit.\n"				\
-"  -n     : Do not hide the icon when neubot is idle.\n"		\
+"  -n     : Do not hide the icon when neubot is idle (default)\n"	\
+"  -q     : Hide the icon when neubot is idle.\n"			\
 "  -V     : Print version number and exit.\n"				\
 "  -v     : Run the program in verbose mode.\n"
 
 def main(args):
     daemonize = True
     blink = False
-    nohide = False
+    nohide = True
     # parse
     try:
-        options, arguments = getopt(args[1:], "BdnVv", ["help"])
+        options, arguments = getopt(args[1:], "BdnqVv", ["help"])
     except GetoptError:
         stderr.write(USAGE % args[0])
         exit(1)
@@ -270,6 +274,8 @@ def main(args):
             exit(0)
         elif name == "-n":
             nohide = True
+        elif name == "-q":
+            nohide = False
         elif name == "-V":
             stderr.write(VERSION + "\n")
             exit(0)
