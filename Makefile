@@ -303,13 +303,10 @@ app.zip:
 DEB_PACKAGE = dist/$(STEM)-1_all.deb
 
 # Directories to create.
-DEB_DATA_DIRS += dist/data/usr/share/applications/
 DEB_DATA_DIRS += dist/data/etc/init.d/
 DEB_DATA_DIRS += dist/data/etc/apt/sources.list.d/
 
 # Files to copy.
-DEB_DATA_FILES += usr/share/applications/neubot-web-ui.desktop
-DEB_DATA_FILES += usr/share/applications/neubot-status-icon.desktop
 DEB_DATA_FILES += etc/init.d/neubot
 DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
 
