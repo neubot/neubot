@@ -121,6 +121,32 @@ class StateTest:
             element.appendChild(text)
             parent.appendChild(element)
 
+class StateRendezvous:
+    def __init__(self):
+        self.status = None
+
+    def set_status(self, status):
+        self.status = status
+
+    #
+    # ...
+    #   <status>failed</status>
+    # ...
+    #
+
+    def marshal(self, document, parent):
+        if self.status:
+            element = document.createElement("status")
+            text = document.createTextNode(self.status)
+            element.appendChild(text)
+            parent.appendChild(element)
+
+#
+# TODO It would be nice to use "idle" for activity instead of
+# None because that will certainly make the code more readable
+# for new developers.
+#
+
 ACTIVITIES = [
     "rendezvous",
     "negotiate",
@@ -138,6 +164,7 @@ class State:
 
     def __init__(self):
         self.versioninfo = ()
+        self.rendezvous = None
         self.activity = None
         self.negotiate = None
         self.test = None
@@ -197,6 +224,10 @@ class State:
             element = document.createElement("test")
             self.test.marshal(document, element)
             root.appendChild(element)
+        if self.rendezvous:
+            element = document.createElement("rendezvous")
+            self.rendezvous.marshal(document, element)
+            root.appendChild(element)
         return XML_to_stringio(document)
 
     #
@@ -222,6 +253,7 @@ class State:
         # forgot the results).
         #
         if self.activity == None:
+            self.rendezvous = None
             self.negotiate = None
             self.test = None
         self.activity = activity
@@ -241,6 +273,12 @@ class State:
     def set_queueInfo(self, queuePos, queueLen):
         if self.negotiate:
             self.negotiate.set_queueInfo(queuePos, queueLen)
+        return self
+
+    def set_rendezvous_status(self, status):
+        if not self.rendezvous:
+            self.rendezvous = StateRendezvous()
+        self.rendezvous.set_status(status)
         return self
 
     def append_result(self, tag, value, unit):

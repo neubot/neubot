@@ -318,6 +318,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         sched(self.interval, self.rendezvous)
 
     def connection_failed(self, client):
+        state.set_rendezvous_status("failed")
         self._reschedule()
 
     def connection_lost(self, client):
