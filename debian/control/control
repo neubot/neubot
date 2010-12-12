@@ -5,7 +5,7 @@ Maintainer: Simone Basso <bassosimone@gmail.com>
 Installed-Size: @SIZE@
 Depends: python (>= 2.5)
 Section: net
-Homepage: http://www.neubot.org
+Homepage: http://www.neubot.org/
 Priority: optional
 Description: Neubot, the network neutrality bot
  Neubot is a research project on network neutrality of the NEXA

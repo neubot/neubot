@@ -34,4 +34,4 @@ if os.name != "posix":
         author="Simone Basso",
         author_email="bassosimone@gmail.com",
         console=[{"script": "bin/neubot"}],
-        url="http://www.neubot.org")
+        url="http://www.neubot.org/")

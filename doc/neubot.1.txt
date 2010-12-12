@@ -195,4 +195,4 @@ COPYRIGHT
 SEE ALSO
 ````````
 
-| ``Neubot | The network neutrality bot <http://www.neubot.org>``
+| ``Neubot | The network neutrality bot <http://www.neubot.org/>``
