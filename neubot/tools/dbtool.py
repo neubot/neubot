@@ -48,11 +48,6 @@
 # invokes this file's main().  And we need to make sure that the
 # `make install' command also installs this file.
 #
-# FIXME There are some cases where the program fails with encoding
-# or decoding unicode errors.  We should investigate an fix these
-# issues and probably the solution is to store data in unicode format
-# into DOM objects and THEN convert to UTF-8 in toxml().
-#
 
 # MaxMind
 ASN_DATABASE = "/usr/local/share/GeoIP/GeoIPASNum.dat"
@@ -64,6 +59,7 @@ Please, install py-GeoIP and install also the related databases.
 See <http://www.neubot.org/install-geoip> for more help.
 """
 
+import unicodedata
 import getopt
 import sqlite3
 import sys
@@ -78,6 +74,36 @@ except ImportError:
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
+
+def XXX_normalize_city_name(city):
+    """
+    This function is an hack and is here to avoid toxml("utf-8") failures
+    when there are city names containing accented letters.  The hack consists
+    of converting accented letters to normal letters and the solution I have
+    chosen was one among the ones proposed in the following online thread
+    <http://code.activestate.com/recipes/251871/>.  See in particular the post
+    of Aaron Bentley, that says:
+    >
+    > [This solution] has the advantage that you don't need to enumerate any
+    > particular conversions-- any accented latin characters will be reduced
+    > to their base form, and non-ascii characters will be stripped.
+    >
+    > By normalizing to NFKD, we transform precomposed characters like
+    > \u00C0 (LATIN CAPITAL LETTER A WITH GRAVE) into pairs of base letter
+    > \u0041 (A) and combining character \u0300 (GRAVE accent).
+    >
+    > Converting to ascii using 'ignore' strips all non-ascii characters,
+    > e.g. the combining characters. However, it will also strip other
+    > non-ascii characters, so if there are no latin characters in the input,
+    > the output will be empty.
+    >
+    Note that we know that GeoIP returns LATIN-1 strings (it's possible
+    to guess that reading GeoIP.h).  In order to test what happens without
+    this function, just make this one a no-op and make sure that there is
+    at least a city name that contains an accented letter.
+    """
+    city = unicode(city, "latin-1")
+    return unicodedata.normalize("NFKD", city).encode("ASCII", "ignore")
 
 class Anonymizer(object):
 
@@ -112,6 +138,7 @@ class CityResolver(object):
         if not record:
             sys.stderr.write("CityResolver: %s not found\n" % address)
             return None
+        record["city"] = XXX_normalize_city_name(record["city"])
         ret = record["country_code"], record["region"], record["city"]
         return ret
 
