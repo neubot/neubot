@@ -68,7 +68,9 @@ else:
     WWW = PREFIX + "/share/neubot/www"
     # We provide an App for MacOS X
     if ismacosx():
-        WWW = "/Applications/neubot.app/Contents/Resources/neubot/neubot/www"
+        progname = os.path.abspath(argv[0])
+        prefix = progname.replace("/bin/neubot", "")
+        WWW = prefix + "/neubot/www"
 
 def printfiles():
     log.debug("Config files  : %s" % str(CONFIG))

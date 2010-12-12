@@ -77,8 +77,6 @@ fi
 #
 # Find out the place where neubot.app/ is installed and adjust
 # Python path to include neubot sources.
-# XXX Note that neubot assumes /Applications/neubot.app which
-# means that for now the code below is overkill.
 #
 
 BASE=`echo $0|sed 's/\/MacOS\/neubot//'`
