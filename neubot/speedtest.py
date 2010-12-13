@@ -201,6 +201,13 @@ class _SessionTrackerMixin(object):
     queue = deque()
     connections = {}
 
+    def __init__(self):
+        sched(60, self._sample_queue_length)
+
+    def _sample_queue_length(self):
+        log.info("speedtest queue length: %d\n" % len(self.queue))
+        sched(60, self._sample_queue_length)
+
     def session_active(self, request):
         identifier = request["authorization"]
         if identifier in self.identifiers:
@@ -281,6 +288,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
         self.config = config
         self.begin_test = 0
         sched(3, self._speedtest_check_timeout)
+        _SessionTrackerMixin.__init__(self)
 
     def check_request_headers(self, connection, request):
         ret = True
