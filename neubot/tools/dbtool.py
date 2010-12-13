@@ -384,6 +384,32 @@ class XMLizer(ProcessorInterface):
     def finish(self):
         self.outfile.write("</results>\r\n")
 
+class UUIDCounter(ProcessorInterface):
+    """
+    Counts the number of UUIDs per day.
+    Should be improved to allow more flexibility, e.g. count the
+    number of UUIDs per hour.
+    """
+
+    last = 0
+    threshold = 86400
+    uuids = set()
+
+    def __init__(self, outfile):
+        self.outfile = outfile
+
+    def feed(self, result):
+        current = int(result.timestamp)
+        if self.last == 0 or current - self.last > self.threshold:
+            if self.last > 0:
+                self.outfile.write("%d %d\r\n" % (self.last, len(self.uuids)))
+            self.uuids.clear()
+            self.last = current
+        self.uuids.add(result.client)
+
+    def finish(self):
+        self.outfile.write("%d %d\r\n" % (self.last, len(self.uuids)))
+
 def DB_walker(conf, filename, processor, filters):
     """
     Walk the tuples in the results table of the database at <filename>
@@ -403,13 +429,22 @@ def DB_walker(conf, filename, processor, filters):
     reader.close()
     processor.finish()
 
+#
+# Warning! Do not expect these command line options to stay like
+# this for too much time.  I'd like to rework them because if we add
+# a new option for each different analysis this is going to explode
+# and we will soon run out of letters.  And also these options are
+# not orthogonal which is bad from the user point of view.
+#
+
 VERSION = "0.3.1"
 
-USAGE = """Usage: @PROGNAME@ [-nV] [--help] database
+USAGE = """Usage: @PROGNAME@ [-CnV] [--help] database
 """
 
 HELP = USAGE + """
 Options:
+  -C     : Count unique UUIDs per day.
   -n     : Do not anonymize the database.
   --help : Print this help screen and exit.
   -V     : Print version number and exit.
@@ -423,14 +458,18 @@ Options:
 #
 
 def main(args):
+    count = False
     anon = True
     filters = [ FILTER_timestamp ]
     try:
-        options, arguments = getopt.getopt(args[1:], "nV", ["help"])
+        options, arguments = getopt.getopt(args[1:], "CnV", ["help"])
     except getopt.error:
         sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         sys.exit(1)
     for name, value in options:
+        if name == "-C":
+            count = True
+            continue
         if name == "-n":
             anon = False
             continue
@@ -445,12 +484,15 @@ def main(args):
     if len(arguments) != 1:
         sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         sys.exit(1)
-    if anon:
+    if anon and not count:
         filters.append(FILTER_anonymize)
     filename = arguments[0]
     conf = Configuration()
-    xmlizer = XMLizer(sys.stdout)
-    DB_walker(conf, filename, xmlizer, filters)
+    if count:
+        processor = UUIDCounter(sys.stdout)
+    else:
+        processor = XMLizer(sys.stdout)
+    DB_walker(conf, filename, processor, filters)
 
 if __name__ == "__main__":
     main(sys.argv)
