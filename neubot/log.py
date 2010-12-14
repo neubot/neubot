@@ -24,11 +24,10 @@ import collections
 import logging.handlers
 import time
 import traceback
+import os
+import sys
 
 from neubot.compat import deque_append
-from os import isatty
-from sys import stderr
-
 from neubot.unix import *
 from neubot.win32 import *
 
@@ -95,25 +94,25 @@ class Logger:
     #
 
     def _interactive(self):
-        return (not self._verbose and self._tty and isatty(stderr.fileno()))
+        return (not self._verbose and self._tty and os.isatty(sys.stderr.fileno()))
 
     def start(self, message):
         if not self._interactive():
             self.info(message + " in progress...")
             self.message = message
         else:
-            stderr.write(message + "...")
+            sys.stderr.write(message + "...")
 
     def progress(self):
         if self._interactive():
-            stderr.write(".")
+            sys.stderr.write(".")
 
     def complete(self):
         if not self._interactive():
             self.info(self.message + ": complete")
             self.message = None
         else:
-            stderr.write(" done\n")
+            sys.stderr.write(" done\n")
 
     #
     # Log functions
