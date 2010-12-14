@@ -74,18 +74,18 @@ if os.name == "posix":
         """
 
         def __init__(self):
-            syslog.openlog("neubot", syslog.LOG_DAEMON|syslog.LOG_PID)
+            syslog.openlog("neubot", syslog.LOG_PID)
 
         def error(self, message):
-            syslog.syslog(syslog.LOG_ERR, message)
+            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_ERR, message)
 
         def warning(self, message):
-            syslog.syslog(syslog.LOG_WARNING, message)
+            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_WARNING, message)
 
         def info(self, message):
-            syslog.syslog(syslog.LOG_INFO, message)
+            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_INFO, message)
 
         def debug(self, message):
-            syslog.syslog(syslog.LOG_DEBUG, message)
+            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
 
     __all__.append("BackgroundLogger")
