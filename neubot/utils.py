@@ -113,8 +113,8 @@ def _unit_formatter(n, v, unit):
     for k, s in v:
         if n >= k:
             n /= k
-            return "%.1f%s%s" % (n, s, unit)
-    return "%.1f%s" % (n, unit)
+            return "%.1f %s%s" % (n, s, unit)
+    return "%.1f %s" % (n, unit)
 
 def unit_formatter(n, base10=False, unit=""):
     if base10:
