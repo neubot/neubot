@@ -27,6 +27,9 @@ import traceback
 import os
 import sys
 
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
 from neubot.compat import deque_append
 from neubot.unix import *
 from neubot.win32 import *
@@ -175,3 +178,18 @@ progress = log.progress
 complete = log.complete
 debug = log.debug
 getlines = log.getlines
+
+def main(args):
+    verbose()
+    error("testing neubot logger -- This is an error message")
+    warning("testing neubot logger -- This is an warning message")
+    info("testing neubot logger -- This is an info message")
+    debug("testing neubot logger -- This is a debug message")
+    redirect()
+    error("testing neubot logger -- This is an error message")
+    warning("testing neubot logger -- This is an warning message")
+    info("testing neubot logger -- This is an info message")
+    debug("testing neubot logger -- This is a debug message")
+
+if __name__ == "__main__":
+    main(sys.argv)
