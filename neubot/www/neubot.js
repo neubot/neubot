@@ -80,12 +80,30 @@ function getcurstate(data) {
     $("#state").html($(html));
 
     /*
+     * Position in queue if we're negotiating
+     */
+
+    html = "";
+    var details = $(data).find("negotiate");
+    if (details) {
+        $(details).find("queuePos").each(function() {
+            var $entry = $(this);
+            html += "<h2>Position in queue: " + $.trim($entry.text()) + "/";
+        });
+        $(details).find("queueLen").each(function() {
+            var $entry = $(this);
+            html += $.trim($entry.text()) + "</h2>";
+        });
+        $("#detail").html($(html));
+    }
+
+    /*
      * Get details of the current/latest test
      */
 
     html = "";
     var details = $(data).find("test");
-    if (details) {
+    if (details && current != "negotiate") {
         var name = $.trim($(details).find("name").text());
         var results = new Array();
         if (active == "true") {
