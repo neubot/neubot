@@ -382,6 +382,11 @@ class SimpleStateTracker(ClientController):
                 continue
         self.write()
 
+    def connection_failed(self, client):
+        self.clear()
+        self.set_failure()
+        self.write()
+
     def clear(self):
         pass
 
@@ -397,6 +402,9 @@ class SimpleStateTracker(ClientController):
     def set_extra(self, name, value):
         pass
 
+    def set_failure(self):
+        pass
+
     def write(self):
         pass
 
@@ -406,6 +414,7 @@ class StateTracker(SimpleStateTracker):
         self.clear()
 
     def clear(self):
+        self.failure = False
         self.active = False
         self.activity = ""
         self.extra = {}
@@ -424,7 +433,13 @@ class StateTracker(SimpleStateTracker):
     def set_extra(self, name, value):
         self.extra[name] = value
 
+    def set_failure(self):
+        self.failure = True
+
     def write(self):
+        if self.failure:
+            stdout.write("can't connect to neubot daemon\n")
+            return
         stdout.write("[%d] " % self.timestamp)
         if self.update:
             stdout.write("{%s: %s} " % self.update)
