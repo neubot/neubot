@@ -536,7 +536,7 @@ class Download(SpeedtestHelper):
         speed = self.total / dtime
         self.speed.append(speed)
         # done
-        speed = unit_formatter(speed * 8, base10=True, unit="bps")
+        speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
         state.append_result("download", speed, "")
         self.speedtest.complete()
 
@@ -621,7 +621,7 @@ class Upload(SpeedtestHelper):
         speed = self.total / utime
         self.speed.append(speed)
         # done
-        speed = unit_formatter(speed * 8, base10=True, unit="bps")
+        speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
         state.append_result("upload", speed, "")
         self.speedtest.complete()
 
@@ -1026,7 +1026,7 @@ FLAGS = {
 
 FORMATTERS = {
     "raw": lambda n: " %fiB/s" % n,
-    "bits": lambda n: unit_formatter(n*8, base10=True, unit="bps"),
+    "bits": lambda n: unit_formatter(n*8, base10=True, unit="bit/s"),
     "bytes": lambda n: unit_formatter(n, unit="B/s"),
 }
 
