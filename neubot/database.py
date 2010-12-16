@@ -27,6 +27,8 @@
 # file.
 #
 
+import types
+
 if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
@@ -338,6 +340,8 @@ class DatabaseManager:
         self.query_results_functional(vector.append, tag, since, until, uuid_)
         vector.append("</results>")
         body = "".join(vector)
+        if type(body) == types.UnicodeType:
+            body = body.encode("utf-8")
         stringio = StringIO(body)
         return stringio
 
