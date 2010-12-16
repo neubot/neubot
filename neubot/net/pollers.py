@@ -81,6 +81,7 @@ CHECK_TIMEOUT = 10
 class Poller:
     def __init__(self, timeout):
         self.timeout = timeout
+        self.again = True
         self.printstats = False
         self.readset = {}
         self.writeset = {}
@@ -166,9 +167,12 @@ class Poller:
     #
 
     def loop(self):
-        while self.readset or self.writeset:
+        while self.again and (self.readset or self.writeset):
             self.update_tasks()
             self.dispatch_events()
+
+    def break_loop(self):
+        self.again = False
 
     #
     # Tests shows that update_tasks() would be slower if we kept tasks
@@ -266,3 +270,4 @@ loop = poller.loop
 sched = poller.sched
 disable_stats = poller.disable_stats
 enable_stats = poller.enable_stats
+break_loop = poller.break_loop
