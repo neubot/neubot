@@ -137,7 +137,7 @@ class RendezvousServer(Server):
             # choose at random.
             #
             if self.config.test_uri2:
-                if random() >= 0.66:
+                if random() >= 0.50:
                     builder.data(self.config.test_uri2)
                 else:
                     builder.data(self.config.test_uri)
