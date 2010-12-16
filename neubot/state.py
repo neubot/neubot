@@ -24,6 +24,8 @@
 # Track neubot state
 #
 
+import os
+
 if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
@@ -220,6 +222,10 @@ class State:
             text = document.createTextNode("false")
         else:
             text = document.createTextNode("true")
+        element.appendChild(text)
+        root.appendChild(element)
+        element = document.createElement("pid")
+        text = document.createTextNode(str(os.getpid()))
         element.appendChild(text)
         root.appendChild(element)
         for activity in ACTIVITIES:
