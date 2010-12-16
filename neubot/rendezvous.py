@@ -65,6 +65,8 @@ from sys import stderr
 from neubot.speedtest import XML_get_scalar
 from neubot.speedtest import XML_get_vector
 
+import random
+
 #
 # <rendezvous>
 #  <accept>speedtest</accept>
@@ -418,7 +420,7 @@ def main(args):
     fakerc.write("[rendezvous]\n")
     dontloop = False
     servermode = False
-    interval = 1500
+    interval = 1380 + random.randrange(0, 240)
     xdebug = False
     daemonize = True
     # parse
