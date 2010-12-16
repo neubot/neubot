@@ -45,6 +45,7 @@ from os.path import normpath
 from urlparse import urlsplit
 from neubot.database import database
 from neubot.net.pollers import loop
+from neubot.net.pollers import break_loop
 from neubot.config import config
 from neubot.state import state
 from urllib import urlencode
@@ -55,7 +56,6 @@ from sys import stderr
 from sys import stdout
 from sys import stdin
 from os import isatty
-from os import _exit
 from neubot import pathnames
 from sys import exit
 from shlex import split
@@ -202,13 +202,8 @@ class UIServer(Server):
                 body=stringio, mimetype="text/plain")
         connection.reply(request, response)
 
-    #
-    # Not the cleanest way to exit(): It would be better
-    # to tell the main loop() to quit.
-    #
-
     def _do_api_exit(self, connection, request, query, recurse=False):
-        _exit(0)
+        break_loop()
 
 #
 # [ui]
