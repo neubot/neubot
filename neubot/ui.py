@@ -699,11 +699,13 @@ def main(args):
     # config
     fakerc.seek(0)
     ui.configure(pathnames.CONFIG, fakerc)
+    database.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len (arguments) > 0:
             stderr.write(USAGE.replace("@PROGNAME@", args[0]))
             exit(1)
+        database.start()
         ui.start()
         loop()
         exit(0)
