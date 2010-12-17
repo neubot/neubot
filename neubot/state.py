@@ -142,13 +142,8 @@ class StateRendezvous:
             element.appendChild(text)
             parent.appendChild(element)
 
-#
-# TODO It would be nice to use "idle" for activity instead of
-# None because that will certainly make the code more readable
-# for new developers.
-#
-
 ACTIVITIES = [
+    "idle",
     "rendezvous",
     "negotiate",
     "test",
@@ -166,7 +161,7 @@ class State:
     def __init__(self):
         self.versioninfo = ()
         self.rendezvous = None
-        self.activity = None
+        self.activity = "idle"
         self.negotiate = None
         self.test = None
         self.since = timestamp()
@@ -221,7 +216,7 @@ class State:
                 element.appendChild(text)
                 root.appendChild(element)
         element = document.createElement("active")
-        if not self.activity:
+        if self.activity == "idle":
             text = document.createTextNode("false")
         else:
             text = document.createTextNode("true")
@@ -255,7 +250,7 @@ class State:
     #
 
     def set_inactive(self):
-        self.activity = None
+        self.activity = "idle"
         return self
 
     def set_activity(self, activity, tasks=[], name=""):
@@ -270,7 +265,7 @@ class State:
         # Idle transition (that used to be the place where we
         # forgot the results).
         #
-        if self.activity == None:
+        if self.activity == "idle":
             self.rendezvous = None
             self.negotiate = None
             self.test = None
