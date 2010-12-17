@@ -30,6 +30,7 @@ import sys
 
 from neubot.utils import unit_formatter
 from neubot.utils import ticks
+from neubot.utils import timestamp
 from neubot.utils import SimpleStats
 from neubot.utils import Stats
 from neubot import log
@@ -57,20 +58,25 @@ class Pollable:
 class PollerTask:
     def __init__(self, delta, func):
         self.time = ticks() + delta
+        self.timestamp = timestamp() + int(delta)
         self.func = func
 
     #
     # Set time to -1 so that sort() move the task at the beginning
     # of the list.  And clear func to allow garbage collection of
     # the referenced object.
+    # We need to add timestamp because ticks() might be just the
+    # time since neubot started (as happens with Windows).
     #
 
     def unsched(self):
         self.time = -1
+        self.timestamp = -1
         self.func = None
 
     def resched(self, delta):
         self.time = ticks() + delta
+        self.timestamp = timestamp() + int(delta)
 
     def __del__(self):
         pass
