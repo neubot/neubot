@@ -31,6 +31,7 @@ if __name__ == "__main__":
 from neubot.notify import STATECHANGE
 from neubot.notify import get_event_timestamp
 from neubot.utils import versioncmp
+from neubot.utils import timestamp
 from neubot.utils import XML_to_stringio
 from xml.dom import minidom
 from neubot.notify import publish
@@ -168,6 +169,12 @@ class State:
         self.activity = None
         self.negotiate = None
         self.test = None
+        self.since = timestamp()
+        self.next_rendezvous = -1
+
+    def set_next_rendezvous(self, t):
+        self.next_rendezvous = t
+        return self
 
     def set_versioninfo(self, ver, uri):
         self.versioninfo = (ver, uri)
@@ -175,6 +182,8 @@ class State:
 
     #
     # <state t="1284818634023">
+    #  <since>1292599259</since>
+    #  <next_rendezvous>1292599277</next_rendezvous>
     #  <active>True</active>
     #  <activity>rendezvous</activity>
     #  <activity>negotiate</activity>
@@ -194,6 +203,15 @@ class State:
         document = minidom.parseString("<state/>")
         root = document.documentElement
         root.setAttribute("t", timestamp)
+        element = document.createElement("since")
+        root.appendChild(element)
+        text = document.createTextNode(str(self.since))
+        element.appendChild(text)
+        if self.next_rendezvous > 0:
+            element = document.createElement("next_rendezvous")
+            root.appendChild(element)
+            text = document.createTextNode(str(self.next_rendezvous))
+            element.appendChild(text)
         if len(self.versioninfo) == 2:
             ver, uri = self.versioninfo
             if versioncmp(ver, version) > 0:

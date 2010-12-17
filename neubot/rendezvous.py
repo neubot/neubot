@@ -315,9 +315,10 @@ class RendezvousClient(ClientController, SpeedtestController):
             return
         if self.dontloop:
             return
-        state.set_inactive().commit()
         log.info("* Next rendezvous in %d seconds" % self.interval)
-        sched(self.interval, self.rendezvous)
+        task = sched(self.interval, self.rendezvous)
+        state.set_next_rendezvous(task.timestamp)
+        state.set_inactive().commit()
 
     def connection_failed(self, client):
         state.set_rendezvous_status("failed")
