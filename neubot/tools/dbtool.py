@@ -172,26 +172,27 @@ class SpeedtestResult(object):
     Represent the result of a speedtest.
     """
 
-    client = ""
-    timestamp = 0
-    internalAddress = ""
-    realAddress = ""
-    realAddressRegion = ""
-    realAddressCountryCode = ""
-    realAddressCity = ""
-    realAddressASN = ""
-    realAddressASName = ""
-    remoteAddress = ""
-    remoteAddressRegion = ""
-    remoteAddressCountryCode = ""
-    remoteAddressCity = ""
-    remoteAddressASN = ""
-    remoteAddressASName = ""
-    connectTime = 0.0
-    latency = 0.0
-    downloadSpeed = 0.0
-    uploadSpeed = 0.0
-
+    def __init__(self):
+        self.client = ""
+        self.timestamp = 0
+        self.internalAddress = ""
+        self.realAddress = ""
+        self.realAddressRegion = ""
+        self.realAddressCountryCode = ""
+        self.realAddressCity = ""
+        self.realAddressASN = ""
+        self.realAddressASName = ""
+        self.remoteAddress = ""
+        self.remoteAddressRegion = ""
+        self.remoteAddressCountryCode = ""
+        self.remoteAddressCity = ""
+        self.remoteAddressASN = ""
+        self.remoteAddressASName = ""
+        self.connectTime = 0.0
+        self.latency = 0.0
+        self.downloadSpeed = 0.0
+        self.uploadSpeed = 0.0
+ 
 def XML_append_attribute(document, element, name, value):
     """
     Append to <element> an element with tagName <name> that contains
@@ -257,6 +258,7 @@ class SpeedtestResultXML(SpeedtestResult):
         return data
 
     def __init__(self, data):
+        SpeedtestResult.__init__(self)
         document = xml.dom.minidom.parseString(data)
         root = document.documentElement
         if root.tagName == "SpeedtestCollect":
