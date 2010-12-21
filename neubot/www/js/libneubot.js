@@ -221,6 +221,7 @@ var neubot = (function() {
               axes: {
                 xaxis: {
                   label: "Hours ago",
+                  min: -24,
                   max: 0,
                   showTickMarks: true
                 },
