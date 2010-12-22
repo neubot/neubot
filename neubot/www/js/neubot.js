@@ -135,7 +135,7 @@
             $('#downloadResult').text("---");
             $('#testResultsBox').qtip("show");
         }
-        if (current != "test")
+        if (current == "idle")                  // XXX
             $('#testResultsBox').qtip("hide");
         if (current == "test")
             $('#testResultsBox h4').text("Current test details");
@@ -171,8 +171,6 @@
                 name: 'blue'
             }
         });
-        $('#testResultsBox').hide();
-        $('#testResultsBox').slideToggle('slow');
 
         neubot.update_results_plot(500);
 
