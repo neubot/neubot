@@ -326,5 +326,51 @@ var neubot = (function() {
         self.get_recent_results(processor.process_results, delay);
     }
 
+    // utils
+
+    self.XML_text = function(selector, data) {
+        var text = $(selector, data).text();
+        if (text == "")
+            return (text);
+        text = $.trim(text);
+        return (text);
+    }
+
+    self.XML_number = function(selector, data) {
+        var text = self.XML_text(selector, data);
+        if (text == "")
+            return (text);
+        var number = Number(text);
+        return (number);
+    }
+
+    self.XML_timestamp = function(selector, data) {
+        return (self.XML_number(selector, data));
+    }
+
+    self.timestamp_to_minutes = function(t) {
+        return (Math.ceil(t / 60));
+    }
+
+    self.format_minutes = function(t) {
+        if (t > 1)
+            s = t + " minutes";
+        else
+            s = t + " minute";
+        return (s);
+    }
+
+    self.timestamp_to_date = function(t) {
+        t = t * 1000;
+        var date = new Date(t);
+        return (date);
+    }
+
+    self.format_date = function(date) {
+        return (date.toLocaleString());
+    }
+
+    // closure
+
     return self;
 })();
