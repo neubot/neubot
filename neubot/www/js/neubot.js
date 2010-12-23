@@ -122,8 +122,11 @@
         // of the most transient states, therefore be
         // paranoid and issue a robust check
 
+        // Not yet
+        /*
         if (prev != "idle" && (current == "negotiate" || current == "idle"))
             neubot.update_results_plot();
+        */
 
         // Adjust style
         // The qtip must be visible while we are testing
@@ -172,7 +175,10 @@
             }
         });
 
+        // Not yet
+        /*
         neubot.update_results_plot(500);
+        */
 
         tracker = neubot.state_tracker(process_state);
         tracker.start();
