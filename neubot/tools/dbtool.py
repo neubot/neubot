@@ -351,10 +351,12 @@ class ProcessorInterface(object):
     Common interface for all processors.
     """
 
-    def init(self):
+    def init(self, parameters):
         """
         Initialize the processor, e.g. print something before
         the data, or open a file.
+        The param <parameters> is a dictionary that holds optional
+        parameters for the initializer.
         """
 
     def feed(self, result):
@@ -376,7 +378,7 @@ class XMLizer(ProcessorInterface):
     def __init__(self, outfile):
         self.outfile = outfile
 
-    def init(self):
+    def init(self, parameters):
         self.outfile.write('<results timeUnit="s" speedUnit="iB/s">\r\n')
 
     def feed(self, result):
@@ -388,17 +390,19 @@ class XMLizer(ProcessorInterface):
 
 class UUIDCounter(ProcessorInterface):
     """
-    Counts the number of UUIDs per day.
-    Should be improved to allow more flexibility, e.g. count the
-    number of UUIDs per hour.
+    Counts the number of UUIDs every <threshold> time.
     """
-
-    last = 0
-    threshold = 86400
-    uuids = set()
 
     def __init__(self, outfile):
         self.outfile = outfile
+        self.last = 0
+        self.uuids = set()
+
+    def init(self, parameters):
+        if 'threshold' in parameters:
+            self.threshold = parameters['threshold']
+        else:
+            self.threshold = 86400
 
     def feed(self, result):
         current = int(result.timestamp)
@@ -412,13 +416,13 @@ class UUIDCounter(ProcessorInterface):
     def finish(self):
         self.outfile.write("%d %d\r\n" % (self.last, len(self.uuids)))
 
-def DB_walker(conf, filename, processor, filters):
+def DB_walker(conf, filename, processor, filters, parameters):
     """
     Walk the tuples in the results table of the database at <filename>
     and then filter each tuple through the registered <filters> and finally
-    pass the result to the specified <processor>.
+    pass the result to the specified <processor> with <parameters>.
     """
-    processor.init()
+    processor.init(parameters)
     connection = sqlite3.connect(filename)
     reader = connection.cursor()
     reader.execute("SELECT result FROM results WHERE tag = 'speedtest';")
@@ -441,15 +445,17 @@ def DB_walker(conf, filename, processor, filters):
 
 VERSION = "0.3.1"
 
-USAGE = """Usage: @PROGNAME@ [-CnV] [--help] database
+USAGE = """Usage: @PROGNAME@ [-CnV] [-T threshold] [--help] database
 """
 
 HELP = USAGE + """
 Options:
-  -C     : Count unique UUIDs per day.
-  -n     : Do not anonymize the database.
-  --help : Print this help screen and exit.
-  -V     : Print version number and exit.
+  -C          : Count unique UUIDs per day (see also -T).
+  -n          : Do not anonymize the database.
+  --help      : Print this help screen and exit.
+  -T treshold : Modifier for -C: count the number of unique UUIDs
+                every treshold seconds rather than every day.
+  -V          : Print version number and exit.
 
 """
 
@@ -460,11 +466,13 @@ Options:
 #
 
 def main(args):
+    parameters = {}
     count = False
     anon = True
+
     filters = [ FILTER_timestamp ]
     try:
-        options, arguments = getopt.getopt(args[1:], "CnV", ["help"])
+        options, arguments = getopt.getopt(args[1:], "CnT:V", ["help"])
     except getopt.error:
         sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
         sys.exit(1)
@@ -474,6 +482,16 @@ def main(args):
             continue
         if name == "-n":
             anon = False
+            continue
+        if name == "-T":
+            try:
+                threshold = int(value)
+            except ValueError:
+                threshold = -1
+            if threshold < 0:
+                sys.stderr.write("error: threshold must be a positive integer\n")
+                sys.exit(1)
+            parameters['threshold'] = threshold
             continue
         if name == "--help":
             sys.stdout.write(HELP.replace("@PROGNAME@", args[0]))
@@ -494,7 +512,8 @@ def main(args):
         processor = UUIDCounter(sys.stdout)
     else:
         processor = XMLizer(sys.stdout)
-    DB_walker(conf, filename, processor, filters)
+
+    DB_walker(conf, filename, processor, filters, parameters)
 
 if __name__ == "__main__":
     main(sys.argv)
