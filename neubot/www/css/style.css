@@ -1,113 +1,394 @@
-/* neubot/www/css/neubot.css */
-/*-
- * This is a derivative work of Drupal porting of K2 theme
- * available at <http://drupal.org/project/k2> and released
- * under version 2 of the GNU General Public License.
- */
-
-/* ::::: http://neubot.org/modules/aggregator/aggregator.css?L ::::: */
-
-/* ::::: http://neubot.org/modules/node/node.css?L ::::: */
-
-/* ::::: http://neubot.org/modules/system/defaults.css?L ::::: */
-
-form { margin: 0pt; padding: 0pt; }
-hr { height: 1px; border: 1px solid gray; }
-img { border: 0pt none; }
-table { border-collapse: collapse; }
-/* ::::: http://neubot.org/modules/system/system.css?L ::::: */
-
-tbody { border-top: 1px solid rgb(204, 204, 204); }
-.item-list ul { margin: 0pt 0pt 0.75em; padding: 0pt; }
-.item-list ul li { margin: 0pt 0pt 0.25em 1.5em; padding: 0pt; list-style: disc outside none; }
-.form-item { margin-top: 1em; margin-bottom: 1em; }
-.form-item label { display: block; font-weight: bold; }
-.item-list .pager { clear: both; text-align: center; }
-.item-list .pager li { background-image: none; display: inline; list-style-type: none; padding: 0.5em; }
-.pager-current { font-weight: bold; }
-.container-inline div, .container-inline label { display: inline; }
-/* ::::: http://neubot.org/modules/system/system-menus.css?L ::::: */
-
-li a.active { color: rgb(0, 0, 0); }
-/* ::::: http://neubot.org/modules/user/user.css?L ::::: */
-
-/* ::::: http://neubot.org/sites/all/modules/views/css/views.css?L ::::: */
-
-/* ::::: http://neubot.org/sites/www.neubot.org/themes/k2/css/core.css?L ::::: */
-
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td { margin: 0pt; padding: 0pt; border: 0pt none; outline: 0pt none; vertical-align: baseline; background: none repeat scroll 0% 0% transparent; }
-ol, ul { list-style: none outside none; }
-:focus { outline: 0pt none; }
-table { border-collapse: collapse; border-spacing: 0pt; }
-body { font-size: 62.5%; font-family: 'Lucida Grande',Verdana,Helvetica,Arial,sans-serif; color: rgb(68, 68, 68); background: none repeat scroll 0% 0% rgb(238, 238, 238); text-align: center; }
-#page { background: none repeat scroll 0% 0% white; text-align: left; margin: 0pt auto; padding-top: 20px; position: relative; border-right: 1px solid rgb(221, 221, 221); border-width: medium 1px 1px; border-style: none solid solid; border-color: -moz-use-text-color rgb(221, 221, 221) rgb(221, 221, 221); clear: both; }
-.one-sidebar #page { width: 780px; }
-.content { padding: 0pt 20px 10px; }
-body.one-sidebar #primary-wrapper { float: left; margin-right: -220px; width: 100%; }
-body.one-sidebar #primary { margin-right: 220px; }
-body.one-sidebar .secondary { float: right; }
-#primary { position: relative; float: left; width: 500px; padding: 10px; }
-.secondary { width: 200px; float: left; font-size: 1.2em; line-height: 1.5em; color: rgb(102, 102, 102); position: relative; padding: 0pt 10px; overflow: hidden; }
-ul.k2menu { margin: 0pt; padding: 0pt; position: absolute; bottom: 0pt; left: 20px; width: 90%; }
-ul.k2menu li { display: inline; margin: 0pt; }
-ul.k2menu, ul.k2menu li a { padding: 5px 15px 6px; }
-ul.k2menu li a { font-size: 1em; color: white; margin: 0pt; -moz-border-radius-topleft: 3px; -moz-border-radius-topright: 3px; }
-ul.k2menu li a:hover { background: none repeat scroll 0% 0% rgb(51, 51, 51); color: rgb(238, 238, 238); text-decoration: none; }
-ul.k2menu li.active a, ul.k2menu li.active a:hover { color: rgb(51, 51, 51); background: none repeat scroll 0% 0% white; text-decoration: none; }
-h1, h2, h3, h4 { font-family: 'Trebuchet MS',Verdana,Sans-Serif; }
-h1 { font-size: 3em; }
-h1.blog-title { font-weight: bold; letter-spacing: -1px; padding: 35px 40px 0pt; }
-h1.blog-title a, #header .description { text-decoration: none; color: white; }
-h1.blog-title a:hover { text-decoration: underline; }
-#header .description { font-size: 1em; margin: 0pt 40px; }
-h2 { text-align: center; font-size: 2.5em; font-weight: bold; letter-spacing: -1px; }
-.secondary h4 { font-size: 1.5em; font-weight: normal; padding: 0pt; display: block; margin-bottom: 5px; }
-h3, h4, .single .k2-asides h3 { font-size: 2.4em; font-weight: normal; letter-spacing: -1px; }
-h4 { font-size: 1.6em; font-weight: normal; letter-spacing: -1px; }
-.entry-head { margin-top: 10px; }
-.secondary div { margin: 20px 0pt 0pt; padding: 0pt; position: relative; }
-.skiplink { display: none; }
-h2, h2 a, h2 a:visited, h3, h3 a, h3 a:visited, h4, h4 a, h4 a:visited { color: rgb(68, 68, 68); }
-h2, h2 a, h2 a:hover, h2 a:visited, h3, h3 a, h3 a:hover, h3 a:visited, h4, h4 a, h4 a:hover, h4 a:visited { text-decoration: none; }
-.entry-meta { font-size: 1em; line-height: 1.6em;color display: block; margin-top: 1px; color: rgb(187, 187, 187); }
-.entry-meta div { display: inline; }
-.meta-start { padding: 2px 0pt 2px 20px; background: url('time.png') no-repeat scroll left top transparent; }
-.entry-date abbr { border: 0pt none; color: rgb(119, 119, 119); }
-.entry-author { display: none; }
-.entry-author address { display: inline; font-style: normal; }
-.hentry { margin: 5px 0pt 15px; position: relative; }
-.entry-content { font-size: 1.2em; line-height: 1.8em; text-align: justify; color: rgb(68, 68, 68); }
-.entry-content p, .entry-content ul, .entry-content ol, .entry-content div, .entry-content blockquote { margin: 13px 0pt; }
-input[type="text"]:focus, textarea:focus { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(51, 51, 51); border-color: rgb(102, 102, 102); }
-#footer { clear: both; margin: 0pt auto; padding: 20px 0pt 40px; text-align: center; color: rgb(119, 119, 119); }
-#footer a { color: rgb(136, 136, 136); border-bottom: 1px solid rgb(204, 204, 204); font-weight: bold; }
-#footer a:hover { border: medium none; text-decoration: none; color: rgb(0, 0, 0); }
-#primary a:hover, #primary a:visited:hover, .secondary a:hover, .secondary a:visited:hover { text-decoration: underline; }
-a { color: rgb(34, 119, 221); text-decoration: none; }
-.entry-content a:visited { color: rgb(187, 68, 17); }
-.clear { clear: both; }
-hr { display: none; }
-.secondary div p { margin-top: 0.5em; }
-.secondary ul, .secondary ol, .secondary div div { margin: 5px 0pt 0pt; padding-left: 0pt; }
-.secondary ul ul, .secondary ol ol, .secondary div div { margin: 0pt 0pt 0pt 10px; }
-.secondary ul ul ul, .secondary ol ol ol, .secondary div div div { margin: 0pt 0pt 0pt 20px; }
-input[type="text"], textarea { color: rgb(68, 68, 68); padding: 1px; margin: 0pt; }
-table img { vertical-align: text-top; }
-code { font: 1.1em 'Courier New',Courier,Monospace; }
-a#x_link_to_nexa { height: 50px; left: 455px; position: absolute; top: 31px; width: 250px; }
-#header { height: 130px; background: url('image/header.png') repeat scroll 0% 0% transparent; position: relative; }
-
-table#state td, table#state th { padding: 2px; padding-right: 8px; padding-left: 8px;}
-table#state th { color: #3da64e;}
-table#state th#stateCol { width: 6.5em; }
-table#state td { background-repeat: no-repeat; background-position: 0 .9em; }
-table#state { margin-left: 5px; font-size: 0.9em; }
-.entry-content dt { margin-left: -10px; padding-left: 20px;  background-repeat: no-repeat; background-position: 0 .9em; }
-.entry-content dt, .secondary dt { float: left; clear: left; width: 9em;  }
-.entry-content dd, .secondary dd { margin-left: 9em; text-align: right;}
-.entry-content dl { margin: 0px 15px; line-height: 2em;}
-#update { display: none; }
-.help {
-  border-bottom: 1px dotted #333;
-  cursor: help;
+form {
+    margin: 0pt;
+    padding: 0pt;
 }
+hr {
+    border: 1px solid gray;
+    height: 1px;
+}
+img {
+    border: 0pt none;
+}
+table {
+    border-collapse: collapse;
+}
+tbody {
+    border-top: 1px solid rgb(204, 204, 204);
+}
+.item-list ul {
+    margin: 0pt 0pt 0.75em;
+    padding: 0pt;
+}
+.item-list ul li {
+    list-style: disc outside none;
+    margin: 0pt 0pt 0.25em
+1.5em;
+    padding: 0pt;
+}
+.form-item {
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+.form-item label {
+    display: block;
+    font-weight: bold;
+}
+.item-list .pager {
+    clear: both;
+    text-align: center;
+}
+.item-list .pager li {
+    background-image: none;
+    display: inline;
+    list-style-type: none;
+    padding: 0.5em;
+}
+.pager-current {
+    font-weight: bold;
+}
+.container-inline div, .container-inline label {
+    display: inline;
+}
+li a.active {
+    color: rgb(0, 0, 0);
+}
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em,
+font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table,
+caption, tbody, tfoot, thead, tr, th, td {
+    background: none
+repeat scroll 0% 0% transparent;
+    border: 0pt none;
+    margin: 0pt;
+    outline: 0pt none;
+    padding: 0pt;
+    vertical-align: baseline;
+}
+ol, ul {
+    list-style: none outside none;
+}
+:focus {
+    outline: 0pt none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0pt;
+}
+body {
+    background: none
+repeat scroll 0% 0% rgb(238, 238, 238);
+    color: rgb(68, 68, 68);
+    font-family: 'Lucida Grande',Verdana,Helvetica,Arial,sans-serif;
+    font-size: 62.5%;
+    text-align: center;
+}
+#page {
+    background: none repeat scroll 0% 0% white;
+    border-color: -moz-use-text-color rgb(221, 221, 221) rgb(221, 221, 221);
+    border-right: 1px solid rgb(221, 221, 221);
+    border-style: none solid solid;
+    border-width: medium 1px 1px;
+    clear: both;
+    margin: 0pt auto;
+    padding-top: 20px;
+    position: relative;
+    text-align: left;
+}
+.one-sidebar #page {
+    width: 780px;
+}
+.content {
+    padding: 0pt 20px
+10px;
+}
+body.one-sidebar #primary-wrapper {
+    float: left;
+    margin-right: -220px;
+    width: 100%;
+}
+body.one-sidebar #primary {
+    margin-right: 220px;
+}
+body.one-sidebar .secondary {
+    float: right;
+}
+#primary {
+    float: left;
+    padding: 10px;
+    position: relative;
+    width: 500px;
+}
+.secondary {
+    color: rgb(102, 102, 102);
+    float: left;
+    font-size: 1.2em;
+    line-height: 1.5em;
+    overflow: hidden;
+    padding: 0pt 10px;
+    position: relative;
+    width: 200px;
+}
+ul.k2menu {
+    bottom: 0pt;
+    left: 20px;
+    margin: 0pt;
+    padding: 0pt;
+    position: absolute;
+    width: 90%;
+}
+ul.k2menu li {
+    display: inline;
+    margin: 0pt;
+}
+ul.k2menu, ul.k2menu
+li a {
+    padding: 5px 15px 6px;
+}
+ul.k2menu li a {
+    color: white;
+    font-size: 1em;
+    margin: 0pt;
+    moz-border-radius-topleft: 3px;
+    moz-border-radius-topright: 3px;
+}
+ul.k2menu li a:hover {
+    background: none repeat scroll 0% 0% rgb(51, 51, 51);
+    color: rgb(238, 238, 238);
+    text-decoration: none;
+}
+ul.k2menu
+li.active a, ul.k2menu li.active a:hover {
+    background: none repeat scroll 0% 0% white;
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+}
+h1, h2, h3, h4 {
+    font-family: 'Trebuchet MS',Verdana,Sans-Serif;
+}
+h1 {
+    font-size: 3em;
+}
+h1.blog-title {
+    font-weight: bold;
+    letter-spacing: -1px;
+    padding: 35px 40px 0pt;
+}
+h1.blog-title a, #header .description {
+    color: white;
+    text-decoration: none;
+}
+h1.blog-title a:hover {
+    text-decoration: underline;
+}
+#header
+.description {
+    font-size: 1em;
+    margin: 0pt 40px;
+}
+h2 {
+    font-size: 2.5em;
+    font-weight: bold;
+    letter-spacing: -1px;
+    text-align: center;
+}
+.secondary h4 {
+    display: block;
+    font-size: 1.5em;
+    font-weight: normal;
+    margin-bottom: 5px;
+    padding: 0pt;
+}
+h3, h4, .single .k2-asides h3 {
+    font-size: 2.4em;
+    font-weight: normal;
+    letter-spacing: -1px;
+}
+h4 {
+    font-size: 1.6em;
+    font-weight: normal;
+    letter-spacing: -1px;
+}
+.entry-head {
+    margin-top: 10px;
+}
+.secondary div {
+    margin: 20px 0pt 0pt;
+    padding: 0pt;
+    position: relative;
+}
+.skiplink {
+    display: none;
+}
+h2, h2 a, h2 a:visited, h3, h3 a, h3 a:visited, h4, h4 a, h4
+a:visited {
+    color: rgb(68, 68, 68);
+}
+h2, h2 a, h2 a:hover, h2 a:visited, h3, h3 a, h3 a:hover, h3 a:visited, h4, h4 a, h4 a:hover, h4 a:visited {
+    text-decoration: none;
+}
+.entry-meta {
+    color: rgb(187, 187, 187);
+    display: block;
+    font-size: 1em;
+    line-height: 1.6em;
+    margin-top: 1px;
+}
+.entry-meta div {
+    display: inline;
+}
+.meta-start {
+    /*background: url('time.png') no-repeat scroll left top transparent;*/
+    background: none;
+    padding: 2px 0pt 2px 20px;
+}
+.entry-date abbr {
+    border: 0pt none;
+    color: rgb(119, 119, 119);
+}
+.entry-author {
+    display: none;
+}
+.entry-author address {
+    display: inline;
+    font-style: normal;
+}
+.hentry {
+    margin: 5px 0pt
+15px;
+    position: relative;
+}
+.entry-content {
+    color: rgb(68, 68, 68);
+    font-size: 1.2em;
+    line-height: 1.8em;
+    text-align: justify;
+}
+.entry-content p,
+.entry-content ul, .entry-content ol, .entry-content div, .entry-content blockquote {
+    margin: 13px 0pt;
+}
+input[type="text"]:focus, textarea:focus {
+    background: none repeat scroll 0% 0% rgb(255, 255, 255);
+    border-color: rgb(102, 102, 102);
+    color: rgb(51, 51, 51);
+}
+#footer {
+    clear: both;
+    color: rgb(119, 119, 119);
+    margin: 0pt
+auto;
+    padding: 20px 0pt 40px;
+    text-align: center;
+}
+#footer a {
+    border-bottom: 1px solid rgb(204,
+204, 204);
+    color: rgb(136, 136, 136);
+    font-weight: bold;
+}
+#footer a:hover {
+    border: medium none;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+#primary a:hover, #primary
+a:visited:hover, .secondary a:hover, .secondary a:visited:hover {
+    text-decoration: underline;
+}
+a {
+    color: rgb(34, 119, 221);
+    text-decoration: none;
+}
+.entry-content a:visited {
+    color: rgb(187, 68, 17);
+}
+.clear {
+    clear: both;
+}
+hr {
+    display: none;
+}
+.secondary div p {
+    margin-top: 0.5em;
+}
+.secondary
+ul, .secondary ol, .secondary div div {
+    margin: 5px 0pt 0pt;
+    padding-left: 0pt;
+}
+.secondary ul ul, .secondary ol ol, .secondary div div {
+    margin: 0pt
+0pt 0pt 10px;
+}
+.secondary ul ul ul, .secondary ol ol ol, .secondary div div div {
+    margin: 0pt 0pt 0pt 20px;
+}
+input[type="text"], textarea {
+    color: rgb(68, 68, 68);
+    margin: 0pt;
+    padding: 1px;
+}
+table img {
+    vertical-align: text-top;
+}
+code {
+    font: 1.1em 'Courier New',Courier,Monospace;
+}
+a#x_link_to_nexa {
+    height: 50px;
+    left: 455px;
+    position: absolute;
+    top: 31px;
+    width: 250px;
+}
+#header {
+    background: url('../image/header.png')
+repeat scroll 0% 0% transparent;
+    height: 130px;
+    position: relative;
+}
+table#state td, table#state th {
+    padding: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+table#state th {
+    color: #3da64e;
+}
+table#state th#stateCol {
+    width: 6.5em;
+}
+table#state td {
+    background-position: 0 .9em;
+    background-repeat: no-repeat;
+}
+table#state {
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+.entry-content dt {
+    background-position: 0 .9em;
+    background-repeat: no-repeat;
+    margin-left: -10px;
+    padding-left: 20px;
+}
+.entry-content dt, .secondary dt {
+    clear: left;
+    float: left;
+    width: 9em;
+}
+.entry-content dd, .secondary dd {
+    margin-left: 9em;
+    text-align: right;
+}
+.entry-content dl {
+    line-height: 2em;
+    margin: 0px 15px;
+}
+#update {
+    display: none;
+}
+.help {
+    border-bottom: 1px dotted #333;
+    cursor: help;
+}
+
