@@ -46,7 +46,6 @@ from neubot import version
 from getopt import getopt
 from neubot import log
 from uuid import uuid4
-from time import time
 from sys import exit
 from sys import stderr
 from sys import stdout
@@ -280,7 +279,7 @@ class DatabaseManager:
     #
 
     def save_result(self, tag, result, ident):
-        t = int(time())
+        t = timestamp()
         cursor = self.connection.cursor()
         cursor.execute(RESULTS_SAVE, {"tag": tag, "result": result,
                        "timestamp": t, "ident": ident})
