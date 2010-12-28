@@ -226,7 +226,6 @@ class Stream(Pollable):
                 self.flags |= SENDBLOCKED
             elif status == ERROR:
                 log.error("* Connection %s: recv error" % self.logname)
-                log.exception()
                 self._do_close()
             else:
                 panic = "Unexpected status value"
@@ -306,7 +305,6 @@ class Stream(Pollable):
                 self.flags |= RECVBLOCKED
             elif status == ERROR:
                 log.error("* Connection %s: send error" % self.logname)
-                log.exception()
                 self._do_close()
             else:
                 panic = "Unexpected status value"
@@ -362,6 +360,7 @@ if HAVE_SSL:
                 elif code == SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, ""
                 else:
+                    log.exception()
                     return ERROR, ""
 
         def sosend(self, octets):
@@ -377,6 +376,7 @@ if HAVE_SSL:
                 elif code == SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, 0
                 else:
+                    log.exception()
                     return ERROR, 0
 
 from socket import error as SocketError
@@ -401,6 +401,7 @@ class StreamSocket(Stream):
             if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_READ, ""
             else:
+                log.exception()
                 return ERROR, ""
 
     def sosend(self, octets):
@@ -411,6 +412,7 @@ class StreamSocket(Stream):
             if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_WRITE, 0
             else:
+                log.exception()
                 return ERROR, 0
 
 if HAVE_SSL:
