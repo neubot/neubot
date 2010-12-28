@@ -34,8 +34,8 @@ function getresults(data){
     var fields = ["timestamp", "internalAddress", "realAddress",
                   "remoteAddress", "connectTime", "latency",
                   "downloadSpeed", "uploadSpeed"];
-    var titles = ["Timestamp", "Internal Address", "Real Address",
-                  "Remote Address", "Connect Time", "Latency",
+    var titles = ["Timestamp", "Internal Addr.", "Real Addr.",
+                  "Remote Addr.", "Connect Time", "Latency",
                   "Download Speed", "Upload Speed"];
     var i, nn, n = document.getElementById("step").range[0];
 
@@ -127,7 +127,13 @@ function getresults(data){
                       Number(n-nn),
                       LocaleDateString(timestamp)
                     ]);
-                    txt = n++ + " " + timestamp.toString().replace(/GMT.*$/,"");
+
+                    // txt = n++ + " " + timestamp.toString().replace(/GMT.*$/,"");
+                    // Alternative code below
+                    n++;
+                    txt = '<nobr>' + timestamp.getDate() + '/' + timestamp.getMonth() + '/' + timestamp.getFullYear() +
+                        ' ' + timestamp.toTimeString().replace(/GMT.*$/,"") + '</nobr>';
+
                     break;
                 case 'connectTime':
                 case 'latency':
