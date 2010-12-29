@@ -216,7 +216,7 @@ class SimpleClient(Receiver):
 #
 
 from neubot.utils import unit_formatter
-from neubot.net.pollers import SimpleStats
+from neubot.utils import SimpleStats
 
 #
 # Add the SimpleClient timing information and convenience
