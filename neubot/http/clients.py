@@ -50,6 +50,8 @@ from neubot.utils import ticks
 from neubot.utils import safe_seek
 from neubot.http.utils import make_filename
 from sys import stdin, stdout, stderr
+from neubot.utils import unit_formatter
+from neubot.utils import SimpleStats
 from sys import exit
 from sys import argv
 
@@ -209,9 +211,6 @@ class SimpleClient(Receiver):
         if (request["connection"] == "close" or
             response["connection"] == "close"):
             self.handler.close()
-
-from neubot.utils import unit_formatter
-from neubot.utils import SimpleStats
 
 #
 # Add the SimpleClient timing information and convenience
