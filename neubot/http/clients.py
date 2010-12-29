@@ -210,11 +210,6 @@ class SimpleClient(Receiver):
             response["connection"] == "close"):
             self.handler.close()
 
-#
-# When we'll measure more than one protocol, the code
-# below should be moved in some shared place.
-#
-
 from neubot.utils import unit_formatter
 from neubot.utils import SimpleStats
 
