@@ -221,7 +221,7 @@ class SimpleConnection(Receiver):
         self.got_request(message)
 
 from neubot.utils import unit_formatter
-from neubot.net.pollers import SimpleStats
+from neubot.utils import SimpleStats
 
 #
 # Add SimpleConnection timing information and implement
