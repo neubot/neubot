@@ -18,7 +18,7 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
-class Handler:
+class Handler(object):
     def connection_starting(self, addr):
         pass
 
@@ -37,7 +37,7 @@ class Handler:
     def connection_lost(self, s):
         pass
 
-class StreamWrapper:
+class StreamWrapper(object):
     def __init__(self, stream):
         self.handler = None
         self.stream = stream
