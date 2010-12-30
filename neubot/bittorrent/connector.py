@@ -121,6 +121,23 @@ class BTConnector(Handler):
     def send_keepalive(self):
         self._send_message('')
 
+    def _send_message(self, *msg_a):
+        if self.closed:
+            return
+        l = 0
+        for e in msg_a:
+            l += len(e)
+        d = [tobinary(l), ]
+        d.extend(msg_a)
+        s = ''.join(d)
+        self._write(s)
+
+    def _write(self, s):
+            self.connection.write(s)
+
+    def connection_flushed(self, connection):
+        pass
+
     def _read_messages(self):
         yield 1 + len(protocol_name)
         yield 20
@@ -183,20 +200,6 @@ class BTConnector(Handler):
         else:
             self.close()
 
-    def _write(self, s):
-            self.connection.write(s)
-
-    def _send_message(self, *msg_a):
-        if self.closed:
-            return
-        l = 0
-        for e in msg_a:
-            l += len(e)
-        d = [tobinary(l), ]
-        d.extend(msg_a)
-        s = ''.join(d)
-        self._write(s)
-
     def data_came_in(self, conn, s):
         while True:
             if self.closed:
@@ -235,6 +238,3 @@ class BTConnector(Handler):
         del self._buffer
         del self.parent
         del self._message
-
-    def connection_flushed(self, connection):
-        pass
