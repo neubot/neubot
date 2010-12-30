@@ -20,9 +20,8 @@
 #
 
 import struct
-from struct import pack, unpack
-from cStringIO import StringIO
 
+from cStringIO import StringIO
 from handler import Handler
 from bitfield import Bitfield
 
@@ -147,16 +146,16 @@ class BTConnector(Handler):
 
 
     def send_request(self, index, begin, length):
-        self._send_message(pack("!ciii", REQUEST, index, begin, length))
+        self._send_message(struct.pack("!ciii", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
-        self._send_message(pack("!ciii", CANCEL, index, begin, length))
+        self._send_message(struct.pack("!ciii", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
         self._send_message(BITFIELD, bitfield)
 
     def send_have(self, index):
-        self._send_message(pack("!ci", HAVE, index))
+        self._send_message(struct.pack("!ci", HAVE, index))
 
 
 
@@ -242,7 +241,7 @@ class BTConnector(Handler):
             if len(message) != 13:
                 self.close()
                 return
-            i, a, b = unpack("!xiii", message)
+            i, a, b = struct.unpack("!xiii", message)
             self.upload.got_request(i, a, b)
         elif t == CANCEL:
             pass
@@ -251,7 +250,7 @@ class BTConnector(Handler):
                 self.close()
                 return
             n = len(message) - 9
-            i, a, b = unpack("!xii%ss" % n, message)
+            i, a, b = struct.unpack("!xii%ss" % n, message)
             self.download.got_piece(i, a, b)
         else:
             self.close()
