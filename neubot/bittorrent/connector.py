@@ -90,10 +90,6 @@ class BTConnector(Handler):
         if not self.id:
             self.connection.write(self.parent.my_id)
 
-    def close(self):
-        if not self.closed:
-            self.connection.close()
-
     def send_interested(self):
         self._send_message(INTERESTED)
 
@@ -226,6 +222,10 @@ class BTConnector(Handler):
             except:
                 self.close()
                 return
+
+    def close(self):
+        if not self.closed:
+            self.connection.close()
 
     def connection_lost(self, conn):
         self.closed = True
