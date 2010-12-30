@@ -87,7 +87,7 @@ class BTConnector(Handler):
     def send_handshake(self):
         self.connection.write(''.join((chr(len(protocol_name)),
           protocol_name, FLAGS, self.parent.infohash)))
-        if self.id is not None:
+        if not self.id:
             self.connection.write(self.parent.my_id)
 
     def close(self):
