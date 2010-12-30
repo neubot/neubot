@@ -31,37 +31,15 @@ def toint(s):
 def tobinary(i):
     return struct.pack("!i", i)
 
-
-class BTMessages(object):
-
-    def __init__(self, messages):
-        self.message_to_chr = {}
-        self.chr_to_message = {}
-        for o, v in messages.iteritems():
-            c = chr(o)
-            self.chr_to_message[c] = v
-            self.message_to_chr[v] = c
-
-    def __getitem__(self, key):
-        return self.chr_to_message.get(key, "UNKNOWN: %r" % key)
-
-message_dict = BTMessages({
-0:'CHOKE',
-1:'UNCHOKE',
-2:'INTERESTED',
-3:'NOT_INTERESTED',
-
-4:'HAVE',
-5:'BITFIELD',
-6:'REQUEST',
-7:'PIECE',
-8:'CANCEL',
-
-})
-
-locals().update(message_dict.message_to_chr)
-
-
+CHOKE = chr(0)
+UNCHOKE = chr(1)
+INTERESTED = chr(2)
+NOT_INTERESTED = chr(3)
+HAVE = chr(4)
+BITFIELD = chr(5)
+REQUEST = chr(6)
+PIECE = chr(7)
+CANCEL = chr(8)
 
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
