@@ -18,7 +18,6 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
-# Kudos to BitTorrent developers: this is a nice interface!
 class Handler:
     def connection_starting(self, addr):
         pass
@@ -38,14 +37,12 @@ class Handler:
     def connection_lost(self, s):
         pass
 
-# BitTorrent interface but neubot engine!
 class StreamWrapper:
     def __init__(self, stream):
         self.handler = None
         self.stream = stream
         self.stream.notify_closing = self._closing
         self.ip, self.port = stream.peername[:2]
-        # IIRC Twisted use an integer to save the port
         self.port = int(self.port)
         self.closed = False
 
