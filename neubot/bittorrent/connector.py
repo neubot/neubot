@@ -126,10 +126,7 @@ class BTConnector(Handler):
         d = [tobinary(l), ]
         d.extend(msg_a)
         s = ''.join(d)
-        self._write(s)
-
-    def _write(self, s):
-            self.connection.write(s)
+        self.connection.write(s)
 
     def connection_flushed(self, connection):
         pass
