@@ -85,14 +85,10 @@ class BTConnector(Handler):
             self.send_handshake()
 
     def send_handshake(self):
-            self.connection.write(''.join((chr(len(protocol_name)),
-                                           protocol_name,
-                                           FLAGS,
-                                           self.parent.infohash)))
-            # if we already have the peer's id, just send ours.
-            # otherwise we wait for it.
-            if self.id is not None:
-                self.connection.write(self.parent.my_id)
+        self.connection.write(''.join((chr(len(protocol_name)),
+          protocol_name, FLAGS, self.parent.infohash)))
+        if self.id is not None:
+            self.connection.write(self.parent.my_id)
 
     def close(self):
         if not self.closed:
@@ -105,10 +101,10 @@ class BTConnector(Handler):
         self._send_message(NOT_INTERESTED)
 
     def send_choke(self):
-            self._send_message(CHOKE)
+        self._send_message(CHOKE)
 
     def send_unchoke(self):
-            self._send_message(UNCHOKE)
+        self._send_message(UNCHOKE)
 
     def send_request(self, index, begin, length):
         self._send_message(struct.pack("!ciii", REQUEST, index, begin, length))
@@ -125,18 +121,13 @@ class BTConnector(Handler):
     def send_keepalive(self):
         self._send_message('')
 
-    # yields the number of bytes it wants next, gets those in self._message
     def _read_messages(self):
-        # be compatible with encrypted clients. Thanks Uoti
         yield 1 + len(protocol_name)
-        yield 20 # download id (i.e., infohash)
+        yield 20
         if not self.locally_initiated:
             self.connection.write(''.join((chr(len(protocol_name)),
-                                           protocol_name, FLAGS,
-                                           self.parent.infohash,
-                                           self.parent.my_id)))
-        yield 20  # peer id
-        # if we don't already have the peer's id, send ours
+              protocol_name, FLAGS, self.parent.infohash, self.parent.my_id)))
+        yield 20
         if not self.id:
             self.id = self._message
             if self.locally_initiated:
@@ -144,7 +135,7 @@ class BTConnector(Handler):
         self.complete = True
         self.parent.connection_handshake_completed(self)
         while True:
-            yield 4   # message length
+            yield 4
             l = toint(self._message)
             if l > self.max_message_length:
                 return
@@ -154,16 +145,12 @@ class BTConnector(Handler):
 
     def _got_message(self, message):
         t = message[0]
-        #XXX we have removed HAVE_ALL and HAVE_NONE
-        #if t in [BITFIELD, HAVE_ALL, HAVE_NONE] and self.got_anything:
         if t in [BITFIELD] and self.got_anything:
             self.close()
             return
         self.got_anything = True
-        #XXX We have removed HAVE_ALL and HAVE_NONE
-        if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED,
-                  ) and
-                len(message) != 1):
+        if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
+          len(message) != 1):
             self.close()
             return
         if t == CHOKE:
@@ -216,20 +203,14 @@ class BTConnector(Handler):
                 return
             i = self._next_len - self._buffer.tell()
             if i > len(s):
-                # not enough bytes, keep buffering
                 self._buffer.write(s)
                 return
             if self._buffer.tell() > 0:
-                # collect buffer + current for message
                 self._buffer.write(buffer(s, 0, i))
                 m = self._buffer.getvalue()
-                # optimize for cpu (reduce mallocs)
-                #self._buffer.truncate(0)
-                # optimize for memory (free buffer memory)
                 self._buffer.close()
                 self._buffer = StringIO()
             else:
-                # painful string copy
                 m = s[:i]
             s = buffer(s, i)
             self._message = m
