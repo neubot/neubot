@@ -45,13 +45,8 @@ FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
 protocol_name = 'BitTorrent protocol'
 
-
-
-
-
-
-
 class BTConnector(Handler):
+
     """Implements the syntax of the BitTorrent protocol.
        See Upload.py and Download.py for the connection-level
        semantics."""
@@ -81,21 +76,15 @@ class BTConnector(Handler):
         self._reader = self._read_messages()
         self._next_len = self._reader.next()
         self._message = None
-
-
         self.obfuscate_outgoing = obfuscate_outgoing
         self.sloppy_pre_connection_counter = 0
         self.log_prefix = log_prefix
-
-
         #XXX different with original code: attach BEFORE handshake
         self.connection.attach_connector(self)
         if self.locally_initiated:
             self.send_handshake()
 
-
     def send_handshake(self):
-
             self.connection.write(''.join((chr(len(protocol_name)),
                                            protocol_name,
                                            FLAGS,
@@ -104,7 +93,6 @@ class BTConnector(Handler):
             # otherwise we wait for it.
             if self.id is not None:
                 self.connection.write(self.parent.my_id)
-
 
     def close(self):
         if not self.closed:
@@ -122,7 +110,6 @@ class BTConnector(Handler):
     def send_unchoke(self):
             self._send_message(UNCHOKE)
 
-
     def send_request(self, index, begin, length):
         self._send_message(struct.pack("!ciii", REQUEST, index, begin, length))
 
@@ -135,48 +122,27 @@ class BTConnector(Handler):
     def send_have(self, index):
         self._send_message(struct.pack("!ci", HAVE, index))
 
-
-
-
-
     def send_keepalive(self):
         self._send_message('')
 
-
-
-
-
-
-
     # yields the number of bytes it wants next, gets those in self._message
     def _read_messages(self):
-
         # be compatible with encrypted clients. Thanks Uoti
         yield 1 + len(protocol_name)
-
-
         yield 20 # download id (i.e., infohash)
-
         if not self.locally_initiated:
             self.connection.write(''.join((chr(len(protocol_name)),
                                            protocol_name, FLAGS,
                                            self.parent.infohash,
                                            self.parent.my_id)))
-
         yield 20  # peer id
         # if we don't already have the peer's id, send ours
         if not self.id:
             self.id = self._message
-
-
-
             if self.locally_initiated:
                 self.connection.write(self.parent.my_id)
-
-
         self.complete = True
         self.parent.connection_handshake_completed(self)
-
         while True:
             yield 4   # message length
             l = toint(self._message)
@@ -185,9 +151,6 @@ class BTConnector(Handler):
             if l > 0:
                 yield l
                 self._got_message(self._message)
-
-
-
 
     def _got_message(self, message):
         t = message[0]
@@ -280,13 +243,10 @@ class BTConnector(Handler):
                 self.close()
                 return
 
-
     def connection_lost(self, conn):
         self.closed = True
         self._reader = None
         self.parent.connection_lost(self)
-
-
         self.connection = None
         if self.complete:
             self.upload = None
