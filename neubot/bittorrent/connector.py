@@ -134,6 +134,33 @@ class BTConnector(Handler):
     def connection_flushed(self, connection):
         pass
 
+    def data_came_in(self, conn, s):
+        while True:
+            if self.closed:
+                return
+            i = self._next_len - self._buffer.tell()
+            if i > len(s):
+                self._buffer.write(s)
+                return
+            if self._buffer.tell() > 0:
+                self._buffer.write(buffer(s, 0, i))
+                m = self._buffer.getvalue()
+                self._buffer.close()
+                self._buffer = StringIO()
+            else:
+                m = s[:i]
+            s = buffer(s, i)
+            self._message = m
+            self._rest = s
+            try:
+                self._next_len = self._reader.next()
+            except StopIteration:
+                self.close()
+                return
+            except:
+                self.close()
+                return
+
     def _read_messages(self):
         yield 1 + len(protocol_name)
         yield 20
@@ -195,33 +222,6 @@ class BTConnector(Handler):
             self.download.got_piece(i, a, b)
         else:
             self.close()
-
-    def data_came_in(self, conn, s):
-        while True:
-            if self.closed:
-                return
-            i = self._next_len - self._buffer.tell()
-            if i > len(s):
-                self._buffer.write(s)
-                return
-            if self._buffer.tell() > 0:
-                self._buffer.write(buffer(s, 0, i))
-                m = self._buffer.getvalue()
-                self._buffer.close()
-                self._buffer = StringIO()
-            else:
-                m = s[:i]
-            s = buffer(s, i)
-            self._message = m
-            self._rest = s
-            try:
-                self._next_len = self._reader.next()
-            except StopIteration:
-                self.close()
-                return
-            except:
-                self.close()
-                return
 
     def close(self):
         if not self.closed:
