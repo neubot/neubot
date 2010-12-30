@@ -82,13 +82,10 @@ class BTConnector(Handler):
         #XXX different with original code: attach BEFORE handshake
         self.connection.attach_connector(self)
         if self.locally_initiated:
-            self.send_handshake()
-
-    def send_handshake(self):
-        self.connection.write(''.join((chr(len(protocol_name)),
-          protocol_name, FLAGS, self.parent.infohash)))
-        if not self.id:
-            self.connection.write(self.parent.my_id)
+            self.connection.write(''.join((chr(len(protocol_name)),
+              protocol_name, FLAGS, self.parent.infohash)))
+            if not self.id:
+                self.connection.write(self.parent.my_id)
 
     def send_interested(self):
         self._send_message(INTERESTED)
