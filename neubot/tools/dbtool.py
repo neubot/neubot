@@ -114,8 +114,9 @@ class Anonymizer(object):
     integer.
     """
 
-    mapping = {}
-    last = 0
+    def __init__(self):
+        self.mapping = {}
+        self.last = 0
 
     def anonymize(self, identifier):
         if not identifier in self.mapping:
@@ -128,8 +129,6 @@ class CityResolver(object):
     """
     Map an internet address to a (CountryCode,Region,City) tuple.
     """
-
-    handle = None
 
     def __init__(self, filename):
         if not os.path.isfile(filename):
@@ -155,8 +154,6 @@ class ASNResolver(object):
     Map an internet address to Autonomous System Number and Autonomous
     System name and returns the (number, name) tuple.
     """
-
-    handle = None
 
     def __init__(self, filename):
         if not os.path.isfile(filename):
