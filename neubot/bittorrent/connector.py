@@ -151,6 +151,8 @@ class BTConnector(Handler):
             except StopIteration:
                 self.close()
                 return
+            except (KeyboardInterrupt, SystemExit):
+                raise
             except:
                 self.close()
                 return
