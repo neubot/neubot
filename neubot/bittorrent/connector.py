@@ -226,9 +226,8 @@ class BTConnector(Handler):
         self._reader = None
         self.parent.connection_lost(self)
         self.connection = None
-        if self.complete:
-            self.upload = None
-            self.download = None
+        self.upload = None
+        self.download = None
         del self._buffer
         del self.parent
         del self._message
