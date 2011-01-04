@@ -63,7 +63,8 @@ class BTConnector(Handler):
         self.hostname = None
         self.locally_initiated = locally_initiated
         self.complete = False
-        self.closed = False
+        self.closing = False
+        self.writing = False
         self.got_anything = False
         self.upload = None
         self.download = None
@@ -107,8 +108,9 @@ class BTConnector(Handler):
         self._send_message('')
 
     def _send_message(self, *msg_a):
-        if self.closed:
+        if self.closing:
             return
+        self.writing = True
         l = 0
         for e in msg_a:
             l += len(e)
@@ -118,11 +120,13 @@ class BTConnector(Handler):
         self.connection.write(s)
 
     def connection_flushed(self, connection):
-        pass
+        self.writing = False
+        if self.closing:
+            self.connection.close()
 
     def data_came_in(self, conn, s):
         while True:
-            if self.closed:
+            if self.closing:
                 return
             i = self._next_len - self._buffer.tell()
             if i > len(s):
@@ -212,11 +216,16 @@ class BTConnector(Handler):
             self.close()
 
     def close(self):
-        if not self.closed:
-            self.connection.close()
+        if self.closing:
+            return
+        self.closing = True
+        if self.writing:
+            return
+        self.connection.close()
 
     def connection_lost(self, conn):
-        self.closed = True
+        # because we might also be invoked on network error
+        self.closing = True
         self._reader = None
         self.parent.connection_lost(self)
         self.connection = None
