@@ -1,3 +1,3 @@
 rmdir /S /Q build dist
-del neubot-0.3.1-setup.exe
+del neubot-0.3.2-setup.exe
 pause

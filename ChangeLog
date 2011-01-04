@@ -1,3 +1,81 @@
+Neubot 0.3.2 [2011-01-04]
+	* MacOS/: move here neubot.app for MacOS
+	* Makefile: add targets to create neubot.app and neubot.app.zip
+	* MacOS: Remove private Makefile
+	* MacOS: Move README into doc/ directory and rename it
+	* MacOS/neubot: Improve copyright notice
+	* pathnames.py: MacOS: do not hardcode '/Applications/neubot ...'
+	* Makefile: Install icon for all Unix-like systems
+	* statusicon.py: Use the scalable neubot icon
+	* icons: Change the name of some icons
+	* Makefile: remove debian-specific rules to install icon
+	* statusicon: By default show the status icon
+	* statusicon: Improve right-click menu labels
+	* statusicon: cosmetic changes
+	* statusicon: Make sure we don't from..import standard library
+	* Makefile: install menu entries for all Unix-like OSes
+	* Makefile: Remove debian-specific rules for menu entries
+	* neubot/ui.py: notify text-ui when the daemon is down
+	* neubot/log.py: Move system-dependent bits out of this file
+	* neubot/log.py: make sure we don't from..import standard library
+	* neubot/log.py: Add a very simple test unit
+	* neubot/unix.py: make sure we use LOG_DAEMON
+	* BUGS: official ML languages are english and italian
+	* http/clients.py: Make sure we print download/upload speed stats
+	* bin/neubot: Make sure Python >= 2.5 and < 3.0
+	* Make sure website URI is /-terminated
+	* _unit_formatter(): Add space between unit and data
+	* Globally replace bps with bits/s
+	* neubot/speedtest.py: by default use two parallel connections
+	* net/test.py: fix comment at the beginning of the file
+	* net/streams.py: make sure we print exceptions correctly
+	* neubot/notify.py: remove some debugging prints
+	* neubot/notify.py: safer dispatching of events
+	* neubot/notify.py: make needs_publish() more robust
+	* README: add copyright notice
+	* www: Improve copyright notice
+	* statusicon: Improve copyright notice
+	* win32: Improve copyright notice
+	* bittorent: Improve copyright notice
+	* http: Improve copyright notice
+	* net: Improve copyright notice
+	* neubot: Make sure all files have new/better notice
+	* bin: Improve copyright notice
+	* debian: Improve copyright notice
+	* Finish improving copyright notice
+	* www/results.js: oops upload and dowload labels were swapped
+	* neubot/www: Add current version number to the web user interface
+	* www/results.js: Make sure we plot all data points
+	* www/neubot.js: propagate queue position information
+	* net/pollers.py: Simplify task scheduler
+	* net/pollers.py: Cosmetic changes
+	* net/pollers.py: Get rid of Poller.get_ticks() globally
+	* net/pollers.py: Surround stream.closing with try..except
+	* net/pollers.py: Always treat SystemExit like KeyboardInterrupt
+	* net/pollers.py: move Stats and SimpleStats into utils.py
+	* net/pollers.py: Remove unused dispatch() method
+	* net/pollers.py: Don't use from..import for standard library
+	* net/pollers.py: Allow to break the loop cleanly
+	* neubot/ui.py: Break cleanly out of the main loop
+	* net/pollers.py: Add timestamping to PollerTask
+	* rendezvous.py: On -S do not start a companion speedtest server
+	* speedtest.py: Add -d command line option for -S mode
+	* rendezvous.py: Notify state.py that connection failed
+	* rendezvous.py: Do not wait for a deterministic amount of time
+	* rendezvous.py: Give equal tratment to both test servers
+	* rendezvous.py: Pass to state.py some timing information
+	* neubot/state.py: Use "idle" instead of None to mark inactivity
+	* neubot/speedtest.py: Move test server code into a separate mixin
+	* neubot/speedtest.py: Move negotiator server code in a separate mixin
+	* neubot/speedtest.py: Cosmetics after refactoring into mixins
+	* neubot/speedtest.py: Hack to avoid client disconnection
+	* neubot/speedtest.py: Improve queue algorithm
+	* neubot/speedtest.py: Use connection_lost to improve queue algorithm
+	* neubot/speedtest.py: Make sure first session's connection is not special
+	* doc: Add documentation for SpeedtestServer
+	* neubot/speedtest.py: Periodically log the queue length
+	* Release neubot/0.3.2
+
 Neubot 0.3.1 [2010-11-18]
 	* [cleanups] remove unused code: prettyprint_exception
 	* [cleanups] streams: remove commented out code
