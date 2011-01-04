@@ -53,8 +53,7 @@ class BTConnector(Handler):
        See Upload.py and Download.py for the connection-level
        semantics."""
 
-    def __init__(self, parent, connection, id, is_local,
-                 obfuscate_outgoing=False, log_prefix = "", lan=False):
+    def __init__(self, parent, connection, id, is_local):
         self.parent = parent
         self.connection = connection
         self.id = id
@@ -63,12 +62,7 @@ class BTConnector(Handler):
         self.addr = (self.ip, self.port)
         self.hostname = None
         self.locally_initiated = is_local
-        if self.locally_initiated:
-            self.listening_port = self.port
-        else:
-            self.listening_port = None
         self.complete = False
-        self.lan = lan
         self.closed = False
         self.got_anything = False
         self.upload = None
@@ -77,9 +71,6 @@ class BTConnector(Handler):
         self._reader = self._read_messages()
         self._next_len = self._reader.next()
         self._message = None
-        self.obfuscate_outgoing = obfuscate_outgoing
-        self.sloppy_pre_connection_counter = 0
-        self.log_prefix = log_prefix
         #XXX different with original code: attach BEFORE handshake
         self.connection.attach_connector(self)
         if self.locally_initiated:
