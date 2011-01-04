@@ -45,6 +45,8 @@ FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
 protocol_name = 'BitTorrent protocol'
 
+MAX_MESSAGE_LENGTH = 1<<16
+
 class BTConnector(Handler):
 
     """Implements the syntax of the BitTorrent protocol.
@@ -62,7 +64,6 @@ class BTConnector(Handler):
         self.hostname = None
         self.locally_initiated = is_local
         if self.locally_initiated:
-            self.max_message_length = self.parent.config['max_message_length']
             self.listening_port = self.port
         else:
             self.listening_port = None
@@ -173,7 +174,7 @@ class BTConnector(Handler):
         while True:
             yield 4
             l = toint(self._message)
-            if l > self.max_message_length:
+            if l > MAX_MESSAGE_LENGTH:
                 return
             if l > 0:
                 yield l
