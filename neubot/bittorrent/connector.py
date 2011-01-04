@@ -53,7 +53,7 @@ class BTConnector(Handler):
        See Upload.py and Download.py for the connection-level
        semantics."""
 
-    def __init__(self, parent, connection, id, is_local):
+    def __init__(self, parent, connection, id, locally_initiated):
         self.parent = parent
         self.connection = connection
         self.id = id
@@ -61,7 +61,7 @@ class BTConnector(Handler):
         self.port = connection.port
         self.addr = (self.ip, self.port)
         self.hostname = None
-        self.locally_initiated = is_local
+        self.locally_initiated = locally_initiated
         self.complete = False
         self.closed = False
         self.got_anything = False
