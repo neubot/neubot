@@ -228,6 +228,6 @@ class BTConnector(Handler):
         self.connection = None
         self.upload = None
         self.download = None
-        del self._buffer
-        del self.parent
-        del self._message
+        self._buffer = None
+        self.parent = None
+        self._message = None
