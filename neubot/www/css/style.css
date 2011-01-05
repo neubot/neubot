@@ -21,8 +21,7 @@ tbody {
 }
 .item-list ul li {
     list-style: disc outside none;
-    margin: 0pt 0pt 0.25em
-1.5em;
+    margin: 0pt 0pt 0.25em 1.5em;
     padding: 0pt;
 }
 .form-item {
@@ -55,8 +54,7 @@ li a.active {
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em,
 font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table,
 caption, tbody, tfoot, thead, tr, th, td {
-    background: none
-repeat scroll 0% 0% transparent;
+    background: none repeat scroll 0% 0% transparent;
     border: 0pt none;
     margin: 0pt;
     outline: 0pt none;
@@ -74,8 +72,7 @@ table {
     border-spacing: 0pt;
 }
 body {
-    background: none
-repeat scroll 0% 0% rgb(238, 238, 238);
+    background: none repeat scroll 0% 0% rgb(238, 238, 238);
     color: rgb(68, 68, 68);
     font-family: 'Lucida Grande',Verdana,Helvetica,Arial,sans-serif;
     font-size: 62.5%;
@@ -95,6 +92,7 @@ repeat scroll 0% 0% rgb(238, 238, 238);
 }
 .one-sidebar #page {
     width: 780px;
+    width: 980px;
 }
 .content {
     padding: 0pt 20px
@@ -115,7 +113,7 @@ body.one-sidebar .secondary {
     float: left;
     padding: 10px;
     position: relative;
-    width: 500px;
+    width: 700px;
 }
 .secondary {
     color: rgb(102, 102, 102);
@@ -341,8 +339,8 @@ a#x_link_to_nexa {
     width: 250px;
 }
 #header {
-    background: url('../img/header.png')
-repeat scroll 0% 0% transparent;
+    background: url('../img/header.png') repeat scroll 0% 0% transparent;
+    background: url("../img/header.png") no-repeat scroll right top #00B047;
     height: 130px;
     position: relative;
 }
@@ -392,3 +390,44 @@ table#state {
     cursor: help;
 }
 
+/*
+	Web20 Table Style
+	written by Netway Media, http://www.netway-media.com
+*/
+#results table {
+  border-collapse: collapse;
+  border: 1px solid #666666;
+  font: normal 11px verdana, arial, helvetica, sans-serif;
+  color: #363636;
+  background: #f6f6f6;
+  text-align:left;
+  font-size: .8em;
+  }
+#results caption {
+  text-align: center;
+  font: bold 16px arial, helvetica, sans-serif;
+  background: transparent;
+  padding:6px 4px 8px 0px;
+  color: #CC00FF;
+  text-transform: uppercase;
+}
+#results thead, #results tfoot {
+text-align:left;
+height:30px;
+}
+#results thead th, #results tfoot th {
+padding:5px;
+}
+#results table a {
+color: #333333;
+text-decoration:none;
+}
+#results table a:hover {
+text-decoration:underline;
+}
+#results tr.odd {
+background: #f1f1f1;
+}
+#results tbody th, #results tbody td {
+padding:5px;
+}
