@@ -101,7 +101,7 @@ class UIServer(Server):
             if uri == "/":
                 response = Message()
                 compose(response, code="301", reason="Moved Permanently")
-                location = "http://%s:%s/neubot.html" % (self.config.address,
+                location = "http://%s:%s/index.html" % (self.config.address,
                                                          self.config.port)
                 response["location"] = location
                 connection.reply(request, response)
@@ -144,7 +144,7 @@ class UIServer(Server):
         response = Message()
         if request.method == "POST":
             config.update(request.body)
-            location = "http://%s:%s/neubot.html" % (self.config.address,
+            location = "http://%s:%s/index.html" % (self.config.address,
                                                      self.config.port)
             compose(response, code="303", reason="See Other")
             response["location"] = location
