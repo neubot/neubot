@@ -24,6 +24,8 @@
 # Track neubot state
 #
 
+import os
+
 if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
@@ -70,6 +72,7 @@ DONE = "done"
 
 class StateTest:
     def __init__(self, name, tasks=[]):
+        self.timestamp = timestamp()
         self.current = None
         self.name = name
         self.states = {}
@@ -94,6 +97,7 @@ class StateTest:
     #
     # ...
     #   <name>speedtest</name>
+    #   <timestamp>1293021960</timestamp>
     #   <task state="done">latency</task>
     #   <task state="running">download</task>
     #   <task state="ready">upload</task>
@@ -102,6 +106,10 @@ class StateTest:
     #
 
     def marshal(self, document, parent):
+        element = document.createElement("timestamp")
+        text = document.createTextNode(str(self.timestamp))
+        element.appendChild(text)
+        parent.appendChild(element)
         if self.name:
             element = document.createElement("name")
             text = document.createTextNode(self.name)
@@ -220,6 +228,10 @@ class State:
             text = document.createTextNode("false")
         else:
             text = document.createTextNode("true")
+        element.appendChild(text)
+        root.appendChild(element)
+        element = document.createElement("pid")
+        text = document.createTextNode(str(os.getpid()))
         element.appendChild(text)
         root.appendChild(element)
         for activity in ACTIVITIES:

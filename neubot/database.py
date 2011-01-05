@@ -27,12 +27,15 @@
 # file.
 #
 
+import types
+
 if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
 from collections import deque
 from neubot import pathnames
+from neubot.utils import timestamp
 from neubot.compat import deque_appendleft
 from ConfigParser import SafeConfigParser
 from StringIO import StringIO
@@ -306,6 +309,41 @@ class DatabaseManager:
     # nice to hide these three functions behind the same
     # common interface.
     #
+
+    def query_results_functional(self, func, tag=None, since=-1,
+                                 until=-1, uuid_=None):
+        if since < 0:
+            since = 0
+        if until < 0:
+            until = timestamp()
+        params = {"tag": tag, "since": since, "until": until, "uuid": uuid_}
+        cursor = self.connection.cursor()
+        query = """SELECT result, timestamp FROM results
+          WHERE timestamp >= :since AND timestamp < :until"""
+        if tag:
+            query += " AND tag = :tag"
+        if uuid_:
+            query += " AND uuid = :uuid"
+        query += ";"
+        cursor.execute(query, params)
+        for result in cursor:
+            func(result[0])
+        cursor.close()
+
+    def query_results(self, tag=None, since=-1, until=-1, uuid_=None):
+        vector = []
+        self.query_results_functional(vector.append, tag, since, until, uuid_)
+        return vector
+
+    def query_results_xml(self, tag=None, since=-1, until=-1, uuid_=None):
+        vector = ["<results>"]
+        self.query_results_functional(vector.append, tag, since, until, uuid_)
+        vector.append("</results>")
+        body = "".join(vector)
+        if type(body) == types.UnicodeType:
+            body = body.encode("utf-8")
+        stringio = StringIO(body)
+        return stringio
 
     def iterate_results(self, func):
         cursor = self.connection.cursor()
