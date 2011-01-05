@@ -63,6 +63,7 @@ import unicodedata
 import getopt
 import sqlite3
 import sys
+import os
 import uuid
 import xml.dom.minidom
 
@@ -131,6 +132,12 @@ class CityResolver(object):
     handle = None
 
     def __init__(self, filename):
+        if not os.path.isfile(filename):
+            sys.stderr.write("CityResolver: %s: No such file or directory\n" %
+                filename)
+            sys.stderr.write("See <http://www.neubot.org/install-geoip> "
+                "for more help\n")
+            exit(1)
         self.handle = GeoIP.open(filename, GeoIP.GEOIP_STANDARD)
 
     def resolve(self, address):
@@ -152,6 +159,12 @@ class ASNResolver(object):
     handle = None
 
     def __init__(self, filename):
+        if not os.path.isfile(filename):
+            sys.stderr.write("ASNResolver: %s: No such file or directory\n" %
+                filename)
+            sys.stderr.write("See <http://www.neubot.org/install-geoip> "
+                "for more help\n")
+            exit(1)
         self.handle = GeoIP.open(filename, GeoIP.GEOIP_STANDARD)
 
     def resolve(self, address):
@@ -192,7 +205,7 @@ class SpeedtestResult(object):
         self.latency = 0.0
         self.downloadSpeed = 0.0
         self.uploadSpeed = 0.0
- 
+
 def XML_append_attribute(document, element, name, value):
     """
     Append to <element> an element with tagName <name> that contains
@@ -290,14 +303,14 @@ class Configuration(object):
     asn_resolver = None
     city_resolver = None
 
+    def init_db(self):
+        self.asn_resolver = ASNResolver(self.asn_database)
+        self.city_resolver = CityResolver(self.city_database)
+
     def resolve_asn(self, address):
-        if not self.asn_resolver:
-            self.asn_resolver = ASNResolver(self.asn_database)
         return self.asn_resolver.resolve(address)
 
     def resolve_city(self, address):
-        if not self.city_resolver:
-            self.city_resolver = CityResolver(self.city_database)
         return self.city_resolver.resolve(address)
 
 def FILTER_noop(conf, result):
@@ -508,6 +521,7 @@ def main(args):
         filters.append(FILTER_anonymize)
     filename = arguments[0]
     conf = Configuration()
+    conf.init_db()
     if count:
         processor = UUIDCounter(sys.stdout)
     else:
