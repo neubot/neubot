@@ -32,6 +32,14 @@
 
     <script src="js/jquery.js" type="text/javascript"></script>
     <script src="js/jquery-ui.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/jqplot.cursor.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.highlighter.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.canvasTextRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+    <!-- IE8 does not have Canvas! -->
+    <!--[if IE]><script language="javascript" type="text/javascript" src="jqplot/excanvas.js"></script><![endif]-->
+
     <script src="js/jquery.qtip.js" type="text/javascript"></script>
     <script src="js/jquery.jqplot.js" type="text/javascript"></script>
 
@@ -51,14 +59,14 @@
 
       <div id="header">
         <h1 class="blog-title">
-         <a href="/new-neubot.html">Neubot web interface</a>
+         <a href="/index.html">Neubot web interface</a>
         </h1>
         <p class="description">
          The web-interface to control the neubot daemon
         </p>
         <ul class="k2menu">
           <li class="menu-191 active-trail first active">
-            <a href="http://localhost:9774/new-neubot.html"
+            <a href="http://localhost:9774/index.html"
                title="Status" class="active">Status</a>
           </li>
           <li class="menu-192">
@@ -68,10 +76,6 @@
           <li class="menu-196">
             <a href="http://www.neubot.org/"
                title="Neubot web site">Neubot web site</a>
-          </li>
-          <li class="menu-199">
-            <a href="http://localhost:9774/neubot.html"
-               title="Old web interface">Old web interface</a>
           </li>
         </ul>
       </div>
