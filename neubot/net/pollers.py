@@ -52,7 +52,7 @@ class Pollable:
     def writetimeout(self, now):
         return False
 
-    def closing(self):
+    def closed(self):
         pass
 
 class PollerTask:
@@ -125,7 +125,7 @@ class Poller:
         self.unset_readable(stream)
         self.unset_writable(stream)
         try:
-            stream.closing()
+            stream.closed()
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
