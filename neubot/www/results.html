@@ -19,49 +19,172 @@
  # You should have received a copy of the GNU General Public License
  # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-                      "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="neubot.css">
-<link rel="stylesheet" type="text/css" href="web20-table.css"/>
-<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-<script src="jquery-1.4.2.min.js" type="text/javascript"></script>
-<script language="javascript" type="text/javascript" src="jqplot/jquery.jqplot.min.js"></script>
-<link rel="stylesheet" type="text/css" href="jqplot/jquery.jqplot.css" />
-<!--
-  TODO Remember to move all the stuff below in results.js
--->
-<script type="text/javascript" src="jqplot/plugins/jqplot.axisLabelRenderer.min.js"></script>
-<script type="text/javascript" src="jqplot/plugins/jqplot.cursor.min.js"></script>
-<script type="text/javascript" src="jqplot/plugins/jqplot.highlighter.min.js"></script>
-<script type="text/javascript" src="jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-<script type="text/javascript" src="jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
-<script type="text/javascript" src="jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-<!-- IE8 does not have Canvas! -->
-<!--[if IE]><script language="javascript" type="text/javascript" src="jqplot/excanvas.js"></script><![endif]-->
-<script src="results.js" type="text/javascript"></script>
-<title>Neubot 0.3.2 | Results</title>
-</head>
-<body>
-<div id="header">
-  <div id="logo">
-    <a href="http://www.neubot.org/">
-      <img src="neubot-logo.png" height="50" alt="Neubot website"
-           style="border-style: none;">
-    </a>
-  </div>
-</div>
-<div id="content" style="text-align: center">
-  <ul>
-    <div style="float: right;">
-      <h2><a href="/neubot.html">Home</a></h2>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <script src="js/jquery.js" type="text/javascript"></script>
+    <script src="js/jquery-ui.js" type="text/javascript"></script>
+    <script src="js/jquery.qtip.js" type="text/javascript"></script>
+    <script src="js/jquery.jqplot.js" type="text/javascript"></script>
+
+    <script src="js/libneubot.js" type="text/javascript"></script>
+    <script src="js/neubot.js" type="text/javascript"></script>
+
+    <script src="js/results.js" type="text/javascript"></script>
+
+	<script type="text/javascript" src="js/jqplot.cursor.min.js"></script>
+	<script type="text/javascript" src="js/jqplot.highlighter.min.js"></script>
+	<script type="text/javascript" src="js/jqplot.canvasTextRenderer.min.js"></script>
+	<script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
+	<script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+	<!-- IE8 does not have Canvas! -->
+	<!--[if IE]><script language="javascript" type="text/javascript" src="jqplot/excanvas.js"></script><![endif]-->
+
+    <title>Neubot 0.3.2 | Web interface</title>
+
+    <link rel="shortcut icon" href="image/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="css/jquery.jqplot.css" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+
+  </head>
+
+  <body class="front not-logged-in page-node one-sidebar sidebar-right">
+    <div id="page">
+
+      <div id="header">
+        <h1 class="blog-title">
+         <a href="/index.html">Neubot web interface</a>
+        </h1>
+        <p class="description">
+         The web-interface to control the neubot daemon
+        </p>
+        <ul class="k2menu">
+          <li class="menu-191 active-trail first">
+            <a href="http://localhost:9774/index.html"
+               title="Status">Status</a>
+          </li>
+          <li class="menu-192 active">
+            <a href="http://localhost:9774/results.html"
+               title="Your recent results" class="active">Your recent results</a>
+          </li>
+          <li class="menu-196">
+            <a href="http://www.neubot.org/"
+               title="Neubot web site">Neubot web site</a>
+          </li>
+        </ul>
+      </div>
+
+      <hr />
+
+      <div class="content">
+
+        <!-- Taken from drupal and k2, therefore here we might have
+          more DIVs than needed and one day we might want to merge -->
+        <div id="primary-wrapper">
+        <div id="primary">
+
+        <div id="rollingcontent" class="hfeed">
+        <div id="node-46" class="hentry node">
+        <div class="entry-content">
+          <h4>Speedtest results</h4>
+          <p>
+            <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a>
+          </p>
+          <div id="chartdiv1" style="height:400px; width:100%;"></div>
+          <div id="results">
+            <!-- nothing -->
+          </div>
+        </div>
+        </div>
+        </div>
+
+        <!-- Not yet -->
+        <!-- Do not move the plot inside the three DIVs above
+          if you want the plot itself to make some sense -->
+        <!--
+        <h4>Recent download and upload rates</h4>
+        <div id="chartdiv1" style="width:100%;">
+        </div>
+        -->
+
+        </div>
+        </div>
+
+        <div id="sidebar-1" class="secondary">
+
+          <!-- Again the usage of H4 here seems to me improper. -->
+          <div id="update" class="block-">
+            <h4 style="text-align: center;">Updates available</h4>
+            <p>
+              Version <em><span id="updateVersion">unknown</span></em> is
+              available for download from <em><span id="updateUrl">
+              unknown</span></em>.
+            </p>
+          </div>
+
+          <!-- XXX js/neubot.js will write directly into the H4
+            of #testResultsBox and in general this box seems a place
+            that needs some more separation between content and
+            presentation love.
+            XXX Also here we have testName1 because testName was
+            already defined and we must find a better fix for that
+            because to have two names like this is a crap. -->
+          <div id="testResultsBox" class="block-">
+            <h4 style="text-align: center;">Latest test details</h4>
+            <p style="text-align: center; color: #3da64e; font-size: normal;">
+              Result of <em><span id="testName1">unknown</span></em>
+              <br /><span id="testTime"></span>
+            </p>
+            <dl>
+              <dt>
+                <span class="help"
+                  title="Upper bound of the round-trip delay">Latency</span>
+              </dt>
+              <dd>
+                <span id="latencyResult">???</span>
+              </dd>
+              <dt>Download speed</dt>
+              <dd><span id="downloadResult">???</span></dd>
+              <dt>Upload speed</dt>
+              <dd><span id="uploadResult">???</span></dd>
+            </dl>
+          </div>
+
+          <!-- Ok, so probably we should fix all H4s at once. -->
+          <div id="about" class="block-">
+            <h4>About</h4>
+            <p>
+              Neubot is based on a lightweight
+              <a href="http://www.neubot.org/copying">open-source</a>
+              program that runs in background and periodically
+              performs transmission tests to probe your Internet
+              connection using various application level protocols.
+              <a href="http://www.neubot.org/faq">Read more</a>
+            </p>
+          </div>
+
+        </div>
+
+        <div class="clear">
+        </div>
+      </div>
+      <div class="clear">
+      </div>
     </div>
-    <h2>Speedtest results - <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a></h2>
-    <div id="chartdiv1" style="height:400px; width:100%;"></div>
-    <div id="results">
-      <!-- nothing -->
+
+    <hr />
+
+    <div id="footer">
+      Neubot is a research project on network neutrality of the
+      <a href="http://nexa.polito.it/">NEXA Center for Internet &amp;
+      Society</a> at <a href="http://www.polito.it/">Politecnico di
+      Torino</a>.
     </div>
-  </ul>
-</div>
-</body>
+
+  </body>
+</html>
