@@ -450,7 +450,6 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 
 from neubot.net.pollers import Pollable, poller
 from neubot.utils import fixkwargs
-from neubot.utils import ticks
 from socket import SOCK_STREAM
 from errno import EINPROGRESS
 from socket import getaddrinfo
