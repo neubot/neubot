@@ -460,7 +460,6 @@ from errno import ENOTCONN
 from socket import AF_INET6
 from socket import AF_INET
 from socket import socket
-from neubot import log
 from os import strerror
 
 #
@@ -575,7 +574,6 @@ from socket import SO_REUSEADDR
 from socket import SOL_SOCKET
 from socket import socket
 from socket import AF_INET
-from neubot import log
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
