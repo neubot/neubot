@@ -565,7 +565,6 @@ def connect(address, port, connected, **kwargs):
 
 from neubot.net.pollers import Pollable, poller
 from socket import SOCK_STREAM, AI_PASSIVE
-from neubot.utils import fixkwargs
 from socket import getaddrinfo
 from socket import SO_REUSEADDR
 from socket import SOL_SOCKET
