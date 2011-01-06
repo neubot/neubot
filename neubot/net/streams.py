@@ -453,7 +453,6 @@ from neubot.utils import fixkwargs
 from neubot.utils import ticks
 from socket import SOCK_STREAM
 from errno import EINPROGRESS
-from errno import EWOULDBLOCK
 from socket import getaddrinfo
 from errno import ENOTCONN
 from socket import AF_INET6
