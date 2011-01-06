@@ -562,7 +562,7 @@ def connect(address, port, connected, **kwargs):
 
 # Listen
 
-from socket import SOCK_STREAM, AI_PASSIVE
+from socket import AI_PASSIVE
 from socket import getaddrinfo
 from socket import SO_REUSEADDR
 from socket import SOL_SOCKET
