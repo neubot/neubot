@@ -565,7 +565,6 @@ from socket import AI_PASSIVE
 from socket import getaddrinfo
 from socket import SO_REUSEADDR
 from socket import SOL_SOCKET
-from socket import socket
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
