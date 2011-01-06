@@ -696,8 +696,6 @@ class Source:
     def __del__(self):
         pass
 
-from neubot.net.listeners import listen
-from neubot.net.connectors import connect
 from neubot.net.pollers import loop
 
 if __name__ == "__main__":
