@@ -52,7 +52,7 @@ class Pollable:
     def writetimeout(self, now):
         return False
 
-    def closed(self):
+    def closed(self, exception=None):
         pass
 
 class PollerTask:
