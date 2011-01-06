@@ -567,7 +567,6 @@ from socket import getaddrinfo
 from socket import SO_REUSEADDR
 from socket import SOL_SOCKET
 from socket import socket
-from socket import AF_INET
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
