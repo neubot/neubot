@@ -562,7 +562,6 @@ def connect(address, port, connected, **kwargs):
 
 # Listen
 
-from neubot.net.pollers import poller
 from socket import SOCK_STREAM, AI_PASSIVE
 from socket import getaddrinfo
 from socket import SO_REUSEADDR
