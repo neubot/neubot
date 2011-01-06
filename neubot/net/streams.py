@@ -451,7 +451,6 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 from neubot.net.pollers import Pollable, poller
 from neubot.utils import fixkwargs
 from neubot.utils import ticks
-from socket import error as SocketError
 from socket import SOCK_STREAM
 from errno import EINPROGRESS
 from errno import EWOULDBLOCK
@@ -567,7 +566,6 @@ def connect(address, port, connected, **kwargs):
 
 from neubot.net.pollers import Pollable, poller
 from socket import SOCK_STREAM, AI_PASSIVE
-from socket import error as SocketError
 from neubot.utils import fixkwargs
 from socket import getaddrinfo
 from socket import SO_REUSEADDR
