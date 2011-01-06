@@ -454,7 +454,6 @@ from socket import SOCK_STREAM
 from errno import EINPROGRESS
 from socket import getaddrinfo
 from errno import ENOTCONN
-from socket import AF_INET6
 from socket import AF_INET
 from socket import socket
 from os import strerror
