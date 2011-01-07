@@ -29,8 +29,10 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
 from types import UnicodeType
+from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot import log
 
@@ -648,14 +650,34 @@ class Listener(Pollable):
 def listen(address, port, accepted, **kwargs):
     Listener(address, port, accepted, **kwargs)
 
+# TODO move to neubot/utils.py
+def speed_formatter(speed, base10=True, bytes=False):
+    unit = "Byte/s"
+    if not bytes:
+        speed = speed * 8
+        unit = "bit/s"
+    return unit_formatter(speed, base10, unit)
+
 # Unit test
 
 class Discard:
     def __init__(self, stream):
+        self.timestamp = ticks()
+        sched(1, self.update_stats)
+        self.received = 0
         stream.recv(MAXBUF, self.got_data)
 
     def got_data(self, stream, octets):
+        self.received += len(octets)
         stream.recv(MAXBUF, self.got_data)
+
+    def update_stats(self):
+        sched(1, self.update_stats)
+        now = ticks()
+        speed = self.received / (now - self.timestamp)
+        print "Current speed: ", speed_formatter(speed)
+        self.timestamp = now
+        self.received = 0
 
     def __del__(self):
         pass
