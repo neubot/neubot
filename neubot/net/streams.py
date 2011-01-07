@@ -40,14 +40,12 @@ if __name__ == "__main__":
 
 from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
+from neubot.net.pollers import poller
+from neubot.net.pollers import loop
 from neubot.utils import unit_formatter
 from neubot.utils import ticks
-from neubot import log
-
-from neubot.net.pollers import poller
 from neubot.utils import fixkwargs
-
-from neubot.net.pollers import loop
+from neubot import log
 
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
