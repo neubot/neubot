@@ -78,6 +78,8 @@ ISSENDING = 1<<5
 ISRECEIVING = 1<<6
 EOF = 1<<7
 
+MAXBUF = 1<<18
+
 class Stream(Pollable):
     def __init__(self, poller, fileno, myname, peername, logname):
         self.poller = poller
@@ -543,7 +545,7 @@ class Connector(Pollable):
                 self.sock.getpeername()
             except SocketError, (code, reason):
                 if code == ENOTCONN:
-                    self.sock.recv(8000)
+                    self.sock.recv(MAXBUF)
                 else:
                     raise
             logname = "with %s:%s" % self.name
@@ -655,30 +657,30 @@ def listen(address, port, accepted, **kwargs):
 
 class Discard:
     def __init__(self, stream):
-        stream.recv(8000, self.got_data)
+        stream.recv(MAXBUF, self.got_data)
 
     def got_data(self, stream, octets):
-        stream.recv(8000, self.got_data)
+        stream.recv(MAXBUF, self.got_data)
 
     def __del__(self):
         pass
 
 class Echo:
     def __init__(self, stream):
-        stream.recv(8000, self.got_data)
+        stream.recv(MAXBUF, self.got_data)
 
     def got_data(self, stream, octets):
         stream.send(octets, self.sent_data)
 
     def sent_data(self, stream, octets):
-        stream.recv(8000, self.got_data)
+        stream.recv(MAXBUF, self.got_data)
 
     def __del__(self):
         pass
 
 class Source:
     def __init__(self, stream):
-        self.buffer = "A" * 8000
+        self.buffer = "A" * MAXBUF
         stream.send(self.buffer, self.sent_data)
 
     def sent_data(self, stream, octets):
