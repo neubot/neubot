@@ -27,32 +27,25 @@
 # file.
 #
 
+import ConfigParser
+import StringIO
+import collections
+import getopt
+import os.path
+import sqlite3
+import sys
 import types
+import uuid
 
 if __name__ == "__main__":
-    from sys import path
-    path.insert(0, ".")
+    sys.path.insert(0, ".")
 
-from collections import deque
 from neubot import pathnames
 from neubot.utils import timestamp
 from neubot.compat import deque_appendleft
-from ConfigParser import SafeConfigParser
-from StringIO import StringIO
-from sqlite3 import connect
-from getopt import GetoptError
-from sqlite3 import Error
 from neubot import version
-from getopt import getopt
 from neubot import log
-from uuid import uuid4
-from time import time
-from sys import exit
-from sys import stderr
-from sys import stdout
-from sys import argv
 
-import os.path
 if os.name == "posix":
     from neubot.utils import getpwnamlx
 
@@ -145,7 +138,7 @@ def migrate_from__v1_0__to__v1_1(connection):
         cursor.execute("ALTER TABLE results ADD uuid TEXT;")
         cursor.execute("""UPDATE config SET value='1.1'
                           WHERE name='version';""")
-        cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid4())})
+        cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid.uuid4())})
         connection.commit()
     cursor.close()
 
@@ -169,7 +162,7 @@ def migrate(connection):
 class DatabaseManager:
     def __init__(self, config):
         self.config = config
-        self.queue = deque()
+        self.queue = collections.deque()
         self.connection = None
         self.ident = None
         self._do_connect()
@@ -194,7 +187,7 @@ class DatabaseManager:
         except (IOError, OSError):
             log.error("Can't open/access database file: %s" % self.config.path)
             log.exception()
-            exit(1)
+            sys.exit(1)
         else:
             fp.close()
         if os.name == "posix" and os.getuid() == 0:
@@ -205,7 +198,7 @@ class DatabaseManager:
             #
             passwd = getpwnamlx()
             os.chown(self.config.path, passwd.pw_uid, passwd.pw_gid)
-        self.connection = connect(self.config.path)
+        self.connection = sqlite3.connect(self.config.path)
         cursor = self.connection.cursor()
         self._make_config(cursor)
         self._make_results(cursor)
@@ -223,9 +216,9 @@ class DatabaseManager:
         try:
             cursor.execute(CONFIG_MAKE)
             cursor.execute(CONFIG_FILL_VERSION)
-            cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid4())})
+            cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid.uuid4())})
             self.connection.commit()
-        except Error, reason:
+        except sqlite3.Error, reason:
             if str(reason) != "table config already exists":
                 raise
 
@@ -233,7 +226,7 @@ class DatabaseManager:
         try:
             cursor.execute(RESULTS_MAKE)
             self.connection.commit()
-        except Error, reason:
+        except sqlite3.Error, reason:
             if str(reason) != "table results already exists":
                 raise
 
@@ -280,7 +273,7 @@ class DatabaseManager:
     #
 
     def save_result(self, tag, result, ident):
-        t = int(time())
+        t = timestamp()
         cursor = self.connection.cursor()
         cursor.execute(RESULTS_SAVE, {"tag": tag, "result": result,
                        "timestamp": t, "ident": ident})
@@ -342,7 +335,7 @@ class DatabaseManager:
         body = "".join(vector)
         if type(body) == types.UnicodeType:
             body = body.encode("utf-8")
-        stringio = StringIO(body)
+        stringio = StringIO.StringIO(body)
         return stringio
 
     def iterate_results(self, func):
@@ -382,7 +375,7 @@ class DatabaseManager:
                 pos = pos + 1
         vector.append("</results>")
         body = "".join(vector)
-        stringio = StringIO(body)
+        stringio = StringIO.StringIO(body)
         return stringio
 
     def prune(self):
@@ -404,7 +397,7 @@ class DatabaseManager:
 
     def rebuild_uuid(self):
         cursor = self.connection.cursor()
-        cursor.execute(CONFIG_UPDATE_UUID, {"ident": str(uuid4())})
+        cursor.execute(CONFIG_UPDATE_UUID, {"ident": str(uuid.uuid4())})
         cursor.close()
         self.connection.commit()
 
@@ -416,20 +409,20 @@ class DatabaseManager:
 # client = True
 #
 
-class DatabaseConfig(SafeConfigParser):
+class DatabaseConfig(ConfigParser.SafeConfigParser):
     def __init__(self):
-        SafeConfigParser.__init__(self)
+        ConfigParser.SafeConfigParser.__init__(self)
         self.auto_prune = True
         self.maxcache = 256
         self.path = pathnames.DATABASE
         self.client = True
 
     def readfp(self, fp, filename=None):
-        SafeConfigParser.readfp(self, fp, filename)
+        ConfigParser.SafeConfigParser.readfp(self, fp, filename)
         self._do_parse()
 
     def read(self, filenames):
-        SafeConfigParser.read(self, filenames)
+        ConfigParser.SafeConfigParser.read(self, filenames)
         self._do_parse()
 
     def _do_parse(self):
@@ -484,15 +477,15 @@ HELP = USAGE +								\
 BRIEF, DELETE, INIT, LIST, PRUNE, REBUILD = range(0,6)
 
 def main(args):
-    fakerc = StringIO()
+    fakerc = StringIO.StringIO()
     fakerc.write("[database]\n")
     action = BRIEF
     # parse
     try:
-        options, arguments = getopt(args[1:], "D:dfilVvz", ["help"])
-    except GetoptError:
-        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-        exit(1)
+        options, arguments = getopt.getopt(args[1:], "D:dfilVvz", ["help"])
+    except getopt.GetoptError:
+        sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        sys.exit(1)
     # options
     for name, value in options:
         if name == "-D":
@@ -500,8 +493,8 @@ def main(args):
         elif name == "-d":
             action = DELETE
         elif name == "--help":
-            stdout.write(HELP.replace("@PROGNAME@", args[0]))
-            exit(0)
+            sys.stdout.write(HELP.replace("@PROGNAME@", args[0]))
+            sys.exit(0)
         elif name == "-f":
             action = REBUILD
         elif name == "-i":
@@ -509,7 +502,7 @@ def main(args):
         elif name == "-l":
             action = LIST
         elif name == "-V":
-            stdout.write(version + "\n")
+            sys.stdout.write(version + "\n")
         elif name == "-v":
             log.verbose()
         elif name == "-z":
@@ -519,8 +512,8 @@ def main(args):
     database.configure(pathnames.CONFIG, fakerc)
     # arguments
     if len(arguments) >= 2:
-        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-        exit(1)
+        sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        sys.exit(1)
     elif len(arguments) == 1:
         database.config.path = arguments[0]
     # run
@@ -532,20 +525,20 @@ def main(args):
         if action == BRIEF:
             config = database.dbm.get_config()
             for key in sorted(config.keys()):
-                stdout.write("%s\t: %s\n" % (key, config[key]))
+                sys.stdout.write("%s\t: %s\n" % (key, config[key]))
         elif action == DELETE:
             database.dbm.delete()
         elif action == LIST:
             results = database.dbm.get_results()
             if results:
-                stdout.write("<results>\n")
+                sys.stdout.write("<results>\n")
                 for result in results:
-                    stdout.write("%s\n" % result)
-                stdout.write("</results>\n")
+                    sys.stdout.write("%s\n" % result)
+                sys.stdout.write("</results>\n")
         elif action == PRUNE:
             database.dbm.prune()
         elif action == REBUILD:
             database.dbm.rebuild_uuid()
 
 if __name__ == "__main__":
-    main(argv)
+    main(sys.argv)
