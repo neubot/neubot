@@ -571,8 +571,6 @@ LISTENARGS = {
     "certfile"   : None,
     "family"     : socket.AF_INET,
     "listening"  : lambda: None,
-#   "maxclients" : 7,
-#   "maxconns"   : 4,
     "poller"     : poller,
     "secure"     : False,
 }
@@ -593,54 +591,61 @@ class Listener(Pollable):
         self.sock = None
         self._listen()
 
-    def __del__(self):
-        pass
-
     def _listen(self):
         log.debug("* About to bind %s:%s" % self.name)
+
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
                                    socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
-            for family, socktype, protocol, canonname, sockaddr in addrinfo:
-                try:
-                    log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket.socket(family, socktype, protocol)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    sock.setblocking(False)
-                    sock.bind(sockaddr)
-                    # Probably the backlog here is too big
-                    sock.listen(128)
-                    self.sock = sock
-                    self.poller.set_readable(self)
-                    log.debug("* Bound with %s" % str(sockaddr))
-                    log.debug("* Listening at %s:%s..." % self.name)
-                    self.listening()
-                    break
-                except socket.error:
-                    log.error("* bind() with %s failed" % str(sockaddr))
-                    log.exception()
-        except socket.error:
+        except socket.error, exception:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
-        if not self.sock:
-            log.error("* Can't bind %s:%s" % self.name)
             self.cantbind()
+            return
+
+        for family, socktype, protocol, canonname, sockaddr in addrinfo:
+            try:
+                log.debug("* Trying with %s..." % str(sockaddr))
+
+                sock = socket.socket(family, socktype, protocol)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.setblocking(False)
+                sock.bind(sockaddr)
+                # Probably the backlog here is too big
+                sock.listen(128)
+
+                self.sock = sock
+                self.poller.set_readable(self)
+                log.debug("* Bound with %s" % str(sockaddr))
+                log.debug("* Listening at %s:%s..." % self.name)
+                self.listening()
+                return
+
+            except socket.error, exception:
+                log.error("* bind() with %s failed" % str(sockaddr))
+                log.exception()
+
+        log.error("* Can't bind %s:%s" % self.name)
+        self.cantbind()
 
     def fileno(self):
         return self.sock.fileno()
 
     def readable(self):
+
         try:
             sock, sockaddr = self.sock.accept()
             sock.setblocking(False)
-            logname = "with %s" % str(sock.getpeername())
-            stream = create_stream(sock, self.poller, sock.fileno(),
-              sock.getsockname(), sock.getpeername(), logname,
-              self.secure, self.certfile, True)
-            log.debug("* Got connection from %s" % str(sock.getpeername()))
-            self.accepted(stream)
         except socket.error:
             log.exception()
+            return
+
+        logname = "with %s" % str(sock.getpeername())
+        stream = create_stream(sock, self.poller, sock.fileno(),
+          sock.getsockname(), sock.getpeername(), logname,
+          self.secure, self.certfile, True)
+        log.debug("* Got connection from %s" % str(sock.getpeername()))
+        self.accepted(stream)
 
 def listen(address, port, accepted, **kwargs):
     Listener(address, port, accepted, **kwargs)
