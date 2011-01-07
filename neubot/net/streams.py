@@ -448,6 +448,10 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 
 # Connect
 
+from socket import AI_PASSIVE
+from socket import SO_REUSEADDR
+from socket import SOL_SOCKET
+
 from neubot.net.pollers import poller
 from neubot.utils import fixkwargs
 from socket import SOCK_STREAM
@@ -560,10 +564,6 @@ def connect(address, port, connected, **kwargs):
     Connector(address, port, connected, **kwargs)
 
 # Listen
-
-from socket import AI_PASSIVE
-from socket import SO_REUSEADDR
-from socket import SOL_SOCKET
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
