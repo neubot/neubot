@@ -545,6 +545,10 @@ class Connector(Pollable):
         if timedout:
             log.error("* connect() to %s:%s timed-out" % self.name)
 
+    def closing(self):
+        log.debug("* closing Connector to %s:%s" % self.name)
+        self.cantconnect()
+
 def connect(address, port, connected, **kwargs):
     Connector(address, port, connected, **kwargs)
 
