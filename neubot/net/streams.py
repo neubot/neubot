@@ -448,6 +448,8 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 # Connect
 
 #
+# XXX IIRC connect() returns 0 only if connecting to 127.0.0.1:port.
+#
 # We have the same code path for connect_ex() returning 0 and returning
 # one of [EINPROGRESS, EWOULDBLOCK].  This is not very efficient because
 # when it returns 0 we know we are already connected and so it would be
@@ -455,6 +457,9 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 # in sharing the same code path, namely that testing is simpler because
 # we don't have to test the [EINPROGRESS, EWOULDBLOCK] corner case.
 #
+
+# Winsock returns EWOULDBLOCK
+INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
 CONNECTARGS = {
     "cantconnect" : lambda: None,
@@ -482,63 +487,69 @@ class Connector(Pollable):
         self.sock = None
         self._connect()
 
-    def __del__(self):
-        pass
-
     def _connect(self):
         log.debug("* About to connect to %s:%s" % self.name)
+
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port,
                                    self.family, socket.SOCK_STREAM)
-            for family, socktype, protocol, cannonname, sockaddr in addrinfo:
-                try:
-                    log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket.socket(family, socktype, protocol)
-                    sock.setblocking(False)
-                    error = sock.connect_ex(sockaddr)
-                    # Winsock returns EWOULDBLOCK
-                    if error not in [0, errno.EINPROGRESS, errno.EWOULDBLOCK]:
-                        raise socket.error(error, os.strerror(error))
-                    self.sock = sock
-                    self.begin = ticks()
-                    self.poller.set_writable(self)
-                    log.debug("* Connection to %s in progress" % str(sockaddr))
-                    self.connecting()
-                    break
-                except socket.error:
-                    log.error("* connect() to %s failed" % str(sockaddr))
-                    log.exception()
-        except socket.error:
+        except socket.error, exception:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
-        if not self.sock:
-            log.error("* Can't connect to %s:%s" % self.name)
             self.cantconnect()
+            return
+
+        for family, socktype, protocol, cannonname, sockaddr in addrinfo:
+            try:
+                log.debug("* Trying with %s..." % str(sockaddr))
+
+                sock = socket.socket(family, socktype, protocol)
+                sock.setblocking(False)
+                result = sock.connect_ex(sockaddr)
+                if result not in INPROGRESS:
+                    raise socket.error(result, os.strerror(result))
+
+                self.sock = sock
+                self.begin = ticks()
+                self.poller.set_writable(self)
+                log.debug("* Connection to %s in progress" % str(sockaddr))
+                self.connecting()
+                return
+
+            except socket.error, exception:
+                log.error("* connect() to %s failed" % str(sockaddr))
+                log.exception()
+
+        log.error("* Can't connect to %s:%s" % self.name)
+        self.cantconnect()
 
     def fileno(self):
         return self.sock.fileno()
 
     def writable(self):
         self.poller.unset_writable(self)
+
+        # See http://cr.yp.to/docs/connect.html
         try:
-            # See http://cr.yp.to/docs/connect.html
-            try:
-                self.sock.getpeername()
-            except socket.error, (code, reason):
-                if code == errno.ENOTCONN:
-                    self.sock.recv(MAXBUF)
-                else:
-                    raise
-            logname = "with %s:%s" % self.name
-            stream = create_stream(self.sock, self.poller, self.sock.fileno(),
-              self.sock.getsockname(), self.sock.getpeername(), logname,
-              self.secure, None, False)
-            log.debug("* Connected to %s:%s!" % self.name)
-            self.connected(stream)
-        except socket.error:
+            self.sock.getpeername()
+        except socket.error, exception:
             log.error("* Can't connect to %s:%s" % self.name)
-            log.exception()
+            if exception[0] == errno.ENOTCONN:
+                try:
+                    self.sock.recv(MAXBUF)
+                except socket.error, exception:
+                    log.exception()
+            else:
+                log.exception()
             self.cantconnect()
+            return
+
+        logname = "with %s:%s" % self.name
+        stream = create_stream(self.sock, self.poller, self.sock.fileno(),
+          self.sock.getsockname(), self.sock.getpeername(), logname,
+          self.secure, None, False)
+        log.debug("* Connected to %s:%s!" % self.name)
+        self.connected(stream)
 
     def writetimeout(self, now):
         timedout = (now - self.begin >= self.conntimeo)
