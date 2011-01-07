@@ -25,6 +25,7 @@
 #
 
 import errno
+import os
 import socket
 import sys
 import types
@@ -45,7 +46,6 @@ from neubot import log
 
 from neubot.net.pollers import poller
 from neubot.utils import fixkwargs
-from os import strerror
 
 from neubot.net.pollers import loop
 
@@ -500,7 +500,7 @@ class Connector(Pollable):
                     error = sock.connect_ex(sockaddr)
                     # Winsock returns EWOULDBLOCK
                     if error not in [0, errno.EINPROGRESS, errno.EWOULDBLOCK]:
-                        raise socket.error(error, strerror(error))
+                        raise socket.error(error, os.strerror(error))
                     self.sock = sock
                     self.begin = ticks()
                     self.poller.set_writable(self)
