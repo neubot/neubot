@@ -341,6 +341,7 @@ a#x_link_to_nexa {
 #header {
     background: url('../img/header.png') repeat scroll 0% 0% transparent;
     background: url("../img/header.png") no-repeat scroll right top #00B047;
+    background: url("../img/header-web.png") no-repeat scroll right top #00B047;
     height: 130px;
     position: relative;
 }
@@ -430,4 +431,21 @@ background: #f1f1f1;
 }
 #results tbody th, #results tbody td {
 padding:5px;
+}
+.hidden-tag {
+    display: none;
+}
+a#x_link_to_nexa {
+    position: absolute;
+    width: 260px;
+    height: 65px;
+    top: 35px;
+    left: 650px;
+}
+a#x_link_to_status {
+    position: absolute;
+    height: 70px;
+    width: 400px;
+    left: 32px;
+    top: 15px;
 }
