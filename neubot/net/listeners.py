@@ -28,14 +28,6 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
-HAVE_SSL = True
-try:
-    from ssl import wrap_socket, SSLError
-except ImportError:
-    HAVE_SSL = False
-    class SSLError(Exception):
-        pass
-
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
 from socket import SOCK_STREAM, AI_PASSIVE
@@ -49,97 +41,8 @@ from socket import AF_INET
 from sys import exit
 from neubot import log
 
-LISTENARGS = {
-    "cantbind"   : lambda: None,
-    "certfile"   : None,
-    "family"     : AF_INET,
-    "listening"  : lambda: None,
-#   "maxclients" : 7,
-#   "maxconns"   : 4,
-    "poller"     : poller,
-    "secure"     : False,
-}
-
-class Listener(Pollable):
-    def __init__(self, address, port, accepted, **kwargs):
-        self.address = address
-        self.port = port
-        self.name = (self.address, self.port)
-        self.accepted = accepted
-        self.kwargs = fixkwargs(kwargs, LISTENARGS)
-        self.listening = self.kwargs["listening"]
-        self.cantbind = self.kwargs["cantbind"]
-        self.poller = self.kwargs["poller"]
-        self.family = self.kwargs["family"]
-        self.secure = self.kwargs["secure"]
-        self.certfile = self.kwargs["certfile"]
-        self.sock = None
-        self._listen()
-
-    def __del__(self):
-        pass
-
-    def _listen(self):
-        log.debug("* About to bind %s:%s" % self.name)
-        try:
-            addrinfo = getaddrinfo(self.address, self.port, self.family,
-                                   SOCK_STREAM, 0, AI_PASSIVE)
-            for family, socktype, protocol, canonname, sockaddr in addrinfo:
-                try:
-                    log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket(family, socktype, protocol)
-                    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-                    sock.setblocking(False)
-                    sock.bind(sockaddr)
-                    # Probably the backlog here is too big
-                    sock.listen(128)
-                    self.sock = sock
-                    self.poller.set_readable(self)
-                    log.debug("* Bound with %s" % str(sockaddr))
-                    log.debug("* Listening at %s:%s..." % self.name)
-                    self.listening()
-                    break
-                except SocketError:
-                    log.error("* bind() with %s failed" % str(sockaddr))
-                    log.exception()
-        except SocketError:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
-        if not self.sock:
-            log.error("* Can't bind %s:%s" % self.name)
-            self.cantbind()
-
-    def fileno(self):
-        return self.sock.fileno()
-
-    def readable(self):
-        try:
-            sock, sockaddr = self.sock.accept()
-            sock.setblocking(False)
-            if self.secure:
-                if HAVE_SSL:
-                    x = wrap_socket(sock, do_handshake_on_connect=False,
-                     certfile=self.certfile, server_side=True)
-                else:
-                    raise RuntimeError("SSL support not available")
-            else:
-                x = sock
-            logname = "with %s" % str(sock.getpeername())
-            stream = create_stream(x, self.poller, sock.fileno(),
-             sock.getsockname(), sock.getpeername(), logname)
-            log.debug("* Got connection from %s" % str(sock.getpeername()))
-            self.accepted(stream)
-        except (SocketError, SSLError):
-            log.exception()
-
-def listen(address, port, accepted, **kwargs):
-    Listener(address, port, accepted, **kwargs)
-
-#
-# Test unit
-#
-
 from socket import AF_INET6
+from neubot.net.streams import listen
 from neubot.net.pollers import loop
 from neubot import version
 from getopt import GetoptError

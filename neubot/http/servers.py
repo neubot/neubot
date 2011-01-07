@@ -54,7 +54,8 @@ from neubot import log
 from sys import argv
 from sys import exit
 from os import getcwd
-
+from neubot.utils import unit_formatter
+from neubot.utils import SimpleStats
 from socket import AF_INET
 
 #
@@ -219,9 +220,6 @@ class SimpleConnection(Receiver):
             self.keepalive = False
         self.begun_receiving = False
         self.got_request(message)
-
-from neubot.utils import unit_formatter
-from neubot.net.pollers import SimpleStats
 
 #
 # Add SimpleConnection timing information and implement
