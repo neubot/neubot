@@ -24,6 +24,7 @@
 # Asynchronous I/O for non-blocking sockets (and SSL)
 #
 
+import socket
 import sys
 import types
 
@@ -41,23 +42,12 @@ from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot import log
 
-from socket import SocketType
-
-from socket import error as SocketError
 from errno import EAGAIN, EWOULDBLOCK
-
-from socket import AI_PASSIVE
-from socket import SO_REUSEADDR
-from socket import SOL_SOCKET
 
 from neubot.net.pollers import poller
 from neubot.utils import fixkwargs
-from socket import SOCK_STREAM
 from errno import EINPROGRESS
-from socket import getaddrinfo
 from errno import ENOTCONN
-from socket import AF_INET
-from socket import socket
 from os import strerror
 
 from neubot.net.pollers import loop
@@ -426,7 +416,7 @@ class StreamSocket(Stream):
         try:
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
-        except SocketError, (code, reason):
+        except socket.error, (code, reason):
             if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_READ, ""
             else:
@@ -437,7 +427,7 @@ class StreamSocket(Stream):
         try:
             count = self.sock.send(octets)
             return SUCCESS, count
-        except SocketError, (code, reason):
+        except socket.error, (code, reason):
             if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_WRITE, 0
             else:
@@ -452,11 +442,11 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                 sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
                   certfile=certfile, server_side=server_side)
             except ssl.SSLError, exception:
-                raise SocketError(exception)
+                raise socket.error(exception)
             stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
             return stream
-    if type(sock) == SocketType and secure:
-        raise SocketError("SSL support not available")
+    if type(sock) == socket.SocketType and secure:
+        raise socket.error("SSL support not available")
     stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
     return stream
 
@@ -475,7 +465,7 @@ CONNECTARGS = {
     "cantconnect" : lambda: None,
     "connecting"  : lambda: None,
     "conntimeo"   : 10,
-    "family"      : AF_INET,
+    "family"      : socket.AF_INET,
     "poller"      : poller,
     "secure"      : False,
 }
@@ -503,27 +493,27 @@ class Connector(Pollable):
     def _connect(self):
         log.debug("* About to connect to %s:%s" % self.name)
         try:
-            addrinfo = getaddrinfo(self.address, self.port,
-                                   self.family, SOCK_STREAM)
+            addrinfo = socket.getaddrinfo(self.address, self.port,
+                                   self.family, socket.SOCK_STREAM)
             for family, socktype, protocol, cannonname, sockaddr in addrinfo:
                 try:
                     log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket(family, socktype, protocol)
+                    sock = socket.socket(family, socktype, protocol)
                     sock.setblocking(False)
                     error = sock.connect_ex(sockaddr)
                     # Winsock returns EWOULDBLOCK
                     if error not in [0, EINPROGRESS, EWOULDBLOCK]:
-                        raise SocketError(error, strerror(error))
+                        raise socket.error(error, strerror(error))
                     self.sock = sock
                     self.begin = ticks()
                     self.poller.set_writable(self)
                     log.debug("* Connection to %s in progress" % str(sockaddr))
                     self.connecting()
                     break
-                except SocketError:
+                except socket.error:
                     log.error("* connect() to %s failed" % str(sockaddr))
                     log.exception()
-        except SocketError:
+        except socket.error:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
         if not self.sock:
@@ -539,7 +529,7 @@ class Connector(Pollable):
             # See http://cr.yp.to/docs/connect.html
             try:
                 self.sock.getpeername()
-            except SocketError, (code, reason):
+            except socket.error, (code, reason):
                 if code == ENOTCONN:
                     self.sock.recv(MAXBUF)
                 else:
@@ -550,7 +540,7 @@ class Connector(Pollable):
               self.secure, None, False)
             log.debug("* Connected to %s:%s!" % self.name)
             self.connected(stream)
-        except SocketError:
+        except socket.error:
             log.error("* Can't connect to %s:%s" % self.name)
             log.exception()
             self.cantconnect()
@@ -568,7 +558,7 @@ def connect(address, port, connected, **kwargs):
 LISTENARGS = {
     "cantbind"   : lambda: None,
     "certfile"   : None,
-    "family"     : AF_INET,
+    "family"     : socket.AF_INET,
     "listening"  : lambda: None,
 #   "maxclients" : 7,
 #   "maxconns"   : 4,
@@ -598,13 +588,13 @@ class Listener(Pollable):
     def _listen(self):
         log.debug("* About to bind %s:%s" % self.name)
         try:
-            addrinfo = getaddrinfo(self.address, self.port, self.family,
-                                   SOCK_STREAM, 0, AI_PASSIVE)
+            addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
+                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
             for family, socktype, protocol, canonname, sockaddr in addrinfo:
                 try:
                     log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket(family, socktype, protocol)
-                    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+                    sock = socket.socket(family, socktype, protocol)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     sock.setblocking(False)
                     sock.bind(sockaddr)
                     # Probably the backlog here is too big
@@ -615,10 +605,10 @@ class Listener(Pollable):
                     log.debug("* Listening at %s:%s..." % self.name)
                     self.listening()
                     break
-                except SocketError:
+                except socket.error:
                     log.error("* bind() with %s failed" % str(sockaddr))
                     log.exception()
-        except SocketError:
+        except socket.error:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
         if not self.sock:
@@ -638,7 +628,7 @@ class Listener(Pollable):
               self.secure, self.certfile, True)
             log.debug("* Got connection from %s" % str(sock.getpeername()))
             self.accepted(stream)
-        except SocketError:
+        except socket.error:
             log.exception()
 
 def listen(address, port, accepted, **kwargs):
