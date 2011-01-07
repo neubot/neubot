@@ -27,6 +27,11 @@
 import sys
 import types
 
+try:
+    import ssl
+except ImportError:
+    ssl = None
+
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
@@ -35,11 +40,6 @@ from neubot.net.pollers import Pollable
 from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot import log
-
-try:
-    import ssl
-except ImportError:
-    ssl = None
 
 from socket import SocketType
 
