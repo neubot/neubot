@@ -74,21 +74,15 @@ class Stream(Pollable):
         self.send_success = None
         self.send_ticks = 0
         self.send_pos = 0
-        self.send_error = None
         self.recv_maxlen = 0
         self.recv_success = None
         self.recv_ticks = 0
-        self.recv_error = None
         self.eof = False
         self.timeout = TIMEOUT
         self.notify_closing = None
-        self.context = None
         self.stats = []
         self.stats.append(self.poller.stats)
         self.flags = 0
-
-    def __del__(self):
-        pass
 
     def fileno(self):
         return self._fileno
@@ -109,12 +103,6 @@ class Stream(Pollable):
         if not (self.flags & ISCLOSED):
             log.debug("* Closing connection %s" % self.logname)
             self.flags |= ISCLOSED
-            if self.recv_error:
-                self.recv_error(self)
-                self.recv_error = None
-            if self.send_error:
-                self.send_error(self)
-                self.send_error = None
             if self.notify_closing:
                 self.notify_closing()
                 self.notify_closing = None
@@ -172,13 +160,12 @@ class Stream(Pollable):
             self.poller.unset_writable(self)
             self.handleWritable = None
 
-    def recv(self, maxlen, recv_success, recv_error=None):
+    def recv(self, maxlen, recv_success):
         if not (self.flags & ISCLOSED):
             self.recv_maxlen = maxlen
             self.recv_success = recv_success
             self.recv_ticks = ticks()
             self.flags |= RECV_PENDING
-            self.recv_error = recv_error
             #
             # ISRECEIVING means we're already inside _do_recv().
             # We don't want to invoke _do_recv() again, in this
@@ -226,7 +213,6 @@ class Stream(Pollable):
                     # after notify().
                     #
                     self.flags &= ~RECV_PENDING
-                    self.recv_error = None
                     if notify:
                         notify(self, octets)
                     #
@@ -263,7 +249,7 @@ class Stream(Pollable):
     # to recv()'s implementation are also applicable here.
     #
 
-    def send(self, octets, send_success, send_error=None):
+    def send(self, octets, send_success):
         if not (self.flags & ISCLOSED):
             #
             # Make sure we don't start sending an Unicode string
@@ -279,7 +265,6 @@ class Stream(Pollable):
             self.send_success = send_success
             self.send_ticks = ticks()
             self.flags |= SEND_PENDING
-            self.send_error = send_error
             if not (self.flags & ISSENDING):
                 self._do_send()
 
@@ -311,7 +296,6 @@ class Stream(Pollable):
                         self.send_success = None
                         self.send_ticks = 0
                         self.flags &= ~SEND_PENDING
-                        self.send_error = None
                         if notify:
                             notify(self, octets)
                         if not (self.flags & (SENDBLOCKED|ISCLOSED)):
@@ -358,9 +342,6 @@ if ssl:
             Stream.__init__(self, poller, fileno, myname, peername, logname)
             self.need_handshake = True
 
-        def __del__(self):
-            Stream.__del__(self)
-
         def soclose(self):
             self.ssl_sock.close()
 
@@ -396,13 +377,12 @@ if ssl:
                     log.exception()
                     return ERROR, 0
 
+SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
+
 class StreamSocket(Stream):
     def __init__(self, sock, poller, fileno, myname, peername, logname):
         self.sock = sock
         Stream.__init__(self, poller, fileno, myname, peername, logname)
-
-    def __del__(self):
-        Stream.__del__(self)
 
     def soclose(self):
         self.sock.close()
@@ -412,7 +392,7 @@ class StreamSocket(Stream):
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
         except socket.error, (code, reason):
-            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+            if code in SOFT_ERRORS:
                 return WANT_READ, ""
             else:
                 log.exception()
@@ -423,7 +403,7 @@ class StreamSocket(Stream):
             count = self.sock.send(octets)
             return SUCCESS, count
         except socket.error, (code, reason):
-            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+            if code in SOFT_ERRORS:
                 return WANT_WRITE, 0
             else:
                 log.exception()
@@ -679,9 +659,6 @@ class Discard:
         self.timestamp = now
         self.received = 0
 
-    def __del__(self):
-        pass
-
 class Echo:
     def __init__(self, stream):
         stream.recv(MAXBUF, self.got_data)
@@ -692,9 +669,6 @@ class Echo:
     def sent_data(self, stream, octets):
         stream.recv(MAXBUF, self.got_data)
 
-    def __del__(self):
-        pass
-
 class Source:
     def __init__(self, stream):
         self.buffer = "A" * MAXBUF
@@ -702,9 +676,6 @@ class Source:
 
     def sent_data(self, stream, octets):
         stream.send(self.buffer, self.sent_data)
-
-    def __del__(self):
-        pass
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
