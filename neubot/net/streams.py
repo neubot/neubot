@@ -24,6 +24,7 @@
 # Asynchronous I/O for non-blocking sockets (and SSL)
 #
 
+import errno
 import socket
 import sys
 import types
@@ -42,12 +43,8 @@ from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot import log
 
-from errno import EAGAIN, EWOULDBLOCK
-
 from neubot.net.pollers import poller
 from neubot.utils import fixkwargs
-from errno import EINPROGRESS
-from errno import ENOTCONN
 from os import strerror
 
 from neubot.net.pollers import loop
@@ -417,7 +414,7 @@ class StreamSocket(Stream):
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
         except socket.error, (code, reason):
-            if code in [EAGAIN, EWOULDBLOCK]:
+            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
                 return WANT_READ, ""
             else:
                 log.exception()
@@ -428,7 +425,7 @@ class StreamSocket(Stream):
             count = self.sock.send(octets)
             return SUCCESS, count
         except socket.error, (code, reason):
-            if code in [EAGAIN, EWOULDBLOCK]:
+            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
                 return WANT_WRITE, 0
             else:
                 log.exception()
@@ -502,7 +499,7 @@ class Connector(Pollable):
                     sock.setblocking(False)
                     error = sock.connect_ex(sockaddr)
                     # Winsock returns EWOULDBLOCK
-                    if error not in [0, EINPROGRESS, EWOULDBLOCK]:
+                    if error not in [0, errno.EINPROGRESS, errno.EWOULDBLOCK]:
                         raise socket.error(error, strerror(error))
                     self.sock = sock
                     self.begin = ticks()
@@ -530,7 +527,7 @@ class Connector(Pollable):
             try:
                 self.sock.getpeername()
             except socket.error, (code, reason):
-                if code == ENOTCONN:
+                if code == errno.ENOTCONN:
                     self.sock.recv(MAXBUF)
                 else:
                     raise
