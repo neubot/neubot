@@ -36,17 +36,11 @@ from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot import log
 
-HAVE_SSL = True
 try:
-    from ssl import SSLError
-    from ssl import SSL_ERROR_WANT_READ
-    from ssl import SSL_ERROR_WANT_WRITE
+    import ssl
 except ImportError:
-    HAVE_SSL = False
+    ssl = None
 
-if HAVE_SSL:
-    from ssl import SSLSocket
-    from ssl import wrap_socket
 from socket import SocketType
 
 from socket import error as SocketError
@@ -372,7 +366,7 @@ class Stream(Pollable):
     def sosend(self, octets):
         raise NotImplementedError
 
-if HAVE_SSL:
+if ssl:
     class StreamSSL(Stream):
         def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
             self.ssl_sock = ssl_sock
@@ -392,10 +386,10 @@ if HAVE_SSL:
                     self.need_handshake = False
                 octets = self.ssl_sock.read(maxlen)
                 return SUCCESS, octets
-            except SSLError, (code, reason):
-                if code == SSL_ERROR_WANT_READ:
+            except ssl.SSLError, (code, reason):
+                if code == ssl.SSL_ERROR_WANT_READ:
                     return WANT_READ, ""
-                elif code == SSL_ERROR_WANT_WRITE:
+                elif code == ssl.SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, ""
                 else:
                     log.exception()
@@ -408,10 +402,10 @@ if HAVE_SSL:
                     self.need_handshake = False
                 count = self.ssl_sock.write(octets)
                 return SUCCESS, count
-            except SSLError, (code, reason):
-                if code == SSL_ERROR_WANT_READ:
+            except ssl.SSLError, (code, reason):
+                if code == ssl.SSL_ERROR_WANT_READ:
                     return WANT_READ, 0
-                elif code == SSL_ERROR_WANT_WRITE:
+                elif code == ssl.SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, 0
                 else:
                     log.exception()
@@ -452,12 +446,12 @@ class StreamSocket(Stream):
 
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
-    if HAVE_SSL:
+    if ssl:
         if secure:
             try:
-                sock = wrap_socket(sock, do_handshake_on_connect=False,
+                sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
                   certfile=certfile, server_side=server_side)
-            except SSLError, exception:
+            except ssl.SSLError, exception:
                 raise SocketError(exception)
             stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
             return stream
