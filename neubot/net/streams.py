@@ -646,9 +646,7 @@ class Listener(Pollable):
 def listen(address, port, accepted, **kwargs):
     Listener(address, port, accepted, **kwargs)
 
-#
 # Unit test
-#
 
 class Discard:
     def __init__(self, stream):
