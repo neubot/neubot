@@ -78,7 +78,7 @@ ISSENDING = 1<<5
 ISRECEIVING = 1<<6
 EOF = 1<<7
 
-MAXBUF = 8000
+MAXBUF = 1<<18
 
 class Stream(Pollable):
     def __init__(self, poller, fileno, myname, peername, logname):
