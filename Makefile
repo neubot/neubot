@@ -277,19 +277,20 @@ install:
 # Application for MacOS X >= Leopard (10.5)
 #
 
-APP_RESOURCES=neubot.app/Contents/Resources
+APP_NAME=$(STEM).app
+APP_RESOURCES=$(APP_NAME)/Contents/Resources
 
 app:
 	@echo "[APP]"
 	@make -f Makefile archive
-	@cp -R MacOS/neubot.app dist/
+	@cp -R MacOS/neubot.app dist/$(APP_NAME)
 	@cd dist/$(APP_RESOURCES) && tar -xzf ../../../$(STEM).tar.gz && \
          ln -s $(STEM) neubot && rm -rf pax_global_header
 
 app.zip:
 	@echo "[APP.ZIP]"
 	@make -f Makefile app
-	@cd dist && zip -q --symlinks -r neubot.app.zip neubot.app
+	@cd dist && zip -q --symlinks -r $(APP_NAME).zip $(APP_NAME)
 
 #      _      _
 #   __| | ___| |__
