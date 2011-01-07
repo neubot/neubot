@@ -25,13 +25,13 @@
 #
 
 import sys
+import types
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
-from types import UnicodeType
 from neubot.utils import unit_formatter
 from neubot.utils import ticks
 from neubot import log
@@ -292,7 +292,7 @@ class Stream(Pollable):
             # go very likely to 'Internal error' state if passed
             # an unicode encoding.
             #
-            if type(octets) == UnicodeType:
+            if type(octets) == types.UnicodeType:
                 log.warning("* send: Working-around Unicode input")
                 octets = octets.encode("utf-8")
             self.send_octets = octets
