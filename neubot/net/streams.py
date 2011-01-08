@@ -198,25 +198,10 @@ class Stream(Pollable):
                     self.recv_maxlen = 0
                     self.recv_success = None
                     self.recv_ticks = 0
-                    #
-                    # Unset RECV_PENDING but wait before unsetting
-                    # readable because notify() might invoke recv()
-                    # again--and so we check RECV_PENDING again
-                    # after notify().
-                    #
                     self.flags &= ~RECV_PENDING
+                    self.unset_readable()
                     if notify:
                         notify(self, octets)
-                    #
-                    # Be careful because notify() is an user-defined
-                    # callback that might invoke send()--which might
-                    # need to block recv()--or close().
-                    #
-                    if not (self.flags & (RECVBLOCKED|ISCLOSED)):
-                        if self.flags & RECV_PENDING:
-                            self.set_readable(self._do_recv)
-                        else:
-                            self.unset_readable()
                 else:
                     log.debug("* Connection %s: EOF" % self.logname)
                     self.flags |= EOF
@@ -286,13 +271,9 @@ class Stream(Pollable):
                         self.send_success = None
                         self.send_ticks = 0
                         self.flags &= ~SEND_PENDING
+                        self.unset_writable()
                         if notify:
                             notify(self, octets)
-                        if not (self.flags & (SENDBLOCKED|ISCLOSED)):
-                            if self.flags & SEND_PENDING:
-                                self.set_writable(self._do_send)
-                            else:
-                                self.unset_writable()
                     else:
                         panic = "Internal error"
                 else:
