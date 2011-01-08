@@ -125,13 +125,13 @@ class SocketWrapper(object):
                 return ERROR, 0
 
 class Stream(Pollable):
-    def __init__(self, poller, sock, filenum, myname, peername, logname):
+    def __init__(self, poller):
         self.poller = poller
-        self.sock = sock
-        self.filenum = filenum
-        self.myname = myname
-        self.peername = peername
-        self.logname = logname
+        self.sock = None
+        self.filenum = -1
+        self.myname = None
+        self.peername = None
+        self.logname = None
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
@@ -151,6 +151,30 @@ class Stream(Pollable):
 
     def fileno(self):
         return self.filenum
+
+    def make_connection(self, sock):
+        self.filenum = sock.fileno()
+        self.myname = sock.getsockname()
+        self.peername = sock.getpeername()
+        self.logname = str((self.myname, self.peername))
+        self.sock = SocketWrapper(sock)
+
+    def configure(self, dictionary):
+        if "secure" in dictionary and dictionary["secure"]:
+
+            if not ssl:
+                raise RuntimeError("SSL support not available")
+
+            server_side = False
+            if "server_side" in dictionary and dictionary["server_side"]:
+                server_side = dictionary["server_side"]
+            certfile = None
+            if "certfile" in dictionary and dictionary["certfile"]:
+                certfile = dictionary["certfile"]
+
+            so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
+              certfile=certfile, server_side=server_side)
+            self.sock = SSLWrapper(so)
 
     #
     # When you keep a reference to the stream in your class,
@@ -325,20 +349,14 @@ class Stream(Pollable):
 
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
-    if ssl:
-        if secure:
-            try:
-                sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
-                  certfile=certfile, server_side=server_side)
-            except ssl.SSLError, exception:
-                raise socket.error(exception)
-            so = SSLWrapper(sock)
-            stream = Stream(poller, so, fileno, myname, peername, logname)
-            return stream
-    if type(sock) == socket.SocketType and secure:
-        raise socket.error("SSL support not available")
-    so = SocketWrapper(sock)
-    stream = Stream(poller, so, fileno, myname, peername, logname)
+    conf = {
+        "certfile": certfile,
+        "server_side": server_side,
+        "secure": secure,
+    }
+    stream = Stream(poller)
+    stream.make_connection(sock)
+    stream.configure(conf)
     return stream
 
 # Connect
