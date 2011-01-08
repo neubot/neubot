@@ -55,8 +55,6 @@ SEND_PENDING = 1<<1
 SENDBLOCKED = 1<<2
 RECV_PENDING = 1<<3
 RECVBLOCKED = 1<<4
-ISSENDING = 1<<5
-ISRECEIVING = 1<<6
 EOF = 1<<7
 
 MAXBUF = 1<<18
@@ -166,13 +164,8 @@ class Stream(Pollable):
             self.recv_success = recv_success
             self.recv_ticks = ticks()
             self.flags |= RECV_PENDING
-            #
-            # ISRECEIVING means we're already inside _do_recv().
-            # We don't want to invoke _do_recv() again, in this
-            # case, because there' the risk of infinite recursion.
-            #
-            if not (self.flags & ISRECEIVING):
-                self._do_recv()
+            if not (self.flags & RECVBLOCKED):
+                self.set_readable(self._do_recv)
 
     def _do_recv(self):
         #
@@ -183,7 +176,6 @@ class Stream(Pollable):
         # recv() until this happens.
         #
         if not (self.flags & RECVBLOCKED):
-            self.flags |= ISRECEIVING
             panic = ""
             if self.flags & SENDBLOCKED:
                 #
@@ -240,7 +232,6 @@ class Stream(Pollable):
                 self._do_close()
             else:
                 panic = "Unexpected status value"
-            self.flags &= ~ISRECEIVING
             if panic:
                 raise Exception(panic)
 
@@ -265,12 +256,11 @@ class Stream(Pollable):
             self.send_success = send_success
             self.send_ticks = ticks()
             self.flags |= SEND_PENDING
-            if not (self.flags & ISSENDING):
-                self._do_send()
+            if not (self.flags & SENDBLOCKED):
+                self.set_writable(self._do_send)
 
     def _do_send(self):
         if not (self.flags & SENDBLOCKED):
-            self.flags |= ISSENDING
             panic = ""
             if self.flags & RECVBLOCKED:
                 if self.flags & RECV_PENDING:
@@ -317,7 +307,6 @@ class Stream(Pollable):
                 self._do_close()
             else:
                 panic = "Unexpected status value"
-            self.flags &= ~ISSENDING
             if panic:
                 raise Exception(panic)
 
