@@ -31,6 +31,10 @@ import sys
 import types
 
 try:
+    from Crypto.Cipher import ARC4
+except ImportError:
+    ARC4 = None
+try:
     import ssl
 except ImportError:
     ssl = None
@@ -154,6 +158,8 @@ class Stream(Pollable):
         self.sendblocked = 0
         self.recv_pending = 0
         self.recvblocked = 0
+        self.encrypt = None
+        self.decrypt = None
 
     def fileno(self):
         return self.filenum
@@ -181,6 +187,19 @@ class Stream(Pollable):
             so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
+
+        if "obfuscate" in dictionary and dictionary["obfuscate"]:
+
+            if not ARC4:
+                raise RuntimeError("ARC4 support not available")
+
+            key = "neubot"
+            if "key" in dictionary and dictionary["key"]:
+                key = dictionary["key"]
+
+            algo = ARC4.new(key)
+            self.encrypt = algo.encrypt
+            self.decrypt = algo.decrypt
 
     #
     # When you keep a reference to the stream in your class,
@@ -253,6 +272,8 @@ class Stream(Pollable):
             self.recv_ticks = 0
             self.recv_pending = 0
             self.poller.unset_readable(self)
+            if self.decrypt:
+                octets = self.decrypt(octets)
             if notify:
                 notify(self, octets)
             return
@@ -282,9 +303,12 @@ class Stream(Pollable):
     def send(self, octets, send_success):
         if self.isclosed:
             return
+
         if type(octets) == types.UnicodeType:
             log.warning("* send: Working-around Unicode input")
             octets = octets.encode("utf-8")
+        if self.encrypt:
+            octets = self.encrypt(octets)
 
         self.send_octets = octets
         self.send_success = send_success
