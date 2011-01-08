@@ -52,6 +52,80 @@ TIMEOUT = 300
 
 MAXBUF = 1<<18
 
+if ssl:
+    class StreamSSL(Stream):
+        def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
+            self.ssl_sock = ssl_sock
+            Stream.__init__(self, poller, fileno, myname, peername, logname)
+            self.need_handshake = True
+
+        def soclose(self):
+            self.ssl_sock.close()
+
+        def sorecv(self, maxlen):
+            try:
+                if self.need_handshake:
+                    self.ssl_sock.do_handshake()
+                    self.need_handshake = False
+                octets = self.ssl_sock.read(maxlen)
+                return SUCCESS, octets
+            except ssl.SSLError, (code, reason):
+                if code == ssl.SSL_ERROR_WANT_READ:
+                    return WANT_READ, ""
+                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                    return WANT_WRITE, ""
+                else:
+                    log.exception()
+                    return ERROR, ""
+
+        def sosend(self, octets):
+            try:
+                if self.need_handshake:
+                    self.ssl_sock.do_handshake()
+                    self.need_handshake = False
+                count = self.ssl_sock.write(octets)
+                return SUCCESS, count
+            except ssl.SSLError, (code, reason):
+                if code == ssl.SSL_ERROR_WANT_READ:
+                    return WANT_READ, 0
+                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                    return WANT_WRITE, 0
+                else:
+                    log.exception()
+                    return ERROR, 0
+
+SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
+
+class StreamSocket(Stream):
+    def __init__(self, sock, poller, fileno, myname, peername, logname):
+        self.sock = sock
+        Stream.__init__(self, poller, fileno, myname, peername, logname)
+
+    def soclose(self):
+        self.sock.close()
+
+    def sorecv(self, maxlen):
+        try:
+            octets = self.sock.recv(maxlen)
+            return SUCCESS, octets
+        except socket.error, (code, reason):
+            if code in SOFT_ERRORS:
+                return WANT_READ, ""
+            else:
+                log.exception()
+                return ERROR, ""
+
+    def sosend(self, octets):
+        try:
+            count = self.sock.send(octets)
+            return SUCCESS, count
+        except socket.error, (code, reason):
+            if code in SOFT_ERRORS:
+                return WANT_WRITE, 0
+            else:
+                log.exception()
+                return ERROR, 0
+
 class Stream(Pollable):
     def __init__(self, poller, filenum, myname, peername, logname):
         self.poller = poller
@@ -263,80 +337,6 @@ class Stream(Pollable):
 
     def sosend(self, octets):
         raise NotImplementedError
-
-if ssl:
-    class StreamSSL(Stream):
-        def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
-            self.ssl_sock = ssl_sock
-            Stream.__init__(self, poller, fileno, myname, peername, logname)
-            self.need_handshake = True
-
-        def soclose(self):
-            self.ssl_sock.close()
-
-        def sorecv(self, maxlen):
-            try:
-                if self.need_handshake:
-                    self.ssl_sock.do_handshake()
-                    self.need_handshake = False
-                octets = self.ssl_sock.read(maxlen)
-                return SUCCESS, octets
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
-                    return WANT_READ, ""
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
-                    return WANT_WRITE, ""
-                else:
-                    log.exception()
-                    return ERROR, ""
-
-        def sosend(self, octets):
-            try:
-                if self.need_handshake:
-                    self.ssl_sock.do_handshake()
-                    self.need_handshake = False
-                count = self.ssl_sock.write(octets)
-                return SUCCESS, count
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
-                    return WANT_READ, 0
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
-                    return WANT_WRITE, 0
-                else:
-                    log.exception()
-                    return ERROR, 0
-
-SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
-
-class StreamSocket(Stream):
-    def __init__(self, sock, poller, fileno, myname, peername, logname):
-        self.sock = sock
-        Stream.__init__(self, poller, fileno, myname, peername, logname)
-
-    def soclose(self):
-        self.sock.close()
-
-    def sorecv(self, maxlen):
-        try:
-            octets = self.sock.recv(maxlen)
-            return SUCCESS, octets
-        except socket.error, (code, reason):
-            if code in SOFT_ERRORS:
-                return WANT_READ, ""
-            else:
-                log.exception()
-                return ERROR, ""
-
-    def sosend(self, octets):
-        try:
-            count = self.sock.send(octets)
-            return SUCCESS, count
-        except socket.error, (code, reason):
-            if code in SOFT_ERRORS:
-                return WANT_WRITE, 0
-            else:
-                log.exception()
-                return ERROR, 0
 
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
