@@ -54,20 +54,20 @@ MAXBUF = 1<<18
 
 if ssl:
     class StreamSSL(Stream):
-        def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
-            self.ssl_sock = ssl_sock
+        def __init__(self, sock, poller, fileno, myname, peername, logname):
+            self.sock = sock
             Stream.__init__(self, poller, fileno, myname, peername, logname)
             self.need_handshake = True
 
         def soclose(self):
-            self.ssl_sock.close()
+            self.sock.close()
 
         def sorecv(self, maxlen):
             try:
                 if self.need_handshake:
-                    self.ssl_sock.do_handshake()
+                    self.sock.do_handshake()
                     self.need_handshake = False
-                octets = self.ssl_sock.read(maxlen)
+                octets = self.sock.read(maxlen)
                 return SUCCESS, octets
             except ssl.SSLError, (code, reason):
                 if code == ssl.SSL_ERROR_WANT_READ:
@@ -81,9 +81,9 @@ if ssl:
         def sosend(self, octets):
             try:
                 if self.need_handshake:
-                    self.ssl_sock.do_handshake()
+                    self.sock.do_handshake()
                     self.need_handshake = False
-                count = self.ssl_sock.write(octets)
+                count = self.sock.write(octets)
                 return SUCCESS, count
             except ssl.SSLError, (code, reason):
                 if code == ssl.SSL_ERROR_WANT_READ:
