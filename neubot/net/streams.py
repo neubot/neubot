@@ -64,7 +64,6 @@ class Stream(Pollable):
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
-        self.send_pos = 0
         self.recv_maxlen = 0
         self.recv_success = None
         self.recv_ticks = 0
@@ -104,7 +103,6 @@ class Stream(Pollable):
             self.send_octets = None
             self.send_success = None
             self.send_ticks = 0
-            self.send_pos = 0
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
@@ -221,7 +219,6 @@ class Stream(Pollable):
             octets = octets.encode("utf-8")
 
         self.send_octets = octets
-        self.send_pos = 0
         self.send_success = send_success
         self.send_ticks = ticks()
         self.send_pending = 1
@@ -240,21 +237,19 @@ class Stream(Pollable):
                 self.unset_readable()
             self.recvblocked = 0
 
-        subset = buffer(self.send_octets, self.send_pos)
-        status, count = self.sosend(subset)
+        status, count = self.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
             for stats in self.stats:
                 stats.send.account(count)
-            self.send_pos += count
-            if self.send_pos < len(self.send_octets):
+            if count < len(self.send_octets):
+                self.send_octets = buffer(self.send_octets, count)
                 self.send_ticks = ticks()
                 self.set_writable(self._do_send)
-            elif self.send_pos == len(self.send_octets):
+            elif count == len(self.send_octets):
                 notify = self.send_success
                 octets = self.send_octets
                 self.send_octets = None
-                self.send_pos = 0
                 self.send_success = None
                 self.send_ticks = 0
                 self.send_pending = 0
