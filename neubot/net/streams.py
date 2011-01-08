@@ -59,8 +59,6 @@ class Stream(Pollable):
         self.myname = myname
         self.peername = peername
         self.logname = logname
-        self.handleReadable = None
-        self.handleWritable = None
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
@@ -106,8 +104,6 @@ class Stream(Pollable):
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
-            self.handleReadable = None
-            self.handleWritable = None
             self.soclose()
             self.poller.close(self)
 
@@ -116,18 +112,6 @@ class Stream(Pollable):
 
     def writetimeout(self, now):
         return (self.send_pending and (now - self.send_ticks) > self.timeout)
-
-    #
-    # Make sure that we set/unset readable/writable only if
-    # needed, because the operation is a bit expensive (you
-    # add/remove entries to/from an hash table).
-    #
-
-    def readable(self):
-        self.handleReadable()
-
-    def writable(self):
-        self.handleWritable()
 
     def recv(self, maxlen, recv_success):
         if self.isclosed:
@@ -142,19 +126,17 @@ class Stream(Pollable):
             return
 
         self.poller.set_readable(self)
-        self.handleReadable = self._do_recv
 
-    def _do_recv(self):
+    def readable(self):
         if self.recvblocked:
+            self.writable()
             return
 
         if self.sendblocked:
             if self.send_pending:
                 self.poller.set_writable(self)
-                self.handleWritable = self._do_send
             else:
                 self.poller.unset_writable(self)
-                self.handleWritable = None
             self.sendblocked = 0
 
         status, octets = self.sorecv(self.recv_maxlen)
@@ -168,19 +150,16 @@ class Stream(Pollable):
             self.recv_ticks = 0
             self.recv_pending = 0
             self.poller.unset_readable(self)
-            self.handleReadable = None
             if notify:
                 notify(self, octets)
             return
 
         if status == WANT_READ:
             self.poller.set_readable(self)
-            self.handleReadable = self._do_recv
             return
 
         if status == WANT_WRITE:
             self.poller.set_writable(self)
-            self.handleWritable = self._do_recv
             self.sendblocked = 1
             return
 
@@ -213,19 +192,17 @@ class Stream(Pollable):
             return
 
         self.poller.set_writable(self)
-        self.handleWritable = self._do_send
 
-    def _do_send(self):
+    def writable(self):
         if self.sendblocked:
+            self.readable()
             return
 
         if self.recvblocked:
             if self.recv_pending:
                 self.poller.set_readable(self)
-                self.handleReadable = self._do_recv
             else:
                 self.poller.unset_readable(self)
-                self.handleReadable = None
             self.recvblocked = 0
 
         status, count = self.sosend(self.send_octets)
@@ -242,7 +219,6 @@ class Stream(Pollable):
                 self.send_ticks = 0
                 self.send_pending = 0
                 self.poller.unset_writable(self)
-                self.handleWritable = None
                 if notify:
                     notify(self, octets)
                 return
@@ -251,19 +227,16 @@ class Stream(Pollable):
                 self.send_octets = buffer(self.send_octets, count)
                 self.send_ticks = ticks()
                 self.poller.set_writable(self)
-                self.handleWritable = self._do_send
                 return
 
             raise RuntimeError("Sent more than expected")
 
         if status == WANT_WRITE:
             self.poller.set_writable(self)
-            self.handleWritable = self._do_send
             return
 
         if status == WANT_READ:
             self.poller.set_readable(self)
-            self.handleReadable = self._do_send
             self.recvblocked = 1
             return
 
