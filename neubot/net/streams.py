@@ -51,7 +51,11 @@ from neubot.utils import ticks
 from neubot.utils import fixkwargs
 from neubot import log
 
-SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
+SUCCESS = 0
+ERROR = 1
+WANT_READ = 2
+WANT_WRITE = 3
+
 TIMEOUT = 300
 
 MAXBUF = 1<<18
@@ -137,29 +141,34 @@ class SocketWrapper(object):
 class Stream(Pollable):
     def __init__(self, poller):
         self.poller = poller
+
         self.sock = None
         self.filenum = -1
         self.myname = None
         self.peername = None
         self.logname = None
+
+        self.timeout = TIMEOUT
+        self.encrypt = None
+        self.decrypt = None
+
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
         self.recv_maxlen = 0
         self.recv_success = None
         self.recv_ticks = 0
+
         self.eof = False
-        self.timeout = TIMEOUT
-        self.notify_closing = None
-        self.stats = []
-        self.stats.append(self.poller.stats)
         self.isclosed = 0
         self.send_pending = 0
         self.sendblocked = 0
         self.recv_pending = 0
         self.recvblocked = 0
-        self.encrypt = None
-        self.decrypt = None
+
+        self.stats = []
+        self.stats.append(self.poller.stats)
+        self.notify_closing = None
 
     def fileno(self):
         return self.filenum
@@ -264,18 +273,22 @@ class Stream(Pollable):
         status, octets = self.sock.sorecv(self.recv_maxlen)
 
         if status == SUCCESS and octets:
+
             for stats in self.stats:
                 stats.recv.account(len(octets))
+
             notify = self.recv_success
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
             self.recv_pending = 0
             self.poller.unset_readable(self)
+
             if self.decrypt:
                 octets = self.decrypt(octets)
             if notify:
                 notify(self, octets)
+
             return
 
         if status == WANT_READ:
