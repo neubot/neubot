@@ -640,6 +640,8 @@ def speed_formatter(speed, base10=True, bytes=False):
 
 # Unit test
 
+import getopt
+
 class Discard:
     def __init__(self, stream):
         self.timestamp = ticks()
@@ -677,22 +679,89 @@ class Source:
     def sent_data(self, stream, octets):
         stream.send(self.buffer, self.sent_data)
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.stdout.write("Usage: %s discard|echo|source\n" % sys.argv[0])
+from neubot import version
+
+USAGE = "Usage: %s [-6SlVv] [-C cert] [-n timeout] [-P proto] [--help] address port\n"
+
+HELP = USAGE +								\
+"Options:\n"								\
+"  -6         : Use IPv6 rather than IPv4.\n"				\
+"  -C cert    : Secure listen().  Use OpenSSL cert.\n"                  \
+"  --help     : Print this help screen and exit.\n"			\
+"  -l         : Listen for incoming connections.\n"			\
+"  -n timeout : Time-out after timeout seconds.\n"			\
+"  -P proto   : Run the specified protocol.\n"				\
+"               Avail. protos: echo, discard.\n"			\
+"  -S         : Secure connect().  Use OpenSSL.\n"			\
+"  -V         : Print version number and exit.\n"			\
+"  -v         : Run the program in verbose mode.\n"
+
+def connected(stream):
+    stream.close()
+
+def main(args):
+    family = socket.AF_INET
+    srvmode = False
+    timeout = 10
+    secure = False
+    certfile = None
+    proto = None
+    try:
+        options, arguments = getopt.getopt(args[1:], "6C:ln:P:SVv", ["help"])
+    except getopt.GetoptError:
+        sys.stderr.write(USAGE % args[0])
         sys.exit(1)
-    elif sys.argv[1] == "discard":
-        listen("127.0.0.1", "8009", accepted=Discard)
+    for name, value in options:
+        if name == "-6":
+            family = socket.AF_INET6
+        elif name == "-C":
+            certfile = value
+        elif name == "--help":
+            sys.stdout.write(HELP % args[0])
+            sys.exit(0)
+        elif name == "-l":
+            srvmode = True
+        elif name == "-n":
+            try:
+                timeout = int(value)
+            except ValueError:
+                timeout = -1
+            if timeout < 0:
+                log.error("Bad timeout")
+                sys.exit(1)
+        elif name == "-P":
+            proto = value
+        elif name == "-S":
+            secure = True
+        elif name == "-V":
+            sys.stdout.write(version + "\n")
+            sys.exit(0)
+        elif name == "-v":
+            log.verbose()
+    if len(arguments) != 2:
+        sys.stderr.write(USAGE % args[0])
+        sys.exit(1)
+    if proto == "discard":
+        if srvmode:
+            listen("127.0.0.1", "8009", accepted=Discard)
+        else:
+            connect("127.0.0.1", "8009", connected=Source)
         loop()
         sys.exit(0)
-    elif sys.argv[1] == "echo":
+    elif proto == "echo":
         listen("127.0.0.1", "8007", accepted=Echo)
         loop()
         sys.exit(0)
-    elif sys.argv[1] == "source":
-        connect("127.0.0.1", "8009", connected=Source)
-        loop()
-        sys.exit(0)
-    else:
-        sys.stderr.write("Usage: %s discard|echo|source\n" % sys.argv[0])
+    elif proto:
+        sys.stderr.write(USAGE)
         sys.exit(1)
+    if srvmode:
+        listen(arguments[0], arguments[1], connected, family=family,
+               secure=secure, certfile=certfile)
+    else:
+        connect(arguments[0], arguments[1], connected, conntimeo=timeout,
+                family=family, secure=secure)
+    loop()
+
+if __name__ == "__main__":
+    main(sys.argv)
