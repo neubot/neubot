@@ -50,13 +50,6 @@ from neubot import log
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
 
-ISCLOSED = 1<<0
-SEND_PENDING = 1<<1
-SENDBLOCKED = 1<<2
-RECV_PENDING = 1<<3
-RECVBLOCKED = 1<<4
-EOF = 1<<7
-
 MAXBUF = 1<<18
 
 class Stream(Pollable):
@@ -80,7 +73,11 @@ class Stream(Pollable):
         self.notify_closing = None
         self.stats = []
         self.stats.append(self.poller.stats)
-        self.flags = 0
+        self.isclosed = 0
+        self.send_pending = 0
+        self.sendblocked = 0
+        self.recv_pending = 0
+        self.recvblocked = 0
 
     def fileno(self):
         return self._fileno
@@ -98,9 +95,9 @@ class Stream(Pollable):
         self._do_close()
 
     def _do_close(self):
-        if not (self.flags & ISCLOSED):
+        if not self.isclosed:
             log.debug("* Closing connection %s" % self.logname)
-            self.flags |= ISCLOSED
+            self.isclosed = 1
             if self.notify_closing:
                 self.notify_closing()
                 self.notify_closing = None
@@ -117,12 +114,10 @@ class Stream(Pollable):
             self.poller.close(self)
 
     def readtimeout(self, now):
-        return (self.flags & RECV_PENDING and
-         (now - self.recv_ticks) > self.timeout)
+        return (self.recv_pending and (now - self.recv_ticks) > self.timeout)
 
     def writetimeout(self, now):
-        return (self.flags & SEND_PENDING and
-         (now - self.send_ticks) > self.timeout)
+        return (self.send_pending and (now - self.send_ticks) > self.timeout)
 
     #
     # Make sure that we set/unset readable/writable only if
@@ -159,12 +154,12 @@ class Stream(Pollable):
             self.handleWritable = None
 
     def recv(self, maxlen, recv_success):
-        if not (self.flags & ISCLOSED):
+        if not self.isclosed:
             self.recv_maxlen = maxlen
             self.recv_success = recv_success
             self.recv_ticks = ticks()
-            self.flags |= RECV_PENDING
-            if not (self.flags & RECVBLOCKED):
+            self.recv_pending = 1
+            if not self.recvblocked:
                 self.set_readable(self._do_recv)
 
     def _do_recv(self):
@@ -175,20 +170,20 @@ class Stream(Pollable):
         # to invoke SSL_write() again--and of course we can't
         # recv() until this happens.
         #
-        if not (self.flags & RECVBLOCKED):
+        if not self.recvblocked:
             panic = ""
-            if self.flags & SENDBLOCKED:
+            if self.sendblocked:
                 #
                 # SENDBLOCKED is the symmetrical of RECVBLOCKED.
                 # If we're here it means that SSL_read() returned
                 # WANT_WRITE and we temporarily needed to block
                 # send().
                 #
-                if self.flags & SEND_PENDING:
+                if self.send_pending:
                     self.set_writable(self._do_send)
                 else:
                     self.unset_writable()
-                self.flags &= ~SENDBLOCKED
+                self.sendblocked = 0
             status, octets = self.sorecv(self.recv_maxlen)
             if status == SUCCESS:
                 if octets:
@@ -198,20 +193,19 @@ class Stream(Pollable):
                     self.recv_maxlen = 0
                     self.recv_success = None
                     self.recv_ticks = 0
-                    self.flags &= ~RECV_PENDING
+                    self.recv_pending = 0
                     self.unset_readable()
                     if notify:
                         notify(self, octets)
                 else:
                     log.debug("* Connection %s: EOF" % self.logname)
-                    self.flags |= EOF
                     self.eof = True
                     self._do_close()
             elif status == WANT_READ:
                 self.set_readable(self._do_recv)
             elif status == WANT_WRITE:
                 self.set_writable(self._do_recv)
-                self.flags |= SENDBLOCKED
+                self.sendblocked = 1
             elif status == ERROR:
                 log.error("* Connection %s: recv error" % self.logname)
                 self._do_close()
@@ -226,7 +220,7 @@ class Stream(Pollable):
     #
 
     def send(self, octets, send_success):
-        if not (self.flags & ISCLOSED):
+        if not self.isclosed:
             #
             # Make sure we don't start sending an Unicode string
             # because _do_send() assumes 8 bits encoding and would
@@ -240,19 +234,19 @@ class Stream(Pollable):
             self.send_pos = 0
             self.send_success = send_success
             self.send_ticks = ticks()
-            self.flags |= SEND_PENDING
-            if not (self.flags & SENDBLOCKED):
+            self.send_pending = 1
+            if not self.sendblocked:
                 self.set_writable(self._do_send)
 
     def _do_send(self):
-        if not (self.flags & SENDBLOCKED):
+        if not self.sendblocked:
             panic = ""
-            if self.flags & RECVBLOCKED:
-                if self.flags & RECV_PENDING:
+            if self.recvblocked:
+                if self.recv_pending:
                     self.set_readable(self._do_recv)
                 else:
                     self.unset_readable()
-                self.flags &= ~RECVBLOCKED
+                self.recvblocked = 0
             subset = buffer(self.send_octets, self.send_pos)
             status, count = self.sosend(subset)
             if status == SUCCESS:
@@ -270,7 +264,7 @@ class Stream(Pollable):
                         self.send_pos = 0
                         self.send_success = None
                         self.send_ticks = 0
-                        self.flags &= ~SEND_PENDING
+                        self.send_pending = 0
                         self.unset_writable()
                         if notify:
                             notify(self, octets)
@@ -282,7 +276,7 @@ class Stream(Pollable):
                 self.set_writable(self._do_send)
             elif status == WANT_READ:
                 self.set_readable(self._do_send)
-                self.flags |= RECVBLOCKED
+                self.recvblocked = 1
             elif status == ERROR:
                 log.error("* Connection %s: send error" % self.logname)
                 self._do_close()
