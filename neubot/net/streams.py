@@ -53,9 +53,9 @@ TIMEOUT = 300
 MAXBUF = 1<<18
 
 class Stream(Pollable):
-    def __init__(self, poller, fileno, myname, peername, logname):
+    def __init__(self, poller, filenum, myname, peername, logname):
         self.poller = poller
-        self._fileno = fileno
+        self.filenum = filenum
         self.myname = myname
         self.peername = peername
         self.logname = logname
@@ -79,7 +79,7 @@ class Stream(Pollable):
         self.recvblocked = 0
 
     def fileno(self):
-        return self._fileno
+        return self.filenum
 
     #
     # When you keep a reference to the stream in your class,
@@ -160,8 +160,10 @@ class Stream(Pollable):
         self.recv_ticks = ticks()
         self.recv_pending = 1
 
-        if not self.recvblocked:
-            self.set_readable(self._do_recv)
+        if self.recvblocked:
+            return
+
+        self.set_readable(self._do_recv)
 
     def _do_recv(self):
         if self.recvblocked:
@@ -223,8 +225,10 @@ class Stream(Pollable):
         self.send_ticks = ticks()
         self.send_pending = 1
 
-        if not self.sendblocked:
-            self.set_writable(self._do_send)
+        if self.sendblocked:
+            return
+
+        self.set_writable(self._do_send)
 
     def _do_send(self):
         if self.sendblocked:
