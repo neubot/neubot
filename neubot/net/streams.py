@@ -461,38 +461,30 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
 class Connector(Pollable):
-    def __init__(self, address, port, connected, **kwargs):
-        self.address = address
-        self.port = port
-        self.name = (self.address, self.port)
-        self.connected = connected
-        self.kwargs = fixkwargs(kwargs, CONNECTARGS)
-        self.connecting = self.kwargs["connecting"]
-        self.cantconnect = self.kwargs["cantconnect"]
-        self.poller = self.kwargs["poller"]
-        self.family = self.kwargs["family"]
-        self.secure = self.kwargs["secure"]
-        self.conntimeo = self.kwargs["conntimeo"]
-        self.mkstream = self.kwargs["mkstream"]
-        self.begin = 0
-        self.sock = None
-        self._connect()
 
-    def _connect(self):
-        log.debug("* About to connect to %s:%s" % self.name)
+    def __init__(self, poller):
+        self.poller = poller
+        self.protocol = None
+        self.sock = None
+        self.timeout = 15
+        self.timestamp = 0
+        self.endpoint = None
+        self.family = 0
+
+    def connect(self, endpoint, family=socket.AF_INET):
+        self.endpoint = endpoint
+        self.family = family
 
         try:
-            addrinfo = socket.getaddrinfo(self.address, self.port,
-                                   self.family, socket.SOCK_STREAM)
+            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
+                                          family, socket.SOCK_STREAM)
         except socket.error, exception:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
-            self.cantconnect()
+            self.connection_failed(exception)
             return
 
+        last_exception = None
         for family, socktype, protocol, cannonname, sockaddr in addrinfo:
             try:
-                log.debug("* Trying with %s..." % str(sockaddr))
 
                 sock = socket.socket(family, socktype, protocol)
                 sock.setblocking(False)
@@ -501,18 +493,21 @@ class Connector(Pollable):
                     raise socket.error(result, os.strerror(result))
 
                 self.sock = sock
-                self.begin = ticks()
+                self.timestamp = ticks()
                 self.poller.set_writable(self)
-                log.debug("* Connection to %s in progress" % str(sockaddr))
-                self.connecting()
+                self.started_connecting()
                 return
 
             except socket.error, exception:
-                log.error("* connect() to %s failed" % str(sockaddr))
-                log.exception()
+                last_exception = exception
 
-        log.error("* Can't connect to %s:%s" % self.name)
-        self.cantconnect()
+        self.connection_failed(last_exception)
+
+    def connection_failed(self, exception):
+        pass
+
+    def started_connecting(self):
+        pass
 
     def fileno(self):
         return self.sock.fileno()
@@ -524,37 +519,31 @@ class Connector(Pollable):
         try:
             self.sock.getpeername()
         except socket.error, exception:
-            log.error("* Can't connect to %s:%s" % self.name)
             if exception[0] == errno.ENOTCONN:
                 try:
                     self.sock.recv(MAXBUF)
-                except socket.error, exception:
-                    log.exception()
-            else:
-                log.exception()
-            self.cantconnect()
+                except socket.error, exception2:
+                    exception = exception2
+            self.connection_failed(exception)
             return
 
-        if not self.mkstream:
-            self.connected(self.poller, self.sock)
-            return
+        stream = self.protocol(self.poller)
+        stream.parent = self
+        stream.make_connection(self.sock)
+        self.connection_made(stream)
+        stream.connection_made()
 
-        logname = "with %s:%s" % self.name
-        stream = create_stream(self.sock, self.poller, self.sock.fileno(),
-          self.sock.getsockname(), self.sock.getpeername(), logname,
-          self.secure, None, False)
-        log.debug("* Connected to %s:%s!" % self.name)
-        self.connected(stream)
+    def connection_made(self, stream):
+        pass
+
+    def connection_lost(self, stream):
+        pass
 
     def writetimeout(self, now):
-        timedout = (now - self.begin >= self.conntimeo)
-        if timedout:
-            log.error("* connect() to %s:%s timed-out" % self.name)
-        return timedout
+        return now - self.timestamp >= self.timeout
 
-    def closing(self):
-        log.debug("* closing Connector to %s:%s" % self.name)
-        self.cantconnect()
+    def closing(self, exception=None):
+        self.connection_failed(exception)
 
 CONNECTARGS = {
     "cantconnect" : lambda: None,
@@ -662,81 +651,80 @@ def connect(address, port, connected, **kwargs):
 # Listen
 
 class Listener(Pollable):
-    def __init__(self, address, port, accepted, **kwargs):
-        self.address = address
-        self.port = port
-        self.name = (self.address, self.port)
-        self.accepted = accepted
-        self.kwargs = fixkwargs(kwargs, LISTENARGS)
-        self.listening = self.kwargs["listening"]
-        self.cantbind = self.kwargs["cantbind"]
-        self.poller = self.kwargs["poller"]
-        self.family = self.kwargs["family"]
-        self.secure = self.kwargs["secure"]
-        self.certfile = self.kwargs["certfile"]
-        self.mkstream = self.kwargs["mkstream"]
-        self.sock = None
-        self._listen()
 
-    def _listen(self):
-        log.debug("* About to bind %s:%s" % self.name)
+    def __init__(self, poller):
+        self.protocol = None
+        self.poller = poller
+        self.lsock = None
+        self.endpoint = None
+        self.family = 0
+
+    def listen(self, endpoint, family=socket.AF_INET):
+        self.endpoint = endpoint
+        self.family = family
 
         try:
-            addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
-                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1], family,
+                         socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
         except socket.error, exception:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
-            self.cantbind()
+            self.bind_failed(exception)
             return
 
+        last_exception = None
         for family, socktype, protocol, canonname, sockaddr in addrinfo:
             try:
-                log.debug("* Trying with %s..." % str(sockaddr))
 
-                sock = socket.socket(family, socktype, protocol)
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                sock.setblocking(False)
-                sock.bind(sockaddr)
+                lsock = socket.socket(family, socktype, protocol)
+                lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                lsock.setblocking(False)
+                lsock.bind(sockaddr)
                 # Probably the backlog here is too big
-                sock.listen(128)
+                lsock.listen(128)
 
-                self.sock = sock
+                self.lsock = lsock
                 self.poller.set_readable(self)
-                log.debug("* Bound with %s" % str(sockaddr))
-                log.debug("* Listening at %s:%s..." % self.name)
-                self.listening()
+                self.started_listening()
                 return
 
             except socket.error, exception:
-                log.error("* bind() with %s failed" % str(sockaddr))
-                log.exception()
+                last_exception = exception
 
-        log.error("* Can't bind %s:%s" % self.name)
-        self.cantbind()
+        self.bind_failed(last_exception)
+
+    def bind_failed(self, exception):
+        pass
+
+    def started_listening(self):
+        pass
 
     def fileno(self):
-        return self.sock.fileno()
+        return self.lsock.fileno()
 
     def readable(self):
-
         try:
-            sock, sockaddr = self.sock.accept()
+            sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
-        except socket.error:
-            log.exception()
+        except socket.error, exception:
+            self.accept_failed(exception)
             return
 
-        if not self.mkstream:
-            self.accepted(self.poller, sock)
-            return
+        stream = self.protocol(self.poller)
+        stream.parent = self
+        stream.make_connection(sock)
+        self.connection_made(stream)
+        stream.connection_made()
 
-        logname = "with %s" % str(sock.getpeername())
-        stream = create_stream(sock, self.poller, sock.fileno(),
-          sock.getsockname(), sock.getpeername(), logname,
-          self.secure, self.certfile, True)
-        log.debug("* Got connection from %s" % str(sock.getpeername()))
-        self.accepted(stream)
+    def accept_failed(self, exception):
+        pass
+
+    def connection_made(self, stream):
+        pass
+
+    def connection_lost(self, stream):
+        pass
+
+    def closing(self, exception=None):
+        self.bind_failed(exception)     # XXX
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
