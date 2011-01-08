@@ -129,28 +129,6 @@ class Stream(Pollable):
     def writable(self):
         self.handleWritable()
 
-    def set_readable(self, func):
-        if not self.handleReadable:
-            self.poller.set_readable(self)
-        if self.handleReadable != func:
-            self.handleReadable = func
-
-    def set_writable(self, func):
-        if not self.handleWritable:
-            self.poller.set_writable(self)
-        if self.handleWritable != func:
-            self.handleWritable = func
-
-    def unset_readable(self):
-        if self.handleReadable:
-            self.poller.unset_readable(self)
-            self.handleReadable = None
-
-    def unset_writable(self):
-        if self.handleWritable:
-            self.poller.unset_writable(self)
-            self.handleWritable = None
-
     def recv(self, maxlen, recv_success):
         if self.isclosed:
             return
@@ -163,7 +141,8 @@ class Stream(Pollable):
         if self.recvblocked:
             return
 
-        self.set_readable(self._do_recv)
+        self.poller.set_readable(self)
+        self.handleReadable = self._do_recv
 
     def _do_recv(self):
         if self.recvblocked:
@@ -171,9 +150,11 @@ class Stream(Pollable):
 
         if self.sendblocked:
             if self.send_pending:
-                self.set_writable(self._do_send)
+                self.poller.set_writable(self)
+                self.handleWritable = self._do_send
             else:
-                self.unset_writable()
+                self.poller.unset_writable(self)
+                self.handleWritable = None
             self.sendblocked = 0
 
         status, octets = self.sorecv(self.recv_maxlen)
@@ -186,17 +167,20 @@ class Stream(Pollable):
             self.recv_success = None
             self.recv_ticks = 0
             self.recv_pending = 0
-            self.unset_readable()
+            self.poller.unset_readable(self)
+            self.handleReadable = None
             if notify:
                 notify(self, octets)
             return
 
         if status == WANT_READ:
-            self.set_readable(self._do_recv)
+            self.poller.set_readable(self)
+            self.handleReadable = self._do_recv
             return
 
         if status == WANT_WRITE:
-            self.set_writable(self._do_recv)
+            self.poller.set_writable(self)
+            self.handleWritable = self._do_recv
             self.sendblocked = 1
             return
 
@@ -228,7 +212,8 @@ class Stream(Pollable):
         if self.sendblocked:
             return
 
-        self.set_writable(self._do_send)
+        self.poller.set_writable(self)
+        self.handleWritable = self._do_send
 
     def _do_send(self):
         if self.sendblocked:
@@ -236,9 +221,11 @@ class Stream(Pollable):
 
         if self.recvblocked:
             if self.recv_pending:
-                self.set_readable(self._do_recv)
+                self.poller.set_readable(self)
+                self.handleReadable = self._do_recv
             else:
-                self.unset_readable()
+                self.poller.unset_readable(self)
+                self.handleReadable = None
             self.recvblocked = 0
 
         status, count = self.sosend(self.send_octets)
@@ -254,7 +241,8 @@ class Stream(Pollable):
                 self.send_success = None
                 self.send_ticks = 0
                 self.send_pending = 0
-                self.unset_writable()
+                self.poller.unset_writable(self)
+                self.handleWritable = None
                 if notify:
                     notify(self, octets)
                 return
@@ -262,17 +250,20 @@ class Stream(Pollable):
             if count < len(self.send_octets):
                 self.send_octets = buffer(self.send_octets, count)
                 self.send_ticks = ticks()
-                self.set_writable(self._do_send)
+                self.poller.set_writable(self)
+                self.handleWritable = self._do_send
                 return
 
             raise RuntimeError("Sent more than expected")
 
         if status == WANT_WRITE:
-            self.set_writable(self._do_send)
+            self.poller.set_writable(self)
+            self.handleWritable = self._do_send
             return
 
         if status == WANT_READ:
-            self.set_readable(self._do_send)
+            self.poller.set_readable(self)
+            self.handleReadable = self._do_send
             self.recvblocked = 1
             return
 
