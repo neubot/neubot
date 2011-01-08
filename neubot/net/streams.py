@@ -242,11 +242,8 @@ class Stream(Pollable):
         if status == SUCCESS and count > 0:
             for stats in self.stats:
                 stats.send.account(count)
-            if count < len(self.send_octets):
-                self.send_octets = buffer(self.send_octets, count)
-                self.send_ticks = ticks()
-                self.set_writable(self._do_send)
-            elif count == len(self.send_octets):
+
+            if count == len(self.send_octets):
                 notify = self.send_success
                 octets = self.send_octets
                 self.send_octets = None
@@ -256,9 +253,15 @@ class Stream(Pollable):
                 self.unset_writable()
                 if notify:
                     notify(self, octets)
-            else:
-                raise RuntimeError("Sent more than expected")
-            return
+                return
+
+            if count < len(self.send_octets):
+                self.send_octets = buffer(self.send_octets, count)
+                self.send_ticks = ticks()
+                self.set_writable(self._do_send)
+                return
+
+            raise RuntimeError("Sent more than expected")
 
         if status == WANT_WRITE:
             self.set_writable(self._do_send)
