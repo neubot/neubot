@@ -154,136 +154,135 @@ class Stream(Pollable):
             self.handleWritable = None
 
     def recv(self, maxlen, recv_success):
-        if not self.isclosed:
-            self.recv_maxlen = maxlen
-            self.recv_success = recv_success
-            self.recv_ticks = ticks()
-            self.recv_pending = 1
-            if not self.recvblocked:
-                self.set_readable(self._do_recv)
+        if self.isclosed:
+            return
+
+        self.recv_maxlen = maxlen
+        self.recv_success = recv_success
+        self.recv_ticks = ticks()
+        self.recv_pending = 1
+
+        if not self.recvblocked:
+            self.set_readable(self._do_recv)
 
     def _do_recv(self):
-        #
-        # RECVBLOCKED means that the underlying socket is SSL,
-        # _and_ that SSL_write() returned WANT_READ, so we need
-        # to wait for the underlying socket to become readable
-        # to invoke SSL_write() again--and of course we can't
-        # recv() until this happens.
-        #
-        if not self.recvblocked:
-            panic = ""
-            if self.sendblocked:
-                #
-                # SENDBLOCKED is the symmetrical of RECVBLOCKED.
-                # If we're here it means that SSL_read() returned
-                # WANT_WRITE and we temporarily needed to block
-                # send().
-                #
-                if self.send_pending:
-                    self.set_writable(self._do_send)
-                else:
-                    self.unset_writable()
-                self.sendblocked = 0
-            status, octets = self.sorecv(self.recv_maxlen)
-            if status == SUCCESS:
-                if octets:
-                    for stats in self.stats:
-                        stats.recv.account(len(octets))
-                    notify = self.recv_success
-                    self.recv_maxlen = 0
-                    self.recv_success = None
-                    self.recv_ticks = 0
-                    self.recv_pending = 0
-                    self.unset_readable()
-                    if notify:
-                        notify(self, octets)
-                else:
-                    log.debug("* Connection %s: EOF" % self.logname)
-                    self.eof = True
-                    self._do_close()
-            elif status == WANT_READ:
-                self.set_readable(self._do_recv)
-            elif status == WANT_WRITE:
-                self.set_writable(self._do_recv)
-                self.sendblocked = 1
-            elif status == ERROR:
-                log.error("* Connection %s: recv error" % self.logname)
-                self._do_close()
-            else:
-                panic = "Unexpected status value"
-            if panic:
-                raise Exception(panic)
+        if self.recvblocked:
+            return
 
-    #
-    # send() is symmetrical to recv() and so to the comments
-    # to recv()'s implementation are also applicable here.
-    #
+        if self.sendblocked:
+            if self.send_pending:
+                self.set_writable(self._do_send)
+            else:
+                self.unset_writable()
+            self.sendblocked = 0
+
+        status, octets = self.sorecv(self.recv_maxlen)
+
+        if status == SUCCESS and octets:
+            for stats in self.stats:
+                stats.recv.account(len(octets))
+            notify = self.recv_success
+            self.recv_maxlen = 0
+            self.recv_success = None
+            self.recv_ticks = 0
+            self.recv_pending = 0
+            self.unset_readable()
+            if notify:
+                notify(self, octets)
+            return
+
+        if status == WANT_READ:
+            self.set_readable(self._do_recv)
+            return
+
+        if status == WANT_WRITE:
+            self.set_writable(self._do_recv)
+            self.sendblocked = 1
+            return
+
+        if status == SUCCESS and not octets:
+            log.debug("* Connection %s: EOF" % self.logname)
+            self.eof = True
+            self._do_close()
+            return
+
+        if status == ERROR:
+            log.error("* Connection %s: recv error" % self.logname)
+            self._do_close()
+            return
+
+        raise RuntimeError("Unexpected status value")
 
     def send(self, octets, send_success):
-        if not self.isclosed:
-            #
-            # Make sure we don't start sending an Unicode string
-            # because _do_send() assumes 8 bits encoding and would
-            # go very likely to 'Internal error' state if passed
-            # an unicode encoding.
-            #
-            if type(octets) == types.UnicodeType:
-                log.warning("* send: Working-around Unicode input")
-                octets = octets.encode("utf-8")
-            self.send_octets = octets
-            self.send_pos = 0
-            self.send_success = send_success
-            self.send_ticks = ticks()
-            self.send_pending = 1
-            if not self.sendblocked:
-                self.set_writable(self._do_send)
+        if self.isclosed:
+            return
+        if type(octets) == types.UnicodeType:
+            log.warning("* send: Working-around Unicode input")
+            octets = octets.encode("utf-8")
+
+        self.send_octets = octets
+        self.send_pos = 0
+        self.send_success = send_success
+        self.send_ticks = ticks()
+        self.send_pending = 1
+
+        if not self.sendblocked:
+            self.set_writable(self._do_send)
 
     def _do_send(self):
-        if not self.sendblocked:
-            panic = ""
-            if self.recvblocked:
-                if self.recv_pending:
-                    self.set_readable(self._do_recv)
-                else:
-                    self.unset_readable()
-                self.recvblocked = 0
-            subset = buffer(self.send_octets, self.send_pos)
-            status, count = self.sosend(subset)
-            if status == SUCCESS:
-                if count > 0:
-                    for stats in self.stats:
-                        stats.send.account(count)
-                    self.send_pos += count
-                    if self.send_pos < len(self.send_octets):
-                        self.send_ticks = ticks()
-                        self.set_writable(self._do_send)
-                    elif self.send_pos == len(self.send_octets):
-                        notify = self.send_success
-                        octets = self.send_octets
-                        self.send_octets = None
-                        self.send_pos = 0
-                        self.send_success = None
-                        self.send_ticks = 0
-                        self.send_pending = 0
-                        self.unset_writable()
-                        if notify:
-                            notify(self, octets)
-                    else:
-                        panic = "Internal error"
-                else:
-                    panic = "Unexpected count value"
-            elif status == WANT_WRITE:
-                self.set_writable(self._do_send)
-            elif status == WANT_READ:
-                self.set_readable(self._do_send)
-                self.recvblocked = 1
-            elif status == ERROR:
-                log.error("* Connection %s: send error" % self.logname)
-                self._do_close()
+        if self.sendblocked:
+            return
+
+        if self.recvblocked:
+            if self.recv_pending:
+                self.set_readable(self._do_recv)
             else:
-                panic = "Unexpected status value"
-            if panic:
-                raise Exception(panic)
+                self.unset_readable()
+            self.recvblocked = 0
+
+        subset = buffer(self.send_octets, self.send_pos)
+        status, count = self.sosend(subset)
+
+        if status == SUCCESS and count > 0:
+            for stats in self.stats:
+                stats.send.account(count)
+            self.send_pos += count
+            if self.send_pos < len(self.send_octets):
+                self.send_ticks = ticks()
+                self.set_writable(self._do_send)
+            elif self.send_pos == len(self.send_octets):
+                notify = self.send_success
+                octets = self.send_octets
+                self.send_octets = None
+                self.send_pos = 0
+                self.send_success = None
+                self.send_ticks = 0
+                self.send_pending = 0
+                self.unset_writable()
+                if notify:
+                    notify(self, octets)
+            else:
+                raise RuntimeError("Sent more than expected")
+            return
+
+        if status == WANT_WRITE:
+            self.set_writable(self._do_send)
+            return
+
+        if status == WANT_READ:
+            self.set_readable(self._do_send)
+            self.recvblocked = 1
+            return
+
+        if status == ERROR:
+            log.error("* Connection %s: send error" % self.logname)
+            self._do_close()
+            return
+
+        if status == SUCCESS and count <= 0:
+            raise RuntimeError("Unexpected count value")
+
+        raise RuntimeError("Unexpected status value")
 
     #
     # These are the methods that an "underlying socket"
