@@ -53,10 +53,9 @@ TIMEOUT = 300
 MAXBUF = 1<<18
 
 if ssl:
-    class StreamSSL(Stream):
-        def __init__(self, sock, poller, fileno, myname, peername, logname):
+    class SSLWrapper(object):
+        def __init__(self, sock):
             self.sock = sock
-            Stream.__init__(self, poller, fileno, myname, peername, logname)
             self.need_handshake = True
 
         def soclose(self):
@@ -96,10 +95,9 @@ if ssl:
 
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 
-class StreamSocket(Stream):
-    def __init__(self, sock, poller, fileno, myname, peername, logname):
+class SocketWrapper(object):
+    def __init__(self, sock):
         self.sock = sock
-        Stream.__init__(self, poller, fileno, myname, peername, logname)
 
     def soclose(self):
         self.sock.close()
@@ -127,8 +125,9 @@ class StreamSocket(Stream):
                 return ERROR, 0
 
 class Stream(Pollable):
-    def __init__(self, poller, filenum, myname, peername, logname):
+    def __init__(self, poller, sock, filenum, myname, peername, logname):
         self.poller = poller
+        self.sock = sock
         self.filenum = filenum
         self.myname = myname
         self.peername = peername
@@ -178,7 +177,7 @@ class Stream(Pollable):
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
-            self.soclose()
+            self.sock.soclose()
             self.poller.close(self)
 
     def readtimeout(self, now):
@@ -213,7 +212,7 @@ class Stream(Pollable):
                 self.poller.unset_writable(self)
             self.sendblocked = 0
 
-        status, octets = self.sorecv(self.recv_maxlen)
+        status, octets = self.sock.sorecv(self.recv_maxlen)
 
         if status == SUCCESS and octets:
             for stats in self.stats:
@@ -279,7 +278,7 @@ class Stream(Pollable):
                 self.poller.unset_readable(self)
             self.recvblocked = 0
 
-        status, count = self.sosend(self.send_octets)
+        status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
             for stats in self.stats:
@@ -324,20 +323,6 @@ class Stream(Pollable):
 
         raise RuntimeError("Unexpected status value")
 
-    #
-    # These are the methods that an "underlying socket"
-    # implementation should override.
-    #
-
-    def soclose(self):
-        raise NotImplementedError
-
-    def sorecv(self, maxlen):
-        raise NotImplementedError
-
-    def sosend(self, octets):
-        raise NotImplementedError
-
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
     if ssl:
@@ -347,11 +332,13 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile=certfile, server_side=server_side)
             except ssl.SSLError, exception:
                 raise socket.error(exception)
-            stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
+            so = SSLWrapper(sock)
+            stream = Stream(poller, so, fileno, myname, peername, logname)
             return stream
     if type(sock) == socket.SocketType and secure:
         raise socket.error("SSL support not available")
-    stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
+    so = SocketWrapper(sock)
+    stream = Stream(poller, so, fileno, myname, peername, logname)
     return stream
 
 # Connect
