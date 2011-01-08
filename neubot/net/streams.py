@@ -460,6 +460,102 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 # Winsock returns EWOULDBLOCK
 INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
+class Connector(Pollable):
+    def __init__(self, address, port, connected, **kwargs):
+        self.address = address
+        self.port = port
+        self.name = (self.address, self.port)
+        self.connected = connected
+        self.kwargs = fixkwargs(kwargs, CONNECTARGS)
+        self.connecting = self.kwargs["connecting"]
+        self.cantconnect = self.kwargs["cantconnect"]
+        self.poller = self.kwargs["poller"]
+        self.family = self.kwargs["family"]
+        self.secure = self.kwargs["secure"]
+        self.conntimeo = self.kwargs["conntimeo"]
+        self.mkstream = self.kwargs["mkstream"]
+        self.begin = 0
+        self.sock = None
+        self._connect()
+
+    def _connect(self):
+        log.debug("* About to connect to %s:%s" % self.name)
+
+        try:
+            addrinfo = socket.getaddrinfo(self.address, self.port,
+                                   self.family, socket.SOCK_STREAM)
+        except socket.error, exception:
+            log.error("* getaddrinfo() %s:%s failed" % self.name)
+            log.exception()
+            self.cantconnect()
+            return
+
+        for family, socktype, protocol, cannonname, sockaddr in addrinfo:
+            try:
+                log.debug("* Trying with %s..." % str(sockaddr))
+
+                sock = socket.socket(family, socktype, protocol)
+                sock.setblocking(False)
+                result = sock.connect_ex(sockaddr)
+                if result not in INPROGRESS:
+                    raise socket.error(result, os.strerror(result))
+
+                self.sock = sock
+                self.begin = ticks()
+                self.poller.set_writable(self)
+                log.debug("* Connection to %s in progress" % str(sockaddr))
+                self.connecting()
+                return
+
+            except socket.error, exception:
+                log.error("* connect() to %s failed" % str(sockaddr))
+                log.exception()
+
+        log.error("* Can't connect to %s:%s" % self.name)
+        self.cantconnect()
+
+    def fileno(self):
+        return self.sock.fileno()
+
+    def writable(self):
+        self.poller.unset_writable(self)
+
+        # See http://cr.yp.to/docs/connect.html
+        try:
+            self.sock.getpeername()
+        except socket.error, exception:
+            log.error("* Can't connect to %s:%s" % self.name)
+            if exception[0] == errno.ENOTCONN:
+                try:
+                    self.sock.recv(MAXBUF)
+                except socket.error, exception:
+                    log.exception()
+            else:
+                log.exception()
+            self.cantconnect()
+            return
+
+        if not self.mkstream:
+            self.connected(self.poller, self.sock)
+            return
+
+        logname = "with %s:%s" % self.name
+        stream = create_stream(self.sock, self.poller, self.sock.fileno(),
+          self.sock.getsockname(), self.sock.getpeername(), logname,
+          self.secure, None, False)
+        log.debug("* Connected to %s:%s!" % self.name)
+        self.connected(stream)
+
+    def writetimeout(self, now):
+        timedout = (now - self.begin >= self.conntimeo)
+        if timedout:
+            log.error("* connect() to %s:%s timed-out" % self.name)
+        return timedout
+
+    def closing(self):
+        log.debug("* closing Connector to %s:%s" % self.name)
+        self.cantconnect()
+
 CONNECTARGS = {
     "cantconnect" : lambda: None,
     "connecting"  : lambda: None,
@@ -469,7 +565,7 @@ CONNECTARGS = {
     "secure"      : False,
 }
 
-class Connector(Pollable):
+class OldConnector(Pollable):
     def __init__(self, address, port, connected, **kwargs):
         self.address = address
         self.port = port
@@ -561,9 +657,86 @@ class Connector(Pollable):
         self.cantconnect()
 
 def connect(address, port, connected, **kwargs):
-    Connector(address, port, connected, **kwargs)
+    OldConnector(address, port, connected, **kwargs)
 
 # Listen
+
+class Listener(Pollable):
+    def __init__(self, address, port, accepted, **kwargs):
+        self.address = address
+        self.port = port
+        self.name = (self.address, self.port)
+        self.accepted = accepted
+        self.kwargs = fixkwargs(kwargs, LISTENARGS)
+        self.listening = self.kwargs["listening"]
+        self.cantbind = self.kwargs["cantbind"]
+        self.poller = self.kwargs["poller"]
+        self.family = self.kwargs["family"]
+        self.secure = self.kwargs["secure"]
+        self.certfile = self.kwargs["certfile"]
+        self.mkstream = self.kwargs["mkstream"]
+        self.sock = None
+        self._listen()
+
+    def _listen(self):
+        log.debug("* About to bind %s:%s" % self.name)
+
+        try:
+            addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
+                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+        except socket.error, exception:
+            log.error("* getaddrinfo() %s:%s failed" % self.name)
+            log.exception()
+            self.cantbind()
+            return
+
+        for family, socktype, protocol, canonname, sockaddr in addrinfo:
+            try:
+                log.debug("* Trying with %s..." % str(sockaddr))
+
+                sock = socket.socket(family, socktype, protocol)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.setblocking(False)
+                sock.bind(sockaddr)
+                # Probably the backlog here is too big
+                sock.listen(128)
+
+                self.sock = sock
+                self.poller.set_readable(self)
+                log.debug("* Bound with %s" % str(sockaddr))
+                log.debug("* Listening at %s:%s..." % self.name)
+                self.listening()
+                return
+
+            except socket.error, exception:
+                log.error("* bind() with %s failed" % str(sockaddr))
+                log.exception()
+
+        log.error("* Can't bind %s:%s" % self.name)
+        self.cantbind()
+
+    def fileno(self):
+        return self.sock.fileno()
+
+    def readable(self):
+
+        try:
+            sock, sockaddr = self.sock.accept()
+            sock.setblocking(False)
+        except socket.error:
+            log.exception()
+            return
+
+        if not self.mkstream:
+            self.accepted(self.poller, sock)
+            return
+
+        logname = "with %s" % str(sock.getpeername())
+        stream = create_stream(sock, self.poller, sock.fileno(),
+          sock.getsockname(), sock.getpeername(), logname,
+          self.secure, self.certfile, True)
+        log.debug("* Got connection from %s" % str(sock.getpeername()))
+        self.accepted(stream)
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
@@ -574,7 +747,7 @@ LISTENARGS = {
     "secure"     : False,
 }
 
-class Listener(Pollable):
+class OldListener(Pollable):
     def __init__(self, address, port, accepted, **kwargs):
         self.address = address
         self.port = port
@@ -647,7 +820,7 @@ class Listener(Pollable):
         self.accepted(stream)
 
 def listen(address, port, accepted, **kwargs):
-    Listener(address, port, accepted, **kwargs)
+    OldListener(address, port, accepted, **kwargs)
 
 # TODO move to neubot/utils.py
 def speed_formatter(speed, base10=True, bytes=False):
