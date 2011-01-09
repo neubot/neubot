@@ -59,7 +59,10 @@ if ssl:
             self.need_handshake = True
 
         def soclose(self):
-            self.sock.close()
+            try:
+                self.sock.close()
+            except ssl.SSLError:
+                pass
 
         def sorecv(self, maxlen):
             try:
@@ -100,7 +103,10 @@ class SocketWrapper(object):
         self.sock = sock
 
     def soclose(self):
-        self.sock.close()
+        try:
+            self.sock.close()
+        except socket.error:
+            pass
 
     def sorecv(self, maxlen):
         try:
