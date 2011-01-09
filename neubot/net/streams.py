@@ -24,27 +24,9 @@
 # Asynchronous I/O for non-blocking sockets (and SSL)
 #
 
-import errno
-import os
-import socket
-import sys
-import types
-
-try:
-    import ssl
-except ImportError:
-    ssl = None
-
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
-
-from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
-from neubot.net.pollers import poller
-from neubot.net.pollers import loop
-from neubot.utils import unit_formatter
+from types import UnicodeType
 from neubot.utils import ticks
-from neubot.utils import fixkwargs
 from neubot import log
 
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
@@ -58,8 +40,6 @@ RECVBLOCKED = 1<<4
 ISSENDING = 1<<5
 ISRECEIVING = 1<<6
 EOF = 1<<7
-
-MAXBUF = 1<<18
 
 class Stream(Pollable):
     def __init__(self, poller, fileno, myname, peername, logname):
@@ -99,7 +79,7 @@ class Stream(Pollable):
     # that removes such reference.
     #
 
-    def closed(self):
+    def closing(self):
         self._do_close()
 
     def close(self):
@@ -271,7 +251,7 @@ class Stream(Pollable):
             # go very likely to 'Internal error' state if passed
             # an unicode encoding.
             #
-            if type(octets) == types.UnicodeType:
+            if type(octets) == UnicodeType:
                 log.warning("* send: Working-around Unicode input")
                 octets = octets.encode("utf-8")
             self.send_octets = octets
@@ -351,7 +331,15 @@ class Stream(Pollable):
     def sosend(self, octets):
         raise NotImplementedError
 
-if ssl:
+HAVE_SSL = True
+try:
+    from ssl import SSLError
+    from ssl import SSL_ERROR_WANT_READ
+    from ssl import SSL_ERROR_WANT_WRITE
+except ImportError:
+    HAVE_SSL = False
+
+if HAVE_SSL:
     class StreamSSL(Stream):
         def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
             self.ssl_sock = ssl_sock
@@ -371,10 +359,10 @@ if ssl:
                     self.need_handshake = False
                 octets = self.ssl_sock.read(maxlen)
                 return SUCCESS, octets
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
+            except SSLError, (code, reason):
+                if code == SSL_ERROR_WANT_READ:
                     return WANT_READ, ""
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                elif code == SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, ""
                 else:
                     log.exception()
@@ -387,14 +375,17 @@ if ssl:
                     self.need_handshake = False
                 count = self.ssl_sock.write(octets)
                 return SUCCESS, count
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
+            except SSLError, (code, reason):
+                if code == SSL_ERROR_WANT_READ:
                     return WANT_READ, 0
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                elif code == SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, 0
                 else:
                     log.exception()
                     return ERROR, 0
+
+from socket import error as SocketError
+from errno import EAGAIN, EWOULDBLOCK
 
 class StreamSocket(Stream):
     def __init__(self, sock, poller, fileno, myname, peername, logname):
@@ -411,8 +402,8 @@ class StreamSocket(Stream):
         try:
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
-        except socket.error, (code, reason):
-            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+        except SocketError, (code, reason):
+            if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_READ, ""
             else:
                 log.exception()
@@ -422,289 +413,24 @@ class StreamSocket(Stream):
         try:
             count = self.sock.send(octets)
             return SUCCESS, count
-        except socket.error, (code, reason):
-            if code in [errno.EAGAIN, errno.EWOULDBLOCK]:
+        except SocketError, (code, reason):
+            if code in [EAGAIN, EWOULDBLOCK]:
                 return WANT_WRITE, 0
             else:
                 log.exception()
                 return ERROR, 0
 
-def create_stream(sock, poller, fileno, myname, peername, logname, secure,
-                  certfile, server_side):
-    if ssl:
-        if secure:
-            try:
-                sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
-                  certfile=certfile, server_side=server_side)
-            except ssl.SSLError, exception:
-                raise socket.error(exception)
+if HAVE_SSL:
+    from ssl import SSLSocket
+from socket import SocketType
+
+def create_stream(sock, poller, fileno, myname, peername, logname):
+    if HAVE_SSL:
+        if type(sock) == SSLSocket:
             stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
             return stream
-    if type(sock) == socket.SocketType and secure:
-        raise socket.error("SSL support not available")
-    stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
-    return stream
-
-# Connect
-
-#
-# We have the same code path for connect_ex() returning 0 and returning
-# one of [EINPROGRESS, EWOULDBLOCK].  This is not very efficient because
-# when it returns 0 we know we are already connected and so it would be
-# more logical not to check for writability.  But there is also value
-# in sharing the same code path, namely that testing is simpler because
-# we don't have to test the [EINPROGRESS, EWOULDBLOCK] corner case.
-#
-
-CONNECTARGS = {
-    "cantconnect" : lambda: None,
-    "connecting"  : lambda: None,
-    "conntimeo"   : 10,
-    "family"      : socket.AF_INET,
-    "poller"      : poller,
-    "secure"      : False,
-}
-
-class Connector(Pollable):
-    def __init__(self, address, port, connected, **kwargs):
-        self.address = address
-        self.port = port
-        self.name = (self.address, self.port)
-        self.connected = connected
-        self.kwargs = fixkwargs(kwargs, CONNECTARGS)
-        self.connecting = self.kwargs["connecting"]
-        self.cantconnect = self.kwargs["cantconnect"]
-        self.poller = self.kwargs["poller"]
-        self.family = self.kwargs["family"]
-        self.secure = self.kwargs["secure"]
-        self.conntimeo = self.kwargs["conntimeo"]
-        self.begin = 0
-        self.sock = None
-        self._connect()
-
-    def __del__(self):
-        pass
-
-    def _connect(self):
-        log.debug("* About to connect to %s:%s" % self.name)
-        try:
-            addrinfo = socket.getaddrinfo(self.address, self.port,
-                                   self.family, socket.SOCK_STREAM)
-            for family, socktype, protocol, cannonname, sockaddr in addrinfo:
-                try:
-                    log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket.socket(family, socktype, protocol)
-                    sock.setblocking(False)
-                    error = sock.connect_ex(sockaddr)
-                    # Winsock returns EWOULDBLOCK
-                    if error not in [0, errno.EINPROGRESS, errno.EWOULDBLOCK]:
-                        raise socket.error(error, os.strerror(error))
-                    self.sock = sock
-                    self.begin = ticks()
-                    self.poller.set_writable(self)
-                    log.debug("* Connection to %s in progress" % str(sockaddr))
-                    self.connecting()
-                    break
-                except socket.error:
-                    log.error("* connect() to %s failed" % str(sockaddr))
-                    log.exception()
-        except socket.error:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
-        if not self.sock:
-            log.error("* Can't connect to %s:%s" % self.name)
-            self.cantconnect()
-
-    def fileno(self):
-        return self.sock.fileno()
-
-    def writable(self):
-        self.poller.unset_writable(self)
-        try:
-            # See http://cr.yp.to/docs/connect.html
-            try:
-                self.sock.getpeername()
-            except socket.error, (code, reason):
-                if code == errno.ENOTCONN:
-                    self.sock.recv(MAXBUF)
-                else:
-                    raise
-            logname = "with %s:%s" % self.name
-            stream = create_stream(self.sock, self.poller, self.sock.fileno(),
-              self.sock.getsockname(), self.sock.getpeername(), logname,
-              self.secure, None, False)
-            log.debug("* Connected to %s:%s!" % self.name)
-            self.connected(stream)
-        except socket.error:
-            log.error("* Can't connect to %s:%s" % self.name)
-            log.exception()
-            self.cantconnect()
-
-    def writetimeout(self, now):
-        timedout = (now - self.begin >= self.conntimeo)
-        if timedout:
-            log.error("* connect() to %s:%s timed-out" % self.name)
-
-    def closed(self):
-        log.debug("* closing Connector to %s:%s" % self.name)
-        self.cantconnect()
-
-def connect(address, port, connected, **kwargs):
-    Connector(address, port, connected, **kwargs)
-
-# Listen
-
-LISTENARGS = {
-    "cantbind"   : lambda: None,
-    "certfile"   : None,
-    "family"     : socket.AF_INET,
-    "listening"  : lambda: None,
-#   "maxclients" : 7,
-#   "maxconns"   : 4,
-    "poller"     : poller,
-    "secure"     : False,
-}
-
-class Listener(Pollable):
-    def __init__(self, address, port, accepted, **kwargs):
-        self.address = address
-        self.port = port
-        self.name = (self.address, self.port)
-        self.accepted = accepted
-        self.kwargs = fixkwargs(kwargs, LISTENARGS)
-        self.listening = self.kwargs["listening"]
-        self.cantbind = self.kwargs["cantbind"]
-        self.poller = self.kwargs["poller"]
-        self.family = self.kwargs["family"]
-        self.secure = self.kwargs["secure"]
-        self.certfile = self.kwargs["certfile"]
-        self.sock = None
-        self._listen()
-
-    def __del__(self):
-        pass
-
-    def _listen(self):
-        log.debug("* About to bind %s:%s" % self.name)
-        try:
-            addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
-                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
-            for family, socktype, protocol, canonname, sockaddr in addrinfo:
-                try:
-                    log.debug("* Trying with %s..." % str(sockaddr))
-                    sock = socket.socket(family, socktype, protocol)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    sock.setblocking(False)
-                    sock.bind(sockaddr)
-                    # Probably the backlog here is too big
-                    sock.listen(128)
-                    self.sock = sock
-                    self.poller.set_readable(self)
-                    log.debug("* Bound with %s" % str(sockaddr))
-                    log.debug("* Listening at %s:%s..." % self.name)
-                    self.listening()
-                    break
-                except socket.error:
-                    log.error("* bind() with %s failed" % str(sockaddr))
-                    log.exception()
-        except socket.error:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
-        if not self.sock:
-            log.error("* Can't bind %s:%s" % self.name)
-            self.cantbind()
-
-    def fileno(self):
-        return self.sock.fileno()
-
-    def readable(self):
-        try:
-            sock, sockaddr = self.sock.accept()
-            sock.setblocking(False)
-            logname = "with %s" % str(sock.getpeername())
-            stream = create_stream(sock, self.poller, sock.fileno(),
-              sock.getsockname(), sock.getpeername(), logname,
-              self.secure, self.certfile, True)
-            log.debug("* Got connection from %s" % str(sock.getpeername()))
-            self.accepted(stream)
-        except socket.error:
-            log.exception()
-
-def listen(address, port, accepted, **kwargs):
-    Listener(address, port, accepted, **kwargs)
-
-# TODO move to neubot/utils.py
-def speed_formatter(speed, base10=True, bytes=False):
-    unit = "Byte/s"
-    if not bytes:
-        speed = speed * 8
-        unit = "bit/s"
-    return unit_formatter(speed, base10, unit)
-
-# Unit test
-
-class Discard:
-    def __init__(self, stream):
-        self.timestamp = ticks()
-        sched(1, self.update_stats)
-        self.received = 0
-        stream.recv(MAXBUF, self.got_data)
-
-    def got_data(self, stream, octets):
-        self.received += len(octets)
-        stream.recv(MAXBUF, self.got_data)
-
-    def update_stats(self):
-        sched(1, self.update_stats)
-        now = ticks()
-        speed = self.received / (now - self.timestamp)
-        print "Current speed: ", speed_formatter(speed)
-        self.timestamp = now
-        self.received = 0
-
-    def __del__(self):
-        pass
-
-class Echo:
-    def __init__(self, stream):
-        stream.recv(MAXBUF, self.got_data)
-
-    def got_data(self, stream, octets):
-        stream.send(octets, self.sent_data)
-
-    def sent_data(self, stream, octets):
-        stream.recv(MAXBUF, self.got_data)
-
-    def __del__(self):
-        pass
-
-class Source:
-    def __init__(self, stream):
-        self.buffer = "A" * MAXBUF
-        stream.send(self.buffer, self.sent_data)
-
-    def sent_data(self, stream, octets):
-        stream.send(self.buffer, self.sent_data)
-
-    def __del__(self):
-        pass
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.stdout.write("Usage: %s discard|echo|source\n" % sys.argv[0])
-        sys.exit(1)
-    elif sys.argv[1] == "discard":
-        listen("127.0.0.1", "8009", accepted=Discard)
-        loop()
-        sys.exit(0)
-    elif sys.argv[1] == "echo":
-        listen("127.0.0.1", "8007", accepted=Echo)
-        loop()
-        sys.exit(0)
-    elif sys.argv[1] == "source":
-        connect("127.0.0.1", "8009", connected=Source)
-        loop()
-        sys.exit(0)
+    if type(sock) == SocketType:
+        stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
     else:
-        sys.stderr.write("Usage: %s discard|echo|source\n" % sys.argv[0])
-        sys.exit(1)
+        raise ValueError("Unknown socket type")
+    return stream
