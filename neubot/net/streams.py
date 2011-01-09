@@ -34,6 +34,38 @@ from types import UnicodeType
 from neubot.utils import ticks
 from neubot import log
 
+HAVE_SSL = True
+try:
+    from ssl import SSLError
+    from ssl import SSL_ERROR_WANT_READ
+    from ssl import SSL_ERROR_WANT_WRITE
+except ImportError:
+    HAVE_SSL = False
+
+if HAVE_SSL:
+    from ssl import SSLSocket
+    from ssl import wrap_socket
+from socket import SocketType
+
+from socket import error as SocketError
+from errno import EAGAIN, EWOULDBLOCK
+
+from socket import AI_PASSIVE
+from socket import SO_REUSEADDR
+from socket import SOL_SOCKET
+
+from neubot.net.pollers import poller
+from neubot.utils import fixkwargs
+from socket import SOCK_STREAM
+from errno import EINPROGRESS
+from socket import getaddrinfo
+from errno import ENOTCONN
+from socket import AF_INET
+from socket import socket
+from os import strerror
+
+from neubot.net.pollers import loop
+
 SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
 TIMEOUT = 300
 
@@ -336,14 +368,6 @@ class Stream(Pollable):
     def sosend(self, octets):
         raise NotImplementedError
 
-HAVE_SSL = True
-try:
-    from ssl import SSLError
-    from ssl import SSL_ERROR_WANT_READ
-    from ssl import SSL_ERROR_WANT_WRITE
-except ImportError:
-    HAVE_SSL = False
-
 if HAVE_SSL:
     class StreamSSL(Stream):
         def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
@@ -389,9 +413,6 @@ if HAVE_SSL:
                     log.exception()
                     return ERROR, 0
 
-from socket import error as SocketError
-from errno import EAGAIN, EWOULDBLOCK
-
 class StreamSocket(Stream):
     def __init__(self, sock, poller, fileno, myname, peername, logname):
         self.sock = sock
@@ -425,11 +446,6 @@ class StreamSocket(Stream):
                 log.exception()
                 return ERROR, 0
 
-if HAVE_SSL:
-    from ssl import SSLSocket
-    from ssl import wrap_socket
-from socket import SocketType
-
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
     if HAVE_SSL:
@@ -447,22 +463,6 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
     return stream
 
 # Connect
-
-from neubot.net.streams import create_stream
-from neubot.net.pollers import Pollable, poller
-from neubot.utils import fixkwargs
-from neubot.utils import ticks
-from socket import error as SocketError
-from socket import SOCK_STREAM
-from errno import EINPROGRESS
-from errno import EWOULDBLOCK
-from socket import getaddrinfo
-from errno import ENOTCONN
-from socket import AF_INET6
-from socket import AF_INET
-from socket import socket
-from neubot import log
-from os import strerror
 
 #
 # We have the same code path for connect_ex() returning 0 and returning
@@ -572,18 +572,6 @@ def connect(address, port, connected, **kwargs):
 
 # Listen
 
-from neubot.net.streams import create_stream
-from neubot.net.pollers import Pollable, poller
-from socket import SOCK_STREAM, AI_PASSIVE
-from socket import error as SocketError
-from neubot.utils import fixkwargs
-from socket import getaddrinfo
-from socket import SO_REUSEADDR
-from socket import SOL_SOCKET
-from socket import socket
-from socket import AF_INET
-from neubot import log
-
 LISTENARGS = {
     "cantbind"   : lambda: None,
     "certfile"   : None,
@@ -663,9 +651,7 @@ class Listener(Pollable):
 def listen(address, port, accepted, **kwargs):
     Listener(address, port, accepted, **kwargs)
 
-#
 # Unit test
-#
 
 class Discard:
     def __init__(self, stream):
@@ -700,10 +686,6 @@ class Source:
 
     def __del__(self):
         pass
-
-from neubot.net.listeners import listen
-from neubot.net.connectors import connect
-from neubot.net.pollers import loop
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
