@@ -85,7 +85,7 @@ class Stream(Pollable):
     # that removes such reference.
     #
 
-    def closing(self):
+    def closed(self):
         self._do_close()
 
     def close(self):
@@ -466,7 +466,7 @@ class Connector(Pollable):
             log.error("* connect() to %s:%s timed-out" % self.name)
         return timedout
 
-    def closing(self):
+    def closed(self):
         log.debug("* closing Connector to %s:%s" % self.name)
         self.cantconnect()
 
