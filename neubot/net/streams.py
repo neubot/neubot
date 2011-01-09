@@ -60,6 +60,11 @@ TIMEOUT = 300
 
 MAXBUF = 1<<18
 
+SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
+
+# Winsock returns EWOULDBLOCK
+INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
+
 if ssl:
     class SSLWrapper(object):
         def __init__(self, sock):
@@ -101,8 +106,6 @@ if ssl:
                     return WANT_WRITE, 0
                 else:
                     return ERROR, exception
-
-SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 
 class SocketWrapper(object):
     def __init__(self, sock):
@@ -432,6 +435,9 @@ class Stream(Pollable):
     def send_complete(self, count):
         pass
 
+### BEGIN DEPRECATED CODE ####
+#
+
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
     conf = {
@@ -444,21 +450,10 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
     stream.configure(conf)
     return stream
 
+                           #
+### END DEPRECATED CODE ####
+
 # Connect
-
-#
-# XXX IIRC connect() returns 0 only if connecting to 127.0.0.1:port.
-#
-# We have the same code path for connect_ex() returning 0 and returning
-# one of [EINPROGRESS, EWOULDBLOCK].  This is not very efficient because
-# when it returns 0 we know we are already connected and so it would be
-# more logical not to check for writability.  But there is also value
-# in sharing the same code path, namely that testing is simpler because
-# we don't have to test the [EINPROGRESS, EWOULDBLOCK] corner case.
-#
-
-# Winsock returns EWOULDBLOCK
-INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
 class Connector(Pollable):
 
@@ -545,6 +540,9 @@ class Connector(Pollable):
 
     def closing(self, exception=None):
         self.connection_failed(exception)
+
+### BEGIN DEPRECATED CODE ####
+#
 
 CONNECTARGS = {
     "cantconnect" : lambda: None,
@@ -649,6 +647,9 @@ class OldConnector(Pollable):
 def connect(address, port, connected, **kwargs):
     OldConnector(address, port, connected, **kwargs)
 
+                           #
+### END DEPRECATED CODE ####
+
 # Listen
 
 class Listener(Pollable):
@@ -726,6 +727,9 @@ class Listener(Pollable):
 
     def closing(self, exception=None):
         self.bind_failed(exception)     # XXX
+
+### BEGIN DEPRECATED CODE ####
+#
 
 LISTENARGS = {
     "cantbind"   : lambda: None,
@@ -810,6 +814,9 @@ class OldListener(Pollable):
 
 def listen(address, port, accepted, **kwargs):
     OldListener(address, port, accepted, **kwargs)
+
+                           #
+### END DEPRECATED CODE ####
 
 # TODO move to neubot/utils.py
 def speed_formatter(speed, base10=True, bytes=False):
