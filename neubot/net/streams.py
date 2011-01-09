@@ -495,7 +495,8 @@ class Connector(Pollable):
                 self.sock = sock
                 self.timestamp = ticks()
                 self.poller.set_writable(self)
-                self.started_connecting()
+                if result != 0:
+                    self.started_connecting()
                 return
 
             except socket.error, exception:
