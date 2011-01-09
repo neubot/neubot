@@ -23,6 +23,9 @@
 #
 # Code for debugging
 #
+# To enable tracing, do::
+#   sys.setprofile(neubot.debug.trace)
+#
 
 import sys
 
@@ -87,6 +90,3 @@ class Profiler:
 
 profiler = Profiler()
 trace = profiler.notify_event
-
-# To enable tracing, do
-#sys.setprofile(neubot.debug.trace)
