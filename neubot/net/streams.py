@@ -836,6 +836,102 @@ def listen(address, port, accepted, **kwargs):
                            #
 ### END DEPRECATED CODE ####
 
+# Measurer
+
+class StreamMeasurer(object):
+    dead = False
+    recv = 0
+    send = 0
+
+class Measurer(object):
+    def __init__(self):
+        self.last = ticks()
+        self.streams = []
+        self.rtts = []
+
+    def connect(self, connector, endpoint, family=socket.AF_INET):
+        connector.connect(endpoint, family, self)
+
+    def register_stream(self, stream):
+        m = StreamMeasurer()
+        stream.configure({"measurer": m})
+        self.streams.append(m)
+
+    def measure(self):
+        now = ticks()
+        delta = now - self.last
+        self.last = now
+
+        if delta <= 0:
+            return None
+
+        rttavg = 0
+        rttdetails = []
+        if len(self.rtts) > 0:
+            for rtt in self.rtts:
+                rttavg += rtt
+            rttavg = rttavg / len(self.rtts)
+            rttdetails = self.rtts
+            self.rtts = []
+
+        alive = []
+        recvsum = 0
+        sendsum = 0
+        for m in self.streams:
+            recvsum += m.recv
+            sendsum += m.send
+            if not m.dead:
+                alive.append(m)
+        recvavg = recvsum / delta
+        sendavg = sendsum / delta
+        percentages = []
+        for m in self.streams:
+            recvp, sendp = 0, 0
+            if recvsum:
+                recvp = 100 * m.recv / recvsum
+            if sendsum:
+                sendp = 100 * m.send / sendsum
+            percentages.append((recvp, sendp))
+            if not m.dead:
+                m.recv = m.send = 0
+        self.streams = alive
+
+        return rttavg, rttdetails, recvavg, sendavg, percentages
+
+class VerboseMeasurer(Measurer):
+    def __init__(self, poller, output=sys.stdout, interval=1):
+        Measurer.__init__(self)
+
+        self.poller = poller
+        self.output = output
+        self.interval = interval
+
+    def start(self):
+        self.poller.sched(self.interval, self.report)
+        self.output.write("\t\trtt\t\trecv\t\t\tsend\n")
+
+    def report(self):
+        self.poller.sched(self.interval, self.report)
+
+        rttavg, rttdetails, recvavg, sendavg, percentages = self.measure()
+
+        if len(rttdetails) > 0:
+            rttavg = "%d us" % int(1000000 * rttavg)
+            self.output.write("\t\t%s\t\t---\t\t---\n" % rttavg)
+            if len(rttdetails) > 1:
+                for detail in rttdetails:
+                    detail = "%d us" % int(1000000 * detail)
+                    self.output.write("\t\t  %s\t\t---\t\t---\n" % detail)
+
+        if len(percentages) > 0:
+            recv, send = speed_formatter(recvavg), speed_formatter(sendavg)
+            self.output.write("\t\t---\t\t%s\t\t%s\n" % (recv, send))
+            if len(percentages) > 1:
+                for val in percentages:
+                    val = map(lambda x: "%.2f%%" % x, val)
+                    self.output.write("\t\t---\t\t  %s\t\t  %s\n" %
+                                      (val[0], val[1]))
+
 # Unit test
 
 import getopt
