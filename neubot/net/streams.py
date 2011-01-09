@@ -422,15 +422,21 @@ class StreamSocket(Stream):
 
 if HAVE_SSL:
     from ssl import SSLSocket
+    from ssl import wrap_socket
 from socket import SocketType
 
-def create_stream(sock, poller, fileno, myname, peername, logname):
+def create_stream(sock, poller, fileno, myname, peername, logname, secure,
+                  certfile, server_side):
     if HAVE_SSL:
-        if type(sock) == SSLSocket:
+        if secure:
+            try:
+                sock = wrap_socket(sock, do_handshake_on_connect=False,
+                  certfile=certfile, server_side=server_side)
+            except SSLError, exception:
+                raise SocketError(exception)
             stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
             return stream
-    if type(sock) == SocketType:
-        stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
-    else:
-        raise ValueError("Unknown socket type")
+    if type(sock) == SocketType and secure:
+        raise SocketError("SSL support not available")
+    stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
     return stream

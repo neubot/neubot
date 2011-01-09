@@ -28,14 +28,6 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
-HAVE_SSL = True
-try:
-    from ssl import wrap_socket, SSLError
-except ImportError:
-    HAVE_SSL = False
-    class SSLError(Exception):
-        pass
-
 from neubot.net.streams import create_stream
 from neubot.net.pollers import Pollable, poller
 from neubot.utils import fixkwargs
@@ -136,19 +128,13 @@ class Connector(Pollable):
                     self.sock.recv(8000)
                 else:
                     raise
-            if self.secure:
-                if HAVE_SSL:
-                    x = wrap_socket(self.sock, do_handshake_on_connect=False)
-                else:
-                    raise RuntimeError("SSL support not available")
-            else:
-                x = self.sock
             logname = "with %s:%s" % self.name
-            stream = create_stream(x, self.poller, self.sock.fileno(),
-             self.sock.getsockname(), self.sock.getpeername(), logname)
+            stream = create_stream(self.sock, self.poller, self.sock.fileno(),
+              self.sock.getsockname(), self.sock.getpeername(), logname,
+              self.secure, None, False)
             log.debug("* Connected to %s:%s!" % self.name)
             self.connected(stream)
-        except (SocketError, SSLError):
+        except SocketError:
             log.error("* Can't connect to %s:%s" % self.name)
             log.exception()
             self.cantconnect()
