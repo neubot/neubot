@@ -170,6 +170,8 @@ class Stream(Pollable):
         self.stats.append(self.poller.stats)
         self.notify_closing = None
 
+        self.measurer = None
+
     #
     # XXX
     # Reading the code, please keep in mind that there are two
@@ -225,6 +227,9 @@ class Stream(Pollable):
             self.encrypt = algo.encrypt
             self.decrypt = algo.decrypt
 
+        if "measurer" in dictionary and dictionary["measurer"]:
+            self.measurer = dictionary["measurer"]
+
     def connection_made(self):
         pass
 
@@ -253,6 +258,8 @@ class Stream(Pollable):
             self.connection_lost(exception)
             if self.parent:
                 self.parent.connection_lost(self)
+            if self.measurer:
+                self.measurer.dead = True
             self.send_octets = None
             self.send_success = None
             self.send_ticks = 0
@@ -303,6 +310,8 @@ class Stream(Pollable):
 
         if status == SUCCESS and octets:
 
+            if self.measurer:
+                self.measurer.recv += len(octets)
             for stats in self.stats:
                 stats.recv.account(len(octets))
 
@@ -387,6 +396,9 @@ class Stream(Pollable):
         status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
+
+            if self.measurer:
+                self.measurer.send += count
             for stats in self.stats:
                 stats.send.account(count)
 
