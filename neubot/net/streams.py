@@ -465,10 +465,12 @@ class Connector(Pollable):
         self.timestamp = 0
         self.endpoint = None
         self.family = 0
+        self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET):
+    def connect(self, endpoint, family=socket.AF_INET, measurer_=None):
         self.endpoint = endpoint
         self.family = family
+        self.measurer = measurer_
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -522,6 +524,10 @@ class Connector(Pollable):
                     exception = exception2
             self.connection_failed(exception)
             return
+
+        if self.measurer:
+            rtt = ticks() - self.timestamp
+            self.measurer.rtts.append(rtt)
 
         stream = self.protocol(self.poller)
         stream.parent = self
