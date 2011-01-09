@@ -173,17 +173,3 @@ def compose(m, **kwargs):
     else:
         m["content-length"] = "0"
     m.family = kwargs["family"]
-
-#
-# For compatibility with existing code
-#
-
-class Messagexxx(Message):
-    def __init__(self, method="", uri="", code="", reason="", protocol=""):
-        Message.__init__(self, method, uri, code, reason, protocol)
-        self._proto = None
-        self.context = None
-
-message = Messagexxx
-
-__all__ = [ "message" ]
