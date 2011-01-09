@@ -138,8 +138,8 @@ class SocketWrapper(object):
                 return ERROR, exception
 
 class Stream(Pollable):
-    def __init__(self, poller):
-        self.poller = poller
+    def __init__(self, poller_):
+        self.poller = poller_
         self.parent = None
 
         self.sock = None
@@ -243,8 +243,8 @@ class Stream(Pollable):
     # that removes such reference.
     #
 
-    def closed(self):
-        self._do_close()
+    def closed(self, exception=None):
+        self._do_close(exception)
 
     def close(self):
         self._do_close()
@@ -450,14 +450,14 @@ class Stream(Pollable):
 ### BEGIN DEPRECATED CODE ####
 #
 
-def create_stream(sock, poller, fileno, myname, peername, logname, secure,
+def create_stream(sock, poller_, fileno, myname, peername, logname, secure,
                   certfile, server_side):
     conf = {
         "certfile": certfile,
         "server_side": server_side,
         "secure": secure,
     }
-    stream = Stream(poller)
+    stream = Stream(poller_)
     stream.make_connection(sock)
     stream.configure(conf)
     return stream
@@ -469,8 +469,8 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 
 class Connector(Pollable):
 
-    def __init__(self, poller):
-        self.poller = poller
+    def __init__(self, poller_):
+        self.poller = poller_
         self.protocol = None
         self.sock = None
         self.timeout = 15
@@ -594,7 +594,7 @@ class OldConnector(Pollable):
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port,
                                    self.family, socket.SOCK_STREAM)
-        except socket.error, exception:
+        except socket.error:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
             self.cantconnect()
@@ -617,7 +617,7 @@ class OldConnector(Pollable):
                 self.connecting()
                 return
 
-            except socket.error, exception:
+            except socket.error:
                 log.error("* connect() to %s failed" % str(sockaddr))
                 log.exception()
 
@@ -658,7 +658,7 @@ class OldConnector(Pollable):
             log.error("* connect() to %s:%s timed-out" % self.name)
         return timedout
 
-    def closed(self):
+    def closed(self, exception=None):
         log.debug("* closing Connector to %s:%s" % self.name)
         self.cantconnect()
 
@@ -672,9 +672,9 @@ def connect(address, port, connected, **kwargs):
 
 class Listener(Pollable):
 
-    def __init__(self, poller):
+    def __init__(self, poller_):
         self.protocol = None
-        self.poller = poller
+        self.poller = poller_
         self.lsock = None
         self.endpoint = None
         self.family = 0
@@ -780,7 +780,7 @@ class OldListener(Pollable):
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
                                    socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
-        except socket.error, exception:
+        except socket.error:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
             self.cantbind()
@@ -804,7 +804,7 @@ class OldListener(Pollable):
                 self.listening()
                 return
 
-            except socket.error, exception:
+            except socket.error:
                 log.error("* bind() with %s failed" % str(sockaddr))
                 log.exception()
 
@@ -899,10 +899,10 @@ class Measurer(object):
         return rttavg, rttdetails, recvavg, sendavg, percentages
 
 class VerboseMeasurer(Measurer):
-    def __init__(self, poller, output=sys.stdout, interval=1):
+    def __init__(self, poller_, output=sys.stdout, interval=1):
         Measurer.__init__(self)
 
-        self.poller = poller
+        self.poller = poller_
         self.output = output
         self.interval = interval
 
@@ -971,8 +971,8 @@ measurer = VerboseMeasurer(poller)
 verboser = StreamVerboser()
 
 class DiscardProtocol(Stream):
-    def __init__(self, poller):
-        Stream.__init__(self, poller)
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
 
     def connection_made(self):
         verboser.connection_made(self.logname)
@@ -986,8 +986,8 @@ class DiscardProtocol(Stream):
         verboser.connection_lost(self.logname, self.eof, exception)
 
 class DiscardListener(Listener):
-    def __init__(self, poller, dictionary):
-        Listener.__init__(self, poller)
+    def __init__(self, poller_, dictionary):
+        Listener.__init__(self, poller_)
         self.protocol = DiscardProtocol
         self.dictionary = dictionary
 
@@ -1001,8 +1001,8 @@ class DiscardListener(Listener):
         stream.configure(self.dictionary)
 
 class EchoProtocol(Stream):
-    def __init__(self, poller):
-        Stream.__init__(self, poller)
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
 
     def connection_made(self):
         verboser.connection_made(self.logname)
@@ -1019,8 +1019,8 @@ class EchoProtocol(Stream):
         verboser.connection_lost(self.logname, self.eof, exception)
 
 class EchoListener(Listener):
-    def __init__(self, poller, dictionary):
-        Listener.__init__(self, poller)
+    def __init__(self, poller_, dictionary):
+        Listener.__init__(self, poller_)
         self.protocol = EchoProtocol
         self.dictionary = dictionary
 
@@ -1034,8 +1034,8 @@ class EchoListener(Listener):
         stream.configure(self.dictionary)
 
 class ChargenProtocol(Stream):
-    def __init__(self, poller):
-        Stream.__init__(self, poller)
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
 
     def connection_made(self):
         verboser.connection_made(self.logname)
@@ -1049,8 +1049,8 @@ class ChargenProtocol(Stream):
         verboser.connection_lost(self.logname, self.eof, exception)
 
 class ChargenConnector(Connector):
-    def __init__(self, poller, dictionary):
-        Connector.__init__(self, poller)
+    def __init__(self, poller_, dictionary):
+        Connector.__init__(self, poller_)
         self.protocol = ChargenProtocol
         self.dictionary = dictionary
 
@@ -1064,8 +1064,8 @@ class ChargenConnector(Connector):
         stream.configure(self.dictionary)
 
 class ConnectProtocol(Stream):
-    def __init__(self, poller):
-        Stream.__init__(self, poller)
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
 
     def connection_made(self):
         self.close()
@@ -1074,8 +1074,8 @@ class ConnectProtocol(Stream):
         verboser.connection_lost(self.logname, self.eof, exception)
 
 class ConnectConnector(Connector):
-    def __init__(self, poller, dictionary):
-        Connector.__init__(self, poller)
+    def __init__(self, poller_, dictionary):
+        Connector.__init__(self, poller_)
         self.protocol = ConnectProtocol
         self.dictionary = dictionary
 
