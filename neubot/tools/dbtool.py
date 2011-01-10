@@ -453,7 +453,7 @@ def DB_walker(conf, filename, processor, filters, parameters):
 # not orthogonal which is bad from the user point of view.
 #
 
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 
 USAGE = """Usage: @PROGNAME@ [-CnV] [-T threshold] [--help] database
 """
