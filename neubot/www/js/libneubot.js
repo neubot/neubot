@@ -113,7 +113,9 @@ var neubot = (function() {
         }
 
         function to_date(x) {
-            return (new Date(x * 1000)).toString();
+            date = self.timestamp_to_date(x)
+            fmt = self.format_date(date);
+            return (fmt);
         }
 
         function to_msec(x) {
@@ -367,7 +369,12 @@ var neubot = (function() {
     }
 
     self.format_date = function(date) {
-        return (date.toLocaleString());
+        function pad(n) {
+            return n < 10 ? '0' + n : n
+        }
+        return date.getFullYear() + '-' + pad(date.getMonth() + 1)
+          + '-' + pad(date.getDate()) + '\n' + pad(date.getHours()) + ':'
+          + pad(date.getMinutes());
     }
 
     // closure
