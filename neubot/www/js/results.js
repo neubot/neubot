@@ -127,7 +127,8 @@ function getresults(data){
                       Number(n-nn),
                       LocaleDateString(timestamp)
                     ]);
-                    txt = n++ + " " + timestamp.toString().replace(/GMT.*$/,"");
+                    n++;
+                    txt = '<nobr>' + LocaleDateString(timestamp) + '</nobr>';
                     break;
                 case 'connectTime':
                 case 'latency':
