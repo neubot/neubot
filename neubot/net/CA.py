@@ -49,7 +49,7 @@ Options:
 
 """
 
-VERSION = "Neubot 0.3.2\n"
+VERSION = "Neubot 0.3.3\n"
 
 def main(args):
 
