@@ -19,6 +19,16 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * TODO We should make it possible to walk the list of results and
+ * create just the table, or just the plot, or both.  In other words,
+ * the function that walks the results should not receive just a
+ * function but rather a list of one or more functions.  I suggest
+ * to do that because it's pretty stupid to invoke twice the API
+ * for pulling results when you want to populate the table and
+ * make the plot.
+ */
+
 var neubot = (function() {
     var self = {};
 
