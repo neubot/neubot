@@ -22,6 +22,11 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * TODO for results.html we have js/results.js, therefore it would
+ * be a great idea to rename this file js/index.js for consistency.
+ */
+
 (function() {
 
     var prevStatus;

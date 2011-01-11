@@ -19,6 +19,12 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * TODO Most of the code here should be actually rewritten in terms
+ * of neubot.update_results and we should do that in order to use the
+ * new API for pulling results (e.g. /api/results2).
+ */
+
 /* use a function for the exact format desired... */
 function LocaleDateString(d){
     function pad(n) {
