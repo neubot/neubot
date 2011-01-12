@@ -29,7 +29,6 @@ if __name__ == "__main__":
    path.insert(0, ".")
 
 from neubot import version
-from neubot.utils import timestamp
 from StringIO import StringIO
 from neubot.http.servers import Server
 from neubot.http.messages import Message
@@ -73,7 +72,6 @@ class UIServer(Server):
         self.table["/api/config"] = self._do_api_config
         self.table["/api/exit"] = self._do_api_exit
         self.table["/api/results"] = self._do_api_results
-        self.table["/api/results2"] = self._do_api_results2
         self.table["/api/state"] = self._do_api_state
         self.table["/api/version"] = self._do_api_version
 
@@ -101,7 +99,7 @@ class UIServer(Server):
             if uri == "/":
                 response = Message()
                 compose(response, code="301", reason="Moved Permanently")
-                location = "http://%s:%s/index.html" % (self.config.address,
+                location = "http://%s:%s/neubot.html" % (self.config.address,
                                                          self.config.port)
                 response["location"] = location
                 connection.reply(request, response)
@@ -144,7 +142,7 @@ class UIServer(Server):
         response = Message()
         if request.method == "POST":
             config.update(request.body)
-            location = "http://%s:%s/index.html" % (self.config.address,
+            location = "http://%s:%s/neubot.html" % (self.config.address,
                                                      self.config.port)
             compose(response, code="303", reason="See Other")
             response["location"] = location
@@ -178,36 +176,6 @@ class UIServer(Server):
             connection.reply(request, response)
             return
         stringio = database.dbm.get_cached_results(filt, start, stop, ident)
-        compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="text/xml")
-        connection.reply(request, response)
-
-    def _do_api_results2(self, connection, request, query, recurse=False):
-        tag = None
-        since = 0
-        until = timestamp()
-        uuid_ = None
-        # parse
-        dictionary = parse_qs(query)
-        if dictionary.has_key("tag"):
-            tag = dictionary["tag"][0]
-        if dictionary.has_key("since"):
-            since = int(dictionary["since"][0])
-            if since < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("until"):
-            until = int(dictionary["until"][0])
-            if until < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("uuid"):
-            uuid_ = dictionary["uuid"][0]
-        # XML+HTTP
-        response = Message()
-        if not database.dbm:
-            compose(response, code="204", reason="No Content")
-            connection.reply(request, response)
-            return
-        stringio = database.dbm.query_results_xml(tag, since, until, uuid_)
         compose(response, code="200", reason="Ok",
                 body=stringio, mimetype="text/xml")
         connection.reply(request, response)
@@ -731,13 +699,11 @@ def main(args):
     # config
     fakerc.seek(0)
     ui.configure(pathnames.CONFIG, fakerc)
-    database.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len (arguments) > 0:
             stderr.write(USAGE.replace("@PROGNAME@", args[0]))
             exit(1)
-        database.start()
         ui.start()
         loop()
         exit(0)

@@ -39,6 +39,9 @@ def prettyprint(write, direction, msg, eol=""):
         if line == "":
             break
 
+# compat
+prettyprinter = prettyprint
+
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
     if scheme != "http" and scheme != "https":
@@ -55,6 +58,20 @@ def urlsplit(uri):
     if query:
         pathquery = pathquery + "?" + query
     return scheme, address, port, pathquery
+
+#
+# response_unbounded() is less accurate than nextstate() and will
+# be removed together with http.protocol
+#
+
+def response_unbounded(request, response):
+    if (request.method != "HEAD"
+     and response["content-type"]
+     and not response["transfer-encoding"]
+     and not response["content-length"]):
+        return True
+    else:
+        return False
 
 def date():
     return email.utils.formatdate(usegmt=True)

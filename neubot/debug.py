@@ -23,9 +23,6 @@
 #
 # Code for debugging
 #
-# To enable tracing, do::
-#   sys.setprofile(neubot.debug.trace)
-#
 
 import sys
 
@@ -43,7 +40,7 @@ class Profiler:
                 name = "???"
             if name.endswith(".pyc") or name.endswith(".pyo"):
                 name = name[:-1]
-            for pattern in ["neubot/", "python2.5/", "python2.6/", "python/"]:
+            for pattern in ["neubot/", "testing/", "python2.6/", "python/"]:
                 index = name.find(pattern)
                 if index > 0:
                     name = name[index+len(pattern):]
@@ -90,3 +87,6 @@ class Profiler:
 
 profiler = Profiler()
 trace = profiler.notify_event
+
+# To enable tracing, do
+#sys.setprofile(neubot.debug.trace)

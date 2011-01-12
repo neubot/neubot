@@ -1,0 +1,105 @@
+/* neubot/www/neubot.css */
+/*
+ * Copyright (c) 2010 Antonio Servetti <antonio.servetti@polito.it>,
+ *  Politecnico di Torino
+ *
+ * This file is part of Neubot <http://www.neubot.org/>.
+ *
+ * Neubot is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Neubot is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+body {
+    margin: 15px;
+    padding: 0px;
+    font-family: verdana;
+    font-size: medium;
+}
+
+.disabled {
+    color: gray;
+}
+
+#logo {
+    background-image: url("header.png");
+    background-repeat: repeat-x;
+}
+
+#content {
+    padding: 10px;
+    border-style: none solid solid solid;
+    border-width: 2px;
+    border-color: #D4D4D4;
+    padding-bottom: 2em;
+
+}
+
+#content h2 {
+    font-size: medium;
+    font-weight: bold;
+    margin: 0px;
+    padding: 0px;
+}
+
+#content ul {
+    margin: 0px;
+    padding-left: 46px;
+    padding-right: 46px;
+    line-height: 3em;
+    list-style:none outside none;
+}
+
+#content ul.l-squared {
+    list-style-type:square;
+}
+
+#content ul.l-squared li#running {
+    background-image: url('loading/loading.gif');
+}
+
+#content ul ul {
+    padding-bottom: 0.5em;
+    line-height: normal;
+}
+
+ul.hlist li {
+    display: inline;
+    list-style-type: none;
+    margin-right: 1em;
+    text-decoration: none;
+    color: #D4D4D4;
+}
+
+ul.hlist li#active {
+    border-bottom: 4px solid #000;
+    background: transparent;
+    color: #000;
+}
+
+.gray {
+    color: #D4D4D4;
+}
+
+.boxed {
+    border:solid 1px #D4D4D4;
+    background:#EFEFEF;
+    padding-left: 1em;
+    margin-top: 0.5em;
+    margin-left: -1em;
+    margin-right: -1em;
+}
+
+#testname {
+    font-style: italic;
+    font-weight: normal;
+}

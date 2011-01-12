@@ -270,10 +270,6 @@ class Handler:
     # does not implement MIME folding, and the latter is that it ignores the
     # trailers.
     #
-    # TODO Hmm this should probably become part of a separate mixin
-    # or class because it's quite a different beast with respect to the
-    # code above.
-    #
 
     def _got_line(self, line):
         if self.state == FIRSTLINE:

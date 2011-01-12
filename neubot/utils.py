@@ -250,7 +250,7 @@ def XML_to_stringio(document):
 # Stats
 #
 
-class SimpleStats(object):
+class SimpleStats:
     def __init__(self):
         self.begin()
 
@@ -274,7 +274,7 @@ class SimpleStats(object):
     def speed(self):
         return self.length / self.diff()
 
-class Stats(object):
+class Stats:
     def __init__(self):
         self.send = SimpleStats()
         self.recv = SimpleStats()
