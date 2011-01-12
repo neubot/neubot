@@ -1,3 +1,81 @@
+Neubot 0.3.3 [2011-01-11]
+	* neubot/ui.py: Always start the database when running in server mode
+	* database.py: query_results_functional(): New query API backend
+	* neubot/ui.py: /api/results2: New query API
+	* neubot/database.py: Make sure we don't pass unicode to lower layers
+	* neubot/state.py: Augment state with neubot daemon's PID
+	* neubot/state.py: Augment state with latest rendezvous's timestamp
+	* neubot/database.py: use timestamp() instead of int(time())
+	* neubot/database.py: Don't use from..import for standard library
+	* neubot/objgraph.py: Import v1.1b of objgraph
+	* neubot/debug.py: Re-organize comments
+	* neubot/debug.py: The testing folder does not exist anymore
+	* neubot/options.py: Generic options parser for all modules
+	* net/CA.py: Helper script to create certfiles for testing
+	* Make sure we import Stats and SimpleStats from neubot.utils
+	* http/clients.py: Zap an old comment
+	* http/clients.py: Group imports at the beginning
+	* http/servers.py: Group declarations at the beginning
+	* utils.py: Let Stats and SimpleStats inherit from object
+	* Makefile: Add version number to MacOSX application
+	* Makefile: Allow to make a lite release
+	* http/messages.py: Remove obsolete and unused code
+	* http/utils.py: Remove some obsolete and unused code
+	* http/handlers.py: Note that we might want to split the handler
+	* Simplify net module: Move SSL code in streams.py
+	* Simplify net module: Move connect() and listen() in streams.py
+	* Simplify net module: Copy code of test.py into streams.py.
+	* Simplify net module: Bye bye neubot/net/test.py
+	* Simplify net module: streams.py: import sys instead of from sys import ...
+	* Simplify net module: Move all imports at the beginning of streams.py
+	* Simplify net module: Define and use MAXBUF in streams.py
+	* Simplify net module: In streams.py: Print throughput every second
+	* Simplify net module: In streams.py: Avoid from..imports
+	* Simplify net module: In streams.py: Cleanup Connector code
+	* Simplify net module: In streams.py: Cleanup Listener code
+	* Simplify net module: In streams.py: Cleanup Stream code
+	* Simplify net module: In streams.py: Rewrite the main() func
+	* Simplify net module: Empty connectors.py and listeners.py
+	* Undo streams.py optimizations: Undo ISSENDING/ISRECEIVING
+	* Undo streams.py optimizations: Undo delayed unset readable/writable
+	* Rewrite Stream in streams.py: Use boolean variables and not flags
+	* Rewrite Stream in streams.py: Linearize the code
+	* Rewrite Stream in streams.py: More clever buffer usage, kill send_pos
+	* Rewrite Stream in streams.py: Assume successful send
+	* Rewrite Stream in streams.py: Group together some cosmetic changes
+	* More Stream undos: Get rid of the set/unset paranoia
+	* More Stream undos: We don't need the handleReadable/Writable dance
+	* Change Pollable API: pollers.py: Rename closing() to closed()
+	* Change Pollable API: streams.py: Rename closing() to closed()
+	* Change Pollable API: Add to closed() the exception argument
+	* neubot/www: These are the sources of the new web user interface
+	* neubot/www: js/libneubot.js: Make the plot symmetric
+	* neubot/www: js/neubot.js: black magic to unbreak the tooltip
+	* neubot/www: Edit neubot/ui.py to link to the new graphic
+	* neubot/www: Disable plots in /index.html because they kill my browser
+	* neubot/www: Install needed jqplot plugins into js/
+	* neubot/www: Move CSS snippets from index.html to style.css
+	* neubot/www: Cleanup and reindent style.css
+	* neubot/www: Cleanup all image folders
+	* neubot/www: Move results.js into js/ folder
+	* neubot/www: results.js: Change the way we print time
+	* neubot/www: results.js: Shorter labels for prettier table
+	* neubot/www: Delete all the unneeded files
+	* neubot/www: style.css: Increase the page width
+	* neubot/www: index.html: Include all needed jqplot plugins
+	* neubot/www: results.html: Wrap the old page in the new style
+	* neubot/www: Wide header
+	* neubot/www: Cleanup after wide header patch
+	* neubot/www: Add media property to CSS tags
+	* neubot/www: Be readable by braille and nongraphic browsers too
+	* neubot/www: fix location of favicon.ico
+	* neubot/www: index.html: Fix version number
+	* neubot/www: libneubot.js: Make sure we always use same time format
+	* neubot/www: results.html: Unbreak the plots
+	* neubot/www: Note things that should be done
+	* neubot/www: small fixes for webui font size
+	* Release neubot/0.3.3
+
 Neubot 0.3.2 [2011-01-04]
 	* MacOS/: move here neubot.app for MacOS
 	* Makefile: add targets to create neubot.app and neubot.app.zip

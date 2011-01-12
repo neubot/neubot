@@ -26,7 +26,7 @@
 # GIT a new release.
 #
 
-VERSION	= 0.3.2
+VERSION	= 0.3.3
 
 #
 # The list of .PHONY targets.  This is also used to build the
@@ -67,7 +67,9 @@ PHONIES += deb
 PHONIES += clean
 PHONIES += help
 PHONIES += lint
+PHONIES += release_lite
 PHONIES += __release
+PHONIES += _release_finish
 
 .PHONY: $(PHONIES)
 _all: help
@@ -277,19 +279,20 @@ install:
 # Application for MacOS X >= Leopard (10.5)
 #
 
-APP_RESOURCES=neubot.app/Contents/Resources
+APP_NAME=$(STEM).app
+APP_RESOURCES=$(APP_NAME)/Contents/Resources
 
 app:
 	@echo "[APP]"
 	@make -f Makefile archive
-	@cp -R MacOS/neubot.app dist/
+	@cp -R MacOS/neubot.app dist/$(APP_NAME)
 	@cd dist/$(APP_RESOURCES) && tar -xzf ../../../$(STEM).tar.gz && \
          ln -s $(STEM) neubot && rm -rf pax_global_header
 
 app.zip:
 	@echo "[APP.ZIP]"
 	@make -f Makefile app
-	@cd dist && zip -q --symlinks -r neubot.app.zip neubot.app
+	@cd dist && zip -q --symlinks -r $(APP_NAME).zip $(APP_NAME)
 
 #      _      _
 #   __| | ___| |__
@@ -421,6 +424,64 @@ lint:
 	@echo "[LINT]"
 	@find . -type f -name \*.py -exec pychecker {} \;
 
+#           _
+#  _ __ ___| | ___  __ _ ___  ___
+# | '__/ _ \ |/ _ \/ _` / __|/ _ \
+# | | |  __/ |  __/ (_| \__ \  __/
+# |_|  \___|_|\___|\__,_|___/\___|
+#
+# Bless a new neubot release (sources, Debian, and MacOSX).
+#
+
+#
+# Make sure we have the right permissions and generate the
+# checksums.
+# Often this command is run as root and we want to be able to
+# write the win32 installer in the directory at the end of the
+# Unix and MacOSX release process.
+# Try to be portable because OpenBSD (for instance) does not
+# have a sha256sum command.
+#
+
+_release_finish:
+	@cd dist && \
+         for FILE in neubot-*; do \
+           if env sha256sum < /dev/null 1> /dev/null 2> /dev/null; then \
+             sha256sum $$FILE >> SHA256.inc; \
+             test $$? || exit 1; \
+           elif env sha256 < /dev/null 1> /dev/null 2> /dev/null; then \
+             sha256 $$FILE | perl -ne \
+              'print "$$2  $$1\n" if /^SHA256 \((.*)\) = (.*)$$/;' \
+              >> SHA256.inc; \
+             test $$? || exit 1; \
+           else \
+              echo "Skipping the SHA256 part..."; \
+           fi \
+         done
+	@cd dist && chmod 644 *
+	@chmod 777 dist
+
+#
+# The following rule invokes _release_finish and this is redundant
+# when __release invokes it, but useful when such rule is the command
+# typed by the user.  This happens when the releaser either is not
+# running under a Debian-like system (therefore some assumptions
+# made by __release are not met) or she is creating an informal
+# release (for developers and testers) that does not require her
+# to create files for APT.
+# XXX Note that we don't need to issue `make archive` because the
+# app for MacOSX already does that.
+#
+
+release_lite:
+	@make clean
+	@make app.zip
+	@rm -rf dist/$(STEM).app
+	@make deb
+	@rm -rf dist/data* dist/control* dist/debian-binary
+#	@make archive
+	@make _release_finish
+
 #
 # Hidden because it depends on the way my machine is
 # configured (for example here we assume GNU/Linux with
@@ -429,7 +490,7 @@ lint:
 
 __release:
 	@echo "[RELEASE]"
-	@make clean
+	@make release_lite
 #	@#Create Win32 installer using Wine
 #	@install -d dist
 #	@cp $$HOME/.wine/drive_c/windows/system32/python27.dll dist/
@@ -442,8 +503,6 @@ __release:
 #
 #	DEB/APT
 #
-	@make deb
-	@rm -rf dist/data* dist/control* dist/debian-binary
 	@cd dist && dpkg-scanpackages . > Packages
 	@cd dist && gzip --stdout -9 Packages > Packages.gz
 	@cp debian/Release dist/
@@ -453,13 +512,4 @@ __release:
 	  echo " $$SHASUM $$KBYTES $$FILE" >> dist/Release; \
 	 done
 	@gpg -abs -o dist/Release.gpg dist/Release
-#
-#	Sources
-#
-	@make archive
-	@cd dist && sha256sum neubot-* >> SHA256.inc
-#
-#	Fix permissions
-#
-	@cd dist && chmod 644 *
-	@chmod 777 dist
+	@make _release_finish

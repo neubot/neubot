@@ -1,24 +1,27 @@
+<!-- neubot/www/neubot.html -->
 <!--
- # neubot/www/results.html
- #
- # Copyright (c) 2010 Antonio Servetti <antonio.servetti@polito.it>,
- #  Politecnico di Torino
- #
- # This file is part of Neubot <http://www.neubot.org/>.
- #
- # Neubot is free software: you can redistribute it and/or modify
- # it under the terms of the GNU General Public License as published by
- # the Free Software Foundation, either version 3 of the License, or
- # (at your option) any later version.
- #
- # Neubot is distributed in the hope that it will be useful,
- # but WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- # GNU General Public License for more details.
- #
- # You should have received a copy of the GNU General Public License
- # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+ Copyright (c) 2010 Antonio Servetti <antonio.servetti@polito.it>,
+  Politecnico di Torino
+
+ Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+  NEXA Center for Internet & Society at Politecnico di Torino
+
+ This file is part of Neubot <http://www.neubot.org/>.
+
+ Neubot is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Neubot is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 -->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -29,21 +32,19 @@
 
     <script src="js/jquery.js" type="text/javascript"></script>
     <script src="js/jquery-ui.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/jqplot.cursor.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.highlighter.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.canvasTextRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+    <!-- IE8 does not have Canvas! -->
+    <!--[if IE]><script language="javascript" type="text/javascript" src="jqplot/excanvas.js"></script><![endif]-->
+
     <script src="js/jquery.qtip.js" type="text/javascript"></script>
     <script src="js/jquery.jqplot.js" type="text/javascript"></script>
 
     <script src="js/libneubot.js" type="text/javascript"></script>
     <script src="js/neubot.js" type="text/javascript"></script>
-
-    <script src="js/results.js" type="text/javascript"></script>
-
-	<script type="text/javascript" src="js/jqplot.cursor.min.js"></script>
-	<script type="text/javascript" src="js/jqplot.highlighter.min.js"></script>
-	<script type="text/javascript" src="js/jqplot.canvasTextRenderer.min.js"></script>
-	<script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
-	<script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
-	<!-- IE8 does not have Canvas! -->
-	<!--[if IE]><script language="javascript" type="text/javascript" src="jqplot/excanvas.js"></script><![endif]-->
 
     <title>Neubot 0.3.3 | Web interface</title>
 
@@ -69,13 +70,13 @@
          <a href="http://nexa.polito.it/">Nexa</a>
         </h2>
         <ul class="k2menu">
-          <li class="menu-191 active-trail first">
+          <li class="menu-191 active-trail first active">
             <a href="http://localhost:9774/index.html"
-               title="Status">Status</a>
+               title="Status" class="active">Status</a>
           </li>
-          <li class="menu-192 active">
+          <li class="menu-192">
             <a href="http://localhost:9774/results.html"
-               title="Your recent results" class="active">Your recent results</a>
+               title="Your recent results">Your recent results</a>
           </li>
           <li class="menu-196">
             <a href="http://www.neubot.org/"
@@ -96,19 +97,97 @@
         <div id="rollingcontent" class="hfeed">
         <div id="node-46" class="hentry node">
         <div class="entry-content">
-          <h4>Speedtest results</h4>
+
           <p>
-            <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a>
+            Thank you for using neubot! You are gaining some understanding
+            about your Internet Connection and helping the Internet Community
+            to understand what is going on in the network.
           </p>
-          <!-- XXX Do NOT move plots here or they will suck alot. -->
+
+          <!-- It seems wrong to me to use H4 here -->
+          <h4>Current Neubot status</h4>
+
+          <p>
+            This is the web interface to control the <em>neubot daemon</em>,
+            that is running in background with pid <em><span id="pid">unknown
+            </span></em> since <em><span id="since">unknown</span></em>.
+            The following table provides some more details on the state of
+            the daemon and highlights the current state.
+          </p>
+
+          <!-- Each row in the table has a different id because we need
+            the make bold the line of the current state. -->
+          <table id="state">
+            <thead>
+              <tr>
+                <th></th>
+                <th id="stateCol">State</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="idle">
+                <td></td>
+                <td>idle</td>
+                <td>
+                  The daemon is sleeping.  The next rendezvous will
+                  start in <em><span id="next_rendezvous">unknown
+                  </span></em>.
+                </td>
+              </tr>
+              <tr id="rendezvous">
+                <td></td>
+                <td>rendezvous</td>
+                <td>
+                  The daemon is connecting to the <em>master server</em>
+                  and retrieves test instructions and update information.
+                </td>
+              </tr>
+              <tr id="negotiate">
+                <td></td>
+                <td>negotiate</td>
+                <td>
+                  The daemon is waiting for its turn to perform a
+                  transmission test.  The last known position in queue
+                  is <em><span id="queuePos">unknown</span></em> and there
+                  are <em><span id="queueLen">unknown</span></em> neubots
+                  in queue.
+                </td>
+              </tr>
+              <tr id="test">
+                <td></td>
+                <td>test</td>
+                <td>
+                  The daemon is performing a transmission test.  The
+                  name of the test is <em><span id="testName">
+                  unknown</span></em>.
+                </td>
+              </tr>
+              <tr id="collect">
+                <td></td>
+                <td>collect</td>
+                <td>
+                  The daemon is uploading the results of the latest
+                  transmission test to the neubot project servers.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <br />
+
         </div>
         </div>
         </div>
 
-        <div id="chartdiv1" style="height: 400px; width:100%;"></div>
-        <div id="results">
-          <!-- nothing -->
+        <!-- Not yet -->
+        <!-- Do not move the plot inside the three DIVs above
+          if you want the plot itself to make some sense -->
+        <!--
+        <h4>Recent download and upload rates</h4>
+        <div id="chartdiv1" style="width:100%;">
         </div>
+        -->
 
         </div>
         </div>
@@ -186,4 +265,3 @@
 
   </body>
 </html>
-
