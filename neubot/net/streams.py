@@ -24,6 +24,7 @@
 # Asynchronous I/O for non-blocking sockets (and SSL)
 #
 
+import collections
 import errno
 import os
 import socket
@@ -60,6 +61,7 @@ class Stream(Pollable):
         self.peername = peername
         self.logname = logname
         self.send_octets = None
+        self.send_queue = collections.deque()
         self.send_success = None
         self.send_ticks = 0
         self.recv_maxlen = 0
@@ -183,6 +185,10 @@ class Stream(Pollable):
             log.warning("* send: Working-around Unicode input")
             octets = octets.encode("utf-8")
 
+        if self.send_pending:
+            self.send_queue.append(octets)
+            return
+
         self.send_octets = octets
         self.send_success = send_success
         self.send_ticks = ticks()
@@ -212,6 +218,20 @@ class Stream(Pollable):
                 stats.send.account(count)
 
             if count == len(self.send_octets):
+
+                #
+                # XXX Note that the following snippet is potentially
+                # wrong as long as each send() is free to set the call-
+                # back to notify `send complete` to.  I don't want to
+                # fix it because I plan to modify the stream API so
+                # that this is not an issue anymore.
+                #
+
+                if len(self.send_queue) > 0:
+                    self.send_octets = self.send_queue.popleft()
+                    self.send_ticks = ticks()
+                    return
+
                 notify = self.send_success
                 octets = self.send_octets
                 self.send_octets = None
