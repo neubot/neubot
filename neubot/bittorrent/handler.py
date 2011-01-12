@@ -64,6 +64,7 @@ class StreamWrapper(object):
 
     def _closing(self):
         self.closed = True
+        self.handler.connection_lost(self, None)
         self.handler = None
         self.stream.notify_closing = None
         self.ip, self.port = None, None
