@@ -49,9 +49,6 @@ class StreamWrapper(object):
     def write(self, data):
         if self.closed:
             return
-        # bleh
-        if isinstance(data, buffer):
-            data = str(data)
         self.stream.send(data, self._written)
 
     def _written(self, stream, data):
