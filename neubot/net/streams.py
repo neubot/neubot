@@ -138,8 +138,8 @@ class SocketWrapper(object):
                 return ERROR, exception
 
 class Stream(Pollable):
-    def __init__(self, poller):
-        self.poller = poller
+    def __init__(self, poller_):
+        self.poller = poller_
         self.parent = None
 
         self.sock = None
@@ -243,8 +243,8 @@ class Stream(Pollable):
     # that removes such reference.
     #
 
-    def closed(self):
-        self._do_close()
+    def closed(self, exception=None):
+        self._do_close(exception)
 
     def close(self):
         self._do_close()
@@ -450,14 +450,14 @@ class Stream(Pollable):
 ### BEGIN DEPRECATED CODE ####
 #
 
-def create_stream(sock, poller, fileno, myname, peername, logname, secure,
+def create_stream(sock, poller_, fileno, myname, peername, logname, secure,
                   certfile, server_side):
     conf = {
         "certfile": certfile,
         "server_side": server_side,
         "secure": secure,
     }
-    stream = Stream(poller)
+    stream = Stream(poller_)
     stream.make_connection(sock)
     stream.configure(conf)
     return stream
@@ -469,8 +469,8 @@ def create_stream(sock, poller, fileno, myname, peername, logname, secure,
 
 class Connector(Pollable):
 
-    def __init__(self, poller):
-        self.poller = poller
+    def __init__(self, poller_):
+        self.poller = poller_
         self.protocol = None
         self.sock = None
         self.timeout = 15
@@ -594,7 +594,7 @@ class OldConnector(Pollable):
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port,
                                    self.family, socket.SOCK_STREAM)
-        except socket.error, exception:
+        except socket.error:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
             self.cantconnect()
@@ -617,7 +617,7 @@ class OldConnector(Pollable):
                 self.connecting()
                 return
 
-            except socket.error, exception:
+            except socket.error:
                 log.error("* connect() to %s failed" % str(sockaddr))
                 log.exception()
 
@@ -658,7 +658,7 @@ class OldConnector(Pollable):
             log.error("* connect() to %s:%s timed-out" % self.name)
         return timedout
 
-    def closed(self):
+    def closed(self, exception=None):
         log.debug("* closing Connector to %s:%s" % self.name)
         self.cantconnect()
 
@@ -672,9 +672,9 @@ def connect(address, port, connected, **kwargs):
 
 class Listener(Pollable):
 
-    def __init__(self, poller):
+    def __init__(self, poller_):
         self.protocol = None
-        self.poller = poller
+        self.poller = poller_
         self.lsock = None
         self.endpoint = None
         self.family = 0
@@ -780,7 +780,7 @@ class OldListener(Pollable):
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
                                    socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
-        except socket.error, exception:
+        except socket.error:
             log.error("* getaddrinfo() %s:%s failed" % self.name)
             log.exception()
             self.cantbind()
@@ -804,7 +804,7 @@ class OldListener(Pollable):
                 self.listening()
                 return
 
-            except socket.error, exception:
+            except socket.error:
                 log.error("* bind() with %s failed" % str(sockaddr))
                 log.exception()
 
@@ -899,10 +899,10 @@ class Measurer(object):
         return rttavg, rttdetails, recvavg, sendavg, percentages
 
 class VerboseMeasurer(Measurer):
-    def __init__(self, poller, output=sys.stdout, interval=1):
+    def __init__(self, poller_, output=sys.stdout, interval=1):
         Measurer.__init__(self)
 
-        self.poller = poller
+        self.poller = poller_
         self.output = output
         self.interval = interval
 
@@ -932,130 +932,282 @@ class VerboseMeasurer(Measurer):
                     self.output.write("\t\t---\t\t  %s\t\t  %s\n" %
                                       (val[0], val[1]))
 
+# Verboser
+
+class StreamVerboser(object):
+    def connection_lost(self, logname, eof, exception):
+        if exception:
+            log.error("* Connection %s: %s" % (logname, exception))
+        elif eof:
+            log.debug("* Connection %s: EOF" % (logname))
+        else:
+            log.error("* Connection %s: lost (no reason given)" % (logname))
+
+    def bind_failed(self, endpoint, exception, fatal=False):
+        log.error("* Bind %s failed: %s" % (endpoint, exception))
+        if fatal:
+            sys.exit(1)
+
+    def started_listening(self, endpoint):
+        log.debug("* Listening at %s" % str(endpoint))
+
+    def connection_made(self, logname):
+        log.debug("* Connection made %s" % str(logname))
+
+    def connection_failed(self, endpoint, exception, fatal=False):
+        log.error("* Connection to %s failed: %s" % (endpoint, exception))
+        if fatal:
+            sys.exit(1)
+
+    def started_connecting(self, endpoint):
+        log.debug("* Connecting to %s ..." % str(endpoint))
+
 # Unit test
 
+from neubot.options import OptionParser
 import getopt
 
-class Discard:
-    def __init__(self, stream):
-        self.timestamp = ticks()
-        sched(1, self.update_stats)
-        self.received = 0
-        stream.recv(MAXBUF, self.got_data)
+measurer = VerboseMeasurer(poller)
+verboser = StreamVerboser()
 
-    def got_data(self, stream, octets):
-        self.received += len(octets)
-        stream.recv(MAXBUF, self.got_data)
+class DiscardProtocol(Stream):
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
 
-    def update_stats(self):
-        sched(1, self.update_stats)
-        now = ticks()
-        speed = self.received / (now - self.timestamp)
-        print "Current speed: ", speed_formatter(speed)
-        self.timestamp = now
-        self.received = 0
+    def connection_made(self):
+        verboser.connection_made(self.logname)
+        measurer.register_stream(self)
+        self.start_recv(MAXBUF)
 
-class Echo:
-    def __init__(self, stream):
-        stream.recv(MAXBUF, self.got_data)
+    def recv_complete(self, octets):
+        self.start_recv(MAXBUF)
 
-    def got_data(self, stream, octets):
-        stream.send(octets, self.sent_data)
+    def connection_lost(self, exception):
+        verboser.connection_lost(self.logname, self.eof, exception)
 
-    def sent_data(self, stream, octets):
-        stream.recv(MAXBUF, self.got_data)
+class DiscardListener(Listener):
+    def __init__(self, poller_, dictionary):
+        Listener.__init__(self, poller_)
+        self.protocol = DiscardProtocol
+        self.dictionary = dictionary
 
-class Source:
-    def __init__(self, stream):
+    def bind_failed(self, exception):
+        verboser.bind_failed(self.endpoint, exception, fatal=True)
+
+    def started_listening(self):
+        verboser.started_listening(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+
+class EchoProtocol(Stream):
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
+
+    def connection_made(self):
+        verboser.connection_made(self.logname)
+        measurer.register_stream(self)
+        self.start_recv(MAXBUF)
+
+    def recv_complete(self, octets):
+        self.start_send(octets)
+
+    def send_complete(self, count):
+        self.start_recv(MAXBUF)
+
+    def connection_lost(self, exception):
+        verboser.connection_lost(self.logname, self.eof, exception)
+
+class EchoListener(Listener):
+    def __init__(self, poller_, dictionary):
+        Listener.__init__(self, poller_)
+        self.protocol = EchoProtocol
+        self.dictionary = dictionary
+
+    def bind_failed(self, exception):
+        verboser.bind_failed(self.endpoint, exception, fatal=True)
+
+    def started_listening(self):
+        verboser.started_listening(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+
+class ChargenProtocol(Stream):
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
+
+    def connection_made(self):
+        verboser.connection_made(self.logname)
         self.buffer = "A" * MAXBUF
-        stream.send(self.buffer, self.sent_data)
+        self.start_send(self.buffer)
 
-    def sent_data(self, stream, octets):
-        stream.send(self.buffer, self.sent_data)
+    def send_complete(self, octets):
+        self.start_send(self.buffer)
 
-from neubot import version
+    def connection_lost(self, exception):
+        verboser.connection_lost(self.logname, self.eof, exception)
 
-USAGE = "Usage: %s [-6SlVv] [-C cert] [-n timeout] [-P proto] [--help] address port\n"
+class ChargenConnector(Connector):
+    def __init__(self, poller_, dictionary):
+        Connector.__init__(self, poller_)
+        self.protocol = ChargenProtocol
+        self.dictionary = dictionary
 
-HELP = USAGE +								\
-"Options:\n"								\
-"  -6         : Use IPv6 rather than IPv4.\n"				\
-"  -C cert    : Secure listen().  Use OpenSSL cert.\n"                  \
-"  --help     : Print this help screen and exit.\n"			\
-"  -l         : Listen for incoming connections.\n"			\
-"  -n timeout : Time-out after timeout seconds.\n"			\
-"  -P proto   : Run the specified protocol.\n"				\
-"               Avail. protos: echo, discard.\n"			\
-"  -S         : Secure connect().  Use OpenSSL.\n"			\
-"  -V         : Print version number and exit.\n"			\
-"  -v         : Run the program in verbose mode.\n"
+    def connection_failed(self, exception):
+        verboser.connection_failed(self.endpoint, exception, fatal=True)
 
-def connected(stream):
-    stream.close()
+    def started_connecting(self):
+        verboser.started_connecting(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+
+class ConnectProtocol(Stream):
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
+
+    def connection_made(self):
+        self.close()
+
+    def connection_lost(self, exception):
+        verboser.connection_lost(self.logname, self.eof, exception)
+
+class ConnectConnector(Connector):
+    def __init__(self, poller_, dictionary):
+        Connector.__init__(self, poller_)
+        self.protocol = ConnectProtocol
+        self.dictionary = dictionary
+
+    def connection_failed(self, exception):
+        verboser.connection_failed(self.endpoint, exception, fatal=True)
+
+    def started_connecting(self):
+        verboser.started_connecting(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+
+USAGE = """Neubot net -- Test unit for the asynchronous network layer
+
+Usage: neubot net [-Vv] [-D macro[=value]] [-f file] [--help]
+
+Options:
+    -D macro[=value]   : Set the value of the macro `macro`.
+    -f file            : Read options from file `file`.
+    --help             : Print this help screen and exit.
+    -V                 : Print version number and exit.
+    -v                 : Run the program in verbose mode.
+
+Macros (defaults in square brackets):
+    address=addr       : Select the address to use [127.0.0.1]
+    certfile           : Path to private key and certificate file
+                         to be used together with `-D secure` []
+    count=N            : Spawn N client connections at a time [1]
+    key=KEY            : Use KEY to initialize ARC4 stream []
+    listen             : Listen for incoming connections [False]
+    obfuscate          : Obfuscate traffic using ARC4 [False]
+    port=port          : Select the port to use [12345]
+    proto=proto        : Choose the protocol.  In listen mode you can
+                         choose between `echo' and `discard' (which is
+                         the default).  In connect / client mode you
+                         can choose between `connect' and `chargen',
+                         and the latter is the default.
+    secure             : Secure the communication using SSL [False]
+
+"""
+
+VERSION = "Neubot 0.3.2\n"
 
 def main(args):
-    family = socket.AF_INET
-    srvmode = False
-    timeout = 10
-    secure = False
-    certfile = None
-    proto = None
+
+    conf = OptionParser()
+    conf.set_option("net", "address", "127.0.0.1")
+    conf.set_option("net", "certfile", "")
+    conf.set_option("net", "count", "1")
+    conf.set_option("net", "key", "")
+    conf.set_option("net", "listen", "False")
+    conf.set_option("net", "obfuscate", "False")
+    conf.set_option("net", "port", "12345")
+    conf.set_option("net", "proto", "")
+    conf.set_option("net", "secure", "False")
+
     try:
-        options, arguments = getopt.getopt(args[1:], "6C:ln:P:SVv", ["help"])
+        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
     except getopt.GetoptError:
-        sys.stderr.write(USAGE % args[0])
-        sys.exit(1)
-    for name, value in options:
-        if name == "-6":
-            family = socket.AF_INET6
-        elif name == "-C":
-            certfile = value
-        elif name == "--help":
-            sys.stdout.write(HELP % args[0])
-            sys.exit(0)
-        elif name == "-l":
-            srvmode = True
-        elif name == "-n":
-            try:
-                timeout = int(value)
-            except ValueError:
-                timeout = -1
-            if timeout < 0:
-                log.error("Bad timeout")
-                sys.exit(1)
-        elif name == "-P":
-            proto = value
-        elif name == "-S":
-            secure = True
-        elif name == "-V":
-            sys.stdout.write(version + "\n")
-            sys.exit(0)
-        elif name == "-v":
-            log.verbose()
-    if len(arguments) != 2:
-        sys.stderr.write(USAGE % args[0])
-        sys.exit(1)
-    if proto == "discard":
-        if srvmode:
-            listen("127.0.0.1", "8009", accepted=Discard)
-        else:
-            connect("127.0.0.1", "8009", connected=Source)
-        loop()
-        sys.exit(0)
-    elif proto == "echo":
-        listen("127.0.0.1", "8007", accepted=Echo)
-        loop()
-        sys.exit(0)
-    elif proto:
         sys.stderr.write(USAGE)
         sys.exit(1)
-    if srvmode:
-        listen(arguments[0], arguments[1], connected, family=family,
-               secure=secure, certfile=certfile)
+
+    if len(arguments) > 0:
+        sys.stdout.write(USAGE)
+        sys.exit(1)
+
+    for name, value in options:
+        if name == "-D":
+             conf.register_opt(value, "net")
+             continue
+        if name == "-f":
+             conf.register_file(value)
+             continue
+        if name == "--help":
+             sys.stdout.write(USAGE)
+             sys.exit(0)
+        if name == "-V":
+             sys.stdout.write(VERSION)
+             sys.exit(0)
+        if name == "-v":
+             log.verbose()
+             continue
+
+    conf.merge_files()
+    conf.merge_environ()
+    conf.merge_opts()
+
+    measurer.start()
+
+    address = conf.get_option("net", "address")
+    count = conf.get_option_uint("net", "count")
+    listen = conf.get_option_bool("net", "listen")
+    port = conf.get_option_uint("net", "port")
+    proto = conf.get_option("net", "proto")
+
+    dictionary = {
+        "certfile": conf.get_option("net", "certfile"),
+        "key": conf.get_option("net", "key"),
+        "obfuscate": conf.get_option_bool("net", "obfuscate"),
+        "secure": conf.get_option_bool("net", "secure"),
+    }
+
+    endpoint = (address, port)
+
+    if listen:
+        dictionary["server_side"] = True
+        if not proto or proto == "discard":
+            listener = DiscardListener(poller, dictionary)
+        elif proto == "echo":
+            listener = EchoListener(poller, dictionary)
+        else:
+            sys.stderr.write(USAGE)
+            sys.exit(1)
+
+        listener.listen(endpoint)
+        loop()
+        sys.exit(0)
+
+    if not proto or proto == "chargen":
+        mkconnector = ChargenConnector
+    elif proto == "connect":
+        mkconnector = ConnectConnector
     else:
-        connect(arguments[0], arguments[1], connected, conntimeo=timeout,
-                family=family, secure=secure)
+        sys.stderr.write(USAGE)
+        sys.exit(1)
+
+    while count > 0:
+        count = count - 1
+        connector = mkconnector(poller, dictionary)
+        measurer.connect(connector, endpoint)
     loop()
+    sys.exit(0)
 
 if __name__ == "__main__":
     main(sys.argv)
