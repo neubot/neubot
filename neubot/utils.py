@@ -126,6 +126,13 @@ def unit_formatter(n, base10=False, unit=""):
     else:
         return _unit_formatter(n, [GIBI,MEBI,KIBI], unit)
 
+def speed_formatter(speed, base10=True, bytes=False):
+    unit = "Byte/s"
+    if not bytes:
+        speed = speed * 8
+        unit = "bit/s"
+    return unit_formatter(speed, base10, unit)
+
 def time_formatter(n):
     if n >= 1.0:
         return "%.1f s" % n

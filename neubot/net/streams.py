@@ -46,7 +46,7 @@ from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
 from neubot.net.pollers import poller
 from neubot.net.pollers import loop
-from neubot.utils import unit_formatter
+from neubot.utils import speed_formatter
 from neubot.utils import ticks
 from neubot.utils import fixkwargs
 from neubot import log
@@ -170,6 +170,8 @@ class Stream(Pollable):
         self.stats.append(self.poller.stats)
         self.notify_closing = None
 
+        self.measurer = None
+
     #
     # XXX
     # Reading the code, please keep in mind that there are two
@@ -225,6 +227,9 @@ class Stream(Pollable):
             self.encrypt = algo.encrypt
             self.decrypt = algo.decrypt
 
+        if "measurer" in dictionary and dictionary["measurer"]:
+            self.measurer = dictionary["measurer"]
+
     def connection_made(self):
         pass
 
@@ -253,6 +258,8 @@ class Stream(Pollable):
             self.connection_lost(exception)
             if self.parent:
                 self.parent.connection_lost(self)
+            if self.measurer:
+                self.measurer.dead = True
             self.send_octets = None
             self.send_success = None
             self.send_ticks = 0
@@ -303,6 +310,8 @@ class Stream(Pollable):
 
         if status == SUCCESS and octets:
 
+            if self.measurer:
+                self.measurer.recv += len(octets)
             for stats in self.stats:
                 stats.recv.account(len(octets))
 
@@ -387,6 +396,9 @@ class Stream(Pollable):
         status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
+
+            if self.measurer:
+                self.measurer.send += count
             for stats in self.stats:
                 stats.send.account(count)
 
@@ -465,10 +477,12 @@ class Connector(Pollable):
         self.timestamp = 0
         self.endpoint = None
         self.family = 0
+        self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET):
+    def connect(self, endpoint, family=socket.AF_INET, measurer_=None):
         self.endpoint = endpoint
         self.family = family
+        self.measurer = measurer_
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -522,6 +536,10 @@ class Connector(Pollable):
                     exception = exception2
             self.connection_failed(exception)
             return
+
+        if self.measurer:
+            rtt = ticks() - self.timestamp
+            self.measurer.rtts.append(rtt)
 
         stream = self.protocol(self.poller)
         stream.parent = self
@@ -818,13 +836,101 @@ def listen(address, port, accepted, **kwargs):
                            #
 ### END DEPRECATED CODE ####
 
-# TODO move to neubot/utils.py
-def speed_formatter(speed, base10=True, bytes=False):
-    unit = "Byte/s"
-    if not bytes:
-        speed = speed * 8
-        unit = "bit/s"
-    return unit_formatter(speed, base10, unit)
+# Measurer
+
+class StreamMeasurer(object):
+    dead = False
+    recv = 0
+    send = 0
+
+class Measurer(object):
+    def __init__(self):
+        self.last = ticks()
+        self.streams = []
+        self.rtts = []
+
+    def connect(self, connector, endpoint, family=socket.AF_INET):
+        connector.connect(endpoint, family, self)
+
+    def register_stream(self, stream):
+        m = StreamMeasurer()
+        stream.configure({"measurer": m})
+        self.streams.append(m)
+
+    def measure(self):
+        now = ticks()
+        delta = now - self.last
+        self.last = now
+
+        if delta <= 0:
+            return None
+
+        rttavg = 0
+        rttdetails = []
+        if len(self.rtts) > 0:
+            for rtt in self.rtts:
+                rttavg += rtt
+            rttavg = rttavg / len(self.rtts)
+            rttdetails = self.rtts
+            self.rtts = []
+
+        alive = []
+        recvsum = 0
+        sendsum = 0
+        for m in self.streams:
+            recvsum += m.recv
+            sendsum += m.send
+            if not m.dead:
+                alive.append(m)
+        recvavg = recvsum / delta
+        sendavg = sendsum / delta
+        percentages = []
+        for m in self.streams:
+            recvp, sendp = 0, 0
+            if recvsum:
+                recvp = 100 * m.recv / recvsum
+            if sendsum:
+                sendp = 100 * m.send / sendsum
+            percentages.append((recvp, sendp))
+            if not m.dead:
+                m.recv = m.send = 0
+        self.streams = alive
+
+        return rttavg, rttdetails, recvavg, sendavg, percentages
+
+class VerboseMeasurer(Measurer):
+    def __init__(self, poller, output=sys.stdout, interval=1):
+        Measurer.__init__(self)
+
+        self.poller = poller
+        self.output = output
+        self.interval = interval
+
+    def start(self):
+        self.poller.sched(self.interval, self.report)
+        self.output.write("\t\trtt\t\trecv\t\t\tsend\n")
+
+    def report(self):
+        self.poller.sched(self.interval, self.report)
+
+        rttavg, rttdetails, recvavg, sendavg, percentages = self.measure()
+
+        if len(rttdetails) > 0:
+            rttavg = "%d us" % int(1000000 * rttavg)
+            self.output.write("\t\t%s\t\t---\t\t---\n" % rttavg)
+            if len(rttdetails) > 1:
+                for detail in rttdetails:
+                    detail = "%d us" % int(1000000 * detail)
+                    self.output.write("\t\t  %s\t\t---\t\t---\n" % detail)
+
+        if len(percentages) > 0:
+            recv, send = speed_formatter(recvavg), speed_formatter(sendavg)
+            self.output.write("\t\t---\t\t%s\t\t%s\n" % (recv, send))
+            if len(percentages) > 1:
+                for val in percentages:
+                    val = map(lambda x: "%.2f%%" % x, val)
+                    self.output.write("\t\t---\t\t  %s\t\t  %s\n" %
+                                      (val[0], val[1]))
 
 # Unit test
 
