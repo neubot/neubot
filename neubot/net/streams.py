@@ -46,7 +46,7 @@ from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
 from neubot.net.pollers import poller
 from neubot.net.pollers import loop
-from neubot.utils import unit_formatter
+from neubot.utils import speed_formatter
 from neubot.utils import ticks
 from neubot.utils import fixkwargs
 from neubot import log
@@ -817,14 +817,6 @@ def listen(address, port, accepted, **kwargs):
 
                            #
 ### END DEPRECATED CODE ####
-
-# TODO move to neubot/utils.py
-def speed_formatter(speed, base10=True, bytes=False):
-    unit = "Byte/s"
-    if not bytes:
-        speed = speed * 8
-        unit = "bit/s"
-    return unit_formatter(speed, base10, unit)
 
 # Unit test
 
