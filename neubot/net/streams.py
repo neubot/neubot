@@ -31,6 +31,10 @@ import sys
 import types
 
 try:
+    from Crypto.Cipher import ARC4
+except ImportError:
+    ARC4 = None
+try:
     import ssl
 except ImportError:
     ssl = None
@@ -47,37 +51,164 @@ from neubot.utils import ticks
 from neubot.utils import fixkwargs
 from neubot import log
 
-SUCCESS, ERROR, WANT_READ, WANT_WRITE = range(0,4)
+SUCCESS = 0
+ERROR = 1
+WANT_READ = 2
+WANT_WRITE = 3
+
 TIMEOUT = 300
 
 MAXBUF = 1<<18
 
+if ssl:
+    class SSLWrapper(object):
+        def __init__(self, sock):
+            self.sock = sock
+            self.need_handshake = True
+
+        def soclose(self):
+            try:
+                self.sock.close()
+            except ssl.SSLError:
+                pass
+
+        def sorecv(self, maxlen):
+            try:
+                if self.need_handshake:
+                    self.sock.do_handshake()
+                    self.need_handshake = False
+                octets = self.sock.read(maxlen)
+                return SUCCESS, octets
+            except ssl.SSLError, (code, reason):
+                if code == ssl.SSL_ERROR_WANT_READ:
+                    return WANT_READ, ""
+                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                    return WANT_WRITE, ""
+                else:
+                    log.exception()
+                    return ERROR, ""
+
+        def sosend(self, octets):
+            try:
+                if self.need_handshake:
+                    self.sock.do_handshake()
+                    self.need_handshake = False
+                count = self.sock.write(octets)
+                return SUCCESS, count
+            except ssl.SSLError, (code, reason):
+                if code == ssl.SSL_ERROR_WANT_READ:
+                    return WANT_READ, 0
+                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                    return WANT_WRITE, 0
+                else:
+                    log.exception()
+                    return ERROR, 0
+
+SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
+
+class SocketWrapper(object):
+    def __init__(self, sock):
+        self.sock = sock
+
+    def soclose(self):
+        try:
+            self.sock.close()
+        except socket.error:
+            pass
+
+    def sorecv(self, maxlen):
+        try:
+            octets = self.sock.recv(maxlen)
+            return SUCCESS, octets
+        except socket.error, (code, reason):
+            if code in SOFT_ERRORS:
+                return WANT_READ, ""
+            else:
+                log.exception()
+                return ERROR, ""
+
+    def sosend(self, octets):
+        try:
+            count = self.sock.send(octets)
+            return SUCCESS, count
+        except socket.error, (code, reason):
+            if code in SOFT_ERRORS:
+                return WANT_WRITE, 0
+            else:
+                log.exception()
+                return ERROR, 0
+
 class Stream(Pollable):
-    def __init__(self, poller, filenum, myname, peername, logname):
+    def __init__(self, poller):
         self.poller = poller
-        self.filenum = filenum
-        self.myname = myname
-        self.peername = peername
-        self.logname = logname
+
+        self.sock = None
+        self.filenum = -1
+        self.myname = None
+        self.peername = None
+        self.logname = None
+
+        self.timeout = TIMEOUT
+        self.encrypt = None
+        self.decrypt = None
+
         self.send_octets = None
         self.send_success = None
         self.send_ticks = 0
         self.recv_maxlen = 0
         self.recv_success = None
         self.recv_ticks = 0
+
         self.eof = False
-        self.timeout = TIMEOUT
-        self.notify_closing = None
-        self.stats = []
-        self.stats.append(self.poller.stats)
         self.isclosed = 0
         self.send_pending = 0
         self.sendblocked = 0
         self.recv_pending = 0
         self.recvblocked = 0
 
+        self.stats = []
+        self.stats.append(self.poller.stats)
+        self.notify_closing = None
+
     def fileno(self):
         return self.filenum
+
+    def make_connection(self, sock):
+        self.filenum = sock.fileno()
+        self.myname = sock.getsockname()
+        self.peername = sock.getpeername()
+        self.logname = str((self.myname, self.peername))
+        self.sock = SocketWrapper(sock)
+
+    def configure(self, dictionary):
+        if "secure" in dictionary and dictionary["secure"]:
+
+            if not ssl:
+                raise RuntimeError("SSL support not available")
+
+            server_side = False
+            if "server_side" in dictionary and dictionary["server_side"]:
+                server_side = dictionary["server_side"]
+            certfile = None
+            if "certfile" in dictionary and dictionary["certfile"]:
+                certfile = dictionary["certfile"]
+
+            so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
+              certfile=certfile, server_side=server_side)
+            self.sock = SSLWrapper(so)
+
+        if "obfuscate" in dictionary and dictionary["obfuscate"]:
+
+            if not ARC4:
+                raise RuntimeError("ARC4 support not available")
+
+            key = "neubot"
+            if "key" in dictionary and dictionary["key"]:
+                key = dictionary["key"]
+
+            algo = ARC4.new(key)
+            self.encrypt = algo.encrypt
+            self.decrypt = algo.decrypt
 
     #
     # When you keep a reference to the stream in your class,
@@ -104,7 +235,7 @@ class Stream(Pollable):
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
-            self.soclose()
+            self.sock.soclose()
             self.poller.close(self)
 
     def readtimeout(self, now):
@@ -139,19 +270,25 @@ class Stream(Pollable):
                 self.poller.unset_writable(self)
             self.sendblocked = 0
 
-        status, octets = self.sorecv(self.recv_maxlen)
+        status, octets = self.sock.sorecv(self.recv_maxlen)
 
         if status == SUCCESS and octets:
+
             for stats in self.stats:
                 stats.recv.account(len(octets))
+
             notify = self.recv_success
             self.recv_maxlen = 0
             self.recv_success = None
             self.recv_ticks = 0
             self.recv_pending = 0
             self.poller.unset_readable(self)
+
+            if self.decrypt:
+                octets = self.decrypt(octets)
             if notify:
                 notify(self, octets)
+
             return
 
         if status == WANT_READ:
@@ -179,9 +316,12 @@ class Stream(Pollable):
     def send(self, octets, send_success):
         if self.isclosed:
             return
+
         if type(octets) == types.UnicodeType:
             log.warning("* send: Working-around Unicode input")
             octets = octets.encode("utf-8")
+        if self.encrypt:
+            octets = self.encrypt(octets)
 
         self.send_octets = octets
         self.send_success = send_success
@@ -205,7 +345,7 @@ class Stream(Pollable):
                 self.poller.unset_readable(self)
             self.recvblocked = 0
 
-        status, count = self.sosend(self.send_octets)
+        status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
             for stats in self.stats:
@@ -250,108 +390,16 @@ class Stream(Pollable):
 
         raise RuntimeError("Unexpected status value")
 
-    #
-    # These are the methods that an "underlying socket"
-    # implementation should override.
-    #
-
-    def soclose(self):
-        raise NotImplementedError
-
-    def sorecv(self, maxlen):
-        raise NotImplementedError
-
-    def sosend(self, octets):
-        raise NotImplementedError
-
-if ssl:
-    class StreamSSL(Stream):
-        def __init__(self, ssl_sock, poller, fileno, myname, peername, logname):
-            self.ssl_sock = ssl_sock
-            Stream.__init__(self, poller, fileno, myname, peername, logname)
-            self.need_handshake = True
-
-        def soclose(self):
-            self.ssl_sock.close()
-
-        def sorecv(self, maxlen):
-            try:
-                if self.need_handshake:
-                    self.ssl_sock.do_handshake()
-                    self.need_handshake = False
-                octets = self.ssl_sock.read(maxlen)
-                return SUCCESS, octets
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
-                    return WANT_READ, ""
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
-                    return WANT_WRITE, ""
-                else:
-                    log.exception()
-                    return ERROR, ""
-
-        def sosend(self, octets):
-            try:
-                if self.need_handshake:
-                    self.ssl_sock.do_handshake()
-                    self.need_handshake = False
-                count = self.ssl_sock.write(octets)
-                return SUCCESS, count
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
-                    return WANT_READ, 0
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
-                    return WANT_WRITE, 0
-                else:
-                    log.exception()
-                    return ERROR, 0
-
-SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
-
-class StreamSocket(Stream):
-    def __init__(self, sock, poller, fileno, myname, peername, logname):
-        self.sock = sock
-        Stream.__init__(self, poller, fileno, myname, peername, logname)
-
-    def soclose(self):
-        self.sock.close()
-
-    def sorecv(self, maxlen):
-        try:
-            octets = self.sock.recv(maxlen)
-            return SUCCESS, octets
-        except socket.error, (code, reason):
-            if code in SOFT_ERRORS:
-                return WANT_READ, ""
-            else:
-                log.exception()
-                return ERROR, ""
-
-    def sosend(self, octets):
-        try:
-            count = self.sock.send(octets)
-            return SUCCESS, count
-        except socket.error, (code, reason):
-            if code in SOFT_ERRORS:
-                return WANT_WRITE, 0
-            else:
-                log.exception()
-                return ERROR, 0
-
 def create_stream(sock, poller, fileno, myname, peername, logname, secure,
                   certfile, server_side):
-    if ssl:
-        if secure:
-            try:
-                sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
-                  certfile=certfile, server_side=server_side)
-            except ssl.SSLError, exception:
-                raise socket.error(exception)
-            stream = StreamSSL(sock, poller, fileno, myname, peername, logname)
-            return stream
-    if type(sock) == socket.SocketType and secure:
-        raise socket.error("SSL support not available")
-    stream = StreamSocket(sock, poller, fileno, myname, peername, logname)
+    conf = {
+        "certfile": certfile,
+        "server_side": server_side,
+        "secure": secure,
+    }
+    stream = Stream(poller)
+    stream.make_connection(sock)
+    stream.configure(conf)
     return stream
 
 # Connect
