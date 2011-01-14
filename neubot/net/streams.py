@@ -79,14 +79,13 @@ if ssl:
                     self.need_handshake = False
                 octets = self.sock.read(maxlen)
                 return SUCCESS, octets
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
+            except ssl.SSLError, exception:
+                if exception[0] == ssl.SSL_ERROR_WANT_READ:
                     return WANT_READ, ""
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                elif exception[0] == ssl.SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, ""
                 else:
-                    log.exception()
-                    return ERROR, ""
+                    return ERROR, exception
 
         def sosend(self, octets):
             try:
@@ -95,14 +94,13 @@ if ssl:
                     self.need_handshake = False
                 count = self.sock.write(octets)
                 return SUCCESS, count
-            except ssl.SSLError, (code, reason):
-                if code == ssl.SSL_ERROR_WANT_READ:
+            except ssl.SSLError, exception:
+                if exception[0] == ssl.SSL_ERROR_WANT_READ:
                     return WANT_READ, 0
-                elif code == ssl.SSL_ERROR_WANT_WRITE:
+                elif exception[0] == ssl.SSL_ERROR_WANT_WRITE:
                     return WANT_WRITE, 0
                 else:
-                    log.exception()
-                    return ERROR, 0
+                    return ERROR, exception
 
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 
@@ -120,23 +118,21 @@ class SocketWrapper(object):
         try:
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
-        except socket.error, (code, reason):
-            if code in SOFT_ERRORS:
+        except socket.error, exception:
+            if exception[0] in SOFT_ERRORS:
                 return WANT_READ, ""
             else:
-                log.exception()
-                return ERROR, ""
+                return ERROR, exception
 
     def sosend(self, octets):
         try:
             count = self.sock.send(octets)
             return SUCCESS, count
-        except socket.error, (code, reason):
-            if code in SOFT_ERRORS:
+        except socket.error, exception:
+            if exception[0] in SOFT_ERRORS:
                 return WANT_WRITE, 0
             else:
-                log.exception()
-                return ERROR, 0
+                return ERROR, exception
 
 class Stream(Pollable):
     def __init__(self, poller):
