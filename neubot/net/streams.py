@@ -932,6 +932,36 @@ class VerboseMeasurer(Measurer):
                     self.output.write("\t\t---\t\t  %s\t\t  %s\n" %
                                       (val[0], val[1]))
 
+# Verboser
+
+class StreamVerboser(object):
+    def connection_lost(self, logname, eof, exception):
+        if exception:
+            log.error("* Connection %s: %s" % (logname, exception))
+        elif eof:
+            log.debug("* Connection %s: EOF" % (logname))
+        else:
+            log.error("* Connection %s: lost (no reason given)" % (logname))
+
+    def bind_failed(self, endpoint, exception, fatal=False):
+        log.error("* Bind %s failed: %s" % (endpoint, exception))
+        if fatal:
+            sys.exit(1)
+
+    def started_listening(self, endpoint):
+        log.debug("* Listening at %s" % str(endpoint))
+
+    def connection_made(self, logname):
+        log.debug("* Connection made %s" % str(logname))
+
+    def connection_failed(self, endpoint, exception, fatal=False):
+        log.error("* Connection to %s failed: %s" % (endpoint, exception))
+        if fatal:
+            sys.exit(1)
+
+    def started_connecting(self, endpoint):
+        log.debug("* Connecting to %s ..." % str(endpoint))
+
 # Unit test
 
 import getopt
