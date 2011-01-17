@@ -505,7 +505,7 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET, measurer_=None):
+    def connect(self, endpoint, family=socket.AF_INET, measurer_=None, sobuf=0):
         self.endpoint = endpoint
         self.family = family
         self.measurer = measurer_
@@ -522,6 +522,9 @@ class Connector(Pollable):
             try:
 
                 sock = socket.socket(family, socktype, protocol)
+                if sobuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
                 sock.setblocking(False)
                 result = sock.connect_ex(sockaddr)
                 if result not in INPROGRESS:
@@ -705,7 +708,7 @@ class Listener(Pollable):
         self.endpoint = None
         self.family = 0
 
-    def listen(self, endpoint, family=socket.AF_INET):
+    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
         self.endpoint = endpoint
         self.family = family
 
@@ -722,6 +725,9 @@ class Listener(Pollable):
 
                 lsock = socket.socket(family, socktype, protocol)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                if sobuf:
+                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
+                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
                 lsock.setblocking(False)
                 lsock.bind(sockaddr)
                 # Probably the backlog here is too big
@@ -875,8 +881,8 @@ class Measurer(object):
         self.streams = []
         self.rtts = []
 
-    def connect(self, connector, endpoint, family=socket.AF_INET):
-        connector.connect(endpoint, family, self)
+    def connect(self, connector, endpoint, family=socket.AF_INET, sobuf=0):
+        connector.connect(endpoint, family, self, sobuf)
 
     def register_stream(self, stream):
         m = StreamMeasurer()
