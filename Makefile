@@ -68,6 +68,7 @@ PHONIES += help
 PHONIES += lint
 PHONIES += _release
 PHONIES += release
+PHONIES += release_stable
 
 .PHONY: $(PHONIES)
 _all: help
@@ -304,6 +305,9 @@ DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
 # Files to `chmod +x`.
 DEB_DATA_EXEC += dist/data/etc/init.d/neubot
 
+# Update URI
+DEB_UPDATE_URI = "testing"
+
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@cd dist/data && mv usr/man usr/share/man
@@ -316,6 +320,8 @@ _deb_data:
 	@for FILE in $(DEB_DATA_EXEC); do \
 	 chmod 755 $$FILE; \
 	done
+	@./scripts/sed_inplace s/@TESTING@/$(DEB_UPDATE_URI)/g \
+         dist/data/etc/apt/sources.list.d/neubot.list
 
 _deb_data.tgz: _deb_data
 	@cd dist/data && tar czf ../data.tar.gz ./*
@@ -424,3 +430,7 @@ _release:
 release:
 	@echo "[RELEASE]"
 	@make -f Makefile _release
+
+release_stable:
+	@echo "[RELEASE_STABLE]"
+	@make -f Makefile _release DEB_UPDATE_URI=""
