@@ -404,9 +404,7 @@ lint:
 _release:
 	@make clean
 	@make app.zip
-	@rm -rf dist/$(STEM).app
 	@make deb
-	@rm -rf dist/data* dist/control* dist/debian-binary
 	@make archive
 #
 	@cd dist && dpkg-scanpackages . > Packages
