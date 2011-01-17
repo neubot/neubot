@@ -412,17 +412,7 @@ _release:
 	@make app.zip
 	@make deb
 	@make archive
-#
-	@cd dist && dpkg-scanpackages . > Packages
-	@cd dist && gzip --stdout -9 Packages > Packages.gz
-	@cp debian/Release dist/
-	@for FILE in Packages Packages.gz; do \
-	  SHASUM=`sha256sum dist/$$FILE | awk '{print $$1}'` && \
-	  KBYTES=`wc -c dist/$$FILE | awk '{print $$1}'` && \
-	  echo " $$SHASUM $$KBYTES $$FILE" >> dist/Release; \
-	 done
-	@gpg -abs -o dist/Release.gpg dist/Release
-#
+	@./scripts/update_apt
 	@cd dist && ../scripts/sha256sum neubot-* >> SHA256.inc
 	@cd dist && chmod 644 *
 	@chmod 777 dist
