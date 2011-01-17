@@ -1,7 +1,10 @@
 # Makefile
-# Copyright (c) 2010 NEXA Center for Internet & Society
 
-# This file is part of Neubot.
+#
+# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
 #
 # Neubot is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,15 +18,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
-
-#
-# Makefile
 #
 
 #
-# The release.sh script will automatically update the version
-# number (both here and in the sources) every time we tag with
-# GIT a new release.
+# The scripts/release script will automatically update the
+# version number each time we tag with a new release.
 #
 
 VERSION	= 0.3.3
@@ -67,9 +66,9 @@ PHONIES += deb
 PHONIES += clean
 PHONIES += help
 PHONIES += lint
-PHONIES += release_lite
-PHONIES += __release
-PHONIES += _release_finish
+PHONIES += _release
+PHONIES += release
+PHONIES += release_stable
 
 .PHONY: $(PHONIES)
 _all: help
@@ -87,13 +86,6 @@ STEM = neubot-$(VERSION)
 ARCHIVE = git archive --prefix=$(STEM)/
 FORMATS += tar
 FORMATS += zip
-
-#
-# Note that archive is not a subtarget of e.g. __release
-# because this is the only command that depends on GIT and
-# we want this Makefile to be useful even when the user
-# has downloaded the vanilla sources archive.
-#
 
 archive:
 	@echo "[ARCHIVE]"
@@ -202,8 +194,6 @@ _install_menu:
 # The original sources contain the @DATADIR@ placeholder and
 # will use a sane default if they find the placeholder instead
 # of a valid path.
-# Note that we don't use ``sed -i`` below because at least
-# in OpenBSD this non-standard switch is not implemented.
 # FIXME Actually the sources contain PREFIX but it should use
 # DATADIR; however now we don't have time to fix that and so
 # the above comment is not (yet) right.
@@ -220,16 +210,14 @@ NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
 #
 #_install_edit:
 #	@for EDIT in $(NEEDEDIT); do \
-#	 sed 's|@DATADIR@|$(DATADIR)|g' $$EDIT > $$EDIT.tmp; \
-#	 cat $$EDIT.tmp > $$EDIT; rm $$EDIT.tmp; \
+#	 ./scripts/sed_inplace 's|@DATADIR@|$(DATADIR)|g' $$EDIT; \
 #	done
 #
 # Old style:
 #
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
-	 sed 's|@PREFIX@|$(PREFIX)|g' $$EDIT > $$EDIT.tmp; \
-	 cat $$EDIT.tmp > $$EDIT; rm $$EDIT.tmp; \
+	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT; \
 	done
 
 _install_compile:
@@ -276,7 +264,7 @@ install:
 #  \__,_| .__/| .__/
 #       |_|   |_|
 #
-# Application for MacOS X >= Leopard (10.5)
+# Application for MacOSX >= Leopard (10.5)
 #
 
 APP_NAME=$(STEM).app
@@ -293,6 +281,7 @@ app.zip:
 	@echo "[APP.ZIP]"
 	@make -f Makefile app
 	@cd dist && zip -q --symlinks -r $(APP_NAME).zip $(APP_NAME)
+	@cd dist && rm -rf $(APP_NAME) $(STEM).tar.gz $(STEM).zip
 
 #      _      _
 #   __| | ___| |__
@@ -313,8 +302,11 @@ DEB_DATA_DIRS += dist/data/etc/apt/sources.list.d/
 DEB_DATA_FILES += etc/init.d/neubot
 DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
 
-# Files to chmod 755.
+# Files to `chmod +x`.
 DEB_DATA_EXEC += dist/data/etc/init.d/neubot
+
+# Update URI
+DEB_UPDATE_URI = "testing"
 
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
@@ -328,6 +320,8 @@ _deb_data:
 	@for FILE in $(DEB_DATA_EXEC); do \
 	 chmod 755 $$FILE; \
 	done
+	@./scripts/sed_inplace s/@TESTING@/$(DEB_UPDATE_URI)/g \
+         dist/data/etc/apt/sources.list.d/neubot.list
 
 _deb_data.tgz: _deb_data
 	@cd dist/data && tar czf ../data.tar.gz ./*
@@ -342,36 +336,14 @@ _deb_control_skel:
 	 install -m644 debian/$$FILE dist/$$FILE; \
 	done
 
-#
-# Try to be portable and don't assume we're running in the
-# GNU/Linux environment where md5sum is available.
-#
-
 _deb_control_md5sums:
 	@install -m644 /dev/null dist/control/md5sums
-	@FILES=`find dist/data -type f`; \
-	 if [ -x /usr/bin/md5sum ]; then \
-	  for FILE in $$FILES; do \
-	   md5sum $$FILE >> dist/control/md5sums; \
-	  done; \
-	 elif [ -x /bin/cksum ]; then \
-	  for FILE in $$FILES; do \
-	   MD5=`cat $$FILE|/bin/cksum -a md5`; \
-           echo $$MD5 $$FILE >> dist/control/md5sums; \
-	  done; \
-	 else \
-	  echo "error: can't calculate md5sum"; \
-	  exit 1; \
-	 fi
-	@sed 's|dist\/data\/||g' dist/control/md5sums > dist/control/md5sums.1
-	@cat dist/control/md5sums.1 > dist/control/md5sums
-	@rm -rf dist/control/md5sums.1
+	@./scripts/md5sum `find dist/data -type f` > dist/control/md5sums
+	@./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
 
 _deb_control_size:
 	@SIZE=`du -k -s dist/data/|cut -f1` && \
-	 sed "s|@SIZE@|$$SIZE|" dist/control/control > dist/control/siz && \
-	 cat dist/control/siz > dist/control/control && \
-	 rm dist/control/siz
+	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
 
 _deb_control:
 	@make -f Makefile _deb_control_skel
@@ -399,6 +371,8 @@ _deb:
 	@make -f Makefile _deb_binary
 	@ar r $(DEB_PACKAGE) dist/debian-binary \
 	 dist/control.tar.gz dist/data.tar.gz
+	@cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
+         control/ data/
 
 deb:
 	@echo "[DEB]"
@@ -433,83 +407,20 @@ lint:
 # Bless a new neubot release (sources, Debian, and MacOSX).
 #
 
-#
-# Make sure we have the right permissions and generate the
-# checksums.
-# Often this command is run as root and we want to be able to
-# write the win32 installer in the directory at the end of the
-# Unix and MacOSX release process.
-# Try to be portable because OpenBSD (for instance) does not
-# have a sha256sum command.
-#
-
-_release_finish:
-	@cd dist && \
-         for FILE in neubot-*; do \
-           if env sha256sum < /dev/null 1> /dev/null 2> /dev/null; then \
-             sha256sum $$FILE >> SHA256.inc; \
-             test $$? || exit 1; \
-           elif env sha256 < /dev/null 1> /dev/null 2> /dev/null; then \
-             sha256 $$FILE | perl -ne \
-              'print "$$2  $$1\n" if /^SHA256 \((.*)\) = (.*)$$/;' \
-              >> SHA256.inc; \
-             test $$? || exit 1; \
-           else \
-              echo "Skipping the SHA256 part..."; \
-           fi \
-         done
+_release:
+	@make clean
+	@make app.zip
+	@make deb
+	@make archive
+	@./scripts/update_apt
+	@cd dist && ../scripts/sha256sum neubot-* >> SHA256.inc
 	@cd dist && chmod 644 *
 	@chmod 777 dist
 
-#
-# The following rule invokes _release_finish and this is redundant
-# when __release invokes it, but useful when such rule is the command
-# typed by the user.  This happens when the releaser either is not
-# running under a Debian-like system (therefore some assumptions
-# made by __release are not met) or she is creating an informal
-# release (for developers and testers) that does not require her
-# to create files for APT.
-# XXX Note that we don't need to issue `make archive` because the
-# app for MacOSX already does that.
-#
-
-release_lite:
-	@make clean
-	@make app.zip
-	@rm -rf dist/$(STEM).app
-	@make deb
-	@rm -rf dist/data* dist/control* dist/debian-binary
-#	@make archive
-	@make _release_finish
-
-#
-# Hidden because it depends on the way my machine is
-# configured (for example here we assume GNU/Linux with
-# WINE installed).
-#
-
-__release:
+release:
 	@echo "[RELEASE]"
-	@make release_lite
-#	@#Create Win32 installer using Wine
-#	@install -d dist
-#	@cp $$HOME/.wine/drive_c/windows/system32/python27.dll dist/
-#	@wine cmd /c Build.bat
-#	@install -d dist/neubot-$(VERSION)
-#	@cd dist && mv *.zip *.exe *.dll neubot-$(VERSION)/
-#	@cd dist && zip -r neubot-win32-$(VERSION).zip neubot-$(VERSION)/
-#	@cd dist && rm -rf neubot-$(VERSION)/
-#	@mv Neubot_Setup_* dist/
-#
-#	DEB/APT
-#
-	@cd dist && dpkg-scanpackages . > Packages
-	@cd dist && gzip --stdout -9 Packages > Packages.gz
-	@cp debian/Release dist/
-	@for FILE in Packages Packages.gz; do \
-	  SHASUM=`sha256sum dist/$$FILE | awk '{print $$1}'` && \
-	  KBYTES=`wc -c dist/$$FILE | awk '{print $$1}'` && \
-	  echo " $$SHASUM $$KBYTES $$FILE" >> dist/Release; \
-	 done
-	@gpg -abs -o dist/Release.gpg dist/Release
-	@make _release_finish
+	@make -f Makefile _release
+
+release_stable:
+	@echo "[RELEASE_STABLE]"
+	@make -f Makefile _release DEB_UPDATE_URI=""
