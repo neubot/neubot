@@ -66,9 +66,8 @@ PHONIES += deb
 PHONIES += clean
 PHONIES += help
 PHONIES += lint
-PHONIES += release_lite
-PHONIES += __release
-PHONIES += _release_finish
+PHONIES += _release
+PHONIES += release
 
 .PHONY: $(PHONIES)
 _all: help
@@ -399,60 +398,13 @@ lint:
 # Bless a new neubot release (sources, Debian, and MacOSX).
 #
 
-#
-# Make sure we have the right permissions and generate the
-# checksums.
-# Often this command is run as root and we want to be able to
-# write the win32 installer in the directory at the end of the
-# Unix and MacOSX release process.
-#
-
-_release_finish:
-	@cd dist && ../scripts/sha256sum neubot-* >> SHA256.inc
-	@cd dist && chmod 644 *
-	@chmod 777 dist
-
-#
-# The following rule invokes _release_finish and this is redundant
-# when __release invokes it, but useful when such rule is the command
-# typed by the user.  This happens when the releaser either is not
-# running under a Debian-like system (therefore some assumptions
-# made by __release are not met) or she is creating an informal
-# release (for developers and testers) that does not require her
-# to create files for APT.
-# XXX Note that we don't need to issue `make archive` because the
-# app for MacOSX already does that.
-#
-
-release_lite:
+_release:
 	@make clean
 	@make app.zip
 	@rm -rf dist/$(STEM).app
 	@make deb
 	@rm -rf dist/data* dist/control* dist/debian-binary
-#	@make archive
-	@make _release_finish
-
-#
-# Hidden because it depends on the way my machine is
-# configured (for example here we assume GNU/Linux with
-# WINE installed).
-#
-
-__release:
-	@echo "[RELEASE]"
-	@make release_lite
-#	@#Create Win32 installer using Wine
-#	@install -d dist
-#	@cp $$HOME/.wine/drive_c/windows/system32/python27.dll dist/
-#	@wine cmd /c Build.bat
-#	@install -d dist/neubot-$(VERSION)
-#	@cd dist && mv *.zip *.exe *.dll neubot-$(VERSION)/
-#	@cd dist && zip -r neubot-win32-$(VERSION).zip neubot-$(VERSION)/
-#	@cd dist && rm -rf neubot-$(VERSION)/
-#	@mv Neubot_Setup_* dist/
-#
-#	DEB/APT
+	@make archive
 #
 	@cd dist && dpkg-scanpackages . > Packages
 	@cd dist && gzip --stdout -9 Packages > Packages.gz
@@ -463,4 +415,11 @@ __release:
 	  echo " $$SHASUM $$KBYTES $$FILE" >> dist/Release; \
 	 done
 	@gpg -abs -o dist/Release.gpg dist/Release
-	@make _release_finish
+#
+	@cd dist && ../scripts/sha256sum neubot-* >> SHA256.inc
+	@cd dist && chmod 644 *
+	@chmod 777 dist
+
+release:
+	@echo "[RELEASE]"
+	@make -f Makefile _release
