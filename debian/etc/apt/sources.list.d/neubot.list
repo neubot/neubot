@@ -1,1 +1,1 @@
-deb http://releases.neubot.org/ /
+deb http://releases.neubot.org/ /@TESTING@
