@@ -21,9 +21,8 @@
 #
 
 #
-# The release.sh script will automatically update the version
-# number (both here and in the sources) every time we tag with
-# GIT a new release.
+# The scripts/release script will automatically update the
+# version number each time we tag with a new release.
 #
 
 VERSION	= 0.3.3
@@ -87,13 +86,6 @@ STEM = neubot-$(VERSION)
 ARCHIVE = git archive --prefix=$(STEM)/
 FORMATS += tar
 FORMATS += zip
-
-#
-# Note that archive is not a subtarget of e.g. __release
-# because this is the only command that depends on GIT and
-# we want this Makefile to be useful even when the user
-# has downloaded the vanilla sources archive.
-#
 
 archive:
 	@echo "[ARCHIVE]"
@@ -276,7 +268,7 @@ install:
 #  \__,_| .__/| .__/
 #       |_|   |_|
 #
-# Application for MacOS X >= Leopard (10.5)
+# Application for MacOSX >= Leopard (10.5)
 #
 
 APP_NAME=$(STEM).app
@@ -313,7 +305,7 @@ DEB_DATA_DIRS += dist/data/etc/apt/sources.list.d/
 DEB_DATA_FILES += etc/init.d/neubot
 DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
 
-# Files to chmod 755.
+# Files to `chmod +x`.
 DEB_DATA_EXEC += dist/data/etc/init.d/neubot
 
 _deb_data:
