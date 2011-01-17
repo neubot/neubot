@@ -280,6 +280,7 @@ app.zip:
 	@echo "[APP.ZIP]"
 	@make -f Makefile app
 	@cd dist && zip -q --symlinks -r $(APP_NAME).zip $(APP_NAME)
+	@cd dist && rm -rf $(APP_NAME) $(STEM).tar.gz $(STEM).zip
 
 #      _      _
 #   __| | ___| |__
