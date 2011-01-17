@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# release.sh
-
 #
 # Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
@@ -65,8 +63,7 @@ mv ChangeLog.in ChangeLog
 PATTERN="$CURRENT_MAJOR\\.$CURRENT_MINOR\\.$CURRENT_PATCH"
 FILES=`grep -Rn $PATTERN *|grep -v ^ChangeLog|awk -F: '{print $1}'|sort -u`
 for FILE in $FILES; do
-    sed s/$PATTERN/$NEW/g $FILE > $FILE.new &&
-     cat $FILE.new > $FILE && rm $FILE.new
+    ./scripts/sed_inplace s/$PATTERN/$NEW/g $FILE
 done
 
 #
