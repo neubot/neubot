@@ -365,6 +365,8 @@ _deb:
 	@make -f Makefile _deb_binary
 	@ar r $(DEB_PACKAGE) dist/debian-binary \
 	 dist/control.tar.gz dist/data.tar.gz
+	@cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
+         control/ data/
 
 deb:
 	@echo "[DEB]"
