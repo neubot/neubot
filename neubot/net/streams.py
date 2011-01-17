@@ -1146,6 +1146,7 @@ Macros (defaults in square brackets):
                          can choose between `connect' and `chargen',
                          and the latter is the default.
     secure             : Secure the communication using SSL [False]
+    sobuf=size         : Set socket buffer size to `size` []
 
 """
 
@@ -1163,6 +1164,7 @@ def main(args):
     conf.set_option("net", "port", "12345")
     conf.set_option("net", "proto", "")
     conf.set_option("net", "secure", "False")
+    conf.set_option("net", "sobuf", "0")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -1202,6 +1204,7 @@ def main(args):
     listen = conf.get_option_bool("net", "listen")
     port = conf.get_option_uint("net", "port")
     proto = conf.get_option("net", "proto")
+    sobuf = conf.get_option_uint("net", "sobuf")
 
     dictionary = {
         "certfile": conf.get_option("net", "certfile"),
@@ -1222,7 +1225,7 @@ def main(args):
             sys.stderr.write(USAGE)
             sys.exit(1)
 
-        listener.listen(endpoint)
+        listener.listen(endpoint, sobuf=sobuf)
         loop()
         sys.exit(0)
 
@@ -1237,7 +1240,7 @@ def main(args):
     while count > 0:
         count = count - 1
         connector = mkconnector(poller, dictionary)
-        measurer.connect(connector, endpoint)
+        measurer.connect(connector, endpoint, sobuf=sobuf)
     loop()
     sys.exit(0)
 
