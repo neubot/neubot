@@ -30,7 +30,7 @@ if [ -x /usr/bin/dpkg-scanpackages ]; then
             {
                 SHA256SUM=`sha256sum $FILE | awk '{print $1}'` &&
                 KBYTES=`wc -c $FILE | awk '{print $1}'` &&
-                echo " $SHASUM $KBYTES $FILE" >> Release;
+                echo " $SHA256SUM $KBYTES $FILE" >> Release;
             }
             test $? || exit 1
         done &&
