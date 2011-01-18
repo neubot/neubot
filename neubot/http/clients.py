@@ -43,7 +43,7 @@ from neubot.http.messages import Message
 from neubot.http.messages import compose
 from neubot.http.utils import nextstate
 from neubot.http.utils import prettyprint
-from neubot.net.connectors import connect
+from neubot.net.streams import connect
 from neubot.net.pollers import loop
 from neubot.net.pollers import enable_stats
 from neubot.utils import ticks
