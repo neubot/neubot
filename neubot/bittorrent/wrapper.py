@@ -29,8 +29,8 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from connector import BTConnector
-from neubot.net.listeners import listen
-from neubot.net.connectors import connect
+from neubot.net.streams import listen
+from neubot.net.streams import connect
 from handler import StreamWrapper
 from neubot import log
 
