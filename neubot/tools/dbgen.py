@@ -3,6 +3,7 @@
 #
 # Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011 Roberto D'Auria <everlastingfire@autistici.org>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -28,31 +29,68 @@ import sys
 import uuid
 import time
 import random
-from subprocess import call
-from sqlite3 import connect
+import subprocess
+import sqlite3
+from datetime import datetime
 
-ROWS = 10
+# Fill the database with DAYS days and DAILYROWS daily records
+# for each day, using UUIDS random-generated clients
 
-RESULTS_SAVE = "INSERT INTO results VALUES(null, :tag, :result, :timestamp, :ident);"
+DAYS = 100
+DAILYROWS = 100
+UUIDS = 100
+
+# Probability of a client to change IP
+IPCHANGETHR = 0.05
+
+# Generation start timestamp
+START = time.mktime(datetime(2011, 1, 1).timetuple())
+
+# Server IP
+REMOTE = "130.192.91.211"
+
+# Insert query
+RESULTS_SAVE = "INSERT INTO results VALUES(null, :tag, :result, :timestamp, \
+                :ident);"
+
+# Generate fake clients
+clients = []
+for i in xrange(UUIDS):
+    clients.append([str(uuid.uuid4()), "10.0." + str(random.randint(0, 254)) + \
+                    "." + str(random.randint(1, 254))])
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        stderr.write("Usage: %s database\n" % sys.argv[0])
+        sys.stderr.write("Usage: %s database\n" % sys.argv[0])
         sys.exit(1)
-    call(["/usr/bin/env", "python", "neubot/database.py", "-i", sys.argv[1]])
-    connection = connect(sys.argv[1])
+    subprocess.call(["/usr/bin/env", "python", "neubot/database.py", "-i", sys.argv[1]])
+    connection = sqlite3.connect(sys.argv[1])
     cursor = connection.cursor()
-    count = 0
     tag = "speedtest"
-    ident = str(uuid.uuid4())
-    timestamp = int(time.time())
-    remote = "130.192.91.211"
 
-    while count < ROWS:
-        addr = "10.0.0." + str(random.randint(1, 254))
-        download = str(random.random() * 100000)
-        upload = str(random.random() * 40000)
-        result = """\
+    for i in xrange(DAYS):
+        # To make realistic timestamps, we use randint() here
+        timestamps = [random.randint(START + i*3600*24, START + (i+1)*3600*24) \
+                      for x in xrange(DAILYROWS)]
+
+        timestamps.sort() # Records are sorted by timestamp
+
+        # IP changes
+        for client in clients:
+            r = random.random()
+            if r < IPCHANGETHR:
+                client[1] = "10.0." + str(random.randint(0, 254)) + "." + str(random.randint(1, 254))
+
+        for timestamp in timestamps:
+            download = str(random.random() * 100000)
+            upload = str(random.random() * 40000)
+
+            # Pick a random client
+            n = random.randint(0, len(clients)-1)
+            ident = clients[n][0]
+            addr = clients[n][1]
+
+            result = """\
 <SpeedtestCollect>\
 <client>%s</client>\
 <timestamp>%s</timestamp>\
@@ -63,11 +101,11 @@ if __name__ == "__main__":
 <latency>%s</latency>\
 <downloadSpeed>%s</downloadSpeed>\
 <uploadSpeed>%s</uploadSpeed>\
-</SpeedtestCollect>""" % (ident, timestamp, addr, addr, remote, str(random.random()),
-            str(random.random()), download, upload)
-        cursor.execute(RESULTS_SAVE, {'tag': tag, 'result': result,
-            'timestamp': timestamp, 'ident': ident})
-        count = count + 1
+</SpeedtestCollect>""" % (ident, timestamp, addr, addr, REMOTE, str(random.random()),
+                str(random.random()), download, upload)
+            cursor.execute(RESULTS_SAVE, {'tag': tag, 'result': result,
+                'timestamp': timestamp, 'ident': ident})
+
     connection.commit()
     cursor.close()
     connection.close()
