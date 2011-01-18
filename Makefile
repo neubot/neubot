@@ -25,7 +25,7 @@
 # version number each time we tag with a new release.
 #
 
-VERSION	= 0.3.3
+VERSION	= 0.3.4
 
 #
 # The list of .PHONY targets.  This is also used to build the

@@ -1,3 +1,252 @@
+Neubot 0.3.4 [2011-01-18]
+	* www/libneubot.js: shared javascript functions
+	* www/libneubot.js: make the plot symmetric
+	* libneubot.js: add helpers for the new web user interface
+	* www/css: location for CSS sheets used by the new web user interface
+	* www/image: location for images used by the new web user interface
+	* www/js: location for the javascripts required by the new WEB-UI
+	* www/new-neubot.*: Development sources of the new Web-UI
+	* www/new-neubot.js: black magic to unbreak the tooltip
+	* neubot/ui.py: By default use the new Web UI
+	* www/new-neubot: disable plots because they kill my browser
+	* neubot/tools: Directory for standalone tools
+	* tools/dbtool.py: Standalone tool to analyze database
+	* tools/dbtool.py: Hackish fix for the accented letter issue
+	* tools/dbtool.py: Add command to count unique uuids per day
+	* [tools] neubot/tools/dbtool.py: add __init__() to SpeedtestResult class
+	* [tools] dbtool.py: Let the user decide treshold on -C
+	* Merge branches 'topic.tools' and 'topic.www-api' into next
+	* neubot/objgraph.py: Import v1.1b of objgraph
+	* Renaming file to clean web interface
+	* Edit index
+	* Edit style and merge stuff in html file
+	* Updated ui.py to use index.html
+	* Clean CSS file
+	* Clean image folders
+	* jqplot folder removed
+	* added needed jqplot files
+	* moved results.js into js folder
+	* deleted unneeded files
+	* css/style.css: Increase the page width
+	* www/index.html: Minor changes
+	* www/results.html: Wrap the old page in the new style
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug' and 'topic.www-new-gui' into next
+	* Make sure we import Stats and SimpleStats from neubot.utils
+	* http/clients.py: Zap an old comment
+	* http/clients.py: Group imports at the beginning
+	* http/servers.py: Group declarations at the beginning
+	* utils.py: Let Stats and SimpleStats inherit from object
+	* neubot/options.py: Generic options parser for all modules
+	* net/CA.py: Helper script to create certfiles for testing
+	* neubot/www: Wide header
+	* neubot/www: Cleanup after wide header patch
+	* neubot/www: Add media property to CSS tags
+	* neubot/www: Be readable by braille and nongraphic browsers too
+	* neubot/net/: Move SSL code in streams.py
+	* neubot/net: Move connect() and listen() in streams.py
+	* neubot/net: Copy code of test.py into streams.py.
+	* neubot/net: Bye bye neubot/net/test.py
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.www-new-gui', 'topic.options' and 'topic.CA' into next
+	* net/streams.py: import sys instead of from sys import ...
+	* net/streams.py: Zap circular imports
+	* net/streams.py: Zap useless from neubot.net.streams import ...
+	* net/streams.py: Get rid of multiple from neubot import log
+	* net/streams.py: Get rid of multiple from socket import error ...
+	* net/streams.py: Don't import EWOULDBLOCK more than once
+	* net/streams.py: Don't import fixkwargs more than once
+	* net/streams.py: Don't import ticks more than once
+	* net/streams.py: Make sure we import Pollable just once
+	* net/streams.py: Don't import poller more than once
+	* net/streams.py: Import SOCK_STREAM just once
+	* net/streams.py: Import AF_INET just once
+	* net/streams.py: Zap unused from socket import AF_INET6
+	* net/streams.py: don't import socket from socket twice
+	* net/streams.py: Make sure we don't import getaddrinfo twice()
+	* net/streams.py: Silence pychecker
+	* net/streams.py: Just move all the imports at the beginning
+	* net/streams.py: Cosmetics
+	* net/streams.py: Define a variable that holds buffer size
+	* net/streams.py: Make sure MAXBUF is big enough
+	* net/streams.py: Every second calculate and print throughput
+	* net/streams.py: Import types and not from types import ...
+	* net/streams.py: Import ssl and not from ssl import ...
+	* net/streams.py: Move import ssl before local imports
+	* net/streams.py: Import socket and not from socket import ...
+	* net/streams.py: Import errno and not from errno import ...
+	* net/streams.py: Import os and not from os import ...
+	* net/streams.py: Group all local imports together
+	* dbtool.py: check if database files exist before trying to open them
+	* dbtool.py: add __init__() to Anonymizer, CityResolver and ASNResolver
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.www-new-gui', 'topic.options', 'topic.CA', 'topic.simplify-stream' and 'topic.stats-cleanup' into next
+	* net/streams.py: Oops closing() lost by mistake moving the code
+	* neubot/net: Pollable: rename closing() to closed()
+	* net/pollers.py: Add to closed() the exception argument
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.www-new-gui', 'topic.options', 'topic.CA', 'topic.simplify-stream', 'topic.stats-cleanup' and 'topic.adjust-pollable-api' into next
+	* Makefile: Add version number to MacOSX application
+	* Makefile: Allow to make a lite release
+	* http/messages.py: Remove obsolete and unused code
+	* http/utils.py: Remove some obsolete and unused code
+	* http/handlers.py: Note that we might want to split the handler
+	* simplify-stream: Revert all the changes in this branch
+	* Simplify net module: Move SSL code in streams.py
+	* Simplify net module: Move connect() and listen() in streams.py
+	* Simplify net module: Copy code of test.py into streams.py.
+	* Simplify net module: Bye bye neubot/net/test.py
+	* Simplify net module: streams.py: import sys instead of from sys import ...
+	* Simplify net module: Move all imports at the beginning of streams.py
+	* Simplify net module: Define and use MAXBUF in streams.py
+	* Simplify net module: In streams.py: Print throughput every second
+	* Simplify net module: In streams.py: Avoid from..imports
+	* Simplify net module: In streams.py: Cleanup Connector code
+	* Simplify net module: In streams.py: Cleanup Listener code
+	* Simplify net module: In streams.py: Cleanup Stream code
+	* Simplify net module: In streams.py: Rewrite the main() func
+	* Simplify net module: Empty connectors.py and listeners.py
+	* Undo streams.py optimizations: Undo ISSENDING/ISRECEIVING
+	* Undo streams.py optimizations: Undo delayed unset readable/writable
+	* Rewrite Stream in streams.py: Use boolean variables and not flags
+	* Rewrite Stream in streams.py: Linearize the code
+	* Rewrite Stream in streams.py: More clever buffer usage, kill send_pos
+	* Rewrite Stream in streams.py: Assume successful send
+	* Rewrite Stream in streams.py: Group together some cosmetic changes
+	* More Stream undos: Get rid of the set/unset paranoia
+	* More Stream undos: We don't need the handleReadable/Writable dance
+	* Change Pollable API: pollers.py: Rename closing() to closed()
+	* Change Pollable API: streams.py: Rename closing() to closed()
+	* Change Pollable API: Add to closed() the exception argument
+	* topic.adjust-pollable-api: Revert all the changes in this branch
+	* Merge branch 'topic.adjust-pollable-api' into next
+	* Merge branch 'topic.simplify-stream' into next
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.www-new-gui', 'topic.options', 'topic.CA', 'topic.simplify-stream', 'topic.stats-cleanup', 'topic.adjust-pollable-api', 'topic.release', 'topic.misc', 'topic.net.simplify' and 'topic.poller.improve-api' into next
+	* neubot/debug.py: Re-organize comments
+	* neubot/debug.py: The testing folder does not exist anymore
+	* neubot/www: These are the sources of the new web user interface
+	* neubot/www: js/libneubot.js: Make the plot symmetric
+	* neubot/www: js/neubot.js: black magic to unbreak the tooltip
+	* neubot/www: Edit neubot/ui.py to link to the new graphic
+	* neubot/www: Disable plots in /index.html because they kill my browser
+	* neubot/www: Install needed jqplot plugins into js/
+	* neubot/www: Move CSS snippets from index.html to style.css
+	* neubot/www: Cleanup and reindent style.css
+	* neubot/www: Cleanup all image folders
+	* neubot/www: Move results.js into js/ folder
+	* neubot/www: results.js: Change the way we print time
+	* neubot/www: results.js: Shorter labels for prettier table
+	* neubot/www: Delete all the unneeded files
+	* neubot/www: style.css: Increase the page width
+	* neubot/www: index.html: Include all needed jqplot plugins
+	* neubot/www: results.html: Wrap the old page in the new style
+	* neubot/www: Wide header
+	* neubot/www: Cleanup after wide header patch
+	* neubot/www: Add media property to CSS tags
+	* neubot/www: Be readable by braille and nongraphic browsers too
+	* neubot/www: fix location of favicon.ico
+	* topic.www-new-gui: Revert everything in this branch
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.www-new-gui', 'topic.options', 'topic.CA', 'topic.stats-cleanup', 'topic.release', 'topic.misc', 'topic.net.simplify', 'topic.poller.improve-api' and 'topic.www-clean' into next
+	* neubot/www: index.html: Fix version number
+	* tools/dbtool.py: Fix version number
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.options', 'topic.CA', 'topic.stats-cleanup', 'topic.release', 'topic.misc', 'topic.net.simplify', 'topic.poller.improve-api' and 'topic.www-clean' into next
+	* fake-db.py: improved fake rows generation
+	* move fake-db.py to neubot/tools/dbgen.py
+	* neubot/www: libneubot.js: Make sure we always use same time format
+	* neubot/www: results.html: Unbreak the plots
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.options', 'topic.CA', 'topic.stats-cleanup', 'topic.release', 'topic.misc', 'topic.net.simplify', 'topic.poller.improve-api' and 'topic.www-clean' into next
+	* neubot/www: Note things that should be done
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.options', 'topic.CA', 'topic.stats-cleanup', 'topic.release', 'topic.misc', 'topic.net.simplify', 'topic.poller.improve-api' and 'topic.www-clean' into next
+	* neubot/www: small fixes for webui font size
+	* Merge branches 'topic.tools', 'topic.www-api', 'topic.debug', 'topic.options', 'topic.CA', 'topic.stats-cleanup', 'topic.release', 'topic.misc', 'topic.net.simplify', 'topic.poller.improve-api' and 'topic.www-clean' into next
+	* neubot/tools: Directory for standalone tools
+	* tools/dbtool.py: Standalone tool to analyze database
+	* tools/dbtool.py: Hackish fix for the accented letter issue
+	* tools/dbtool.py: Add command to count unique uuids per day
+	* [tools] neubot/tools/dbtool.py: add __init__() to SpeedtestResult class
+	* [tools] dbtool.py: Let the user decide treshold on -C
+	* dbtool.py: check if database files exist before trying to open them
+	* dbtool.py: add __init__() to Anonymizer, CityResolver and ASNResolver
+	* tools/dbtool.py: Fix version number
+	* AUTHORS: Give credit to patch contributors and translators
+	* Revert the tree back to 0.3.2, so we can fast-forward it
+	* Merge branch 'master' into exp-old-next
+	* connector.py: Remove all commented out lines
+	* connector.py: Fix import pack vs from pack..import
+	* connector.py: Simplify message codes
+	* connector.py: Collapse multiple empty lines
+	* connector.py: Reindent and remove some comments
+	* connector.py: Avoid pychecker warning
+	* connector.py: Reorganize send path
+	* connector.py: Reorganize close path
+	* connector.py: Reorganize recv path
+	* connector.py: Simplify send path
+	* connector.py: Simplify initialization
+	* handler.py: Delete purely emotive comments
+	* handlers.py: Make sure we inherit from object
+	* handler.py: Make sure we invoke handler's connection_lost()
+	* handler.py: Now connector should not pass write() a buffer
+	* connector.py: Simplify destructor
+	* connector.py: Setting to None should be the same as del
+	* connector.py: Propagate KeyboardInterrupt and SystemExit
+	* connector.py: Make max_message_length a constant
+	* connector.py: Remove unused parameters
+	* connector.py: Cosmetic change: mv is_local locally_initiated
+	* connector.py: Delay close when we are sending
+	* streams.py: Allow to send() when we are already sending
+	* streams.py: Move StreamSSL and StreamSocket before Stream
+	* streams.py: SSLWrapper: s/ssl_sock/sock/
+	* streams.py: Change relation between Stream and Socket/SSLStream
+	* streams.py: Allow to specify configuration parameters
+	* streams.py: Consider that soclose() might raise
+	* streams.py: Allow to encrypt/decrypt data using ARC4
+	* streams.py: Cosmetic changes to make the code more readable
+	* streams.py: Stream/SSLWrapper: propagate exception to Stream
+	* streams.py: More structured relation with protocol and parent
+	* streams.py: Fork Connector and Listener
+	* streams.py: More structured Connector and Listener
+	* streams.py: Dispatch started_connecting() on EINPROGRESS only
+	* streams.py: Cosmetic changes to increment readability
+	* utils.py: Add speed_formatter
+	* streams.py: Pull stream_formatter from neubot.utils
+	* streams.py: Add connect() support for measuring RTT
+	* streams.py: Alternate approach for measuring stats
+	* streams.py: StreamVerboser: default log messages for stream
+	* streams.py: Add Measurer and VerboserMeasurer
+	* streams.py: Rewrite from scratch the test unit
+	* streams.py: Reduce the number of pychecker warnings
+	* Merge branch 'topic.stream.configure' into next
+	* Merge branch 'topic.stream.more-structured-api' into next
+	* Merge branch 'topic.stream.measurer' into next
+	* Merge branch 'topic.stream.rewrite-main' into next
+	* Merge branch 'topic.stream.multiwrite' into next
+	* Merge branch 'topic.authors' into next
+	* Merge branch 'topic.tools' into next
+	* Merge branch 'pu.dbgen' into next
+	* scripts: Directory with useful scripts
+	* scripts: Move release.sh there and rename it relase
+	* scripts/release: Use the new scripts/send_inplace helper
+	* Makefile: Update copyright notice to new style
+	* Makefile: Update some comments and remove other comments
+	* Makefile: Take advantage of the new helpers in scripts/
+	* Makefile: simplify the code to make a release
+	* Makefile: make app.zip: do not leave garbage around
+	* Makefile: make deb: do not leave garbage around
+	* Makefile: make release: don't need to remove garbage anymore
+	* Makefile: support for testing and stable releases
+	* debian: Support for stable/testing releases in neubot.list
+	* scripts: Add update_apt script that updates APT info
+	* Makefile: Use the new scripts/update_apt helper
+	* www: Update with respect to possible neubot.js -> index.js rename
+	* Merge branch 'topic.misc' into next
+	* Merge branch 'topic.testing' into next
+	* Merge branch 'topic.bittorrent' into next
+	* Revert everything in this branch because it's not yet ready
+	* Merge branch 'topic.tools' into next
+	* Revert all the changes in the branch pu.dbgen
+	* Re-apply some bits that I mistakenly removed from next
+	* scripts: sed_inplace: don't clobber permissions
+	* debian: Make sure apt likes our neubot.list
+	* scripts: Make sure update_apt produces a valid Release file
+	* Revert "More clever buffer usage, kill send_pos"
+	* Release neubot/0.3.4
+
 Neubot 0.3.3 [2011-01-11]
 	* neubot/ui.py: Always start the database when running in server mode
 	* database.py: query_results_functional(): New query API backend

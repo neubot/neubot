@@ -23,7 +23,7 @@
 #
 # Non-blocking listen() and accept() for stream sockets
 # DEPRECATED most of the code has been moved into streams.py
-# This file will stay here for 0.3.3 just for compat.
+# This file will stay here for 0.3.4 just for compat.
 #
 
 from neubot.net.streams import listen

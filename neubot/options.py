@@ -30,7 +30,7 @@ Neubot options parser
 :Manual section: 3
 :Date: 2011-01-07
 :Manual group: Neubot manual
-:Version: Neubot 0.3.3
+:Version: Neubot 0.3.4
 
 SYNOPSYS
 ````````
@@ -365,7 +365,7 @@ Options:
 
 """
 
-VERSION = "Neubot 0.3.3\n"
+VERSION = "Neubot 0.3.4\n"
 
 def _write(section, option, value):
     sys.stdout.write("%s.%s=%s\n" % (section, option, str(value)))
