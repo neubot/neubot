@@ -505,7 +505,7 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET, measurer_=None):
+    def connect(self, endpoint, family=socket.AF_INET, measurer_=None, sobuf=0):
         self.endpoint = endpoint
         self.family = family
         self.measurer = measurer_
@@ -522,6 +522,9 @@ class Connector(Pollable):
             try:
 
                 sock = socket.socket(family, socktype, protocol)
+                if sobuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
                 sock.setblocking(False)
                 result = sock.connect_ex(sockaddr)
                 if result not in INPROGRESS:
@@ -705,7 +708,7 @@ class Listener(Pollable):
         self.endpoint = None
         self.family = 0
 
-    def listen(self, endpoint, family=socket.AF_INET):
+    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
         self.endpoint = endpoint
         self.family = family
 
@@ -722,6 +725,9 @@ class Listener(Pollable):
 
                 lsock = socket.socket(family, socktype, protocol)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                if sobuf:
+                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
+                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
                 lsock.setblocking(False)
                 lsock.bind(sockaddr)
                 # Probably the backlog here is too big
@@ -875,8 +881,8 @@ class Measurer(object):
         self.streams = []
         self.rtts = []
 
-    def connect(self, connector, endpoint, family=socket.AF_INET):
-        connector.connect(endpoint, family, self)
+    def connect(self, connector, endpoint, family=socket.AF_INET, sobuf=0):
+        connector.connect(endpoint, family, self, sobuf)
 
     def register_stream(self, stream):
         m = StreamMeasurer()
@@ -1140,6 +1146,7 @@ Macros (defaults in square brackets):
                          can choose between `connect' and `chargen',
                          and the latter is the default.
     secure             : Secure the communication using SSL [False]
+    sobuf=size         : Set socket buffer size to `size` []
 
 """
 
@@ -1157,6 +1164,7 @@ def main(args):
     conf.set_option("net", "port", "12345")
     conf.set_option("net", "proto", "")
     conf.set_option("net", "secure", "False")
+    conf.set_option("net", "sobuf", "0")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -1196,6 +1204,7 @@ def main(args):
     listen = conf.get_option_bool("net", "listen")
     port = conf.get_option_uint("net", "port")
     proto = conf.get_option("net", "proto")
+    sobuf = conf.get_option_uint("net", "sobuf")
 
     dictionary = {
         "certfile": conf.get_option("net", "certfile"),
@@ -1216,7 +1225,7 @@ def main(args):
             sys.stderr.write(USAGE)
             sys.exit(1)
 
-        listener.listen(endpoint)
+        listener.listen(endpoint, sobuf=sobuf)
         loop()
         sys.exit(0)
 
@@ -1231,7 +1240,7 @@ def main(args):
     while count > 0:
         count = count - 1
         connector = mkconnector(poller, dictionary)
-        measurer.connect(connector, endpoint)
+        measurer.connect(connector, endpoint, sobuf=sobuf)
     loop()
     sys.exit(0)
 
