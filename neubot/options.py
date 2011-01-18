@@ -305,7 +305,7 @@ class OptionParser(ConfigParser.RawConfigParser):
         try:
             value = int(value)
         except ValueError:
-            log.error("Option %s in section %s requires an interger argument"
+            log.error("Option %s in section %s requires an integer argument"
               % (option, section))
             sys.exit(1)
         return value
