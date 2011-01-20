@@ -1002,77 +1002,29 @@ import getopt
 measurer = VerboseMeasurer(poller)
 verboser = StreamVerboser()
 
-class DiscardProtocol(Stream):
+KIND_NONE = 0
+KIND_DISCARD = 1
+KIND_CHARGEN = 2
+
+class GenericProtocol(Stream):
     def __init__(self, poller_):
         Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        verboser.connection_made(self.logname)
-        measurer.register_stream(self)
-        self.start_recv(MAXBUF)
-
-    def recv_complete(self, octets):
-        self.start_recv(MAXBUF)
-
-    def connection_lost(self, exception):
-        verboser.connection_lost(self.logname, self.eof, exception)
-
-class DiscardListener(Listener):
-    def __init__(self, poller_, dictionary):
-        Listener.__init__(self, poller_)
-        self.protocol = DiscardProtocol
-        self.dictionary = dictionary
-
-    def bind_failed(self, exception):
-        verboser.bind_failed(self.endpoint, exception, fatal=True)
-
-    def started_listening(self):
-        verboser.started_listening(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-class EchoProtocol(Stream):
-    def __init__(self, poller_):
-        Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        verboser.connection_made(self.logname)
-        measurer.register_stream(self)
-        self.start_recv(MAXBUF)
-
-    def recv_complete(self, octets):
-        self.start_send(octets)
-
-    def send_complete(self, count):
-        self.start_recv(MAXBUF)
-
-    def connection_lost(self, exception):
-        verboser.connection_lost(self.logname, self.eof, exception)
-
-class EchoListener(Listener):
-    def __init__(self, poller_, dictionary):
-        Listener.__init__(self, poller_)
-        self.protocol = EchoProtocol
-        self.dictionary = dictionary
-
-    def bind_failed(self, exception):
-        verboser.bind_failed(self.endpoint, exception, fatal=True)
-
-    def started_listening(self):
-        verboser.started_listening(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-class ChargenProtocol(Stream):
-    def __init__(self, poller_):
-        Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        verboser.connection_made(self.logname)
         self.buffer = "A" * MAXBUF
-        self.start_send(self.buffer)
+        self.kind = KIND_NONE
+
+    def connection_made(self):
+        verboser.connection_made(self.logname)
+        measurer.register_stream(self)
+        if self.kind == KIND_DISCARD:
+            self.start_recv(MAXBUF)
+            return
+        if self.kind == KIND_CHARGEN:
+            self.start_send(self.buffer)
+            return
+        self.close()
+
+    def recv_complete(self, octets):
+        self.start_recv(MAXBUF)
 
     def send_complete(self, octets):
         self.start_send(self.buffer)
@@ -1080,11 +1032,29 @@ class ChargenProtocol(Stream):
     def connection_lost(self, exception):
         verboser.connection_lost(self.logname, self.eof, exception)
 
-class ChargenConnector(Connector):
-    def __init__(self, poller_, dictionary):
-        Connector.__init__(self, poller_)
-        self.protocol = ChargenProtocol
+class GenericListener(Listener):
+    def __init__(self, poller_, dictionary, kind):
+        Listener.__init__(self, poller_)
+        self.protocol = GenericProtocol
         self.dictionary = dictionary
+        self.kind = kind
+
+    def bind_failed(self, exception):
+        verboser.bind_failed(self.endpoint, exception, fatal=True)
+
+    def started_listening(self):
+        verboser.started_listening(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+        stream.kind = self.kind
+
+class GenericConnector(Connector):
+    def __init__(self, poller_, dictionary, kind):
+        Connector.__init__(self, poller_)
+        self.protocol = GenericProtocol
+        self.dictionary = dictionary
+        self.kind = kind
 
     def connection_failed(self, exception):
         verboser.connection_failed(self.endpoint, exception, fatal=True)
@@ -1094,31 +1064,7 @@ class ChargenConnector(Connector):
 
     def connection_made(self, stream):
         stream.configure(self.dictionary)
-
-class ConnectProtocol(Stream):
-    def __init__(self, poller_):
-        Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        self.close()
-
-    def connection_lost(self, exception):
-        verboser.connection_lost(self.logname, self.eof, exception)
-
-class ConnectConnector(Connector):
-    def __init__(self, poller_, dictionary):
-        Connector.__init__(self, poller_)
-        self.protocol = ConnectProtocol
-        self.dictionary = dictionary
-
-    def connection_failed(self, exception):
-        verboser.connection_failed(self.endpoint, exception, fatal=True)
-
-    def started_connecting(self):
-        verboser.started_connecting(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
+        stream.kind = self.kind
 
 USAGE = """Neubot net -- Test unit for the asynchronous network layer
 
@@ -1140,14 +1086,14 @@ Macros (defaults in square brackets):
     listen             : Listen for incoming connections [False]
     obfuscate          : Obfuscate traffic using ARC4 [False]
     port=port          : Select the port to use [12345]
-    proto=proto        : Choose the protocol.  In listen mode you can
-                         choose between `echo' and `discard' (which is
-                         the default).  In connect / client mode you
-                         can choose between `connect' and `chargen',
-                         and the latter is the default.
+    proto=proto        : Override protocol [] (see below).
     secure             : Secure the communication using SSL [False]
     sobuf=size         : Set socket buffer size to `size` []
 
+Protocols:
+    There are two available protocols: `discard` and `chargen`.
+    When running in server mode the default is `chargen` and when
+    running in client mode the default is `discard`.
 """
 
 VERSION = "Neubot 0.3.2\n"
@@ -1215,31 +1161,29 @@ def main(args):
 
     endpoint = (address, port)
 
-    if listen:
-        dictionary["server_side"] = True
-        if not proto or proto == "discard":
-            listener = DiscardListener(poller, dictionary)
-        elif proto == "echo":
-            listener = EchoListener(poller, dictionary)
+    if proto == "chargen":
+        kind = KIND_CHARGEN
+    elif proto == "discard":
+        kind = KIND_DISCARD
+    elif proto == "":
+        if listen:
+            kind = KIND_CHARGEN
         else:
-            sys.stderr.write(USAGE)
-            sys.exit(1)
-
-        listener.listen(endpoint, sobuf=sobuf)
-        loop()
-        sys.exit(0)
-
-    if not proto or proto == "chargen":
-        mkconnector = ChargenConnector
-    elif proto == "connect":
-        mkconnector = ConnectConnector
+            kind = KIND_DISCARD
     else:
         sys.stderr.write(USAGE)
         sys.exit(1)
 
+    if listen:
+        dictionary["server_side"] = True
+        listener = GenericListener(poller, dictionary, kind)
+        listener.listen(endpoint, sobuf=sobuf)
+        loop()
+        sys.exit(0)
+
     while count > 0:
         count = count - 1
-        connector = mkconnector(poller, dictionary)
+        connector = GenericConnector(poller, dictionary, kind)
         measurer.connect(connector, endpoint, sobuf=sobuf)
     loop()
     sys.exit(0)
