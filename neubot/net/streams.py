@@ -1204,14 +1204,14 @@ Macros (defaults in square brackets):
     listen             : Listen for incoming connections [False]
     obfuscate          : Obfuscate traffic using ARC4 [False]
     port=port          : Select the port to use [12345]
-    proto=proto        : Choose the protocol.  In listen mode you can
-                         choose between `echo' and `discard' (which is
-                         the default).  In connect / client mode you
-                         can choose between `connect' and `chargen',
-                         and the latter is the default.
+    proto=proto        : Override protocol [] (see below).
     secure             : Secure the communication using SSL [False]
     sobuf=size         : Set socket buffer size to `size` []
 
+Protocols:
+    There are two available protocols: `discard` and `chargen`.
+    When running in server mode the default is `chargen` and when
+    running in client mode the default is `discard`.
 """
 
 VERSION = "Neubot 0.3.2\n"
@@ -1279,31 +1279,29 @@ def main(args):
 
     endpoint = (address, port)
 
-    if listen:
-        dictionary["server_side"] = True
-        if not proto or proto == "discard":
-            listener = DiscardListener(poller, dictionary)
-        elif proto == "echo":
-            listener = EchoListener(poller, dictionary)
+    if proto == "chargen":
+        kind = KIND_CHARGEN
+    elif proto == "discard":
+        kind = KIND_DISCARD
+    elif proto == "":
+        if listen:
+            kind = KIND_CHARGEN
         else:
-            sys.stderr.write(USAGE)
-            sys.exit(1)
-
-        listener.listen(endpoint, sobuf=sobuf)
-        loop()
-        sys.exit(0)
-
-    if not proto or proto == "chargen":
-        mkconnector = ChargenConnector
-    elif proto == "connect":
-        mkconnector = ConnectConnector
+            kind = KIND_DISCARD
     else:
         sys.stderr.write(USAGE)
         sys.exit(1)
 
+    if listen:
+        dictionary["server_side"] = True
+        listener = GenericListener(poller, dictionary, kind)
+        listener.listen(endpoint, sobuf=sobuf)
+        loop()
+        sys.exit(0)
+
     while count > 0:
         count = count - 1
-        connector = mkconnector(poller, dictionary)
+        connector = GenericConnector(poller, dictionary, kind)
         measurer.connect(connector, endpoint, sobuf=sobuf)
     loop()
     sys.exit(0)
