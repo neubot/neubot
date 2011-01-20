@@ -1002,6 +1002,70 @@ import getopt
 measurer = VerboseMeasurer(poller)
 verboser = StreamVerboser()
 
+KIND_NONE = 0
+KIND_DISCARD = 1
+KIND_CHARGEN = 2
+
+class GenericProtocol(Stream):
+    def __init__(self, poller_):
+        Stream.__init__(self, poller_)
+        self.buffer = "A" * MAXBUF
+        self.kind = KIND_NONE
+
+    def connection_made(self):
+        verboser.connection_made(self.logname)
+        measurer.register_stream(self)
+        if self.kind == KIND_DISCARD:
+            self.start_recv(MAXBUF)
+            return
+        if self.kind == KIND_CHARGEN:
+            self.start_send(self.buffer)
+            return
+        self.close()
+
+    def recv_complete(self, octets):
+        self.start_recv(MAXBUF)
+
+    def send_complete(self, octets):
+        self.start_send(self.buffer)
+
+    def connection_lost(self, exception):
+        verboser.connection_lost(self.logname, self.eof, exception)
+
+class GenericListener(Listener):
+    def __init__(self, poller_, dictionary, kind):
+        Listener.__init__(self, poller_)
+        self.protocol = GenericProtocol
+        self.dictionary = dictionary
+        self.kind = kind
+
+    def bind_failed(self, exception):
+        verboser.bind_failed(self.endpoint, exception, fatal=True)
+
+    def started_listening(self):
+        verboser.started_listening(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+        stream.kind = self.kind
+
+class GenericConnector(Connector):
+    def __init__(self, poller_, dictionary, kind):
+        Connector.__init__(self, poller_)
+        self.protocol = GenericProtocol
+        self.dictionary = dictionary
+        self.kind = kind
+
+    def connection_failed(self, exception):
+        verboser.connection_failed(self.endpoint, exception, fatal=True)
+
+    def started_connecting(self):
+        verboser.started_connecting(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+        stream.kind = self.kind
+
 class DiscardProtocol(Stream):
     def __init__(self, poller_):
         Stream.__init__(self, poller_)
