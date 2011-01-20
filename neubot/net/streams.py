@@ -46,6 +46,7 @@ if __name__ == "__main__":
 from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
 from neubot.net.pollers import poller
+from neubot.net.pollers import break_loop
 from neubot.net.pollers import loop
 from neubot.utils import speed_formatter
 from neubot.utils import ticks
@@ -1082,6 +1083,7 @@ Macros (defaults in square brackets):
     certfile           : Path to private key and certificate file
                          to be used together with `-D secure` []
     clients=N          : Spawn N client connections at a time [1]
+    duration=N         : Stop the client(s) after N seconds []
     key=KEY            : Use KEY to initialize ARC4 stream []
     listen             : Listen for incoming connections [False]
     obfuscate          : Obfuscate traffic using ARC4 [False]
@@ -1104,6 +1106,7 @@ def main(args):
     conf.set_option("net", "address", "127.0.0.1")
     conf.set_option("net", "certfile", "")
     conf.set_option("net", "clients", "1")
+    conf.set_option("net", "duration", "0")
     conf.set_option("net", "key", "")
     conf.set_option("net", "listen", "False")
     conf.set_option("net", "obfuscate", "False")
@@ -1147,6 +1150,7 @@ def main(args):
 
     address = conf.get_option("net", "address")
     clients = conf.get_option_uint("net", "clients")
+    duration = conf.get_option_uint("net", "duration")
     listen = conf.get_option_bool("net", "listen")
     port = conf.get_option_uint("net", "port")
     proto = conf.get_option("net", "proto")
@@ -1180,6 +1184,9 @@ def main(args):
         listener.listen(endpoint, sobuf=sobuf)
         loop()
         sys.exit(0)
+
+    if duration > 0:
+        sched(duration, break_loop)
 
     while clients > 0:
         clients = clients - 1
