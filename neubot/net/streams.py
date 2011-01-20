@@ -1081,7 +1081,7 @@ Macros (defaults in square brackets):
     address=addr       : Select the address to use [127.0.0.1]
     certfile           : Path to private key and certificate file
                          to be used together with `-D secure` []
-    count=N            : Spawn N client connections at a time [1]
+    clients=N          : Spawn N client connections at a time [1]
     key=KEY            : Use KEY to initialize ARC4 stream []
     listen             : Listen for incoming connections [False]
     obfuscate          : Obfuscate traffic using ARC4 [False]
@@ -1103,7 +1103,7 @@ def main(args):
     conf = OptionParser()
     conf.set_option("net", "address", "127.0.0.1")
     conf.set_option("net", "certfile", "")
-    conf.set_option("net", "count", "1")
+    conf.set_option("net", "clients", "1")
     conf.set_option("net", "key", "")
     conf.set_option("net", "listen", "False")
     conf.set_option("net", "obfuscate", "False")
@@ -1146,7 +1146,7 @@ def main(args):
     measurer.start()
 
     address = conf.get_option("net", "address")
-    count = conf.get_option_uint("net", "count")
+    clients = conf.get_option_uint("net", "clients")
     listen = conf.get_option_bool("net", "listen")
     port = conf.get_option_uint("net", "port")
     proto = conf.get_option("net", "proto")
@@ -1181,8 +1181,8 @@ def main(args):
         loop()
         sys.exit(0)
 
-    while count > 0:
-        count = count - 1
+    while clients > 0:
+        clients = clients - 1
         connector = GenericConnector(poller, dictionary, kind)
         measurer.connect(connector, endpoint, sobuf=sobuf)
     loop()
