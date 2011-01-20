@@ -1186,6 +1186,7 @@ def main(args):
         sys.exit(0)
 
     if duration > 0:
+        duration = duration + 0.1       # XXX
         sched(duration, break_loop)
 
     while clients > 0:
