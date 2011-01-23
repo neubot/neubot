@@ -290,7 +290,6 @@ class Stream(Pollable):
             return
 
         if status == WANT_READ:
-            self.poller.set_readable(self)
             return
 
         if status == WANT_WRITE:
@@ -379,7 +378,6 @@ class Stream(Pollable):
             raise RuntimeError("Sent more than expected")
 
         if status == WANT_WRITE:
-            self.poller.set_writable(self)
             return
 
         if status == WANT_READ:
