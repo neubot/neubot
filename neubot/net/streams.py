@@ -154,7 +154,6 @@ class Stream(Pollable):
         self.encrypt = None
         self.decrypt = None
 
-        self.send_pos = 0
         self.send_octets = None
         self.send_queue = collections.deque()
         self.send_success = None
@@ -264,7 +263,6 @@ class Stream(Pollable):
                 self.parent.connection_lost(self)
             if self.measurer:
                 self.measurer.dead = True
-            self.send_pos = 0
             self.send_octets = None
             self.send_success = None
             self.send_ticks = 0
@@ -380,7 +378,6 @@ class Stream(Pollable):
             self.send_queue.append(octets)
             return
 
-        self.send_pos = 0
         self.send_octets = octets
         self.send_success = send_success
         self.send_ticks = ticks()
@@ -403,8 +400,7 @@ class Stream(Pollable):
                 self.poller.unset_readable(self)
             self.recvblocked = 0
 
-        subset = buffer(self.send_octets, self.send_pos)
-        status, count = self.sock.sosend(subset)
+        status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
 
@@ -413,9 +409,7 @@ class Stream(Pollable):
             for stats in self.stats:
                 stats.send.account(count)
 
-            self.send_pos += count
-
-            if self.send_pos == len(self.send_octets):
+            if count == len(self.send_octets):
 
                 #
                 # XXX Note that the following snippet is potentially
@@ -432,7 +426,6 @@ class Stream(Pollable):
 
                 notify = self.send_success
                 octets = self.send_octets
-                self.send_pos = 0
                 self.send_octets = None
                 self.send_success = None
                 self.send_ticks = 0
@@ -442,7 +435,8 @@ class Stream(Pollable):
                     notify(self, octets)
                 return
 
-            if self.send_pos < len(self.send_octets):
+            if count < len(self.send_octets):
+                self.send_octets = buffer(self.send_octets, count)
                 self.send_ticks = ticks()
                 self.poller.set_writable(self)
                 return
