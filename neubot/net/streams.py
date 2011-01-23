@@ -264,15 +264,12 @@ class Stream(Pollable):
 
     def readable(self):
         if self.recvblocked:
+            self.poller.set_writable(self)
+            if not self.recv_pending:
+                self.poller.unset_readable(self)
+            self.recvblocked = 0
             self.writable()
             return
-
-        if self.sendblocked:
-            if self.send_pending:
-                self.poller.set_writable(self)
-            else:
-                self.poller.unset_writable(self)
-            self.sendblocked = 0
 
         status, octets = self.sock.sorecv(self.recv_maxlen)
 
@@ -297,6 +294,7 @@ class Stream(Pollable):
             return
 
         if status == WANT_WRITE:
+            self.poller.unset_readable(self)
             self.poller.set_writable(self)
             self.sendblocked = 1
             return
@@ -343,15 +341,12 @@ class Stream(Pollable):
 
     def writable(self):
         if self.sendblocked:
+            self.poller.set_readable(self)
+            if not self.send_pending:
+                self.poller.unset_writable(self)
+            self.sendblocked = 0
             self.readable()
             return
-
-        if self.recvblocked:
-            if self.recv_pending:
-                self.poller.set_readable(self)
-            else:
-                self.poller.unset_readable(self)
-            self.recvblocked = 0
 
         status, count = self.sock.sosend(self.send_octets)
 
@@ -388,6 +383,7 @@ class Stream(Pollable):
             return
 
         if status == WANT_READ:
+            self.poller.unset_writable(self)
             self.poller.set_readable(self)
             self.recvblocked = 1
             return
