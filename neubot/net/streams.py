@@ -156,10 +156,8 @@ class Stream(Pollable):
 
         self.send_octets = None
         self.send_queue = collections.deque()
-        self.send_success = None
         self.send_ticks = 0
         self.recv_maxlen = 0
-        self.recv_success = None
         self.recv_ticks = 0
 
         self.eof = False
@@ -169,26 +167,7 @@ class Stream(Pollable):
         self.recv_pending = 0
         self.recvblocked = 0
 
-        self.stats = []
-        self.stats.append(self.poller.stats)
-        self.notify_closing = None
-
         self.measurer = None
-
-    #
-    # XXX
-    # Reading the code, please keep in mind that there are two
-    # possible levels of abstraction.  At the higher level your
-    # protocol class derives from this class, and you override
-    # connection_lost(), recv_complete(), send_complete() and
-    # you invoke start_recv() and start_send() and so forth.
-    # At the lower level you invoke directly recv() and send()
-    # and you register a cleanup function in notify_closing.
-    # Further comments will highlight what parts of the code
-    # are at the higher level and what are at the lower level.
-    # We will merge the low level into the high one in the
-    # future.    (2011-01-09, Simone)
-    #
 
     def fileno(self):
         return self.filenum
@@ -236,15 +215,10 @@ class Stream(Pollable):
     def connection_made(self):
         pass
 
+    # Close path
+
     def connection_lost(self, exception):
         pass
-
-    #
-    # Low level of abstraction only:
-    # When you keep a reference to the stream in your class,
-    # remember to point stream.notify_closing to a function
-    # that removes such reference.
-    #
 
     def closed(self, exception=None):
         self._do_close(exception)
@@ -255,19 +229,14 @@ class Stream(Pollable):
     def _do_close(self, exception=None):
         if not self.isclosed:
             self.isclosed = 1
-            if self.notify_closing:
-                self.notify_closing()
-                self.notify_closing = None
             self.connection_lost(exception)
             if self.parent:
                 self.parent.connection_lost(self)
             if self.measurer:
                 self.measurer.dead = True
             self.send_octets = None
-            self.send_success = None
             self.send_ticks = 0
             self.recv_maxlen = 0
-            self.recv_success = None
             self.recv_ticks = 0
             self.sock.soclose()
             self.poller.close(self)
@@ -281,14 +250,10 @@ class Stream(Pollable):
     # Recv path
 
     def start_recv(self, maxlen):
-        self.recv(maxlen, self.recv_complete1)
-
-    def recv(self, maxlen, recv_success):
         if self.isclosed:
             return
 
         self.recv_maxlen = maxlen
-        self.recv_success = recv_success
         self.recv_ticks = ticks()
         self.recv_pending = 1
 
@@ -315,21 +280,16 @@ class Stream(Pollable):
 
             if self.measurer:
                 self.measurer.recv += len(octets)
-            for stats in self.stats:
-                stats.recv.account(len(octets))
 
-            notify = self.recv_success
             self.recv_maxlen = 0
-            self.recv_success = None
             self.recv_ticks = 0
             self.recv_pending = 0
             self.poller.unset_readable(self)
 
             if self.decrypt:
                 octets = self.decrypt(octets)
-            if notify:
-                notify(self, octets)
 
+            self.recv_complete(octets)
             return
 
         if status == WANT_READ:
@@ -353,18 +313,12 @@ class Stream(Pollable):
 
         raise RuntimeError("Unexpected status value")
 
-    def recv_complete1(self, stream, octets):
-        self.recv_complete(octets)
-
     def recv_complete(self, octets):
         pass
 
     # Send path
 
     def start_send(self, octets):
-        self.send(octets, self.send_complete1)
-
-    def send(self, octets, send_success):
         if self.isclosed:
             return
 
@@ -379,7 +333,6 @@ class Stream(Pollable):
             return
 
         self.send_octets = octets
-        self.send_success = send_success
         self.send_ticks = ticks()
         self.send_pending = 1
 
@@ -406,33 +359,20 @@ class Stream(Pollable):
 
             if self.measurer:
                 self.measurer.send += count
-            for stats in self.stats:
-                stats.send.account(count)
 
             if count == len(self.send_octets):
-
-                #
-                # XXX Note that the following snippet is potentially
-                # wrong as long as each send() is free to set the call-
-                # back to notify `send complete` to.  I don't want to
-                # fix it because I plan to modify the stream API so
-                # that this is not an issue anymore.
-                #
 
                 if len(self.send_queue) > 0:
                     self.send_octets = self.send_queue.popleft()
                     self.send_ticks = ticks()
                     return
 
-                notify = self.send_success
-                octets = self.send_octets
                 self.send_octets = None
-                self.send_success = None
                 self.send_ticks = 0
                 self.send_pending = 0
                 self.poller.unset_writable(self)
-                if notify:
-                    notify(self, octets)
+
+                self.send_complete()
                 return
 
             if count < len(self.send_octets):
@@ -461,9 +401,6 @@ class Stream(Pollable):
             raise RuntimeError("Unexpected count value")
 
         raise RuntimeError("Unexpected status value")
-
-    def send_complete1(self, stream, octets):
-        self.send_complete()
 
     def send_complete(self):
         pass
