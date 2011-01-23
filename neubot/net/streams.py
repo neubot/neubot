@@ -140,6 +140,13 @@ class SocketWrapper(object):
                 return ERROR, exception
 
 class Stream(Pollable):
+
+    """Your protocol should be a subclass of this class.  The file
+       `doc/protocol.png` documents the high level finite state machine
+       provided by this stream in order to help the protocol.  The low
+       level finite state machine for the send and recv path is documented,
+       respectively, in `doc/sendpath.png` and `doc/recvpath.png`."""
+
     def __init__(self, poller_):
         self.poller = poller_
         self.parent = None
@@ -186,7 +193,6 @@ class Stream(Pollable):
             raise RuntimeError("configure() invoked before make_connection()")
 
         if "secure" in dictionary and dictionary["secure"]:
-
             if not ssl:
                 raise RuntimeError("SSL support not available")
             if hasattr(self.sock, "need_handshake"):
@@ -204,7 +210,6 @@ class Stream(Pollable):
             self.sock = SSLWrapper(so)
 
         if "obfuscate" in dictionary and dictionary["obfuscate"]:
-
             if not ARC4:
                 raise RuntimeError("ARC4 support not available")
 
@@ -234,19 +239,27 @@ class Stream(Pollable):
         self._do_close()
 
     def _do_close(self, exception=None):
-        if not self.isclosed:
-            self.isclosed = 1
-            self.connection_lost(exception)
-            if self.parent:
-                self.parent.connection_lost(self)
-            if self.measurer:
-                self.measurer.dead = True
-            self.send_octets = None
-            self.send_ticks = 0
-            self.recv_maxlen = 0
-            self.recv_ticks = 0
-            self.sock.soclose()
-            self.poller.close(self)
+        if self.isclosed:
+            return
+
+        self.isclosed = 1
+
+        self.connection_lost(exception)
+        if self.parent:
+            self.parent.connection_lost(self)
+
+        if self.measurer:
+            self.measurer.dead = True
+
+        self.send_octets = None
+        self.send_ticks = 0
+        self.recv_maxlen = 0
+        self.recv_ticks = 0
+        self.sock.soclose()
+
+        self.poller.close(self)
+
+    # Timeouts
 
     def readtimeout(self, now):
         return (self.recv_pending and (now - self.recv_ticks) > self.timeout)
