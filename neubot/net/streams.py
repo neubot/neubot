@@ -173,6 +173,8 @@ class Stream(Pollable):
         return self.filenum
 
     def make_connection(self, sock):
+        if self.sock:
+            raise RuntimeError("make_connection() invoked more than once")
         self.filenum = sock.fileno()
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
@@ -180,10 +182,15 @@ class Stream(Pollable):
         self.sock = SocketWrapper(sock)
 
     def configure(self, dictionary):
+        if not self.sock:
+            raise RuntimeError("configure() invoked before make_connection()")
+
         if "secure" in dictionary and dictionary["secure"]:
 
             if not ssl:
                 raise RuntimeError("SSL support not available")
+            if hasattr(self.sock, "need_handshake"):
+                raise RuntimeError("Can't wrap SSL socket twice")
 
             server_side = False
             if "server_side" in dictionary and dictionary["server_side"]:
@@ -251,6 +258,8 @@ class Stream(Pollable):
 
     def start_recv(self, maxlen=MAXBUF):
         if self.isclosed:
+            return
+        if self.recv_pending:
             return
 
         self.recv_maxlen = maxlen
