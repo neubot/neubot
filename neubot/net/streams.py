@@ -469,9 +469,9 @@ class Stream(Pollable):
         raise RuntimeError("Unexpected status value")
 
     def send_complete1(self, stream, octets):
-        self.send_complete(len(octets))
+        self.send_complete()
 
-    def send_complete(self, count):
+    def send_complete(self):
         pass
 
 ### BEGIN DEPRECATED CODE ####
@@ -1027,7 +1027,7 @@ class GenericProtocol(Stream):
     def recv_complete(self, octets):
         self.start_recv(MAXBUF)
 
-    def send_complete(self, octets):
+    def send_complete(self):
         self.start_send(self.buffer)
 
     def connection_lost(self, exception):
