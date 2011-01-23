@@ -249,7 +249,7 @@ class Stream(Pollable):
 
     # Recv path
 
-    def start_recv(self, maxlen):
+    def start_recv(self, maxlen=MAXBUF):
         if self.isclosed:
             return
 
@@ -1283,7 +1283,7 @@ class GenericProtocol(Stream):
         verboser.connection_made(self.logname)
         measurer.register_stream(self)
         if self.kind == KIND_DISCARD:
-            self.start_recv(MAXBUF)
+            self.start_recv()
             return
         if self.kind == KIND_CHARGEN:
             self.start_send(self.buffer)
@@ -1291,7 +1291,7 @@ class GenericProtocol(Stream):
         self.close()
 
     def recv_complete(self, octets):
-        self.start_recv(MAXBUF)
+        self.start_recv()
 
     def send_complete(self):
         self.start_send(self.buffer)
