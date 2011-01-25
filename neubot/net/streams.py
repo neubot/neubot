@@ -1256,7 +1256,7 @@ class StreamVerboser(object):
         elif eof:
             log.debug("* Connection %s: EOF" % (logname))
         else:
-            log.error("* Connection %s: lost (no reason given)" % (logname))
+            log.debug("* Closed connection %s" % (logname))
 
     def bind_failed(self, endpoint, exception, fatal=False):
         log.error("* Bind %s failed: %s" % (endpoint, exception))
