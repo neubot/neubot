@@ -235,7 +235,7 @@ class Stream(Pollable):
     def closed(self, exception=None):
         self._do_close(exception)
 
-    def close(self):
+    def shutdown(self):
         self._do_close()
 
     def _do_close(self, exception=None):
@@ -1304,7 +1304,7 @@ class GenericProtocol(Stream):
         if self.kind == KIND_CHARGEN:
             self.start_send(self.buffer)
             return
-        self.close()
+        self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
