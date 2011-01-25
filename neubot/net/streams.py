@@ -1380,7 +1380,7 @@ Protocols:
     running in client mode the default is `discard`.
 """
 
-VERSION = "Neubot 0.3.2\n"
+VERSION = "Neubot 0.3.4\n"
 
 def main(args):
 
