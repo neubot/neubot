@@ -71,7 +71,6 @@ if ssl:
     class SSLWrapper(object):
         def __init__(self, sock):
             self.sock = sock
-            self.need_handshake = True
 
         def soclose(self):
             try:
@@ -81,9 +80,6 @@ if ssl:
 
         def sorecv(self, maxlen):
             try:
-                if self.need_handshake:
-                    self.sock.do_handshake()
-                    self.need_handshake = False
                 octets = self.sock.read(maxlen)
                 return SUCCESS, octets
             except ssl.SSLError, exception:
@@ -96,9 +92,6 @@ if ssl:
 
         def sosend(self, octets):
             try:
-                if self.need_handshake:
-                    self.sock.do_handshake()
-                    self.need_handshake = False
                 count = self.sock.write(octets)
                 return SUCCESS, count
             except ssl.SSLError, exception:
