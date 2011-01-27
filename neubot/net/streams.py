@@ -71,7 +71,6 @@ if ssl:
     class SSLWrapper(object):
         def __init__(self, sock):
             self.sock = sock
-            self.need_handshake = True
 
         def soclose(self):
             try:
@@ -81,9 +80,6 @@ if ssl:
 
         def sorecv(self, maxlen):
             try:
-                if self.need_handshake:
-                    self.sock.do_handshake()
-                    self.need_handshake = False
                 octets = self.sock.read(maxlen)
                 return SUCCESS, octets
             except ssl.SSLError, exception:
@@ -96,9 +92,6 @@ if ssl:
 
         def sosend(self, octets):
             try:
-                if self.need_handshake:
-                    self.sock.do_handshake()
-                    self.need_handshake = False
                 count = self.sock.write(octets)
                 return SUCCESS, count
             except ssl.SSLError, exception:
@@ -173,6 +166,7 @@ class Stream(Pollable):
         self.sendblocked = 0
         self.recv_pending = 0
         self.recvblocked = 0
+        self.kickoffssl = 0
 
         self.measurer = None
 
@@ -208,6 +202,9 @@ class Stream(Pollable):
             so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
+
+            if not server_side:
+                self.kickoffssl = 1
 
         if "obfuscate" in dictionary and dictionary["obfuscate"]:
             if not ARC4:
@@ -283,6 +280,24 @@ class Stream(Pollable):
             return
 
         self.poller.set_readable(self)
+
+        #
+        # The client-side of an SSL connection must send the HELLO
+        # message to start the negotiation.  This is done automagically
+        # by SSL_read and SSL_write.  When the client first operation
+        # is a send(), no problem: the socket is always writable at
+        # the beginning and writable() invokes sosend() that invokes
+        # SSL_write() that negotiates.  The problem is when the client
+        # first operation is recv(): in this case the socket would never
+        # become readable because the server side is waiting for an HELLO.
+        # The following piece of code makes sure that the first recv()
+        # of the client invokes readable() that invokes sorecv() that
+        # invokes SSL_read() that starts the negotiation.
+        #
+
+        if self.kickoffssl:
+            self.kickoffssl = 0
+            self.readable()
 
     def readable(self):
         if self.recvblocked:
