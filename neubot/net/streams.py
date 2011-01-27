@@ -154,6 +154,275 @@ class Stream(Pollable):
         self.encrypt = None
         self.decrypt = None
 
+        self.send_octets = None
+        self.send_queue = collections.deque()
+        self.send_ticks = 0
+        self.recv_maxlen = 0
+        self.recv_ticks = 0
+
+        self.eof = False
+        self.isclosed = 0
+        self.send_pending = 0
+        self.sendblocked = 0
+        self.recv_pending = 0
+        self.recvblocked = 0
+
+        self.measurer = None
+
+    def fileno(self):
+        return self.filenum
+
+    def make_connection(self, sock):
+        self.filenum = sock.fileno()
+        self.myname = sock.getsockname()
+        self.peername = sock.getpeername()
+        self.logname = str((self.myname, self.peername))
+        self.sock = SocketWrapper(sock)
+
+    def configure(self, dictionary):
+        if "secure" in dictionary and dictionary["secure"]:
+
+            if not ssl:
+                raise RuntimeError("SSL support not available")
+
+            server_side = False
+            if "server_side" in dictionary and dictionary["server_side"]:
+                server_side = dictionary["server_side"]
+            certfile = None
+            if "certfile" in dictionary and dictionary["certfile"]:
+                certfile = dictionary["certfile"]
+
+            so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
+              certfile=certfile, server_side=server_side)
+            self.sock = SSLWrapper(so)
+
+        if "obfuscate" in dictionary and dictionary["obfuscate"]:
+
+            if not ARC4:
+                raise RuntimeError("ARC4 support not available")
+
+            key = "neubot"
+            if "key" in dictionary and dictionary["key"]:
+                key = dictionary["key"]
+
+            algo = ARC4.new(key)
+            self.encrypt = algo.encrypt
+            self.decrypt = algo.decrypt
+
+        if "measurer" in dictionary and dictionary["measurer"]:
+            self.measurer = dictionary["measurer"]
+
+    def connection_made(self):
+        pass
+
+    # Close path
+
+    def connection_lost(self, exception):
+        pass
+
+    def closed(self, exception=None):
+        self._do_close(exception)
+
+    def close(self):
+        self._do_close()
+
+    def _do_close(self, exception=None):
+        if not self.isclosed:
+            self.isclosed = 1
+            self.connection_lost(exception)
+            if self.parent:
+                self.parent.connection_lost(self)
+            if self.measurer:
+                self.measurer.dead = True
+            self.send_octets = None
+            self.send_ticks = 0
+            self.recv_maxlen = 0
+            self.recv_ticks = 0
+            self.sock.soclose()
+            self.poller.close(self)
+
+    def readtimeout(self, now):
+        return (self.recv_pending and (now - self.recv_ticks) > self.timeout)
+
+    def writetimeout(self, now):
+        return (self.send_pending and (now - self.send_ticks) > self.timeout)
+
+    # Recv path
+
+    def start_recv(self, maxlen):
+        if self.isclosed:
+            return
+
+        self.recv_maxlen = maxlen
+        self.recv_ticks = ticks()
+        self.recv_pending = 1
+
+        if self.recvblocked:
+            return
+
+        self.poller.set_readable(self)
+
+    def readable(self):
+        if self.recvblocked:
+            self.writable()
+            return
+
+        if self.sendblocked:
+            if self.send_pending:
+                self.poller.set_writable(self)
+            else:
+                self.poller.unset_writable(self)
+            self.sendblocked = 0
+
+        status, octets = self.sock.sorecv(self.recv_maxlen)
+
+        if status == SUCCESS and octets:
+
+            if self.measurer:
+                self.measurer.recv += len(octets)
+
+            self.recv_maxlen = 0
+            self.recv_ticks = 0
+            self.recv_pending = 0
+            self.poller.unset_readable(self)
+
+            if self.decrypt:
+                octets = self.decrypt(octets)
+
+            self.recv_complete(octets)
+            return
+
+        if status == WANT_READ:
+            self.poller.set_readable(self)
+            return
+
+        if status == WANT_WRITE:
+            self.poller.set_writable(self)
+            self.sendblocked = 1
+            return
+
+        if status == SUCCESS and not octets:
+            self.eof = True
+            self._do_close()
+            return
+
+        if status == ERROR:
+            # Here octets is the exception that occurred
+            self._do_close(octets)
+            return
+
+        raise RuntimeError("Unexpected status value")
+
+    def recv_complete(self, octets):
+        pass
+
+    # Send path
+
+    def start_send(self, octets):
+        if self.isclosed:
+            return
+
+        if type(octets) == types.UnicodeType:
+            log.warning("* send: Working-around Unicode input")
+            octets = octets.encode("utf-8")
+        if self.encrypt:
+            octets = self.encrypt(octets)
+
+        if self.send_pending:
+            self.send_queue.append(octets)
+            return
+
+        self.send_octets = octets
+        self.send_ticks = ticks()
+        self.send_pending = 1
+
+        if self.sendblocked:
+            return
+
+        self.poller.set_writable(self)
+
+    def writable(self):
+        if self.sendblocked:
+            self.readable()
+            return
+
+        if self.recvblocked:
+            if self.recv_pending:
+                self.poller.set_readable(self)
+            else:
+                self.poller.unset_readable(self)
+            self.recvblocked = 0
+
+        status, count = self.sock.sosend(self.send_octets)
+
+        if status == SUCCESS and count > 0:
+
+            if self.measurer:
+                self.measurer.send += count
+
+            if count == len(self.send_octets):
+
+                if len(self.send_queue) > 0:
+                    self.send_octets = self.send_queue.popleft()
+                    self.send_ticks = ticks()
+                    return
+
+                self.send_octets = None
+                self.send_ticks = 0
+                self.send_pending = 0
+                self.poller.unset_writable(self)
+
+                self.send_complete()
+                return
+
+            if count < len(self.send_octets):
+                self.send_octets = buffer(self.send_octets, count)
+                self.send_ticks = ticks()
+                self.poller.set_writable(self)
+                return
+
+            raise RuntimeError("Sent more than expected")
+
+        if status == WANT_WRITE:
+            self.poller.set_writable(self)
+            return
+
+        if status == WANT_READ:
+            self.poller.set_readable(self)
+            self.recvblocked = 1
+            return
+
+        if status == ERROR:
+            # Here count is the exception that occurred
+            self._do_close(count)
+            return
+
+        if status == SUCCESS and count <= 0:
+            raise RuntimeError("Unexpected count value")
+
+        raise RuntimeError("Unexpected status value")
+
+    def send_complete(self):
+        pass
+
+### BEGIN DEPRECATED CODE ####
+#
+
+class OldStream(Pollable):
+    def __init__(self, poller_):
+        self.poller = poller_
+        self.parent = None
+
+        self.sock = None
+        self.filenum = -1
+        self.myname = None
+        self.peername = None
+        self.logname = None
+
+        self.timeout = TIMEOUT
+        self.encrypt = None
+        self.decrypt = None
+
         self.send_pos = 0
         self.send_octets = None
         self.send_queue = collections.deque()
@@ -469,13 +738,10 @@ class Stream(Pollable):
         raise RuntimeError("Unexpected status value")
 
     def send_complete1(self, stream, octets):
-        self.send_complete(len(octets))
+        self.send_complete()
 
-    def send_complete(self, count):
+    def send_complete(self):
         pass
-
-### BEGIN DEPRECATED CODE ####
-#
 
 def create_stream(sock, poller_, fileno, myname, peername, logname, secure,
                   certfile, server_side):
@@ -484,7 +750,7 @@ def create_stream(sock, poller_, fileno, myname, peername, logname, secure,
         "server_side": server_side,
         "secure": secure,
     }
-    stream = Stream(poller_)
+    stream = OldStream(poller_)
     stream.make_connection(sock)
     stream.configure(conf)
     return stream
@@ -1027,7 +1293,7 @@ class GenericProtocol(Stream):
     def recv_complete(self, octets):
         self.start_recv(MAXBUF)
 
-    def send_complete(self, octets):
+    def send_complete(self):
         self.start_send(self.buffer)
 
     def connection_lost(self, exception):
