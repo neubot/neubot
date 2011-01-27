@@ -24,7 +24,6 @@
 # Protocol handler
 #
 
-from StringIO import StringIO
 from neubot.utils import file_length
 from neubot.net.poller import POLLER
 from collections import deque
