@@ -140,6 +140,13 @@ class SocketWrapper(object):
                 return ERROR, exception
 
 class Stream(Pollable):
+
+    """Your protocol should be a subclass of this class.  The file
+       `doc/protocol.png` documents the high level finite state machine
+       provided by this stream in order to help the protocol.  The low
+       level finite state machine for the send and recv path is documented,
+       respectively, in `doc/sendpath.png` and `doc/recvpath.png`."""
+
     def __init__(self, poller_):
         self.poller = poller_
         self.parent = None
@@ -173,6 +180,8 @@ class Stream(Pollable):
         return self.filenum
 
     def make_connection(self, sock):
+        if self.sock:
+            raise RuntimeError("make_connection() invoked more than once")
         self.filenum = sock.fileno()
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
@@ -180,10 +189,14 @@ class Stream(Pollable):
         self.sock = SocketWrapper(sock)
 
     def configure(self, dictionary):
-        if "secure" in dictionary and dictionary["secure"]:
+        if not self.sock:
+            raise RuntimeError("configure() invoked before make_connection()")
 
+        if "secure" in dictionary and dictionary["secure"]:
             if not ssl:
                 raise RuntimeError("SSL support not available")
+            if hasattr(self.sock, "need_handshake"):
+                raise RuntimeError("Can't wrap SSL socket twice")
 
             server_side = False
             if "server_side" in dictionary and dictionary["server_side"]:
@@ -197,7 +210,6 @@ class Stream(Pollable):
             self.sock = SSLWrapper(so)
 
         if "obfuscate" in dictionary and dictionary["obfuscate"]:
-
             if not ARC4:
                 raise RuntimeError("ARC4 support not available")
 
@@ -227,19 +239,27 @@ class Stream(Pollable):
         self._do_close()
 
     def _do_close(self, exception=None):
-        if not self.isclosed:
-            self.isclosed = 1
-            self.connection_lost(exception)
-            if self.parent:
-                self.parent.connection_lost(self)
-            if self.measurer:
-                self.measurer.dead = True
-            self.send_octets = None
-            self.send_ticks = 0
-            self.recv_maxlen = 0
-            self.recv_ticks = 0
-            self.sock.soclose()
-            self.poller.close(self)
+        if self.isclosed:
+            return
+
+        self.isclosed = 1
+
+        self.connection_lost(exception)
+        if self.parent:
+            self.parent.connection_lost(self)
+
+        if self.measurer:
+            self.measurer.dead = True
+
+        self.send_octets = None
+        self.send_ticks = 0
+        self.recv_maxlen = 0
+        self.recv_ticks = 0
+        self.sock.soclose()
+
+        self.poller.close(self)
+
+    # Timeouts
 
     def readtimeout(self, now):
         return (self.recv_pending and (now - self.recv_ticks) > self.timeout)
@@ -249,8 +269,10 @@ class Stream(Pollable):
 
     # Recv path
 
-    def start_recv(self, maxlen):
+    def start_recv(self, maxlen=MAXBUF):
         if self.isclosed:
+            return
+        if self.recv_pending:
             return
 
         self.recv_maxlen = maxlen
@@ -264,15 +286,12 @@ class Stream(Pollable):
 
     def readable(self):
         if self.recvblocked:
+            self.poller.set_writable(self)
+            if not self.recv_pending:
+                self.poller.unset_readable(self)
+            self.recvblocked = 0
             self.writable()
             return
-
-        if self.sendblocked:
-            if self.send_pending:
-                self.poller.set_writable(self)
-            else:
-                self.poller.unset_writable(self)
-            self.sendblocked = 0
 
         status, octets = self.sock.sorecv(self.recv_maxlen)
 
@@ -293,10 +312,10 @@ class Stream(Pollable):
             return
 
         if status == WANT_READ:
-            self.poller.set_readable(self)
             return
 
         if status == WANT_WRITE:
+            self.poller.unset_readable(self)
             self.poller.set_writable(self)
             self.sendblocked = 1
             return
@@ -343,15 +362,12 @@ class Stream(Pollable):
 
     def writable(self):
         if self.sendblocked:
+            self.poller.set_readable(self)
+            if not self.send_pending:
+                self.poller.unset_writable(self)
+            self.sendblocked = 0
             self.readable()
             return
-
-        if self.recvblocked:
-            if self.recv_pending:
-                self.poller.set_readable(self)
-            else:
-                self.poller.unset_readable(self)
-            self.recvblocked = 0
 
         status, count = self.sock.sosend(self.send_octets)
 
@@ -384,10 +400,10 @@ class Stream(Pollable):
             raise RuntimeError("Sent more than expected")
 
         if status == WANT_WRITE:
-            self.poller.set_writable(self)
             return
 
         if status == WANT_READ:
+            self.poller.unset_writable(self)
             self.poller.set_readable(self)
             self.recvblocked = 1
             return
@@ -1283,7 +1299,7 @@ class GenericProtocol(Stream):
         verboser.connection_made(self.logname)
         measurer.register_stream(self)
         if self.kind == KIND_DISCARD:
-            self.start_recv(MAXBUF)
+            self.start_recv()
             return
         if self.kind == KIND_CHARGEN:
             self.start_send(self.buffer)
@@ -1291,7 +1307,7 @@ class GenericProtocol(Stream):
         self.close()
 
     def recv_complete(self, octets):
-        self.start_recv(MAXBUF)
+        self.start_recv()
 
     def send_complete(self):
         self.start_send(self.buffer)
