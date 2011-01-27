@@ -24,9 +24,10 @@
 # Protocol handler
 #
 
+import collections
+
 from neubot.utils import file_length
 from neubot.net.poller import POLLER
-from collections import deque
 from neubot.log import LOG
 
 class Receiver:
@@ -85,7 +86,7 @@ class Handler:
         self.flags = 0
         self.task = None
         # sending
-        self.sendqueue = deque()
+        self.sendqueue = collections.deque()
         self.flush_success = None
         self.flush_progress = None
         self.flush_error = None
