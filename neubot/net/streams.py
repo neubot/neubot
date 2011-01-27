@@ -235,7 +235,7 @@ class Stream(Pollable):
     def closed(self, exception=None):
         self._do_close(exception)
 
-    def close(self):
+    def shutdown(self):
         self._do_close()
 
     def _do_close(self, exception=None):
@@ -1256,7 +1256,7 @@ class StreamVerboser(object):
         elif eof:
             log.debug("* Connection %s: EOF" % (logname))
         else:
-            log.error("* Connection %s: lost (no reason given)" % (logname))
+            log.debug("* Closed connection %s" % (logname))
 
     def bind_failed(self, endpoint, exception, fatal=False):
         log.error("* Bind %s failed: %s" % (endpoint, exception))
@@ -1304,7 +1304,7 @@ class GenericProtocol(Stream):
         if self.kind == KIND_CHARGEN:
             self.start_send(self.buffer)
             return
-        self.close()
+        self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
@@ -1380,7 +1380,7 @@ Protocols:
     running in client mode the default is `discard`.
 """
 
-VERSION = "Neubot 0.3.2\n"
+VERSION = "Neubot 0.3.4\n"
 
 def main(args):
 
