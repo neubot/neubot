@@ -29,6 +29,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.log import LOG
+from neubot.compat import json
 
 def XML_append_attribute(document, element, name, value):
 
@@ -89,6 +90,41 @@ def XML_marshal(object, root_elem_name):
 
         #
         # Return a non XML string so that the parser will notice
+        # and will -hopefully- complain aloud.
+        #
+
+        data = ""
+
+    return data
+
+def JSON_marshal(object):
+
+    """
+    Marshal the attributes of `object` into JSON.  Note that this method
+    will marshal scalar attributes only--vectors, hashes, and classes are
+    going to be ignored.
+    """
+
+    #
+    # Note that vars() works as long as the class has been
+    # created using __init__() to initialize attributes.
+    #
+
+    dictionary = {}
+    allvars = vars(object)
+    for name, value in allvars.items():
+        if type(value) not in SIMPLETYPES:
+            continue
+        dictionary[name] = str(value)
+
+    try:
+        data = json.dumps(dictionary, ensure_ascii=True)
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        log.exception()
+        log.warning("Unicode endode or decode error (see above)")
+
+        #
+        # Return a non JSON string so that the parser will notice
         # and will -hopefully- complain aloud.
         #
 
