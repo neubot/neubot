@@ -56,10 +56,10 @@ def XML_append_attribute(document, element, name, value):
 SIMPLETYPES = [ types.IntType, types.FloatType, types.StringType,
                 types.UnicodeType ]
 
-def XML_marshal(object, root_elem_name):
+def XML_marshal(obj, root_elem_name):
 
     """
-    Marshal the attributes of `object` into XML.  Note that this method
+    Marshal the attributes of `obj` into XML.  Note that this method
     will marshal scalar attributes only--vectors, hashes, and classes are
     going to be ignored.
     """
@@ -75,7 +75,7 @@ def XML_marshal(object, root_elem_name):
     # created using __init__() to initialize attributes.
     #
 
-    allvars = vars(object)
+    allvars = vars(obj)
     for name, value in allvars.items():
         if type(value) not in SIMPLETYPES:
             continue
@@ -96,10 +96,10 @@ def XML_marshal(object, root_elem_name):
 
     return data
 
-def JSON_marshal(object):
+def JSON_marshal(obj):
 
     """
-    Marshal the attributes of `object` into JSON.  Note that this method
+    Marshal the attributes of `obj` into JSON.  Note that this method
     will marshal scalar attributes only--vectors, hashes, and classes are
     going to be ignored.
     """
@@ -110,7 +110,7 @@ def JSON_marshal(object):
     #
 
     dictionary = {}
-    allvars = vars(object)
+    allvars = vars(obj)
     for name, value in allvars.items():
         if type(value) not in SIMPLETYPES:
             continue
@@ -131,7 +131,7 @@ def JSON_marshal(object):
 
     return data
 
-def QS_unmarshal(object, data):
+def QS_unmarshal(obj, data):
 
     """
     Unmarshal the content of data -- which must be a www-urlencoded
@@ -142,10 +142,10 @@ def QS_unmarshal(object, data):
     dictionary = cgi.parse_qs(data)
     for key in dictionary:
 
-        if not hasattr(object, key):
+        if not hasattr(obj, key):
             continue
 
-        value = getattr(object, key)
+        value = getattr(obj, key)
         if type(value) == types.IntType:
             cast = int
         elif type(value) == types.FloatType:
@@ -163,7 +163,7 @@ def QS_unmarshal(object, data):
         except ValueError:
             continue
 
-        setattr(object, key, value)
+        setattr(obj, key, value)
 
 __all__ = [ "XML_marshal", "QS_unmarshal" ]
 
