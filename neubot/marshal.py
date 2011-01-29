@@ -165,7 +165,7 @@ def QS_unmarshal(obj, data):
 
         setattr(obj, key, value)
 
-__all__ = [ "XML_marshal", "QS_unmarshal" ]
+__all__ = [ "JSON_marshal", "XML_marshal", "QS_unmarshal" ]
 
 class TestClass(object):
     def __init__(self):
