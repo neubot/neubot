@@ -80,7 +80,6 @@ def XML_marshal(object, root_elem_name):
         if type(value) not in SIMPLETYPES:
             continue
         XML_append_attribute(document, root, name, str(value))
-        continue
 
     try:
         data = root.toxml("utf-8")
