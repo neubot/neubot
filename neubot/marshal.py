@@ -177,11 +177,19 @@ class TestClass(object):
         self.ustring = u"ustring"
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1] not in [ "-json", "-xml" ]:
+        sys.stdout.write("Usage: marshal.py -json|-xml\n")
+        sys.exit(1)
+    elif sys.argv[1] == "-xml":
+        marshal = lambda obj: XML_marshal(obj, "TestClass")
+    else:
+        marshal = JSON_marshal
+
     test = TestClass()
-    print XML_marshal(test, "TestClass")
+    print marshal(test)
 
     QS_unmarshal(test, "floating=3.0&integer=2&string=asd&ustring=")
-    print XML_marshal(test, "TestClass")
+    print marshal(test)
 
     QS_unmarshal(test, "floating=three&integer=two&string=&ustring=be")
-    print XML_marshal(test, "TestClass")
+    print marshal(test)
