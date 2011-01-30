@@ -78,12 +78,7 @@ class Logger(object):
 
     def __init__(self, maxqueue):
         self._verbose = False
-        self.logger = logging.Logger("neubot.log.Logger")
-        self.handler = logging.StreamHandler()
-        self.formatter = logging.Formatter("%(message)s")
-        self.handler.setFormatter(self.formatter)
-        self.logger.addHandler(self.handler)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = InteractiveLogger()
         self.queue = collections.deque()
         self.message = None
         self.maxqueue = maxqueue
