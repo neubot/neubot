@@ -158,13 +158,8 @@ class Logger(object):
         if self.noisy:
             self._log(self.logger.debug, message)
 
-    #
-    # XXX We don't want access logs to be saved into the queue, or
-    # the client making a request for /logs will cause a new log to
-    # be written, and that's not sane.
-    #
-
     def log_access(self, message):
+        # Note enqueue MUST be False to avoid /api/logs comet storm
         self._log(self.logger.info, message, False)
 
     def _log(self, printlog, message, enqueue=True):
