@@ -175,12 +175,6 @@ class Logger(object):
             data = ""
         return data
 
-    def getlines(self):
-        result = []
-        for timestamp, line in self.queue:
-            result.append((timestamp, line))
-        return result
-
 MAXQUEUE = 100
 
 log = Logger(MAXQUEUE)
@@ -197,7 +191,6 @@ start = log.start
 progress = log.progress
 complete = log.complete
 debug = log.debug
-getlines = log.getlines
 
 def main(args):
     verbose()
