@@ -37,7 +37,7 @@ if os.name != "posix":
         version="0.3.4",
         author="Simone Basso",
         author_email="bassosimone@gmail.com",
-        console=[{
+        windows=[{
             "script": "bin/neubot",
             "icon_resources": [(0, "icons/neubot.ico")],
         }],
