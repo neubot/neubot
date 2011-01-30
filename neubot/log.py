@@ -36,6 +36,8 @@ if __name__ == "__main__":
 
 from neubot.compat import deque_append
 from neubot.compat import json
+
+# fetch BackgroundLogger from either unix or win32
 from neubot.unix import *
 from neubot.win32 import *
 
