@@ -77,22 +77,23 @@ class InteractiveLogger(object):
 class Logger(object):
 
     def __init__(self, maxqueue):
-        self._verbose = False
         self.logger = InteractiveLogger()
         self.queue = collections.deque()
         self.message = None
         self.maxqueue = maxqueue
-        self._tty = True
+
+        self.interactive = True
+        self.noisy = False
 
     def verbose(self):
-        self._verbose = True
+        self.noisy = True
 
     def quiet(self):
-        self._verbose = False
+        self.noisy = False
 
     def redirect(self):
         self.logger = BackgroundLogger()
-        self._tty = False
+        self.interactive = False
 
     #
     # In some cases it makes sense to print progress during a
@@ -114,7 +115,7 @@ class Logger(object):
     #
 
     def _interactive(self):
-        return (not self._verbose and self._tty)
+        return (not self.noisy and self.interactive)
 
     def start(self, message):
         if not self._interactive():
@@ -153,7 +154,7 @@ class Logger(object):
         self._log(self.logger.info, message)
 
     def debug(self, message):
-        if self._verbose:
+        if self.noisy:
             self._log(self.logger.debug, message)
 
     #
