@@ -78,12 +78,14 @@ class Logger(object):
 
     def __init__(self, maxqueue):
         self.logger = InteractiveLogger()
+
         self.queue = collections.deque()
-        self.message = None
         self.maxqueue = maxqueue
 
         self.interactive = True
         self.noisy = False
+
+        self.message = None
 
     def verbose(self):
         self.noisy = True
