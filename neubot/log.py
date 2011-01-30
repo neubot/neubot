@@ -46,8 +46,6 @@ from neubot.win32 import *
 
 timestamp = lambda: int(time.time())
 
-MAXQUEUE = 100
-
 class InteractiveLogger(object):
 
         """Log messages on the standard error.  This is the simplest
@@ -168,6 +166,8 @@ class Logger(object):
         for timestamp, line in self.queue:
             result.append((timestamp, line))
         return result
+
+MAXQUEUE = 100
 
 log = Logger(MAXQUEUE)
 
