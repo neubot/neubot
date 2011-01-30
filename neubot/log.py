@@ -21,7 +21,7 @@
 #
 
 #
-# Wrapper for logger
+# Wrapper for logging
 #
 
 import collections
