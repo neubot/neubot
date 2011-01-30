@@ -128,9 +128,7 @@ class Logger(object):
         else:
             sys.stderr.write(" done\n")
 
-    #
     # Log functions
-    #
 
     def exception(self):
         content = traceback.format_exc()
