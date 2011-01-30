@@ -105,6 +105,10 @@ class BTConnector(Stream):
     def send_keepalive(self):
         self._send_message('')
 
+    def send_piece(self, index, begin, block):
+        self._send_message(struct.pack("!cii%ss" % len(block), PIECE,
+          index, begin, block))
+
     def _send_message(self, *msg_a):
         if self.closing:
             return
