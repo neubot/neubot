@@ -101,12 +101,11 @@ class Logger(object):
     #   Download in progress......... done
     #
     # This makes sense when: (i) the program is not running in
-    # verbose mode; (ii) logs are directed to the stderr and the
-    # stderr is attached to a TTY.  If the progream is running
-    # in verbose mode, there might be many messages between
-    # the 'in progress...' and 'done'.  And if the logs are not
-    # directed to stderr or stderr is re-directed to a file,
-    # then it does not make sense to print progress as well.
+    # verbose mode; (ii) logs are directed to the stderr.
+    # If the program is running in verbose mode, there might
+    # be many messages between the 'in progress...' and 'done'.
+    # And if the logs are not directed to stderr then it does
+    # not make sense to print progress as well.
     # So, in these cases, the output will look like::
     #
     #   Download in progress...
@@ -115,7 +114,7 @@ class Logger(object):
     #
 
     def _interactive(self):
-        return (not self._verbose and self._tty and os.isatty(sys.stderr.fileno()))
+        return (not self._verbose and self._tty)
 
     def start(self, message):
         if not self._interactive():
