@@ -57,7 +57,8 @@ timestamp = lambda: int(time.time())
 
 MAXQUEUE = 100
 
-class Logger:
+class Logger(object):
+
     def __init__(self, maxqueue):
         self._verbose = False
         self.logger = logging.Logger("neubot.log.Logger")
