@@ -19,18 +19,15 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
+import cStringIO
 import struct
+import sys
 
-from cStringIO import StringIO
-from bitfield import Bitfield
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
 
+from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.streams import Stream
-
-def toint(s):
-    return struct.unpack("!i", s)[0]
-
-def tobinary(i):
-    return struct.pack("!i", i)
 
 CHOKE = chr(0)
 UNCHOKE = chr(1)
@@ -48,11 +45,17 @@ protocol_name = 'BitTorrent protocol'
 
 MAX_MESSAGE_LENGTH = 1<<16
 
-class BTConnector(Stream):
+def toint(s):
+    return struct.unpack("!i", s)[0]
 
-    """Implements the syntax of the BitTorrent protocol.
-       See Upload.py and Download.py for the connection-level
-       semantics."""
+def tobinary(i):
+    return struct.pack("!i", i)
+
+class BTStream(Stream):
+
+    """Specializes stream in order to handle the BitTorrent peer
+       wire protocol.  See also the finite state machine documented
+       at `doc/protocol.png`."""
 
     def initialize(self, parent, id, locally_initiated):
         self.parent = parent
@@ -65,7 +68,7 @@ class BTConnector(Stream):
         self.got_anything = False
         self.upload = None
         self.download = None
-        self._buffer = StringIO()
+        self._buffer = cStringIO.StringIO()
         self._reader = self._read_messages()
         self._next_len = self._reader.next()
         self._message = None
@@ -135,7 +138,7 @@ class BTConnector(Stream):
                 self._buffer.write(buffer(s, 0, i))
                 m = self._buffer.getvalue()
                 self._buffer.close()
-                self._buffer = StringIO()
+                self._buffer = cStringIO.StringIO()
             else:
                 m = s[:i]
             s = buffer(s, i)
