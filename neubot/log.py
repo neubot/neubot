@@ -179,6 +179,9 @@ MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
 __all__ = [ "LOG" ]
 
+### DEPRECATED ###
+#
+
 log = LOG
 
 log_access = log.log_access
@@ -193,6 +196,9 @@ start = log.start
 progress = log.progress
 complete = log.complete
 debug = log.debug
+
+                 #
+### DEPRECATED ###
 
 def main(args):
     LOG.verbose()
