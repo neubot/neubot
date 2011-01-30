@@ -57,6 +57,23 @@ timestamp = lambda: int(time.time())
 
 MAXQUEUE = 100
 
+class InteractiveLogger(object):
+
+        """Log messages on the standard error.  This is the simplest
+           logger one can think and is the one we use at startup."""
+
+        def error(self, message):
+            sys.stderr.write(message + "\n")
+
+        def warning(self, message):
+            sys.stderr.write(message + "\n")
+
+        def info(self, message):
+            sys.stderr.write(message + "\n")
+
+        def debug(self, message):
+            sys.stderr.write(message + "\n")
+
 class Logger(object):
 
     def __init__(self, maxqueue):
