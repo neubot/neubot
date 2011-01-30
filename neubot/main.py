@@ -41,7 +41,7 @@ from sys import argv
 from sys import exit
 
 # cheating a bit
-from neubot.bittorrent import wrapper as bittorrent
+from neubot.bittorrent import main as bittorrent
 from neubot.http import clients as http
 from neubot.http import servers as httpd
 
