@@ -46,15 +46,6 @@ from neubot.win32 import *
 
 timestamp = lambda: int(time.time())
 
-#
-# We save recent messages into a circular queue, together with
-# their timestamp, and we do that because we want to return to
-# the user also the time when a certain message was generated.
-# The purpose of keeping recent messages is NOT to replace the
-# traditional logging, but it's because we want to provide to
-# our users ALSO this handy information.
-#
-
 MAXQUEUE = 100
 
 class InteractiveLogger(object):
@@ -75,6 +66,9 @@ class InteractiveLogger(object):
             sys.stderr.write(message + "\n")
 
 class Logger(object):
+
+    """Main wrapper for logging.  The queue allows us to export
+       recent logs via /api/logs."""
 
     def __init__(self, maxqueue):
         self.logger = InteractiveLogger()
