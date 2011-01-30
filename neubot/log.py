@@ -116,22 +116,19 @@ class Logger(object):
     #   Download complete.
     #
 
-    def _interactive(self):
-        return (not self.noisy and self.interactive)
-
     def start(self, message):
-        if not self._interactive():
+        if self.noisy or not self.interactive:
             self.info(message + " in progress...")
             self.message = message
         else:
             sys.stderr.write(message + "...")
 
     def progress(self):
-        if self._interactive():
+        if not self.noisy and self.interactive:
             sys.stderr.write(".")
 
     def complete(self):
-        if not self._interactive():
+        if self.noisy or not self.interactive:
             self.info(self.message + ": complete")
             self.message = None
         else:
