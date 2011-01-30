@@ -129,6 +129,8 @@ class Logger(object):
 
     def complete(self):
         if self.noisy or not self.interactive:
+            if not self.message:
+                self.message = "???"
             self.info(self.message + ": complete")
             self.message = None
         else:
