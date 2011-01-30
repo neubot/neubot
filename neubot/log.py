@@ -176,8 +176,10 @@ class Logger(object):
         return data
 
 MAXQUEUE = 100
+LOG = Logger(MAXQUEUE)
+__all__ = [ "LOG" ]
 
-log = Logger(MAXQUEUE)
+log = LOG
 
 log_access = log.log_access
 verbose = log.verbose
@@ -193,16 +195,16 @@ complete = log.complete
 debug = log.debug
 
 def main(args):
-    verbose()
-    error("testing neubot logger -- This is an error message")
-    warning("testing neubot logger -- This is an warning message")
-    info("testing neubot logger -- This is an info message")
-    debug("testing neubot logger -- This is a debug message")
-    redirect()
-    error("testing neubot logger -- This is an error message")
-    warning("testing neubot logger -- This is an warning message")
-    info("testing neubot logger -- This is an info message")
-    debug("testing neubot logger -- This is a debug message")
+    LOG.verbose()
+    LOG.error("testing neubot logger -- This is an error message")
+    LOG.warning("testing neubot logger -- This is an warning message")
+    LOG.info("testing neubot logger -- This is an info message")
+    LOG.debug("testing neubot logger -- This is a debug message")
+    LOG.redirect()
+    LOG.error("testing neubot logger -- This is an error message")
+    LOG.warning("testing neubot logger -- This is an warning message")
+    LOG.info("testing neubot logger -- This is an info message")
+    LOG.debug("testing neubot logger -- This is a debug message")
 
 if __name__ == "__main__":
     main(sys.argv)
