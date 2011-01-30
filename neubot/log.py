@@ -39,6 +39,14 @@ from neubot.unix import *
 from neubot.win32 import *
 
 #
+# XXX neubot/utils.py depends on this file so we must roll out our
+# own version of timestamp().  It could also make sense to move here
+# the definition of timestamp and pull from this file in utils.py.
+#
+
+timestamp = lambda: int(time.time())
+
+#
 # We save recent messages into a circular queue, together with
 # their timestamp, and we do that because we want to return to
 # the user also the time when a certain message was generated.
@@ -150,7 +158,7 @@ class Logger:
         if message[-1] == "\n":
             message = message[:-1]
         if enqueue:
-            deque_append(self.queue, self.maxqueue, (time.time(), message))
+            deque_append(self.queue, self.maxqueue, (timestamp(), message))
         if self.prefix:
             message = self.prefix + message
         printlog(message)
