@@ -211,6 +211,7 @@ def main(args):
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
+    print str(LOG)
 
 if __name__ == "__main__":
     main(sys.argv)
