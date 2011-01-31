@@ -71,11 +71,8 @@ class BTConnector(Stream):
         self._message = None
 
     def connection_made(self):
-        if self.locally_initiated:
-            self.start_send(''.join((chr(len(protocol_name)),
-              protocol_name, FLAGS, self.parent.infohash)))
-            if not self.id:
-                self.start_send(self.parent.my_id)
+        self.start_send("".join((chr(len(protocol_name)), protocol_name,
+          FLAGS, self.parent.infohash, self.parent.my_id)))
         self.start_recv()
 
     def send_interested(self):
@@ -157,16 +154,9 @@ class BTConnector(Stream):
         self.start_recv()
 
     def _read_messages(self):
-        yield 1 + len(protocol_name)
-        yield 20
-        if not self.locally_initiated:
-            self.start_send(''.join((chr(len(protocol_name)), protocol_name,
-              FLAGS, self.parent.infohash, self.parent.my_id)))
-        yield 20
+        yield 1 + len(protocol_name) + 8 + 20 + 20
         if not self.id:
             self.id = self._message
-            if self.locally_initiated:
-                self.start_send(self.parent.my_id)
         self.complete = True
         self.parent.connection_handshake_completed(self)
         while True:
