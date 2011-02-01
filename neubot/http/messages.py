@@ -48,6 +48,7 @@ class Message(object):
         self.port = ""
         self.pathquery = ""
         self.family = socket.AF_UNSPEC
+        self.length = 0
 
     #
     # The client code saves the whole uri in self.uri and then
@@ -178,9 +179,9 @@ def compose(m, **kwargs):
     if kwargs["body"]:
         m.body = kwargs["body"]
         safe_seek(m.body, 0, os.SEEK_END)
-        length = m.body.tell()
+        m.length = m.body.tell()
         safe_seek(m.body, 0, os.SEEK_SET)
-        m["content-length"] = str(length)
+        m["content-length"] = str(m.length)
         if kwargs["mimetype"]:
             m["content-type"] = kwargs["mimetype"]
     else:
