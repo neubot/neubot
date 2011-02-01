@@ -134,11 +134,11 @@ class SocketWrapper(object):
 
 class Stream(Pollable):
 
-    """Your protocol should be a subclass of this class.  The file
-       `doc/protocol.png` documents the high level finite state machine
-       provided by this stream in order to help the protocol.  The low
-       level finite state machine for the send and recv path is documented,
-       respectively, in `doc/sendpath.png` and `doc/recvpath.png`."""
+    """To implement the protocol syntax, subclass this class and
+       implement the finite state machine described in the file
+       `doc/protocol.png`.  The low level finite state machines for
+       the send and recv path are documented, respectively, in
+       `doc/sendpath.png` and `doc/recvpath.png`."""
 
     def __init__(self, poller_):
         self.poller = poller_
@@ -795,7 +795,7 @@ class Connector(Pollable):
 
     def __init__(self, poller_):
         self.poller = poller_
-        self.protocol = None
+        self.stream = None
         self.sock = None
         self.timeout = 15
         self.timestamp = 0
@@ -868,7 +868,7 @@ class Connector(Pollable):
             rtt = ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
-        stream = self.protocol(self.poller)
+        stream = self.stream(self.poller)
         stream.parent = self
         stream.make_connection(self.sock)
         self.connection_made(stream)
@@ -1000,7 +1000,7 @@ def connect(address, port, connected, **kwargs):
 class Listener(Pollable):
 
     def __init__(self, poller_):
-        self.protocol = None
+        self.stream = None
         self.poller = poller_
         self.lsock = None
         self.endpoint = None
@@ -1058,7 +1058,7 @@ class Listener(Pollable):
             self.accept_failed(exception)
             return
 
-        stream = self.protocol(self.poller)
+        stream = self.stream(self.poller)
         stream.parent = self
         stream.make_connection(sock)
         self.connection_made(stream)
@@ -1304,7 +1304,11 @@ KIND_NONE = 0
 KIND_DISCARD = 1
 KIND_CHARGEN = 2
 
-class GenericProtocol(Stream):
+class GenericProtocolStream(Stream):
+
+    """Specializes stream in order to handle some byte-oriented
+       protocols like discard and chargen."""
+
     def __init__(self, poller_):
         Stream.__init__(self, poller_)
         self.buffer = "A" * MAXBUF
@@ -1333,7 +1337,7 @@ class GenericProtocol(Stream):
 class GenericListener(Listener):
     def __init__(self, poller_, dictionary, kind):
         Listener.__init__(self, poller_)
-        self.protocol = GenericProtocol
+        self.stream = GenericProtocolStream
         self.dictionary = dictionary
         self.kind = kind
 
@@ -1350,7 +1354,7 @@ class GenericListener(Listener):
 class GenericConnector(Connector):
     def __init__(self, poller_, dictionary, kind):
         Connector.__init__(self, poller_)
-        self.protocol = GenericProtocol
+        self.stream = GenericProtocolStream
         self.dictionary = dictionary
         self.kind = kind
 
