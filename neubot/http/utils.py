@@ -42,7 +42,7 @@ def prettyprint(write, direction, msg, eol=""):
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
     if scheme != "http" and scheme != "https":
-        raise Exception("Unknown scheme")
+        raise ValueError("Unknown scheme")
     if ":" in netloc:
         address, port = netloc.split(":", 1)
     elif scheme == "https":
