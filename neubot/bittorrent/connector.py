@@ -29,6 +29,9 @@ if __name__ == "__main__":
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.streams import Stream
 
+from neubot.net.streams import verboser as VERBOSER
+from neubot.log import log as LOG
+
 CHOKE = chr(0)
 UNCHOKE = chr(1)
 INTERESTED = chr(2)
@@ -74,38 +77,50 @@ class BTStream(Stream):
         self._message = None
 
     def connection_made(self):
+        VERBOSER.connection_made(self.logname)
+        LOG.debug("> HANDSHAKE")
         self.start_send("".join((chr(len(protocol_name)), protocol_name,
           FLAGS, self.parent.infohash, self.parent.my_id)))
         self.start_recv()
 
     def send_interested(self):
+        LOG.debug("> INTERESTED")
         self._send_message(INTERESTED)
 
     def send_not_interested(self):
+        LOG.debug("> NOT_INTERESTED")
         self._send_message(NOT_INTERESTED)
 
     def send_choke(self):
+        LOG.debug("> CHOKE")
         self._send_message(CHOKE)
 
     def send_unchoke(self):
+        LOG.debug("> UNCHOKE")
         self._send_message(UNCHOKE)
 
     def send_request(self, index, begin, length):
+        LOG.debug("> REQUEST %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!ciii", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
+        LOG.debug("> CANCEL %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!ciii", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
+        LOG.debug("> BITFIELD <bitfield>")
         self._send_message(BITFIELD, bitfield)
 
     def send_have(self, index):
+        LOG.debug("> HAVE %d" % index)
         self._send_message(struct.pack("!ci", HAVE, index))
 
     def send_keepalive(self):
+        LOG.debug("> KEEPALIVE")
         self._send_message('')
 
     def send_piece(self, index, begin, block):
+        LOG.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
         self._send_message(struct.pack("!cii%ss" % len(block), PIECE,
           index, begin, block))
 
@@ -158,6 +173,7 @@ class BTStream(Stream):
 
     def _read_messages(self):
         yield 1 + len(protocol_name) + 8 + 20 + 20
+        LOG.debug("< HANDSHAKE")
         if not self.id:
             self.id = self._message
         self.complete = True
@@ -165,10 +181,12 @@ class BTStream(Stream):
         while True:
             yield 4
             l = toint(self._message)
+            LOG.debug("BT receiver: expect %d bytes" % l)
             if l > MAX_MESSAGE_LENGTH:
                 return
             if l > 0:
                 yield l
+                LOG.debug("BT receiver: got %d bytes" % l)
                 self._got_message(self._message)
 
     def _got_message(self, message):
@@ -198,6 +216,7 @@ class BTStream(Stream):
                 self.close()
                 return
             i, a, b = struct.unpack("!xiii", message)
+            LOG.debug("< REQUEST %d %d %d" % (i, a, b))
             self.upload.got_request(i, a, b)
         elif t == CANCEL:
             pass
@@ -207,6 +226,7 @@ class BTStream(Stream):
                 return
             n = len(message) - 9
             i, a, b = struct.unpack("!xii%ss" % n, message)
+            LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
             self.download.got_piece(i, a, b)
         else:
             self.close()
@@ -214,6 +234,7 @@ class BTStream(Stream):
     def close(self):
         if self.closing:
             return
+        LOG.debug("* Requested to close connection %s" % self.logname)
         self.closing = True
         if self.writing:
             return
@@ -222,6 +243,7 @@ class BTStream(Stream):
     def connection_lost(self, exception):
         # because we might also be invoked on network error
         self.closing = True
+        VERBOSER.connection_lost(self.logname, self.eof, exception)
         self._reader = None
         self.parent.connection_lost(self)
         self.upload = None
