@@ -19,17 +19,18 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
+import cStringIO
 import struct
+import sys
 
-from cStringIO import StringIO
-from handler import Handler
-from bitfield import Bitfield
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
 
-def toint(s):
-    return struct.unpack("!i", s)[0]
+from neubot.bittorrent.bitfield import Bitfield
+from neubot.net.streams import Stream
 
-def tobinary(i):
-    return struct.pack("!i", i)
+from neubot.net.streams import verboser as VERBOSER
+from neubot.log import log as LOG
 
 CHOKE = chr(0)
 UNCHOKE = chr(1)
@@ -47,19 +48,21 @@ protocol_name = 'BitTorrent protocol'
 
 MAX_MESSAGE_LENGTH = 1<<16
 
-class BTConnector(Handler):
+def toint(s):
+    return struct.unpack("!i", s)[0]
 
-    """Implements the syntax of the BitTorrent protocol.
-       See Upload.py and Download.py for the connection-level
-       semantics."""
+def tobinary(i):
+    return struct.pack("!i", i)
 
-    def __init__(self, parent, connection, id, locally_initiated):
+class BTStream(Stream):
+
+    """Specializes stream in order to handle the BitTorrent peer
+       wire protocol.  See also the finite state machine documented
+       at `doc/protocol.png`."""
+
+    def initialize(self, parent, id, locally_initiated):
         self.parent = parent
-        self.connection = connection
         self.id = id
-        self.ip = connection.ip
-        self.port = connection.port
-        self.addr = (self.ip, self.port)
         self.hostname = None
         self.locally_initiated = locally_initiated
         self.complete = False
@@ -68,44 +71,58 @@ class BTConnector(Handler):
         self.got_anything = False
         self.upload = None
         self.download = None
-        self._buffer = StringIO()
+        self._buffer = cStringIO.StringIO()
         self._reader = self._read_messages()
         self._next_len = self._reader.next()
         self._message = None
-        #XXX different with original code: attach BEFORE handshake
-        self.connection.attach_connector(self)
-        if self.locally_initiated:
-            self.connection.write(''.join((chr(len(protocol_name)),
-              protocol_name, FLAGS, self.parent.infohash)))
-            if not self.id:
-                self.connection.write(self.parent.my_id)
+
+    def connection_made(self):
+        VERBOSER.connection_made(self.logname)
+        LOG.debug("> HANDSHAKE")
+        self.start_send("".join((chr(len(protocol_name)), protocol_name,
+          FLAGS, self.parent.infohash, self.parent.my_id)))
+        self.start_recv()
 
     def send_interested(self):
+        LOG.debug("> INTERESTED")
         self._send_message(INTERESTED)
 
     def send_not_interested(self):
+        LOG.debug("> NOT_INTERESTED")
         self._send_message(NOT_INTERESTED)
 
     def send_choke(self):
+        LOG.debug("> CHOKE")
         self._send_message(CHOKE)
 
     def send_unchoke(self):
+        LOG.debug("> UNCHOKE")
         self._send_message(UNCHOKE)
 
     def send_request(self, index, begin, length):
+        LOG.debug("> REQUEST %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!ciii", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
+        LOG.debug("> CANCEL %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!ciii", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
+        LOG.debug("> BITFIELD <bitfield>")
         self._send_message(BITFIELD, bitfield)
 
     def send_have(self, index):
+        LOG.debug("> HAVE %d" % index)
         self._send_message(struct.pack("!ci", HAVE, index))
 
     def send_keepalive(self):
+        LOG.debug("> KEEPALIVE")
         self._send_message('')
+
+    def send_piece(self, index, begin, block):
+        LOG.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
+        self._send_message(struct.pack("!cii%ss" % len(block), PIECE,
+          index, begin, block))
 
     def _send_message(self, *msg_a):
         if self.closing:
@@ -117,26 +134,26 @@ class BTConnector(Handler):
         d = [tobinary(l), ]
         d.extend(msg_a)
         s = ''.join(d)
-        self.connection.write(s)
+        self.start_send(s)
 
-    def connection_flushed(self, connection):
+    def send_complete(self):
         self.writing = False
         if self.closing:
-            self.connection.close()
+            self.shutdown()
 
-    def data_came_in(self, conn, s):
+    def recv_complete(self, s):
         while True:
             if self.closing:
                 return
             i = self._next_len - self._buffer.tell()
             if i > len(s):
                 self._buffer.write(s)
-                return
+                break
             if self._buffer.tell() > 0:
                 self._buffer.write(buffer(s, 0, i))
                 m = self._buffer.getvalue()
                 self._buffer.close()
-                self._buffer = StringIO()
+                self._buffer = cStringIO.StringIO()
             else:
                 m = s[:i]
             s = buffer(s, i)
@@ -152,27 +169,24 @@ class BTConnector(Handler):
             except:
                 self.close()
                 return
+        self.start_recv()
 
     def _read_messages(self):
-        yield 1 + len(protocol_name)
-        yield 20
-        if not self.locally_initiated:
-            self.connection.write(''.join((chr(len(protocol_name)),
-              protocol_name, FLAGS, self.parent.infohash, self.parent.my_id)))
-        yield 20
+        yield 1 + len(protocol_name) + 8 + 20 + 20
+        LOG.debug("< HANDSHAKE")
         if not self.id:
             self.id = self._message
-            if self.locally_initiated:
-                self.connection.write(self.parent.my_id)
         self.complete = True
         self.parent.connection_handshake_completed(self)
         while True:
             yield 4
             l = toint(self._message)
+            LOG.debug("BT receiver: expect %d bytes" % l)
             if l > MAX_MESSAGE_LENGTH:
                 return
             if l > 0:
                 yield l
+                LOG.debug("BT receiver: got %d bytes" % l)
                 self._got_message(self._message)
 
     def _got_message(self, message):
@@ -202,6 +216,7 @@ class BTConnector(Handler):
                 self.close()
                 return
             i, a, b = struct.unpack("!xiii", message)
+            LOG.debug("< REQUEST %d %d %d" % (i, a, b))
             self.upload.got_request(i, a, b)
         elif t == CANCEL:
             pass
@@ -211,6 +226,7 @@ class BTConnector(Handler):
                 return
             n = len(message) - 9
             i, a, b = struct.unpack("!xii%ss" % n, message)
+            LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
             self.download.got_piece(i, a, b)
         else:
             self.close()
@@ -218,17 +234,18 @@ class BTConnector(Handler):
     def close(self):
         if self.closing:
             return
+        LOG.debug("* Requested to close connection %s" % self.logname)
         self.closing = True
         if self.writing:
             return
-        self.connection.close()
+        self.shutdown()
 
-    def connection_lost(self, conn):
+    def connection_lost(self, exception):
         # because we might also be invoked on network error
         self.closing = True
+        VERBOSER.connection_lost(self.logname, self.eof, exception)
         self._reader = None
         self.parent.connection_lost(self)
-        self.connection = None
         self.upload = None
         self.download = None
         self._buffer = None
