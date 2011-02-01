@@ -1,4 +1,4 @@
-# neubot/bittorrent/connector.py
+# neubot/bittorrent/streams.py
 
 #
 # This program is free software: you can redistribute it and/or modify
