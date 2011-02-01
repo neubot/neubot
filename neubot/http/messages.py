@@ -20,16 +20,21 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from neubot.utils import safe_seek
-from StringIO import StringIO
-from neubot.http.utils import date
-from neubot.http.utils import urlsplit
-from neubot.utils import fixkwargs
-from os import SEEK_END, SEEK_SET
-from socket import AF_INET, AF_UNSPEC
-from types import StringType
+import StringIO
+import types
+import socket
+import os
 
-class Message:
+from neubot.http.utils import urlsplit
+from neubot.utils import safe_seek
+from neubot.http.utils import date
+from neubot.utils import fixkwargs
+
+
+class Message(object):
+
+    """Represents an HTTP message."""
+
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
         self.method = method
         self.uri = uri
@@ -37,15 +42,12 @@ class Message:
         self.reason = reason
         self.protocol = protocol
         self.headers = {}
-        self.body = StringIO("")
+        self.body = StringIO.StringIO("")
         self.scheme = ""
         self.address = ""
         self.port = ""
         self.pathquery = ""
-        self.family = AF_UNSPEC
-
-    def __del__(self):
-        pass
+        self.family = socket.AF_UNSPEC
 
     #
     # The client code saves the whole uri in self.uri and then
@@ -59,6 +61,7 @@ class Message:
 
     def serialize_headers(self):
         lst = []
+
         if self.method:
             lst.append(self.method)
             lst.append(" ")
@@ -77,20 +80,29 @@ class Message:
             lst.append(" ")
             lst.append(self.reason)
         lst.append("\r\n")
+
         for key, value in self.headers.items():
             lst.append(key)
             lst.append(": ")
             lst.append(value)
             lst.append("\r\n")
         lst.append("\r\n")
+
         octets = "".join(lst)
-        return StringIO(octets)
+        return StringIO.StringIO(octets)
 
     def serialize_body(self):
         return self.body
 
+    #
+    # RFC2616 section 4.2 says that "Each header field consists
+    # of a name followed by a colon (":") and the field value. Field
+    # names are case-insensitive."  So, for simplicity, we use all-
+    # lowercase header names.
+    #
+
     def __getitem__(self, key):
-        if type(key) != StringType:
+        if type(key) != types.StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
@@ -98,7 +110,7 @@ class Message:
         return ""
 
     def __setitem__(self, key, value):
-        if type(key) != StringType:
+        if type(key) != types.StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
@@ -106,11 +118,12 @@ class Message:
         self.headers[key] = value
 
     def __delitem__(self, key):
-        if type(key) != StringType:
+        if type(key) != types.StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
             del self.headers[key]
+
 
 #
 # Note that compose() is meant for composing request messages
@@ -126,7 +139,7 @@ COMPOSEARGS = {
     "body"       : None,
     "code"       : "",
     "date"       : True,
-    "family"     : AF_INET,
+    "family"     : socket.AF_INET,
     "keepalive"  : True,
     "method"     : "",
     "mimetype"   : "",
@@ -164,9 +177,9 @@ def compose(m, **kwargs):
         m["connection"] = "close"
     if kwargs["body"]:
         m.body = kwargs["body"]
-        safe_seek(m.body, 0, SEEK_END)
+        safe_seek(m.body, 0, os.SEEK_END)
         length = m.body.tell()
-        safe_seek(m.body, 0, SEEK_SET)
+        safe_seek(m.body, 0, os.SEEK_SET)
         m["content-length"] = str(length)
         if kwargs["mimetype"]:
             m["content-type"] = kwargs["mimetype"]
