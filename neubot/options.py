@@ -188,13 +188,6 @@ manual page::
         def get_option_float(self, section, option):
             "Same as above but also try to cast to float."
 
-BUGS
-````
-
-This module does not work reliably unless section names and option
-names are all lowercase.  This is due to the interaction between this
-module and ConfigParser.RawConfigParser.
-
 AUTHOR
 ``````
 
@@ -244,6 +237,9 @@ class OptionParser(ConfigParser.RawConfigParser):
         if not self.has_section(section):
             self.add_section(section)
         self.set(section, option, value)
+
+    def optionxform(self, option):
+        return option
 
     def register_file(self, path):
         self.files.append(path)
