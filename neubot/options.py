@@ -342,13 +342,13 @@ USAGE = """Neubot options -- Test unit for options parser
 Usage: neubot options [-Vv] [-D option[=value]] [-f file] [--help]
 
 Options:
-    -D option[=value]  : Set the value of the option option.
-    -f file            : Read options from file file.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
+    -D option[=value]  : Set the value of the option option
+    -f file            : Read options from file file
+    --help             : Print this help screen and exit
+    -V                 : Print version number and exit
+    -v                 : Run the program in verbose mode
 
-Options:
+Macros:
     -D cast=type       : Attempt to cast all the other options to
                          the given type.  Type might be one of the
                          following:

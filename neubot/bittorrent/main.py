@@ -125,19 +125,19 @@ class BTListeningPeer(Listener):
 
 USAGE = """Neubot bittorrent -- Test unit for BitTorrent module
 
-Usage: neubot bittorrent [-Vv] [-D option[=value]] [-f file] [--help]
+Usage: neubot bittorrent [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
-    -D option[=value]  : Set the value of the option option.
-    -f file            : Read options from file file.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
+    -D macro[=value]   : Set the value of the macro `macro`
+    -f file            : Read options from file `file`
+    --help             : Print this help screen and exit
+    -V                 : Print version number and exit
+    -v                 : Run the program in verbose mode
 
 Macros (defaults in square brackets):
-    address=addr       : Select address to use [127.0.0.1]
-    listen             : Listen for incoming connections [False]
-    port=port          : Select the port to use [6881]
+    address=addr       : Select address to use               [127.0.0.1]
+    listen             : Listen for incoming connections     [False]
+    port=port          : Select the port to use              [6881]
 
 """
 
