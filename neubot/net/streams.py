@@ -1373,25 +1373,25 @@ USAGE = """Neubot net -- Test unit for the asynchronous network layer
 Usage: neubot net [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
-    -D macro[=value]   : Set the value of the macro `macro`.
-    -f file            : Read options from file `file`.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
+    -D macro[=value]   : Set the value of the macro `macro`
+    -f file            : Read options from file `file`
+    --help             : Print this help screen and exit
+    -V                 : Print version number and exit
+    -v                 : Run the program in verbose mode
 
 Macros (defaults in square brackets):
-    address=addr       : Select the address to use [127.0.0.1]
+    address=addr       : Select the address to use                 [127.0.0.1]
     certfile           : Path to private key and certificate file
-                         to be used together with `-D secure` []
-    clients=N          : Spawn N client connections at a time [1]
-    duration=N         : Stop the client(s) after N seconds []
-    key=KEY            : Use KEY to initialize ARC4 stream []
-    listen             : Listen for incoming connections [False]
-    obfuscate          : Obfuscate traffic using ARC4 [False]
-    port=port          : Select the port to use [12345]
-    proto=proto        : Override protocol [] (see below).
-    secure             : Secure the communication using SSL [False]
-    sobuf=size         : Set socket buffer size to `size` []
+                         to be used together with `-D secure`      []
+    clients=N          : Spawn N client connections at a time      [1]
+    duration=N         : Stop the client(s) after N seconds        []
+    key=KEY            : Use KEY to initialize ARC4 stream         []
+    listen             : Listen for incoming connections           [False]
+    obfuscate          : Obfuscate traffic using ARC4              [False]
+    port=port          : Select the port to use                    [12345]
+    proto=proto        : Override protocol (see below)             []
+    secure             : Secure the communication using SSL        [False]
+    sobuf=size         : Set socket buffer size to `size`          []
 
 Protocols:
     There are two available protocols: `discard` and `chargen`.
