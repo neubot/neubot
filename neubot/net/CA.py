@@ -32,16 +32,16 @@ from neubot import log
 
 USAGE = """Neubot CA -- Generate test certificates
 
-Usage: neubot CA [-Vv] [-D option[=value]] [-f file] [--help]
+Usage: neubot CA [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
-    -D option=value  : Set the value of the option option.
-    -f file          : Read options from the file file.
+    -D macro=value   : Set the value of the macro `macro`.
+    -f file          : Read options from the file `file`.
     --help           : Print this help screen and exit.
     -V               : Print version number and exit.
     -v               : Run the program in verbose mode.
 
-Options:
+Macros (defaults in square brackets):
     bits=count       : Generate count bits RSA privkey   [2048]
     cacert=file      : Override cacert file name         [cacert.pem]
     days=count       : Certificate valid for count days  [1095]
