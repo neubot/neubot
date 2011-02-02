@@ -54,10 +54,10 @@ VERSION = "Neubot 0.3.4\n"
 def main(args):
 
     conf = OptionParser()
-    conf.set_option("ca", "bits", "2048")
-    conf.set_option("ca", "cacert", "cacert.pem")
-    conf.set_option("ca", "days", "1095")
-    conf.set_option("ca", "privkey", "privkey.pem")
+    conf.set_option("CA", "bits", "2048")
+    conf.set_option("CA", "cacert", "cacert.pem")
+    conf.set_option("CA", "days", "1095")
+    conf.set_option("CA", "privkey", "privkey.pem")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:Vv", ["help"])
@@ -71,7 +71,7 @@ def main(args):
 
     for name, value in options:
         if name == "-D":
-             conf.register_opt(value, "ca")
+             conf.register_opt(value, "CA")
              continue
         if name == "-f":
              conf.register_file(value)
@@ -90,10 +90,10 @@ def main(args):
     conf.merge_environ()
     conf.merge_opts()
 
-    bits = conf.get_option("ca", "bits")
-    cacert = conf.get_option("ca", "cacert")
-    days = conf.get_option("ca", "days")
-    privkey = conf.get_option("ca", "privkey")
+    bits = conf.get_option("CA", "bits")
+    cacert = conf.get_option("CA", "cacert")
+    days = conf.get_option("CA", "days")
+    privkey = conf.get_option("CA", "privkey")
 
     genrsa = [ "openssl", "genrsa", "-out", privkey, bits ]
     log.debug("CA: exec: %s" % genrsa)
