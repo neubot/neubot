@@ -35,11 +35,11 @@ USAGE = """Neubot CA -- Generate test certificates
 Usage: neubot CA [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
-    -D macro=value   : Set the value of the macro `macro`.
-    -f file          : Read options from the file `file`.
-    --help           : Print this help screen and exit.
-    -V               : Print version number and exit.
-    -v               : Run the program in verbose mode.
+    -D macro=value   : Set the value of the macro `macro`
+    -f file          : Read options from the file `file`
+    --help           : Print this help screen and exit
+    -V               : Print version number and exit
+    -v               : Run the program in verbose mode
 
 Macros (defaults in square brackets):
     bits=count       : Generate count bits RSA privkey   [2048]
