@@ -25,7 +25,6 @@
 #
 
 import collections
-import logging.handlers
 import time
 import traceback
 import os
