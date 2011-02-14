@@ -32,25 +32,35 @@ __all__ = []
 
 if os.name == "nt":
 
+    import logging.handlers
+
     class BackgroundLogger(object):
 
-        """
-        Empty background logger for Windows.  We need to fix this as
-        soon as possible and use here some nice class from logging such
-        as the rotating logger or, if possible, the native logger for
-        Windows.
-        """
+        """Where to log messages when running in background under
+           windows -- note we nearly always run in background since
+           for windows neubot does not attach to a console."""
+
+        def __init__(self):
+            formatter = logging.Formatter("%(message)s")
+
+            # XXX not passing our dllname here
+            handler = logging.handlers.NTEventLogHandler("neubot")
+            handler.setFormatter(formatter)
+
+            self.logger = logging.Logger("neubot.win32.BackgroundLogger")
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.DEBUG)
 
         def error(self, message):
-            pass
+            self.logger.error(message)
 
         def warning(self, message):
-            pass
+            self.logger.warning(message)
 
         def info(self, message):
-            pass
+            self.logger.info(message)
 
         def debug(self, message):
-            pass
+            self.logger.debug(message)
 
     __all__.append("BackgroundLogger")

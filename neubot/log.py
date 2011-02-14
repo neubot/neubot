@@ -70,12 +70,6 @@ class Logger:
     def quiet(self):
         self._verbose = False
 
-    #
-    # Some more work -probably- needs to be done in order to
-    # redirect logs to a logging file when running under the
-    # Windows operating systems family.
-    #
-
     def redirect(self):
         self.logger = BackgroundLogger()
         self._tty = False
