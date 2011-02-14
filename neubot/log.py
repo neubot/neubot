@@ -21,11 +21,10 @@
 #
 
 #
-# Wrapper for logger
+# Wrapper for logging
 #
 
 import collections
-import logging.handlers
 import time
 import traceback
 import os
@@ -35,44 +34,62 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.compat import deque_append
+from neubot.compat import json
+
+# fetch BackgroundLogger from either unix or win32
 from neubot.unix import *
 from neubot.win32 import *
 
 #
-# We save recent messages into a circular queue, together with
-# their timestamp, and we do that because we want to return to
-# the user also the time when a certain message was generated.
-# The purpose of keeping recent messages is NOT to replace the
-# traditional logging, but it's because we want to provide to
-# our users ALSO this handy information.
+# XXX neubot/utils.py depends on this file so we must roll out our
+# own version of timestamp().  It could also make sense to move here
+# the definition of timestamp and pull from this file in utils.py.
 #
 
-MAXQUEUE = 100
+timestamp = lambda: int(time.time())
 
-class Logger:
+class InteractiveLogger(object):
+
+        """Log messages on the standard error.  This is the simplest
+           logger one can think and is the one we use at startup."""
+
+        def error(self, message):
+            sys.stderr.write(message + "\n")
+
+        def warning(self, message):
+            sys.stderr.write(message + "\n")
+
+        def info(self, message):
+            sys.stderr.write(message + "\n")
+
+        def debug(self, message):
+            sys.stderr.write(message + "\n")
+
+class Logger(object):
+
+    """Main wrapper for logging.  The queue allows us to export
+       recent logs via /api/logs."""
+
     def __init__(self, maxqueue):
-        self._verbose = False
-        self.logger = logging.Logger("neubot.log.Logger")
-        self.handler = logging.StreamHandler()
-        self.formatter = logging.Formatter("%(message)s")
-        self.handler.setFormatter(self.formatter)
-        self.logger.addHandler(self.handler)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = InteractiveLogger()
+
         self.queue = collections.deque()
-        self.message = None
         self.maxqueue = maxqueue
-        self._tty = True
-        self.prefix = None
+
+        self.interactive = True
+        self.noisy = False
+
+        self.message = None
 
     def verbose(self):
-        self._verbose = True
+        self.noisy = True
 
     def quiet(self):
-        self._verbose = False
+        self.noisy = False
 
     def redirect(self):
         self.logger = BackgroundLogger()
-        self._tty = False
+        self.interactive = False
 
     #
     # In some cases it makes sense to print progress during a
@@ -81,12 +98,11 @@ class Logger:
     #   Download in progress......... done
     #
     # This makes sense when: (i) the program is not running in
-    # verbose mode; (ii) logs are directed to the stderr and the
-    # stderr is attached to a TTY.  If the progream is running
-    # in verbose mode, there might be many messages between
-    # the 'in progress...' and 'done'.  And if the logs are not
-    # directed to stderr or stderr is re-directed to a file,
-    # then it does not make sense to print progress as well.
+    # verbose mode; (ii) logs are directed to the stderr.
+    # If the program is running in verbose mode, there might
+    # be many messages between the 'in progress...' and 'done'.
+    # And if the logs are not directed to stderr then it does
+    # not make sense to print progress as well.
     # So, in these cases, the output will look like::
     #
     #   Download in progress...
@@ -94,30 +110,27 @@ class Logger:
     #   Download complete.
     #
 
-    def _interactive(self):
-        return (not self._verbose and self._tty and os.isatty(sys.stderr.fileno()))
-
     def start(self, message):
-        if not self._interactive():
+        if self.noisy or not self.interactive:
             self.info(message + " in progress...")
             self.message = message
         else:
             sys.stderr.write(message + "...")
 
     def progress(self):
-        if self._interactive():
+        if not self.noisy and self.interactive:
             sys.stderr.write(".")
 
     def complete(self):
-        if not self._interactive():
+        if self.noisy or not self.interactive:
+            if not self.message:
+                self.message = "???"
             self.info(self.message + ": complete")
             self.message = None
         else:
             sys.stderr.write(" done\n")
 
-    #
     # Log functions
-    #
 
     def exception(self):
         content = traceback.format_exc()
@@ -134,34 +147,49 @@ class Logger:
         self._log(self.logger.info, message)
 
     def debug(self, message):
-        if self._verbose:
+        if self.noisy:
             self._log(self.logger.debug, message)
 
-    #
-    # XXX We don't want access logs to be saved into the queue, or
-    # the client making a request for /logs will cause a new log to
-    # be written, and that's not sane.
-    #
-
     def log_access(self, message):
+        # Note enqueue MUST be False to avoid /api/logs comet storm
         self._log(self.logger.info, message, False)
 
     def _log(self, printlog, message, enqueue=True):
         if message[-1] == "\n":
             message = message[:-1]
         if enqueue:
-            deque_append(self.queue, self.maxqueue, (time.time(), message))
-        if self.prefix:
-            message = self.prefix + message
+            deque_append(self.queue, self.maxqueue, (timestamp(), message))
         printlog(message)
 
-    def getlines(self):
-        result = []
-        for timestamp, line in self.queue:
-            result.append((timestamp, line))
-        return result
+    # Marshal
 
-log = Logger(MAXQUEUE)
+    def __str__(self):
+        results = []
+        for tstamp, message in self.queue:
+            dictionary = {}
+            dictionary["timestamp"] = tstamp
+            dictionary["message"] = message
+            results.append(dictionary)
+        try:
+            data = json.dumps(results, ensure_ascii=True)
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            data = ""
+        return data
+
+MAXQUEUE = 100
+LOG = Logger(MAXQUEUE)
+__all__ = [ "LOG" ]
+
+# XXX Under Windows, the common case is to run as a GUI application,
+# therefore don't try to log to standard error.  This is not 100% clean
+# or correct but it should make things work.
+if os.name == "nt":
+    LOG.redirect()
+
+### DEPRECATED ###
+#
+
+log = LOG
 
 log_access = log.log_access
 verbose = log.verbose
@@ -175,19 +203,22 @@ start = log.start
 progress = log.progress
 complete = log.complete
 debug = log.debug
-getlines = log.getlines
+
+                 #
+### DEPRECATED ###
 
 def main(args):
-    verbose()
-    error("testing neubot logger -- This is an error message")
-    warning("testing neubot logger -- This is an warning message")
-    info("testing neubot logger -- This is an info message")
-    debug("testing neubot logger -- This is a debug message")
-    redirect()
-    error("testing neubot logger -- This is an error message")
-    warning("testing neubot logger -- This is an warning message")
-    info("testing neubot logger -- This is an info message")
-    debug("testing neubot logger -- This is a debug message")
+    LOG.verbose()
+    LOG.error("testing neubot logger -- This is an error message")
+    LOG.warning("testing neubot logger -- This is an warning message")
+    LOG.info("testing neubot logger -- This is an info message")
+    LOG.debug("testing neubot logger -- This is a debug message")
+    LOG.redirect()
+    LOG.error("testing neubot logger -- This is an error message")
+    LOG.warning("testing neubot logger -- This is an warning message")
+    LOG.info("testing neubot logger -- This is an info message")
+    LOG.debug("testing neubot logger -- This is a debug message")
+    print str(LOG)
 
 if __name__ == "__main__":
     main(sys.argv)
