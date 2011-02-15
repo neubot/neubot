@@ -63,7 +63,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.utils import become_daemon
-from neubot.ui import SimpleStateTracker
+from neubot.api_client import APIStateTracker
 from neubot.log import LOG
 
 # default address and port
@@ -71,32 +71,20 @@ ADDRESS = "127.0.0.1"
 PORT = "9774"
 VERSION = "0.3.5"
 
-class StateTrackerAdapter(SimpleStateTracker):
+class StateTrackerAdapter(APIStateTracker):
     def __init__(self, icon, address, port):
-        SimpleStateTracker.__init__(self, address, port)
-        self.state = None
+        APIStateTracker.__init__(self, address, port)
         self.icon = icon
-        self.update = ()
 
-    def clear(self):
+    def process_dictionary(self, dictionary):
+        update = ()
+        if "update_version" in dictionary and "update_uri" in dictionary:
+            update = dictionary["update_version"], dictionary["update_uri"]
+        state = dictionary["current"]
+        self.icon.update_state(state, update)
+
+    def notify_error(self, message):
         self.icon.update_state(None, None)
-        self.update = ()
-
-    def set_update(self, ver, uri):
-        self.update = (ver, uri)
-
-    def set_active(self, active):
-        if active.lower() != "true":
-            self.state = "SLEEPING"
-
-    def set_current_activity(self, activity):
-        self.state = activity.upper()
-
-#   def set_extra(self, name, value):
-#       pass
-
-    def write(self):
-        self.icon.update_state(self.state, self.update)
 
 class StateTrackerThread(threading.Thread):
     def __init__(self, icon, address, port):
@@ -184,7 +172,7 @@ class StatusIcon:
         gtk.gdk.threads_enter()
         if state:
             self.icon.set_tooltip("Neubot daemon state: " + state)
-            if state not in [ "SLEEPING", "UNKNOWN" ]:
+            if state != "idle":
                 if self.blink:
                     self.icon.set_blinking(True)
                 if not self.nohide:
