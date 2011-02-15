@@ -38,7 +38,7 @@ from sys import argv
 from neubot.log import LOG
 from neubot import version
 from getopt import GetoptError
-from neubot.state import state
+from neubot.state import STATE
 from getopt import getopt
 from sys import stderr
 from sys import exit
@@ -562,7 +562,7 @@ class Latency(SpeedtestHelper):
             del self.latency[:]
             self.latency.append(latency)
             latency = time_formatter(latency)
-            state.append_result("latency", latency, "")
+            STATE.update("speedtest_latency", {"value": latency})
         if len(self.connect) > 0:
             connect = sum(self.connect) / len(self.connect)
             del self.connect[:]
@@ -688,7 +688,7 @@ class Download(SpeedtestHelper):
         speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
         speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
-        state.append_result("download", speed, "")
+        STATE.update("speedtest_download", {"value": speed})
         self.speedtest.complete()
 
 
@@ -790,7 +790,7 @@ class Upload(SpeedtestHelper):
         speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
         speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
-        state.append_result("upload", speed, "")
+        STATE.update("speedtest_upload", {"value": speed})
         self.speedtest.complete()
 
 
@@ -880,8 +880,8 @@ class Negotiate(SpeedtestHelper):
             if negotiation.queuePos and negotiation.queueLen:
                 LOG.info("* Waiting in queue: %d/%d" % (negotiation.queuePos,
                                                         negotiation.queueLen))
-                state.set_queueInfo(negotiation.queuePos, negotiation.queueLen)
-                state.commit()
+                STATE.update("negotiate",{"queue_pos": negotiation.queuePos,
+                                          "queue_len": negotiation.queueLen})
             self.start()
             return
         LOG.info("* Authorized to take the test!")
@@ -977,6 +977,7 @@ FLAG_SUCCESS = (1<<6)
 
 class SpeedtestClient1(ClientController):
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
+        STATE.update("test_name", "speedtest")
         self.negotiate = Negotiate(self)
         self.latency = Latency(self)
         self.download = Download(self)
@@ -1032,21 +1033,18 @@ class SpeedtestClient1(ClientController):
 
     def _update_speedtest(self):
         if self.flags & FLAG_NEGOTIATE:
-            state.set_activity("negotiate").commit()
+            STATE.update("negotiate")
             self.negotiate.start()
         elif self.flags & FLAG_LATENCY:
-            state.set_activity("test", ["latency", "download", "upload"],
-                               "speedtest")
-            state.set_task("latency").commit()
-            self.latency.start()
+            STATE.update("test", "speedtest_latency")
         elif self.flags & FLAG_DOWNLOAD:
-            state.set_task("download").commit()
+            STATE.update("test", "speedtest_download")
             self.download.start()
         elif self.flags & FLAG_UPLOAD:
-            state.set_task("upload").commit()
+            STATE.update("test", "speedtest_upload")
             self.upload.start()
         elif self.flags & FLAG_COLLECT:
-            state.set_activity("collect").commit()
+            STATE.update("collect")
             self.collect.start()
         else:
             self.flags |= FLAG_SUCCESS
