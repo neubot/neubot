@@ -72,8 +72,6 @@ class UIServer(Server):
     def _initialize(self):
         self.table["/api/config"] = self._do_api_config
         self.table["/api/exit"] = self._do_api_exit
-        self.table["/api/results"] = self._do_api_results
-        self.table["/api/results2"] = self._do_api_results2
         self.table["/api/speedtest"] = self._do_api_speedtest
         self.table["/api/state"] = self._do_api_state
         self.table["/api/version"] = self._do_api_version
@@ -148,63 +146,6 @@ class UIServer(Server):
         stringio = CONFIG.marshal()
         compose(response, code="200", reason="Ok",
          mimetype="application/json", body=stringio)
-        connection.reply(request, response)
-
-    def _do_api_results(self, connection, request, query, recurse=False):
-        dictionary = parse_qs(query)
-        filt, start, stop, ident = None, 0, -1, None
-        # parse
-        if dictionary.has_key("filter"):
-            filt = dictionary["filter"][0]
-        if dictionary.has_key("start"):
-            start = int(dictionary["start"][0])
-            if start < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("stop"):
-            stop = int(dictionary["stop"][0])
-            if stop < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("ident"):
-            ident = dictionary["ident"][0]
-        # XML+HTTP
-        response = Message()
-        if not database.dbm:
-            compose(response, code="204", reason="No Content")
-            connection.reply(request, response)
-            return
-        stringio = database.dbm.get_cached_results(filt, start, stop, ident)
-        compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="text/xml")
-        connection.reply(request, response)
-
-    def _do_api_results2(self, connection, request, query, recurse=False):
-        tag = None
-        since = 0
-        until = timestamp()
-        uuid_ = None
-        # parse
-        dictionary = parse_qs(query)
-        if dictionary.has_key("tag"):
-            tag = dictionary["tag"][0]
-        if dictionary.has_key("since"):
-            since = int(dictionary["since"][0])
-            if since < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("until"):
-            until = int(dictionary["until"][0])
-            if until < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("uuid"):
-            uuid_ = dictionary["uuid"][0]
-        # XML+HTTP
-        response = Message()
-        if not database.dbm:
-            compose(response, code="204", reason="No Content")
-            connection.reply(request, response)
-            return
-        stringio = database.dbm.query_results_xml(tag, since, until, uuid_)
-        compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="text/xml")
         connection.reply(request, response)
 
     def _do_api_speedtest(self, connection, request, query, recurse=False):
