@@ -131,6 +131,61 @@ def JSON_marshal(obj):
 
     return data
 
+def XML_unmarshal(obj, data, root_elem_name):
+
+    """Unmarshal the content of `data` -- which must be a serialized
+       XML file using utf-8 encoding -- into the given object, provided
+       that the object already contains an attribute with such name
+       and the same type."""
+
+    document = xml.dom.minidom.parseString(data)
+
+    root = document.documentElement
+    if root.tagName != root_elem_name:
+        LOG.warning("Ignoring unexpected root element: %s" % root.tagName)
+        return
+
+    root.normalize()
+    for element in root.childNodes:
+        if element.nodeType != element.ELEMENT_NODE:
+            continue
+
+        if not hasattr(obj, element.tagName):
+            continue
+        value = getattr(obj, element.tagName)
+        if type(value) == types.IntType:
+            cast = int
+        elif type(value) == types.FloatType:
+            cast = float
+        elif type(value) == types.StringType:
+            cast = str
+        elif type(value) == types.UnicodeType:
+            cast = unicode
+        else:
+            continue
+
+        text = None
+        for node in element.childNodes:
+            if node.nodeType == element.TEXT_NODE:
+                text = node
+                # Normalized tree, OK to break here
+                break
+        if not text:
+            continue
+
+        #XXX Workaround a bug in speedtest.py
+        if element.tagName == "timestamp":
+            cast = lambda x: int(float(x))
+
+        textdata = text.data.strip()
+        try:
+            value = cast(textdata)
+        except ValueError:
+            LOG.warning("failed to convert: %s" % textdata)
+            continue
+
+        setattr(obj, element.tagName, value)
+
 def QS_unmarshal(obj, data):
 
     """
