@@ -43,6 +43,9 @@ if __name__ == "__main__":
 from neubot import pathnames
 from neubot.times import timestamp
 from neubot.compat import deque_appendleft
+from neubot.marshal import JSON_marshal
+from neubot.marshal import XML_unmarshal
+from neubot.compat import json
 from neubot import version
 from neubot.log import LOG
 
@@ -149,6 +152,45 @@ MIGRATORS = [
 def migrate(connection):
     for migrator in MIGRATORS:
         migrator(connection)
+
+#
+# XXX XXX XXX
+# BEGIN code to marshal/unmarshal
+# The purpose of the code below is to allow easy marshalling and
+# unmarshalling of the speedtest results using the facilities provided
+# by <neubot/marshal.py>.  This code will gone when all the results
+# in the database will be stored as pure SQL rather than as XML.
+#
+
+class SpeedtestResultXML(object):
+    def __init__(self):
+        self.client = ""
+        self.timestamp = 0
+        self.internalAddress = ""
+        self.realAddress = ""
+        self.remoteAddress = ""
+        self.connectTime = 0.0
+        self.latency = 0.0
+        self.downloadSpeed = 0.0
+        self.uploadSpeed = 0.0
+
+def speedtest_result_good_from_xml(obj):
+    dictionary = {
+        "client_uuid": obj.client,
+        "timestamp": obj.timestamp,
+        "internal_address": obj.internalAddress,
+        "real_address": obj.realAddress,
+        "remote_address": obj.remoteAddress,
+        "connect_time": obj.connectTime,
+        "latency": obj.latency,
+        "download_speed": obj.downloadSpeed,
+        "upload_speed": obj.uploadSpeed,
+    }
+    return dictionary
+
+# END code to marshal/unmarshal
+# XXX XXX XXX
+
 
 #
 # Database manager.
@@ -327,6 +369,22 @@ class DatabaseManager:
         vector = []
         self.query_results_functional(vector.append, tag, since, until, uuid_)
         return vector
+
+    def query_results_json(self, tag=None, since=-1, until=-1, uuid_=None):
+        vector = []
+        self.query_results_functional(vector.append, tag, since, until, uuid_)
+
+        if vector:
+            temp, vector = vector, []
+            for octets in temp:
+                result = SpeedtestResultXML()
+                XML_unmarshal(result, octets, "SpeedtestCollect")
+                result = speedtest_result_good_from_xml(result)
+                vector.append(result)
+
+        octets = json.dumps(vector, ensure_ascii=True)
+        stringio = StringIO.StringIO(octets)
+        return stringio
 
     def query_results_xml(self, tag=None, since=-1, until=-1, uuid_=None):
         vector = ["<results>"]
