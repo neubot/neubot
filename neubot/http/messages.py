@@ -124,46 +124,58 @@ class Message(object):
         if self.headers.has_key(key):
             del self.headers[key]
 
+    #
+    # Note that compose() is meant for composing request messages
+    # from client-side and response messages from server-side.
+    # If the body is not present we explicitly set Content-Length at
+    # zero.  It costs nothing and the gain is that the browser does
+    # not guess that there is an unbounded response when we send a
+    # "200 Ok" response with no attached body.
+    #
 
-#
-# Note that compose() is meant for composing request messages
-# from client-side and response messages from server-side.
-# If the body is not present we explicitly set Content-Length at
-# zero.  It costs nothing and the gain is that the browser does
-# not guess that there is an unbounded response when we send a
-# "200 Ok" response with no attached body.
-#
+    def compose(self, **kwargs):
+        self.method = kwargs.get("method", "")
 
+        if kwargs.get("uri", ""):
+            self.uri = kwargs.get("uri", "")
+            (self.scheme, self.address,
+             self.port, self.pathquery) = urlsplit(self.uri)
+            self["host"] = self.address + ":" + self.port
+        else:
+            self.scheme = kwargs.get("scheme", "")
+            self.address = kwargs.get("address", "")
+            self.port = kwargs.get("port", "")
+            self.pathquery = kwargs.get("pathquery", "")
+
+        self.code = kwargs.get("code", "")
+        self.reason = kwargs.get("reason", "")
+        self.protocol = kwargs.get("protocol", "HTTP/1.1")
+
+        if kwargs.get("nocache", True):
+            if self.method:
+                self["pragma"] = "no-cache"
+            self["cache-control"] = "no-cache"
+
+        if kwargs.get("date", True):
+            self["date"] = date()
+
+        if not kwargs.get("keepalive", True):
+            self["connection"] = "close"
+
+        if kwargs.get("body", None):
+            self.body = kwargs.get("body", None)
+            safe_seek(self.body, 0, os.SEEK_END)
+            self.length = self.body.tell()
+            safe_seek(self.body, 0, os.SEEK_SET)
+            self["content-length"] = str(self.length)
+            if kwargs.get("mimetype", ""):
+                self["content-type"] = kwargs.get("mimetype", "")
+        else:
+            self["content-length"] = "0"
+
+        self.family = kwargs.get("family", socket.AF_INET)
+
+
+# for compat
 def compose(m, **kwargs):
-    m.method = kwargs.get("method", "")
-    if kwargs.get("uri", ""):
-        m.uri = kwargs.get("uri", "")
-        m.scheme, m.address, m.port, m.pathquery = urlsplit(m.uri)
-        m["host"] = m.address + ":" + m.port
-    else:
-        m.scheme = kwargs.get("scheme", "")
-        m.address = kwargs.get("address", "")
-        m.port = kwargs.get("port", "")
-        m.pathquery = kwargs.get("pathquery", "")
-    m.code = kwargs.get("code", "")
-    m.reason = kwargs.get("reason", "")
-    m.protocol = kwargs.get("protocol", "HTTP/1.1")
-    if kwargs.get("nocache", True):
-        if m.method:
-            m["pragma"] = "no-cache"
-        m["cache-control"] = "no-cache"
-    if kwargs.get("date", True):
-        m["date"] = date()
-    if not kwargs.get("keepalive", True):
-        m["connection"] = "close"
-    if kwargs.get("body", None):
-        m.body = kwargs.get("body", None)
-        safe_seek(m.body, 0, os.SEEK_END)
-        m.length = m.body.tell()
-        safe_seek(m.body, 0, os.SEEK_SET)
-        m["content-length"] = str(m.length)
-        if kwargs.get("mimetype", ""):
-            m["content-type"] = kwargs.get("mimetype", "")
-    else:
-        m["content-length"] = "0"
-    m.family = kwargs.get("family", socket.AF_INET)
+    m.compose(**kwargs)
