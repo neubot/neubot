@@ -28,7 +28,6 @@ import os
 from neubot.http.utils import urlsplit
 from neubot.utils import safe_seek
 from neubot.http.utils import date
-from neubot.utils import fixkwargs
 
 
 class Message(object):
@@ -135,55 +134,36 @@ class Message(object):
 # "200 Ok" response with no attached body.
 #
 
-COMPOSEARGS = {
-    "address"    : "",
-    "body"       : None,
-    "code"       : "",
-    "date"       : True,
-    "family"     : socket.AF_INET,
-    "keepalive"  : True,
-    "method"     : "",
-    "mimetype"   : "",
-    "nocache"    : True,
-    "port"       : "",
-    "pathquery"  : "",
-    "protocol"   : "HTTP/1.1",
-    "reason"     : "",
-    "scheme"     : "",
-    "uri"        : "",
-}
-
 def compose(m, **kwargs):
-    fixkwargs(kwargs, COMPOSEARGS)
-    m.method = kwargs["method"]
-    if kwargs["uri"]:
-        m.uri = kwargs["uri"]
+    m.method = kwargs.get("method", "")
+    if kwargs.get("uri", ""):
+        m.uri = kwargs.get("uri", "")
         m.scheme, m.address, m.port, m.pathquery = urlsplit(m.uri)
         m["host"] = m.address + ":" + m.port
     else:
-        m.scheme = kwargs["scheme"]
-        m.address = kwargs["address"]
-        m.port = kwargs["port"]
-        m.pathquery = kwargs["pathquery"]
-    m.code = kwargs["code"]
-    m.reason = kwargs["reason"]
-    m.protocol = kwargs["protocol"]
-    if kwargs["nocache"]:
+        m.scheme = kwargs.get("scheme", "")
+        m.address = kwargs.get("address", "")
+        m.port = kwargs.get("port", "")
+        m.pathquery = kwargs.get("pathquery", "")
+    m.code = kwargs.get("code", "")
+    m.reason = kwargs.get("reason", "")
+    m.protocol = kwargs.get("protocol", "HTTP/1.1")
+    if kwargs.get("nocache", True):
         if m.method:
             m["pragma"] = "no-cache"
         m["cache-control"] = "no-cache"
-    if kwargs["date"]:
+    if kwargs.get("date", True):
         m["date"] = date()
-    if not kwargs["keepalive"]:
+    if not kwargs.get("keepalive", True):
         m["connection"] = "close"
-    if kwargs["body"]:
-        m.body = kwargs["body"]
+    if kwargs.get("body", None):
+        m.body = kwargs.get("body", None)
         safe_seek(m.body, 0, os.SEEK_END)
         m.length = m.body.tell()
         safe_seek(m.body, 0, os.SEEK_SET)
         m["content-length"] = str(m.length)
-        if kwargs["mimetype"]:
-            m["content-type"] = kwargs["mimetype"]
+        if kwargs.get("mimetype", ""):
+            m["content-type"] = kwargs.get("mimetype", "")
     else:
         m["content-length"] = "0"
-    m.family = kwargs["family"]
+    m.family = kwargs.get("family", socket.AF_INET)
