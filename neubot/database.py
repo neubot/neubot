@@ -29,7 +29,6 @@
 
 import ConfigParser
 import StringIO
-import collections
 import getopt
 import os.path
 import sqlite3
@@ -204,13 +203,11 @@ def speedtest_result_good_from_xml(obj):
 class DatabaseManager:
     def __init__(self, config):
         self.config = config
-        self.queue = collections.deque()
         self.connection = None
         self.ident = None
         self._do_connect()
         self._autoprune()
         migrate(self.connection)
-        self._do_init_queue()
         self._do_fetch_ident()
 
     #
@@ -276,21 +273,6 @@ class DatabaseManager:
         if self.config.auto_prune:
             self.prune()
 
-    #
-    # XXX Assume that this is not going to be very slow
-    # because the number of rows in the table is bounded
-    # due to periodic prune() invocation.
-    #
-
-    def _do_init_queue(self):
-        if self.config.client:
-            cursor = self.connection.cursor()
-            cursor.execute("SELECT * from RESULTS;")
-            for rowid, tag, result, t, ident in cursor:
-                deque_appendleft(self.queue, self.config.maxcache,
-                                 (tag, result, t, ident))
-            cursor.close()
-
     def _do_fetch_ident(self):
         if self.config.client:
             cursor = self.connection.cursor()
@@ -321,9 +303,6 @@ class DatabaseManager:
                        "timestamp": t, "ident": ident})
         self.connection.commit()
         cursor.close()
-        if self.config.client:
-            deque_appendleft(self.queue, self.config.maxcache,
-                             (tag, result, t, ident))
 
     def get_config(self):
         dictionary = {}
@@ -336,14 +315,6 @@ class DatabaseManager:
         dictionary["path"] = self.config.path
         cursor.close()
         return dictionary
-
-    #
-    # TODO get/iterate_results() access the database and
-    # get_cached_results() access the cache, but they do
-    # basically the same thing, and so it should be very
-    # nice to hide these three functions behind the same
-    # common interface.
-    #
 
     def query_results_functional(self, func, tag=None, since=-1,
                                  until=-1, uuid_=None):
@@ -365,11 +336,6 @@ class DatabaseManager:
             func(result[0])
         cursor.close()
 
-    def query_results(self, tag=None, since=-1, until=-1, uuid_=None):
-        vector = []
-        self.query_results_functional(vector.append, tag, since, until, uuid_)
-        return vector
-
     def query_results_json(self, tag=None, since=-1, until=-1, uuid_=None):
         vector = []
         self.query_results_functional(vector.append, tag, since, until, uuid_)
@@ -384,56 +350,6 @@ class DatabaseManager:
 
         octets = json.dumps(vector, ensure_ascii=True)
         stringio = StringIO.StringIO(octets)
-        return stringio
-
-    def query_results_xml(self, tag=None, since=-1, until=-1, uuid_=None):
-        vector = ["<results>"]
-        self.query_results_functional(vector.append, tag, since, until, uuid_)
-        vector.append("</results>")
-        body = "".join(vector)
-        if type(body) == types.UnicodeType:
-            body = body.encode("utf-8")
-        stringio = StringIO.StringIO(body)
-        return stringio
-
-    def iterate_results(self, func):
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT result FROM results;")
-        for result in cursor:
-            func(result)
-        cursor.close()
-
-    def get_results(self):
-        vector = []
-        self.iterate_results(vector.append)
-        return vector
-
-    #
-    # This function is not going to be the fastest one
-    # on earth for long queues (but on most cases we keep
-    # the length bounded).
-    # This function's arguments have the same semantic
-    # of the built-in range() function when invoked with
-    # two arguments, e.g. range(0,10).
-    #
-
-    def get_cached_results(self, filt=None, start=0, stop=-1, identif=None):
-        vector = []
-        vector.append("<results>")
-        if self.queue:
-            if stop == -1:
-                stop = len(self.queue)
-            pos = 0
-            for tag, result, t, ident in self.queue:
-                if pos == stop:
-                    break
-                if (pos >= start and (not filt or filt == tag)
-                 and (not identif or identif == ident)):
-                    vector.append(result)
-                pos = pos + 1
-        vector.append("</results>")
-        body = "".join(vector)
-        stringio = StringIO.StringIO(body)
         return stringio
 
     def prune(self):
@@ -587,12 +503,10 @@ def main(args):
         elif action == DELETE:
             database.dbm.delete()
         elif action == LIST:
-            results = database.dbm.get_results()
+            results = database.dbm.query_results_json()
             if results:
-                sys.stdout.write("<results>\n")
-                for result in results:
-                    sys.stdout.write("%s\n" % result)
-                sys.stdout.write("</results>\n")
+                sys.stdout.write(results.read())
+                sys.stdout.write("\n")
         elif action == PRUNE:
             database.dbm.prune()
         elif action == REBUILD:
