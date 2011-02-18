@@ -76,14 +76,15 @@ class Download(object):
     def got_piece(self, index, begin, length):
         if self.choked:
             return
-        self.handler.send_request(0, 0, 1<<15)
+        self.handler.send_request(index, 0, 1<<15)
 
     def got_choke(self):
         self.choked = True
 
     def got_unchoke(self):
         self.choked = False
-        self.handler.send_request(0, 0, 1<<15)
+        for index in range(0, 32):
+            self.handler.send_request(index, 0, 1<<15)
 
 class BTConnectingPeer(Connector):
 
