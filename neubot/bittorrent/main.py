@@ -42,13 +42,16 @@ class Upload(object):
 
     """Responds to requests."""
 
-    def __init__(self, handler):
+    def __init__(self, handler, scramble):
         self.handler = handler
-        self.scrambler = arcfour_new()
+        self.scrambler = None
+        if scramble:
+            self.scrambler = arcfour_new()
 
     def got_request(self, index, begin, length):
         data = "A" * length
-        data = self.scrambler.encrypt(data)
+        if self.scrambler:
+            data = self.scrambler.encrypt(data)
         self.handler.send_piece(index, begin, data)
 
     def got_interested(self):
@@ -94,7 +97,7 @@ class BTConnectingPeer(Connector):
         MEASURER.register_stream(handler)
         handler.initialize(self, self.my_id, True)
         handler.download = Download(handler)
-        handler.upload = Upload(handler)
+        handler.upload = Upload(handler, True)
 
     def connection_handshake_completed(self, handler):
         handler.send_request(0, 0, 1<<15)
@@ -123,7 +126,7 @@ class BTListeningPeer(Listener):
         MEASURER.register_stream(handler)
         handler.initialize(self, self.my_id, True)
         handler.download = Download(handler)
-        handler.upload = Upload(handler)
+        handler.upload = Upload(handler, True)
 
     def connection_handshake_completed(self, handler):
         pass
