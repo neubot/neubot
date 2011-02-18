@@ -32,10 +32,6 @@ import sys
 import types
 
 try:
-    from Crypto.Cipher import ARC4
-except ImportError:
-    ARC4 = None
-try:
     import ssl
 except ImportError:
     ssl = None
@@ -49,6 +45,7 @@ from neubot.net.pollers import poller
 from neubot.net.pollers import break_loop
 from neubot.net.pollers import loop
 from neubot.utils import speed_formatter
+from neubot.arcfour import arcfour_new
 from neubot.utils import ticks
 from neubot.utils import fixkwargs
 from neubot import log
@@ -207,14 +204,11 @@ class Stream(Pollable):
                 self.kickoffssl = 1
 
         if "obfuscate" in dictionary and dictionary["obfuscate"]:
-            if not ARC4:
-                raise RuntimeError("ARC4 support not available")
-
-            key = "neubot"
+            key = None
             if "key" in dictionary and dictionary["key"]:
                 key = dictionary["key"]
 
-            algo = ARC4.new(key)
+            algo = arcfour_new(key)
             self.encrypt = algo.encrypt
             self.decrypt = algo.decrypt
 
@@ -519,15 +513,11 @@ class OldStream(Pollable):
             self.sock = SSLWrapper(so)
 
         if "obfuscate" in dictionary and dictionary["obfuscate"]:
-
-            if not ARC4:
-                raise RuntimeError("ARC4 support not available")
-
-            key = "neubot"
+            key = None
             if "key" in dictionary and dictionary["key"]:
                 key = dictionary["key"]
 
-            algo = ARC4.new(key)
+            algo = arcfour_new(key)
             self.encrypt = algo.encrypt
             self.decrypt = algo.decrypt
 
