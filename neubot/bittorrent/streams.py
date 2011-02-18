@@ -144,6 +144,7 @@ class BTStream(Stream):
     def recv_complete(self, s):
         while True:
             if self.closing:
+                LOG.debug("BT receiver: stop because we're closing")
                 return
             i = self._next_len - self._buffer.tell()
             if i > len(s):
@@ -162,11 +163,13 @@ class BTStream(Stream):
             try:
                 self._next_len = self._reader.next()
             except StopIteration:
+                LOG.debug("BT receiver: stop iteration")
                 self.close()
                 return
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
+                LOG.exception()
                 self.close()
                 return
         self.start_recv()
@@ -182,7 +185,8 @@ class BTStream(Stream):
             yield 4
             l = toint(self._message)
             LOG.debug("BT receiver: expect %d bytes" % l)
-            if l > MAX_MESSAGE_LENGTH:
+            if l > MAX_MESSAGE_LENGTH or l < 0:
+                LOG.error("BT receiver: max message length exceeded")
                 return
             if l > 0:
                 yield l
@@ -192,11 +196,13 @@ class BTStream(Stream):
     def _got_message(self, message):
         t = message[0]
         if t in [BITFIELD] and self.got_anything:
+            LOG.error("BT receiver: bitfield after we got something")
             self.close()
             return
         self.got_anything = True
         if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
           len(message) != 1):
+            LOG.error("BT receiver: expecting one-byte-long message, got more")
             self.close()
             return
         if t == CHOKE:
@@ -217,6 +223,7 @@ class BTStream(Stream):
             pass
         elif t == REQUEST:
             if len(message) != 13:
+                LOG.error("BT receiver: REQUEST: invalid message length")
                 self.close()
                 return
             i, a, b = struct.unpack("!xiii", message)
@@ -226,6 +233,7 @@ class BTStream(Stream):
             pass
         elif t == PIECE:
             if len(message) <= 9:
+                LOG.error("BT receiver: PIECE: invalid message length")
                 self.close()
                 return
             n = len(message) - 9
@@ -233,6 +241,7 @@ class BTStream(Stream):
             LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
             self.download.got_piece(i, a, b)
         else:
+            LOG.error("BT receiver: unexpected message type")
             self.close()
 
     def close(self):
