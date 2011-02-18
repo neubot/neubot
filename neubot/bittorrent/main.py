@@ -47,18 +47,23 @@ class Upload(object):
         self.scrambler = None
         if scramble:
             self.scrambler = arcfour_new()
+        self.interested = False
 
     def got_request(self, index, begin, length):
+        if not self.interested:
+            return
         data = "A" * length
         if self.scrambler:
             data = self.scrambler.encrypt(data)
         self.handler.send_piece(index, begin, data)
 
     def got_interested(self):
-        pass
+        self.interested = True
+        self.handler.send_unchoke()
 
     def got_not_interested(self):
-        pass
+        self.interested = False
+        self.handler.send_choke()
 
 class Download(object):
 
@@ -66,15 +71,19 @@ class Download(object):
 
     def __init__(self, handler):
         self.handler = handler
+        self.choked = True
 
     def got_piece(self, index, begin, length):
+        if self.choked:
+            return
         self.handler.send_request(0, 0, 1<<15)
 
     def got_choke(self):
-        pass
+        self.choked = True
 
     def got_unchoke(self):
-        pass
+        self.choked = False
+        self.handler.send_request(0, 0, 1<<15)
 
 class BTConnectingPeer(Connector):
 
@@ -106,7 +115,7 @@ class BTConnectingPeer(Connector):
         handler.upload = Upload(handler, scramble)
 
     def connection_handshake_completed(self, handler):
-        handler.send_request(0, 0, 1<<15)
+        handler.send_interested()
 
 class BTListeningPeer(Listener):
 
