@@ -36,15 +36,19 @@ from neubot.net.streams import verboser as VERBOSER
 from neubot.net.streams import measurer as MEASURER
 from neubot.net.pollers import poller as POLLER
 
+from neubot.arcfour import arcfour_new
+
 class Upload(object):
 
     """Responds to requests."""
 
     def __init__(self, handler):
         self.handler = handler
+        self.scrambler = arcfour_new()
 
     def got_request(self, index, begin, length):
         data = "A" * length
+        data = self.scrambler.encrypt(data)
         self.handler.send_piece(index, begin, data)
 
     def got_interested(self):
