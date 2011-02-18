@@ -44,7 +44,8 @@ class Upload(object):
         self.handler = handler
 
     def got_request(self, index, begin, length):
-        pass
+        data = "A" * length
+        self.handler.send_piece(index, begin, data)
 
     def got_interested(self):
         pass
@@ -60,7 +61,7 @@ class Download(object):
         self.handler = handler
 
     def got_piece(self, index, begin, length):
-        pass
+        self.handler.send_request(0, 0, 1<<15)
 
     def got_choke(self):
         pass
@@ -92,7 +93,7 @@ class BTConnectingPeer(Connector):
         handler.upload = Upload(handler)
 
     def connection_handshake_completed(self, handler):
-        handler.close()
+        handler.send_request(0, 0, 1<<15)
 
 class BTListeningPeer(Listener):
 
@@ -121,7 +122,7 @@ class BTListeningPeer(Listener):
         handler.upload = Upload(handler)
 
     def connection_handshake_completed(self, handler):
-        handler.close()
+        pass
 
 USAGE = """Neubot bittorrent -- Test unit for BitTorrent module
 
