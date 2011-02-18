@@ -208,9 +208,8 @@ class Stream(Pollable):
             if "key" in dictionary and dictionary["key"]:
                 key = dictionary["key"]
 
-            algo = arcfour_new(key)
-            self.encrypt = algo.encrypt
-            self.decrypt = algo.decrypt
+            self.encrypt = arcfour_new(key).encrypt
+            self.decrypt = arcfour_new(key).decrypt
 
         if "measurer" in dictionary and dictionary["measurer"]:
             self.measurer = dictionary["measurer"]
@@ -517,9 +516,8 @@ class OldStream(Pollable):
             if "key" in dictionary and dictionary["key"]:
                 key = dictionary["key"]
 
-            algo = arcfour_new(key)
-            self.encrypt = algo.encrypt
-            self.decrypt = algo.decrypt
+            self.encrypt = arcfour_new(key).encrypt
+            self.decrypt = arcfour_new(key).decrypt
 
         if "measurer" in dictionary and dictionary["measurer"]:
             self.measurer = dictionary["measurer"]
