@@ -170,6 +170,7 @@ Macros (defaults in square brackets):
     listen             : Listen for incoming connections     [False]
     obfuscate          : Obfuscate traffic using ARC4        [False]
     port=port          : Select the port to use              [6881]
+    sobuf=size         : Set socket buffer size to `size`    []
 
 """
 
@@ -183,6 +184,7 @@ def main(args):
     conf.set_option("bittorrent", "listen", "False")
     conf.set_option("bittorrent", "obfuscate", "False")
     conf.set_option("bittorrent", "port", "6881")
+    conf.set_option("bittorrent", "sobuf", 0)
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -220,6 +222,7 @@ def main(args):
     listen = conf.get_option_bool("bittorrent", "listen")
     obfuscate = conf.get_option_bool("bittorrent", "obfuscate")
     port = conf.get_option_uint("bittorrent", "port")
+    sobuf = conf.get_option_uint("bittorrent", "sobuf")
 
     endpoint = (address, port)
     dictionary = {
@@ -232,13 +235,13 @@ def main(args):
     if listen:
         listener = BTListeningPeer(POLLER)
         listener.configure(dictionary)
-        listener.listen(endpoint)
+        listener.listen(endpoint, sobuf=sobuf)
         POLLER.loop()
         sys.exit(0)
 
     connector = BTConnectingPeer(POLLER)
     connector.configure(dictionary)
-    connector.connect(endpoint)
+    connector.connect(endpoint, sobuf=sobuf)
     POLLER.loop()
     sys.exit(0)
 
