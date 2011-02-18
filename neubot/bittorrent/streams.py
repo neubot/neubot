@@ -200,13 +200,17 @@ class BTStream(Stream):
             self.close()
             return
         if t == CHOKE:
-            pass
+            LOG.debug("< CHOKE")
+            self.download.got_choke()
         elif t == UNCHOKE:
-            pass
+            LOG.debug("< UNCHOKE")
+            self.download.got_unchoke()
         elif t == INTERESTED:
-            pass
+            LOG.debug("< INTERESTED")
+            self.upload.got_interested()
         elif t == NOT_INTERESTED:
-            pass
+            LOG.debug("< NOT_INTERESTED")
+            self.upload.got_not_interested()
         elif t == HAVE:
             pass
         elif t == BITFIELD:
