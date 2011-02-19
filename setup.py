@@ -40,6 +40,11 @@ try:
 except ImportError:
    py2exe = None
 
+CONSOLE = [{
+    "icon_resources": [(0, "icons/neubot.ico")],
+    "script": "bin/neubot",
+}]
+
 PACKAGES = [
     "neubot/bittorrent",
     "neubot/http",
@@ -62,7 +67,7 @@ SCRIPTS = [
 
 WINDOWS = [{
     "icon_resources": [(0, "icons/neubot.ico")],
-    "script": "bin/neubot",
+    "script": "bin/neubotw",
 }]
 
 PY2EXE = False
@@ -79,6 +84,7 @@ distutils.core.setup(name="neubot",
                      author="Simone Basso",
                      author_email="bassosimone@gmail.com",
                      windows=WINDOWS,
+                     console=CONSOLE,
                      url="http://www.neubot.org/",
                      scripts=SCRIPTS,
                     )
