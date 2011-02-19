@@ -1,7 +1,7 @@
 # setup.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -21,24 +21,71 @@
 #
 
 #
-# Use py2exe to create neubot.exe
+# This is a standard setup.py script with py2exe hooks in order
+# to generate an installer for Windows.  Please note that the code
+# in this file, for now, is effective on Windows only, and that
+# some more work is required in order to use this file for Linux
+# and other Unixes.  However, the goal is to use this file and
+# to reduce the amount of code in Makefile.
 #
 
+import subprocess
 import distutils.core
-import os
+import os.path
+import shutil
+import sys
 
-if os.name != "posix":
-    import py2exe
-    distutils.core.setup(name="neubot",
-        description="The network neutrality bot",
-        license="GPLv3",
-        packages=["neubot"],
-        package_dir={"neubot" : "."},
-        version="0.3.4",
-        author="Simone Basso",
-        author_email="bassosimone@gmail.com",
-        windows=[{
-            "script": "bin/neubot",
-            "icon_resources": [(0, "icons/neubot.ico")],
-        }],
-        url="http://www.neubot.org/")
+try:
+   import py2exe
+except ImportError:
+   py2exe = None
+
+PACKAGES = [
+    "neubot/bittorrent",
+    "neubot/http",
+    "neubot/net",
+    "neubot/simplejson",
+    "neubot",
+]
+
+PACKAGE_DATA = [
+    "neubot/www/css",
+    "neubot/www/img",
+    "neubot/www/js",
+    "neubot/www",
+]
+
+SCRIPTS = [
+    "bin/start-neubot-daemon",
+    "bin/neubot",
+]
+
+WINDOWS = [{
+    "icon_resources": [(0, "icons/neubot.ico")],
+    "script": "bin/neubot",
+}]
+
+PY2EXE = False
+if os.name == "nt" and len(sys.argv) == 1 and py2exe:
+    sys.argv.append("py2exe")
+    PY2EXE = True
+
+distutils.core.setup(name="neubot",
+                     description="the network neutrality bot",
+                     license="GPLv3",
+                     packages=PACKAGES,
+                     package_data={"neubot": PACKAGE_DATA},
+                     version="0.3.4",
+                     author="Simone Basso",
+                     author_email="bassosimone@gmail.com",
+                     windows=WINDOWS,
+                     url="http://www.neubot.org/",
+                     scripts=SCRIPTS,
+                    )
+
+if PY2EXE:
+    shutil.copytree("neubot/www", "dist/www")
+    if "PROGRAMFILES" in os.environ:
+        MAKENSIS = os.environ["PROGRAMFILES"] + "\\NSIS\\makensis.exe"
+        if os.path.exists(MAKENSIS):
+            subprocess.call([MAKENSIS, "neubot.nsi"])
