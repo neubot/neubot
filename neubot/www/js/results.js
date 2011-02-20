@@ -97,6 +97,15 @@ function getresults(data){
          * speed, latency.
          */
 
+        /*
+         * XXX XXX XXX We know timestamp is always before speed.  But
+         * it is lame to count on that and the following loop should be
+         * rewritten in a ROBUST way instead.  I don't want to do it
+         * now because Alessio is already working to improve this part
+         * of Neubot and I want to minimize changes.
+         */
+        var timestamp = -1;
+
         for (i = 0; i < fields.length; i++) {
             val = $entry.find(fields[i]).text();
             switch(fields[i]) {
@@ -121,7 +130,7 @@ function getresults(data){
                     txt = address;
                     break;
                 case 'timestamp':
-                    var timestamp = new Date(val*1000);
+                    timestamp = new Date(val*1000);
                     var rg = new RegExp("GMT");
                     /*
                      * XXX We might want to add a field with
@@ -143,7 +152,7 @@ function getresults(data){
                 case 'downloadSpeed':
                     txt = (val * 8/1024/1024).toFixed(3);
                     download[ipCounter[address]].unshift([
-                      Number(n-nn-1),
+                      timestamp,
                       Number(txt)
                     ]);
                     txt += " Mb/s";
@@ -151,7 +160,7 @@ function getresults(data){
                 case 'uploadSpeed':
                     txt = (val * 8/1024/1024).toFixed(3);
                     upload[ipCounter[address]].unshift([
-                      Number(n-nn-1),
+                      timestamp,
                       Number(txt)
                     ]);
                     txt += " Mb/s";
@@ -206,6 +215,9 @@ function getresults(data){
               fontSize: '10pt', showMark: true
             },
             */
+            renderer:$.jqplot.DateAxisRenderer,
+            tickOptions:{formatString:'%b %#d, %Y'},
+            tickInterval:'4 hours',
             showTickMarks: true
           },
           yaxis: {
