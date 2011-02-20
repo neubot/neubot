@@ -180,12 +180,6 @@ MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
 __all__ = [ "LOG" ]
 
-# XXX Under Windows, the common case is to run as a GUI application,
-# therefore don't try to log to standard error.  This is not 100% clean
-# or correct but it should make things work.
-if os.name == "nt":
-    LOG.redirect()
-
 ### DEPRECATED ###
 #
 
