@@ -150,7 +150,7 @@ function getresults(data){
                     txt = (val * 1000).toFixed(0) + " ms";
                     break;
                 case 'downloadSpeed':
-                    txt = (val * 8/1024/1024).toFixed(3);
+                    txt = (val * 8/1000/1000).toFixed(3);
                     download[ipCounter[address]].unshift([
                       timestamp,
                       Number(txt)
@@ -158,7 +158,7 @@ function getresults(data){
                     txt += " Mb/s";
                     break;
                 case 'uploadSpeed':
-                    txt = (val * 8/1024/1024).toFixed(3);
+                    txt = (val * 8/1000/1000).toFixed(3);
                     upload[ipCounter[address]].unshift([
                       timestamp,
                       Number(txt)

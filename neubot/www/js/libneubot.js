@@ -133,7 +133,7 @@ var neubot = (function() {
         }
 
         function to_Mbit(x) {
-            return (x * 8/1024/1024).toFixed(2) + " Mbit/s";
+            return (x * 8/1000/1000).toFixed(2) + " Mbit/s";
         }
 
         my.format_result = function(result) {
@@ -177,7 +177,7 @@ var neubot = (function() {
         var curtime = self.unix_time();
 
         function to_Mbit(x) {
-            return (x * 8/1024/1024).toFixed(2);
+            return (x * 8/1000/1000).toFixed(2);
         }
 
         my.format_result = function(result) {
