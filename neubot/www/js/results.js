@@ -194,11 +194,18 @@ function getresults(data){
         axes: {
           xaxis: {
             label: "Time",
+            /*
+             * Commented-out because the zoom does not work very
+             * well when this feature is enabled.  We need to find
+             * a workaround because now the X axis is quite ugly.
+             */
+            /*
             ticks: plotTicks,
             tickOptions: {
               angle: -90,
               fontSize: '10pt', showMark: true
             },
+            */
             showTickMarks: true
           },
           yaxis: {
