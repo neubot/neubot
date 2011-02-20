@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+import sys
+import os
+
+NEUBOT_HOME = "@PREFIX@/share"
+if NEUBOT_HOME.startswith("@"):
+    NEUBOT_HOME = "."
+
+if sys.version_info[0] > 2 or sys.version_info[1] < 5:
+    sys.stderr.write("fatal: wrong Python version\n")
+    sys.stderr.write("please run neubot using Python >= 2.5 and < 3.0\n")
+    sys.exit(1)
+
+if os.environ.has_key("NEUBOT_HOME"):
+    NEUBOT_HOME = os.environ["NEUBOT_HOME"]
+sys.path.insert(0, NEUBOT_HOME)
+
+from neubot.main import main
+from neubot.log import LOG
+
+#
+# Redirect the logger immediately because we're going to run in
+# windows mode and therefore there is neither a console nor a standard
+# error for the default logger.  The logs are redirected to the NT
+# EventLog handler (Start -> Settings -> Control Panel -> Administrative
+# Tools -> Event Viewer).
+#
+
+LOG.redirect()
+main(sys.argv)
