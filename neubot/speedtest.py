@@ -572,28 +572,20 @@ class Latency(SpeedtestHelper):
             self.connect.append(connect)
         self.speedtest.complete()
 
-#
-# Here we measure download speed.  Note that it is possible to employ
-# more than one connection to reduce the effect of distance (in terms
-# of RTT) from the origin server.
-# This implementation is still rather prototypal and indeed we need to
-# follow-up with the following improvements:
-#
-# 1. Do not measure the speed as the average of the speed seen by each
-#    connection because this might become inaccurate if connections do
-#    not start and finish nearly at the same time.
-#
+# Here we measure download speed.
 
 MIN_DOWNLOAD = 1<<16
 MAX_DOWNLOAD = 1<<26
 
+
 class Download(SpeedtestHelper):
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
+        self.calibrating = 3
         self.length = MIN_DOWNLOAD
+        self.begin = 0
+        self.end = 0
         self.complete = []
-        self.begin = []
-        self.end = []
         self.total = 0
         self.speed = []
 
@@ -601,7 +593,17 @@ class Download(SpeedtestHelper):
         SpeedtestHelper.__del__(self)
 
     def start(self):
-        log.start("* Download %d bytes" % self.length)
+
+        if self.calibrating:
+            log.start("* Download: calibrate with %d bytes" % self.length)
+            self.begin = ticks()
+            client = self.speedtest.clients[0]
+            self._start_one(client)
+            return
+
+        log.start("* Download: measure with %d bytes and %d connections" %
+                  (self.length, len(self.speedtest.clients)))
+        self.begin = ticks()
         for client in self.speedtest.clients:
             self._start_one(client)
 
@@ -614,60 +616,67 @@ class Download(SpeedtestHelper):
         client.sendrecv(m)
 
     def got_response(self, client, response):
+
         if response.code not in ["200", "206"]:
             self.speedtest.bad_response(response)
             return
-        self.begin.append(client.receiving.start)
-        self.end.append(client.receiving.stop)
-        self.total += client.receiving.length
-        self.complete.append(client)
-        if len(self.complete) == len(self.speedtest.clients):
-            self.speedtest.upload.body = response.body.read()
-            self._pass_complete()
 
-    def _pass_complete(self):
-        log.complete()
-        # time
-        dtime = max(self.end) - min(self.begin)
-        if dtime < 1 and self.length < MAX_DOWNLOAD:
-            self.length <<= 1
-            del self.complete[:]
-            del self.begin[:]
-            del self.end[:]
-            self.total = 0
+        end = ticks()
+        elapsed = end - self.begin
+
+        if self.calibrating:
+            log.complete()
+            self.calibrating -= 1
+
+            self.length = int(self.length / elapsed)
+            if self.length >= MAX_DOWNLOAD:
+                self.length = MAX_DOWNLOAD
+                self.calibrating = 0
+
+            if elapsed >= 1:
+                self.calibrating = 0
+
+            if self.calibrating == 0:
+                self.length = int(7 * self.length / 4)
+                if self.length >= MAX_DOWNLOAD:
+                    self.length = MAX_DOWNLOAD
+
             self.start()
             return
-        # speed
-        speed = self.total / dtime
+
+        self.total += self.length
+
+        self.complete.append(client)
+        if len(self.complete) < len(self.speedtest.clients):
+            return
+
+        log.complete()
+        self.speedtest.upload.body = response.body.read()
+        self.end = end
+        self._pass_complete()
+
+    def _pass_complete(self):
+        speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
-        # done
         speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
         state.append_result("download", speed, "")
         self.speedtest.complete()
 
-#
-# Here we measure upload speed.  Note that it is possible to employ
-# more than one connection to reduce the effect of distance (in terms
-# of RTT) from the origin server.
-# This implementation is still rather prototypal and indeed we need to
-# follow-up with the following improvements:
-#
-# 1. Do not measure the speed as the average of the speed seen by each
-#    connection because this might become inaccurate if connections do
-#    not start and finish nearly at the same time.
-#
+
+# Here we measure upload speed.
 
 MIN_UPLOAD = 1<<15
-#MAX_UPLOAD = 1<<25
+
 
 class Upload(SpeedtestHelper):
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
+        self.calibrating = 3
         self.length = MIN_UPLOAD
         self.body = "\0" * 1048576
         self.complete = []
-        self.begin = []
-        self.end = []
+        self.begin = 0
+        self.end = 0
         self.total = 0
         self.speed = []
 
@@ -675,8 +684,19 @@ class Upload(SpeedtestHelper):
         SpeedtestHelper.__del__(self)
 
     def start(self):
-        log.start("* Upload %d bytes" % self.length)
-        for client in self.speedtest.clients:
+
+        if self.calibrating:
+            log.start("* Upload: calibrate with %d bytes" % self.length)
+            self.begin = ticks()
+            client = self.speedtest.clients[0]
+            self._start_one(client)
+            return
+
+        clients = self.speedtest.clients[0:2]
+        log.start("* Upload: measure with %d bytes and %d connections" %
+                  (self.length, len(clients)))
+        self.begin = ticks()
+        for client in clients:
             self._start_one(client)
 
     def _start_one(self, client):
@@ -689,46 +709,51 @@ class Upload(SpeedtestHelper):
         client.sendrecv(m)
 
     def got_response(self, client, response):
+
         if response.code != "200":
             self.speedtest.bad_response(response)
             return
-        self.begin.append(client.sending.start)
-        #
-        # The commented out line understates the sending speed because
-        # it does not account the time required to empty the TCP send
-        # buffer. And the error is not negligible in many cases.
-        # So, we overstate the send speed and some tests show that in
-        # this case the error very small.
-        # BTW, I should read again bits of "TCP/IP Illustrated vol. 2"
-        # because it's not obvious to me what's going on here.
-        #
-        self.end.append(client.receiving.start)
-        #self.end.append(client.sending.stop)
-        self.total += client.sending.length
+
+        end = ticks()
+        elapsed = end - self.begin
+
+        if self.calibrating:
+            log.complete()
+            self.calibrating -= 1
+
+            self.length = int(self.length / elapsed)
+            if self.length >= len(self.body):
+                self.length = len(self.body)
+                self.calibrating = 0
+
+            if elapsed >= 1:
+                self.calibrating = 0
+
+            if self.calibrating == 0:
+                self.length = int(7 * self.length / 2)
+                if self.length >= len(self.body):
+                    self.length = len(self.body)
+
+            self.start()
+            return
+
+        self.total += self.length
+
         self.complete.append(client)
-        if len(self.complete) == len(self.speedtest.clients):
-            self._pass_complete()
+        if len(self.complete) < 2:
+            return
+
+        log.complete()
+        self.end = end
+        self._pass_complete()
 
     def _pass_complete(self):
-        log.complete()
-        # time
-        utime = max(self.end) - min(self.begin)
-        if utime < 1:
-            self.length <<= 1
-            if self.length <= len(self.body):
-                del self.complete[:]
-                del self.begin[:]
-                del self.end[:]
-                self.total = 0
-                self.start()
-                return
-        # speed
-        speed = self.total / utime
+        speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
-        # done
         speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
         state.append_result("upload", speed, "")
         self.speedtest.complete()
+
 
 #
 # <SpeedtestNegotiate_Response>
