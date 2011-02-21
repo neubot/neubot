@@ -155,7 +155,7 @@ function getresults(data){
                       timestamp,
                       Number(txt)
                     ]);
-                    txt += " Mb/s";
+                    txt += " Mbit/s";
                     break;
                 case 'uploadSpeed':
                     txt = (val * 8/1000/1000).toFixed(3);
@@ -163,7 +163,7 @@ function getresults(data){
                       timestamp,
                       Number(txt)
                     ]);
-                    txt += " Mb/s";
+                    txt += " Mbit/s";
                     break;
                 default:
                     txt = val;
@@ -209,7 +209,7 @@ function getresults(data){
             showTickMarks: true
           },
           yaxis: {
-            label: "Mb/s",
+            label: "Mbit/s",
             min: 0
           }
         },
