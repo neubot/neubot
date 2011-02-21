@@ -1049,7 +1049,7 @@ class SpeedtestClient1(ClientController):
 
 class SpeedtestController:
     def start_speedtest_simple(self, uri):
-        SpeedtestClient(uri, 2, FLAG_ALL, False, self)
+        SpeedtestClient(uri, 4, FLAG_ALL, False, self)
 
     def speedtest_complete(self):
         pass
@@ -1146,7 +1146,7 @@ def main(args):
     xdebug = False
     flags = 0
     fmt = "bits"
-    nclients = 2
+    nclients = 4
     # parse
     try:
         options, arguments = getopt(args[1:], "a:D:dn:O:SsVvx", ["help"])
