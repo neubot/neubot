@@ -76,7 +76,7 @@ function getSetConfigVar(id, myfunction, change, value) {
 
     if (myfunction) {
         success = function(data) {
-            executeFunctionByName(myfunction, window, jQuery(data).find("Config").find(id).text());
+            executeFunctionByName(myfunction, window, data[id]);
         }
     }
 
@@ -84,7 +84,7 @@ function getSetConfigVar(id, myfunction, change, value) {
         url: '/api/config',
         data: data,
         type: type,
-        dataType: 'xml',
+        dataType: 'json',
         success: success
     });
 }
