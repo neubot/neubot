@@ -33,6 +33,8 @@
  * here in this file.
  */
 
+var prevStatus;
+
 function setStatusLabels(status) {
     if (status == "1") {
         jQuery("#statusBoxSpan").html("enabled");
@@ -40,7 +42,7 @@ function setStatusLabels(status) {
         jQuery("#statusBoxA").html("Disable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", "setStatusLabels", true, 0);
+            getSetConfigVar("enabled", setStatusLabels, true, 0);
         });
     }
     else {
@@ -49,19 +51,9 @@ function setStatusLabels(status) {
         jQuery("#statusBoxA").html("Enable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", "setStatusLabels", true, 1);
+            getSetConfigVar("enabled", setStatusLabels, true, 1);
         });
     }
-}
-
-function executeFunctionByName(functionName, context, args) {
-    var args = Array.prototype.slice.call(arguments).splice(2);
-    var namespaces = functionName.split(".");
-    var func = namespaces.pop();
-    for (var i = 0; i < namespaces.length; i++) {
-        context = context[namespaces[i]];
-    }
-    return context[func].apply(this, args);
 }
 
 function getSetConfigVar(id, myfunction, change, value) {
@@ -76,7 +68,7 @@ function getSetConfigVar(id, myfunction, change, value) {
 
     if (myfunction) {
         success = function(data) {
-            executeFunctionByName(myfunction, window, data[id]);
+            myfunction(data[id]);
         }
     }
 
@@ -88,8 +80,6 @@ function getSetConfigVar(id, myfunction, change, value) {
         success: success
     });
 }
-
-var prevStatus;
 
 function process_state(data) {
     var current;
@@ -216,7 +206,7 @@ function process_state(data) {
 $(document).ready(function() {
     $.jqplot.config.enablePlugins = true;
 
-    getSetConfigVar("enabled", "setStatusLabels", false);
+    getSetConfigVar("enabled", setStatusLabels, false);
 
     $('#testResultsBox').qtip({
         content: "A new test is running.",
