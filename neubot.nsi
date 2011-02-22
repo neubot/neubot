@@ -44,28 +44,28 @@ section
     writeuninstaller "$INSTDIR\uninstall.exe"
     createdirectory "$SMPROGRAMS\neubot"
     createshortcut "$SMPROGRAMS\neubot\neubot (gui).lnk"		\
-      "$INSTDIR\neubot.exe"
+      "$INSTDIR\neubotw.exe"
     createshortcut "$SMPROGRAMS\neubot\neubot (start).lnk"		\
-      "$INSTDIR\neubot.exe" "start"
+      "$INSTDIR\neubotw.exe" "start"
     createshortcut "$SMPROGRAMS\neubot\neubot (stop).lnk"		\
-      "$INSTDIR\neubot.exe" "stop"
+      "$INSTDIR\neubotw.exe" "stop"
     createshortcut "$SMPROGRAMS\neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
     createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
-      "$INSTDIR\neubot.exe" "start"
+      "$INSTDIR\neubotw.exe" "start"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "DisplayName" "neubot 0.3.4"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
-    exec '"$INSTDIR\neubot.exe" start'
+    exec '"$INSTDIR\neubotw.exe" start'
 sectionend
 section "uninstall"
     #
-    # To be sure that the system is not locking anymore neubot.exe
+    # To be sure that the system is not locking anymore neubotw.exe
     # so that we can remove it, we sleep for a while.
     #
-    execwait '"$INSTDIR\neubot.exe" stop'
+    execwait '"$INSTDIR\neubotw.exe" stop'
     sleep 2000
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\neubot"
