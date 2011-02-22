@@ -389,7 +389,7 @@ class XMLizer(ProcessorInterface):
         self.outfile = outfile
 
     def init(self, parameters):
-        self.outfile.write('<results timeUnit="s" speedUnit="iB/s">\r\n')
+        self.outfile.write('<results timeUnit="s" speedUnit="iByte/s">\r\n')
 
     def feed(self, result):
         self.outfile.write(str(result))

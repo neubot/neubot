@@ -1084,7 +1084,7 @@ HELP = USAGE +								\
 class SpeedtestClient(SpeedtestClient1):
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
         SpeedtestClient1.__init__(self, uri, nclients, flags, debug, parent)
-        self.formatter = lambda n: " %fiB/s" % n
+        self.formatter = lambda n: " %f iByte/s" % n
 
     def __del__(self):
         pass
@@ -1131,7 +1131,7 @@ FLAGS = {
 }
 
 FORMATTERS = {
-    "raw": lambda n: " %fiB/s" % n,
+    "raw": lambda n: " %f iByte/s" % n,
     "bits": lambda n: unit_formatter(n*8, base10=True, unit="bit/s"),
     "bytes": lambda n: unit_formatter(n, unit="B/s"),
 }

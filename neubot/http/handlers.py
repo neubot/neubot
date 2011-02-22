@@ -184,9 +184,9 @@ class Handler:
                 self.stream.send(x, self._flush_progress)
                 return
             #
-            # This used to be 8 KiB, but when reading
+            # This used to be 8 KiByte, but when reading
             # from a StringIO the transfer was very slow
-            # and so I've raised it to 256 KiB, which
+            # and so I've raised it to 256 KiByte, which
             # yields more reasonable speeds.
             #
             data = x.read(262144)
