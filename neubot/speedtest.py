@@ -572,6 +572,34 @@ class Latency(SpeedtestHelper):
             self.connect.append(connect)
         self.speedtest.complete()
 
+# Measurer object
+
+from neubot.utils import speed_formatter
+from neubot.net.streams import Measurer
+
+
+class SpeedtestMeasurer(Measurer):
+    def __init__(self):
+        Measurer.__init__(self)
+        sched(1, self.poll)
+        self.created = ticks()
+        self.recv = []
+        self.send = []
+
+    def poll(self):
+        recvavg, sendavg = self.measure()[2:4]
+        self.recv.append(recvavg)
+        self.send.append(sendavg)
+        sched(1, self.poll)
+
+    def clear(self):
+        del self.recv[:]
+        del self.send[:]
+
+
+MEASURER = SpeedtestMeasurer()
+
+
 # Here we measure download speed.
 
 MIN_DOWNLOAD = 1<<16
@@ -603,8 +631,10 @@ class Download(SpeedtestHelper):
 
         log.start("* Download: measure with %d bytes and %d connections" %
                   (self.length, len(self.speedtest.clients)))
+        MEASURER.clear()
         self.begin = ticks()
         for client in self.speedtest.clients:
+            MEASURER.register_stream(client.handler.stream)
             self._start_one(client)
 
     def _start_one(self, client):
@@ -656,6 +686,8 @@ class Download(SpeedtestHelper):
         self._pass_complete()
 
     def _pass_complete(self):
+        log.info("* Download speeds: %s" % map(speed_formatter,
+                                               MEASURER.recv))
         speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
         speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
@@ -695,8 +727,10 @@ class Upload(SpeedtestHelper):
         clients = self.speedtest.clients[0:2]
         log.start("* Upload: measure with %d bytes and %d connections" %
                   (self.length, len(clients)))
+        MEASURER.clear()
         self.begin = ticks()
         for client in clients:
+            MEASURER.register_stream(client.handler.stream)
             self._start_one(client)
 
     def _start_one(self, client):
@@ -748,6 +782,8 @@ class Upload(SpeedtestHelper):
         self._pass_complete()
 
     def _pass_complete(self):
+        log.info("* Upload speeds: %s" % map(speed_formatter,
+                                             MEASURER.send))
         speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
         speed = unit_formatter(speed * 8, base10=True, unit="bit/s")
