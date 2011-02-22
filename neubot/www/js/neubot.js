@@ -90,10 +90,10 @@ function process_state(data) {
 
     // Reset style
 
-    $('table#state tr').css('font-weight', 'normal');
-    $('#testResultsBox h4').text("Latest test details");
-    $('#next_rendezvous').text("");
-    $("#queueInfo").text("");
+    jQuery('table#state tr').css('font-weight', 'normal');
+    jQuery('#testResultsBox h4').text("Latest test details");
+    jQuery('#next_rendezvous').text("");
+    jQuery("#queueInfo").text("");
 
     // Keep processing simple to read and understand:
     // consider each relevant tag on its own but delay
@@ -101,7 +101,7 @@ function process_state(data) {
 
     value = neubot.XML_number("pid", data);
     if (value != "")
-        $("#pid").text(value);
+        jQuery("#pid").text(value);
 
     value = neubot.XML_timestamp("next_rendezvous", data);
     if (value != "") {
@@ -110,7 +110,7 @@ function process_state(data) {
         if (value >= 0) {
             value = neubot.timestamp_to_minutes(value);
             value = neubot.format_minutes(value);
-            $("#next_rendezvous").text(value);
+            jQuery("#next_rendezvous").text(value);
         }
     }
 
@@ -118,48 +118,48 @@ function process_state(data) {
     if (value != "") {
         value = neubot.timestamp_to_date(value);
         value = neubot.format_date(value);
-        $("#since").text(value);
+        jQuery("#since").text(value);
     }
 
     value = neubot.XML_text("update", data);
     attr = neubot.XML_text("update[uri]", data);
     if (value != "" && attr != "") {
-        $("#updateUrl").attr("href", attr);
-        $("#updateVersion").text(value);
-        func = function() { $('#update').slideToggle("slow"); };
+        jQuery("#updateUrl").attr("href", attr);
+        jQuery("#updateVersion").text(value);
+        func = function() { jQuery('#update').slideToggle("slow"); };
         setTimeout(func, 5000);
     }
 
     value = neubot.XML_text("negotiate queuePos", data);
     if (value != "")
-        $("#queuePos").text(value);
+        jQuery("#queuePos").text(value);
     value = neubot.XML_text("negotiate queueLen", data);
     if (value != "")
-        $("#queueLen").text(value);
+        jQuery("#queueLen").text(value);
 
     value = neubot.XML_timestamp("test timestamp", data);
     if (value != "") {
         value = neubot.timestamp_to_date(value);
         value = neubot.format_date(value);
-        $("#testTime").text(value);
+        jQuery("#testTime").text(value);
     }
     value = neubot.XML_text("test name", data);
     if (value != "") {
         // XXX XXX XXX This is sooo ugly!
-        $("#testName").text(value);
-        $("#testName1").text(value);
+        jQuery("#testName").text(value);
+        jQuery("#testName1").text(value);
     }
     // Be prepared to support other test types
     if (value == "speedtest") {
         value = neubot.XML_text('test result[tag="latency"]', data);
         if (value != "")
-            $("#latencyResult").text(value);
+            jQuery("#latencyResult").text(value);
         value = neubot.XML_text('test result[tag="download"]', data);
         if (value != "")
-            $("#downloadResult").text(value);
+            jQuery("#downloadResult").text(value);
         value = neubot.XML_text('test result[tag="upload"]', data);
         if (value != "")
-            $("#uploadResult").text(value);
+            jQuery("#uploadResult").text(value);
     }
 
     // Get the current and the previous statuses
@@ -188,28 +188,28 @@ function process_state(data) {
     // and must not be visible otherwise
 
     if (current == "test" && prev != "test") {
-        $('#latencyResult').text("---");
-        $('#uploadResult').text("---");
-        $('#downloadResult').text("---");
-        $('#testResultsBox').qtip("show");
+        jQuery('#latencyResult').text("---");
+        jQuery('#uploadResult').text("---");
+        jQuery('#downloadResult').text("---");
+        jQuery('#testResultsBox').qtip("show");
     }
     if (current == "idle")                  // XXX
-        $('#testResultsBox').qtip("hide");
+        jQuery('#testResultsBox').qtip("hide");
     if (current == "test")
-        $('#testResultsBox h4').text("Current test details");
+        jQuery('#testResultsBox h4').text("Current test details");
 
-    $('table#state tr#' + current).css('font-weight', 'bold');
+    jQuery('table#state tr#' + current).css('font-weight', 'bold');
 }
 
-$(document).ready(function() {
-    $.jqplot.config.enablePlugins = true;
+jQuery(document).ready(function() {
+    jQuery.jqplot.config.enablePlugins = true;
 
     getSetConfigVar("enabled", setStatusLabels, false);
 
-    $('#testResultsBox').qtip({
+    jQuery('#testResultsBox').qtip({
         content: "A new test is running.",
         position: {
-            target: $('#testTime'),
+            target: jQuery('#testTime'),
             corner: {
                 tooltip: "rightMiddle",
                 target: "leftMiddle"
