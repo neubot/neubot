@@ -89,8 +89,6 @@ function getSetConfigVar(id, myfunction, change, value) {
     });
 }
 
-(function() {
-
     var prevStatus;
 
     function process_state(data) {
@@ -255,4 +253,3 @@ function getSetConfigVar(id, myfunction, change, value) {
         tracker.start();
     });
 
-})();
