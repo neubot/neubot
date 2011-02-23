@@ -48,6 +48,7 @@ class Message(object):
         self.pathquery = ""
         self.family = socket.AF_UNSPEC
         self.length = 0
+        self.response = None
 
     #
     # The client code saves the whole uri in self.uri and then
