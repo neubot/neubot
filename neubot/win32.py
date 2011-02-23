@@ -57,10 +57,18 @@ if os.name == "nt":
         def warning(self, message):
             self.logger.warning(message)
 
+        #
+        # We don't log at info() and warning() level when
+        # running as a windows application under Win32 because
+        # that might fill the log and the default policy does
+        # not help: it does not rotate logs, but rather it
+        # prevents further logging.
+        #
+
         def info(self, message):
-            self.logger.info(message)
+            pass
 
         def debug(self, message):
-            self.logger.debug(message)
+            pass
 
     __all__.append("BackgroundLogger")
