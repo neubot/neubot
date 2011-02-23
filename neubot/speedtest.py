@@ -711,6 +711,7 @@ class Upload(SpeedtestHelper):
         self.end = 0
         self.total = 0
         self.speed = []
+        self.clients = []
 
     def __del__(self):
         SpeedtestHelper.__del__(self)
@@ -724,12 +725,14 @@ class Upload(SpeedtestHelper):
             self._start_one(client)
             return
 
-        clients = self.speedtest.clients[0:2]
+        self.clients = self.speedtest.clients
+        if self.length < (1<<19):
+            self.clients = self.speedtest.clients[0:2]
         log.start("* Upload: measure with %d bytes and %d connections" %
-                  (self.length, len(clients)))
+                  (self.length, len(self.clients)))
         MEASURER.clear()
         self.begin = ticks()
-        for client in clients:
+        for client in self.clients:
             MEASURER.register_stream(client.handler.stream)
             self._start_one(client)
 
@@ -764,7 +767,10 @@ class Upload(SpeedtestHelper):
                 self.calibrating = 0
 
             if self.calibrating == 0:
-                self.length = int(7 * self.length / 2)
+                conns = 4
+                if self.length < (1<<19):
+                    conns = 2
+                self.length = int(7 * self.length / conns)
                 if self.length >= len(self.body):
                     self.length = len(self.body)
 
@@ -774,7 +780,7 @@ class Upload(SpeedtestHelper):
         self.total += self.length
 
         self.complete.append(client)
-        if len(self.complete) < 2:
+        if len(self.complete) < len(self.clients):
             return
 
         log.complete()
