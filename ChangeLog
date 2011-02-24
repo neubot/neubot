@@ -1,3 +1,164 @@
+Neubot 0.3.5 [2011-02-24]
+	* options.py: Fix a typo in an error message
+	* fake-db.py: improved fake rows generation
+	* move fake-db.py to neubot/tools/dbgen.py
+	* neubot/tools: Directory for standalone tools
+	* tools/dbtool.py: Standalone tool to analyze database
+	* tools/dbtool.py: Hackish fix for the accented letter issue
+	* tools/dbtool.py: Add command to count unique uuids per day
+	* neubot/tools/dbtool.py: add __init__() to SpeedtestResult class
+	* dbtool.py: Let the user decide treshold on -C
+	* dbtool.py: check if database files exist before trying to open them
+	* dbtool.py: add __init__() to Anonymizer, CityResolver and ASNResolver
+	* tools/dbtool.py: Fix version number
+	* Merge branch 'topic.tools' into next
+	* marshal.py: Rules to marshal and unmarshal simple classes
+	* config.py: Update to use the new marshal.py module
+	* ui.py: Use the updated config.py module
+	* Merge branch 'topic.update-api-config' into next
+	* Merge branch 'topic.typo-in-options' into next
+	* streams.py: Allow to override default socket buffers size
+	* streams.py: Add command line option to set socket buffers size
+	* Merge branch 'topic.stream.buffer' into next
+	* Do not import from neubot.net.connectors and neubot.net.listeners
+	* neubot.net: Remove deprecated connectors.py listeners.py
+	* Merge branch 'topic.rm-connector-listener' into next
+	* streams.py: Add generic protocol to unit test
+	* streams.py: in main() use the new GenericProtocol
+	* streams.py: Remove unused protocols, connectors, listeners
+	* streams.py: Rename clients the option count
+	* streams.py: Allow to interrupt client(s) after N seconds
+	* streams.py: Make sure -D duration=N prints stats for N seconds
+	* Merge branch 'topic.stream-allow-download-test' into next
+	* Merge branch 'topic.stream-improve-usage' into next
+	* streams.py: We don't need to pass count to send_complete()
+	* streams.py: Fork current Stream implementation
+	* Revert "Revert "More clever buffer usage, kill send_pos""
+	* streams.py: Remove backward compatibility code from new stream
+	* streams.py: start_recv: default maxlen to MAXBUF
+	* doc: Add documentation for stream
+	* streams.py: Compact the sendblocked and recvblocked cases
+	* streams.py: Remove a couple of useless set_readable/writable calls
+	* streams.py: Be paranoid, make the code slightly more robust
+	* streams.py: Minor cosmetic changes
+	* streams.py: rename close() shutdown() in Stream
+	* streams.py: Refine the message we print on explicit close
+	* streams.py: Adjust the version number
+	* streams.py: Remove the ssl handshaking code from SSLWrapper
+	* streams.py: Make sure client always kicks SSL negotiation off
+	* Merge branch 'topic.fork-stream' into next
+	* Merge branch 'topic.enhance-new-stream' into next
+	* Merge branch 'topic.refine-new-stream' into next
+	* Merge branch 'topic.ssl-handshake' into next
+	* win32: Remove executables due to false-positive malware allegation
+	* win32: Remove executables due to false-positive malware allegation
+	* doc/protocol.png: Import new version of the protocol model
+	* streams.py: Remove stream vs protocol semantic confusion
+	* connector.py: Rebase on the new stream
+	* connector.py: Implement send_piece()
+	* connector.py: Fix the way we handshake the peer
+	* connector.py: Cosmetic changes
+	* connector.py: Print something useful when in verbose mode
+	* main.py: New main for BitTorrent
+	* neubot/main.py: Import BitTorrent's main from bittorrent/main.py
+	* Merge branch 'topic.bittorrent-use-new-stream' into next
+	* bittorrent: Remove unused files: handler.py wrapper.py
+	* bittorrent: mv connector.py streams.py for simmetry with neubot.net
+	* main.py: We have renamed connectors.py streams.py
+	* Merge branch 'topic.bittorrent-cleanups-and-cosmetics' into next
+	* options.py: override optionxform to fix uppercase options bug
+	* net/CA.py: Use all-uppercase option prefix
+	* Merge branch 'topic.uppercase-options' into next
+	* net/CA.py: Adjust help string to look like streams.py one
+	* net/CA.py: Remove the dots at the end of the help string
+	* net/streams.py: Adjust help string to look like CA.py one
+	* options.py: Adjust help string to look like net/CA.py one
+	* bittorrent/main.py: Adjust help string to look like net/CA.py one
+	* Merge branch 'topic.help-string-cosmetics' into next
+	* Move neubot.ico icon from win32 to icons
+	* setup.py: Use icons/neubot.ico for neubot.exe
+	* setup.py: Make neubot.exe a windows executable
+	* neubot.nsi: Always invoke neubot.exe
+	* Make-dist.bat: Don't install the content of win32
+	* Remove win32 directory and all its content
+	* Merge branch 'topic.win32-remove' into next
+	* Make-dist.bat: Make sure we install all of www
+	* win32.py: Use NT EventLog handler for logging
+	* log.py: Delete comment: now there is NT EventLog handler
+	* Merge branch 'topic.log-nt' into next
+	* neubot: Add simplejson 2.1.3 sources
+	* simplejson: Make sure it's possible to import from neubot
+	* compat.py: Import simplejson if json not available
+	* Merge branch 'topic.json' into next
+	* log.py: Adjust the comment at the beginning
+	* log.py: Make sure we use integers for timestamps
+	* log.py: Logger: The prefix attribute is not used
+	* log.py: Logger: Inherit explicitly from object
+	* log.py: Implement a simple InteractiveLogger class
+	* log.py: Simplify the code and use InteractiveLogger
+	* log.py: Simplify the interactive check a bit
+	* log.py: Rename the state variables
+	* log.py: Reorganize attributes in __init__
+	* log.py: Get rid of _interactive()
+	* log.py: Avoid possible but unlikely exception
+	* log.py: Simplify a comment
+	* log.py: Simplify another comment
+	* log.py: Move MAXQUEUE definition around
+	* log.py: Another cosmetic change
+	* log.py: Add function to export using json
+	* log.py: Remove getlines() because it's unused
+	* log.py: The global object must have an all-uppercase name
+	* log.py: Deprecate module-wide methods
+	* log.py: Enhance unit test and dump json
+	* log.py: clarify where BackgroundLogger comes from
+	* log.py: With windows force background logger
+	* log.py: Remove unused logging.handlers import
+	* Merge branch 'topic.log-simplify' into next
+	* dbgen.py: more realistic fake results generation
+	* setup.py: Rewritten to drive the win32 build process
+	* Make-*.bat: Remove the now-unneeded batch files
+	* Revert "log.py: With windows force background logger"
+	* bin/neubotw: Script that becomes the windows executable
+	* bin/neubot: Import instead of from..import for stdlib
+	* setup.py: Build both console and windows executables
+	* neubot.nsi: Use neubotw.exe instead of neubot.exe
+	* Merge branch 'win32-build-enhance' into next
+	* www/results.html: unbreak plots for internet explorer
+	* version number on the home page
+	* www/index.html: Merge the about with version number info
+	* www/results.html: Sync the about with index.html
+	* js/results.js: Break x axis lables to unbreak zoom
+	* js/ += jqplot.dateAxisRenderer.min.js
+	* www/results.html: Import from jqplot.dateAxisRenderer
+	* js/results.js: Quick-n-dirty hack to prettify the x axis labels
+	* js/results.js: Remove old-n-commented-out x-axis-labels code
+	* Merge branch 'adjust-results-plot' into next
+	* js: libneubot.js results.js: Use base 10 not base 2
+	* js/libneubot.js: Use 3 digits as we do in results.js
+	* js/results.js: Use Mbit/s rather than Mb/s
+	* Globally replace iB -> iByte
+	* Merge branch 'adjust-units' into next
+	* www/index.html: Clarify that there is a tab for each test
+	* www: index.html results.html: Update primary links
+	* results.html: Link to OECD and provide more context
+	* Merge branch 'add-context-to-results' into next
+	* bin/neubotw: Make sure stderr.write() is a no-op
+	* bin/neubotw: Be very silent when running in windows mode
+	* Merge branch 'win32-gentler-logging' into next
+	* speedtest.py: Use 4 instead of 2 connections
+	* neubot/speedtest.py: First calibrate, then measure
+	* speedtest.py: Measure download/upload speed every second
+	* speedtest.py: upload: use 4 connections if needed
+	* speedtest.py: Default to unit_formatter
+	* speedtest.py: Use blupixel.net for on-demand tests
+	* Merge branch 'enhance-speedtest' into next
+	* neubot/speedtest.py: Use speed_formatter NOT unit_formatter
+	* js/neubot.js: Make sure we output update URI
+	* js/neubot.js: Make sure updates box is visible
+	* js/neubot.js: Make sure updateUrl is a link
+	* Merge branch 'next'
+	* Release neubot/0.3.5
+
 Neubot 0.3.4 [2011-01-18]
 	* www/libneubot.js: shared javascript functions
 	* www/libneubot.js: make the plot symmetric

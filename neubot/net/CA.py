@@ -49,7 +49,7 @@ Macros (defaults in square brackets):
 
 """
 
-VERSION = "Neubot 0.3.4\n"
+VERSION = "Neubot 0.3.5\n"
 
 def main(args):
 
