@@ -139,7 +139,6 @@ class StatusIcon:
     def __init__(self, address, port, blink, nohide):
         self.address = address
         self.port = port
-        self.menu = False
         self.blink = blink
         self.nohide = nohide
         self.icon = gtk.StatusIcon()
@@ -151,16 +150,16 @@ class StatusIcon:
         self.icon.set_visible(self.nohide)
         self.update_item = None
 
+        self.menu = gtk.Menu()
+        item = gtk.MenuItem(label="Open Web Interface")
+        item.connect("activate", self._do_open_browser)
+        self.menu.add(item)
+        item = gtk.MenuItem(label="Close Status Icon")
+        item.connect("activate", self._do_quit)
+        self.menu.add(item)
+        self.menu.show_all()
+
     def on_popup_menu(self, status, button, time):
-        if not self.menu:
-            self.menu = gtk.Menu()
-            item = gtk.MenuItem(label="Open Web Interface")
-            item.connect("activate", self._do_open_browser)
-            self.menu.add(item)
-            item = gtk.MenuItem(label="Close Status Icon")
-            item.connect("activate", self._do_quit)
-            self.menu.add(item)
-            self.menu.show_all()
         self.menu.popup(None, None, gtk.status_icon_position_menu,
                         button, time, self.icon)
 
