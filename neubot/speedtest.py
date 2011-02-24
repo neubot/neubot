@@ -1151,7 +1151,7 @@ HELP = USAGE +								\
 class SpeedtestClient(SpeedtestClient1):
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
         SpeedtestClient1.__init__(self, uri, nclients, flags, debug, parent)
-        self.formatter = unit_formatter
+        self.formatter = speed_formatter
 
     def __del__(self):
         pass
