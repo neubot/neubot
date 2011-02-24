@@ -1203,7 +1203,7 @@ FORMATTERS = {
     "bytes": lambda n: unit_formatter(n, unit="B/s"),
 }
 
-URI = "http://speedtest1.neubot.org/speedtest"
+URI = "http://neubot.blupixel.net/speedtest"
 
 def main(args):
     fakerc = StringIO()
