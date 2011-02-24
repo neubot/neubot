@@ -78,9 +78,8 @@
         }
 
         value = neubot.XML_text("update", data);
-        attr = neubot.XML_text("update[uri]", data);
-        if (value != "" && attr != "") {
-            $("#updateUrl").attr("href", attr);
+        if (value != "") {
+            $("#updateUrl").text($("update", data).attr("uri"));
             $("#updateVersion").text(value);
             func = function() { $('#update').slideToggle("slow"); };
             setTimeout(func, 5000);
