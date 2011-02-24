@@ -52,8 +52,10 @@ class Notifier:
             queue = self.subscribers[event]
         queue.append((func, context))
 
-    def publish(self, event):
-        self.timestamps[event] = T()
+    def publish(self, event, t=None):
+        if not t:
+            t = T()
+        self.timestamps[event] = t
         if self.subscribers.has_key(event):
             queue = self.subscribers[event]
             del self.subscribers[event]
