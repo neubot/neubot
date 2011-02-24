@@ -81,8 +81,9 @@
         if (value != "") {
             $("#updateUrl").text($("update", data).attr("uri"));
             $("#updateVersion").text(value);
-            func = function() { $('#update').slideToggle("slow"); };
-            setTimeout(func, 5000);
+            $("#update").show();
+        } else {
+            $("#update").hide();
         }
 
         value = neubot.XML_text("negotiate queuePos", data);
