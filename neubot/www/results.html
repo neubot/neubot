@@ -42,8 +42,9 @@
 	<script type="text/javascript" src="js/jqplot.canvasTextRenderer.min.js"></script>
 	<script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
 	<script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="js/jqplot.dateAxisRenderer.min.js"></script>
 	<!-- IE8 does not have Canvas! -->
-	<!--[if IE]><script language="javascript" type="text/javascript" src="jqplot/excanvas.js"></script><![endif]-->
+	<!--[if IE]><script language="javascript" type="text/javascript" src="js/excanvas.js"></script><![endif]-->
 
     <title>Neubot 0.3.4 | Web interface</title>
 
@@ -71,15 +72,15 @@
         <ul class="k2menu">
           <li class="menu-191 active-trail first">
             <a href="http://localhost:9774/index.html"
-               title="Status">Status</a>
+               title="The status of the daemon">Status</a>
           </li>
           <li class="menu-192 active">
             <a href="http://localhost:9774/results.html"
-               title="Your recent results" class="active">Your recent results</a>
+               title="Your recent speedtest results" class="active">Speedtest</a>
           </li>
           <li class="menu-196">
             <a href="http://www.neubot.org/"
-               title="Neubot web site">Neubot web site</a>
+               title="Go to Neubot web site">Neubot web site</a>
           </li>
         </ul>
       </div>
@@ -96,11 +97,43 @@
         <div id="rollingcontent" class="hfeed">
         <div id="node-46" class="hentry node">
         <div class="entry-content">
-          <h4>Speedtest results</h4>
-          <p>
-            <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a>
-          </p>
+          <h4>Your recent <em>speedtest</em> results</h4>
+
           <!-- XXX Do NOT move plots here or they will suck alot. -->
+
+          <p>
+           <em>Speedtest</em> is a test that sheds some light on the quality
+           of your broadband connection, by downloading/uploading random data
+           to/from a remote server, and reporting the average speeds.  The
+           test also yields an over-estimate of the round-trip latency between
+           you and such remote server.  For more information, see the
+<a href="http://www.neubot.org/faq#what-does-speedtest-test-measures">FAQ</a>.
+          </p>
+
+          <p>
+           To put the results of this test in the context of the
+           average broadband speed available in your country you
+           might want to check the statistics available at the <a
+           href="http://www.oecd.org/sti/ict/broadband">OECD Broadband
+           Portal</a>.  In particular, it might be interesting to read <a
+           href="http://www.oecd.org/dataoecd/10/53/39575086.xls">"Average
+           advertised download speeds, by country"</a> (in XLS format).
+          </p>
+
+          <p>
+           The plot and the table below show the latest 20 results.  You
+           can navigate your recent testing history clicking on the two
+           arrows below.  And you can adjust the number of results you want
+           to see at-a-time by changing the value in the text field below
+           and then pressing enter.
+          </p>
+
+          <p>
+           <center>
+            <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a>
+           </center>
+          </p>
+
         </div>
         </div>
         </div>
@@ -157,12 +190,13 @@
           <div id="about" class="block-">
             <h4>About</h4>
             <p>
-              Neubot is based on a lightweight
-              <a href="http://www.neubot.org/copying">open-source</a>
-              program that runs in background and periodically
-              performs transmission tests to probe your Internet
-              connection using various application level protocols.
-              <a href="http://www.neubot.org/faq">Read more</a>
+              This is the web user interface of Neubot v0.3.4.
+              Neubot is a lightweight <a
+              href="http://www.neubot.org/copying">open-source</a> program
+              that runs in background and periodically performs
+              transmission tests to probe your Internet connection
+              using various application level protocols.  <a
+              href="http://www.neubot.org/faq">Read more</a>
             </p>
           </div>
 

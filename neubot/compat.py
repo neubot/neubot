@@ -21,6 +21,19 @@
 #
 
 #
+# With Python2.5 use simplejson because json is not in
+# the standard library.  The recommended usage is that of
+# importing `json` from this file as follows::
+#
+#   from neubot.compat import json
+#
+
+try:
+    import json
+except ImportError:
+    from neubot import simplejson as json
+
+#
 # We want to be compatible with Python2.5, where it's not
 # possible to pass deque() the maximum deque length.
 #

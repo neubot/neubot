@@ -46,6 +46,7 @@ if __name__ == "__main__":
 from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
 from neubot.net.pollers import poller
+from neubot.net.pollers import break_loop
 from neubot.net.pollers import loop
 from neubot.utils import speed_formatter
 from neubot.utils import ticks
@@ -70,7 +71,6 @@ if ssl:
     class SSLWrapper(object):
         def __init__(self, sock):
             self.sock = sock
-            self.need_handshake = True
 
         def soclose(self):
             try:
@@ -80,9 +80,6 @@ if ssl:
 
         def sorecv(self, maxlen):
             try:
-                if self.need_handshake:
-                    self.sock.do_handshake()
-                    self.need_handshake = False
                 octets = self.sock.read(maxlen)
                 return SUCCESS, octets
             except ssl.SSLError, exception:
@@ -95,9 +92,6 @@ if ssl:
 
         def sosend(self, octets):
             try:
-                if self.need_handshake:
-                    self.sock.do_handshake()
-                    self.need_handshake = False
                 count = self.sock.write(octets)
                 return SUCCESS, count
             except ssl.SSLError, exception:
@@ -139,6 +133,313 @@ class SocketWrapper(object):
                 return ERROR, exception
 
 class Stream(Pollable):
+
+    """To implement the protocol syntax, subclass this class and
+       implement the finite state machine described in the file
+       `doc/protocol.png`.  The low level finite state machines for
+       the send and recv path are documented, respectively, in
+       `doc/sendpath.png` and `doc/recvpath.png`."""
+
+    def __init__(self, poller_):
+        self.poller = poller_
+        self.parent = None
+
+        self.sock = None
+        self.filenum = -1
+        self.myname = None
+        self.peername = None
+        self.logname = None
+
+        self.timeout = TIMEOUT
+        self.encrypt = None
+        self.decrypt = None
+
+        self.send_octets = None
+        self.send_queue = collections.deque()
+        self.send_ticks = 0
+        self.recv_maxlen = 0
+        self.recv_ticks = 0
+
+        self.eof = False
+        self.isclosed = 0
+        self.send_pending = 0
+        self.sendblocked = 0
+        self.recv_pending = 0
+        self.recvblocked = 0
+        self.kickoffssl = 0
+
+        self.measurer = None
+
+    def fileno(self):
+        return self.filenum
+
+    def make_connection(self, sock):
+        if self.sock:
+            raise RuntimeError("make_connection() invoked more than once")
+        self.filenum = sock.fileno()
+        self.myname = sock.getsockname()
+        self.peername = sock.getpeername()
+        self.logname = str((self.myname, self.peername))
+        self.sock = SocketWrapper(sock)
+
+    def configure(self, dictionary):
+        if not self.sock:
+            raise RuntimeError("configure() invoked before make_connection()")
+
+        if "secure" in dictionary and dictionary["secure"]:
+            if not ssl:
+                raise RuntimeError("SSL support not available")
+            if hasattr(self.sock, "need_handshake"):
+                raise RuntimeError("Can't wrap SSL socket twice")
+
+            server_side = False
+            if "server_side" in dictionary and dictionary["server_side"]:
+                server_side = dictionary["server_side"]
+            certfile = None
+            if "certfile" in dictionary and dictionary["certfile"]:
+                certfile = dictionary["certfile"]
+
+            so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
+              certfile=certfile, server_side=server_side)
+            self.sock = SSLWrapper(so)
+
+            if not server_side:
+                self.kickoffssl = 1
+
+        if "obfuscate" in dictionary and dictionary["obfuscate"]:
+            if not ARC4:
+                raise RuntimeError("ARC4 support not available")
+
+            key = "neubot"
+            if "key" in dictionary and dictionary["key"]:
+                key = dictionary["key"]
+
+            algo = ARC4.new(key)
+            self.encrypt = algo.encrypt
+            self.decrypt = algo.decrypt
+
+        if "measurer" in dictionary and dictionary["measurer"]:
+            self.measurer = dictionary["measurer"]
+
+    def connection_made(self):
+        pass
+
+    # Close path
+
+    def connection_lost(self, exception):
+        pass
+
+    def closed(self, exception=None):
+        self._do_close(exception)
+
+    def shutdown(self):
+        self._do_close()
+
+    def _do_close(self, exception=None):
+        if self.isclosed:
+            return
+
+        self.isclosed = 1
+
+        self.connection_lost(exception)
+        if self.parent:
+            self.parent.connection_lost(self)
+
+        if self.measurer:
+            self.measurer.dead = True
+
+        self.send_octets = None
+        self.send_ticks = 0
+        self.recv_maxlen = 0
+        self.recv_ticks = 0
+        self.sock.soclose()
+
+        self.poller.close(self)
+
+    # Timeouts
+
+    def readtimeout(self, now):
+        return (self.recv_pending and (now - self.recv_ticks) > self.timeout)
+
+    def writetimeout(self, now):
+        return (self.send_pending and (now - self.send_ticks) > self.timeout)
+
+    # Recv path
+
+    def start_recv(self, maxlen=MAXBUF):
+        if self.isclosed:
+            return
+        if self.recv_pending:
+            return
+
+        self.recv_maxlen = maxlen
+        self.recv_ticks = ticks()
+        self.recv_pending = 1
+
+        if self.recvblocked:
+            return
+
+        self.poller.set_readable(self)
+
+        #
+        # The client-side of an SSL connection must send the HELLO
+        # message to start the negotiation.  This is done automagically
+        # by SSL_read and SSL_write.  When the client first operation
+        # is a send(), no problem: the socket is always writable at
+        # the beginning and writable() invokes sosend() that invokes
+        # SSL_write() that negotiates.  The problem is when the client
+        # first operation is recv(): in this case the socket would never
+        # become readable because the server side is waiting for an HELLO.
+        # The following piece of code makes sure that the first recv()
+        # of the client invokes readable() that invokes sorecv() that
+        # invokes SSL_read() that starts the negotiation.
+        #
+
+        if self.kickoffssl:
+            self.kickoffssl = 0
+            self.readable()
+
+    def readable(self):
+        if self.recvblocked:
+            self.poller.set_writable(self)
+            if not self.recv_pending:
+                self.poller.unset_readable(self)
+            self.recvblocked = 0
+            self.writable()
+            return
+
+        status, octets = self.sock.sorecv(self.recv_maxlen)
+
+        if status == SUCCESS and octets:
+
+            if self.measurer:
+                self.measurer.recv += len(octets)
+
+            self.recv_maxlen = 0
+            self.recv_ticks = 0
+            self.recv_pending = 0
+            self.poller.unset_readable(self)
+
+            if self.decrypt:
+                octets = self.decrypt(octets)
+
+            self.recv_complete(octets)
+            return
+
+        if status == WANT_READ:
+            return
+
+        if status == WANT_WRITE:
+            self.poller.unset_readable(self)
+            self.poller.set_writable(self)
+            self.sendblocked = 1
+            return
+
+        if status == SUCCESS and not octets:
+            self.eof = True
+            self._do_close()
+            return
+
+        if status == ERROR:
+            # Here octets is the exception that occurred
+            self._do_close(octets)
+            return
+
+        raise RuntimeError("Unexpected status value")
+
+    def recv_complete(self, octets):
+        pass
+
+    # Send path
+
+    def start_send(self, octets):
+        if self.isclosed:
+            return
+
+        if type(octets) == types.UnicodeType:
+            log.warning("* send: Working-around Unicode input")
+            octets = octets.encode("utf-8")
+        if self.encrypt:
+            octets = self.encrypt(octets)
+
+        if self.send_pending:
+            self.send_queue.append(octets)
+            return
+
+        self.send_octets = octets
+        self.send_ticks = ticks()
+        self.send_pending = 1
+
+        if self.sendblocked:
+            return
+
+        self.poller.set_writable(self)
+
+    def writable(self):
+        if self.sendblocked:
+            self.poller.set_readable(self)
+            if not self.send_pending:
+                self.poller.unset_writable(self)
+            self.sendblocked = 0
+            self.readable()
+            return
+
+        status, count = self.sock.sosend(self.send_octets)
+
+        if status == SUCCESS and count > 0:
+
+            if self.measurer:
+                self.measurer.send += count
+
+            if count == len(self.send_octets):
+
+                if len(self.send_queue) > 0:
+                    self.send_octets = self.send_queue.popleft()
+                    self.send_ticks = ticks()
+                    return
+
+                self.send_octets = None
+                self.send_ticks = 0
+                self.send_pending = 0
+                self.poller.unset_writable(self)
+
+                self.send_complete()
+                return
+
+            if count < len(self.send_octets):
+                self.send_octets = buffer(self.send_octets, count)
+                self.send_ticks = ticks()
+                self.poller.set_writable(self)
+                return
+
+            raise RuntimeError("Sent more than expected")
+
+        if status == WANT_WRITE:
+            return
+
+        if status == WANT_READ:
+            self.poller.unset_writable(self)
+            self.poller.set_readable(self)
+            self.recvblocked = 1
+            return
+
+        if status == ERROR:
+            # Here count is the exception that occurred
+            self._do_close(count)
+            return
+
+        if status == SUCCESS and count <= 0:
+            raise RuntimeError("Unexpected count value")
+
+        raise RuntimeError("Unexpected status value")
+
+    def send_complete(self):
+        pass
+
+### BEGIN DEPRECATED CODE ####
+#
+
+class OldStream(Pollable):
     def __init__(self, poller_):
         self.poller = poller_
         self.parent = None
@@ -468,13 +769,10 @@ class Stream(Pollable):
         raise RuntimeError("Unexpected status value")
 
     def send_complete1(self, stream, octets):
-        self.send_complete(len(octets))
+        self.send_complete()
 
-    def send_complete(self, count):
+    def send_complete(self):
         pass
-
-### BEGIN DEPRECATED CODE ####
-#
 
 def create_stream(sock, poller_, fileno, myname, peername, logname, secure,
                   certfile, server_side):
@@ -483,7 +781,7 @@ def create_stream(sock, poller_, fileno, myname, peername, logname, secure,
         "server_side": server_side,
         "secure": secure,
     }
-    stream = Stream(poller_)
+    stream = OldStream(poller_)
     stream.make_connection(sock)
     stream.configure(conf)
     return stream
@@ -497,7 +795,7 @@ class Connector(Pollable):
 
     def __init__(self, poller_):
         self.poller = poller_
-        self.protocol = None
+        self.stream = None
         self.sock = None
         self.timeout = 15
         self.timestamp = 0
@@ -505,7 +803,7 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET, measurer_=None):
+    def connect(self, endpoint, family=socket.AF_INET, measurer_=None, sobuf=0):
         self.endpoint = endpoint
         self.family = family
         self.measurer = measurer_
@@ -522,6 +820,9 @@ class Connector(Pollable):
             try:
 
                 sock = socket.socket(family, socktype, protocol)
+                if sobuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
                 sock.setblocking(False)
                 result = sock.connect_ex(sockaddr)
                 if result not in INPROGRESS:
@@ -567,7 +868,7 @@ class Connector(Pollable):
             rtt = ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
-        stream = self.protocol(self.poller)
+        stream = self.stream(self.poller)
         stream.parent = self
         stream.make_connection(self.sock)
         self.connection_made(stream)
@@ -699,13 +1000,13 @@ def connect(address, port, connected, **kwargs):
 class Listener(Pollable):
 
     def __init__(self, poller_):
-        self.protocol = None
+        self.stream = None
         self.poller = poller_
         self.lsock = None
         self.endpoint = None
         self.family = 0
 
-    def listen(self, endpoint, family=socket.AF_INET):
+    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
         self.endpoint = endpoint
         self.family = family
 
@@ -722,6 +1023,9 @@ class Listener(Pollable):
 
                 lsock = socket.socket(family, socktype, protocol)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                if sobuf:
+                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
+                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
                 lsock.setblocking(False)
                 lsock.bind(sockaddr)
                 # Probably the backlog here is too big
@@ -754,7 +1058,7 @@ class Listener(Pollable):
             self.accept_failed(exception)
             return
 
-        stream = self.protocol(self.poller)
+        stream = self.stream(self.poller)
         stream.parent = self
         stream.make_connection(sock)
         self.connection_made(stream)
@@ -875,8 +1179,8 @@ class Measurer(object):
         self.streams = []
         self.rtts = []
 
-    def connect(self, connector, endpoint, family=socket.AF_INET):
-        connector.connect(endpoint, family, self)
+    def connect(self, connector, endpoint, family=socket.AF_INET, sobuf=0):
+        connector.connect(endpoint, family, self, sobuf)
 
     def register_stream(self, stream):
         m = StreamMeasurer()
@@ -967,7 +1271,7 @@ class StreamVerboser(object):
         elif eof:
             log.debug("* Connection %s: EOF" % (logname))
         else:
-            log.error("* Connection %s: lost (no reason given)" % (logname))
+            log.debug("* Closed connection %s" % (logname))
 
     def bind_failed(self, endpoint, exception, fatal=False):
         log.error("* Bind %s failed: %s" % (endpoint, exception))
@@ -996,114 +1300,63 @@ import getopt
 measurer = VerboseMeasurer(poller)
 verboser = StreamVerboser()
 
-class DiscardProtocol(Stream):
+KIND_NONE = 0
+KIND_DISCARD = 1
+KIND_CHARGEN = 2
+
+class GenericProtocolStream(Stream):
+
+    """Specializes stream in order to handle some byte-oriented
+       protocols like discard and chargen."""
+
     def __init__(self, poller_):
         Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        verboser.connection_made(self.logname)
-        measurer.register_stream(self)
-        self.start_recv(MAXBUF)
-
-    def recv_complete(self, octets):
-        self.start_recv(MAXBUF)
-
-    def connection_lost(self, exception):
-        verboser.connection_lost(self.logname, self.eof, exception)
-
-class DiscardListener(Listener):
-    def __init__(self, poller_, dictionary):
-        Listener.__init__(self, poller_)
-        self.protocol = DiscardProtocol
-        self.dictionary = dictionary
-
-    def bind_failed(self, exception):
-        verboser.bind_failed(self.endpoint, exception, fatal=True)
-
-    def started_listening(self):
-        verboser.started_listening(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-class EchoProtocol(Stream):
-    def __init__(self, poller_):
-        Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        verboser.connection_made(self.logname)
-        measurer.register_stream(self)
-        self.start_recv(MAXBUF)
-
-    def recv_complete(self, octets):
-        self.start_send(octets)
-
-    def send_complete(self, count):
-        self.start_recv(MAXBUF)
-
-    def connection_lost(self, exception):
-        verboser.connection_lost(self.logname, self.eof, exception)
-
-class EchoListener(Listener):
-    def __init__(self, poller_, dictionary):
-        Listener.__init__(self, poller_)
-        self.protocol = EchoProtocol
-        self.dictionary = dictionary
-
-    def bind_failed(self, exception):
-        verboser.bind_failed(self.endpoint, exception, fatal=True)
-
-    def started_listening(self):
-        verboser.started_listening(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-class ChargenProtocol(Stream):
-    def __init__(self, poller_):
-        Stream.__init__(self, poller_)
-
-    def connection_made(self):
-        verboser.connection_made(self.logname)
         self.buffer = "A" * MAXBUF
-        self.start_send(self.buffer)
-
-    def send_complete(self, octets):
-        self.start_send(self.buffer)
-
-    def connection_lost(self, exception):
-        verboser.connection_lost(self.logname, self.eof, exception)
-
-class ChargenConnector(Connector):
-    def __init__(self, poller_, dictionary):
-        Connector.__init__(self, poller_)
-        self.protocol = ChargenProtocol
-        self.dictionary = dictionary
-
-    def connection_failed(self, exception):
-        verboser.connection_failed(self.endpoint, exception, fatal=True)
-
-    def started_connecting(self):
-        verboser.started_connecting(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-class ConnectProtocol(Stream):
-    def __init__(self, poller_):
-        Stream.__init__(self, poller_)
+        self.kind = KIND_NONE
 
     def connection_made(self):
-        self.close()
+        verboser.connection_made(self.logname)
+        measurer.register_stream(self)
+        if self.kind == KIND_DISCARD:
+            self.start_recv()
+            return
+        if self.kind == KIND_CHARGEN:
+            self.start_send(self.buffer)
+            return
+        self.shutdown()
+
+    def recv_complete(self, octets):
+        self.start_recv()
+
+    def send_complete(self):
+        self.start_send(self.buffer)
 
     def connection_lost(self, exception):
         verboser.connection_lost(self.logname, self.eof, exception)
 
-class ConnectConnector(Connector):
-    def __init__(self, poller_, dictionary):
-        Connector.__init__(self, poller_)
-        self.protocol = ConnectProtocol
+class GenericListener(Listener):
+    def __init__(self, poller_, dictionary, kind):
+        Listener.__init__(self, poller_)
+        self.stream = GenericProtocolStream
         self.dictionary = dictionary
+        self.kind = kind
+
+    def bind_failed(self, exception):
+        verboser.bind_failed(self.endpoint, exception, fatal=True)
+
+    def started_listening(self):
+        verboser.started_listening(self.endpoint)
+
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+        stream.kind = self.kind
+
+class GenericConnector(Connector):
+    def __init__(self, poller_, dictionary, kind):
+        Connector.__init__(self, poller_)
+        self.stream = GenericProtocolStream
+        self.dictionary = dictionary
+        self.kind = kind
 
     def connection_failed(self, exception):
         verboser.connection_failed(self.endpoint, exception, fatal=True)
@@ -1113,50 +1366,55 @@ class ConnectConnector(Connector):
 
     def connection_made(self, stream):
         stream.configure(self.dictionary)
+        stream.kind = self.kind
 
 USAGE = """Neubot net -- Test unit for the asynchronous network layer
 
 Usage: neubot net [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
-    -D macro[=value]   : Set the value of the macro `macro`.
-    -f file            : Read options from file `file`.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
+    -D macro[=value]   : Set the value of the macro `macro`
+    -f file            : Read options from file `file`
+    --help             : Print this help screen and exit
+    -V                 : Print version number and exit
+    -v                 : Run the program in verbose mode
 
 Macros (defaults in square brackets):
-    address=addr       : Select the address to use [127.0.0.1]
+    address=addr       : Select the address to use                 [127.0.0.1]
     certfile           : Path to private key and certificate file
-                         to be used together with `-D secure` []
-    count=N            : Spawn N client connections at a time [1]
-    key=KEY            : Use KEY to initialize ARC4 stream []
-    listen             : Listen for incoming connections [False]
-    obfuscate          : Obfuscate traffic using ARC4 [False]
-    port=port          : Select the port to use [12345]
-    proto=proto        : Choose the protocol.  In listen mode you can
-                         choose between `echo' and `discard' (which is
-                         the default).  In connect / client mode you
-                         can choose between `connect' and `chargen',
-                         and the latter is the default.
-    secure             : Secure the communication using SSL [False]
+                         to be used together with `-D secure`      []
+    clients=N          : Spawn N client connections at a time      [1]
+    duration=N         : Stop the client(s) after N seconds        []
+    key=KEY            : Use KEY to initialize ARC4 stream         []
+    listen             : Listen for incoming connections           [False]
+    obfuscate          : Obfuscate traffic using ARC4              [False]
+    port=port          : Select the port to use                    [12345]
+    proto=proto        : Override protocol (see below)             []
+    secure             : Secure the communication using SSL        [False]
+    sobuf=size         : Set socket buffer size to `size`          []
 
+Protocols:
+    There are two available protocols: `discard` and `chargen`.
+    When running in server mode the default is `chargen` and when
+    running in client mode the default is `discard`.
 """
 
-VERSION = "Neubot 0.3.2\n"
+VERSION = "Neubot 0.3.4\n"
 
 def main(args):
 
     conf = OptionParser()
     conf.set_option("net", "address", "127.0.0.1")
     conf.set_option("net", "certfile", "")
-    conf.set_option("net", "count", "1")
+    conf.set_option("net", "clients", "1")
+    conf.set_option("net", "duration", "0")
     conf.set_option("net", "key", "")
     conf.set_option("net", "listen", "False")
     conf.set_option("net", "obfuscate", "False")
     conf.set_option("net", "port", "12345")
     conf.set_option("net", "proto", "")
     conf.set_option("net", "secure", "False")
+    conf.set_option("net", "sobuf", "0")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -1192,10 +1450,12 @@ def main(args):
     measurer.start()
 
     address = conf.get_option("net", "address")
-    count = conf.get_option_uint("net", "count")
+    clients = conf.get_option_uint("net", "clients")
+    duration = conf.get_option_uint("net", "duration")
     listen = conf.get_option_bool("net", "listen")
     port = conf.get_option_uint("net", "port")
     proto = conf.get_option("net", "proto")
+    sobuf = conf.get_option_uint("net", "sobuf")
 
     dictionary = {
         "certfile": conf.get_option("net", "certfile"),
@@ -1206,32 +1466,34 @@ def main(args):
 
     endpoint = (address, port)
 
-    if listen:
-        dictionary["server_side"] = True
-        if not proto or proto == "discard":
-            listener = DiscardListener(poller, dictionary)
-        elif proto == "echo":
-            listener = EchoListener(poller, dictionary)
+    if proto == "chargen":
+        kind = KIND_CHARGEN
+    elif proto == "discard":
+        kind = KIND_DISCARD
+    elif proto == "":
+        if listen:
+            kind = KIND_CHARGEN
         else:
-            sys.stderr.write(USAGE)
-            sys.exit(1)
-
-        listener.listen(endpoint)
-        loop()
-        sys.exit(0)
-
-    if not proto or proto == "chargen":
-        mkconnector = ChargenConnector
-    elif proto == "connect":
-        mkconnector = ConnectConnector
+            kind = KIND_DISCARD
     else:
         sys.stderr.write(USAGE)
         sys.exit(1)
 
-    while count > 0:
-        count = count - 1
-        connector = mkconnector(poller, dictionary)
-        measurer.connect(connector, endpoint)
+    if listen:
+        dictionary["server_side"] = True
+        listener = GenericListener(poller, dictionary, kind)
+        listener.listen(endpoint, sobuf=sobuf)
+        loop()
+        sys.exit(0)
+
+    if duration > 0:
+        duration = duration + 0.1       # XXX
+        sched(duration, break_loop)
+
+    while clients > 0:
+        clients = clients - 1
+        connector = GenericConnector(poller, dictionary, kind)
+        measurer.connect(connector, endpoint, sobuf=sobuf)
     loop()
     sys.exit(0)
 

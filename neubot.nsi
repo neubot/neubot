@@ -44,32 +44,28 @@ section
     writeuninstaller "$INSTDIR\uninstall.exe"
     createdirectory "$SMPROGRAMS\neubot"
     createshortcut "$SMPROGRAMS\neubot\neubot (gui).lnk"		\
-      "$INSTDIR\neubot-headless.exe"
+      "$INSTDIR\neubotw.exe"
     createshortcut "$SMPROGRAMS\neubot\neubot (start).lnk"		\
-      "$INSTDIR\neubot-start.exe"
+      "$INSTDIR\neubotw.exe" "start"
     createshortcut "$SMPROGRAMS\neubot\neubot (stop).lnk"		\
-      "$INSTDIR\neubot-stop.exe"
+      "$INSTDIR\neubotw.exe" "stop"
     createshortcut "$SMPROGRAMS\neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
     createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
-      "$INSTDIR\neubot-start.exe"
+      "$INSTDIR\neubotw.exe" "start"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "DisplayName" "neubot 0.3.4"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
-    exec "$INSTDIR\neubot-start.exe"
+    exec '"$INSTDIR\neubotw.exe" start'
 sectionend
 section "uninstall"
     #
-    # We cannot use neubot-stop.exe because this program does not
-    # wait for neubot.exe to terminate and so there is the risk to
-    # issue the remove command while the file is already locked
-    # and the remove will fail.
-    # To be sure that the system is not locking anymore neubot.exe
+    # To be sure that the system is not locking anymore neubotw.exe
     # so that we can remove it, we sleep for a while.
     #
-    execwait '"$INSTDIR\neubot.exe" stop'
+    execwait '"$INSTDIR\neubotw.exe" stop'
     sleep 2000
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\neubot"

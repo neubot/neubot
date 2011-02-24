@@ -188,13 +188,6 @@ manual page::
         def get_option_float(self, section, option):
             "Same as above but also try to cast to float."
 
-BUGS
-````
-
-This module does not work reliably unless section names and option
-names are all lowercase.  This is due to the interaction between this
-module and ConfigParser.RawConfigParser.
-
 AUTHOR
 ``````
 
@@ -244,6 +237,9 @@ class OptionParser(ConfigParser.RawConfigParser):
         if not self.has_section(section):
             self.add_section(section)
         self.set(section, option, value)
+
+    def optionxform(self, option):
+        return option
 
     def register_file(self, path):
         self.files.append(path)
@@ -305,7 +301,7 @@ class OptionParser(ConfigParser.RawConfigParser):
         try:
             value = int(value)
         except ValueError:
-            log.error("Option %s in section %s requires an interger argument"
+            log.error("Option %s in section %s requires an integer argument"
               % (option, section))
             sys.exit(1)
         return value
@@ -346,13 +342,13 @@ USAGE = """Neubot options -- Test unit for options parser
 Usage: neubot options [-Vv] [-D option[=value]] [-f file] [--help]
 
 Options:
-    -D option[=value]  : Set the value of the option option.
-    -f file            : Read options from file file.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
+    -D option[=value]  : Set the value of the option option
+    -f file            : Read options from file file
+    --help             : Print this help screen and exit
+    -V                 : Print version number and exit
+    -v                 : Run the program in verbose mode
 
-Options:
+Macros:
     -D cast=type       : Attempt to cast all the other options to
                          the given type.  Type might be one of the
                          following:

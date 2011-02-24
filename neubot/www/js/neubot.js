@@ -78,12 +78,14 @@
         }
 
         value = neubot.XML_text("update", data);
-        attr = neubot.XML_text("update[uri]", data);
-        if (value != "" && attr != "") {
-            $("#updateUrl").attr("href", attr);
+        if (value != "") {
+            link = $("update", data).attr("uri");
+            link = '<a href="' + link + '">' + link + '</a>';
+            $("#updateUrl").html(link);
             $("#updateVersion").text(value);
-            func = function() { $('#update').slideToggle("slow"); };
-            setTimeout(func, 5000);
+            $("#update").show();
+        } else {
+            $("#update").hide();
         }
 
         value = neubot.XML_text("negotiate queuePos", data);

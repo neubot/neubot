@@ -32,16 +32,16 @@ from neubot import log
 
 USAGE = """Neubot CA -- Generate test certificates
 
-Usage: neubot CA [-Vv] [-D option[=value]] [-f file] [--help]
+Usage: neubot CA [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
-    -D option=value  : Set the value of the option option.
-    -f file          : Read options from the file file.
-    --help           : Print this help screen and exit.
-    -V               : Print version number and exit.
-    -v               : Run the program in verbose mode.
+    -D macro=value   : Set the value of the macro `macro`
+    -f file          : Read options from the file `file`
+    --help           : Print this help screen and exit
+    -V               : Print version number and exit
+    -v               : Run the program in verbose mode
 
-Options:
+Macros (defaults in square brackets):
     bits=count       : Generate count bits RSA privkey   [2048]
     cacert=file      : Override cacert file name         [cacert.pem]
     days=count       : Certificate valid for count days  [1095]
@@ -54,10 +54,10 @@ VERSION = "Neubot 0.3.4\n"
 def main(args):
 
     conf = OptionParser()
-    conf.set_option("ca", "bits", "2048")
-    conf.set_option("ca", "cacert", "cacert.pem")
-    conf.set_option("ca", "days", "1095")
-    conf.set_option("ca", "privkey", "privkey.pem")
+    conf.set_option("CA", "bits", "2048")
+    conf.set_option("CA", "cacert", "cacert.pem")
+    conf.set_option("CA", "days", "1095")
+    conf.set_option("CA", "privkey", "privkey.pem")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:Vv", ["help"])
@@ -71,7 +71,7 @@ def main(args):
 
     for name, value in options:
         if name == "-D":
-             conf.register_opt(value, "ca")
+             conf.register_opt(value, "CA")
              continue
         if name == "-f":
              conf.register_file(value)
@@ -90,10 +90,10 @@ def main(args):
     conf.merge_environ()
     conf.merge_opts()
 
-    bits = conf.get_option("ca", "bits")
-    cacert = conf.get_option("ca", "cacert")
-    days = conf.get_option("ca", "days")
-    privkey = conf.get_option("ca", "privkey")
+    bits = conf.get_option("CA", "bits")
+    cacert = conf.get_option("CA", "cacert")
+    days = conf.get_option("CA", "days")
+    privkey = conf.get_option("CA", "privkey")
 
     genrsa = [ "openssl", "genrsa", "-out", privkey, bits ]
     log.debug("CA: exec: %s" % genrsa)

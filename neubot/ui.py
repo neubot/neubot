@@ -47,7 +47,6 @@ from urlparse import urlsplit
 from neubot.database import database
 from neubot.net.pollers import loop
 from neubot.net.pollers import break_loop
-from neubot.config import config
 from neubot.state import state
 from urllib import urlencode
 from textwrap import wrap
@@ -61,6 +60,8 @@ from neubot import pathnames
 from sys import exit
 from shlex import split
 from sys import argv
+
+from neubot.config import *
 
 class UIServer(Server):
     def __init__(self, config):
@@ -143,14 +144,8 @@ class UIServer(Server):
     def _do_api_config(self, connection, request, query, recurse=False):
         response = Message()
         if request.method == "POST":
-            config.update(request.body)
-            location = "http://%s:%s/index.html" % (self.config.address,
-                                                     self.config.port)
-            compose(response, code="303", reason="See Other")
-            response["location"] = location
-            connection.reply(request, response)
-            return
-        stringio = config.marshal()
+            CONFIG.update(request.body)
+        stringio = CONFIG.marshal()
         compose(response, code="200", reason="Ok",
          mimetype="text/xml", body=stringio)
         connection.reply(request, response)

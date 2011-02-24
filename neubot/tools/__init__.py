@@ -1,4 +1,4 @@
-# neubot/net/connectors.py
+# neubot/tools/__init__.py
 
 #
 # Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
@@ -20,10 +20,4 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Non-blocking connect for stream sockets
-# DEPRECATED most of the code has been moved into streams.py
-# This file will stay here for 0.3.4 just for compat.
-#
-
-from neubot.net.streams import connect
+pass

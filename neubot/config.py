@@ -20,55 +20,50 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Most of the variables you can configure via UI
-#
-
-from StringIO import StringIO
-from xml.etree.ElementTree import ElementTree
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import SubElement
-from cgi import parse_qs
-
-class Config:
-    def __init__(self):
-        self.enabled = True
-        self.force = False
-
-    def marshal(self):
-        root = Element("config")
-        elem = SubElement(root, "enabled")
-        elem.text = str(self.enabled)
-        elem = SubElement(root, "force")
-        elem.text = str(self.force)
-        tree = ElementTree(root)
-        stringio = StringIO()
-        tree.write(stringio, encoding="utf-8")
-        stringio.seek(0)
-        return stringio
-
-    def _to_boolean(self, value):
-        value = value.lower()
-        if value in ["false", "no", "0"]:
-            return False
-        return True
-
-    def update(self, stringio):
-        body = stringio.read()
-        dictionary = parse_qs(body)
-        if dictionary.has_key("enabled"):
-            value = dictionary["enabled"][0]
-            self.enabled = self._to_boolean(value)
-        if dictionary.has_key("force"):
-            value = dictionary["force"][0]
-            self.force = self._to_boolean(value)
-
-config = Config()
+import StringIO
+import sys
 
 if __name__ == "__main__":
-    stringio = StringIO()
-    stringio.write("enabled=False&force=True")
+    sys.path.insert(0, ".")
+
+from neubot.marshal import *
+
+class Config(object):
+
+    """
+    Holds all the variables that it's possible to configure via
+    the web user interface.  We return an XML when the request
+    is to read the current values.  And we expect an incoming and
+    www-urlencoded string when the user wants to change some
+    value.
+    """
+
+    def __init__(self):
+        self.enabled = 1
+        self.force = 0
+
+    def marshal(self):
+        data = XML_marshal(self, "Config")
+        stringio = StringIO.StringIO(data)
+        return stringio
+
+    def update(self, stringio):
+        data = stringio.read()
+        QS_unmarshal(self, data)
+
+CONFIG = Config()
+
+__all__ = [ "CONFIG" ]
+
+if __name__ == "__main__":
+    stringio = CONFIG.marshal()
+    print stringio.read()
+
+    stringio = StringIO.StringIO()
+    stringio.write("enabled=0&force=1")
     stringio.seek(0)
-    config.update(stringio)
-    stringio = config.marshal()
+
+    CONFIG.update(stringio)
+
+    stringio = CONFIG.marshal()
     print stringio.read()
