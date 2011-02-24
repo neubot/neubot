@@ -79,7 +79,9 @@
 
         value = neubot.XML_text("update", data);
         if (value != "") {
-            $("#updateUrl").text($("update", data).attr("uri"));
+            link = $("update", data).attr("uri");
+            link = '<a href="' + link + '">' + link + '</a>';
+            $("#updateUrl").html(link);
             $("#updateVersion").text(value);
             $("#update").show();
         } else {
