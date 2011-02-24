@@ -1151,7 +1151,7 @@ HELP = USAGE +								\
 class SpeedtestClient(SpeedtestClient1):
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
         SpeedtestClient1.__init__(self, uri, nclients, flags, debug, parent)
-        self.formatter = lambda n: " %f iByte/s" % n
+        self.formatter = unit_formatter
 
     def __del__(self):
         pass
@@ -1165,14 +1165,14 @@ class SpeedtestClient(SpeedtestClient1):
         if len(self.latency.connect) > 0:
             v.append("Connect:")
             for x in self.latency.connect:
-                v.append(" %f" % x)
+                v.append(" %f s" % x)
             log.info("".join(v))
         # latency
         v = []
         if len(self.latency.latency) > 0:
             v.append("Latency:")
             for x in self.latency.latency:
-                v.append(" %f" % x)
+                v.append(" %f s" % x)
             log.info("".join(v))
         # download
         v = []
