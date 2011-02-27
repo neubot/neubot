@@ -46,7 +46,7 @@ from neubot.http.utils import prettyprint
 from neubot.net.streams import connect
 from neubot.net.pollers import loop
 from neubot.net.pollers import enable_stats
-from neubot.utils import ticks
+from neubot.times import ticks
 from neubot.utils import safe_seek
 from neubot.http.utils import make_filename
 from sys import stdin, stdout, stderr

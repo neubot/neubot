@@ -41,7 +41,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot import pathnames
-from neubot.utils import timestamp
+from neubot.times import timestamp
 from neubot.compat import deque_appendleft
 from neubot import version
 from neubot import log

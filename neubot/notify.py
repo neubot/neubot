@@ -24,12 +24,12 @@
 # Subscribe/publish events
 # Initially an event has a timestamp of zero, and each time
 # you publish an event its timestamp is updated to the current
-# time, using ticks().
+# time, using T().
 #
 
 from collections import deque
 from neubot.net.pollers import sched
-from neubot.utils import ticks
+from neubot.times import T
 from neubot import log
 
 INTERVAL = 10
@@ -52,7 +52,7 @@ class Notifier:
         queue.append((func, context))
 
     def publish(self, event):
-        self.timestamps[event] = int(1000 * ticks())
+        self.timestamps[event] = T()
         if self.subscribers.has_key(event):
             queue = self.subscribers[event]
             del self.subscribers[event]

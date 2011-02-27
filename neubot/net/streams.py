@@ -46,7 +46,7 @@ from neubot.net.pollers import break_loop
 from neubot.net.pollers import loop
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
-from neubot.utils import ticks
+from neubot.times import ticks
 from neubot.utils import fixkwargs
 from neubot import log
 

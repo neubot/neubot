@@ -29,8 +29,8 @@ import select
 import sys
 
 from neubot.utils import unit_formatter
-from neubot.utils import ticks
-from neubot.utils import timestamp
+from neubot.times import ticks
+from neubot.times import timestamp
 from neubot.utils import SimpleStats
 from neubot.utils import Stats
 from neubot import log

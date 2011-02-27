@@ -34,7 +34,7 @@ from neubot.http.messages import compose
 from neubot.http.clients import Client
 from neubot.http.clients import ClientController
 from neubot.net.pollers import loop
-from neubot.utils import timestamp
+from neubot.times import timestamp
 from sys import stdout
 from sys import argv
 from neubot import log
@@ -47,7 +47,7 @@ from sys import exit
 
 from neubot import pathnames
 from collections import deque
-from neubot.utils import ticks
+from neubot.times import ticks
 from neubot.net.pollers import sched
 from neubot.notify import publish
 from neubot.notify import subscribe
