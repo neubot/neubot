@@ -333,8 +333,6 @@ class OptionParser(ConfigParser.RawConfigParser):
             sys.exit(1)
         return value in TRUE_BOOLS
 
-__all__ = [ "OptionParser" ]
-
 # Test unit
 
 USAGE = """Neubot options -- Test unit for options parser
