@@ -30,7 +30,7 @@ from neubot.bittorrent.streams import BTStream
 from neubot.net.streams import Connector
 from neubot.net.streams import Listener
 from neubot.options import OptionParser
-from neubot import log
+from neubot.log import LOG
 
 from neubot.net.streams import verboser as VERBOSER
 from neubot.net.streams import measurer as MEASURER
@@ -210,7 +210,7 @@ def main(args):
              sys.stdout.write(VERSION)
              sys.exit(0)
         if name == "-v":
-             log.verbose()
+             LOG.verbose()
              continue
 
     conf.merge_files()

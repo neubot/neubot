@@ -48,7 +48,7 @@ from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.times import ticks
 from neubot.utils import fixkwargs
-from neubot import log
+from neubot.log import LOG
 
 SUCCESS = 0
 ERROR = 1
@@ -350,7 +350,7 @@ class Stream(Pollable):
             return
 
         if type(octets) == types.UnicodeType:
-            log.warning("* send: Working-around Unicode input")
+            LOG.warning("* send: Working-around Unicode input")
             octets = octets.encode("utf-8")
         if self.encrypt:
             octets = self.encrypt(octets)
@@ -659,7 +659,7 @@ class OldStream(Pollable):
             return
 
         if type(octets) == types.UnicodeType:
-            log.warning("* send: Working-around Unicode input")
+            LOG.warning("* send: Working-around Unicode input")
             octets = octets.encode("utf-8")
         if self.encrypt:
             octets = self.encrypt(octets)
@@ -904,20 +904,20 @@ class OldConnector(Pollable):
         self._connect()
 
     def _connect(self):
-        log.debug("* About to connect to %s:%s" % self.name)
+        LOG.debug("* About to connect to %s:%s" % self.name)
 
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port,
                                    self.family, socket.SOCK_STREAM)
         except socket.error:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
+            LOG.error("* getaddrinfo() %s:%s failed" % self.name)
+            LOG.exception()
             self.cantconnect()
             return
 
         for family, socktype, protocol, cannonname, sockaddr in addrinfo:
             try:
-                log.debug("* Trying with %s..." % str(sockaddr))
+                LOG.debug("* Trying with %s..." % str(sockaddr))
 
                 sock = socket.socket(family, socktype, protocol)
                 sock.setblocking(False)
@@ -928,15 +928,15 @@ class OldConnector(Pollable):
                 self.sock = sock
                 self.begin = ticks()
                 self.poller.set_writable(self)
-                log.debug("* Connection to %s in progress" % str(sockaddr))
+                LOG.debug("* Connection to %s in progress" % str(sockaddr))
                 self.connecting()
                 return
 
             except socket.error:
-                log.error("* connect() to %s failed" % str(sockaddr))
-                log.exception()
+                LOG.error("* connect() to %s failed" % str(sockaddr))
+                LOG.exception()
 
-        log.error("* Can't connect to %s:%s" % self.name)
+        LOG.error("* Can't connect to %s:%s" % self.name)
         self.cantconnect()
 
     def fileno(self):
@@ -949,14 +949,14 @@ class OldConnector(Pollable):
         try:
             self.sock.getpeername()
         except socket.error, exception:
-            log.error("* Can't connect to %s:%s" % self.name)
+            LOG.error("* Can't connect to %s:%s" % self.name)
             if exception[0] == errno.ENOTCONN:
                 try:
                     self.sock.recv(MAXBUF)
                 except socket.error, exception:
-                    log.exception()
+                    LOG.exception()
             else:
-                log.exception()
+                LOG.exception()
             self.cantconnect()
             return
 
@@ -964,17 +964,17 @@ class OldConnector(Pollable):
         stream = create_stream(self.sock, self.poller, self.sock.fileno(),
           self.sock.getsockname(), self.sock.getpeername(), logname,
           self.secure, None, False)
-        log.debug("* Connected to %s:%s!" % self.name)
+        LOG.debug("* Connected to %s:%s!" % self.name)
         self.connected(stream)
 
     def writetimeout(self, now):
         timedout = (now - self.begin >= self.conntimeo)
         if timedout:
-            log.error("* connect() to %s:%s timed-out" % self.name)
+            LOG.error("* connect() to %s:%s timed-out" % self.name)
         return timedout
 
     def closed(self, exception=None):
-        log.debug("* closing Connector to %s:%s" % self.name)
+        LOG.debug("* closing Connector to %s:%s" % self.name)
         self.cantconnect()
 
 def connect(address, port, connected, **kwargs):
@@ -1093,20 +1093,20 @@ class OldListener(Pollable):
         self._listen()
 
     def _listen(self):
-        log.debug("* About to bind %s:%s" % self.name)
+        LOG.debug("* About to bind %s:%s" % self.name)
 
         try:
             addrinfo = socket.getaddrinfo(self.address, self.port, self.family,
                                    socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
         except socket.error:
-            log.error("* getaddrinfo() %s:%s failed" % self.name)
-            log.exception()
+            LOG.error("* getaddrinfo() %s:%s failed" % self.name)
+            LOG.exception()
             self.cantbind()
             return
 
         for family, socktype, protocol, canonname, sockaddr in addrinfo:
             try:
-                log.debug("* Trying with %s..." % str(sockaddr))
+                LOG.debug("* Trying with %s..." % str(sockaddr))
 
                 sock = socket.socket(family, socktype, protocol)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -1117,16 +1117,16 @@ class OldListener(Pollable):
 
                 self.sock = sock
                 self.poller.set_readable(self)
-                log.debug("* Bound with %s" % str(sockaddr))
-                log.debug("* Listening at %s:%s..." % self.name)
+                LOG.debug("* Bound with %s" % str(sockaddr))
+                LOG.debug("* Listening at %s:%s..." % self.name)
                 self.listening()
                 return
 
             except socket.error:
-                log.error("* bind() with %s failed" % str(sockaddr))
-                log.exception()
+                LOG.error("* bind() with %s failed" % str(sockaddr))
+                LOG.exception()
 
-        log.error("* Can't bind %s:%s" % self.name)
+        LOG.error("* Can't bind %s:%s" % self.name)
         self.cantbind()
 
     def fileno(self):
@@ -1138,14 +1138,14 @@ class OldListener(Pollable):
             sock, sockaddr = self.sock.accept()
             sock.setblocking(False)
         except socket.error:
-            log.exception()
+            LOG.exception()
             return
 
         logname = "with %s" % str(sock.getpeername())
         stream = create_stream(sock, self.poller, sock.fileno(),
           sock.getsockname(), sock.getpeername(), logname,
           self.secure, self.certfile, True)
-        log.debug("* Got connection from %s" % str(sock.getpeername()))
+        LOG.debug("* Got connection from %s" % str(sock.getpeername()))
         self.accepted(stream)
 
 def listen(address, port, accepted, **kwargs):
@@ -1255,30 +1255,30 @@ class VerboseMeasurer(Measurer):
 class StreamVerboser(object):
     def connection_lost(self, logname, eof, exception):
         if exception:
-            log.error("* Connection %s: %s" % (logname, exception))
+            LOG.error("* Connection %s: %s" % (logname, exception))
         elif eof:
-            log.debug("* Connection %s: EOF" % (logname))
+            LOG.debug("* Connection %s: EOF" % (logname))
         else:
-            log.debug("* Closed connection %s" % (logname))
+            LOG.debug("* Closed connection %s" % (logname))
 
     def bind_failed(self, endpoint, exception, fatal=False):
-        log.error("* Bind %s failed: %s" % (endpoint, exception))
+        LOG.error("* Bind %s failed: %s" % (endpoint, exception))
         if fatal:
             sys.exit(1)
 
     def started_listening(self, endpoint):
-        log.debug("* Listening at %s" % str(endpoint))
+        LOG.debug("* Listening at %s" % str(endpoint))
 
     def connection_made(self, logname):
-        log.debug("* Connection made %s" % str(logname))
+        LOG.debug("* Connection made %s" % str(logname))
 
     def connection_failed(self, endpoint, exception, fatal=False):
-        log.error("* Connection to %s failed: %s" % (endpoint, exception))
+        LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
         if fatal:
             sys.exit(1)
 
     def started_connecting(self, endpoint):
-        log.debug("* Connecting to %s ..." % str(endpoint))
+        LOG.debug("* Connecting to %s ..." % str(endpoint))
 
 # Unit test
 
@@ -1428,7 +1428,7 @@ def main(args):
              sys.stdout.write(VERSION)
              sys.exit(0)
         if name == "-v":
-             log.verbose()
+             LOG.verbose()
              continue
 
     conf.merge_files()

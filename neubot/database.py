@@ -44,7 +44,7 @@ from neubot import pathnames
 from neubot.times import timestamp
 from neubot.compat import deque_appendleft
 from neubot import version
-from neubot import log
+from neubot.log import LOG
 
 if os.name == "posix":
     from neubot.utils import getpwnamlx
@@ -134,7 +134,7 @@ def migrate_from__v1_0__to__v1_1(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "1.0":
-        log.info("* Migrating database from version 1.0 to 1.1")
+        LOG.info("* Migrating database from version 1.0 to 1.1")
         cursor.execute("ALTER TABLE results ADD uuid TEXT;")
         cursor.execute("""UPDATE config SET value='1.1'
                           WHERE name='version';""")
@@ -176,7 +176,7 @@ class DatabaseManager:
     #
 
     def _do_connect(self):
-        log.debug("* Connecting to database: %s" % self.config.path)
+        LOG.debug("* Connecting to database: %s" % self.config.path)
         #
         # Make sure that we can access the database file or fail making
         # noise (rationale: the error + stacktrace is likely to be less
@@ -185,8 +185,8 @@ class DatabaseManager:
         try:
             fp = open(self.config.path, "ab+")
         except (IOError, OSError):
-            log.error("Can't open/access database file: %s" % self.config.path)
-            log.exception()
+            LOG.error("Can't open/access database file: %s" % self.config.path)
+            LOG.exception()
             sys.exit(1)
         else:
             fp.close()
@@ -504,7 +504,7 @@ def main(args):
         elif name == "-V":
             sys.stdout.write(version + "\n")
         elif name == "-v":
-            log.verbose()
+            LOG.verbose()
         elif name == "-z":
             action = PRUNE
     # config

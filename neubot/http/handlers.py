@@ -28,7 +28,7 @@ from StringIO import StringIO
 from neubot.utils import file_length
 from neubot.net.pollers import sched
 from collections import deque
-from neubot import log
+from neubot.log import LOG
 
 class Receiver:
     def closing(self):
@@ -333,7 +333,7 @@ class Handler:
                 # Ignoring trailers
                 pass
         else:
-            log.debug("Not expecting a line")
+            LOG.debug("Not expecting a line")
             self.close()
 
     def _got_piece(self, piece):
@@ -350,5 +350,5 @@ class Handler:
             if self.left == 0:
                 self.state = CHUNK_END
         else:
-            log.debug("Not expecting a piece")
+            LOG.debug("Not expecting a piece")
             self.close()

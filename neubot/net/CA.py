@@ -28,7 +28,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.options import *
-from neubot import log
+from neubot.log import LOG
 
 USAGE = """Neubot CA -- Generate test certificates
 
@@ -83,7 +83,7 @@ def main(args):
              sys.stdout.write(VERSION)
              sys.exit(0)
         if name == "-v":
-             log.verbose()
+             LOG.verbose()
              continue
 
     conf.merge_files()
@@ -96,12 +96,12 @@ def main(args):
     privkey = conf.get_option("CA", "privkey")
 
     genrsa = [ "openssl", "genrsa", "-out", privkey, bits ]
-    log.debug("CA: exec: %s" % genrsa)
+    LOG.debug("CA: exec: %s" % genrsa)
     subprocess.call(genrsa)
 
     req = [ "openssl", "req", "-new", "-x509", "-key", privkey,
             "-out", cacert, "-days", days ]
-    log.debug("CA: exec: %s" % req)
+    LOG.debug("CA: exec: %s" % req)
     subprocess.call(req)
 
 if __name__ == "__main__":

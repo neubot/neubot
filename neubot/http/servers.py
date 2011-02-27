@@ -50,7 +50,7 @@ from getopt import getopt
 from os import SEEK_END
 from os import sep as SEP
 from time import gmtime
-from neubot import log
+from neubot.log import LOG
 from sys import argv
 from sys import exit
 from os import getcwd
@@ -130,7 +130,7 @@ class SimpleConnection(Receiver):
             response["connection"] = "close"
         self.handler.bufferize(response.serialize_headers())
         self.handler.bufferize(response.serialize_body())
-        prettyprint(log.debug, "> ", response)
+        prettyprint(LOG.debug, "> ", response)
         self._access_log(request, response)
         self.begin_sending()
         self.handler.flush(flush_progress=self.send_progress,
@@ -158,7 +158,7 @@ class SimpleConnection(Receiver):
             nbytes = response["content-length"]
             if nbytes == "0":
                 nbytes = "-"
-        log.log_access("%s - - [%s] \"%s\" %s %s" % (address, xt, requestline,
+        LOG.log_access("%s - - [%s] \"%s\" %s %s" % (address, xt, requestline,
          statuscode, nbytes))
 
     def closing(self):
@@ -183,7 +183,7 @@ class SimpleConnection(Receiver):
         self.message[key] = value
 
     def end_of_headers(self):
-        prettyprint(log.debug, "< ", self.message)
+        prettyprint(LOG.debug, "< ", self.message)
         state, length = self.nextstate(self.message)
         if state == FIRSTLINE:
             #
@@ -340,7 +340,7 @@ class WebServer(Server):
         except KeyboardInterrupt:
             raise
         except:
-            log.exception()
+            LOG.exception()
             m = Message()
             compose(m, code="500", reason="Internal Server Error")
             connection.reply(message, m)
@@ -444,7 +444,7 @@ def main(args):
             stdout.write(VERSION+"\n")
             exit(0)
         elif name == "-v":
-            log.verbose()
+            LOG.verbose()
     # arguments
     if len(arguments) >= 3:
         stderr.write(USAGE % args[0])

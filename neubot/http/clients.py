@@ -32,7 +32,7 @@ from StringIO import StringIO
 from os.path import exists
 from getopt import GetoptError
 from getopt import getopt
-from neubot import log
+from neubot.log import LOG
 from os import unlink, SEEK_SET, SEEK_END
 from neubot import version as VERSION
 from neubot.http.handlers import ERROR
@@ -146,7 +146,7 @@ class SimpleClient(Receiver):
     def _do_send(self):
         self.handler.bufferize(self.request.serialize_headers())
         self.handler.bufferize(self.request.serialize_body())
-        prettyprint(log.debug, "> ", self.request)
+        prettyprint(LOG.debug, "> ", self.request)
         self.begin_sending()
         self.handler.flush(flush_progress=self.send_progress,
                            flush_success=self.sent_request)
@@ -181,7 +181,7 @@ class SimpleClient(Receiver):
         self.response[key] = value
 
     def end_of_headers(self):
-        prettyprint(log.debug, "< ", self.response)
+        prettyprint(LOG.debug, "< ", self.response)
         state, length = self.nextstate(self.request, self.response)
         if state == FIRSTLINE:
             #
@@ -353,7 +353,7 @@ class DownloadManager(ClientController):
                 self._get_resource_piece(0, [0, length/2-1], client)
                 self._get_resource_piece(1, [length/2, length-1], None)
             else:
-                log.error("Bad content-length")
+                LOG.error("Bad content-length")
         else:
             self._get_resource(client)
 
@@ -372,8 +372,8 @@ class DownloadManager(ClientController):
         try:
             afile = open(self.filename, "wb")
         except IOError:
-            log.error("Can't open file: %s" % self.filename)
-            log.exception()
+            LOG.error("Can't open file: %s" % self.filename)
+            LOG.exception()
         else:
             request = Message()
             compose(request, method="GET", uri=self.uri, keepalive=False)
@@ -384,7 +384,7 @@ class DownloadManager(ClientController):
 
     def _got_resource(self, client, request, response):
         if response.code != "200":
-            log.error("Response: %s %s" % (response.code, response.reason))
+            LOG.error("Response: %s %s" % (response.code, response.reason))
             response.body.close()
             unlink(self.filename)
 
@@ -406,8 +406,8 @@ class DownloadManager(ClientController):
         try:
             afile = open(filename, "wb")
         except IOError:
-            log.error("Can't open file: %s" % filename)
-            log.exception()
+            LOG.error("Can't open file: %s" % filename)
+            LOG.exception()
         else:
             request = Message()
             compose(request, method="GET", uri=self.uri, keepalive=False)
@@ -424,39 +424,39 @@ class DownloadManager(ClientController):
         value = response["content-range"]
         vector = value.split()
         if len(vector) != 2 or vector[0] != "bytes":
-            log.error("Bad content-range")
+            LOG.error("Bad content-range")
             return
         value = vector[1]
         vector = value.split("/")
         if len(vector) != 2:
-            log.error("Bad content-range")
+            LOG.error("Bad content-range")
             return
         # check
         byterange = vector[0]
         if not self.filenames.has_key(byterange):
-            log.error("Unexpected content-range")
+            LOG.error("Unexpected content-range")
             return
         # fopen
         try:
             afile = open(self.filename, "ab")
         except IOError:
-            log.error("Can't open file: %s" % self.filename)
-            log.exception()
+            LOG.error("Can't open file: %s" % self.filename)
+            LOG.exception()
             return
         response.body.close()
         filename = self.filenames[byterange]
         try:
             response.body = open(filename, "rb")
         except IOError:
-            log.error("Can't open file: %s" % filename)
-            log.exception()
+            LOG.error("Can't open file: %s" % filename)
+            LOG.exception()
             return
         # unpack
         try:
             vector = byterange.split("-")
             lower, upper = map(int, vector)
         except ValueError:
-            log.exception()
+            LOG.exception()
             return
         # copy
         safe_seek(afile, lower, SEEK_SET)
@@ -573,7 +573,7 @@ def main(args):
             try:
                 outfile = open(value, "wb")
             except IOError:
-                log.exception()
+                LOG.exception()
                 exit(1)
         elif name == "-s":
             new_controller = DefaultController
@@ -585,13 +585,13 @@ def main(args):
             try:
                 infile = open(value, "rb")
             except IOError:
-                log.exception()
+                LOG.exception()
                 exit(1)
         elif name == "-V":
             stdout.write(VERSION+"\n")
             exit(0)
         elif name == "-v":
-            log.verbose()
+            LOG.verbose()
             enable_stats()
     # sanity
     if len(arguments) == 0:
@@ -624,7 +624,7 @@ def main(args):
                         filename = make_filename(uri, "index.html")
                         ofile = open(filename, "wb")
                     except IOError:
-                        log.exception()
+                        LOG.exception()
                         continue
                 else:
                     ofile = outfile
@@ -669,8 +669,8 @@ def main(args):
             # might run out-of-memory because of that).
             #
             if infile == stdin:
-                log.warning("Trying to bufferize standard input")
-                log.warning("We might run out of memory because of that")
+                LOG.warning("Trying to bufferize standard input")
+                LOG.warning("We might run out of memory because of that")
                 infile = StringIO(stdin.read())
             for uri in arguments:
                 client = Client(controller)

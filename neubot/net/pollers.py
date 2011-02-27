@@ -33,7 +33,7 @@ from neubot.times import ticks
 from neubot.times import timestamp
 from neubot.utils import SimpleStats
 from neubot.utils import Stats
-from neubot import log
+from neubot.log import LOG
 
 # Base class for every socket managed by the poller
 class Pollable:
@@ -129,7 +129,7 @@ class Poller:
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            log.exception()
+            LOG.exception()
 
     #
     # We are very careful when accessing readset and writeset because
@@ -151,7 +151,7 @@ class Poller:
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                log.exception()
+                LOG.exception()
                 self.close(stream)
 
     def _writable(self, fileno):
@@ -162,7 +162,7 @@ class Poller:
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                log.exception()
+                LOG.exception()
                 self.close(stream)
 
     #
@@ -210,7 +210,7 @@ class Poller:
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
-                    log.exception()
+                    LOG.exception()
                 index = index + 1
             del self.tasks[:index]
 
@@ -221,7 +221,7 @@ class Poller:
                  [], self.timeout)
             except select.error, (code, reason):
                 if code != errno.EINTR:
-                    log.exception()
+                    LOG.exception()
                     raise
             else:
                 for fileno in res[0]:

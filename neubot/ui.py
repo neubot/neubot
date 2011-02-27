@@ -50,7 +50,7 @@ from neubot.net.pollers import break_loop
 from neubot.state import state
 from urllib import urlencode
 from textwrap import wrap
-from neubot import log
+from neubot.log import LOG
 from cgi import parse_qs
 from sys import stderr
 from sys import stdout
@@ -79,7 +79,7 @@ class UIServer(Server):
         self.table["/api/version"] = self._do_api_version
 
     def bind_failed(self):
-        log.error("Is another neubot(1) instance running?")
+        LOG.error("Is another neubot(1) instance running?")
         exit(1)
 
     def got_request(self, connection, request):
@@ -88,7 +88,7 @@ class UIServer(Server):
         except KeyboardInterrupt:
             raise
         except:
-            log.exception()
+            LOG.exception()
             response = Message()
             compose(response, code="500", reason="Internal Server Error")
             connection.reply(request, response)
@@ -120,7 +120,7 @@ class UIServer(Server):
         try:
             body = open(filename, "rb")
         except (OSError, IOError):
-            log.error("* Not found: %s" % filename)
+            LOG.error("* Not found: %s" % filename)
             compose(response, code="404", reason="Not Found")
         else:
             mimetype, encoding = guess_type(filename)
@@ -339,12 +339,12 @@ class SimpleStateTracker(ClientController):
             except KeyboardInterrupt:
                 raise
             except:
-                log.exception()
+                LOG.exception()
             else:
                 try:
                     self._processbody(document)
                 except ValueError:
-                    log.exception()
+                    LOG.exception()
         self._sendrequest(client)
 
     def _processbody(self, document):
@@ -509,12 +509,12 @@ class UIClient(ClientController):
 
     def got_response(self, client, request, response):
         if response.code == "303":
-            log.info("See Other: %s" % response["location"])
+            LOG.info("See Other: %s" % response["location"])
             return
         if response.code == "200":
             stdout.write(response.body.read())
             return
-        log.error("Error: %s %s" % (response.code, response.reason))
+        LOG.error("Error: %s %s" % (response.code, response.reason))
 
 uiclient = UIClient("127.0.0.1", "9774")
 
@@ -571,7 +571,7 @@ def dosource(vector):
             filename = vector[0]
             fin = open(filename, "r")
         except (IOError, OSError):
-            log.exception()
+            LOG.exception()
         else:
             mainloop([], fin)
     else:
@@ -585,13 +585,13 @@ def doversion(vector):
 
 def doquiet(vector):
     if len(vector) == 0:
-        log.quiet()
+        LOG.quiet()
     else:
         dohelp(["quiet"])
 
 def doverbose(vector):
     if len(vector) == 0:
-        log.verbose()
+        LOG.verbose()
     else:
         dohelp(["verbose"])
 
@@ -719,7 +719,7 @@ def main(args):
         elif name == "-S":
             servermode = True
         elif name == "-v":
-            log.verbose()
+            LOG.verbose()
         elif name == "-V":
             stdout.write(version + "\n")
             exit(0)
@@ -754,7 +754,7 @@ def mainloop(arguments, fin):
             except SystemExit:
                 raise
             except:
-                log.exception()
+                LOG.exception()
     else:
         docommand(arguments)
 

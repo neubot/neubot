@@ -25,7 +25,7 @@ from neubot.times import ticks
 from time import clock
 from time import sleep
 from time import time
-from neubot import log
+from neubot.log import LOG
 from sys import stdin
 from sys import stdout
 from sys import stderr
@@ -159,7 +159,7 @@ def getpwnaml(users=USERS):
 def getpwnamlx(users=USERS):
     passwd = getpwnaml(users)
     if not passwd:
-        log.error("* Can't getpwnam for: %s" % str(users))
+        LOG.error("* Can't getpwnam for: %s" % str(users))
         # XXX Because we catch SystemExit where we should not
         os._exit(1)
     return passwd
@@ -168,27 +168,27 @@ def become_daemon(flags=DAEMON_ALL):
     if os.name == "posix":
         try:
             if flags & DAEMON_SYSLOG:
-                log.debug("* Redirect logs to syslog(3)")
-                log.redirect()
+                LOG.debug("* Redirect logs to syslog(3)")
+                LOG.redirect()
                 for descriptor in range(0,3):
                     os.close(descriptor)
                 devnull = os.open("/dev/null", os.O_RDWR)
                 for descriptor in range(1,3):
                     os.dup2(devnull, descriptor)
             if flags & DAEMON_CHDIR:
-                log.debug("* Move working directory to /")
+                LOG.debug("* Move working directory to /")
                 os.chdir("/")
             if flags & DAEMON_DETACH:
-                log.debug("* Detach from controlling tty")
+                LOG.debug("* Detach from controlling tty")
                 if os.fork() > 0:
                     os._exit(0)
-                log.debug("* Become leader of a new session")
+                LOG.debug("* Become leader of a new session")
                 os.setsid()
-                log.debug("* Detach from controlling session")
+                LOG.debug("* Detach from controlling session")
                 if os.fork() > 0:
                     os._exit(0)
             if flags & DAEMON_SIGNAL:
-                log.debug("* Ignoring the SIGINT signal")
+                LOG.debug("* Ignoring the SIGINT signal")
                 signal.signal(signal.SIGINT, signal.SIG_IGN)
             if flags & DAEMON_PIDFILE:
                 pidfiles = ["/var/run/neubot.pid"]
@@ -199,7 +199,7 @@ def become_daemon(flags=DAEMON_ALL):
                         f = open(pidfile, "wb")
                         f.write(str(os.getpid()) + "\n")
                         f.close()
-                        log.debug("* Written pidfile: %s" % pidfile)
+                        LOG.debug("* Written pidfile: %s" % pidfile)
                         break
                     except (IOError, OSError):
                         pass
@@ -208,8 +208,8 @@ def become_daemon(flags=DAEMON_ALL):
                 os.setgid(passwd.pw_gid)
                 os.setuid(passwd.pw_uid)
         except:
-            log.error("fatal: become_daemon() failed")
-            log.exception()
+            LOG.error("fatal: become_daemon() failed")
+            LOG.exception()
             os._exit(1)
     else:
         pass
