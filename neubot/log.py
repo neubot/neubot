@@ -165,27 +165,6 @@ class Logger(object):
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
 
-### DEPRECATED ###
-#
-
-log = LOG
-
-log_access = log.log_access
-verbose = log.verbose
-quiet = log.quiet
-redirect = log.redirect
-exception = log.exception
-error = log.error
-warning = log.warning
-info = log.info
-start = log.start
-progress = log.progress
-complete = log.complete
-debug = log.debug
-
-                 #
-### DEPRECATED ###
-
 def main(args):
     LOG.verbose()
     LOG.error("testing neubot logger -- This is an error message")
