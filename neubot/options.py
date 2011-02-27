@@ -35,7 +35,7 @@ Neubot options parser
 SYNOPSYS
 ````````
 
-|   from neubot.options import *
+|   from neubot.options import OptionParser
 
 DESCRIPTION
 ```````````
