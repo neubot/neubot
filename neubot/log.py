@@ -156,15 +156,11 @@ class Logger(object):
     def __str__(self):
         results = []
         for tstamp, message in self.queue:
-            dictionary = {}
-            dictionary["timestamp"] = tstamp
-            dictionary["message"] = message
-            results.append(dictionary)
-        try:
-            data = json.dumps(results, ensure_ascii=True)
-        except (UnicodeEncodeError, UnicodeDecodeError):
-            data = ""
-        return data
+            results.append({
+                "timestamp": tstamp,
+                "message": message,
+            })
+        return json.dumps(results)
 
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
