@@ -164,7 +164,6 @@ class Logger(object):
 
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
-__all__ = [ "LOG" ]
 
 ### DEPRECATED ###
 #
