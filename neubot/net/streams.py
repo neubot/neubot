@@ -39,8 +39,8 @@ except ImportError:
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.net.pollers import Pollable
-from neubot.net.pollers import POLLER
+from neubot.net.poller import Pollable
+from neubot.net.poller import POLLER
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.times import ticks

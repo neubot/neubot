@@ -31,7 +31,7 @@ from neubot.utils import unit_formatter
 from neubot.http.messages import compose
 from neubot.http.clients import Client
 from neubot.http.clients import ClientController
-from neubot.net.pollers import POLLER
+from neubot.net.poller import POLLER
 from neubot.times import timestamp
 from sys import stdout
 from sys import argv

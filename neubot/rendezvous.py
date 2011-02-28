@@ -43,7 +43,7 @@ from xml.etree.ElementTree import TreeBuilder
 from neubot.http.messages import compose
 from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
-from neubot.net.pollers import POLLER
+from neubot.net.poller import POLLER
 from neubot.database import database
 from neubot.utils import versioncmp
 from xml.dom import minidom

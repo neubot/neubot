@@ -28,7 +28,7 @@
 #
 
 from collections import deque
-from neubot.net.pollers import POLLER
+from neubot.net.poller import POLLER
 from neubot.times import T
 from neubot.log import LOG
 
