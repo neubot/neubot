@@ -165,7 +165,7 @@ class Logger(object):
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
 
-def main(args):
+if __name__ == "__main__":
     LOG.verbose()
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
@@ -177,6 +177,3 @@ def main(args):
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
     print str(LOG)
-
-if __name__ == "__main__":
-    main(sys.argv)
