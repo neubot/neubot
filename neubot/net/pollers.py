@@ -52,7 +52,7 @@ class Pollable(object):
         pass
 
 
-class PollerTask(object):
+class Task(object):
 
     def __init__(self, delta, func):
         self.time = ticks() + delta
@@ -89,7 +89,7 @@ class Poller(object):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
 
     def sched(self, delta, func):
-        task = PollerTask(delta, func)
+        task = Task(delta, func)
         self.pending.append(task)
         return task
 
