@@ -25,7 +25,7 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from neubot import log
-from neubot.log import ismacosx
+from neubot.system import ismacosx
 from sys import exit
 from sys import argv
 import os.path

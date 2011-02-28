@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
 from neubot import debug
 from sys import setprofile
-from neubot.log import ismacosx
+from neubot.system import ismacosx
 from neubot import pathnames
 from neubot import log
 from sys import stderr
