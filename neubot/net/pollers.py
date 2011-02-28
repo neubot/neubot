@@ -229,8 +229,4 @@ class Poller(object):
                     self.close(stream)
 
 
-poller = Poller(1)
-
-loop = poller.loop
-sched = poller.sched
-break_loop = poller.break_loop
+POLLER = Poller(1)
