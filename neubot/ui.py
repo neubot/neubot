@@ -45,8 +45,7 @@ from mimetypes import guess_extension
 from os.path import normpath
 from urlparse import urlsplit
 from neubot.database import database
-from neubot.net.pollers import loop
-from neubot.net.pollers import break_loop
+from neubot.net.pollers import POLLER
 from neubot.state import state
 from urllib import urlencode
 from textwrap import wrap
@@ -230,7 +229,7 @@ class UIServer(Server):
         connection.reply(request, response)
 
     def _do_api_exit(self, connection, request, query, recurse=False):
-        break_loop()
+        POLLER.break_loop()
 
 #
 # [ui]
@@ -317,7 +316,7 @@ class SimpleStateTracker(ClientController):
     def loop(self):
         while not self.stop:
             self._sendrequest()
-            loop()
+            POLLER.loop()
             # We should land here on errors only
             sleep(3)
 
@@ -531,7 +530,7 @@ def doget(vector):
         if not variable.startswith("/"):
             variable = "/" + variable
         uiclient.get(variable)
-        loop()
+        POLLER.loop()
     else:
         dohelp(["get"])
 
@@ -541,7 +540,7 @@ def doset(vector):
         if not variable.startswith("/"):
             variable = "/" + variable
         uiclient.set(variable, value)
-        loop()
+        POLLER.loop()
     else:
         dohelp(["set"])
 
@@ -734,7 +733,7 @@ def main(args):
             exit(1)
         database.start()
         ui.start()
-        loop()
+        POLLER.loop()
         exit(0)
     # arguments
     mainloop(arguments, stdin)

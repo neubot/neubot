@@ -30,11 +30,11 @@ from neubot.bittorrent.streams import BTStream
 from neubot.net.streams import Connector
 from neubot.net.streams import Listener
 from neubot.options import OptionParser
+from neubot.net.pollers import POLLER
 from neubot.log import LOG
 
 from neubot.net.streams import verboser as VERBOSER
 from neubot.net.streams import measurer as MEASURER
-from neubot.net.pollers import poller as POLLER
 
 from neubot.arcfour import arcfour_new
 

@@ -44,8 +44,7 @@ from neubot.http.messages import compose
 from neubot.http.utils import nextstate
 from neubot.http.utils import prettyprint
 from neubot.net.streams import connect
-from neubot.net.pollers import loop
-from neubot.net.pollers import enable_stats
+from neubot.net.pollers import POLLER
 from neubot.times import ticks
 from neubot.utils import safe_seek
 from neubot.http.utils import make_filename
@@ -592,7 +591,6 @@ def main(args):
             exit(0)
         elif name == "-v":
             LOG.verbose()
-            enable_stats()
     # sanity
     if len(arguments) == 0:
         stderr.write(USAGE.replace("@PROGNAME@", args[0]))
@@ -607,7 +605,7 @@ def main(args):
         #
         for uri in arguments:
             DownloadManager(uri)
-        loop()
+        POLLER.loop()
     else:
         controller = new_controller()
         if method == GET:
@@ -635,7 +633,7 @@ def main(args):
                 response.body = ofile
                 client.sendrecv(request, response)
                 if outfile != None:
-                    loop()
+                    POLLER.loop()
                     if outfile != stdout:
                         #
                         # The SimpleClient code rewind()s the file because
@@ -648,7 +646,7 @@ def main(args):
                     else:
                         outfile.flush()
             if outfile == None:
-                loop()
+                POLLER.loop()
         elif method == HEAD:
             for uri in arguments:
                 client = Client(controller)
@@ -656,7 +654,7 @@ def main(args):
                 request = Message()
                 compose(request, method="HEAD", uri=uri, keepalive=False)
                 client.sendrecv(request)
-            loop()
+            POLLER.loop()
         elif method == PUT:
             #
             # To keep things simple, we PUT each URI sequentially,
@@ -677,7 +675,7 @@ def main(args):
                 request = Message()
                 compose(request, method="PUT", uri=uri, keepalive=False)
                 client.sendrecv(request)
-                loop()
+                POLLER.loop()
                 safe_seek(infile, 0, SEEK_SET)
 
 if __name__ == "__main__":

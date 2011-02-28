@@ -26,7 +26,7 @@
 
 from StringIO import StringIO
 from neubot.utils import file_length
-from neubot.net.pollers import sched
+from neubot.net.pollers import POLLER
 from collections import deque
 from neubot.log import LOG
 
@@ -101,7 +101,7 @@ class Handler:
 
     def passiveclose(self):
         if not (self.flags & ISCLOSED):
-            self.task = sched(30, self.close)
+            self.task = POLLER.sched(30, self.close)
             self.state = IDLE
 
     def close(self, check_eof=False):

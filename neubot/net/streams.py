@@ -39,11 +39,8 @@ except ImportError:
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.net.pollers import sched
 from neubot.net.pollers import Pollable
-from neubot.net.pollers import poller
-from neubot.net.pollers import break_loop
-from neubot.net.pollers import loop
+from neubot.net.pollers import POLLER
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.times import ticks
@@ -882,7 +879,7 @@ CONNECTARGS = {
     "connecting"  : lambda: None,
     "conntimeo"   : 10,
     "family"      : socket.AF_INET,
-    "poller"      : poller,
+    "poller"      : POLLER,
     "secure"      : False,
 }
 
@@ -1072,7 +1069,7 @@ LISTENARGS = {
     "certfile"   : None,
     "family"     : socket.AF_INET,
     "listening"  : lambda: None,
-    "poller"     : poller,
+    "poller"     : POLLER,
     "secure"     : False,
 }
 
@@ -1285,7 +1282,7 @@ class StreamVerboser(object):
 from neubot.options import OptionParser
 import getopt
 
-measurer = VerboseMeasurer(poller)
+measurer = VerboseMeasurer(POLLER)
 verboser = StreamVerboser()
 
 KIND_NONE = 0
@@ -1469,20 +1466,20 @@ def main(args):
 
     if listen:
         dictionary["server_side"] = True
-        listener = GenericListener(poller, dictionary, kind)
+        listener = GenericListener(POLLER, dictionary, kind)
         listener.listen(endpoint, sobuf=sobuf)
-        loop()
+        POLLER.loop()
         sys.exit(0)
 
     if duration > 0:
         duration = duration + 0.1       # XXX
-        sched(duration, break_loop)
+        POLLER.sched(duration, POLLER.break_loop)
 
     while clients > 0:
         clients = clients - 1
-        connector = GenericConnector(poller, dictionary, kind)
+        connector = GenericConnector(POLLER, dictionary, kind)
         measurer.connect(connector, endpoint, sobuf=sobuf)
-    loop()
+    POLLER.loop()
     sys.exit(0)
 
 if __name__ == "__main__":

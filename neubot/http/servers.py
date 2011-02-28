@@ -43,7 +43,7 @@ from neubot.net.streams import listen
 from neubot.utils import fixkwargs
 from neubot import version as VERSION
 from neubot.utils import safe_seek
-from neubot.net.pollers import loop
+from neubot.net.pollers import POLLER
 from types import StringType
 from getopt import GetoptError
 from getopt import getopt
@@ -462,7 +462,7 @@ def main(args):
     server = WebServer(address, port=port)
     server.new_connection = new_connection
     server.listen()
-    loop()
+    POLLER.loop()
 
 if __name__ == "__main__":
     main(argv)

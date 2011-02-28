@@ -43,10 +43,9 @@ from xml.etree.ElementTree import TreeBuilder
 from neubot.http.messages import compose
 from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
-from neubot.net.pollers import sched
+from neubot.net.pollers import POLLER
 from neubot.database import database
 from neubot.utils import versioncmp
-from neubot.net.pollers import loop
 from xml.dom import minidom
 from StringIO import StringIO
 from neubot import version
@@ -316,7 +315,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         if self.dontloop:
             return
         LOG.info("* Next rendezvous in %d seconds" % self.interval)
-        task = sched(self.interval, self.rendezvous)
+        task = POLLER.sched(self.interval, self.rendezvous)
         state.set_next_rendezvous(task.timestamp)
         state.set_inactive().commit()
 
@@ -472,7 +471,7 @@ def main(args):
         rendezvous.start()
         if daemonize:
             become_daemon()
-        loop()
+        POLLER.loop()
         exit(0)
     # client
     if len(arguments) > 1:
@@ -489,7 +488,7 @@ def main(args):
         ui.start()
     client = RendezvousClient(uri, interval, dontloop, xdebug)
     client.rendezvous()
-    loop()
+    POLLER.loop()
 
 if __name__ == "__main__":
     main(argv)

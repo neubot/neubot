@@ -25,15 +25,13 @@ if __name__ == "__main__":
     path.insert(0, ".")
 
 from StringIO import StringIO
-from neubot.net.pollers import disable_stats
-from neubot.net.pollers import enable_stats
 from neubot.database import database
 from neubot.http.messages import Message
 from neubot.utils import unit_formatter
 from neubot.http.messages import compose
 from neubot.http.clients import Client
 from neubot.http.clients import ClientController
-from neubot.net.pollers import loop
+from neubot.net.pollers import POLLER
 from neubot.times import timestamp
 from sys import stdout
 from sys import argv
@@ -48,7 +46,6 @@ from sys import exit
 from neubot import pathnames
 from collections import deque
 from neubot.times import ticks
-from neubot.net.pollers import sched
 from neubot.notify import publish
 from neubot.notify import subscribe
 from neubot.notify import RENEGOTIATE
@@ -202,11 +199,11 @@ class _SessionTrackerMixin(object):
     connections = {}
 
     def __init__(self):
-        sched(60, self._sample_queue_length)
+        POLLER.sched(60, self._sample_queue_length)
 
     def _sample_queue_length(self):
         LOG.info("speedtest queue length: %d\n" % len(self.queue))
-        sched(60, self._sample_queue_length)
+        POLLER.sched(60, self._sample_queue_length)
 
     def session_active(self, request):
         identifier = request["authorization"]
@@ -287,7 +284,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
     def __init__(self, config):
         self.config = config
         self.begin_test = 0
-        sched(3, self._speedtest_check_timeout)
+        POLLER.sched(3, self._speedtest_check_timeout)
         _SessionTrackerMixin.__init__(self)
 
     def check_request_headers(self, connection, request):
@@ -317,7 +314,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
             self.do_negotiate(connection, request, True)
 
     def _speedtest_check_timeout(self):
-        sched(3, self._speedtest_check_timeout)
+        POLLER.sched(3, self._speedtest_check_timeout)
         if self.session_prune():
             publish(RENEGOTIATE)
 
@@ -581,7 +578,7 @@ from neubot.net.streams import Measurer
 class SpeedtestMeasurer(Measurer):
     def __init__(self):
         Measurer.__init__(self)
-        sched(1, self.poll)
+        POLLER.sched(1, self.poll)
         self.created = ticks()
         self.recv = []
         self.send = []
@@ -590,7 +587,7 @@ class SpeedtestMeasurer(Measurer):
         recvavg, sendavg = self.measure()[2:4]
         self.recv.append(recvavg)
         self.send.append(sendavg)
-        sched(1, self.poll)
+        POLLER.sched(1, self.poll)
 
     def clear(self):
         del self.recv[:]
@@ -1272,7 +1269,7 @@ def main(args):
         speedtest.start()
         if daemonize:
             become_daemon()
-        loop()
+        POLLER.loop()
         exit(0)
     # client
     if len(arguments) > 1:
@@ -1287,7 +1284,7 @@ def main(args):
     # run
     client = SpeedtestClient(uri, nclients, flags, xdebug)
     client.formatter = FORMATTERS[fmt]
-    loop()
+    POLLER.loop()
 
 if __name__ == "__main__":
     main(argv)
