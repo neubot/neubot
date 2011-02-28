@@ -26,7 +26,7 @@ import getopt
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.bittorrent.streams import BTStream
+from neubot.bittorrent.stream import BTStream
 from neubot.net.stream import Connector
 from neubot.net.stream import Listener
 from neubot.options import OptionParser
