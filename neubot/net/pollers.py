@@ -20,10 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Poll() and dispatch I/O events (such as "socket readable")
-#
-
 import errno
 import select
 
@@ -31,8 +27,12 @@ from neubot.times import ticks
 from neubot.times import timestamp
 from neubot.log import LOG
 
-# Base class for every socket managed by the poller
-class Pollable:
+# Interval between each check for timed-out I/O operations
+CHECK_TIMEOUT = 10
+
+
+class Pollable(object):
+
     def fileno(self):
         raise NotImplementedError
 
@@ -51,7 +51,9 @@ class Pollable:
     def closed(self, exception=None):
         pass
 
-class PollerTask:
+
+class PollerTask(object):
+
     def __init__(self, delta, func):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
@@ -74,12 +76,11 @@ class PollerTask:
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
 
-# Interval between each check for timed-out I/O operations
-CHECK_TIMEOUT = 10
 
-class Poller:
-    def __init__(self, timeout):
-        self.timeout = timeout
+class Poller(object):
+
+    def __init__(self, select_timeout):
+        self.select_timeout = select_timeout
         self.again = True
         self.readset = {}
         self.writeset = {}
@@ -205,7 +206,7 @@ class Poller:
         if self.readset or self.writeset:
             try:
                 res = select.select(self.readset.keys(), self.writeset.keys(),
-                 [], self.timeout)
+                 [], self.select_timeout)
             except select.error, (code, reason):
                 if code != errno.EINTR:
                     LOG.exception()
@@ -228,6 +229,7 @@ class Poller:
             for stream in x:
                 if stream.writetimeout(now):
                     self.close(stream)
+
 
 poller = Poller(1)
 
