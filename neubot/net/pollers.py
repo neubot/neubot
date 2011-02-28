@@ -78,9 +78,6 @@ class PollerTask:
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
 
-    def __del__(self):
-        pass
-
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
 
@@ -96,9 +93,6 @@ class Poller:
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         self.stats = Stats()
         self.sched(1, self._update_stats)
-
-    def __del__(self):
-        pass
 
     def sched(self, delta, func):
         task = PollerTask(delta, func)
