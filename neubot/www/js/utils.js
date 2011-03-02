@@ -85,7 +85,7 @@ var utils = (function() {
             s = tm + " minutes";
         }
         else {
-            s = "Less than one minute";
+            s = "less than one minute";
         }
         return (s);
     }
