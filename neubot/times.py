@@ -29,7 +29,7 @@ The various definitions of time available in Neubot.
 timestamp()
   Returns an integer representing the number of seconds elapsed
   since the EPOCH in UTC.
- 
+
 ticks()
   Returns a real representing the most precise clock available
   on the current platform.  Note that, depending on the platform,
@@ -43,7 +43,7 @@ T()
   is calculated as follows: ``int(10^6 * ticks())``.  So,
   the same caveat regarding ticks() also applies to this
   function.
-""" 
+"""
 
 import os
 import time
