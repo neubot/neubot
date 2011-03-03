@@ -33,7 +33,7 @@ if __name__ == "__main__":
 from neubot.notify import STATECHANGE
 from neubot.notify import get_event_timestamp
 from neubot.utils import versioncmp
-from neubot.utils import timestamp
+from neubot.times import timestamp
 from neubot.utils import XML_to_stringio
 from xml.dom import minidom
 from neubot.notify import publish

@@ -21,6 +21,7 @@
 #
 
 from StringIO import StringIO
+from neubot.times import ticks
 from time import clock
 from time import sleep
 from time import time
@@ -49,24 +50,6 @@ def fixkwargs(kwargs, defaults):
         if not kwargs.has_key(key):
             kwargs[key] = defaults[key]
     return kwargs
-
-#
-# timestamp()
-#   Suitable for timestamping, returns an *integer* representing the
-#   number of seconds elapsed since the epoch, in UTC.
-#
-# ticks()
-#   An very precise monotonic clock, that might not be suitable for
-#   timestamping (depending on the plaform.)  It should only be used
-#   to calculate the time elapsed between two events.
-#
-
-timestamp = lambda: int(time())
-
-if os.name == 'nt':
-    ticks = clock
-else:
-    ticks = time
 
 #
 # When stdin, stdout, stderr are attached to console, seek(0)

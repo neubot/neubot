@@ -27,7 +27,6 @@
 import collections
 import time
 import traceback
-import os
 import sys
 
 if __name__ == "__main__":
@@ -35,18 +34,11 @@ if __name__ == "__main__":
 
 from neubot.compat import deque_append
 from neubot.compat import json
+from neubot.times import timestamp
 
 # fetch BackgroundLogger from either unix or win32
 from neubot.unix import *
 from neubot.win32 import *
-
-#
-# XXX neubot/utils.py depends on this file so we must roll out our
-# own version of timestamp().  It could also make sense to move here
-# the definition of timestamp and pull from this file in utils.py.
-#
-
-timestamp = lambda: int(time.time())
 
 class InteractiveLogger(object):
 

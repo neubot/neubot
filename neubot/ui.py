@@ -29,7 +29,7 @@ if __name__ == "__main__":
    path.insert(0, ".")
 
 from neubot import version
-from neubot.utils import timestamp
+from neubot.times import timestamp
 from StringIO import StringIO
 from neubot.http.servers import Server
 from neubot.http.messages import Message
