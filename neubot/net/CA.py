@@ -27,7 +27,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.options import *
+from neubot.options import OptionParser
 from neubot.log import LOG
 
 USAGE = """Neubot CA -- Generate test certificates
