@@ -20,23 +20,19 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Poll() and dispatch I/O events (such as "socket readable")
-#
-
 import errno
 import select
-import sys
 
-from neubot.utils import unit_formatter
 from neubot.times import ticks
 from neubot.times import timestamp
-from neubot.utils import SimpleStats
-from neubot.utils import Stats
 from neubot.log import LOG
 
-# Base class for every socket managed by the poller
-class Pollable:
+# Interval between each check for timed-out I/O operations
+CHECK_TIMEOUT = 10
+
+
+class Pollable(object):
+
     def fileno(self):
         raise NotImplementedError
 
@@ -55,7 +51,9 @@ class Pollable:
     def closed(self, exception=None):
         pass
 
-class PollerTask:
+
+class Task(object):
+
     def __init__(self, delta, func):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
@@ -78,30 +76,20 @@ class PollerTask:
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
 
-    def __del__(self):
-        pass
 
-# Interval between each check for timed-out I/O operations
-CHECK_TIMEOUT = 10
+class Poller(object):
 
-class Poller:
-    def __init__(self, timeout):
-        self.timeout = timeout
+    def __init__(self, select_timeout):
+        self.select_timeout = select_timeout
         self.again = True
-        self.printstats = False
         self.readset = {}
         self.writeset = {}
         self.pending = []
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
-        self.stats = Stats()
-        self.sched(1, self._update_stats)
-
-    def __del__(self):
-        pass
 
     def sched(self, delta, func):
-        task = PollerTask(delta, func)
+        task = Task(delta, func)
         self.pending.append(task)
         return task
 
@@ -121,11 +109,11 @@ class Poller:
         if self.writeset.has_key(fileno):
             del self.writeset[fileno]
 
-    def close(self, stream):
+    def close(self, stream, exception=None):
         self.unset_readable(stream)
         self.unset_writable(stream)
         try:
-            stream.closed()
+            stream.closed(exception)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -150,9 +138,8 @@ class Poller:
                 stream.readable()
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except:
-                LOG.exception()
-                self.close(stream)
+            except Exception, exception:
+                self.close(stream, exception)
 
     def _writable(self, fileno):
         if self.writeset.has_key(fileno):
@@ -161,9 +148,8 @@ class Poller:
                 stream.writable()
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except:
-                LOG.exception()
-                self.close(stream)
+            except Exception, exception:
+                self.close(stream, exception)
 
     #
     # Differently from Twisted, we might break out of the loop
@@ -218,7 +204,7 @@ class Poller:
         if self.readset or self.writeset:
             try:
                 res = select.select(self.readset.keys(), self.writeset.keys(),
-                 [], self.timeout)
+                 [], self.select_timeout)
             except select.error, (code, reason):
                 if code != errno.EINTR:
                     LOG.exception()
@@ -242,38 +228,5 @@ class Poller:
                 if stream.writetimeout(now):
                     self.close(stream)
 
-    def disable_stats(self):
-        if self.printstats:
-            sys.stdout.write("\n")
-        self.printstats = False
 
-    def enable_stats(self):
-        self.printstats = True
-
-    def _update_stats(self):
-        self.sched(1, self._update_stats)
-        if self.printstats:
-            # send
-            self.stats.send.end()
-            send = self.stats.send.speed()
-            self.stats.send.begin()
-            # recv
-            self.stats.recv.end()
-            recv = self.stats.recv.speed()
-            self.stats.recv.begin()
-            # print
-            stats = "\r    send: %s | recv: %s" % (
-             unit_formatter(send, unit="B/s"),
-             unit_formatter(recv, unit="B/s"))
-            if len(stats) < 80:
-                stats += " " * (80 - len(stats))
-            sys.stdout.write(stats)
-            sys.stdout.flush()
-
-poller = Poller(1)
-
-loop = poller.loop
-sched = poller.sched
-disable_stats = poller.disable_stats
-enable_stats = poller.enable_stats
-break_loop = poller.break_loop
+POLLER = Poller(1)

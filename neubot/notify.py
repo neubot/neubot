@@ -28,7 +28,7 @@
 #
 
 from collections import deque
-from neubot.net.pollers import sched
+from neubot.net.pollers import POLLER
 from neubot.times import T
 from neubot.log import LOG
 
@@ -39,7 +39,7 @@ STATECHANGE = "statechange"
 
 class Notifier:
     def __init__(self):
-        sched(INTERVAL, self.periodic)
+        POLLER.sched(INTERVAL, self.periodic)
         self.timestamps = {}
         self.subscribers = {}
 
@@ -65,7 +65,7 @@ class Notifier:
                     LOG.exception()
 
     def periodic(self):
-        sched(INTERVAL, self.periodic)
+        POLLER.sched(INTERVAL, self.periodic)
         subscribers = self.subscribers
         self.subscribers = {}
         for event, queue in subscribers.items():
