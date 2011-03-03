@@ -109,11 +109,11 @@ class Poller(object):
         if self.writeset.has_key(fileno):
             del self.writeset[fileno]
 
-    def close(self, stream, exception=None):
+    def close(self, stream):
         self.unset_readable(stream)
         self.unset_writable(stream)
         try:
-            stream.closed(exception)
+            stream.closed()
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -138,8 +138,9 @@ class Poller(object):
                 stream.readable()
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except Exception, exception:
-                self.close(stream, exception)
+            except:
+                LOG.exception()
+                self.close(stream)
 
     def _writable(self, fileno):
         if self.writeset.has_key(fileno):
@@ -148,8 +149,9 @@ class Poller(object):
                 stream.writable()
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except Exception, exception:
-                self.close(stream, exception)
+            except:
+                LOG.exception()
+                self.close(stream)
 
     #
     # Differently from Twisted, we might break out of the loop
