@@ -129,16 +129,19 @@
           </p>
 
           <p>
-           <center>
-            <a id="prev" href="#">&lt;&lt;</a>&nbsp;<input id="step" type="text" value="20" size="1" style="text-align: center"/>&nbsp;<a id="next" href="#">&gt;&gt;</a>
-           </center>
+           View last <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
+            <select id="res_unit" size="1">
+             <option value="d" selected="selected">day</option>
+             <option value="h">hour</option>
+            </select>
+            <input id="res_submit" type="button" value="Go" />
           </p>
 
         </div>
         </div>
         </div>
 
-        <div id="chartdiv1" style="height: 400px; width:100%;"></div>
+        <div id="chartdiv1" style="margin-bottom:20px; height: 400px; width:100%;"></div>
         <div id="results">
           <!-- nothing -->
         </div>
