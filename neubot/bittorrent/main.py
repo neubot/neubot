@@ -36,21 +36,34 @@ from neubot.net.streams import verboser as VERBOSER
 from neubot.net.streams import measurer as MEASURER
 from neubot.net.pollers import poller as POLLER
 
+from neubot.arcfour import arcfour_new
+
 class Upload(object):
 
     """Responds to requests."""
 
-    def __init__(self, handler):
+    def __init__(self, handler, scramble):
         self.handler = handler
+        self.scrambler = None
+        if scramble:
+            self.scrambler = arcfour_new()
+        self.interested = False
 
     def got_request(self, index, begin, length):
-        pass
+        if not self.interested:
+            return
+        data = "A" * length
+        if self.scrambler:
+            data = self.scrambler.encrypt(data)
+        self.handler.send_piece(index, begin, data)
 
     def got_interested(self):
-        pass
+        self.interested = True
+        self.handler.send_unchoke()
 
     def got_not_interested(self):
-        pass
+        self.interested = False
+        self.handler.send_choke()
 
 class Download(object):
 
@@ -58,15 +71,20 @@ class Download(object):
 
     def __init__(self, handler):
         self.handler = handler
+        self.choked = True
 
     def got_piece(self, index, begin, length):
-        pass
+        if self.choked:
+            return
+        self.handler.send_request(index, 0, 1<<15)
 
     def got_choke(self):
-        pass
+        self.choked = True
 
     def got_unchoke(self):
-        pass
+        self.choked = False
+        for index in range(0, 32):
+            self.handler.send_request(index, 0, 1<<15)
 
 class BTConnectingPeer(Connector):
 
@@ -78,6 +96,10 @@ class BTConnectingPeer(Connector):
         self.infohash = "".join( ['\xaa']*20 )
         self.my_id = "".join( ['\xaa']*20 )
         self.stream = BTStream
+        self.dictionary = {}
+
+    def configure(self, dictionary):
+        self.dictionary = dictionary
 
     def connection_failed(self, exception):
         VERBOSER.connection_failed(self.endpoint, exception, fatal=True)
@@ -86,13 +108,15 @@ class BTConnectingPeer(Connector):
         VERBOSER.started_connecting(self.endpoint)
 
     def connection_made(self, handler):
+        handler.configure(self.dictionary)
         MEASURER.register_stream(handler)
         handler.initialize(self, self.my_id, True)
         handler.download = Download(handler)
-        handler.upload = Upload(handler)
+        scramble = not self.dictionary.get("obfuscate", False)
+        handler.upload = Upload(handler, scramble)
 
     def connection_handshake_completed(self, handler):
-        handler.close()
+        handler.send_interested()
 
 class BTListeningPeer(Listener):
 
@@ -104,6 +128,10 @@ class BTListeningPeer(Listener):
         self.infohash = "".join( ['\xaa']*20 )
         self.my_id = "".join( ['\xaa']*20 )
         self.stream = BTStream
+        self.dictionary = {}
+
+    def configure(self, dictionary):
+        self.dictionary = dictionary
 
     def started_listening(self):
         VERBOSER.started_listening(self.endpoint)
@@ -115,13 +143,15 @@ class BTListeningPeer(Listener):
         VERBOSER.connection_failed(self.endpoint, exception, fatal=True)
 
     def connection_made(self, handler):
+        handler.configure(self.dictionary)
         MEASURER.register_stream(handler)
         handler.initialize(self, self.my_id, True)
         handler.download = Download(handler)
-        handler.upload = Upload(handler)
+        scramble = not self.dictionary.get("obfuscate", False)
+        handler.upload = Upload(handler, scramble)
 
     def connection_handshake_completed(self, handler):
-        handler.close()
+        pass
 
 USAGE = """Neubot bittorrent -- Test unit for BitTorrent module
 
@@ -136,8 +166,11 @@ Options:
 
 Macros (defaults in square brackets):
     address=addr       : Select address to use               [127.0.0.1]
+    key=KEY            : Use KEY to initialize ARC4 stream   []
     listen             : Listen for incoming connections     [False]
+    obfuscate          : Obfuscate traffic using ARC4        [False]
     port=port          : Select the port to use              [6881]
+    sobuf=size         : Set socket buffer size to `size`    []
 
 """
 
@@ -147,8 +180,11 @@ def main(args):
 
     conf = OptionParser()
     conf.set_option("bittorrent", "address", "127.0.0.1")
+    conf.set_option("bittorrent", "key", "")
     conf.set_option("bittorrent", "listen", "False")
+    conf.set_option("bittorrent", "obfuscate", "False")
     conf.set_option("bittorrent", "port", "6881")
+    conf.set_option("bittorrent", "sobuf", 0)
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -182,21 +218,30 @@ def main(args):
     conf.merge_opts()
 
     address = conf.get_option("bittorrent", "address")
+    key = conf.get_option("bittorrent", "key")
     listen = conf.get_option_bool("bittorrent", "listen")
+    obfuscate = conf.get_option_bool("bittorrent", "obfuscate")
     port = conf.get_option_uint("bittorrent", "port")
+    sobuf = conf.get_option_uint("bittorrent", "sobuf")
 
     endpoint = (address, port)
+    dictionary = {
+        "obfuscate": obfuscate,
+        "key": key,
+    }
 
     MEASURER.start()
 
     if listen:
         listener = BTListeningPeer(POLLER)
-        listener.listen(endpoint)
+        listener.configure(dictionary)
+        listener.listen(endpoint, sobuf=sobuf)
         POLLER.loop()
         sys.exit(0)
 
     connector = BTConnectingPeer(POLLER)
-    connector.connect(endpoint)
+    connector.configure(dictionary)
+    connector.connect(endpoint, sobuf=sobuf)
     POLLER.loop()
     sys.exit(0)
 
