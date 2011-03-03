@@ -122,14 +122,12 @@ function process_state(data) {
     }
 
     value = neubot.XML_text("update", data);
-    if (value != "") {
-        link = $("update", data).attr("uri");
-        link = '<a href="' + link + '">' + link + '</a>';
-        $("#updateUrl").html(link);
+    attr = neubot.XML_text("update[uri]", data);
+    if (value != "" && attr != "") {
+        $("#updateUrl").attr("href", attr);
         $("#updateVersion").text(value);
-        $("#update").show();
-    } else {
-        $("#update").hide();
+        func = function() { $('#update').slideToggle("slow"); };
+        setTimeout(func, 5000);
     }
 
     value = neubot.XML_text("negotiate queuePos", data);
