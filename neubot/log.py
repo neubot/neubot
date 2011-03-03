@@ -33,12 +33,10 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.compat import deque_append
+from neubot.system import BackgroundLogger
 from neubot.compat import json
 from neubot.times import timestamp
 
-# fetch BackgroundLogger from either unix or win32
-from neubot.unix import *
-from neubot.win32 import *
 
 class InteractiveLogger(object):
 
