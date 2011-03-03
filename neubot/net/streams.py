@@ -460,8 +460,6 @@ class OldStream(Pollable):
         self.recv_pending = 0
         self.recvblocked = 0
 
-        self.stats = []
-        self.stats.append(self.poller.stats)
         self.notify_closing = None
 
         self.measurer = None
@@ -602,8 +600,6 @@ class OldStream(Pollable):
 
             if self.measurer:
                 self.measurer.recv += len(octets)
-            for stats in self.stats:
-                stats.recv.account(len(octets))
 
             notify = self.recv_success
             self.recv_maxlen = 0
@@ -695,8 +691,6 @@ class OldStream(Pollable):
 
             if self.measurer:
                 self.measurer.send += count
-            for stats in self.stats:
-                stats.send.account(count)
 
             self.send_pos += count
 
