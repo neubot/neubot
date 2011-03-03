@@ -44,7 +44,7 @@ from neubot.http.messages import compose
 from neubot.http.utils import nextstate
 from neubot.http.utils import prettyprint
 from neubot.net.streams import connect
-from neubot.net.pollers import POLLER
+from neubot.net.poller import POLLER
 from neubot.times import ticks
 from neubot.utils import safe_seek
 from neubot.http.utils import make_filename

@@ -45,7 +45,7 @@ from mimetypes import guess_extension
 from os.path import normpath
 from urlparse import urlsplit
 from neubot.database import database
-from neubot.net.pollers import POLLER
+from neubot.net.poller import POLLER
 from neubot.state import state
 from urllib import urlencode
 from textwrap import wrap

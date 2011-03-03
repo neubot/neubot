@@ -26,7 +26,7 @@
 
 from StringIO import StringIO
 from neubot.utils import file_length
-from neubot.net.pollers import POLLER
+from neubot.net.poller import POLLER
 from collections import deque
 from neubot.log import LOG
 

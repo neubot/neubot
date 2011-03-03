@@ -1,4 +1,4 @@
-# neubot/net/pollers.py
+# neubot/net/poller.py
 
 #
 # Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,

@@ -1,4 +1,4 @@
-# neubot/bittorrent/streams.py
+# neubot/bittorrent/stream.py
 
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,10 +27,9 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.bittorrent.bitfield import Bitfield
-from neubot.net.streams import Stream
+from neubot.net.stream import Stream
+from neubot.net.stream import VERBOSER
 from neubot.log import LOG
-
-from neubot.net.streams import verboser as VERBOSER
 
 CHOKE = chr(0)
 UNCHOKE = chr(1)
