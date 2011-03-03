@@ -20,16 +20,20 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from neubot.utils import safe_seek
-from StringIO import StringIO
-from neubot.http.utils import date
-from neubot.http.utils import urlsplit
-from neubot.utils import fixkwargs
-from os import SEEK_END, SEEK_SET
-from socket import AF_INET, AF_UNSPEC
-from types import StringType
+import StringIO
+import types
+import socket
+import os
 
-class Message:
+from neubot.http.utils import urlsplit
+from neubot.utils import safe_seek
+from neubot.http.utils import date
+
+
+class Message(object):
+
+    """Represents an HTTP message."""
+
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
         self.method = method
         self.uri = uri
@@ -37,15 +41,13 @@ class Message:
         self.reason = reason
         self.protocol = protocol
         self.headers = {}
-        self.body = StringIO("")
+        self.body = StringIO.StringIO("")
         self.scheme = ""
         self.address = ""
         self.port = ""
         self.pathquery = ""
-        self.family = AF_UNSPEC
-
-    def __del__(self):
-        pass
+        self.family = socket.AF_UNSPEC
+        self.length = 0
 
     #
     # The client code saves the whole uri in self.uri and then
@@ -59,6 +61,7 @@ class Message:
 
     def serialize_headers(self):
         lst = []
+
         if self.method:
             lst.append(self.method)
             lst.append(" ")
@@ -77,20 +80,29 @@ class Message:
             lst.append(" ")
             lst.append(self.reason)
         lst.append("\r\n")
+
         for key, value in self.headers.items():
             lst.append(key)
             lst.append(": ")
             lst.append(value)
             lst.append("\r\n")
         lst.append("\r\n")
+
         octets = "".join(lst)
-        return StringIO(octets)
+        return StringIO.StringIO(octets)
 
     def serialize_body(self):
         return self.body
 
+    #
+    # RFC2616 section 4.2 says that "Each header field consists
+    # of a name followed by a colon (":") and the field value. Field
+    # names are case-insensitive."  So, for simplicity, we use all-
+    # lowercase header names.
+    #
+
     def __getitem__(self, key):
-        if type(key) != StringType:
+        if type(key) != types.StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
@@ -98,7 +110,7 @@ class Message:
         return ""
 
     def __setitem__(self, key, value):
-        if type(key) != StringType:
+        if type(key) != types.StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
@@ -106,70 +118,64 @@ class Message:
         self.headers[key] = value
 
     def __delitem__(self, key):
-        if type(key) != StringType:
+        if type(key) != types.StringType:
             raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
             del self.headers[key]
 
-#
-# Note that compose() is meant for composing request messages
-# from client-side and response messages from server-side.
-# If the body is not present we explicitly set Content-Length at
-# zero.  It costs nothing and the gain is that the browser does
-# not guess that there is an unbounded response when we send a
-# "200 Ok" response with no attached body.
-#
+    #
+    # Note that compose() is meant for composing request messages
+    # from client-side and response messages from server-side.
+    # If the body is not present we explicitly set Content-Length at
+    # zero.  It costs nothing and the gain is that the browser does
+    # not guess that there is an unbounded response when we send a
+    # "200 Ok" response with no attached body.
+    #
 
-COMPOSEARGS = {
-    "address"    : "",
-    "body"       : None,
-    "code"       : "",
-    "date"       : True,
-    "family"     : AF_INET,
-    "keepalive"  : True,
-    "method"     : "",
-    "mimetype"   : "",
-    "nocache"    : True,
-    "port"       : "",
-    "pathquery"  : "",
-    "protocol"   : "HTTP/1.1",
-    "reason"     : "",
-    "scheme"     : "",
-    "uri"        : "",
-}
+    def compose(self, **kwargs):
+        self.method = kwargs.get("method", "")
 
+        if kwargs.get("uri", ""):
+            self.uri = kwargs.get("uri", "")
+            (self.scheme, self.address,
+             self.port, self.pathquery) = urlsplit(self.uri)
+            self["host"] = self.address + ":" + self.port
+        else:
+            self.scheme = kwargs.get("scheme", "")
+            self.address = kwargs.get("address", "")
+            self.port = kwargs.get("port", "")
+            self.pathquery = kwargs.get("pathquery", "")
+
+        self.code = kwargs.get("code", "")
+        self.reason = kwargs.get("reason", "")
+        self.protocol = kwargs.get("protocol", "HTTP/1.1")
+
+        if kwargs.get("nocache", True):
+            if self.method:
+                self["pragma"] = "no-cache"
+            self["cache-control"] = "no-cache"
+
+        if kwargs.get("date", True):
+            self["date"] = date()
+
+        if not kwargs.get("keepalive", True):
+            self["connection"] = "close"
+
+        if kwargs.get("body", None):
+            self.body = kwargs.get("body", None)
+            safe_seek(self.body, 0, os.SEEK_END)
+            self.length = self.body.tell()
+            safe_seek(self.body, 0, os.SEEK_SET)
+            self["content-length"] = str(self.length)
+            if kwargs.get("mimetype", ""):
+                self["content-type"] = kwargs.get("mimetype", "")
+        else:
+            self["content-length"] = "0"
+
+        self.family = kwargs.get("family", socket.AF_INET)
+
+
+# for compat
 def compose(m, **kwargs):
-    fixkwargs(kwargs, COMPOSEARGS)
-    m.method = kwargs["method"]
-    if kwargs["uri"]:
-        m.uri = kwargs["uri"]
-        m.scheme, m.address, m.port, m.pathquery = urlsplit(m.uri)
-        m["host"] = m.address + ":" + m.port
-    else:
-        m.scheme = kwargs["scheme"]
-        m.address = kwargs["address"]
-        m.port = kwargs["port"]
-        m.pathquery = kwargs["pathquery"]
-    m.code = kwargs["code"]
-    m.reason = kwargs["reason"]
-    m.protocol = kwargs["protocol"]
-    if kwargs["nocache"]:
-        if m.method:
-            m["pragma"] = "no-cache"
-        m["cache-control"] = "no-cache"
-    if kwargs["date"]:
-        m["date"] = date()
-    if not kwargs["keepalive"]:
-        m["connection"] = "close"
-    if kwargs["body"]:
-        m.body = kwargs["body"]
-        safe_seek(m.body, 0, SEEK_END)
-        length = m.body.tell()
-        safe_seek(m.body, 0, SEEK_SET)
-        m["content-length"] = str(length)
-        if kwargs["mimetype"]:
-            m["content-type"] = kwargs["mimetype"]
-    else:
-        m["content-length"] = "0"
-    m.family = kwargs["family"]
+    m.compose(**kwargs)

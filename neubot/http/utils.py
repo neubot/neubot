@@ -20,15 +20,15 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os.path
+import email.utils
+import urlparse
+
 from neubot.http.handlers import BOUNDED
 from neubot.http.handlers import CHUNK_LENGTH
 from neubot.http.handlers import ERROR
 from neubot.http.handlers import FIRSTLINE
 from neubot.http.handlers import UNBOUNDED
-from os.path import exists
-
-import email.utils
-import urlparse
 
 def prettyprint(write, direction, msg, eol=""):
     stringio = msg.serialize_headers()
@@ -42,7 +42,7 @@ def prettyprint(write, direction, msg, eol=""):
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
     if scheme != "http" and scheme != "https":
-        raise Exception("Unknown scheme")
+        raise ValueError("Unknown scheme")
     if ":" in netloc:
         address, port = netloc.split(":", 1)
     elif scheme == "https":
@@ -59,9 +59,7 @@ def urlsplit(uri):
 def date():
     return email.utils.formatdate(usegmt=True)
 
-#
-# Functions to negotiate MIME type
-#
+# MIME type negotiation
 
 def _parse_accept(accept):
     if accept == "":
@@ -114,6 +112,20 @@ def negotiate_mime(m, available, default):
 #    length."
 #
 
+def _parselength(message):
+    value = message["content-length"]
+    try:
+        length = int(value)
+    except ValueError:
+        return ERROR, 0
+    else:
+        if length < 0:
+            return ERROR, 0
+        elif length == 0:
+            return FIRSTLINE, 0
+        else:
+            return BOUNDED, length
+
 def nextstate(request, response=None):
     if response == None:
         if request["transfer-encoding"] == "chunked":
@@ -139,19 +151,7 @@ def nextstate(request, response=None):
             else:
                 return FIRSTLINE, 0
 
-def _parselength(message):
-    value = message["content-length"]
-    try:
-        length = int(value)
-    except ValueError:
-        return ERROR, 0
-    else:
-        if length < 0:
-            return ERROR, 0
-        elif length == 0:
-            return FIRSTLINE, 0
-        else:
-            return BOUNDED, length
+# Guarantee unique filename
 
 def _make_filename(uri, default):
     scheme, address, port, pathquery = urlsplit(uri)
@@ -167,7 +167,7 @@ def make_filename(uri, default):
     filename = _make_filename(uri, default)
     index = 0
     temp = filename
-    while exists(temp):
+    while os.path.exists(temp):
         if index == 100:
             raise ValueError("Can't generate unique filename")
         temp = filename + "." + str(index)
