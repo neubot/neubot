@@ -82,104 +82,86 @@ function getSetConfigVar(id, myfunction, change, value) {
 }
 
 function process_state(data) {
-    var current;
+
+    var actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
+    var now = utils.getNow();
     var value;
-    var func;
-    var attr;
-    var prev;
 
     // Reset style
 
-    jQuery('table#state tr').css('font-weight', 'normal');
     jQuery('#testResultsBox h4').text("Latest test details");
     jQuery('#next_rendezvous').text("");
     jQuery("#queueInfo").text("");
 
     // Keep processing simple to read and understand:
-    // consider each relevant tag on its own but delay
+    // consider each relevant tag on its own and delay
     // the show / hide decisions
 
-    value = neubot.XML_number("pid", data);
-    if (value != "")
-        jQuery("#pid").text(value);
+    if (data.events.pid) {
+        jQuery("#pid").text(data.events.pid);
+    }
 
-    value = neubot.XML_timestamp("next_rendezvous", data);
-    if (value != "") {
-        value = value - neubot.unix_time();
+    if (data.events.next_rendezvous) {
+        value = utils.getTimeFromSeconds(data.events.next_rendezvous);
         // The sysadmin might have adjusted the clock
-        if (value >= 0) {
-            value = neubot.timestamp_to_minutes(value);
-            value = neubot.format_minutes(value);
-            jQuery("#next_rendezvous").text(value);
+        if (value && value > now) {
+            jQuery("#next_rendezvous").text(utils.formatMinutes(value - now));
         }
     }
 
-    value = neubot.XML_timestamp("since", data);
-    if (value != "") {
-        value = neubot.timestamp_to_date(value);
-        value = neubot.format_date(value);
-        jQuery("#since").text(value);
+    if (data.events.since) {
+        value = utils.getTimeFromSeconds(data.events.since, true);
+        if (value) {
+            jQuery("#since").text(value);
+        }
     }
 
-    value = neubot.XML_text("update", data);
-    attr = neubot.XML_text("update[uri]", data);
-    if (value != "" && attr != "") {
-        jQuery("#updateUrl").attr("href", attr);
-        jQuery("#updateVersion").text(value);
-        func = function() { jQuery('#update').slideToggle("slow"); };
-        setTimeout(func, 5000);
+    if (data.update_version) {
+        jQuery("#updateUrl").attr("href", data.update_uri);
+        jQuery("#updateUrl").text(data.update_uri);
+        jQuery("#updateVersion").text(data.update_version);
+        setTimeout(function() { jQuery('#update').slideDown("slow"); }, 500);
     }
 
-    value = neubot.XML_text("negotiate queuePos", data);
-    if (value != "")
-        jQuery("#queuePos").text(value);
-    value = neubot.XML_text("negotiate queueLen", data);
-    if (value != "")
-        jQuery("#queueLen").text(value);
+    if (data.events.negotiate) {
+        if (data.events.negotiate.queue_pos) {
+            jQuery("#queuePos").text(data.events.negotiate.queue_pos);
+        }
+        else {
+            jQuery("#queuePos").text(0);
+        }
 
-    value = neubot.XML_timestamp("test timestamp", data);
-    if (value != "") {
-        value = neubot.timestamp_to_date(value);
-        value = neubot.format_date(value);
-        jQuery("#testTime").text(value);
+        // Maybe it is not so useful
+        // I agree -- Simone
+        if (data.events.negotiate.queue_len) {
+            jQuery("#queueLen").text(data.events.negotiate.queue_len);
+        }
+        else {
+            jQuery("#queueLen").text(0);
+        }
     }
-    value = neubot.XML_text("test name", data);
-    if (value != "") {
+
+    if (data.events.test_name) {
         // XXX XXX XXX This is sooo ugly!
-        jQuery("#testName").text(value);
-        jQuery("#testName1").text(value);
+        jQuery("#testName").text(data.events.test_name);
+        jQuery("#testName1").text(data.events.test_name);
     }
-    // Be prepared to support other test types
-    if (value == "speedtest") {
-        value = neubot.XML_text('test result[tag="latency"]', data);
-        if (value != "")
-            jQuery("#latencyResult").text(value);
-        value = neubot.XML_text('test result[tag="download"]', data);
-        if (value != "")
-            jQuery("#downloadResult").text(value);
-        value = neubot.XML_text('test result[tag="upload"]', data);
-        if (value != "")
-            jQuery("#uploadResult").text(value);
+    if (data.events.speedtest_latency) {
+        jQuery("#latencyResult").text(data.events.speedtest_latency.value);
+    }
+    if (data.events.speedtest_download) {
+        jQuery("#downloadResult").text(data.events.speedtest_download.value);
+    }
+    if (data.events.speedtest_upload) {
+        jQuery("#uploadResult").text(data.events.speedtest_upload.value);
     }
 
-    // Get the current and the previous statuses
-    // Use 'idle' as current state if we are inactive
-    // Those are needed to take decisions below
-
-    current = neubot.XML_text('activity[current="true"]', data);
-    if (current == "")
-        current = "idle";
-    prev = prevStatus
-    prevStatus = current
-
-    // We must update the results plot after a test
-    // but we must be careful because 'collect' is one
-    // of the most transient states, therefore be
-    // paranoid and issue a robust check
+    // Update the results plot after a test
+    // Note this is untested code
 
     // Not yet
     /*
-    if (prev != "idle" && (current == "negotiate" || current == "idle"))
+    if (in_array(data.current, actions) && data.current == "collect")
         neubot.update_results_plot();
     */
 
@@ -187,18 +169,16 @@ function process_state(data) {
     // The qtip must be visible while we are testing
     // and must not be visible otherwise
 
-    if (current == "test" && prev != "test") {
-        jQuery('#latencyResult').text("---");
-        jQuery('#uploadResult').text("---");
-        jQuery('#downloadResult').text("---");
-        jQuery('#testResultsBox').qtip("show");
+    if (in_array(data.current, actions)) {
+        if (data.current == "test") {
+            jQuery('#testResultsBox').qtip("show");
+        }
+        else {
+            jQuery('#testResultsBox').qtip("hide");
+        }
+        jQuery('table#state tr').css('background-color', 'transparent');
+        jQuery('table#state tr#' + data.current).css('background-color', '#ffc');
     }
-    if (current == "idle")                  // XXX
-        jQuery('#testResultsBox').qtip("hide");
-    if (current == "test")
-        jQuery('#testResultsBox h4').text("Current test details");
-
-    jQuery('table#state tr#' + current).css('font-weight', 'bold');
 }
 
 jQuery(document).ready(function() {
@@ -237,6 +217,6 @@ jQuery(document).ready(function() {
     neubot.update_results_plot(500);
     */
 
-    tracker = neubot.state_tracker(process_state);
+    tracker = state.tracker(process_state);
     tracker.start();
 });
