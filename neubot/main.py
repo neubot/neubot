@@ -34,7 +34,7 @@ from neubot import debug
 from sys import setprofile
 from neubot.system import ismacosx
 from neubot import pathnames
-from neubot import log
+from neubot.log import LOG
 from sys import stderr
 from sys import stdout
 from sys import argv
@@ -108,7 +108,7 @@ def dostatusicon(args):
     try:
         import gtk
     except ImportError:
-        log.error("fatal: Can't import Gtk bindings for Python.")
+        LOG.error("fatal: Can't import Gtk bindings for Python.")
         exit(1)
     else:
         from neubot import statusicon
@@ -219,7 +219,7 @@ def _do_invoke(func, args):
         code = int(str(e))
         exit(code)
     except:
-        log.exception()
+        LOG.exception()
         exit(1)
 
 #
@@ -264,8 +264,8 @@ def start_daemon(args):
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
-        log.error("Can't exec: %s" % str(args))
-        log.exception()
+        LOG.error("Can't exec: %s" % str(args))
+        LOG.exception()
         exit(1)
 
 def stop_daemon(address, port):

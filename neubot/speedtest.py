@@ -37,7 +37,7 @@ from neubot.net.pollers import loop
 from neubot.times import timestamp
 from sys import stdout
 from sys import argv
-from neubot import log
+from neubot.log import LOG
 from neubot import version
 from getopt import GetoptError
 from neubot.state import state
@@ -150,7 +150,7 @@ class _TestServerMixin(object):
         try:
             body = open(self.config.path, "rb")
         except (IOError, OSError):
-            log.exception()
+            LOG.exception()
             compose(response, code="500", reason="Internal Server Error")
             connection.reply(request, response)
             return
@@ -161,7 +161,7 @@ class _TestServerMixin(object):
             try:
                 first, last = parse_range(request)
             except ValueError:
-                log.exception()
+                LOG.exception()
                 compose(response, code="400", reason="Bad Request")
                 connection.reply(request, response)
                 return
@@ -205,7 +205,7 @@ class _SessionTrackerMixin(object):
         sched(60, self._sample_queue_length)
 
     def _sample_queue_length(self):
-        log.info("speedtest queue length: %d\n" % len(self.queue))
+        LOG.info("speedtest queue length: %d\n" % len(self.queue))
         sched(60, self._sample_queue_length)
 
     def session_active(self, request):
@@ -295,7 +295,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
         self.register_connection(connection, request)
         if self.config.only_auth and request.uri in RESTRICTED:
             if not self.session_active(request):
-                log.warning("* Connection %s: Forbidden" % (
+                LOG.warning("* Connection %s: Forbidden" % (
                  connection.handler.stream.logname))
                 ret = False
         return ret
@@ -415,7 +415,7 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
         except KeyboardInterrupt:
             raise
         except:
-            log.exception()
+            LOG.exception()
             response = Message()
             compose(response, code="500", reason="Internal Server Error")
             connection.reply(request, response)
@@ -529,7 +529,7 @@ class Latency(SpeedtestHelper):
         SpeedtestHelper.__del__(self)
 
     def start(self):
-        log.start("* Latency run #%d" % self.repeat)
+        LOG.start("* Latency run #%d" % self.repeat)
         for client in self.speedtest.clients:
             self._start_one(client)
 
@@ -554,7 +554,7 @@ class Latency(SpeedtestHelper):
             self._pass_complete()
 
     def _pass_complete(self):
-        log.complete()
+        LOG.complete()
         self.repeat = self.repeat + 1
         if self.repeat <= REPEAT:
             del self.complete[:]
@@ -623,13 +623,13 @@ class Download(SpeedtestHelper):
     def start(self):
 
         if self.calibrating:
-            log.start("* Download: calibrate with %d bytes" % self.length)
+            LOG.start("* Download: calibrate with %d bytes" % self.length)
             self.begin = ticks()
             client = self.speedtest.clients[0]
             self._start_one(client)
             return
 
-        log.start("* Download: measure with %d bytes and %d connections" %
+        LOG.start("* Download: measure with %d bytes and %d connections" %
                   (self.length, len(self.speedtest.clients)))
         MEASURER.clear()
         self.begin = ticks()
@@ -655,7 +655,7 @@ class Download(SpeedtestHelper):
         elapsed = end - self.begin
 
         if self.calibrating:
-            log.complete()
+            LOG.complete()
             self.calibrating -= 1
 
             self.length = int(self.length / elapsed)
@@ -680,13 +680,13 @@ class Download(SpeedtestHelper):
         if len(self.complete) < len(self.speedtest.clients):
             return
 
-        log.complete()
+        LOG.complete()
         self.speedtest.upload.body = response.body.read()
         self.end = end
         self._pass_complete()
 
     def _pass_complete(self):
-        log.info("* Download speeds: %s" % map(speed_formatter,
+        LOG.info("* Download speeds: %s" % map(speed_formatter,
                                                MEASURER.recv))
         speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
@@ -719,7 +719,7 @@ class Upload(SpeedtestHelper):
     def start(self):
 
         if self.calibrating:
-            log.start("* Upload: calibrate with %d bytes" % self.length)
+            LOG.start("* Upload: calibrate with %d bytes" % self.length)
             self.begin = ticks()
             client = self.speedtest.clients[0]
             self._start_one(client)
@@ -728,7 +728,7 @@ class Upload(SpeedtestHelper):
         self.clients = self.speedtest.clients
         if self.length < (1<<19):
             self.clients = self.speedtest.clients[0:2]
-        log.start("* Upload: measure with %d bytes and %d connections" %
+        LOG.start("* Upload: measure with %d bytes and %d connections" %
                   (self.length, len(self.clients)))
         MEASURER.clear()
         self.begin = ticks()
@@ -755,7 +755,7 @@ class Upload(SpeedtestHelper):
         elapsed = end - self.begin
 
         if self.calibrating:
-            log.complete()
+            LOG.complete()
             self.calibrating -= 1
 
             self.length = int(self.length / elapsed)
@@ -783,12 +783,12 @@ class Upload(SpeedtestHelper):
         if len(self.complete) < len(self.clients):
             return
 
-        log.complete()
+        LOG.complete()
         self.end = end
         self._pass_complete()
 
     def _pass_complete(self):
-        log.info("* Upload speeds: %s" % map(speed_formatter,
+        LOG.info("* Upload speeds: %s" % map(speed_formatter,
                                              MEASURER.send))
         speed = self.total / (self.end - self.begin)
         self.speed.append(speed)
@@ -857,7 +857,7 @@ class Negotiate(SpeedtestHelper):
 
     def start(self):
         client = self.speedtest.clients[0]
-        log.start("* Negotiate permission to take the test")
+        LOG.start("* Negotiate permission to take the test")
         m = Message()
         compose(m, method="GET", uri=self.speedtest.uri + "negotiate")
         if self.authorization:
@@ -868,26 +868,26 @@ class Negotiate(SpeedtestHelper):
         if response.code != "200":
             self.speedtest.bad_response(response)
             return
-        log.complete()
+        LOG.complete()
         negotiation = SpeedtestNegotiate_Response()
         try:
             negotiation.parse(response.body)
         except ValueError:
-            log.error("* Bad response message")
-            log.exception()
+            LOG.error("* Bad response message")
+            LOG.exception()
             self.speedtest.bad_response(response)
             return
         self.authorization = str(negotiation.authorization)
         self.publicAddress = negotiation.publicAddress
         if not negotiation.unchoked:
             if negotiation.queuePos and negotiation.queueLen:
-                log.info("* Waiting in queue: %d/%d" % (negotiation.queuePos,
+                LOG.info("* Waiting in queue: %d/%d" % (negotiation.queuePos,
                                                         negotiation.queueLen))
                 state.set_queueInfo(negotiation.queuePos, negotiation.queueLen)
                 state.commit()
             self.start()
             return
-        log.info("* Authorized to take the test!")
+        LOG.info("* Authorized to take the test!")
         self.speedtest.complete()
 
 class Collect(SpeedtestHelper):
@@ -899,7 +899,7 @@ class Collect(SpeedtestHelper):
 
     def start(self):
         client = self.speedtest.clients[0]
-        log.start("* Collecting results")
+        LOG.start("* Collecting results")
         # XML
         root = Element("SpeedtestCollect")
         if database.dbm:
@@ -946,7 +946,7 @@ class Collect(SpeedtestHelper):
         if response.code != "200":
             self.speedtest.bad_response(response)
             return
-        log.complete()
+        LOG.complete()
         self.speedtest.complete()
 
 #
@@ -1079,7 +1079,7 @@ class SpeedtestClient1(ClientController):
         self._update_speedtest()
 
     def bad_response(self, response):
-        log.error("* Bad response: aborting speedtest")
+        LOG.error("* Bad response: aborting speedtest")
         self._doCleanup()
 
     #
@@ -1091,13 +1091,13 @@ class SpeedtestClient1(ClientController):
     #
 
     def connection_failed(self, client):
-        log.error("* Connection failed: aborting speedtest")
+        LOG.error("* Connection failed: aborting speedtest")
         self._doCleanup()
 
     def connection_lost(self, client):
         if self.flags & FLAG_SUCCESS:
             return
-        log.error("* Connection lost: aborting speedtest")
+        LOG.error("* Connection lost: aborting speedtest")
         self._doCleanup()
 
     def got_response(self, client, request, response):
@@ -1157,38 +1157,38 @@ class SpeedtestClient(SpeedtestClient1):
         pass
 
     def speedtest_complete(self):
-        log.info("*** Begin test result ***")
-        log.info("Timestamp: %d\n" % timestamp())
-        log.info("Base-URI: %s\n" % self.uri)
+        LOG.info("*** Begin test result ***")
+        LOG.info("Timestamp: %d\n" % timestamp())
+        LOG.info("Base-URI: %s\n" % self.uri)
         # connect
         v = []
         if len(self.latency.connect) > 0:
             v.append("Connect:")
             for x in self.latency.connect:
                 v.append(" %f s" % x)
-            log.info("".join(v))
+            LOG.info("".join(v))
         # latency
         v = []
         if len(self.latency.latency) > 0:
             v.append("Latency:")
             for x in self.latency.latency:
                 v.append(" %f s" % x)
-            log.info("".join(v))
+            LOG.info("".join(v))
         # download
         v = []
         if len(self.download.speed) > 0:
             v.append("Download:")
             for x in self.download.speed:
                 v.append(" %s" % self.formatter(x))
-            log.info("".join(v))
+            LOG.info("".join(v))
         # upload
         v = []
         if len(self.upload.speed) > 0:
             v.append("Upload:")
             for x in self.upload.speed:
                 v.append(" %s" % self.formatter(x))
-            log.info("".join(v))
-        log.info("*** End test result ***")
+            LOG.info("".join(v))
+        LOG.info("*** End test result ***")
 
 FLAGS = {
     "all": FLAG_ALL,
@@ -1224,7 +1224,7 @@ def main(args):
     for name, value in options:
         if name == "-a":
             if not FLAGS.has_key(value):
-                log.error("Invalid argument to -a: %s" % value)
+                LOG.error("Invalid argument to -a: %s" % value)
                 exit(1)
             flags |= FLAGS[value]
         elif name == "-D":
@@ -1240,11 +1240,11 @@ def main(args):
             except ValueError:
                 nclients = -1
             if nclients <= 0:
-                log.error("Invalid argument to -n: %s" % value)
+                LOG.error("Invalid argument to -n: %s" % value)
                 exit(1)
         elif name == "-O":
             if not value in FORMATTERS.keys():
-                log.error("Invalid argument to -O: %s" % value)
+                LOG.error("Invalid argument to -O: %s" % value)
                 exit(1)
             fmt = value
         elif name == "-S":
@@ -1256,7 +1256,7 @@ def main(args):
             stdout.write(version + "\n")
             exit(0)
         elif name == "-v":
-            log.verbose()
+            LOG.verbose()
         elif name == "-x":
             xdebug = True
     # config

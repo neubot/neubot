@@ -28,7 +28,7 @@ import cgi
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot import log
+from neubot.log import LOG
 
 def XML_append_attribute(document, element, name, value):
 
@@ -84,8 +84,8 @@ def XML_marshal(object, root_elem_name):
     try:
         data = root.toxml("utf-8")
     except (UnicodeEncodeError, UnicodeDecodeError):
-        log.exception()
-        log.warning("Unicode endode or decode error (see above)")
+        LOG.exception()
+        LOG.warning("Unicode endode or decode error (see above)")
 
         #
         # Return a non XML string so that the parser will notice

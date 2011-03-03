@@ -28,9 +28,9 @@ if __name__ == "__main__":
 
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.streams import Stream
+from neubot.log import LOG
 
 from neubot.net.streams import verboser as VERBOSER
-from neubot.log import log as LOG
 
 CHOKE = chr(0)
 UNCHOKE = chr(1)

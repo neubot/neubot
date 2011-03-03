@@ -51,7 +51,7 @@ from xml.dom import minidom
 from StringIO import StringIO
 from neubot import version
 from neubot.ui import ui
-from neubot import log
+from neubot.log import LOG
 from getopt import GetoptError
 from getopt import getopt
 from neubot.state import state
@@ -96,7 +96,7 @@ class RendezvousServer(Server):
         Server.__init__(self, config.address, port=port)
 
     def bind_failed(self):
-        log.error("Is another neubot(1) running?")
+        LOG.error("Is another neubot(1) running?")
         exit(1)
 
     def got_request(self, connection, request):
@@ -105,7 +105,7 @@ class RendezvousServer(Server):
         except KeyboardInterrupt:
             raise
         except:
-            log.exception()
+            LOG.exception()
             response = Message()
             compose(response, code="500", reason="Internal Server Error")
             connection.reply(request, response)
@@ -276,7 +276,7 @@ class XMLRendezvous_Response:
         try:
             tree.parse(stringio)
         except:
-            log.exception()
+            LOG.exception()
             raise ValueError("Can't parse XML body")
         else:
             self.available = _XML_parse_available(tree)
@@ -315,7 +315,7 @@ class RendezvousClient(ClientController, SpeedtestController):
             return
         if self.dontloop:
             return
-        log.info("* Next rendezvous in %d seconds" % self.interval)
+        LOG.info("* Next rendezvous in %d seconds" % self.interval)
         task = sched(self.interval, self.rendezvous)
         state.set_next_rendezvous(task.timestamp)
         state.set_inactive().commit()
@@ -362,7 +362,7 @@ class RendezvousClient(ClientController, SpeedtestController):
 
     def got_response(self, client, request, response):
         if response.code != "200":
-            log.error("Error: %s %s" % (response.code, response.reason))
+            LOG.error("Error: %s %s" % (response.code, response.reason))
             self._reschedule()
             return
         self._parse_response(response)
@@ -374,7 +374,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         try:
             m.parse(response.body)
         except ValueError:
-            log.exception()
+            LOG.exception()
             self._reschedule()
         else:
             self._do_followup(m)
@@ -382,7 +382,7 @@ class RendezvousClient(ClientController, SpeedtestController):
     def _do_followup(self, m):
         if m.update:
             for ver, uri in m.update.items():
-                log.warning("Version %s available at %s" % (ver, uri))
+                LOG.warning("Version %s available at %s" % (ver, uri))
                 state.set_versioninfo(ver, uri)
         if self.xdebug:
             self._reschedule()
@@ -449,13 +449,13 @@ def main(args):
             except ValueError:
                 interval = -1
             if interval <= 0:
-                log.error("Invalid argument to -T: %s" % value)
+                LOG.error("Invalid argument to -T: %s" % value)
                 exit(1)
         elif name == "-V":
             stdout.write(version + "\n")
             exit(0)
         elif name == "-v":
-            log.verbose()
+            LOG.verbose()
         elif name == "-x":
             xdebug = True
     # options

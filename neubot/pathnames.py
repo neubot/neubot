@@ -24,7 +24,7 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
-from neubot import log
+from neubot.log import LOG
 from neubot.system import ismacosx
 from sys import exit
 from sys import argv
@@ -77,14 +77,14 @@ else:
         WWW = prefix + "/neubot/www"
 
 def printfiles():
-    log.debug("Config files  : %s" % str(CONFIG))
-    log.debug("Database file : %s" % DATABASE)
-    log.debug("WWW root      : %s" % WWW)
+    LOG.debug("Config files  : %s" % str(CONFIG))
+    LOG.debug("Database file : %s" % DATABASE)
+    LOG.debug("WWW root      : %s" % WWW)
 
 def _makedirs(dirs, perms=0755):
     for directory in dirs:
         if not os.path.exists(directory):
-            log.info("* Create directory: %s" % directory)
+            LOG.info("* Create directory: %s" % directory)
             os.mkdir(directory, perms)
 
 #
@@ -104,5 +104,5 @@ def checkdirs():
     _makedirs(userdirs)
 
 if __name__ == "__main__":
-    log.verbose()
+    LOG.verbose()
     printfiles()

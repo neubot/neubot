@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
 from neubot.utils import become_daemon
 from neubot.ui import SimpleStateTracker
-from neubot import log
+from neubot.log import LOG
 
 # default address and port
 ADDRESS = "127.0.0.1"
@@ -270,7 +270,7 @@ def main(args):
             sys.stderr.write(VERSION + "\n")
             sys.exit(0)
         else:
-            log.verbose()
+            LOG.verbose()
     # arguments
     if len(arguments) >= 3:
         sys.stderr.write(USAGE % args[0])

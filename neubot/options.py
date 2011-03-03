@@ -210,7 +210,7 @@ import os
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot import log
+from neubot.log import LOG
 
 FALSE_BOOLS = [ "0", "no", "false", "off" ]
 TRUE_BOOLS  = [ "1", "yes", "true", "on"  ]
@@ -249,8 +249,8 @@ class OptionParser(ConfigParser.RawConfigParser):
             try:
                 self.read(path)
             except ConfigParser.ParsingError:
-                log.exception()
-                log.error("Can't parse config file: %s (see above)" % path)
+                LOG.exception()
+                LOG.error("Can't parse config file: %s (see above)" % path)
                 sys.exit(1)
 
     def merge_environ(self):
@@ -262,7 +262,7 @@ class OptionParser(ConfigParser.RawConfigParser):
                 var = var + "=TRUE"
             key, value = var.split("=", 1)
             if not "." in key:
-                log.error("Missing section in option specified "
+                LOG.error("Missing section in option specified "
                   "via environment: %s" % orig)
                 sys.exit(1)
             section, option = key.split(".", 1)
@@ -292,7 +292,7 @@ class OptionParser(ConfigParser.RawConfigParser):
         try:
             value = self.get(section, option)
         except ConfigParser.NoOptionError:
-            log.error("No such option %s in section %s" % (option, section))
+            LOG.error("No such option %s in section %s" % (option, section))
             sys.exit(1)
         return value
 
@@ -301,7 +301,7 @@ class OptionParser(ConfigParser.RawConfigParser):
         try:
             value = int(value)
         except ValueError:
-            log.error("Option %s in section %s requires an integer argument"
+            LOG.error("Option %s in section %s requires an integer argument"
               % (option, section))
             sys.exit(1)
         return value
@@ -309,7 +309,7 @@ class OptionParser(ConfigParser.RawConfigParser):
     def get_option_uint(self, section, option):
         value = self.get_option_int(section, option)
         if value < 0:
-            log.error("Option %s in section %s requires a non-negative "
+            LOG.error("Option %s in section %s requires a non-negative "
               "integer argument" % (option, section))
             sys.exit(1)
         return value
@@ -319,7 +319,7 @@ class OptionParser(ConfigParser.RawConfigParser):
         try:
             value = float(value)
         except ValueError:
-            log.error("Option %s in section %s requires a float argument"
+            LOG.error("Option %s in section %s requires a float argument"
               % (option, section))
             sys.exit(1)
         return value
@@ -328,7 +328,7 @@ class OptionParser(ConfigParser.RawConfigParser):
         value = self.get_option(section, option)
         value = value.lower()
         if value not in TRUE_BOOLS and value not in FALSE_BOOLS:
-            log.error("Option %s in section %s requires a boolean argument"
+            LOG.error("Option %s in section %s requires a boolean argument"
               % (option, section))
             sys.exit(1)
         return value in TRUE_BOOLS
@@ -398,7 +398,7 @@ def main(args):
              sys.stdout.write(VERSION)
              sys.exit(0)
         if name == "-v":
-             log.verbose()
+             LOG.verbose()
              continue
 
     conf.merge_files()
@@ -423,7 +423,7 @@ def main(args):
             elif cast == "uint":
                 _write(section, option, conf.get_option_uint(section, option))
             else:
-                log.error("Invalid argument to -D cast: %s" % cast)
+                LOG.error("Invalid argument to -D cast: %s" % cast)
                 sys.exit(1)
 
 if __name__ == "__main__":

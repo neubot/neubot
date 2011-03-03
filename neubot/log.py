@@ -156,42 +156,16 @@ class Logger(object):
     def __str__(self):
         results = []
         for tstamp, message in self.queue:
-            dictionary = {}
-            dictionary["timestamp"] = tstamp
-            dictionary["message"] = message
-            results.append(dictionary)
-        try:
-            data = json.dumps(results, ensure_ascii=True)
-        except (UnicodeEncodeError, UnicodeDecodeError):
-            data = ""
-        return data
+            results.append({
+                "timestamp": tstamp,
+                "message": message,
+            })
+        return json.dumps(results)
 
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
-__all__ = [ "LOG" ]
 
-### DEPRECATED ###
-#
-
-log = LOG
-
-log_access = log.log_access
-verbose = log.verbose
-quiet = log.quiet
-redirect = log.redirect
-exception = log.exception
-error = log.error
-warning = log.warning
-info = log.info
-start = log.start
-progress = log.progress
-complete = log.complete
-debug = log.debug
-
-                 #
-### DEPRECATED ###
-
-def main(args):
+if __name__ == "__main__":
     LOG.verbose()
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
@@ -203,6 +177,3 @@ def main(args):
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
     print str(LOG)
-
-if __name__ == "__main__":
-    main(sys.argv)

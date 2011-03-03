@@ -30,7 +30,7 @@
 from collections import deque
 from neubot.net.pollers import sched
 from neubot.times import T
-from neubot import log
+from neubot.log import LOG
 
 INTERVAL = 10
 
@@ -62,7 +62,7 @@ class Notifier:
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
-                    log.exception()
+                    LOG.exception()
 
     def periodic(self):
         sched(INTERVAL, self.periodic)
@@ -75,7 +75,7 @@ class Notifier:
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
-                    log.exception()
+                    LOG.exception()
 
     def get_event_timestamp(self, event):
         if self.timestamps.has_key(event):
@@ -89,7 +89,7 @@ class Notifier:
         try:
             timestamp = int(timestamp)
         except ValueError:
-            log.exception()
+            LOG.exception()
             timestamp = -1
         if timestamp < 0:
             return False
