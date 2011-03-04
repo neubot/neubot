@@ -1037,6 +1037,7 @@ class SpeedtestClient1(ClientController):
             self.negotiate.start()
         elif self.flags & FLAG_LATENCY:
             STATE.update("test", "speedtest_latency")
+            self.latency.start()
         elif self.flags & FLAG_DOWNLOAD:
             STATE.update("test", "speedtest_download")
             self.download.start()
