@@ -119,8 +119,8 @@ def JSON_marshal(obj):
     try:
         data = json.dumps(dictionary, ensure_ascii=True)
     except (UnicodeEncodeError, UnicodeDecodeError):
-        log.exception()
-        log.warning("Unicode encode or decode error (see above)")
+        LOG.exception()
+        LOG.warning("Unicode encode or decode error (see above)")
 
         #
         # Return a non JSON string so that the parser will notice
