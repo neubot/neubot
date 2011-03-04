@@ -29,6 +29,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.log import LOG
+from neubot.compat import json
 
 def XML_append_attribute(document, element, name, value):
 
@@ -55,10 +56,10 @@ def XML_append_attribute(document, element, name, value):
 SIMPLETYPES = [ types.IntType, types.FloatType, types.StringType,
                 types.UnicodeType ]
 
-def XML_marshal(object, root_elem_name):
+def XML_marshal(obj, root_elem_name):
 
     """
-    Marshal the attributes of `object` into XML.  Note that this method
+    Marshal the attributes of `obj` into XML.  Note that this method
     will marshal scalar attributes only--vectors, hashes, and classes are
     going to be ignored.
     """
@@ -74,12 +75,11 @@ def XML_marshal(object, root_elem_name):
     # created using __init__() to initialize attributes.
     #
 
-    allvars = vars(object)
+    allvars = vars(obj)
     for name, value in allvars.items():
         if type(value) not in SIMPLETYPES:
             continue
         XML_append_attribute(document, root, name, str(value))
-        continue
 
     try:
         data = root.toxml("utf-8")
@@ -96,7 +96,42 @@ def XML_marshal(object, root_elem_name):
 
     return data
 
-def QS_unmarshal(object, data):
+def JSON_marshal(obj):
+
+    """
+    Marshal the attributes of `obj` into JSON.  Note that this method
+    will marshal scalar attributes only--vectors, hashes, and classes are
+    going to be ignored.
+    """
+
+    #
+    # Note that vars() works as long as the class has been
+    # created using __init__() to initialize attributes.
+    #
+
+    dictionary = {}
+    allvars = vars(obj)
+    for name, value in allvars.items():
+        if type(value) not in SIMPLETYPES:
+            continue
+        dictionary[name] = str(value)
+
+    try:
+        data = json.dumps(dictionary, ensure_ascii=True)
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        LOG.exception()
+        LOG.warning("Unicode encode or decode error (see above)")
+
+        #
+        # Return a non JSON string so that the parser will notice
+        # and will -hopefully- complain aloud.
+        #
+
+        data = ""
+
+    return data
+
+def QS_unmarshal(obj, data):
 
     """
     Unmarshal the content of data -- which must be a www-urlencoded
@@ -107,10 +142,10 @@ def QS_unmarshal(object, data):
     dictionary = cgi.parse_qs(data)
     for key in dictionary:
 
-        if not hasattr(object, key):
+        if not hasattr(obj, key):
             continue
 
-        value = getattr(object, key)
+        value = getattr(obj, key)
         if type(value) == types.IntType:
             cast = int
         elif type(value) == types.FloatType:
@@ -128,9 +163,9 @@ def QS_unmarshal(object, data):
         except ValueError:
             continue
 
-        setattr(object, key, value)
+        setattr(obj, key, value)
 
-__all__ = [ "XML_marshal", "QS_unmarshal" ]
+__all__ = [ "JSON_marshal", "XML_marshal", "QS_unmarshal" ]
 
 class TestClass(object):
     def __init__(self):
@@ -141,11 +176,19 @@ class TestClass(object):
         self.ustring = u"ustring"
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1] not in [ "-json", "-xml" ]:
+        sys.stdout.write("Usage: marshal.py -json|-xml\n")
+        sys.exit(1)
+    elif sys.argv[1] == "-xml":
+        marshal = lambda obj: XML_marshal(obj, "TestClass")
+    else:
+        marshal = JSON_marshal
+
     test = TestClass()
-    print XML_marshal(test, "TestClass")
+    print marshal(test)
 
     QS_unmarshal(test, "floating=3.0&integer=2&string=asd&ustring=")
-    print XML_marshal(test, "TestClass")
+    print marshal(test)
 
     QS_unmarshal(test, "floating=three&integer=two&string=&ustring=be")
-    print XML_marshal(test, "TestClass")
+    print marshal(test)

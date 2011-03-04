@@ -146,7 +146,7 @@ class UIServer(Server):
             CONFIG.update(request.body)
         stringio = CONFIG.marshal()
         compose(response, code="200", reason="Ok",
-         mimetype="text/xml", body=stringio)
+         mimetype="application/json", body=stringio)
         connection.reply(request, response)
 
     def _do_api_results(self, connection, request, query, recurse=False):

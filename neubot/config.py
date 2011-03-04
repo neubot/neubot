@@ -32,7 +32,7 @@ class Config(object):
 
     """
     Holds all the variables that it's possible to configure via
-    the web user interface.  We return an XML when the request
+    the web user interface.  We return a JSON when the request
     is to read the current values.  And we expect an incoming and
     www-urlencoded string when the user wants to change some
     value.
@@ -43,7 +43,7 @@ class Config(object):
         self.force = 0
 
     def marshal(self):
-        data = XML_marshal(self, "Config")
+        data = JSON_marshal(self)
         stringio = StringIO.StringIO(data)
         return stringio
 
