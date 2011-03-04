@@ -37,6 +37,7 @@ INTERVAL = 10
 RENEGOTIATE = "renegotiate"
 STATECHANGE = "statechange"
 
+
 class Notifier:
     def __init__(self):
         POLLER.sched(INTERVAL, self.periodic)
@@ -51,8 +52,10 @@ class Notifier:
             queue = self.subscribers[event]
         queue.append((func, context))
 
-    def publish(self, event):
-        self.timestamps[event] = T()
+    def publish(self, event, t=None):
+        if not t:
+            t = T()
+        self.timestamps[event] = t
         if self.subscribers.has_key(event):
             queue = self.subscribers[event]
             del self.subscribers[event]
@@ -97,9 +100,14 @@ class Notifier:
             return False
         return timestamp < self.timestamps[event]
 
-notifier = Notifier()
+
+NOTIFIER = Notifier()
+
+### BEGIN DEPRECATED ###
+notifier = NOTIFIER
 subscribe = notifier.subscribe
 publish = notifier.publish
 periodic = notifier.periodic
 get_event_timestamp = notifier.get_event_timestamp
 needs_publish = notifier.needs_publish
+### END DEPRECATED ###
