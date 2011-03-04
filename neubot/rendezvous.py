@@ -53,7 +53,7 @@ from neubot.ui import ui
 from neubot.log import LOG
 from getopt import GetoptError
 from getopt import getopt
-from neubot.state import state
+from neubot.state import STATE
 from random import random
 from sys import exit
 from sys import argv
@@ -316,18 +316,18 @@ class RendezvousClient(ClientController, SpeedtestController):
             return
         LOG.info("* Next rendezvous in %d seconds" % self.interval)
         task = POLLER.sched(self.interval, self.rendezvous)
-        state.set_next_rendezvous(task.timestamp)
-        state.set_inactive().commit()
+        STATE.update("next_rendezvous", task.timestamp, publish=False)
+        STATE.update("idle")
 
     def connection_failed(self, client):
-        state.set_rendezvous_status("failed")
+        STATE.update("rendezvous", {"status": "failed"})
         self._reschedule()
 
     def connection_lost(self, client):
         self._reschedule()
 
     def rendezvous(self):
-        state.set_activity("rendezvous").commit()
+        STATE.update("rendezvous")
         self._prepare_tree()
 
     def _prepare_tree(self):
@@ -382,7 +382,8 @@ class RendezvousClient(ClientController, SpeedtestController):
         if m.update:
             for ver, uri in m.update.items():
                 LOG.warning("Version %s available at %s" % (ver, uri))
-                state.set_versioninfo(ver, uri)
+                STATE.update("update", {"version": ver,
+                                        "uri": uri})
         if self.xdebug:
             self._reschedule()
             return

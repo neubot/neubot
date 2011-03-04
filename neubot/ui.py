@@ -46,7 +46,7 @@ from os.path import normpath
 from urlparse import urlsplit
 from neubot.database import database
 from neubot.net.poller import POLLER
-from neubot.state import state
+from neubot.state import STATE
 from urllib import urlencode
 from textwrap import wrap
 from neubot.log import LOG
@@ -61,6 +61,7 @@ from shlex import split
 from sys import argv
 
 from neubot.config import *
+from neubot.api_client import APIStateTracker
 
 class UIServer(Server):
     def __init__(self, config):
@@ -181,17 +182,20 @@ class UIServer(Server):
 
     def _do_api_state(self, connection, request, query, recurse=False):
         dictionary = parse_qs(query)
-        if not recurse and dictionary.has_key("t"):
-            timestamp = dictionary["t"][0]
-            stale = needs_publish(STATECHANGE, timestamp)
+        t = None
+        if dictionary.has_key("t"):
+            t = dictionary["t"][0]
+        if not recurse and t:
+            stale = needs_publish(STATECHANGE, t)
             if not stale:
                 subscribe(STATECHANGE, self._do_delayed_request,
                           (connection, request))
                 return
-        stringio = state.marshal()
+        octets = STATE.marshal(t=t)
+        stringio = StringIO(octets)
         response = Message()
         compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="text/xml")
+                body=stringio, mimetype="application/json")
         connection.reply(request, response)
 
     def _do_api_version(self, connection, request, query, recurse=False):
@@ -255,198 +259,6 @@ class UIModule:
 ui = UIModule()
 
 #
-# State tracker
-# The SimpleStateTracker is a mechanism to track the state
-# of the local neubot daemon.  The StateTracker is a consumer
-# that prints the state on the standard output.
-# The reason why there is a clean separation between the two
-# classes is that I plan to attach other consumers to the
-# SimpleStateTracker, such as the StatusIcon or a class that
-# uses PyNotify ...
-#
-
-from xml.dom import minidom
-from neubot.utils import XML_text
-from time import sleep
-
-class SimpleStateTracker(ClientController):
-    def __init__(self, address, port):
-        self.timestamp = 0
-        self.address = address
-        self.port = port
-        self.stop = False
-
-    #
-    # The StatusIcon employs two threads of execution, one for
-    # the Gtk application and the other that runs this class, and
-    # that's why here we have a loop() and a mechanism to break
-    # out of the loop.
-    #
-
-    def interrupt(self):
-        self.stop = True
-
-    def loop(self):
-        while not self.stop:
-            self._sendrequest()
-            POLLER.loop()
-            # We should land here on errors only
-            sleep(3)
-
-    def _sendrequest(self, client=None):
-        request = Message()
-        compose(request, method="GET", uri=self._makeuri())
-        if not client:
-            client = Client(self)
-        client.sendrecv(request)
-
-    def _makeuri(self):
-        return "http://%s:%s/api/state?t=%d" % (self.address, self.port,
-                                                self.timestamp)
-
-    def got_response(self, client, request, response):
-        if response.code == "200" and response["content-type"] == "text/xml":
-            try:
-                document = minidom.parse(response.body)
-            except KeyboardInterrupt:
-                raise
-            except:
-                LOG.exception()
-            else:
-                try:
-                    self._processbody(document)
-                except ValueError:
-                    LOG.exception()
-        self._sendrequest(client)
-
-    def _processbody(self, document):
-        self.clear()
-        # <state>
-        root = document.documentElement
-        if root.nodeType != root.ELEMENT_NODE:
-            raise ValueError("Bad node type")
-        if root.tagName != "state":
-            raise ValueError("Bad tag name")
-        self.timestamp = int(root.getAttribute("t"))
-        for node in root.childNodes:
-            if node.nodeType != node.ELEMENT_NODE:
-                continue
-            element = node
-            # <update>
-            if element.tagName == "update":
-                uri = element.getAttribute("uri")
-                self.set_update(XML_text(element), uri)
-                continue
-            # <active>
-            if element.tagName == "active":
-                self.set_active(XML_text(element))
-                continue
-            # <activity>
-            if element.tagName == "activity":
-                current = element.getAttribute("current")
-                if current.lower() == "true":
-                    self.set_current_activity(XML_text(element))
-                continue
-            # <current>
-            if element.tagName == "test":
-                for node in element.childNodes:
-                    if node.nodeType != node.ELEMENT_NODE:
-                        continue
-                    element = node
-                    # <task>
-                    if element.tagName == "task":
-                        statex = element.getAttribute("state")
-                        if statex.lower() == "running":
-                            self.set_extra("task", XML_text(element))
-                        continue
-                    # <name>
-                    if element.tagName == "name":
-                        self.set_extra(element.tagName, XML_text(element))
-                        continue
-                    # <result>
-                    if element.tagName == "result":
-                        unit = element.getAttribute("unit")
-                        tag = element.getAttribute("tag")
-                        self.set_extra(tag, XML_text(element) + " " + unit)
-                continue
-            if element.tagName == "negotiate":
-                for node in element.childNodes:
-                    if node.nodeType != node.ELEMENT_NODE:
-                        continue
-                    element = node
-                    if element.tagName in ["queuePos", "queueLen"]:
-                        self.set_extra(element.tagName, XML_text(element))
-                        continue
-                continue
-        self.write()
-
-    def connection_failed(self, client):
-        self.clear()
-        self.set_failure()
-        self.write()
-
-    def clear(self):
-        pass
-
-    def set_update(self, ver, uri):
-        pass
-
-    def set_active(self, active):
-        pass
-
-    def set_current_activity(self, activity):
-        pass
-
-    def set_extra(self, name, value):
-        pass
-
-    def set_failure(self):
-        pass
-
-    def write(self):
-        pass
-
-class StateTracker(SimpleStateTracker):
-    def __init__(self, address, port):
-        SimpleStateTracker.__init__(self, address, port)
-        self.clear()
-
-    def clear(self):
-        self.failure = False
-        self.active = False
-        self.activity = ""
-        self.extra = {}
-        self.update = ()
-
-    def set_update(self, ver, uri):
-        self.update = (ver, uri)
-
-    def set_active(self, active):
-        if active.lower() == "true":
-            self.active = True
-
-    def set_current_activity(self, activity):
-        self.activity = activity
-
-    def set_extra(self, name, value):
-        self.extra[name] = value
-
-    def set_failure(self):
-        self.failure = True
-
-    def write(self):
-        if self.failure:
-            stdout.write("can't connect to neubot daemon\n")
-            return
-        stdout.write("[%d] " % self.timestamp)
-        if self.update:
-            stdout.write("{%s: %s} " % self.update)
-        if not self.active:
-            stdout.write("inactive\n")
-            return
-        stdout.write("%s %s\n" % (self.activity, self.extra))
-
-#
 # Client
 #
 
@@ -492,8 +304,8 @@ uiclient = UIClient("127.0.0.1", "9774")
 
 def dotrack(vector):
     if len(vector) == 0:
-        tracker = StateTracker(ui.config.address, ui.config.port)
-        tracker.loop()
+        client = APIStateTracker(ui.config.address, ui.config.port)
+        client.loop()
     else:
         dohelp(["track"])
 
