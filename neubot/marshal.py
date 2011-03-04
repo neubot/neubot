@@ -85,7 +85,7 @@ def XML_marshal(obj, root_elem_name):
         data = root.toxml("utf-8")
     except (UnicodeEncodeError, UnicodeDecodeError):
         LOG.exception()
-        LOG.warning("Unicode endode or decode error (see above)")
+        LOG.warning("Unicode encode or decode error (see above)")
 
         #
         # Return a non XML string so that the parser will notice
