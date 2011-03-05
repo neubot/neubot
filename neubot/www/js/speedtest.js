@@ -31,23 +31,7 @@ var speedtest = (function() {
      "Remote Address", "Connect Time", "Latency", "Download Speed",
      "Upload Speed"];
 
-    /*
-    function process_results(callbacks, data) {
-        jQuery(data).find("SpeedtestCollect").each(function() {
-            var result = {};
-            var entry = jQuery(this);
-            for (i = 0; i < self.result_fields.length; i++) {
-                var field = self.result_fields[i];
-                // XXX Assume everything is OK
-                var text = jQuery(entry).children(field).text();
-                result[field] = text;
-            }
-            callback(result);
-        });
-        // notify we have finished
-        callback(undefined);
-    }
-    */
+    // walk through results
 
     self.get_recent_results = function(callbacks) {
         var one_day_in_ms = 24 * 60 * 60 * 1000;
@@ -77,36 +61,6 @@ var speedtest = (function() {
         };
         jQuery.ajax(params);
     }
-
-    // process results
-
-    /*
-    self.results_processor = function(callbacks, data) {
-        var my = {};
-
-        for (var i = 0; i < callbacks.length; i++) {
-            callbacks[i](data);
-        }
-
-        my.process_results = function(data) {
-            jQuery(data).find("SpeedtestCollect").each(function() {
-                var result = {};
-                var entry = jQuery(this);
-                for (i = 0; i < self.result_fields.length; i++) {
-                    var field = self.result_fields[i];
-                    // XXX Assume everything is OK
-                    var text = jQuery(entry).children(field).text();
-                    result[field] = text;
-                }
-                callback(result);
-            });
-            // notify we have finished
-            callback(undefined);
-        }
-
-        return my;
-    };
-    */
 
     // results formatter
 
