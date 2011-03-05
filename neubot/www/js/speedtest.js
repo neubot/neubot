@@ -236,7 +236,8 @@ function process_state(data) {
 }
 
 jQuery(document).ready(function() {
-    speedtest.get_recent_results([speedtest.results_formatter_table, speedtest.results_formatter_plot]);
+    speedtest.get_recent_results([speedtest.results_formatter_table,
+                                  speedtest.results_formatter_plot]);
 
     jQuery('#testResultsBox').qtip({
         content: "A new test is running.",
@@ -272,17 +273,18 @@ jQuery(document).ready(function() {
         }
         var since = 0;
         switch (jQuery("#res_unit").val()) {
-            case "d":
+        case "d":
             var one_day_in_ms = 24 * 60 * 60 * 1000;
             since = utils.getNow() - one_day_in_ms * n;
             break;
 
-            case "h":
+        case "h":
             var one_hour_in_ms = 60 * 60 * 1000;
             since = utils.getNow() - one_hour_in_ms * n;
             break;
         }
-        speedtest.get_results([speedtest.results_formatter_table, speedtest.results_formatter_plot], since);
+        speedtest.get_results([speedtest.results_formatter_table,
+                               speedtest.results_formatter_plot], since);
         return false;
     };
 
