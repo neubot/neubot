@@ -43,6 +43,7 @@ if __name__ == "__main__":
 from neubot.net.poller import Pollable
 from neubot.options import OptionParser
 from neubot.net.poller import POLLER
+from neubot.utils import become_daemon
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.times import ticks
@@ -826,6 +827,7 @@ Macros (defaults in square brackets):
     certfile           : Path to private key and certificate file
                          to be used together with `-D secure`      []
     clients=N          : Spawn N client connections at a time      [1]
+    daemonize          : Drop privileges and run in background     [False]
     duration=N         : Stop the client(s) after N seconds        []
     key=KEY            : Use KEY to initialize ARC4 stream         []
     listen             : Listen for incoming connections           [False]
@@ -849,6 +851,7 @@ def main(args):
     conf.set_option("net", "address", "127.0.0.1")
     conf.set_option("net", "certfile", "")
     conf.set_option("net", "clients", "1")
+    conf.set_option("net", "daemonize", "False")
     conf.set_option("net", "duration", "0")
     conf.set_option("net", "key", "")
     conf.set_option("net", "listen", "False")
@@ -889,15 +892,17 @@ def main(args):
     conf.merge_environ()
     conf.merge_opts()
 
-    MEASURER.start()
-
     address = conf.get_option("net", "address")
     clients = conf.get_option_uint("net", "clients")
+    daemonize = conf.get_option_bool("net", "daemonize")
     duration = conf.get_option_uint("net", "duration")
     listen = conf.get_option_bool("net", "listen")
     port = conf.get_option_uint("net", "port")
     proto = conf.get_option("net", "proto")
     sobuf = conf.get_option_uint("net", "sobuf")
+
+    if not (listen and daemonize):
+        MEASURER.start()
 
     dictionary = {
         "certfile": conf.get_option("net", "certfile"),
@@ -922,6 +927,8 @@ def main(args):
         sys.exit(1)
 
     if listen:
+        if daemonize:
+            become_daemon()
         dictionary["server_side"] = True
         listener = GenericListener(POLLER, dictionary, kind)
         listener.listen(endpoint, sobuf=sobuf)
