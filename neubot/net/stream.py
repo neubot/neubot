@@ -29,10 +29,6 @@ import types
 import getopt
 
 try:
-    from Crypto.Cipher import ARC4
-except ImportError:
-    ARC4 = None
-try:
     import ssl
 except ImportError:
     ssl = None
