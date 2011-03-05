@@ -811,7 +811,7 @@ class GenericConnector(Connector):
         stream.kind = self.kind
 
 
-USAGE = """Neubot net -- Test unit for the asynchronous network layer
+USAGE = """Neubot net -- TCP bulk transfer test
 
 Usage: neubot net [-Vv] [-D macro[=value]] [-f file] [--help]
 
