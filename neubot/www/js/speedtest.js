@@ -209,9 +209,7 @@ function process_state(data) {
         jQuery("#updateUrl").attr("href", data.update_uri);
         jQuery("#updateUrl").text(data.update_uri);
         jQuery("#updateVersion").text(data.update_version);
-        setTimeout(function() {
-            jQuery('#update').slideDown("slow");
-        }, 5000);
+        setTimeout(function() { jQuery('#update').slideDown("slow"); }, 5000);
     }
 
     if (data.events.test_name) {
@@ -234,9 +232,6 @@ function process_state(data) {
         else {
             jQuery('#testResultsBox').qtip("hide");
         }
-    }
-    if (data.current == "idle") {
-        jQuery('#testResultsBox').qtip("hide");
     }
 }
 
