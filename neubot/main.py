@@ -45,6 +45,7 @@ from neubot.bittorrent import main as bittorrent
 from neubot.http import clients as http
 from neubot.http import servers as httpd
 
+from neubot.net import stream
 from neubot import database
 from neubot import rendezvous
 from neubot import speedtest
@@ -125,6 +126,7 @@ TABLE = {
     "statusicon" : dostatusicon,
     "start"      : dostart,
     "stop"       : dostop,
+    "stream"     : stream.main,
     "ui"         : ui.main,
 }
 
