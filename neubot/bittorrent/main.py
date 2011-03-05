@@ -29,6 +29,7 @@ if __name__ == "__main__":
 from neubot.bittorrent.stream import BTStream
 from neubot.net.stream import Connector
 from neubot.net.stream import Listener
+from neubot.utils import become_daemon
 from neubot.options import OptionParser
 from neubot.net.stream import VERBOSER
 from neubot.net.stream import MEASURER
@@ -165,6 +166,7 @@ Options:
 
 Macros (defaults in square brackets):
     address=addr       : Select address to use               [127.0.0.1]
+    daemonize          : Drop privileges and run in background  [False]
     key=KEY            : Use KEY to initialize ARC4 stream   []
     listen             : Listen for incoming connections     [False]
     obfuscate          : Obfuscate traffic using ARC4        [False]
@@ -179,6 +181,7 @@ def main(args):
 
     conf = OptionParser()
     conf.set_option("bittorrent", "address", "127.0.0.1")
+    conf.set_option("bittorrent", "daemonize", "False")
     conf.set_option("bittorrent", "key", "")
     conf.set_option("bittorrent", "listen", "False")
     conf.set_option("bittorrent", "obfuscate", "False")
@@ -217,6 +220,7 @@ def main(args):
     conf.merge_opts()
 
     address = conf.get_option("bittorrent", "address")
+    daemonize = conf.get_option_bool("bittorrent", "daemonize")
     key = conf.get_option("bittorrent", "key")
     listen = conf.get_option_bool("bittorrent", "listen")
     obfuscate = conf.get_option_bool("bittorrent", "obfuscate")
@@ -229,9 +233,12 @@ def main(args):
         "key": key,
     }
 
-    MEASURER.start()
+    if not (listen and daemonize):
+        MEASURER.start()
 
     if listen:
+        if daemonize:
+            become_daemon()
         listener = BTListeningPeer(POLLER)
         listener.configure(dictionary)
         listener.listen(endpoint, sobuf=sobuf)
