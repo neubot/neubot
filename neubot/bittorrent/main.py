@@ -153,7 +153,7 @@ class BTListeningPeer(Listener):
     def connection_handshake_completed(self, handler):
         pass
 
-USAGE = """Neubot bittorrent -- Test unit for BitTorrent module
+USAGE = """Neubot bittorrent -- BitTorrent test
 
 Usage: neubot bittorrent [-Vv] [-D macro[=value]] [-f file] [--help]
 
@@ -165,13 +165,13 @@ Options:
     -v                 : Run the program in verbose mode
 
 Macros (defaults in square brackets):
-    address=addr       : Select address to use               [127.0.0.1]
+    address=addr       : Select address to use                  [127.0.0.1]
     daemonize          : Drop privileges and run in background  [False]
-    key=KEY            : Use KEY to initialize ARC4 stream   []
-    listen             : Listen for incoming connections     [False]
-    obfuscate          : Obfuscate traffic using ARC4        [False]
-    port=port          : Select the port to use              [6881]
-    sobuf=size         : Set socket buffer size to `size`    []
+    key=KEY            : Use KEY to initialize ARC4 stream      []
+    listen             : Listen for incoming connections        [False]
+    obfuscate          : Obfuscate traffic using ARC4           [False]
+    port=port          : Select the port to use                 [6881]
+    sobuf=size         : Set socket buffer size to `size`       []
 
 """
 
