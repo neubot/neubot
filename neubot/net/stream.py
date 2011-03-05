@@ -848,18 +848,18 @@ VERSION = "Neubot 0.3.5\n"
 def main(args):
 
     conf = OptionParser()
-    conf.set_option("net", "address", "127.0.0.1")
-    conf.set_option("net", "certfile", "")
-    conf.set_option("net", "clients", "1")
-    conf.set_option("net", "daemonize", "False")
-    conf.set_option("net", "duration", "0")
-    conf.set_option("net", "key", "")
-    conf.set_option("net", "listen", "False")
-    conf.set_option("net", "obfuscate", "False")
-    conf.set_option("net", "port", "12345")
-    conf.set_option("net", "proto", "")
-    conf.set_option("net", "secure", "False")
-    conf.set_option("net", "sobuf", "0")
+    conf.set_option("stream", "address", "127.0.0.1")
+    conf.set_option("stream", "certfile", "")
+    conf.set_option("stream", "clients", "1")
+    conf.set_option("stream", "daemonize", "False")
+    conf.set_option("stream", "duration", "0")
+    conf.set_option("stream", "key", "")
+    conf.set_option("stream", "listen", "False")
+    conf.set_option("stream", "obfuscate", "False")
+    conf.set_option("stream", "port", "12345")
+    conf.set_option("stream", "proto", "")
+    conf.set_option("stream", "secure", "False")
+    conf.set_option("stream", "sobuf", "0")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -873,7 +873,7 @@ def main(args):
 
     for name, value in options:
         if name == "-D":
-             conf.register_opt(value, "net")
+             conf.register_opt(value, "stream")
              continue
         if name == "-f":
              conf.register_file(value)
@@ -892,23 +892,23 @@ def main(args):
     conf.merge_environ()
     conf.merge_opts()
 
-    address = conf.get_option("net", "address")
-    clients = conf.get_option_uint("net", "clients")
-    daemonize = conf.get_option_bool("net", "daemonize")
-    duration = conf.get_option_uint("net", "duration")
-    listen = conf.get_option_bool("net", "listen")
-    port = conf.get_option_uint("net", "port")
-    proto = conf.get_option("net", "proto")
-    sobuf = conf.get_option_uint("net", "sobuf")
+    address = conf.get_option("stream", "address")
+    clients = conf.get_option_uint("stream", "clients")
+    daemonize = conf.get_option_bool("stream", "daemonize")
+    duration = conf.get_option_uint("stream", "duration")
+    listen = conf.get_option_bool("stream", "listen")
+    port = conf.get_option_uint("stream", "port")
+    proto = conf.get_option("stream", "proto")
+    sobuf = conf.get_option_uint("stream", "sobuf")
 
     if not (listen and daemonize):
         MEASURER.start()
 
     dictionary = {
-        "certfile": conf.get_option("net", "certfile"),
-        "key": conf.get_option("net", "key"),
-        "obfuscate": conf.get_option_bool("net", "obfuscate"),
-        "secure": conf.get_option_bool("net", "secure"),
+        "certfile": conf.get_option("stream", "certfile"),
+        "key": conf.get_option("stream", "key"),
+        "obfuscate": conf.get_option_bool("stream", "obfuscate"),
+        "secure": conf.get_option_bool("stream", "secure"),
     }
 
     endpoint = (address, port)
