@@ -1,9 +1,6 @@
 Neubot, the network neutrality bot
 ``````````````````````````````````
 
-Copyright (c) 2010-2011 NEXA Center for Internet & Society
- at Politecnico di Torino <http://nexa.polito.it/>
-
 Neubot is a research project on network neutrality of the NEXA
 Center for Internet & Society at Politecnico di Torino. The project
 is based on a lightweight open-source program that interested users
@@ -14,5 +11,9 @@ transmission tests probe the Internet using various application
 level protocols. The program saves tests results locally and uploads
 them on the project servers. The collected dataset contains samples
 from various Providers and allows to monitor network neutrality.
+
+As a collection Neubot is Copyright (c) 2010-2011 NEXA Center for
+Internet & Society at Politecnico di Torino <http://nexa.polito.it/>.
+Each file is copyrighted by the individual contributor.
 
 For more info: http://www.neubot.org/
