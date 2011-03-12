@@ -33,8 +33,6 @@
  * here in this file.
  */
 
-var prevStatus;
-
 function process_state(data) {
 
     var actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
