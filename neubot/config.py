@@ -42,6 +42,9 @@ class Config(object):
         self.enabled = 1
         self.force = 0
 
+    def dictionary(self):
+        return vars(self)
+
     def marshal(self):
         data = JSON_marshal(self)
         stringio = StringIO.StringIO(data)
