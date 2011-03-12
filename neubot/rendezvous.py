@@ -307,6 +307,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         self.dontloop = dontloop
         self.xdebug = xdebug
         self.flags = 0
+        self.task = None
 
     def __del__(self):
         pass
@@ -316,9 +317,12 @@ class RendezvousClient(ClientController, SpeedtestController):
             return
         if self.dontloop:
             return
+        if self.task:
+            LOG.debug("rendezvous: There is already a pending task")
+            return
         LOG.info("* Next rendezvous in %d seconds" % self.interval)
-        task = POLLER.sched(self.interval, self.rendezvous)
-        STATE.update("next_rendezvous", task.timestamp, publish=False)
+        self.task = POLLER.sched(self.interval, self.rendezvous)
+        STATE.update("next_rendezvous", self.task.timestamp, publish=False)
         STATE.update("idle")
 
     def connection_failed(self, client):
@@ -329,6 +333,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         self._reschedule()
 
     def rendezvous(self):
+        self.task = None
         STATE.update("rendezvous")
         self._prepare_tree()
 
