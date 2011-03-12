@@ -142,8 +142,13 @@ class UIServer(Server):
 
     def _do_api_config(self, connection, request, query, recurse=False):
         response = Message()
+
         if request.method == "POST":
             CONFIG.update(request.body)
+            compose(response, code="204", reason="No Content")
+            connection.reply(request, response)
+            return
+
         stringio = CONFIG.marshal()
         compose(response, code="200", reason="Ok",
          mimetype="application/json", body=stringio)
