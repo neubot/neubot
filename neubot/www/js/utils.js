@@ -101,3 +101,49 @@ var utils = (function() {
 
     return self;
 })();
+
+function setStatusLabels(status) {
+    if (status == "1") {
+        jQuery("#statusBoxSpan").html("enabled");
+        jQuery("#statusBoxSpan").css("color", "#3DA64E");
+        jQuery("#statusBoxA").html("Disable");
+        jQuery("#statusBoxA").unbind('click');
+        jQuery("#statusBoxA").click(function () {
+            getSetConfigVar("enabled", setStatusLabels, true, 0);
+        });
+    }
+    else {
+        jQuery("#statusBoxSpan").html("disabled");
+        jQuery("#statusBoxSpan").css("color", "#c00");
+        jQuery("#statusBoxA").html("Enable");
+        jQuery("#statusBoxA").unbind('click');
+        jQuery("#statusBoxA").click(function () {
+            getSetConfigVar("enabled", setStatusLabels, true, 1);
+        });
+    }
+}
+
+function getSetConfigVar(id, myfunction, change, value) {
+    var data = {};
+    var type = "GET";
+    var success = null;
+
+    if (change) {
+        data = {enabled: value};
+        type = "POST";
+    }
+
+    if (myfunction) {
+        success = function(data) {
+            myfunction(data[id]);
+        }
+    }
+
+    jQuery.ajax({
+        url: '/api/config',
+        data: data,
+        type: type,
+        dataType: 'json',
+        success: success
+    });
+}
