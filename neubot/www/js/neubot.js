@@ -33,54 +33,6 @@
  * here in this file.
  */
 
-var prevStatus;
-
-function setStatusLabels(status) {
-    if (status == "1") {
-        jQuery("#statusBoxSpan").html("enabled");
-        jQuery("#statusBoxSpan").css("color", "#3DA64E");
-        jQuery("#statusBoxA").html("Disable");
-        jQuery("#statusBoxA").unbind('click');
-        jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 0);
-        });
-    }
-    else {
-        jQuery("#statusBoxSpan").html("disabled");
-        jQuery("#statusBoxSpan").css("color", "#c00");
-        jQuery("#statusBoxA").html("Enable");
-        jQuery("#statusBoxA").unbind('click');
-        jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 1);
-        });
-    }
-}
-
-function getSetConfigVar(id, myfunction, change, value) {
-    var data = {};
-    var type = "GET";
-    var success = null;
-
-    if (change) {
-        data = {enabled: value};
-        type = "POST";
-    }
-
-    if (myfunction) {
-        success = function(data) {
-            myfunction(data[id]);
-        }
-    }
-
-    jQuery.ajax({
-        url: '/api/config',
-        data: data,
-        type: type,
-        dataType: 'json',
-        success: success
-    });
-}
-
 function process_state(data) {
 
     var actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
@@ -90,8 +42,6 @@ function process_state(data) {
     // Reset style
 
     jQuery('#testResultsBox h4').text("Latest test details");
-    jQuery('#next_rendezvous').text("");
-    jQuery("#queueInfo").text("");
 
     // Keep processing simple to read and understand:
     // consider each relevant tag on its own and delay
@@ -170,6 +120,11 @@ function process_state(data) {
     // and must not be visible otherwise
 
     if (in_array(data.current, actions)) {
+        if (data.current == "negotiate") {
+            jQuery("#latencyResult").text("---");
+            jQuery("#downloadResult").text("---");
+            jQuery("#uploadResult").text("---");
+        }
         if (data.current == "test") {
             jQuery('#testResultsBox').qtip("show");
         }

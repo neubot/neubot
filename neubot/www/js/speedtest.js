@@ -202,8 +202,6 @@ function process_state(data) {
     var actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
 
     jQuery('#testResultsBox h4').text("Latest test details");
-    jQuery('#next_rendezvous').text("");
-    jQuery("#queueInfo").text("");
 
     if (data.update_version) {
         jQuery("#updateUrl").attr("href", data.update_uri);
@@ -226,6 +224,11 @@ function process_state(data) {
     }
 
     if (in_array(data.current, actions)) {
+        if (data.current == "negotiate") {
+            jQuery("#latencyResult").text("---");
+            jQuery("#downloadResult").text("---");
+            jQuery("#uploadResult").text("---");
+        }
         if (data.current == "test") {
             jQuery('#testResultsBox').qtip("show");
         }
@@ -237,6 +240,8 @@ function process_state(data) {
 
 jQuery(document).ready(function() {
     jQuery.jqplot.config.enablePlugins = true;
+
+    getSetConfigVar("enabled", setStatusLabels, false);
 
     speedtest.get_recent_results([speedtest.results_formatter_table,
                                   speedtest.results_formatter_plot]);
