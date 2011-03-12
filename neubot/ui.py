@@ -145,6 +145,7 @@ class UIServer(Server):
 
         if request.method == "POST":
             CONFIG.update(request.body)
+            STATE.update("config", CONFIG.dictionary())
             compose(response, code="204", reason="No Content")
             connection.reply(request, response)
             return
