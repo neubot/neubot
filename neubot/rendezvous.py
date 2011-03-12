@@ -31,6 +31,8 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
+from neubot.config import CONFIG
+
 from neubot import pathnames
 from neubot.http.servers import Server
 from neubot.http.messages import Message
@@ -385,6 +387,9 @@ class RendezvousClient(ClientController, SpeedtestController):
                 STATE.update("update", {"version": ver,
                                         "uri": uri})
         if self.xdebug:
+            self._reschedule()
+            return
+        if not CONFIG.enabled:
             self._reschedule()
             return
         if m.available.has_key("speedtest"):
