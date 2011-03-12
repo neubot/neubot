@@ -31,6 +31,8 @@ if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
 
+from neubot.config import CONFIG
+
 from neubot import pathnames
 from neubot.http.servers import Server
 from neubot.http.messages import Message
@@ -305,6 +307,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         self.dontloop = dontloop
         self.xdebug = xdebug
         self.flags = 0
+        self.task = None
 
     def __del__(self):
         pass
@@ -314,9 +317,12 @@ class RendezvousClient(ClientController, SpeedtestController):
             return
         if self.dontloop:
             return
+        if self.task:
+            LOG.debug("rendezvous: There is already a pending task")
+            return
         LOG.info("* Next rendezvous in %d seconds" % self.interval)
-        task = POLLER.sched(self.interval, self.rendezvous)
-        STATE.update("next_rendezvous", task.timestamp, publish=False)
+        self.task = POLLER.sched(self.interval, self.rendezvous)
+        STATE.update("next_rendezvous", self.task.timestamp, publish=False)
         STATE.update("idle")
 
     def connection_failed(self, client):
@@ -327,6 +333,7 @@ class RendezvousClient(ClientController, SpeedtestController):
         self._reschedule()
 
     def rendezvous(self):
+        self.task = None
         STATE.update("rendezvous")
         self._prepare_tree()
 
@@ -385,6 +392,9 @@ class RendezvousClient(ClientController, SpeedtestController):
                 STATE.update("update", {"version": ver,
                                         "uri": uri})
         if self.xdebug:
+            self._reschedule()
+            return
+        if not CONFIG.enabled:
             self._reschedule()
             return
         if m.available.has_key("speedtest"):
