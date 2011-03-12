@@ -90,8 +90,6 @@ function process_state(data) {
     // Reset style
 
     jQuery('#testResultsBox h4').text("Latest test details");
-    jQuery('#next_rendezvous').text("");
-    jQuery("#queueInfo").text("");
 
     // Keep processing simple to read and understand:
     // consider each relevant tag on its own and delay
@@ -170,6 +168,11 @@ function process_state(data) {
     // and must not be visible otherwise
 
     if (in_array(data.current, actions)) {
+        if (data.current == "negotiate") {
+            jQuery("#latencyResult").text("---");
+            jQuery("#downloadResult").text("---");
+            jQuery("#uploadResult").text("---");
+        }
         if (data.current == "test") {
             jQuery('#testResultsBox').qtip("show");
         }
