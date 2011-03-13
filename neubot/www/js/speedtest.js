@@ -203,6 +203,12 @@ function process_state(data) {
 
     jQuery('#testResultsBox h4').text("Latest test details");
 
+    if (data.events.config) {
+        if (data.events.config.enabled != undefined) {
+            setStatusLabels(data.events.config.enabled);
+        }
+    }
+
     if (data.update_version) {
         jQuery("#updateUrl").attr("href", data.update_uri);
         jQuery("#updateUrl").text(data.update_uri);
