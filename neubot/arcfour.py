@@ -34,6 +34,7 @@ from neubot.log import LOG
 
 class PassThrough(object):
     def __init__(self, key):
+        LOG.warning("arcfour: ARC4 support not available")
         self.key = key
 
     def encrypt(self, data):
@@ -46,7 +47,6 @@ try:
     from Crypto.Cipher import ARC4
     ARCFOUR = ARC4.new
 except ImportError:
-    LOG.warning("arcfour: ARC4 support not available")
     ARCFOUR = PassThrough
 
 def arcfour_new(key=None):
