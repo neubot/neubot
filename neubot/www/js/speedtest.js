@@ -149,12 +149,11 @@ var speedtest = (function() {
 
         var min = Math.ceil((since - utils.getNow()) / (60 * 60 * 1000));
 
-        // TODO We should use a larger font for axis labels
-
         mydata = downloadData.concat(uploadData);
         var plot = jQuery.jqplot("chartdiv1", mydata, {
           title: {
-            text: "Download and upload rate"
+            text: "Your download and upload speed",
+            fontSize: "16pt"
           },
           axes: {
             xaxis: {
