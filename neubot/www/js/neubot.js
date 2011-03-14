@@ -47,6 +47,12 @@ function process_state(data) {
     // consider each relevant tag on its own and delay
     // the show / hide decisions
 
+    if (data.events.config) {
+        if (data.events.config.enabled != undefined) {
+            setStatusLabels(data.events.config.enabled);
+        }
+    }
+
     if (data.events.pid) {
         jQuery("#pid").text(data.events.pid);
     }
