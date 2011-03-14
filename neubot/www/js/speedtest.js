@@ -105,8 +105,6 @@ var speedtest = (function() {
         var downloadLabels = [];
         var uploadLabels = [];
 
-        var curtime = Math.ceil(utils.getNow() / 1000);
-
         for (i = 0; i < data.length; i++) {
             var result = data[i];
             var address = result["real_address"];
@@ -136,15 +134,15 @@ var speedtest = (function() {
                 ipCounterN++;
             }
 
-            // How many hours in the past?
-            var timediff = (timestamp - curtime) / 3600;
+            // Timestamp to millisecond
+            timestamp *= 1000;
 
             // XXX must convert to Number or it does not plot
             counter = ipCounter[address];
             download = Number(utils.toMbitsPerSecondNumber(download));
             upload = Number(utils.toMbitsPerSecondNumber(upload));
-            downloadData[counter].push([timediff, download]);
-            uploadData[counter].push([timediff, upload]);
+            downloadData[counter].push([timestamp, download]);
+            uploadData[counter].push([timestamp, upload]);
         }
 
         var min = Math.ceil((since - utils.getNow()) / (60 * 60 * 1000));
