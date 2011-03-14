@@ -1,7 +1,7 @@
 /* neubot/www/js/speedtest.js */
 /*
  * Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
- *  Università degli Studi di Milano
+ *  Universita` degli Studi di Milano
  * Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
  *  NEXA Center for Internet & Society at Politecnico di Torino
  *
@@ -22,7 +22,7 @@
  */
 
 var speedtest = (function() {
-	var self = {};
+    var self = {};
 
     self.result_fields = ["timestamp", "internalAddress", "realAddress",
      "remoteAddress", "connectTime", "latency", "downloadSpeed", "uploadSpeed"];
@@ -105,8 +105,6 @@ var speedtest = (function() {
         var downloadLabels = [];
         var uploadLabels = [];
 
-        var curtime = Math.ceil(utils.getNow() / 1000);
-
         for (i = 0; i < data.length; i++) {
             var result = data[i];
             var address = result["real_address"];
@@ -136,33 +134,47 @@ var speedtest = (function() {
                 ipCounterN++;
             }
 
-            // How many hours in the past?
-            var timediff = (timestamp - curtime) / 3600;
+            // Timestamp to millisecond
+            timestamp *= 1000;
 
             // XXX must convert to Number or it does not plot
             counter = ipCounter[address];
             download = Number(utils.toMbitsPerSecondNumber(download));
             upload = Number(utils.toMbitsPerSecondNumber(upload));
-            downloadData[counter].push([timediff, download]);
-            uploadData[counter].push([timediff, upload]);
+            downloadData[counter].push([timestamp, download]);
+            uploadData[counter].push([timestamp, upload]);
         }
 
-        var min = Math.ceil((since - utils.getNow()) / (60 * 60 * 1000));
-
-        // TODO We should use a larger font for axis labels
-
         mydata = downloadData.concat(uploadData);
+
+        var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
+        var xaxis = {
+            renderer: jQuery.jqplot.DateAxisRenderer,
+            showTickMarks: true
+        };
+
+        if (hours <= 48) {
+            xaxis.label = "Hours ago";
+            xaxis.tickOptions = {
+              formatString:'%b %#d, h %H'
+            };
+            xaxis.tickInterval = '8 hours';
+        }
+        else {
+            xaxis.label = "Days ago";
+            xaxis.tickOptions = {
+              formatString:'%b %#d'
+            };
+            xaxis.tickInterval = '1 day';
+        }
+
         var plot = jQuery.jqplot("chartdiv1", mydata, {
           title: {
-            text: "Download and upload rate"
+            text: "Your download and upload speed",
+            fontSize: "16pt"
           },
           axes: {
-            xaxis: {
-              label: "Hours ago",
-              min: min,
-              max: 0,
-              showTickMarks: true
-            },
+            xaxis: xaxis,
             yaxis: {
               label: "Mbit/s",
               min: 0
