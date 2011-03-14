@@ -22,7 +22,7 @@
  */
 
 var speedtest = (function() {
-	var self = {};
+    var self = {};
 
     self.result_fields = ["timestamp", "internalAddress", "realAddress",
      "remoteAddress", "connectTime", "latency", "downloadSpeed", "uploadSpeed"];
