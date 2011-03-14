@@ -145,8 +145,6 @@ var speedtest = (function() {
             uploadData[counter].push([timestamp, upload]);
         }
 
-        var min = Math.ceil((since - utils.getNow()) / (60 * 60 * 1000));
-
         mydata = downloadData.concat(uploadData);
         var plot = jQuery.jqplot("chartdiv1", mydata, {
           title: {
@@ -156,8 +154,9 @@ var speedtest = (function() {
           axes: {
             xaxis: {
               label: "Hours ago",
-              min: min,
-              max: 0,
+              renderer:$.jqplot.DateAxisRenderer,
+              tickOptions:{formatString:'%b %#d, %Y'},
+              tickInterval:'7 hours',
               showTickMarks: true
             },
             yaxis: {
