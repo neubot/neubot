@@ -27,18 +27,22 @@ var utils = (function() {
     self.toMs = function(x) {
         return (1000 * x).toFixed(0) + " ms";
     }
+
     self.toMbitsPerSecondNumber = function(x) {
         return (x * 8 / 1000 / 1000).toFixed(3);
     }
+
     self.toMbitsPerSecond = function(x) {
         return (x * 8 / 1000 / 1000).toFixed(3) + " Mbit/s";
     }
+
     self.getText = function(text) {
         if (text == "")
             return (text);
         text = jQuery.trim(text);
         return (text);
     }
+
     self.getNumber = function(text) {
         if (text == "") {
             return (text);
@@ -46,10 +50,12 @@ var utils = (function() {
         var number = Number(text);
         return (number);
     }
+
     self.getNow = function() {
         var date = new Date();
         return date.getTime();
     }
+
     self.getTimeFromMicroseconds = function(t, convert) {
         t = self.getNumber(t);
         if (!t) {
@@ -63,6 +69,7 @@ var utils = (function() {
         }
         return t;
     }
+
     self.getTimeFromSeconds = function(t, convert) {
         t = self.getNumber(t);
         if (!t) {
@@ -76,6 +83,7 @@ var utils = (function() {
         }
         return t;
     }
+
     self.formatMinutes = function(t) {
         t = t / 1000;
         tm = Math.ceil(t / 60);
@@ -89,9 +97,11 @@ var utils = (function() {
         }
         return (s);
     }
+
     self.strPad = function(n) {
         return n < 10 ? '0' + n : n
     }
+
     self.formatDateTime = function(t) {
         var date = new Date(t);
         return date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
