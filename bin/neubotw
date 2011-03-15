@@ -45,16 +45,7 @@ from neubot.log import LOG
 # error for the default logger.  The logs are redirected to the NT
 # EventLog handler (Start -> Settings -> Control Panel -> Administrative
 # Tools -> Event Viewer).
-# XXX We override sys.stderr with a /dev/null-like stderr because the
-# default behavior of the frozen windows executable is to spawn a popup
-# window when the program is about to exit if the standard error was
-# ever written.
 #
 
-class DevNull(object):
-    def write(self, data):
-        return len(data)
-
 LOG.redirect()
-sys.stderr = DevNull()
 main(sys.argv)
