@@ -150,10 +150,6 @@ function getSetConfigVar(id, myfunction, change, value) {
         }
     }
 
-    // XXX note that now /api/config just returns 204 No Content
-    // so the .ajax() below is not correct, but that is harmless
-    // because the effect is that success() is never invoked.
-
     jQuery.ajax({
         url: '/api/config',
         data: data,
