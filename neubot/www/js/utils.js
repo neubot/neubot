@@ -105,7 +105,8 @@ var utils = (function() {
     self.formatDateTime = function(t) {
         var date = new Date(t);
         return date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
-          + '-' + self.strPad(date.getDate()) + '\n' + self.strPad(date.getHours()) + ':'
+          + '-' + self.strPad(date.getDate()) + '\n'
+          + self.strPad(date.getHours()) + ':'
           + self.strPad(date.getMinutes());
     }
 
