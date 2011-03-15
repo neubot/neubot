@@ -1,0 +1,35 @@
+py2exe: Make sure standard error is a blackhole
+
+This patch ensures that the standard error is a blackhole when
+neubot is running as a windows application, i.e. without an attached
+console.  Without this patch neubot fails to start under Windows 7
+(and probably under Vista too) because, in certain cases, py2exe
+tries to open a logfile at C:\Program Files\neubot\neubotw.exe.log,
+and this is not possible because of permissions.
+
+So, if you compile Neubot for Windows using py2exe please make
+sure you apply this patch, like this::
+
+    cd /c/Python27/
+    git apply /c/neubot-git/patches/py2exe_stderr_blackhole.patch
+
+note that here we assume you are running inside Git Bash.
+
+--- a/Lib/site-packages/py2exe/boot_common.py
++++ b/Lib/site-packages/py2exe/boot_common.py
+@@ -69,7 +69,6 @@
+         def flush(self):
+             if self._file is not None:
+                 self._file.flush()
+-    sys.stderr = Stderr()
+     del sys._MessageBox
+     del Stderr
+
+@@ -79,6 +78,7 @@
+             pass
+         def flush(self):
+             pass
++    sys.stderr = Blackhole()
+     sys.stdout = Blackhole()
+     del Blackhole
+ del sys
