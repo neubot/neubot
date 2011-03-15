@@ -126,7 +126,7 @@ function setStatusLabels(status) {
 function getSetConfigVar(id, myfunction, change, value) {
     var data = {};
     var type = "GET";
-    var success = null;
+    var success = undefined;
 
     if (change) {
         data = {enabled: value};
