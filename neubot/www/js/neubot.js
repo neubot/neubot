@@ -67,10 +67,11 @@ function process_state(data) {
         }
     }
 
-    if (data.update_version) {
-        jQuery("#updateUrl").attr("href", data.update_uri);
-        jQuery("#updateUrl").text(data.update_uri);
-        jQuery("#updateVersion").text(data.update_version);
+    if (data.events.update && data.events.update.uri
+      && data.events.update.version) {
+        jQuery("#updateUrl").attr("href", data.events.update.uri);
+        jQuery("#updateUrl").text(data.events.update.uri);
+        jQuery("#updateVersion").text(data.events.update.version);
         setTimeout(function() { jQuery('#update').slideDown("slow"); }, 500);
     }
 
