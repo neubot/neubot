@@ -37,11 +37,6 @@ var state = (function() {
             setTimeout(get_state, 5000);
         }
 
-        // If we fail to find the top-level XML tag treat
-        // that as an error and keep trying softly
-        // setTimeout(..., 0) is to give the browser some
-        // time to breathe and possibly re-draw the page
-
         function get_state_success(data) {
             if (!data.events) {
                 data.events = {};
