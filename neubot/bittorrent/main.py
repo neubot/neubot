@@ -269,7 +269,7 @@ def main(args):
 
     connector = BTConnectingPeer(POLLER)
     connector.configure(dictionary)
-    connector.connect(endpoint, sobuf=sobuf)
+    MEASURER.connect(connector, endpoint, sobuf=sobuf)
     POLLER.loop()
     sys.exit(0)
 
