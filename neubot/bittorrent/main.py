@@ -165,13 +165,16 @@ Options:
     -v                 : Run the program in verbose mode
 
 Macros (defaults in square brackets):
-    address=addr       : Select address to use                  [127.0.0.1]
+    address=addr       : Select address to use                  []
     daemonize          : Drop privileges and run in background  [False]
     key=KEY            : Use KEY to initialize ARC4 stream      []
     listen             : Listen for incoming connections        [False]
     obfuscate          : Obfuscate traffic using ARC4           [False]
     port=port          : Select the port to use                 [6881]
     sobuf=size         : Set socket buffer size to `size`       []
+
+If you don't specify an address Neubot will pick 0.0.0.0 in listen mode
+and neubot.blupixel.net in connect mode.
 
 """
 
@@ -180,7 +183,7 @@ VERSION = "Neubot 0.3.5\n"
 def main(args):
 
     conf = OptionParser()
-    conf.set_option("bittorrent", "address", "127.0.0.1")
+    conf.set_option("bittorrent", "address", "")
     conf.set_option("bittorrent", "daemonize", "False")
     conf.set_option("bittorrent", "key", "")
     conf.set_option("bittorrent", "listen", "False")
@@ -226,6 +229,12 @@ def main(args):
     obfuscate = conf.get_option_bool("bittorrent", "obfuscate")
     port = conf.get_option_uint("bittorrent", "port")
     sobuf = conf.get_option_uint("bittorrent", "sobuf")
+
+    if not address:
+        if not listen:
+            address = "neubot.blupixel.net"
+        else:
+            address = "0.0.0.0"
 
     endpoint = (address, port)
     dictionary = {
