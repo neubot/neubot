@@ -113,7 +113,6 @@ function process_state(data) {
     // Adjust style
     // The qtip must be visible while we are testing
     // and must not be visible otherwise
-
     // data.current should always be in_array() but I am leaving the
     // check in-place for robustness and simmetry with state.py
 
