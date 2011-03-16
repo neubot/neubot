@@ -39,7 +39,7 @@ function process_state(data) {
     jQuery('#testResultsBox h4').text("Latest test details");
 
     // Keep processing simple to read and understand:
-    // consider each relevant tag on its own and delay
+    // consider each relevant event on its own and delay
     // the show / hide decisions
 
     if (data.events.config) {
