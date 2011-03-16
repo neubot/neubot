@@ -88,12 +88,15 @@ function process_state(data) {
         jQuery("#testName").text(data.events.test_name);
         jQuery("#testName1").text(data.events.test_name);
     }
+
     if (data.events.speedtest_latency) {
         jQuery("#latencyResult").text(data.events.speedtest_latency.value);
     }
+
     if (data.events.speedtest_download) {
         jQuery("#downloadResult").text(data.events.speedtest_download.value);
     }
+
     if (data.events.speedtest_upload) {
         jQuery("#uploadResult").text(data.events.speedtest_upload.value);
     }
