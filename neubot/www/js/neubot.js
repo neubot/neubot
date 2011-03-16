@@ -81,15 +81,6 @@ function process_state(data) {
         else {
             jQuery("#queuePos").text(0);
         }
-
-        // Maybe it is not so useful
-        // I agree -- Simone
-        if (data.events.negotiate.queue_len) {
-            jQuery("#queueLen").text(data.events.negotiate.queue_len);
-        }
-        else {
-            jQuery("#queueLen").text(0);
-        }
     }
 
     if (data.events.test_name) {
