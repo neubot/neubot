@@ -165,10 +165,10 @@ a daemon:
 |
 |    $ neubot -v -d
 
-Export results to XML:
+Export results to JSON:
 
 |
-|    # neubot database -l > output.xml
+|    # neubot database -l > output.json
 
 Track neubot daemon state using the command line:
 
