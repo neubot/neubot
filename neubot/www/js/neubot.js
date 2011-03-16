@@ -26,11 +26,6 @@
  * For results.html we have js/results.js, therefore it might
  * make sense to rename this file js/index.js for consistency.
  * OTOH js/index.js seems odd to me.
- * Update: Alessio pointed out that usually you put all the
- * javascript magic into a single file so the browser does
- * not need to load new stuff when you switch page, and that's
- * probably the way to go, i.e. to merge everything we need
- * here in this file.
  */
 
 function process_state(data) {
