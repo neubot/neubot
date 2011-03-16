@@ -167,6 +167,7 @@ Options:
 Macros (defaults in square brackets):
     address=addr       : Select address to use                  []
     daemonize          : Drop privileges and run in background  [False]
+    duration=N         : Stop the test after N seconds          [10]
     key=KEY            : Use KEY to initialize ARC4 stream      []
     listen             : Listen for incoming connections        [False]
     obfuscate          : Obfuscate traffic using ARC4           [False]
@@ -187,6 +188,7 @@ def main(args):
     conf = OptionParser()
     conf.set_option("bittorrent", "address", "")
     conf.set_option("bittorrent", "daemonize", "False")
+    conf.set_option("bittorrent", "duration", "10")
     conf.set_option("bittorrent", "key", "")
     conf.set_option("bittorrent", "listen", "False")
     conf.set_option("bittorrent", "obfuscate", "False")
@@ -226,6 +228,7 @@ def main(args):
 
     address = conf.get_option("bittorrent", "address")
     daemonize = conf.get_option_bool("bittorrent", "daemonize")
+    duration = conf.get_option_uint("bittorrent", "duration")
     key = conf.get_option("bittorrent", "key")
     listen = conf.get_option_bool("bittorrent", "listen")
     obfuscate = conf.get_option_bool("bittorrent", "obfuscate")
@@ -259,6 +262,10 @@ def main(args):
     # XXX
     if sobuf == 0:
         sobuf = 262144
+
+    if duration >= 0:
+        duration = duration + 0.1       # XXX
+        POLLER.sched(duration, POLLER.break_loop)
 
     connector = BTConnectingPeer(POLLER)
     connector.configure(dictionary)
