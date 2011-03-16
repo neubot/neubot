@@ -21,6 +21,9 @@
 #
 
 set -e
+if [ -x /usr/bin/pgrep ]; then
+	/usr/bin/pkill -KILL -f 'neubot statusicon' || true
+fi
 if [ -f /etc/init.d/neubot ]; then
 	/etc/init.d/neubot stop
 	update-rc.d -f neubot remove
