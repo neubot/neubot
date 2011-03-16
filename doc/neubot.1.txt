@@ -5,7 +5,7 @@ The network neutrality bot
 ''''''''''''''''''''''''''
 
 ..
-.. Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+.. Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 ..  NEXA Center for Internet & Society at Politecnico di Torino
 ..
 .. This file is part of Neubot <http://www.neubot.org/>.
@@ -41,6 +41,8 @@ SYNOPSYS
 |   neubot *command* --help
 |   neubot *command* [*arguments*]
 |   neubot speedtest
+|   neubot stream
+|   neubot bittorrent
 
 DESCRIPTION
 ```````````
@@ -54,9 +56,9 @@ and uploads them on the project servers. The collected dataset
 contains samples from various Providers and allows to monitor network
 neutrality.
 
-This is a beta release of neubot that implements a simple client/server
-HTTP transmission test, using a measurement methodology inspired to the
-one of *http://www.speedtest.net*.
+This is a beta release of neubot that implements just client/server
+transmission tests, for HTTP (the *speedtest* command), BitTorrent
+(*bittorrent*), and raw TCP (*stream*).
 
 The first form of the command will make sure that neubot *daemon* is
 running (and will start it if not), and then will open neubot *web user
@@ -103,6 +105,18 @@ The nineth form of the command runs a speed test, invoking the *speedtest*
 sub-command. We include this form here because you might want to start a
 speedtest from command line (for more info on the full synopsys of this
 command pass it the --help option).
+
+The tenth form of the command runs a raw TCP transmission test that
+attempts to download as much data as possible from a remote server
+for about ten seconds.  We include this form here because you might
+want to start such test from command line (for more info on the full
+synopsys of this command pass it the --help option).
+
+The eleventh form of the command runs a BitTorrent transmission test
+that attempts to download as much data as possible from a remote server
+for about ten seconds.  We include this form here because you might
+want to start such test from command line (for more info on the full
+synopsys of this command pass it the --help option).
 
 OPTIONS
 ```````
@@ -151,10 +165,10 @@ a daemon:
 |
 |    $ neubot -v -d
 
-Export results to XML:
+Export results to JSON:
 
 |
-|    # neubot database -l > output.xml
+|    # neubot database -l > output.json
 
 Track neubot daemon state using the command line:
 
@@ -199,13 +213,29 @@ $HOME/.neubot/database.sqlite3
 AUTHOR
 ``````
 
-| Simone Basso <bassosimone@gmail.com>
-| Antonio Servetti <antonio.servertti@polito.it>
+Neubot authors are:
+
+|
+| Simone Basso                  <bassosimone@gmail.com>
+| Antonio Servetti              <antonio.servetti@polito.it>
+
+The following people have contributed patches to the project:
+
+|
+| Alessio Palmero Aprosio	<alessio@apnetwork.it>
+| Roberto D'Auria		<everlastingfire@autistici.org>
+| Marco Scopesi			<marco.scopesi@gmail.com>
+
+The following poeple have helped to translate the website:
+
+|
+| Claudio Artusio               <claudioartusio@gmail.com>
 
 COPYRIGHT
 `````````
 
-| Copyright (c) 2010 NEXA Center for Internet & Society.
+| Copyright (c) 2010-2011 NEXA Center for Internet & Society
+|   at Politecnico di Torino <http://nexa.polito.it/>
 
 | Neubot is free software: you can redistribute it and/or
 | modify it under the terms of the GNU General Public License
