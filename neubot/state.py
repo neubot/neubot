@@ -32,6 +32,8 @@ from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
 from neubot.compat import json
 
+STATES = [ "idle", "rendezvous", "negotiate", "test", "collect" ]
+
 
 class State(object):
 
@@ -75,7 +77,8 @@ class State(object):
         if event == None:
             event = {}
 
-        self.current = name
+        if name in STATES:
+            self.current = name
         self.t = T()
         self.events[name] = self.t, event
 

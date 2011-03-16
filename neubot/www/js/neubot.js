@@ -125,6 +125,9 @@ function process_state(data) {
     // The qtip must be visible while we are testing
     // and must not be visible otherwise
 
+    // data.current should always be in_array() but I am leaving the
+    // check in-place for robustness and simmetry with state.py
+
     if (in_array(data.current, actions)) {
         if (data.current == "negotiate") {
             jQuery("#latencyResult").text("---");
