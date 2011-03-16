@@ -200,7 +200,7 @@ AUTHOR
 ``````
 
 | Simone Basso <bassosimone@gmail.com>
-| Antonio Servetti <antonio.servertti@polito.it>
+| Antonio Servetti <antonio.servetti@polito.it>
 
 COPYRIGHT
 `````````
