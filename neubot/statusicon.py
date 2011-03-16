@@ -79,8 +79,12 @@ class StateTrackerAdapter(APIStateTracker):
 
     def process_dictionary(self, dictionary):
         update = ()
-        if "update_version" in dictionary and "update_uri" in dictionary:
-            update = dictionary["update_version"], dictionary["update_uri"]
+
+        if "events" in dictionary and "update" in dictionary["events"]:
+            udict = dictionary["events"]["update"]
+            if "version" in udict and "uri" in udict:
+                update = udict["version"], udict["uri"]
+
         state = dictionary["current"]
         self.icon.update_state(state, update)
 
