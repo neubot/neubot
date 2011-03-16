@@ -69,6 +69,7 @@ from neubot.log import LOG
 # default address and port
 ADDRESS = "127.0.0.1"
 PORT = "9774"
+
 VERSION = "0.3.5"
 
 class StateTrackerAdapter(APIStateTracker):
@@ -90,20 +91,21 @@ class StateTrackerThread(threading.Thread):
     def __init__(self, icon, address, port):
         threading.Thread.__init__(self)
         self.adapter = StateTrackerAdapter(icon, address, port)
+        # XXX
         self.interrupt = self.adapter.interrupt
 
     #
     # Here we ASSUME that we are running a *detached* thread
-    # of execution--in other words the main program is going
-    # to exit even if this thread is still running--and for
+    # of execution -- in other words the main program is going
+    # to exit even if this thread is still running -- and for
     # this reason we feel free to invoke sleep().
-    # The sleep(3) is here because I am Gtk-ignorant and I
+    # The sleep() is there because I am Gtk-ignorant and I
     # want to be sure that we don't update_state() before we
     # enter into gtk.main(), since I don't know whether it
     # is harmless or not.
     # When there is an error in updating the state we sleep
     # for a while to avoid consuming too much CPU (think for
-    # example at the case when neubot(1) is not running and
+    # example at the case when neubot() is not running and
     # in each iteration the connection is refused).
     #
 
@@ -120,31 +122,37 @@ class StateTrackerThread(threading.Thread):
 #
 
 ICON = "@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg"
-if ICON.startswith('@'):
+if ICON.startswith("@"):
     ICON = "icons/neubot.svg"
 
-class StatusIcon:
+class StatusIcon(object):
+
     def __init__(self, address, port, blink, nohide):
         self.address = address
         self.port = port
         self.blink = blink
         self.nohide = nohide
+
         self.icon = gtk.StatusIcon()
         self.icon.set_from_icon_name(gtk.STOCK_NETWORK)
         if os.path.exists(ICON):
             self.icon.set_from_file(ICON)
+
         self.icon.connect("popup-menu", self.on_popup_menu)
         self.icon.connect("activate", self.on_activate)
         self.icon.set_visible(self.nohide)
         self.update_item = None
 
         self.menu = gtk.Menu()
+
         item = gtk.MenuItem(label="Open Web Interface")
         item.connect("activate", self._do_open_browser)
         self.menu.add(item)
+
         item = gtk.MenuItem(label="Close Status Icon")
         item.connect("activate", self._do_quit)
         self.menu.add(item)
+
         self.menu.show_all()
 
     def on_popup_menu(self, status, button, time):
@@ -170,6 +178,7 @@ class StatusIcon:
 
     def update_state(self, state, update):
         gtk.gdk.threads_enter()
+
         if state:
             self.icon.set_tooltip("Neubot daemon state: " + state)
             if state != "idle":
@@ -182,12 +191,14 @@ class StatusIcon:
                     self.icon.set_visible(False)
                 if self.blink:
                     self.icon.set_blinking(False)
+
         else:
-            self.icon.set_tooltip("Neubot daemon state: ???")
+            self.icon.set_tooltip("Neubot daemon state: unknown")
             if not self.nohide:
                 self.icon.set_visible(False)
             if self.blink:
                 self.icon.set_blinking(False)
+
         if update:
             if not self.update_item:
                 ver, uri = update
@@ -196,17 +207,18 @@ class StatusIcon:
                 self.menu.add(item)
                 self.menu.show_all()
                 self.update_item = item
+
         else:
             if self.update_item:
                 self.menu.remove(self.update_item)
                 self.update_item = None
+
         gtk.gdk.threads_leave()
 
     def _do_download_update(self, *args):
         webbrowser.open(args[1], new=2, autoraise=True)
 
 #
-# Main program
 # The icon is always visible in the notification area,
 # and we know that this is not what the notification area
 # is designed for in the first place.  But we need to
@@ -232,15 +244,17 @@ HELP = USAGE +								\
 "  -v     : Run the program in verbose mode.\n"
 
 def main(args):
+
     daemonize = True
     blink = False
     nohide = True
-    # parse
+
     try:
         options, arguments = getopt.getopt(args[1:], "BdnqVv", ["help"])
     except getopt.GetoptError:
         sys.stderr.write(USAGE % args[0])
         sys.exit(1)
+
     for name, value in options:
         if name == "-B":
             blink = True
@@ -256,9 +270,9 @@ def main(args):
         elif name == "-V":
             sys.stderr.write(VERSION + "\n")
             sys.exit(0)
-        else:
+        elif name == "-v":
             LOG.verbose()
-    # arguments
+
     if len(arguments) >= 3:
         sys.stderr.write(USAGE % args[0])
         sys.exit(1)
@@ -271,15 +285,16 @@ def main(args):
     else:
         address = ADDRESS
         port = PORT
+
     if daemonize:
         become_daemon()
-    # run
+
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)
     tracker = StateTrackerThread(icon, address, port)
     tracker.daemon = True
     tracker.start()
-    # See: http://bit.ly/hp8Ot [operationaldynamics.com]
+
     gtk.gdk.threads_enter()
     gtk.main()
     gtk.gdk.threads_leave()
@@ -289,8 +304,8 @@ def main(args):
 # When we are invoked directly we need to set-up a custom
 # signal handler because we want Ctrl-C to break Gtk's main
 # loop (see http://bit.ly/c2mbSl [faq.pygtk.org]).
-# OTOH when neubot(1) invokes the main() function we don't
-# need to do that because neubot(1) already installs its
+# OTOH when neubot() invokes the main() function we don't
+# need to do that because neubot() already installs its
 # custom signal handler for SIGINT.
 #
 
