@@ -205,7 +205,8 @@ AUTHOR
 COPYRIGHT
 `````````
 
-| Copyright (c) 2010 NEXA Center for Internet & Society.
+| Copyright (c) 2010-2011 NEXA Center for Internet & Society
+|   at Politecnico di Torino <http://nexa.polito.it/>
 
 | Neubot is free software: you can redistribute it and/or
 | modify it under the terms of the GNU General Public License
