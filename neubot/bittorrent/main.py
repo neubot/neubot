@@ -176,6 +176,8 @@ Macros (defaults in square brackets):
 If you don't specify an address Neubot will pick 0.0.0.0 in listen mode
 and neubot.blupixel.net in connect mode.
 
+If you don't force socket buffer size Neubot will attempt to make the
+best choice for you.
 """
 
 VERSION = "Neubot 0.3.5\n"
@@ -253,6 +255,10 @@ def main(args):
         listener.listen(endpoint, sobuf=sobuf)
         POLLER.loop()
         sys.exit(0)
+
+    # XXX
+    if sobuf == 0:
+        sobuf = 262144
 
     connector = BTConnectingPeer(POLLER)
     connector.configure(dictionary)
