@@ -819,12 +819,12 @@ Options:
     -v                 : Run the program in verbose mode
 
 Macros (defaults in square brackets):
-    address=addr       : Select the address to use                 [127.0.0.1]
+    address=addr       : Select the address to use                 []
     certfile           : Path to private key and certificate file
                          to be used together with `-D secure`      []
     clients=N          : Spawn N client connections at a time      [1]
     daemonize          : Drop privileges and run in background     [False]
-    duration=N         : Stop the client(s) after N seconds        []
+    duration=N         : Stop the client(s) after N seconds        [10]
     key=KEY            : Use KEY to initialize ARC4 stream         []
     listen             : Listen for incoming connections           [False]
     obfuscate          : Obfuscate traffic using ARC4              [False]
@@ -837,6 +837,10 @@ Protocols:
     There are two available protocols: `discard` and `chargen`.
     When running in server mode the default is `chargen` and when
     running in client mode the default is `discard`.
+
+If you don't specify an address Neubot will pick 0.0.0.0 in listen mode
+and neubot.blupixel.net in connect mode.
+
 """
 
 VERSION = "Neubot 0.3.5\n"
@@ -844,11 +848,11 @@ VERSION = "Neubot 0.3.5\n"
 def main(args):
 
     conf = OptionParser()
-    conf.set_option("stream", "address", "127.0.0.1")
+    conf.set_option("stream", "address", "")
     conf.set_option("stream", "certfile", "")
     conf.set_option("stream", "clients", "1")
     conf.set_option("stream", "daemonize", "False")
-    conf.set_option("stream", "duration", "0")
+    conf.set_option("stream", "duration", "10")
     conf.set_option("stream", "key", "")
     conf.set_option("stream", "listen", "False")
     conf.set_option("stream", "obfuscate", "False")
@@ -897,6 +901,12 @@ def main(args):
     proto = conf.get_option("stream", "proto")
     sobuf = conf.get_option_uint("stream", "sobuf")
 
+    if not address:
+        if not listen:
+            address = "neubot.blupixel.net"
+        else:
+            address = "0.0.0.0"
+
     if not (listen and daemonize):
         MEASURER.start()
 
@@ -931,7 +941,7 @@ def main(args):
         POLLER.loop()
         sys.exit(0)
 
-    if duration > 0:
+    if duration >= 0:
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
