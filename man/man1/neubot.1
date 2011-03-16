@@ -1,6 +1,6 @@
 .\" Man page generated from reStructeredText.
 .
-.TH NEUBOT 1 "2010-10-21" "Neubot 0.3.5" "Neubot manual"
+.TH NEUBOT 1 "2011-03-16" "Neubot 0.3.5" "Neubot manual"
 .SH NAME
 neubot \- The network neutrality bot
 .
@@ -41,11 +41,13 @@ neubot help
 neubot \fIcommand\fP \-\-help
 neubot \fIcommand\fP [\fIarguments\fP]
 neubot speedtest
+neubot stream
+neubot bittorrent
 .fi
 .sp
 .SH DESCRIPTION
 .sp
-Neubot is the network neutrality bot, a lightweight open-source
+Neubot is the network neutrality bot, a lightweight open\-source
 program that runs in background and periodically performs transmission
 tests with some test servers and with other instances of the program
 itself. These transmission tests probe the Internet using various
@@ -54,9 +56,9 @@ and uploads them on the project servers. The collected dataset
 contains samples from various Providers and allows to monitor network
 neutrality.
 .sp
-This is a beta release of neubot that implements a simple client/server
-HTTP transmission test, using a measurement methodology inspired to the
-one of \fIhttp://www.speedtest.net\fP.
+This is a beta release of neubot that implements just client/server
+transmission tests, for HTTP (the \fIspeedtest\fP command), BitTorrent
+(\fIbittorrent\fP), and raw TCP (\fIstream\fP).
 .sp
 The first form of the command will make sure that neubot \fIdaemon\fP is
 running (and will start it if not), and then will open neubot \fIweb user
@@ -103,6 +105,18 @@ The nineth form of the command runs a speed test, invoking the \fIspeedtest\fP
 sub\-command. We include this form here because you might want to start a
 speedtest from command line (for more info on the full synopsys of this
 command pass it the \-\-help option).
+.sp
+The tenth form of the command runs a raw TCP transmission test that
+attempts to download as much data as possible from a remote server
+for about ten seconds.  We include this form here because you might
+want to start such test from command line (for more info on the full
+synopsys of this command pass it the \-\-help option).
+.sp
+The eleventh form of the command runs a BitTorrent transmission test
+that attempts to download as much data as possible from a remote server
+for about ten seconds.  We include this form here because you might
+want to start such test from command line (for more info on the full
+synopsys of this command pass it the \-\-help option).
 .SH OPTIONS
 .INDENT 0.0
 .TP
@@ -186,11 +200,11 @@ $ neubot \-v \-d
 .fi
 .sp
 .sp
-Export results to XML:
+Export results to JSON:
 .nf
 
 .in +2
-# neubot database \-l > output.xml
+# neubot database \-l > output.json
 .in -2
 .fi
 .sp
@@ -251,14 +265,36 @@ User\-specific configuration file.
 User\-specific results database.
 .UNINDENT
 .SH AUTHOR
+.sp
+Neubot authors are:
 .nf
-Simone Basso <\fI\%bassosimone@gmail.com\fP>
-Antonio Servetti <\fI\%antonio.servertti@polito.it\fP>
+
+Simone Basso                  <\fI\%bassosimone@gmail.com\fP>
+Antonio Servetti              <\fI\%antonio.servetti@polito.it\fP>
+.fi
+.sp
+.sp
+The following people have contributed patches to the project:
+.nf
+
+Alessio Palmero Aprosio       <\fI\%alessio@apnetwork.it\fP>
+Roberto D\(aqAuria               <\fI\%everlastingfire@autistici.org\fP>
+Marco Scopesi                 <\fI\%marco.scopesi@gmail.com\fP>
+.fi
+.sp
+.sp
+The following poeple have helped to translate the website:
+.nf
+
+Claudio Artusio               <\fI\%claudioartusio@gmail.com\fP>
 .fi
 .sp
 .SH COPYRIGHT
 .nf
-Copyright (c) 2010 NEXA Center for Internet & Society.
+Copyright (c) 2010\-2011 NEXA Center for Internet & Society
+.in +2
+at Politecnico di Torino <\fI\%http://nexa.polito.it/\fP>
+.in -2
 .fi
 .sp
 .nf
