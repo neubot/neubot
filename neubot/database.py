@@ -42,8 +42,7 @@ if __name__ == "__main__":
 from neubot import pathnames
 from neubot.times import timestamp
 from neubot.compat import deque_appendleft
-from neubot.marshal import JSON_marshal
-from neubot.marshal import XML_unmarshal
+from neubot.marshal import unmarshal_object
 from neubot.compat import json
 from neubot import version
 from neubot.log import LOG
@@ -343,8 +342,8 @@ class DatabaseManager:
         if vector:
             temp, vector = vector, []
             for octets in temp:
-                result = SpeedtestResultXML()
-                XML_unmarshal(result, octets, "SpeedtestCollect")
+                result = unmarshal_object(octets, "application/xml",
+                                          SpeedtestResultXML)
                 result = speedtest_result_good_from_xml(result)
                 vector.append(result)
 

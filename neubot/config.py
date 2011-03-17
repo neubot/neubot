@@ -26,7 +26,8 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.marshal import *
+from neubot.marshal import unmarshal_objectx
+from neubot.marshal import marshal_object
 
 class Config(object):
 
@@ -46,13 +47,13 @@ class Config(object):
         return vars(self)
 
     def marshal(self):
-        data = JSON_marshal(self)
+        data = marshal_object(self, "application/json")
         stringio = StringIO.StringIO(data)
         return stringio
 
     def update(self, stringio):
         data = stringio.read()
-        QS_unmarshal(self, data)
+        unmarshal_objectx(data, "application/x-www-form-urlencoded", self)
 
 CONFIG = Config()
 
