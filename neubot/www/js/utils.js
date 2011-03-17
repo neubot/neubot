@@ -140,7 +140,7 @@ function getSetConfigVar(id, myfunction, change, value) {
     var success = undefined;
 
     if (change) {
-        data = eval("({" + id + ": " + value + "});");
+        data[id] = value;
         type = "POST";
     }
 
