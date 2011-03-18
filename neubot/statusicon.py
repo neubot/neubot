@@ -70,7 +70,7 @@ from neubot.log import LOG
 ADDRESS = "127.0.0.1"
 PORT = "9774"
 
-VERSION = "0.3.5"
+VERSION = "0.3.6"
 
 class StateTrackerAdapter(APIStateTracker):
     def __init__(self, icon, address, port):

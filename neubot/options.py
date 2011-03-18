@@ -179,7 +179,7 @@ Macros:
 
 """
 
-VERSION = "Neubot 0.3.5\n"
+VERSION = "Neubot 0.3.6\n"
 
 def _write(section, option, value):
     sys.stdout.write("%s.%s=%s\n" % (section, option, str(value)))

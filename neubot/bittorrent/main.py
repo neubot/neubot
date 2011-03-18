@@ -181,7 +181,7 @@ If you don't force socket buffer size Neubot will attempt to make the
 best choice for you.
 """
 
-VERSION = "Neubot 0.3.5\n"
+VERSION = "Neubot 0.3.6\n"
 
 def main(args):
 

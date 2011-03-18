@@ -1,3 +1,201 @@
+Neubot 0.3.6 [2011-03-18]
+	* arcfour.py: New home for ARC4 code
+	* net/streams.py: Import ARC4 code from arcfour.py
+	* net/streams.py: Unbreak ARC4
+	* Merge branch 'arcfour' into next
+	* bittorrent/main.py: Simplest possible transmission test
+	* bittorrent/main.py: Use arcfour_new to scramble pieces
+	* bittorrent/main.py: Make piece scrambling conditional
+	* bittorrent/main.py: Allow to obfuscate the whole protocol
+	* bittorrent/streams.py: Pass CHOKE/UNCHOKE INTERESTED/NOT_INTERESTED
+	* bittorrent/main.py: Honour CHOKE/UNCHOKE INTERESTED/NOT_INTERESTED
+	* bittorrent/main.py: Keep at most 32 pieces in flight
+	* bittorrent/main.py: Allow to ovverride default sobufs size
+	* bittorrent/streams.py: Increase robustness and verbosity
+	* Merge branch 'bittorrent-test' into next
+	* neubot/times.py: The various definitions of time
+	* Always pull the times functions from neubot/times.py
+	* Merge branch 'maint-time' into next
+	* system.py: Generic support for OSes
+	* Always use neubot.system
+	* Merge branch 'maint-system' into next
+	* times.py: Zap a couple of whitespace errors
+	* neubot/log.py: Simplify encoding to JSON
+	* neubot/log.py: Remove __all__[]
+	* neubot/log.py: Remove deprecated code
+	* log.py: Avoid pychecker warning
+	* Make sure we always import LOG from neubot.log
+	* Merge branch 'maint-log' into next
+	* neubot/options.py: Remove __all__[]
+	* net/CA.py: Do not import * from options.py
+	* options.py: Do not suggest to import *
+	* Move neubot/options.py manual to do/neubot.3.txt
+	* Merge branch 'maint-options' into next
+	* net/pollers.py: Remove unneeded __del__
+	* net/pollers.py: Remove stats-printing code
+	* net/pollers.py: Style
+	* net/pollers.py: s/PollerTask/Task/g
+	* net/pollers.py: Pass exceptions upstream
+	* net/pollers.py: No more global funcs, just one global object
+	* Always import POLLER from net.pollers
+	* Merge branch 'maint-poller' into next
+	* neubot/net: mv pollers.py poller.py
+	* Make sure we always import from net.poller not net.pollers
+	* net: Copy to stream.py the new classes of streams.py
+	* Make sure we import from stream (not streams) where needed
+	* bittorrent: mv streams.py stream.py
+	* bittorrent/main.py: Import from bittorrent.stream not streams
+	* Merge branch 'rename-files' into next
+	* Revert "net/pollers.py: Pass exceptions upstream"
+	* streams.py: Remember to remove self.stats
+	* utils.py: Cosmetic changes
+	* utils.py: Better to raise ValueError than Exception
+	* handlers.py: Remove unused import
+	* handlers.py: Use import rather than from..import for collections
+	* messages.py: Cosmetic changes
+	* messages.py: Store body length in a message field
+	* messages.py: Use get(..., default) instead of fixkwargs
+	* messages.py: Make compose() a method of Message
+	* Merge branch 'http-maint' into next
+	* README: Update copyright date to include 2011 too
+	* marshal.py: Implement JSON_marshal()
+	* marshal.py: Allow to test either XML or JSON marshalling
+	* marshal.py: Zap a redundant `continue`
+	* marshal.py: `object` is a reserved word
+	* marshal.py: Remember to export JSON_marshal
+	* marshal.py: endode -> encode
+	* config.py: Return a JSON rather than an XML
+	* ui.py: /api/config mimetype: text/xml -> application/json
+	* marshal.py: Update to use LOG instead of log
+	* Merge branch 'json-config' into next
+	* marshal.py: One more endode -> encode fix
+	* marshal.py: Implement XML_unmarshal()
+	* database.py: Allow to export speedtest results using JSON
+	* ui.py: Add /api/speedtest to pull JSON results
+	* ui.py: Bye bye /api/results /api/results2
+	* database.py: Bye bye cache and old methods to access results
+	* Merge branch 'json-speedtest' into next
+	* statusicon.py: Always create the statusicon menu
+	* notify.py: Use all-uppercase for global objects
+	* notify.py: Allow to pass publish() the opaque time
+	* Merge branch 'notify-T' into next
+	* state.py: Rewrite to reduce complexity and use JSON
+	* api_client.py: Add client that tracks /api/state using comet
+	* ui.py: Update to use the new code in state.py, api_client.py
+	* speedtest.py: Update to use the new code in state.py
+	* rendezvous.py: Update to use the new code in state.py
+	* statusicon.py: Update to use the new code in api_client.py
+	* Merge branch 'json-state' into next
+	* speedtest.py: Re-add removed-by-mistake latency.start()
+	* Added button for start/stop daemon from web interface
+	* Modified config in js to accept JSON
+	* Delete function() in js
+	* neubot.js: Reindent after function(...)() removal
+	* neubot.js: Get rid of executeFunctionByName
+	* neubot.js: Revert quick and dirty fix-update-box attempts
+	* neubot.js: Be explicit: use jQuery and not the dollar symbol
+	* js/contrib.js: new file that contains contributed code
+	* js: Break up libneubot.js into three new files AND switch to JSON
+	* A moment of silence for our beloved js/results.js
+	* www: Make sure updateUri is a clickable hyperlink
+	* www: Update to use new javascript infrastructure
+	* results.html: Rewrite input form to filter results by date
+	* www: Rename results.html to speedtest.html
+	* js/neubot.js: Update state management to use JSON
+	* Merge branch 'json-web' into next
+	* utils.js: Changed upper case letter
+	* www: Make links relative instead of absolute
+	* speedtest.js: Note we should use a larger font for axis labels
+	* speedtest.js: Throw away outdated comment
+	* speedtest.js: Dispose of old, commented-out code chunks
+	* speedtest.js: Sync duplicated code with neubot.js
+	* speedtest.py: Minor cosmetic changes
+	* net/stream.py: Become daemon on -Ddaemonize
+	* bittorrent/main.py: Become daemon on -Ddaemonize
+	* main.py: Allow to invoke net/stream.py main()
+	* bittorrent/main.py: Adjust --help message
+	* net/stream.py: Adjust --help message
+	* net/stream.py: Use 'stream' not 'net' prefix for options
+	* Merge branch 'new-tests' into next
+	* tools/dbtool.py: Fix version number
+	* net/stream.py: Zap unused import
+	* speedtest.js: re-enable zoom (and other plugins)
+	* speedtest.html: zap obsolete description
+	* speedtest.html: center-align view-last control
+	* Merge branch 'www-fixes' into next
+	* index.html: Fix js inclusion order.
+	* js: clear latest results during test
+	* js: Insert enable/disable button in speedtest results page
+	* jquery.qtip.js: updated to new version
+	* neubot.js: prevStatus variable wiped
+	* Merge branch 'www-maint' into next
+	* rendezvous.py: Honour CONFIG.enabled flag
+	* rendezvous.py: Make sure we sched at most 1 rendezvous at a time
+	* Merge branch 'www-enable-disable' into next
+	* arcfour: Lazy 'arc4 not available' warning
+	* ui.py: Return 204 No Content to POST /api/config
+	* config.py: Allow to export as a dictionary
+	* ui.py: Trigger state change after POST /api/config
+	* js: update config.enabled via /api/state
+	* utils.js: Comment on the effect of recent 204 No Content change
+	* Merge branch 'api-config-www' into next
+	* README: clarify collection vs individual contribution copyright
+	* speedtest.js: UTF-7 integralism
+	* speedtest.js: Soft-tabs integralism
+	* speedtest.js: Larger fontSize for plot
+	* speedtest.js: Do not put 'hours ago' on X axis anymore
+	* speedtest.js: Very simple X axis labels rendering
+	* speedtest.js: changed xaxis data in graph
+	* Merge branch 'beautify-x-axis' into next
+	* patches: add py2exe-patch to ensure stderr is a blackhole
+	* Revert "bin/neubotw: Make sure stderr.write() is a no-op"
+	* utils.js: more UTF-7 integralism
+	* utils.js: Avoid IE8 error
+	* utils.js: blank-line-around-funcs integralism
+	* utils.js: 80x24 integralism
+	* Revert "POST /api/state returns 204 No Content" change
+	* utils.js: getSetConfigVar(): Honour id parameter
+	* www: Try to be less ambiguous when we have not performed any test
+	* index.html: Do not mention the number of Neubots in queue
+	* TODO: We should remove queue_len from speedtest-returned info
+	* www: More informative text when we know nothing
+	* index.html: Explain how to run a test now
+	* www: Link to DAUIN not just to Polito
+	* bittorrent/main.py: Choose better default address
+	* bittorrent/main.py: Delegate buffer scaling to the sender only
+	* bittorrent/main.py: Allow to control test duration
+	* net/stream.py: Default test duration to 10 seconds
+	* net/stream.py: Choose better default address
+	* bittorrent/main.py: Also measure connect() time
+	* Merge branch 'friendlier-experimental-tests' into next
+	* arcfour.py: Downgrade to debug() ARC4 warning
+	* debian/control/prerm: Attempt to kill running statusicon
+	* state.py: Update current for canonical state changes only
+	* neubot/statusicon.py: Cosmetic changes
+	* state.js: Throw-away obsolete comment
+	* neubot.js: Update comment wrt neubot.js vs index.js dilemma
+	* neubot.js: s/tag/event/ in comment
+	* neubot.js: Ignore negotiate.queue_len
+	* neubot.js: let's deploy some more blank lines
+	* neubot.js: Tweak comment
+	* Merge branch 'js-maint' into next
+	* statusicon.py: Unbreak update-checking code
+	* neubot.js: Unbreak update-checking code
+	* Merge branch 'check-updates' into next
+	* neubot.1.txt: Correct Antonio's email
+	* neubot.1.txt: Sync copyright statement with README
+	* neubot.1.txt: Update manual page's copyright
+	* neubot.1.txt: We now support two more transmission tests
+	* neubot.1.txt: We now export data to JSON not XML
+	* neubot.1.txt: Give credit to people that helped
+	* man1/neubot.1: Regen
+	* Merge branch 'update-man' into next
+	* www: Unbreak sidebar spans
+	* utils.js: Assign to object in a less baroque way
+	* index.html: dispose of stray whitespace
+	* bin/neubotw: Comment LOG.redirect() out and unbreak Win7
+	* Release neubot/0.3.6
+
 Neubot 0.3.5 [2011-02-24]
 	* options.py: Fix a typo in an error message
 	* fake-db.py: improved fake rows generation
