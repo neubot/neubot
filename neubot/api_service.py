@@ -32,6 +32,8 @@ from neubot.config import CONFIG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.database import database
+from neubot.marshal import unmarshal_objectx
+from neubot.marshal import marshal_object
 
 VERSION = "Neubot 0.3.6\n"
 
@@ -65,10 +67,12 @@ class ServiceHTTP(object):
         response = Message()
 
         if request.method == "POST":
-            CONFIG.update(request.body)
-            STATE.update("config", CONFIG.dictionary())
+            s = request.body.read()
+            unmarshal_objectx(s, "application/x-www-form-urlencoded", CONFIG)
+            STATE.update("config", CONFIG.__dict__)
 
-        stringio = CONFIG.marshal()
+        s = marshal_object(CONFIG, "application/json")
+        stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")
         stream.send_response(request, response)
