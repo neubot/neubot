@@ -163,7 +163,7 @@ def migrate(connection):
 class SpeedtestResultXML(object):
     def __init__(self):
         self.client = ""
-        self.timestamp = 0
+        self.timestamp = 0.0            #XXX
         self.internalAddress = ""
         self.realAddress = ""
         self.remoteAddress = ""
@@ -175,7 +175,7 @@ class SpeedtestResultXML(object):
 def speedtest_result_good_from_xml(obj):
     dictionary = {
         "client_uuid": obj.client,
-        "timestamp": obj.timestamp,
+        "timestamp": int(obj.timestamp),                #XXX
         "internal_address": obj.internalAddress,
         "real_address": obj.realAddress,
         "remote_address": obj.remoteAddress,
