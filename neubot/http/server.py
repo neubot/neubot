@@ -288,13 +288,15 @@ class ServerHTTP(object):
             return
 
         mimetype, encoding = mimetypes.guess_type(fullpath)
+
+        if mimetype == "text/html":
+            ssi = self.dictionary.get("ssi", False)
+            if ssi:
+                body = ssi_replace(rootdir, fp)
+                fp = StringIO.StringIO(body)
+
         if encoding:
             mimetype = "; charset=".join((mimetype, encoding))
-
-        ssi = self.dictionary.get("ssi", False)
-        if ssi:
-            body = ssi_replace(rootdir, fp)
-            fp = StringIO.StringIO(body)
 
         response.compose(code="200", reason="Ok", body=fp,
                          mimetype=mimetype)

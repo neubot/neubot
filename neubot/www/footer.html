@@ -1,0 +1,87 @@
+
+        <!-- begin footer -->
+
+        </div>
+        </div>
+
+        <div id="sidebar-1" class="secondary">
+
+          <!-- Again the usage of H4 here seems to me improper. -->
+          <div id="update" class="block-">
+            <h4 style="text-align: center;">Updates available</h4>
+            <p>
+              Version <em><span id="updateVersion">(information not
+              available)</span></em> is available for download from <em>
+              <a id="updateUrl">(information not available)</a></em>.
+            </p>
+          </div>
+
+          <div id='statusBox'>
+            <p>Neubot is: <span id='statusBoxSpan'>(information not
+             available)</span>
+            <a id='statusBoxA' href='#'
+               onclick='javascript: return false;'>enable/disable</a></p>
+          </div>
+
+          <!-- XXX js/neubot.js will write directly into the H4
+            of #testResultsBox and in general this box seems a place
+            that needs some more separation between content and
+            presentation love.
+            XXX Also here we have testName1 because testName was
+            already defined and we must find a better fix for that
+            because to have two names like this is a crap. -->
+          <div id="testResultsBox" class="block-">
+            <h4 style="text-align: center;">Latest test details</h4>
+            <p style="text-align: center; color: #3da64e; font-size: normal;">
+              Result of <em><span id="testName1">(no tests yet)</span></em>
+              <br /><span id="testTime"></span>
+            </p>
+            <dl>
+              <dt>
+                <span class="help"
+                  title="Upper bound of the round-trip delay">Latency</span>
+              </dt>
+              <dd>
+                <span id="latencyResult">---</span>
+              </dd>
+              <dt>Download speed</dt>
+              <dd><span id="downloadResult">---</span></dd>
+              <dt>Upload speed</dt>
+              <dd><span id="uploadResult">---</span></dd>
+            </dl>
+          </div>
+
+          <!-- Ok, so probably we should fix all H4s at once. -->
+          <div id="about" class="block-">
+            <h4>About</h4>
+            <p>
+              This is the web user interface of Neubot v0.3.6.
+              Neubot is a lightweight <a
+              href="http://www.neubot.org/copying">open-source</a> program
+              that runs in background and periodically performs
+              transmission tests to probe your Internet connection
+              using various application level protocols.  <a
+              href="http://www.neubot.org/faq">Read more</a>
+            </p>
+          </div>
+
+        </div>
+
+        <div class="clear">
+        </div>
+      </div>
+      <div class="clear">
+      </div>
+    </div>
+
+    <hr />
+
+    <div id="footer">
+      Neubot is a research project on network neutrality of the<br />
+      <a href="http://nexa.polito.it/">NEXA Center for Internet &amp;
+      Society</a> at <a href="http://www.dauin.polito.it/">Politecnico
+      di Torino</a>.
+    </div>
+
+  </body>
+</html>
