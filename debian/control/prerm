@@ -21,7 +21,7 @@
 #
 
 set -e
-if [ -x /usr/bin/pgrep ]; then
+if [ -x /usr/bin/pkill ]; then
 	/usr/bin/pkill -KILL -f 'neubot statusicon' || true
 fi
 if [ -f /etc/init.d/neubot ]; then
