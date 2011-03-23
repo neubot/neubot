@@ -62,154 +62,17 @@ from sys import argv
 
 from neubot.config import *
 from neubot.api_client import APIStateTracker
+from neubot.http.server import ServerHTTP
 
-class UIServer(Server):
+
+class UIServer(object):
     def __init__(self, config):
-        Server.__init__(self, config.address, port=config.port)
-        self.config = config
-        self.table = {}
-        self._initialize()
+        dictionary = {"rootdir": config.document_root, "ssi": True}
+        server = ServerHTTP(POLLER)
+        server.configure(dictionary)
+        server.register_service("/api", "neubot.api_service")
+        server.listen((config.address, int(config.port)))
 
-    def _initialize(self):
-        self.table["/api/config"] = self._do_api_config
-        self.table["/api/exit"] = self._do_api_exit
-        self.table["/api/speedtest"] = self._do_api_speedtest
-        self.table["/api/state"] = self._do_api_state
-        self.table["/api/version"] = self._do_api_version
-
-    def bind_failed(self):
-        LOG.error("Is another neubot(1) instance running?")
-        exit(1)
-
-    def got_request(self, connection, request):
-        try:
-            self._map_request(connection, request)
-        except KeyboardInterrupt:
-            raise
-        except:
-            LOG.exception()
-            response = Message()
-            compose(response, code="500", reason="Internal Server Error")
-            connection.reply(request, response)
-
-    def _map_request(self, connection, request):
-        uri = request.uri
-        if uri.startswith("/api"):
-            self._api_request(connection, request)
-            return
-        if uri.startswith("/"):
-            if uri == "/":
-                response = Message()
-                compose(response, code="301", reason="Moved Permanently")
-                location = "http://%s:%s/index.html" % (self.config.address,
-                                                         self.config.port)
-                response["location"] = location
-                connection.reply(request, response)
-                return
-            filename = normpath(self.config.document_root + request.uri)
-            if filename.startswith(self.config.document_root):
-                self._fs_request(connection, request, filename)
-                return
-        response = Message()
-        compose(response, code="403", reason="Forbidden")
-        connection.reply(request, response)
-
-    def _fs_request(self, connection, request, filename):
-        response = Message()
-        try:
-            body = open(filename, "rb")
-        except (OSError, IOError):
-            LOG.error("* Not found: %s" % filename)
-            compose(response, code="404", reason="Not Found")
-        else:
-            mimetype, encoding = guess_type(filename)
-            compose(response, code="200", reason="Ok",
-                    body=body, mimetype=mimetype)
-        connection.reply(request, response)
-
-    def _do_delayed_request(self, event, atuple):
-        connection, request = atuple
-        self._api_request(connection, request, True)
-
-    def _api_request(self, connection, request, recurse=False):
-        try:
-            resource, query = urlsplit(request.uri)[2:4]
-            self.table[resource](connection, request, query, recurse)
-        except KeyError:
-            response = Message()
-            compose(response, code="404", reason="Not Found")
-            connection.reply(request, response)
-
-    def _do_api_config(self, connection, request, query, recurse=False):
-        response = Message()
-
-        if request.method == "POST":
-            CONFIG.update(request.body)
-            STATE.update("config", CONFIG.dictionary())
-
-        stringio = CONFIG.marshal()
-        compose(response, code="200", reason="Ok",
-         mimetype="application/json", body=stringio)
-        connection.reply(request, response)
-
-    def _do_api_speedtest(self, connection, request, query, recurse=False):
-        tag = None
-        since = 0
-        until = timestamp()
-        uuid_ = None
-
-        dictionary = parse_qs(query)
-        if dictionary.has_key("tag"):
-            tag = dictionary["tag"][0]
-        if dictionary.has_key("since"):
-            since = int(dictionary["since"][0])
-            if since < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("until"):
-            until = int(dictionary["until"][0])
-            if until < 0:
-                raise ValueError("Invalid query string")
-        if dictionary.has_key("uuid"):
-            uuid_ = dictionary["uuid"][0]
-
-        response = Message()
-        if not database.dbm:
-            compose(response, code="204", reason="No Content")
-            connection.reply(request, response)
-            return
-
-        stringio = database.dbm.query_results_json(tag, since, until, uuid_)
-        compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="application/json")
-        connection.reply(request, response)
-
-    def _do_api_state(self, connection, request, query, recurse=False):
-        dictionary = parse_qs(query)
-        t = None
-        if dictionary.has_key("t"):
-            t = dictionary["t"][0]
-        if not recurse and t:
-            stale = needs_publish(STATECHANGE, t)
-            if not stale:
-                subscribe(STATECHANGE, self._do_delayed_request,
-                          (connection, request))
-                return
-        octets = STATE.marshal(t=t)
-        stringio = StringIO(octets)
-        response = Message()
-        compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="application/json")
-        connection.reply(request, response)
-
-    def _do_api_version(self, connection, request, query, recurse=False):
-        response = Message()
-        stringio = StringIO("Neubot/" + version + "\r\n")
-        compose(response, code="200", reason="Ok",
-                body=stringio, mimetype="text/plain")
-        connection.reply(request, response)
-
-    def _do_api_exit(self, connection, request, query, recurse=False):
-        POLLER.break_loop()
 
 #
 # [ui]
@@ -257,7 +120,6 @@ class UIModule:
 
     def start(self):
         self.server = UIServer(self.config)
-        self.server.listen()
 
 ui = UIModule()
 
