@@ -42,8 +42,7 @@ if __name__ == "__main__":
 from neubot import pathnames
 from neubot.times import timestamp
 from neubot.compat import deque_appendleft
-from neubot.marshal import JSON_marshal
-from neubot.marshal import XML_unmarshal
+from neubot.marshal import unmarshal_object
 from neubot.compat import json
 from neubot import version
 from neubot.log import LOG
@@ -164,7 +163,7 @@ def migrate(connection):
 class SpeedtestResultXML(object):
     def __init__(self):
         self.client = ""
-        self.timestamp = 0
+        self.timestamp = 0.0            #XXX
         self.internalAddress = ""
         self.realAddress = ""
         self.remoteAddress = ""
@@ -176,7 +175,7 @@ class SpeedtestResultXML(object):
 def speedtest_result_good_from_xml(obj):
     dictionary = {
         "client_uuid": obj.client,
-        "timestamp": obj.timestamp,
+        "timestamp": int(obj.timestamp),                #XXX
         "internal_address": obj.internalAddress,
         "real_address": obj.realAddress,
         "remote_address": obj.remoteAddress,
@@ -343,8 +342,8 @@ class DatabaseManager:
         if vector:
             temp, vector = vector, []
             for octets in temp:
-                result = SpeedtestResultXML()
-                XML_unmarshal(result, octets, "SpeedtestCollect")
+                result = unmarshal_object(octets, "application/xml",
+                                          SpeedtestResultXML)
                 result = speedtest_result_good_from_xml(result)
                 vector.append(result)
 
