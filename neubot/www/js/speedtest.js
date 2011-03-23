@@ -146,8 +146,12 @@ var speedtest = (function() {
         }
 
         mydata = downloadData.concat(uploadData);
+        if (!mydata.length) {
+            return;
+        }
 
-        var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
+        var hours = Math.abs(Math.round((since - utils.getNow())
+                                         / (1000 * 60 * 60)));
         var xaxis = {
             renderer: jQuery.jqplot.DateAxisRenderer,
             showTickMarks: true
