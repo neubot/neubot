@@ -268,3 +268,10 @@ class Stats(object):
     def __init__(self):
         self.send = SimpleStats()
         self.recv = SimpleStats()
+
+
+def asciify(s):
+    try:
+        return s.encode("ascii")
+    except UnicodeDecodeError:
+        raise ValueError("ssi: Cannot ASCIIfy path name")
