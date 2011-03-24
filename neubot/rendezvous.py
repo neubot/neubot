@@ -66,29 +66,14 @@ import random
 
 from neubot.http.server import ServerHTTP
 from neubot.http.messages import Message
+from neubot.marshal import unmarshal_object
+from neubot.marshal import marshal_object
 
-#
-# <rendezvous>
-#  <accept>speedtest</accept>
-#  <accept>bittorrent</accept>
-#  <version>0.2.3</version>
-# </rendezvous>
-#
 
-class XMLRendezvous:
+class RendezvousRequest(object):
     def __init__(self):
         self.accept = []
         self.version = ""
-
-    def parse(self, stringio):
-        tree = ElementTree()
-        try:
-            tree.parse(stringio)
-        except:
-            raise ValueError("Can't parse XML body")
-        else:
-            self.accept = XML_get_vector(tree, "accept")
-            self.version = XML_get_scalar(tree, "version")
 
 
 class ServiceHTTP(object):
@@ -97,9 +82,10 @@ class ServiceHTTP(object):
         self.config = config
 
     def serve(self, server, listener, stream, request):
+        m = unmarshal_object(request.body.read(),
+          "application/xml", RendezvousRequest)
+
         builder = TreeBuilder()
-        m = XMLRendezvous()
-        m.parse(request.body)
         builder.start("rendezvous_response", {})
 
         if m.version:
@@ -324,34 +310,24 @@ class RendezvousClient(ClientController, SpeedtestController):
     def rendezvous(self):
         self.task = None
         STATE.update("rendezvous")
-        self._prepare_tree()
 
-    def _prepare_tree(self):
-        builder = TreeBuilder()
-        builder.start("rendezvous", {})
-        builder.start("version", {})
-        builder.data(version)
-        builder.end("version")
-        builder.start("accept", {})
-        builder.data("speedtest")
-        builder.end("accept")
-        builder.end("rendezvous")
-        root = builder.close()
-        self._serialize_tree(root)
+        m = RendezvousRequest()
+        m.accept.append("speedtest")
+        m.version = version
 
-    def _serialize_tree(self, root):
-        tree = ElementTree(root)
-        stringio = StringIO()
-        tree.write(stringio, encoding="utf-8")
-        stringio.seek(0)
+        s = marshal_object(m, "application/xml")
+
         if self.xdebug:
-            stdout.write(_XML_prettyprint(stringio))
-        self._send_http_request(stringio)
+            stdout.write(s + "\n")
 
-    def _send_http_request(self, stringio):
+        stringio = StringIO()
+        stringio.write(s)
+        stringio.seek(0)
+
         request = Message()
-        compose(request, method="GET", uri=self.server_uri,
-         mimetype="text/xml", body=stringio, keepalive=False)
+        request.compose(method="GET", uri=self.server_uri,
+          mimetype="text/xml", body=stringio, keepalive=False)
+
         client = Client(self)
         client.sendrecv(request)
 
