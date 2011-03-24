@@ -181,11 +181,10 @@ def main(argv):
 
         if os.name == "posix":
 
-            if not running and start:
-                if os.fork() == 0:
-                    from neubot import rendezvous
-                    rendezvous.main([argv[0]])
-                    sys.exit(0)
+            if not running and start and os.fork() == 0:
+                from neubot import rendezvous
+                rendezvous.main([argv[0]])
+                sys.exit(0)
 
             # XXX
             if sys.platform == "darwin":
