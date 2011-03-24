@@ -46,7 +46,6 @@ USAGE = '''\
 neubot - The network neutrality bot
 
 Usage: neubot [command] [-vV] [-D macro[=value]] [-f file] [args...]
-       neubot webgui
        neubot start
        neubot status
        neubot stop
@@ -101,8 +100,6 @@ def main(argv):
         elif command == "-V":
             sys.stdout.write(VERSION)
             sys.exit(0)
-        elif command == "webgui":
-            webgui = True
         elif command == "start":
             start = True
         elif command == "status":
