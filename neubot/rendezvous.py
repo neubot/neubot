@@ -1,7 +1,7 @@
 # neubot/rendezvous.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -32,8 +32,6 @@ if __name__ == "__main__":
 from neubot.config import CONFIG
 
 from neubot import pathnames
-from neubot.http.servers import Server
-from neubot.http.messages import Message
 from neubot.http.clients import Client
 from neubot.http.clients import ClientController
 from neubot.speedtest import SpeedtestController
@@ -66,6 +64,9 @@ from neubot.speedtest import XML_get_vector
 
 import random
 
+from neubot.http.server import ServerHTTP
+from neubot.http.messages import Message
+
 #
 # <rendezvous>
 #  <accept>speedtest</accept>
@@ -89,73 +90,65 @@ class XMLRendezvous:
             self.accept = XML_get_vector(tree, "accept")
             self.version = XML_get_scalar(tree, "version")
 
-class RendezvousServer(Server):
 
-    def _do_rendezvous(self, connection, request):
+class ServiceHTTP(object):
+
+    def __init__(self, config):
+        self.config = config
+
+    def serve(self, server, listener, stream, request):
         builder = TreeBuilder()
         m = XMLRendezvous()
         m.parse(request.body)
         builder.start("rendezvous_response", {})
+
         if m.version:
             if versioncmp(self.config.update_version, m.version) > 0:
                 builder.start("update", {"uri": self.config.update_uri})
                 builder.data(self.config.update_version)
                 builder.end("update")
+
         if "speedtest" in m.accept:
             builder.start("available", {"name": "speedtest"})
             builder.start("uri", {})
+
             #
             # The first speedtest server should always be
             # available; if the second server is available
             # choose at random.
             #
+
             if self.config.test_uri2:
-                if random() >= 0.50:
+                if random.random() >= 0.50:
                     builder.data(self.config.test_uri2)
                 else:
                     builder.data(self.config.test_uri)
             else:
                 builder.data(self.config.test_uri)
+
             builder.end("uri")
             builder.end("available")
+
         builder.end("rendezvous_response")
         root = builder.close()
         tree = ElementTree(root)
         stringio = StringIO()
         tree.write(stringio, encoding="utf-8")
         stringio.seek(0)
-        # HTTP
-        response = Message()
-        compose(response, code="200", reason="Ok",
-                mimetype="text/xml", body=stringio)
-        connection.reply(request, response)
 
+        response = Message()
+        response.compose(code="200", reason="Ok",
+          mimetype="text/xml", body=stringio)
+        stream.send_response(request, response)
+
+
+class RendezvousServer(object):
     def __init__(self, config, port):
-        self.config = config
-        Server.__init__(self, config.address, port=port)
+        server = ServerHTTP(POLLER)
+        server.register_servicex("/rendezvous", ServiceHTTP(config))
+        server.listen((config.address, int(config.altport)))
+        server.listen((config.address, int(config.port)))
 
-    def bind_failed(self):
-        LOG.error("Is another neubot(1) running?")
-        exit(1)
-
-    def got_request(self, connection, request):
-        try:
-            self.process_request(connection, request)
-        except KeyboardInterrupt:
-            raise
-        except:
-            LOG.exception()
-            response = Message()
-            compose(response, code="500", reason="Internal Server Error")
-            connection.reply(request, response)
-
-    def process_request(self, connection, request):
-        if request.uri == "/rendezvous":
-            self._do_rendezvous(connection, request)
-            return
-        response = Message()
-        compose(response, code="403", reason="Forbidden")
-        connection.reply(request, response)
 
 #
 # [rendezvous]
@@ -219,9 +212,6 @@ class RendezvousModule:
     # XXX Migration from 9773 to 8080 because the former might be blocked
     def start(self):
         self.server = RendezvousServer(self.config, self.config.port)
-        self.server.listen()
-        self.altserver = RendezvousServer(self.config, self.config.altport)
-        self.altserver.listen()
 
 rendezvous = RendezvousModule()
 
