@@ -199,15 +199,21 @@ def main(argv):
         elif os.name == "nt":
 
             if webgui:
-                import threading
                 import webbrowser
 
                 func = lambda: \
 		  webbrowser.open("http://%s:%s/" % (address, port))
-                t = threading.Thread(target=func)
-                sys.stderr.write("Opening Neubot web gui\n")
-                t.daemon = True
-                t.start()
+
+                if not running and start:
+                    import threading
+
+                    t = threading.Thread(target=func)
+                    sys.stderr.write("Opening Neubot web gui\n")
+                    t.daemon = True
+                    t.start()
+                else:
+                    sys.stderr.write("Opening Neubot web gui\n")
+                    func()
 
             if not running and start:
                 from neubot import rendezvous
