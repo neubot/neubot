@@ -158,10 +158,8 @@ def main(argv):
 
         if running and start:
             sys.stdout.write("Already running\n")
-            sys.exit(0)
         if not running and stop:
             sys.stdout.write("Not running\n")
-            sys.exit(0)
 
         # Stop
         if running and stop:
