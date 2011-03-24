@@ -29,11 +29,15 @@
 # an XMPP chat session.
 #
 
-import os
+import os.path
 import sys
 
 if __name__ == "__main__":
-    sys.path.insert(0, ".")
+    path = os.path.abspath(__file__)
+    me = os.sep.join(["neubot", "boot.py"])
+    i = path.find(me)
+    path = path[:i]
+    sys.path.insert(0, path)
 
 BOOLEANS = {
     "false": False,
