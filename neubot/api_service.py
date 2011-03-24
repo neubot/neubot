@@ -37,6 +37,7 @@ from neubot.marshal import marshal_object
 
 VERSION = "Neubot 0.3.6\n"
 
+
 class ServiceHTTP(object):
 
     def serve(self, server, listener, stream, request):
