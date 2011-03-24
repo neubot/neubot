@@ -194,7 +194,7 @@ def main(argv):
             if webgui and "DISPLAY" in os.environ:
                 import webbrowser
                 sys.stderr.write("Opening Neubot web gui\n")
-                webbrowser.open("http://%s:%s/index.html" % (address, port))
+                webbrowser.open("http://%s:%s/" % (address, port))
 
         elif os.name == "nt":
 
@@ -203,7 +203,7 @@ def main(argv):
                 import webbrowser
 
                 func = lambda: \
-		  webbrowser.open("http://%s:%s/index.html" % (address, port))
+		  webbrowser.open("http://%s:%s/" % (address, port))
                 t = threading.Thread(target=func)
                 sys.stderr.write("Opening Neubot web gui\n")
                 t.daemon = True
