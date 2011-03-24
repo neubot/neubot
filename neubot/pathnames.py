@@ -39,7 +39,6 @@ if PREFIX.startswith("@"):
 
 DATABASE = ""
 CONFIG = []
-WWW = ""
 
 userdirs = []
 sysdirs = []
@@ -51,7 +50,6 @@ if os.name == "nt":
     CONFIG.append(appdata + "\\neubot\\config")
     DATABASE = appdata + "\\neubot\\database.sqlite3"
     userdirs.append(appdata + "\\neubot")
-    WWW = os.path.dirname(os.path.abspath(argv[0])) + "\\www"
 else:
     # assume posix
     CONFIG.append("/etc/neubot/config")
@@ -69,17 +67,14 @@ else:
         CONFIG.append(home + "/.neubot/config")
         DATABASE = home + "/.neubot/database.sqlite3"
         userdirs.append(home + "/.neubot")
-    WWW = PREFIX + "/share/neubot/www"
     # We provide an App for MacOS X
     if ismacosx():
         progname = os.path.abspath(argv[0])
         prefix = progname.replace("/bin/neubot", "")
-        WWW = prefix + "/neubot/www"
 
 def printfiles():
     LOG.debug("Config files  : %s" % str(CONFIG))
     LOG.debug("Database file : %s" % DATABASE)
-    LOG.debug("WWW root      : %s" % WWW)
 
 def _makedirs(dirs, perms=0755):
     for directory in dirs:

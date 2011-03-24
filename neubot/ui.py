@@ -56,6 +56,7 @@ from sys import stdout
 from sys import stdin
 from os import isatty
 from neubot import pathnames
+from neubot.rootdir import WWW
 from sys import exit
 from shlex import split
 from sys import argv
@@ -85,7 +86,7 @@ class UIConfig(SafeConfigParser):
     def __init__(self):
         SafeConfigParser.__init__(self)
         self.address = "127.0.0.1"
-        self.document_root = pathnames.WWW
+        self.document_root = WWW
         self.port = "9774"
 
 #   def check(self):
