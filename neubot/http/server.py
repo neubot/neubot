@@ -190,12 +190,15 @@ class ServerHTTP(object):
     def configure(self, dictionary):
         self.dictionary = dictionary
 
-    #XXX must be run after configure()
-    def register_service(self, prefix, module):
+    def register_servicex(self, prefix, service):
         if not "prefixes" in self.dictionary:
             self.dictionary["prefixes"] = {}
 
         prefixes = self.dictionary["prefixes"]
+        prefixes[prefix] = service.serve
+
+    #XXX must be run after configure()
+    def register_service(self, prefix, module):
 
         try:
             exec "from %s import ServiceHTTP" % module
@@ -213,7 +216,7 @@ class ServerHTTP(object):
             LOG.exception()
             return
 
-        prefixes[prefix] = service.serve
+        self.register_servicex(prefix, service)
 
     def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
         listener = HTTPListener(self.poller)
