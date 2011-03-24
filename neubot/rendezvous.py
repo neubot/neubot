@@ -90,32 +90,6 @@ class XMLRendezvous:
             self.version = XML_get_scalar(tree, "version")
 
 class RendezvousServer(Server):
-    def __init__(self, config, port):
-        self.config = config
-        Server.__init__(self, config.address, port=port)
-
-    def bind_failed(self):
-        LOG.error("Is another neubot(1) running?")
-        exit(1)
-
-    def got_request(self, connection, request):
-        try:
-            self.process_request(connection, request)
-        except KeyboardInterrupt:
-            raise
-        except:
-            LOG.exception()
-            response = Message()
-            compose(response, code="500", reason="Internal Server Error")
-            connection.reply(request, response)
-
-    def process_request(self, connection, request):
-        if request.uri == "/rendezvous":
-            self._do_rendezvous(connection, request)
-            return
-        response = Message()
-        compose(response, code="403", reason="Forbidden")
-        connection.reply(request, response)
 
     def _do_rendezvous(self, connection, request):
         builder = TreeBuilder()
@@ -154,6 +128,33 @@ class RendezvousServer(Server):
         response = Message()
         compose(response, code="200", reason="Ok",
                 mimetype="text/xml", body=stringio)
+        connection.reply(request, response)
+
+    def __init__(self, config, port):
+        self.config = config
+        Server.__init__(self, config.address, port=port)
+
+    def bind_failed(self):
+        LOG.error("Is another neubot(1) running?")
+        exit(1)
+
+    def got_request(self, connection, request):
+        try:
+            self.process_request(connection, request)
+        except KeyboardInterrupt:
+            raise
+        except:
+            LOG.exception()
+            response = Message()
+            compose(response, code="500", reason="Internal Server Error")
+            connection.reply(request, response)
+
+    def process_request(self, connection, request):
+        if request.uri == "/rendezvous":
+            self._do_rendezvous(connection, request)
+            return
+        response = Message()
+        compose(response, code="403", reason="Forbidden")
         connection.reply(request, response)
 
 #
