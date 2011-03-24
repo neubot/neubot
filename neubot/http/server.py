@@ -384,9 +384,10 @@ def main(args):
     server = ServerHTTP(POLLER)
     server.configure(dictionary)
 
-    for service in services.split(","):
-        prefix, mod = service.split(":")
-        server.register_service(prefix, mod)
+    if services:
+        for service in services.split(","):
+            prefix, mod = service.split(":")
+            server.register_service(prefix, mod)
 
     for port in ports.split(","):
         endpoint = (address, port)
