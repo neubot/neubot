@@ -1,7 +1,7 @@
 # neubot/win32.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -24,7 +24,7 @@
 # Code for Win32
 #
 
-import os
+import os.path
 
 __all__ = []
 
@@ -72,3 +72,16 @@ if os.name == "nt":
             pass
 
     __all__.append("BackgroundLogger")
+
+def change_dir():
+    appdata = os.environ["APPDATA"]
+    datadir = os.sep.join([appdata, "neubot"])
+    if not os.path.isdir(datadir):
+        os.mkdir(datadir, 0755)
+    os.chdir(datadir)
+
+def drop_privileges():
+    pass
+
+def go_background():
+    pass

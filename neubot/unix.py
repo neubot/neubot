@@ -1,7 +1,7 @@
 # neubot/unix.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -24,7 +24,9 @@
 # Code for UNIX
 #
 
+import pwd
 import os.path
+import signal
 import sys
 
 # ismacosx()
@@ -89,3 +91,43 @@ if os.name == "posix":
             syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
 
     __all__.append("BackgroundLogger")
+
+#
+# We need to be the owner of /var/neubot because otherwise
+# sqlite3 fails to lock the database for writing.
+#
+# Read more at http://www.neubot.org/node/14
+#
+
+def change_dir():
+    if os.getuid() != 0:
+        homedir = os.environ["HOME"]
+        datadir = os.sep.join([homedir, ".neubot"])
+    else:
+        datadir = "/var/neubot"
+
+    if not os.path.isdir(datadir):
+        os.mkdir(datadir, 0755)
+
+    if os.getuid() == 0:
+        passwd = pwd.getpwnam("_neubot")
+        os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
+
+    os.chdir(datadir)
+
+def drop_privileges():
+    if os.getuid() == 0:
+        passwd = pwd.getpwnam("_neubot")
+        os.setgid(passwd.pw_gid)
+        os.setuid(passwd.pw_uid)
+
+def go_background():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    if os.fork() > 0:
+        os._exit(0)
+
+    os.setsid()
+
+    if os.fork() > 0:
+        os._exit(0)
