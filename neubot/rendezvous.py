@@ -23,8 +23,6 @@
 #
 # Rendez-vous with master node to discover other peers and to
 # get information on available software updates.
-# This is the command that is executed by default if you don't
-# pass a command to neubot(1).
 #
 
 if __name__ == "__main__":

@@ -183,8 +183,8 @@ def main(argv):
         if os.name == "posix":
 
             if not running and start and os.fork() == 0:
-                from neubot import rendezvous
-                rendezvous.main([argv[0]])
+                from neubot import agent
+                agent.main([argv[0]])
                 sys.exit(0)
 
             # XXX
@@ -216,8 +216,8 @@ def main(argv):
                     func()
 
             if not running and start:
-                from neubot import rendezvous
-                rendezvous.main([argv[0]])
+                from neubot import agent
+                agent.main([argv[0]])
 
         else:
             sys.stderr.write("Your operating system is not supported\n")

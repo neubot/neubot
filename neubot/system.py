@@ -25,8 +25,14 @@ import os
 if os.name == "nt":
     from neubot.win32 import BackgroundLogger
     ismacosx = lambda: False
+    from neubot.win32 import change_dir
+    from neubot.win32 import drop_privileges
+    from neubot.win32 import go_background
 elif os.name == "posix":
     from neubot.unix import BackgroundLogger
     from neubot.unix import ismacosx
+    from neubot.unix import change_dir
+    from neubot.unix import drop_privileges
+    from neubot.unix import go_background
 else:
     raise ImportError("Your system is not supported")

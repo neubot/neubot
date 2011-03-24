@@ -38,6 +38,7 @@ if __name__ == "__main__":
 from neubot.log import LOG
 
 MODULES = {
+    "agent"      : "agent",
     "database"   : "database",
     "bittorrent" : "bittorrent.main",
     "http"       : "http.client",
