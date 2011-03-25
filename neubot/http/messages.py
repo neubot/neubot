@@ -21,6 +21,7 @@
 #
 
 import StringIO
+import collections
 import types
 import socket
 import os
@@ -46,7 +47,7 @@ class Message(object):
         self.reason = reason
         self.protocol = protocol
 
-        self.headers = {}
+        self.headers = collections.defaultdict(str)
         self.body = StringIO.StringIO("")
 
         self.family = socket.AF_UNSPEC
@@ -109,24 +110,15 @@ class Message(object):
     #
 
     def __getitem__(self, key):
-        if type(key) != types.StringType:
-            raise TypeError("key should be a string")
-        key = key.lower()
-        if self.headers.has_key(key):
-            return self.headers[key]
-        return ""
+        return self.headers[key]
 
     def __setitem__(self, key, value):
-        if type(key) != types.StringType:
-            raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
             value = self.headers[key] + ", " + value
         self.headers[key] = value
 
     def __delitem__(self, key):
-        if type(key) != types.StringType:
-            raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
             del self.headers[key]
