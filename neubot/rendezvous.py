@@ -212,8 +212,6 @@ class RendezvousModule:
 
 rendezvous = RendezvousModule()
 
-FLAG_TESTING = 1<<0
-
 
 class RendezvousClient(ClientHTTP, SpeedtestController):
 
@@ -222,12 +220,12 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         self.interval = interval
         self.dontloop = dontloop
         self.xdebug = xdebug
-        self.flags = 0
+        self.testing = 0
         self.task = None
 
     def _reschedule(self):
 
-        if self.flags & FLAG_TESTING:
+        if self.testing:
             return
         if self.dontloop:
             return
@@ -312,11 +310,11 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
 
         if "speedtest" in m1.available:
             uri = m1.available["speedtest"][0]
-            self.flags |= FLAG_TESTING
+            self.testing = 1
             self.start_speedtest_simple(uri)
 
     def speedtest_complete(self):
-        self.flags &= ~FLAG_TESTING
+        self.testing = 0
         self._reschedule()
 
 
