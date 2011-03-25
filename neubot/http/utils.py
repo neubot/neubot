@@ -30,15 +30,6 @@ from neubot.http.handlers import ERROR
 from neubot.http.handlers import FIRSTLINE
 from neubot.http.handlers import UNBOUNDED
 
-def prettyprint(write, direction, msg, eol=""):
-    stringio = msg.serialize_headers()
-    content = stringio.read()
-    headers = content.split("\r\n")
-    for line in headers:
-        write(direction + line + eol)
-        if line == "":
-            break
-
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
     if scheme != "http" and scheme != "https":

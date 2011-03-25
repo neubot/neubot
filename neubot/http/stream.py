@@ -194,7 +194,9 @@ class StreamHTTP(Stream):
 
     def _got_line(self, line):
         if self.state == FIRSTLINE:
-            vector = line.strip().split(None, 2)
+            line = line.strip()
+            LOG.debug("< %s" % line)
+            vector = line.split(None, 2)
             if len(vector) == 3:
                 if line.startswith("HTTP"):
                     protocol, code, reason = vector
@@ -212,6 +214,7 @@ class StreamHTTP(Stream):
                 self.close()
         elif self.state == HEADER:
             if line.strip():
+                LOG.debug("< %s" % line)
                 # not handling mime folding
                 index = line.find(":")
                 if index >= 0:
@@ -220,6 +223,7 @@ class StreamHTTP(Stream):
                 else:
                     self.close()
             else:
+                LOG.debug("<")
                 self.state, self.left = self.got_end_of_headers()
                 if self.state == ERROR:
                     # allow upstream to filter out unwanted requests

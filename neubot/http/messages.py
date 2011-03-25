@@ -29,6 +29,7 @@ import os
 from neubot.http.utils import urlsplit
 from neubot.utils import safe_seek
 from neubot.http.utils import date
+from neubot.log import LOG
 
 
 class Message(object):
@@ -86,14 +87,18 @@ class Message(object):
             v.append(" ")
             v.append(self.reason)
 
+        LOG.debug("> %s" % ("".join(v)))
         v.append("\r\n")
 
         for key, value in self.headers.items():
             v.append(key)
             v.append(": ")
             v.append(value)
+
+            LOG.debug("> %s: %s" % (key, value))
             v.append("\r\n")
 
+        LOG.debug(">")
         v.append("\r\n")
 
         s = "".join(v)

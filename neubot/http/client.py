@@ -33,7 +33,6 @@ from neubot.http.stream import StreamHTTP
 from neubot.net.stream import Connector
 from neubot.options import OptionParser
 from neubot.utils import file_length
-from neubot.http.utils import prettyprint
 from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
 from neubot.http.messages import Message
@@ -61,7 +60,6 @@ class ClientStream(StreamHTTP):
         if not response:
             response = Message()
         request.response = response
-        prettyprint(LOG.debug, "> ", request)
         self.send_message(request)
 
     def got_request_line(self, method, uri, protocol):
@@ -86,7 +84,6 @@ class ClientStream(StreamHTTP):
     def got_end_of_headers(self):
         if self.requests:
             request = self.requests[0]
-            prettyprint(LOG.debug, "< ", request.response)
             if not self.parent.got_response_headers(self, request,
                                                 request.response):
                 return ERROR, 0
