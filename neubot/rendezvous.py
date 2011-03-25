@@ -20,51 +20,28 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Rendez-vous with master node to discover other peers and to
-# get information on available software updates.
-#
+import StringIO
+import xml.dom.minidom
+import random
+import sys
+import getopt
 
 if __name__ == "__main__":
-    from sys import path
-    path.insert(0, ".")
+    sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
 
 from neubot import pathnames
-from neubot.http.clients import Client
-from neubot.http.clients import ClientController
 from neubot.speedtest import SpeedtestController
-from neubot.speedtest import SpeedtestClient
-from xml.etree.ElementTree import ElementTree
-from xml.etree.ElementTree import TreeBuilder
-from neubot.http.messages import compose
 from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
 from neubot.net.poller import POLLER
 from neubot.database import database
 from neubot.utils import versioncmp
-from xml.dom import minidom
-from StringIO import StringIO
 from neubot import version
 from neubot.ui import ui
 from neubot.log import LOG
-from getopt import GetoptError
-from getopt import getopt
 from neubot.state import STATE
-from random import random
-from sys import exit
-from sys import argv
-from sys import stdout
-from sys import stderr
-
-# unclean
-from neubot.speedtest import XML_get_scalar
-from neubot.speedtest import XML_get_vector
-
-import xml.dom.minidom
-import random
-
 from neubot.http.server import ServerHTTP
 from neubot.http.stream import VERBOSER
 from neubot.http.messages import Message
@@ -153,7 +130,7 @@ class ServiceHTTP(object):
             s = adhoc_marshaller(m1)
             mimetype = "text/xml"
 
-        stringio = StringIO()
+        stringio = StringIO.StringIO()
         stringio.write(s)
         stringio.seek(0)
 
@@ -292,9 +269,9 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         s = marshal_object(m, "application/xml")
 
         if self.xdebug:
-            stdout.write(s + "\n")
+            sys.stdout.write(s + "\n")
 
-        stringio = StringIO()
+        stringio = StringIO.StringIO()
         stringio.write(s)
         stringio.seek(0)
 
@@ -312,7 +289,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
 
         s = response.body.read()
         if self.xdebug:
-            stdout.write(s)
+            sys.stdout.write(s)
 
         try:
             m1 = unmarshal_object(s, "application/json", RendezvousResponse)
@@ -365,28 +342,28 @@ HELP = USAGE +								\
 URI = "http://master.neubot.org:8080/rendezvous"
 
 def main(args):
-    fakerc = StringIO()
+    fakerc = StringIO.StringIO()
     fakerc.write("[rendezvous]\n")
     dontloop = False
     servermode = False
     interval = 1380 + random.randrange(0, 240)
     xdebug = False
     daemonize = True
-    # parse
+
     try:
-        options, arguments = getopt(args[1:], "dD:nST:Vvx", ["help"])
-    except GetoptError:
-        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-        exit(1)
-    # options
+        options, arguments = getopt.getopt(args[1:], "dD:nST:Vvx", ["help"])
+    except getopt.GetoptError:
+        sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        sys.exit(1)
+
     for name, value in options:
         if name == "-d":
             daemonize = False
         elif name == "-D":
             fakerc.write(value + "\n")
         elif name == "--help":
-            stdout.write(HELP.replace("@PROGNAME@", args[0]))
-            exit(1)
+            sys.stdout.write(HELP.replace("@PROGNAME@", args[0]))
+            sys.exit(1)
         elif name == "-n":
             dontloop = True
         elif name == "-S":
@@ -398,34 +375,34 @@ def main(args):
                 interval = -1
             if interval <= 0:
                 LOG.error("Invalid argument to -T: %s" % value)
-                exit(1)
+                sys.exit(1)
         elif name == "-V":
-            stdout.write(version + "\n")
-            exit(0)
+            sys.stdout.write(version + "\n")
+            sys.exit(0)
         elif name == "-v":
             LOG.verbose()
         elif name == "-x":
             xdebug = True
-    # options
+
     fakerc.seek(0)
     database.configure(pathnames.CONFIG, fakerc)
     rendezvous.configure(pathnames.CONFIG, fakerc)
     ui.configure(pathnames.CONFIG, fakerc)
-    # server
+
     if servermode:
         if len(arguments) > 0:
-            stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-            exit(1)
+            sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+            sys.exit(1)
         database.start()
         rendezvous.start()
         if daemonize:
             become_daemon()
         POLLER.loop()
-        exit(0)
-    # client
+        sys.exit(0)
+
     if len(arguments) > 1:
-        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-        exit(1)
+        sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        sys.exit(1)
     elif len(arguments) == 1:
         uri = arguments[0]
     else:
@@ -441,4 +418,4 @@ def main(args):
     POLLER.loop()
 
 if __name__ == "__main__":
-    main(argv)
+    main(sys.argv)
