@@ -20,7 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from StringIO import StringIO
 from neubot.times import ticks
 from time import clock
 from time import sleep
@@ -213,28 +212,6 @@ def become_daemon(flags=DAEMON_ALL):
             os._exit(1)
     else:
         pass
-
-#
-# XML
-#
-
-def XML_text(node):
-    vector = []
-    if node.nodeType != node.ELEMENT_NODE:
-        raise ValueError("Bad node type")
-    element = node
-    for node in element.childNodes:
-        if node.nodeType != node.TEXT_NODE:
-            continue
-        text = node
-        vector.append(text.data)
-    return "".join(vector).strip()
-
-def XML_to_string(document):
-    return document.toprettyxml(indent="    ", newl="\n", encoding="utf-8")
-
-def XML_to_stringio(document):
-    return StringIO(XML_to_string(document))
 
 #
 # Stats
