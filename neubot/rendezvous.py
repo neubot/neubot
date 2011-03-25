@@ -62,6 +62,7 @@ from sys import stderr
 from neubot.speedtest import XML_get_scalar
 from neubot.speedtest import XML_get_vector
 
+import xml.dom.minidom
 import random
 
 from neubot.http.server import ServerHTTP
@@ -76,6 +77,55 @@ class RendezvousRequest(object):
         self.version = ""
 
 
+class RendezvousResponse(object):
+    def __init__(self):
+        self.update = {}
+        self.available = {}
+
+
+#
+# Backward-compat ad-hoc stuff.  BLEAH.
+#
+# <rendezvous_response>
+#  <available name="speedtest">
+#   <uri>http://speedtest1.neubot.org/speedtest</uri>
+#   <uri>http://speedtest2.neubot.org/speedtest</uri>
+#  </available>
+#  <update uri="http://releases.neubot.org/neubot-0.2.4.exe">0.2.4</update>
+# </rendezvous_response>
+#
+
+def adhoc_element(document, root, name, value, attributes):
+    element = document.createElement(name)
+    root.appendChild(element)
+
+    if value:
+        text = document.createTextNode(value)
+        element.appendChild(text)
+
+    if attributes:
+        for name, value in attributes.items():
+            element.setAttribute(name, value)
+
+    return element
+
+def adhoc_marshaller(obj):
+    document = xml.dom.minidom.parseString("<rendezvous_response/>")
+
+    if obj.update:
+        adhoc_element(document, document.documentElement, "update",
+          obj.update["version"], {"uri": obj.update["uri"]})
+
+    for name, vector in obj.available.items():
+        element = adhoc_element(document, document.documentElement,
+          "available", None, {"name": name})
+
+        for uri in vector:
+            adhoc_element(document, element, "uri", uri, None)
+
+    return document.documentElement.toxml("utf-8")
+
+
 class ServiceHTTP(object):
 
     def __init__(self, config):
@@ -85,46 +135,29 @@ class ServiceHTTP(object):
         m = unmarshal_object(request.body.read(),
           "application/xml", RendezvousRequest)
 
-        builder = TreeBuilder()
-        builder.start("rendezvous_response", {})
+        m1 = RendezvousResponse()
 
-        if m.version:
-            if versioncmp(self.config.update_version, m.version) > 0:
-                builder.start("update", {"uri": self.config.update_uri})
-                builder.data(self.config.update_version)
-                builder.end("update")
+        if m.version and versioncmp(self.config.update_version, m.version) > 0:
+            m1.update["uri"] = self.config.update_uri
+            m1.update["version"] = self.config.update_version
 
         if "speedtest" in m.accept:
-            builder.start("available", {"name": "speedtest"})
-            builder.start("uri", {})
+            m1.available["speedtest"] = [self.config.test_uri]
 
-            #
-            # The first speedtest server should always be
-            # available; if the second server is available
-            # choose at random.
-            #
+        if m.version and versioncmp(m.version, "0.3.7") >= 0:
+            s = marshal_object(m1, "application/json")
+            mimetype = "application/json"
+        else:
+            s = adhoc_marshaller(m1)
+            mimetype = "text/xml"
 
-            if self.config.test_uri2:
-                if random.random() >= 0.50:
-                    builder.data(self.config.test_uri2)
-                else:
-                    builder.data(self.config.test_uri)
-            else:
-                builder.data(self.config.test_uri)
-
-            builder.end("uri")
-            builder.end("available")
-
-        builder.end("rendezvous_response")
-        root = builder.close()
-        tree = ElementTree(root)
         stringio = StringIO()
-        tree.write(stringio, encoding="utf-8")
+        stringio.write(s)
         stringio.seek(0)
 
         response = Message()
         response.compose(code="200", reason="Ok",
-          mimetype="text/xml", body=stringio)
+          mimetype=mimetype, body=stringio)
         stream.send_response(request, response)
 
 
@@ -201,81 +234,11 @@ class RendezvousModule:
 
 rendezvous = RendezvousModule()
 
-#
-# <rendezvous_response>
-#  <available name="speedtest">
-#   <uri>http://speedtest1.neubot.org/speedtest</uri>
-#   <uri>http://speedtest2.neubot.org/speedtest</uri>
-#  </available>
-#  <update uri="http://releases.neubot.org/neubot-0.2.4.exe">0.2.4</update>
-# </rendezvous_response>
-#
-
-def _XML_parse_available(tree):
-    available = {}
-    elements = tree.findall("available")
-    for element in elements:
-        name = element.get("name")
-        if not name:
-            continue
-        vector = []
-        uris = element.findall("uri")
-        for uri in uris:
-            vector.append(uri.text)
-        if not uris:
-            continue
-        available[name] = vector
-    return available
-
-# sloppy
-def _XML_parse_update(tree):
-    update = {}
-    elements = tree.findall("update")
-    for element in elements:
-        uri = element.get("uri")
-        if not uri:
-            continue
-        ver = element.text
-        update[ver] = uri
-    return update
-
-class XMLRendezvous_Response:
-    def __init__(self):
-        self.available = {}
-        self.update = {}
-
-    def __del__(self):
-        pass
-
-    def parse(self, stringio):
-        tree = ElementTree()
-        try:
-            tree.parse(stringio)
-        except:
-            LOG.exception()
-            raise ValueError("Can't parse XML body")
-        else:
-            self.available = _XML_parse_available(tree)
-            self.update = _XML_parse_update(tree)
-
-#
-# Not the best prettyprint in the world because it would
-# be way more nice to have the tags of text-only elements
-# on the same line of the text itself, e.g.:
-#  <tag>texttexttext</tag>
-# But better than spitting out a linearized XML.
-#
-
-def _XML_prettyprint(stringio):
-    stringio.seek(0)
-    document = minidom.parse(stringio)
-    stringio.seek(0)
-    return document.toprettyxml(indent=" ",
-     newl="\r\n", encoding="utf-8")
-
 FLAG_TESTING = 1<<0
 
+
 class RendezvousClient(ClientController, SpeedtestController):
+
     def __init__(self, server_uri, interval, dontloop, xdebug):
         self.server_uri = server_uri
         self.interval = interval
@@ -336,34 +299,33 @@ class RendezvousClient(ClientController, SpeedtestController):
             LOG.error("Error: %s %s" % (response.code, response.reason))
             self._reschedule()
             return
-        self._parse_response(response)
 
-    def _parse_response(self, response):
+        s = response.body.read()
         if self.xdebug:
-            stdout.write(_XML_prettyprint(response.body))
-        m = XMLRendezvous_Response()
+            stdout.write(s)
+
         try:
-            m.parse(response.body)
+            m1 = unmarshal_object(s, "application/json", RendezvousResponse)
         except ValueError:
             LOG.exception()
             self._reschedule()
-        else:
-            self._do_followup(m)
+            return
 
-    def _do_followup(self, m):
-        if m.update:
-            for ver, uri in m.update.items():
-                LOG.warning("Version %s available at %s" % (ver, uri))
-                STATE.update("update", {"version": ver,
-                                        "uri": uri})
+        if "version" in m1.update and "uri" in m1.update:
+            ver, uri = m1.update["version"], m1.update["uri"]
+            LOG.warning("Version %s available at %s" % (ver, uri))
+            STATE.update("update", {"version": ver, "uri": uri})
+
         if self.xdebug:
             self._reschedule()
             return
+
         if not CONFIG.enabled:
             self._reschedule()
             return
-        if m.available.has_key("speedtest"):
-            uri = m.available["speedtest"][0]
+
+        if "speedtest" in m1.available:
+            uri = m1.available["speedtest"][0]
             self.flags |= FLAG_TESTING
             self.start_speedtest_simple(uri)
 
