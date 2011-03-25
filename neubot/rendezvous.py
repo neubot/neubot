@@ -39,7 +39,6 @@ from neubot.net.poller import POLLER
 from neubot.database import database
 from neubot.utils import versioncmp
 from neubot import version
-from neubot.ui import ui
 from neubot.log import LOG
 from neubot.state import STATE
 from neubot.http.server import ServerHTTP
@@ -387,7 +386,6 @@ def main(args):
     fakerc.seek(0)
     database.configure(pathnames.CONFIG, fakerc)
     rendezvous.configure(pathnames.CONFIG, fakerc)
-    ui.configure(pathnames.CONFIG, fakerc)
 
     if servermode:
         if len(arguments) > 0:
@@ -410,8 +408,6 @@ def main(args):
     database.start()
     if daemonize:
         become_daemon()
-    if not dontloop and not xdebug:
-        ui.start()
     client = RendezvousClient(POLLER)
     client.init(uri, interval, dontloop, xdebug)
     client.rendezvous()
