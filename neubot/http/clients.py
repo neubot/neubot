@@ -49,9 +49,41 @@ from neubot.utils import safe_seek
 from neubot.http.utils import make_filename
 from sys import stdin, stdout, stderr
 from neubot.utils import unit_formatter
-from neubot.utils import SimpleStats
 from sys import exit
 from sys import argv
+
+#
+# Stats
+#
+
+class SimpleStats(object):
+    def __init__(self):
+        self.begin()
+
+    def __del__(self):
+        pass
+
+    def begin(self):
+        self.start = ticks()
+        self.stop = 0
+        self.length = 0
+
+    def end(self):
+        self.stop = ticks()
+
+    def account(self, count):
+        self.length += count
+
+    def diff(self):
+        return self.stop - self.start
+
+    def speed(self):
+        return self.length / self.diff()
+
+class Stats(object):
+    def __init__(self):
+        self.send = SimpleStats()
+        self.recv = SimpleStats()
 
 def SECURE(message):
     return message.scheme == "https"

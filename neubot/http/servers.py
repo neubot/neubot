@@ -54,7 +54,7 @@ from sys import argv
 from sys import exit
 from os import getcwd
 from neubot.utils import unit_formatter
-from neubot.utils import SimpleStats
+from neubot.http.clients import SimpleStats
 from socket import AF_INET
 
 #

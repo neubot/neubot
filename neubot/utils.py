@@ -207,40 +207,6 @@ def become_daemon(flags=DAEMON_ALL):
     else:
         pass
 
-#
-# Stats
-#
-
-class SimpleStats(object):
-    def __init__(self):
-        self.begin()
-
-    def __del__(self):
-        pass
-
-    def begin(self):
-        self.start = ticks()
-        self.stop = 0
-        self.length = 0
-
-    def end(self):
-        self.stop = ticks()
-
-    def account(self, count):
-        self.length += count
-
-    def diff(self):
-        return self.stop - self.start
-
-    def speed(self):
-        return self.length / self.diff()
-
-class Stats(object):
-    def __init__(self):
-        self.send = SimpleStats()
-        self.recv = SimpleStats()
-
-
 def asciify(s):
     try:
         return s.encode("ascii")
