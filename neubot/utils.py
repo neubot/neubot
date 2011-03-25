@@ -44,12 +44,6 @@ def versioncmp(left, right):
             return diff
     return 0
 
-def fixkwargs(kwargs, defaults):
-    for key in defaults.keys():
-        if not kwargs.has_key(key):
-            kwargs[key] = defaults[key]
-    return kwargs
-
 #
 # When stdin, stdout, stderr are attached to console, seek(0)
 # fails because it's not possible to rewind a console device.

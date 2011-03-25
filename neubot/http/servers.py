@@ -39,7 +39,7 @@ from neubot.http.messages import compose
 from neubot.http.utils import nextstate
 from sys import stdin, stdout, stderr
 from neubot.net.streams import listen
-from neubot.utils import fixkwargs
+from neubot.net.streams import fixkwargs
 from neubot import version as VERSION
 from neubot.utils import safe_seek
 from neubot.net.poller import POLLER
