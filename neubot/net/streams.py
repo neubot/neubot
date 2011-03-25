@@ -44,8 +44,13 @@ from neubot.net.poller import POLLER
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.times import ticks
-from neubot.utils import fixkwargs
 from neubot.log import LOG
+
+def fixkwargs(kwargs, defaults):
+    for key in defaults.keys():
+        if not kwargs.has_key(key):
+            kwargs[key] = defaults[key]
+    return kwargs
 
 SUCCESS = 0
 ERROR = 1

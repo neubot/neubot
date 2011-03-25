@@ -39,7 +39,7 @@ from neubot.http.messages import compose
 from neubot.http.utils import nextstate
 from sys import stdin, stdout, stderr
 from neubot.net.streams import listen
-from neubot.utils import fixkwargs
+from neubot.net.streams import fixkwargs
 from neubot import version as VERSION
 from neubot.utils import safe_seek
 from neubot.net.poller import POLLER
@@ -54,7 +54,7 @@ from sys import argv
 from sys import exit
 from os import getcwd
 from neubot.utils import unit_formatter
-from neubot.utils import SimpleStats
+from neubot.http.clients import SimpleStats
 from socket import AF_INET
 
 #

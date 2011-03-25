@@ -1,7 +1,7 @@
 # neubot/utils.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,21 +20,14 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from StringIO import StringIO
-from neubot.times import ticks
-from time import clock
-from time import sleep
-from time import time
-from neubot.log import LOG
-from sys import stdin
-from sys import stdout
-from sys import stderr
-
+import sys
 import signal
 import os
 
 if os.name == "posix":
     import pwd
+
+from neubot.log import LOG
 
 def versioncmp(left, right):
     left = map(int, left.split("."))
@@ -44,12 +37,6 @@ def versioncmp(left, right):
         if diff:
             return diff
     return 0
-
-def fixkwargs(kwargs, defaults):
-    for key in defaults.keys():
-        if not kwargs.has_key(key):
-            kwargs[key] = defaults[key]
-    return kwargs
 
 #
 # When stdin, stdout, stderr are attached to console, seek(0)
@@ -62,7 +49,7 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
     try:
         afile.seek(offset, whence)
     except IOError:
-        if afile not in [stdin, stdout, stderr]:
+        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
             raise
 
 #
@@ -213,62 +200,6 @@ def become_daemon(flags=DAEMON_ALL):
             os._exit(1)
     else:
         pass
-
-#
-# XML
-#
-
-def XML_text(node):
-    vector = []
-    if node.nodeType != node.ELEMENT_NODE:
-        raise ValueError("Bad node type")
-    element = node
-    for node in element.childNodes:
-        if node.nodeType != node.TEXT_NODE:
-            continue
-        text = node
-        vector.append(text.data)
-    return "".join(vector).strip()
-
-def XML_to_string(document):
-    return document.toprettyxml(indent="    ", newl="\n", encoding="utf-8")
-
-def XML_to_stringio(document):
-    return StringIO(XML_to_string(document))
-
-#
-# Stats
-#
-
-class SimpleStats(object):
-    def __init__(self):
-        self.begin()
-
-    def __del__(self):
-        pass
-
-    def begin(self):
-        self.start = ticks()
-        self.stop = 0
-        self.length = 0
-
-    def end(self):
-        self.stop = ticks()
-
-    def account(self, count):
-        self.length += count
-
-    def diff(self):
-        return self.stop - self.start
-
-    def speed(self):
-        return self.length / self.diff()
-
-class Stats(object):
-    def __init__(self):
-        self.send = SimpleStats()
-        self.recv = SimpleStats()
-
 
 def asciify(s):
     try:
