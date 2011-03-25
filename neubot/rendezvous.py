@@ -38,7 +38,6 @@ from ConfigParser import SafeConfigParser
 from neubot.net.poller import POLLER
 from neubot.database import database
 from neubot.utils import versioncmp
-from neubot import version
 from neubot.log import LOG
 from neubot.state import STATE
 from neubot.http.server import ServerHTTP
@@ -47,6 +46,8 @@ from neubot.http.messages import Message
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 from neubot.http.client import ClientHTTP
+
+VERSION = "0.3.7"
 
 
 class RendezvousRequest(object):
@@ -115,9 +116,9 @@ class ServiceHTTP(object):
 
         m1 = RendezvousResponse()
 
-        if m.version and versioncmp(self.config.update_version, m.version) > 0:
+        if m.version and versioncmp(VERSION, m.version) > 0:
             m1.update["uri"] = self.config.update_uri
-            m1.update["version"] = self.config.update_version
+            m1.update["version"] = VERSION
 
         if "speedtest" in m.accept:
             m1.available["speedtest"] = [self.config.test_uri]
@@ -151,7 +152,6 @@ class RendezvousServer(object):
 # [rendezvous]
 # address: 0.0.0.0
 # update_uri: http://releases.neubot.org
-# update_version: 0.3.6
 # test_uri2:
 # test_uri: http://speedtest1.neubot.org/speedtest
 # port: 9773
@@ -163,7 +163,6 @@ class RendezvousConfig(SafeConfigParser):
         SafeConfigParser.__init__(self)
         self.address = "0.0.0.0"
         self.update_uri = "http://releases.neubot.org"
-        self.update_version = version
         self.test_uri = "http://speedtest1.neubot.org/speedtest"
         self.test_uri2 = ""
         self.port = "9773"
@@ -181,8 +180,6 @@ class RendezvousConfig(SafeConfigParser):
             self.address = self.get("rendezvous", "address")
         if self.has_option("rendezvous", "update_uri"):
             self.update_uri = self.get("rendezvous", "update_uri")
-        if self.has_option("rendezvous", "update_version"):
-            self.update_version = self.get("rendezvous", "update_version")
         if self.has_option("rendezvous", "test_uri"):
             self.test_uri = self.get("rendezvous", "test_uri")
         if self.has_option("rendezvous", "test_uri2"):
@@ -261,7 +258,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
 
         m = RendezvousRequest()
         m.accept.append("speedtest")
-        m.version = version
+        m.version = VERSION
 
         s = marshal_object(m, "application/xml")
 
@@ -374,7 +371,7 @@ def main(args):
                 LOG.error("Invalid argument to -T: %s" % value)
                 sys.exit(1)
         elif name == "-V":
-            sys.stdout.write(version + "\n")
+            sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif name == "-v":
             LOG.verbose()
