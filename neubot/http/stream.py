@@ -180,8 +180,9 @@ class StreamHTTP(Stream):
             if self.closing:
                 return
 
-            LOG.debug("HTTP receiver: %s -> %s" %
-              (STATES[ostate], STATES[self.state]))
+#           Should be debug2() not debug()
+#           LOG.debug("HTTP receiver: %s -> %s" %
+#             (STATES[ostate], STATES[self.state]))
 
         # keep the eventual remainder for later
         if length > 0:
