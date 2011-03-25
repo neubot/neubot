@@ -1,7 +1,7 @@
 # neubot/http/messages.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -21,6 +21,7 @@
 #
 
 import StringIO
+import collections
 import types
 import socket
 import os
@@ -28,6 +29,7 @@ import os
 from neubot.http.utils import urlsplit
 from neubot.utils import safe_seek
 from neubot.http.utils import date
+from neubot.log import LOG
 
 
 class Message(object):
@@ -35,20 +37,23 @@ class Message(object):
     """Represents an HTTP message."""
 
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
+
         self.method = method
         self.uri = uri
-        self.code = code
-        self.reason = reason
-        self.protocol = protocol
-        self.headers = {}
-        self.body = StringIO.StringIO("")
         self.scheme = ""
         self.address = ""
         self.port = ""
         self.pathquery = ""
+        self.code = code
+        self.reason = reason
+        self.protocol = protocol
+
+        self.headers = collections.defaultdict(str)
+        self.body = StringIO.StringIO("")
+
         self.family = socket.AF_UNSPEC
-        self.length = 0
         self.response = None
+        self.length = 0
 
     #
     # The client code saves the whole uri in self.uri and then
@@ -61,36 +66,43 @@ class Message(object):
     #
 
     def serialize_headers(self):
-        lst = []
+        v = []
 
         if self.method:
-            lst.append(self.method)
-            lst.append(" ")
+            v.append(self.method)
+            v.append(" ")
             if self.pathquery:
-                lst.append(self.pathquery)
+                v.append(self.pathquery)
             elif self.uri:
-                lst.append(self.uri)
+                v.append(self.uri)
             else:
-                lst.append("/")
-            lst.append(" ")
-            lst.append(self.protocol)
+                v.append("/")
+            v.append(" ")
+            v.append(self.protocol)
+
         else:
-            lst.append(self.protocol)
-            lst.append(" ")
-            lst.append(self.code)
-            lst.append(" ")
-            lst.append(self.reason)
-        lst.append("\r\n")
+            v.append(self.protocol)
+            v.append(" ")
+            v.append(self.code)
+            v.append(" ")
+            v.append(self.reason)
+
+        LOG.debug("> %s" % ("".join(v)))
+        v.append("\r\n")
 
         for key, value in self.headers.items():
-            lst.append(key)
-            lst.append(": ")
-            lst.append(value)
-            lst.append("\r\n")
-        lst.append("\r\n")
+            v.append(key)
+            v.append(": ")
+            v.append(value)
 
-        octets = "".join(lst)
-        return StringIO.StringIO(octets)
+            LOG.debug("> %s: %s" % (key, value))
+            v.append("\r\n")
+
+        LOG.debug(">")
+        v.append("\r\n")
+
+        s = "".join(v)
+        return StringIO.StringIO(s)
 
     def serialize_body(self):
         return self.body
@@ -103,24 +115,15 @@ class Message(object):
     #
 
     def __getitem__(self, key):
-        if type(key) != types.StringType:
-            raise TypeError("key should be a string")
-        key = key.lower()
-        if self.headers.has_key(key):
-            return self.headers[key]
-        return ""
+        return self.headers[key]
 
     def __setitem__(self, key, value):
-        if type(key) != types.StringType:
-            raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
             value = self.headers[key] + ", " + value
         self.headers[key] = value
 
     def __delitem__(self, key):
-        if type(key) != types.StringType:
-            raise TypeError("key should be a string")
         key = key.lower()
         if self.headers.has_key(key):
             del self.headers[key]

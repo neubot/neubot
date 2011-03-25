@@ -37,7 +37,6 @@ from neubot.http.handlers import Receiver
 from neubot.http.messages import Message
 from neubot.http.messages import compose
 from neubot.http.utils import nextstate
-from neubot.http.utils import prettyprint
 from sys import stdin, stdout, stderr
 from neubot.net.streams import listen
 from neubot.utils import fixkwargs
@@ -130,7 +129,6 @@ class SimpleConnection(Receiver):
             response["connection"] = "close"
         self.handler.bufferize(response.serialize_headers())
         self.handler.bufferize(response.serialize_body())
-        prettyprint(LOG.debug, "> ", response)
         self._access_log(request, response)
         self.begin_sending()
         self.handler.flush(flush_progress=self.send_progress,
@@ -183,7 +181,6 @@ class SimpleConnection(Receiver):
         self.message[key] = value
 
     def end_of_headers(self):
-        prettyprint(LOG.debug, "< ", self.message)
         state, length = self.nextstate(self.message)
         if state == FIRSTLINE:
             #

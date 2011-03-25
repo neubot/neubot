@@ -36,7 +36,6 @@ from neubot.http.messages import Message
 from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.stream import StreamHTTP
-from neubot.http.utils import prettyprint
 from neubot.net.stream import Listener
 from neubot.utils import safe_seek
 from neubot.options import OptionParser
@@ -77,7 +76,6 @@ class ServerStream(StreamHTTP):
 
     def got_end_of_headers(self):
         if self.request:
-            prettyprint(LOG.debug, "< ", self.request)
             if not self.parent.got_request_headers(self, self.request):
                 return ERROR, 0
             return nextstate(self.request)
@@ -99,7 +97,6 @@ class ServerStream(StreamHTTP):
             self.close()
 
     def send_response(self, request, response):
-        prettyprint(LOG.debug, "> ", response)
         self.send_message(response)
 
         address = self.peername[0]

@@ -42,7 +42,6 @@ from neubot.http.handlers import Receiver
 from neubot.http.messages import Message
 from neubot.http.messages import compose
 from neubot.http.utils import nextstate
-from neubot.http.utils import prettyprint
 from neubot.net.streams import connect
 from neubot.net.poller import POLLER
 from neubot.times import ticks
@@ -145,7 +144,6 @@ class SimpleClient(Receiver):
     def _do_send(self):
         self.handler.bufferize(self.request.serialize_headers())
         self.handler.bufferize(self.request.serialize_body())
-        prettyprint(LOG.debug, "> ", self.request)
         self.begin_sending()
         self.handler.flush(flush_progress=self.send_progress,
                            flush_success=self.sent_request)
@@ -180,7 +178,6 @@ class SimpleClient(Receiver):
         self.response[key] = value
 
     def end_of_headers(self):
-        prettyprint(LOG.debug, "< ", self.response)
         state, length = self.nextstate(self.request, self.response)
         if state == FIRSTLINE:
             #
@@ -535,7 +532,7 @@ class VerboseController(DefaultController):
         f.write("rr-time: %f s\n"%(client.receiving.stop-client.sending.start))
 
 def print_headers(client, request, response):
-    prettyprint(stdout.write, "", response, eol="\r\n")
+    pass
 
 #
 # There is a function named main() because we want to be able to
