@@ -70,13 +70,18 @@ def object_to_xml(obj):
     root.appendChild( document.createTextNode("\r\n") )
 
     for name, value in obj.__dict__.items():
-        root.appendChild( document.createTextNode("    ") )
 
-        element = document.createElement(name)
-        root.appendChild(element)
-        element.appendChild( document.createTextNode( unicodize(value) ))
+        if type(value) != types.ListType:
+            value = [value]
 
-        root.appendChild( document.createTextNode("\r\n") )
+        for v in value:
+            root.appendChild( document.createTextNode("    ") )
+
+            element = document.createElement(name)
+            root.appendChild(element)
+            element.appendChild( document.createTextNode( unicodize(v) ))
+
+            root.appendChild( document.createTextNode("\r\n") )
 
     return root.toxml("utf-8")
 
@@ -112,7 +117,11 @@ def xml_to_dictionary(s):
 
             for node in element.childNodes:
                 if node.nodeType == node.TEXT_NODE:
-                    dictionary[element.tagName] = node.data.strip()
+
+                    if not element.tagName in dictionary:
+                        dictionary[element.tagName] = []
+
+                    dictionary[element.tagName].append(node.data.strip())
                     break
 
     return dictionary
@@ -124,21 +133,14 @@ UNMARSHALLERS = {
     "text/xml": xml_to_dictionary,
 }
 
-CASTS = {
-    types.UnicodeType: unicodize,   # XXX
-    types.StringType: stringify,    # XXX
-    types.FloatType: float,
-    types.IntType: int,
-    types.LongType: long,
-}
-
 def unmarshal_objectx(s, mimetype, instance):
     dictionary = UNMARSHALLERS[mimetype](s)
     for name, value in instance.__dict__.items():
         if name in dictionary:
-            cast = CASTS[type(value)]
-            value = cast(dictionary[name])
-            setattr(instance, name, value)
+            nval = dictionary[name]
+            if type(value) != types.ListType and type(nval) == types.ListType:
+                nval = nval[0]
+            setattr(instance, name, nval)
 
 def unmarshal_object(s, mimetype, ctor):
     obj = ctor()
@@ -156,6 +158,8 @@ class Test(object):
         self.sname = "Aglie"
         self.fval = 1.43
         self.ival = 1<<17
+        self.vect = [1,2,3,4,5,12,u"Aglié",1.43]
+        self.v2 = ["urbinek"]
 
 def test(mimetype):
     pprint.pprint("--- %s ---" % mimetype)
