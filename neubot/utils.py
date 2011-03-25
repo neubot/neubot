@@ -20,20 +20,14 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from neubot.times import ticks
-from time import clock
-from time import sleep
-from time import time
-from neubot.log import LOG
-from sys import stdin
-from sys import stdout
-from sys import stderr
-
+import sys
 import signal
 import os
 
 if os.name == "posix":
     import pwd
+
+from neubot.log import LOG
 
 def versioncmp(left, right):
     left = map(int, left.split("."))
@@ -55,7 +49,7 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
     try:
         afile.seek(offset, whence)
     except IOError:
-        if afile not in [stdin, stdout, stderr]:
+        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
             raise
 
 #
