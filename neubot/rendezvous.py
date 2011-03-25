@@ -66,9 +66,11 @@ import xml.dom.minidom
 import random
 
 from neubot.http.server import ServerHTTP
+from neubot.http.stream import VERBOSER
 from neubot.http.messages import Message
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
+from neubot.http.client import ClientHTTP
 
 
 class RendezvousRequest(object):
@@ -237,9 +239,9 @@ rendezvous = RendezvousModule()
 FLAG_TESTING = 1<<0
 
 
-class RendezvousClient(ClientController, SpeedtestController):
+class RendezvousClient(ClientHTTP, SpeedtestController):
 
-    def __init__(self, server_uri, interval, dontloop, xdebug):
+    def init(self, server_uri, interval, dontloop, xdebug):
         self.server_uri = server_uri
         self.interval = interval
         self.dontloop = dontloop
@@ -247,10 +249,8 @@ class RendezvousClient(ClientController, SpeedtestController):
         self.flags = 0
         self.task = None
 
-    def __del__(self):
-        pass
-
     def _reschedule(self):
+
         if self.flags & FLAG_TESTING:
             return
         if self.dontloop:
@@ -258,21 +258,32 @@ class RendezvousClient(ClientController, SpeedtestController):
         if self.task:
             LOG.debug("rendezvous: There is already a pending task")
             return
+
         LOG.info("* Next rendezvous in %d seconds" % self.interval)
         self.task = POLLER.sched(self.interval, self.rendezvous)
+
         STATE.update("next_rendezvous", self.task.timestamp, publish=False)
         STATE.update("idle")
 
-    def connection_failed(self, client):
+    def connection_failed(self, connector, exception):
+
+        VERBOSER.connection_failed(connector.endpoint, exception)
         STATE.update("rendezvous", {"status": "failed"})
+
         self._reschedule()
 
-    def connection_lost(self, client):
+    def connection_lost(self, connector, stream):
         self._reschedule()
 
     def rendezvous(self):
         self.task = None
         STATE.update("rendezvous")
+
+        r = Message()
+        r.compose(uri=self.server_uri)
+        self.connect((r.address, int(r.port)))
+
+    def connection_ready(self, connector, stream):
 
         m = RendezvousRequest()
         m.accept.append("speedtest")
@@ -291,10 +302,9 @@ class RendezvousClient(ClientController, SpeedtestController):
         request.compose(method="GET", uri=self.server_uri,
           mimetype="text/xml", body=stringio, keepalive=False)
 
-        client = Client(self)
-        client.sendrecv(request)
+        stream.send_request(request)
 
-    def got_response(self, client, request, response):
+    def got_response(self, connector, stream, request, response):
         if response.code != "200":
             LOG.error("Error: %s %s" % (response.code, response.reason))
             self._reschedule()
@@ -332,6 +342,7 @@ class RendezvousClient(ClientController, SpeedtestController):
     def speedtest_complete(self):
         self.flags &= ~FLAG_TESTING
         self._reschedule()
+
 
 USAGE = 								\
 "Usage: @PROGNAME@ -V\n"						\
@@ -424,7 +435,8 @@ def main(args):
         become_daemon()
     if not dontloop and not xdebug:
         ui.start()
-    client = RendezvousClient(uri, interval, dontloop, xdebug)
+    client = RendezvousClient(POLLER)
+    client.init(uri, interval, dontloop, xdebug)
     client.rendezvous()
     POLLER.loop()
 
