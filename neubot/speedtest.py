@@ -61,7 +61,6 @@ from neubot.http.handlers import ERROR
 from neubot.http.servers import Server
 from neubot.utils import file_length
 from neubot.utils import become_daemon
-from time import time
 from uuid import UUID
 from uuid import uuid4
 
@@ -902,8 +901,8 @@ class Collect(SpeedtestHelper):
         if database.dbm:
             element = SubElement(root, "client")
             element.text = database.dbm.ident
-        timestamp = SubElement(root, "timestamp")
-        timestamp.text = str(time())
+        timestamp_ = SubElement(root, "timestamp")
+        timestamp_.text = str(timestamp())
         internalAddress = SubElement(root, "internalAddress")
         internalAddress.text = client.handler.stream.myname[0]          # XXX
         realAddress = SubElement(root, "realAddress")
