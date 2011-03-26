@@ -54,7 +54,7 @@ Macros  (defaults in square brackets):
     -D address=ADDRESS : ADDRESS of the local API server     [127.0.0.1]
     -D api=BOOL        : Enable/disable the local API server [True]
     -D daemonize=BOOL  : Run in background as a daemon       [True]
-    -D interval=N      : Seconds between each rendezvous     []
+    -D interval=N      : Seconds between each rendezvous     [see below]
     -D master=MASTER   : Master-server FQDN                  [master.neubot.org]
     -D port=PORT       : PORT of the local API server        [9774]
     -D rendezvous=BOOL : Enable/disable rendezvous module    [True]
@@ -138,7 +138,8 @@ def main(args):
     drop_privileges()
 
     if rendezvous:
-        client = RendezvousClient(uri, interval, False, False)
+        client = RendezvousClient(POLLER)
+        client.init(uri, interval, False, False)
         client.rendezvous()
 
     POLLER.loop()
