@@ -32,7 +32,13 @@ from neubot.log import LOG
 def versioncmp(left, right):
     left = map(int, left.split("."))
     right = map(int, right.split("."))
-    for i in range(0, 3):
+
+    if len(left) > len(right):
+        [right.append(0) for i in range(len(left) - len(right))]
+    elif len(right) > len(left):
+        [left.append(0) for i in range(len(right) - len(left))]
+
+    for i in range(len(left)):
         diff = left[i] - right[i]
         if diff:
             return diff
