@@ -127,8 +127,7 @@ def main(argv):
     # Slow / quick startup
 
     if slowpath:
-        from neubot import shell
-        shell.main(argv)
+        run_module(argv)
 
     else:
         running = False
@@ -223,6 +222,56 @@ def main(argv):
             sys.stderr.write("Your operating system is not supported\n")
             sys.exit(1)
 
+    sys.exit(0)
+
+MODULES = {
+    "agent"      : "agent",
+    "database"   : "database",
+    "bittorrent" : "bittorrent.main",
+    "http"       : "http.client",
+    "httpd"      : "http.server",
+    "rendezvous" : "rendezvous",
+    "speedtest"  : "speedtest",
+    "statusicon" : "statusicon",
+    "stream"     : "net.stream",
+}
+
+def run_module(argv):
+
+    # /usr/bin/neubot module ...
+    del argv[0]
+    module = argv[0]
+
+    if module == "help":
+
+        import textwrap
+
+        sys.stdout.write("Neubot help -- prints available commands\n")
+
+        commands = " ".join(sorted(MODULES.keys()))
+        lines =  textwrap.wrap(commands, 60)
+        sys.stdout.write("Commands: " + lines[0] + "\n")
+        for s in lines[1:]:
+            sys.stdout.write("          " + s + "\n")
+
+        sys.stdout.write("Try `neubot COMMAND --help` for more help\n")
+        sys.exit(0)
+
+    if not module in MODULES:
+        sys.stderr.write("Invalid module: %s\n" % module)
+        sys.stderr.write("Try `neubot help` to see the available modules\n")
+        sys.exit(1)
+
+    module = MODULES[module]
+    exec("from neubot.%s import main as MAIN" % module)
+
+    argv[0] = "neubot " + argv[0]
+
+#   Not yet
+#   status = MAIN(argv)
+#   sys.exit(status)
+
+    MAIN(argv)
     sys.exit(0)
 
 if __name__ == "__main__":
