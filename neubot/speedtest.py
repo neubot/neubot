@@ -161,7 +161,7 @@ class SessionState(object):
         self.negotiations = 0
 
 
-class _SessionTrackerMixin(object):
+class SessionTracker(object):
 
     def __init__(self):
         self.identifiers = {}
@@ -174,8 +174,7 @@ class _SessionTrackerMixin(object):
         LOG.info("speedtest queue length: %d\n" % len(self.queue))
         POLLER.sched(60, self._sample_queue_length)
 
-    def session_active(self, request):
-        identifier = request["authorization"]
+    def session_active(self, identifier):
         if identifier in self.identifiers:
             session = self.identifiers[identifier]
             session.timestamp = timestamp()             # XXX
@@ -194,19 +193,16 @@ class _SessionTrackerMixin(object):
             self._do_remove(session)
         return True
 
-    def session_delete(self, request):
-        identifier = request["authorization"]
+    def session_delete(self, identifier):
         if identifier in self.identifiers:
             session = self.identifiers[identifier]
             self._do_remove(session)
 
-    def session_negotiate(self, request):
-        identifier = request["authorization"]
+    def session_negotiate(self, identifier):
         if not identifier in self.identifiers:
             session = SessionState()
             # XXX collision is not impossible but very unlikely
             session.identifier = str(uuid4())
-            request["authorization"] = session.identifier
             session.timestamp = timestamp()
             self._do_add(session)
         else:
@@ -235,9 +231,8 @@ class _SessionTrackerMixin(object):
 
     # connection tracking
 
-    def register_connection(self, connection, request):
+    def register_connection(self, connection, identifier):
         if not connection in self.connections:
-            identifier = request["authorization"]
             if identifier in self.identifiers:
                 self.connections[connection] = identifier
 
@@ -250,18 +245,21 @@ class _SessionTrackerMixin(object):
                 self._do_remove(session)
 
 
-class _NegotiateServerMixin(_SessionTrackerMixin):
+TRACKER = SessionTracker()
+
+
+class _NegotiateServerMixin(object):
+
     def __init__(self, config):
         self.config = config
         self.begin_test = 0
         POLLER.sched(3, self._speedtest_check_timeout)
-        _SessionTrackerMixin.__init__(self)
 
     def check_request_headers(self, connection, request):
         ret = True
-        self.register_connection(connection, request)
+        TRACKER.register_connection(connection, request["authorization"])
         if self.config.only_auth and request.uri in RESTRICTED:
-            if not self.session_active(request):
+            if not TRACKER.session_active(request["authorization"]):
                 LOG.warning("* Connection %s: Forbidden" % (
                  connection.handler.stream.logname))
                 ret = False
@@ -285,15 +283,17 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
 
     def _speedtest_check_timeout(self):
         POLLER.sched(3, self._speedtest_check_timeout)
-        if self.session_prune():
+        if TRACKER.session_prune():
             publish(RENEGOTIATE)
 
     def _speedtest_complete(self, request):
-        self.session_delete(request)
+        TRACKER.session_delete(request["authorization"])
         publish(RENEGOTIATE)
 
     def do_negotiate(self, connection, request, nodelay=False):
-        session = self.session_negotiate(request)
+        session = TRACKER.session_negotiate(request["authorization"])
+        if not request["authorization"]:
+            request["authorization"] = session.identifier
 
         #
         # XXX make sure we track ALSO the first connection of the
@@ -303,7 +303,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
         # would not find an entry in self.connections{}.
         #
         if session.negotiations == 1:
-            self.register_connection(connection, request)
+            TRACKER.register_connection(connection, request["authorization"])
             nodelay = True
 
         if not session.active:
@@ -341,7 +341,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
         connection.reply(request, response)
 
     def remove_connection(self, connection):
-        self.unregister_connection(connection)
+        TRACKER.unregister_connection(connection)
         publish(RENEGOTIATE)
 
 class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
