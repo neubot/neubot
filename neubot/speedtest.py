@@ -28,7 +28,6 @@ from StringIO import StringIO
 from neubot.database import database
 from neubot.http.messages import Message
 from neubot.utils import unit_formatter
-from neubot.http.messages import compose
 from neubot.http.clients import Client
 from neubot.http.clients import ClientController
 from neubot.net.poller import POLLER
@@ -104,7 +103,7 @@ class _TestServerMixin(object):
 
     def do_latency(self, connection, request):
         response = Message()
-        compose(response, code="200", reason="Ok")
+        response.compose(code="200", reason="Ok")
         connection.reply(request, response)
 
     def do_download(self, connection, request):
@@ -114,7 +113,7 @@ class _TestServerMixin(object):
             body = open(self.config.path, "rb")
         except (IOError, OSError):
             LOG.exception()
-            compose(response, code="500", reason="Internal Server Error")
+            response.compose(code="500", reason="Internal Server Error")
             connection.reply(request, response)
             return
         # range
@@ -125,7 +124,7 @@ class _TestServerMixin(object):
                 first, last = parse_range(request)
             except ValueError:
                 LOG.exception()
-                compose(response, code="400", reason="Bad Request")
+                response.compose(code="400", reason="Bad Request")
                 connection.reply(request, response)
                 return
             # XXX read() assumes there is enough core
@@ -136,13 +135,13 @@ class _TestServerMixin(object):
             code, reason = "206", "Partial Content"
         else:
             code, reason = "200", "Ok"
-        compose(response, code=code, reason=reason, body=body,
+        response.compose(code=code, reason=reason, body=body,
                 mimetype="application/octet-stream")
         connection.reply(request, response)
 
     def do_upload(self, connection, request):
         response = Message()
-        compose(response, code="200", reason="Ok")
+        response.compose(code="200", reason="Ok")
         connection.reply(request, response)
 
 RESTRICTED = [
@@ -322,7 +321,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
 
         stringio = StringIO(s)
         response = Message()
-        compose(response, code="200", reason="Ok",
+        response.compose(code="200", reason="Ok",
          body=stringio, mimetype="application/xml")
         connection.reply(request, response)
 
@@ -338,7 +337,7 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
                                      m.client)
 
         response = Message()
-        compose(response, code="200", reason="Ok")
+        response.compose(code="200", reason="Ok")
         connection.reply(request, response)
 
     def remove_connection(self, connection):
@@ -376,7 +375,7 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
         except:
             LOG.exception()
             response = Message()
-            compose(response, code="500", reason="Internal Server Error")
+            response.compose(code="500", reason="Internal Server Error")
             connection.reply(request, response)
 
     def process_request(self, connection, request):
@@ -384,7 +383,7 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
             self.table[request.uri](connection, request)
         except KeyError:
             response = Message()
-            compose(response, code="404", reason="Not Found")
+            response.compose(code="404", reason="Not Found")
             connection.reply(request, response)
 
     def connection_lost(self, connection):
@@ -494,7 +493,7 @@ class Latency(SpeedtestHelper):
 
     def _start_one(self, client):
         m = Message()
-        compose(m, method="HEAD", uri=self.speedtest.uri + "latency")
+        m.compose(method="HEAD", uri=self.speedtest.uri + "latency")
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
         client.sendrecv(m)
@@ -598,7 +597,7 @@ class Download(SpeedtestHelper):
 
     def _start_one(self, client):
         m = Message()
-        compose(m, method="GET", uri=self.speedtest.uri + "download")
+        m.compose(method="GET", uri=self.speedtest.uri + "download")
         m["range"] = "bytes=0-%d" % self.length
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
@@ -698,7 +697,7 @@ class Upload(SpeedtestHelper):
     def _start_one(self, client):
         m = Message()
         body = StringIO(self.body[:self.length])
-        compose(m, method="POST", uri=self.speedtest.uri + "upload",
+        m.compose(method="POST", uri=self.speedtest.uri + "upload",
                 body=body, mimetype="application/octet-stream")
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
@@ -769,7 +768,7 @@ class Negotiate(SpeedtestHelper):
         client = self.speedtest.clients[0]
         LOG.start("* Negotiate permission to take the test")
         m = Message()
-        compose(m, method="GET", uri=self.speedtest.uri + "negotiate")
+        m.compose(method="GET", uri=self.speedtest.uri + "negotiate")
         if self.authorization:
             m["authorization"] = self.authorization
         client.sendrecv(m)
@@ -841,7 +840,7 @@ class Collect(SpeedtestHelper):
             stringio.seek(0)
 
         m = Message()
-        compose(m, method="POST", uri=self.speedtest.uri + "collect",
+        m.compose(method="POST", uri=self.speedtest.uri + "collect",
                 body=stringio, mimetype="application/xml")
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
