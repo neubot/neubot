@@ -29,7 +29,6 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.http.messages import Message
-from neubot.http.messages import compose
 from neubot.http.clients import ClientController
 from neubot.http.clients import Client
 from neubot.net.poller import POLLER
@@ -73,7 +72,7 @@ class APIStateTracker(ClientController):
     def start_transaction(self, client=None):
         request = Message()
         uri = self.uri + str(self.timestamp)
-        compose(request, method="GET", uri=uri)
+        request.compose(method="GET", uri=uri)
         if not client:
             client = Client(self)
         client.sendrecv(request)
