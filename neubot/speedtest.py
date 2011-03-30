@@ -185,19 +185,23 @@ RESTRICTED = [
     "/speedtest/collect",
 ]
 
-class SessionState:
-    active = False
-    timestamp = 0
-    identifier = None
-    queuepos = 0
-    negotiations = 0
+
+class SessionState(object):
+    def __init__(self):
+        self.active = False
+        self.timestamp = 0
+        self.identifier = None
+        self.queuepos = 0
+        self.negotiations = 0
+
 
 class _SessionTrackerMixin(object):
-    identifiers = {}
-    queue = deque()
-    connections = {}
 
     def __init__(self):
+        self.identifiers = {}
+        self.queue = deque()
+        self.connections = {}
+
         POLLER.sched(60, self._sample_queue_length)
 
     def _sample_queue_length(self):
@@ -278,6 +282,7 @@ class _SessionTrackerMixin(object):
             if identifier in self.identifiers:
                 session = self.identifiers[identifier]
                 self._do_remove(session)
+
 
 class _NegotiateServerMixin(_SessionTrackerMixin):
     def __init__(self, config):
