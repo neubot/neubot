@@ -63,6 +63,7 @@ from neubot.utils import become_daemon
 from uuid import UUID
 from uuid import uuid4
 
+from neubot.http.server import ServerHTTP
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 
@@ -91,58 +92,72 @@ class SpeedtestNegotiate_Response(object):
         self.queueLen = 0
 
 
-#
-# Code for speedtest server.  It's composed of two mixins.  The former
-# implements the actual tests and the latter implements negotiation, and
-# collection.
-#
+class Tester(object):
 
-class _TestServerMixin(object):
     def __init__(self, config):
         self.config = config
+
+    def serve(self, server, listener, stream, request):
+
+        if request.uri == "/latency":
+            self.do_latency(stream, request)
+
+        elif request.uri == "/download":
+            self.do_download(stream, request)
+
+        elif request.uri == "/upload":
+            self.do_upload(stream, request)
+
+        else:
+            response = Message()
+            response.compose(code="500", reason="Internal Server Error")
+            stream.send_response(request, response)
 
     def do_latency(self, connection, request):
         response = Message()
         response.compose(code="200", reason="Ok")
-        connection.reply(request, response)
+        connection.send_response(request, response)
 
     def do_download(self, connection, request):
         response = Message()
-        # open
+
         try:
             body = open(self.config.path, "rb")
         except (IOError, OSError):
             LOG.exception()
             response.compose(code="500", reason="Internal Server Error")
-            connection.reply(request, response)
+            connection.send_response(request, response)
             return
-        # range
+
         if request["range"]:
             total = file_length(body)
-            # parse
+
             try:
                 first, last = parse_range(request)
             except ValueError:
                 LOG.exception()
                 response.compose(code="400", reason="Bad Request")
-                connection.reply(request, response)
+                connection.send_response(request, response)
                 return
+
             # XXX read() assumes there is enough core
             body.seek(first)
             partial = body.read(last - first + 1)
             response["content-range"] = "bytes %d-%d/%d" % (first, last, total)
             body = StringIO(partial)
             code, reason = "206", "Partial Content"
+
         else:
             code, reason = "200", "Ok"
+
         response.compose(code=code, reason=reason, body=body,
                 mimetype="application/octet-stream")
-        connection.reply(request, response)
+        connection.send_response(request, response)
 
     def do_upload(self, connection, request):
         response = Message()
         response.compose(code="200", reason="Ok")
-        connection.reply(request, response)
+        connection.send_response(request, response)
 
 
 class SessionState(object):
@@ -251,11 +266,12 @@ class _NegotiateServerMixin(object):
     def check_request_headers(self, connection, request):
         ret = True
         TRACKER.register_connection(connection, request["authorization"])
+
         if (self.config.only_auth and request.uri != "/speedtest/negotiate"
           and not TRACKER.session_active(request["authorization"])):
-            LOG.warning("* Connection %s: Forbidden" % (
-             connection.handler.stream.logname))
+            LOG.warning("* Connection %s: Forbidden" % connection.logname)
             ret = False
+
         return ret
 
     #
@@ -271,8 +287,7 @@ class _NegotiateServerMixin(object):
 
     def _do_renegotiate(self, event, atuple):
         connection, request = atuple
-        if connection.handler:
-            self.do_negotiate(connection, request, True)
+        self.do_negotiate(connection, request, True)
 
     def _speedtest_check_timeout(self):
         POLLER.sched(3, self._speedtest_check_timeout)
@@ -309,14 +324,14 @@ class _NegotiateServerMixin(object):
         m1.authorization = session.identifier
         m1.unchoked = session.active
         m1.queuePos = session.queuepos
-        m1.publicAddress = connection.handler.stream.peername[0]        # XXX
+        m1.publicAddress = connection.peername[0]
         s = marshal_object(m1, "text/xml")
 
         stringio = StringIO(s)
         response = Message()
         response.compose(code="200", reason="Ok",
          body=stringio, mimetype="application/xml")
-        connection.reply(request, response)
+        connection.send_response(request, response)
 
     def do_collect(self, connection, request):
         self._speedtest_complete(request)
@@ -331,56 +346,38 @@ class _NegotiateServerMixin(object):
 
         response = Message()
         response.compose(code="200", reason="Ok")
-        connection.reply(request, response)
+        connection.send_response(request, response)
 
     def remove_connection(self, connection):
         TRACKER.unregister_connection(connection)
         publish(RENEGOTIATE)
 
 
-class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
+class SpeedtestServer(ServerHTTP, _NegotiateServerMixin):
+
     def __init__(self, config):
-        Server.__init__(self, address=config.address, port=config.port)
-        _TestServerMixin.__init__(self, config)
+        ServerHTTP.__init__(self, POLLER)
+        ServerHTTP.listen(self, (config.address, int(config.port)))
         _NegotiateServerMixin.__init__(self, config)
-        self.table = {}
-        self._init_table()
 
-    def _init_table(self):
-        self.table["/speedtest/negotiate"] = self.do_negotiate
-        self.table["/speedtest/latency"] = self.do_latency
-        self.table["/speedtest/download"] = self.do_download
-        self.table["/speedtest/upload"] = self.do_upload
-        self.table["/speedtest/collect"] = self.do_collect
+        self.tester = Tester(config)
 
-    def bind_failed(self):
-        exit(1)
-
-    def got_request_headers(self, connection, request):
-        # XXX cheat with http.Connection: we don't want client disconnection
-        self.nleft = 128
+    def got_request_headers(self, listener, connection, request):
         return self.check_request_headers(connection, request)
 
-    def got_request(self, connection, request):
-        try:
-            self.process_request(connection, request)
-        except KeyboardInterrupt:
-            raise
-        except:
-            LOG.exception()
-            response = Message()
-            response.compose(code="500", reason="Internal Server Error")
-            connection.reply(request, response)
+    def process_request(self, listener, stream, request):
 
-    def process_request(self, connection, request):
-        try:
-            self.table[request.uri](connection, request)
-        except KeyError:
-            response = Message()
-            response.compose(code="404", reason="Not Found")
-            connection.reply(request, response)
+        if request.uri == "/speedtest/negotiate":
+            self.do_negotiate(stream, request)
 
-    def connection_lost(self, connection):
+        elif request.uri == "/speedtest/collect":
+            self.do_collect(stream, request)
+
+        else:
+            request.uri = request.uri.replace("/speedtest", "", 1)
+            self.tester.serve(self, listener, stream, request)
+
+    def connection_lost(self, listener, connection):
         self.remove_connection(connection)
 
 
@@ -434,7 +431,6 @@ class SpeedtestModule:
 
     def start(self):
         self.server = SpeedtestServer(self.config)
-        self.server.listen()
 
 speedtest = SpeedtestModule()
 
