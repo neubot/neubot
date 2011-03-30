@@ -344,6 +344,7 @@ class _NegotiateServerMixin(object):
         TRACKER.unregister_connection(connection)
         publish(RENEGOTIATE)
 
+
 class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
     def __init__(self, config):
         Server.__init__(self, address=config.address, port=config.port)
@@ -388,6 +389,7 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
 
     def connection_lost(self, connection):
         self.remove_connection(connection)
+
 
 #
 # [speedtest]
