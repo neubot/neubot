@@ -1,7 +1,7 @@
 # neubot/speedtest.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -28,7 +28,6 @@ from StringIO import StringIO
 from neubot.database import database
 from neubot.http.messages import Message
 from neubot.utils import unit_formatter
-from neubot.http.messages import compose
 from neubot.http.clients import Client
 from neubot.http.clients import ClientController
 from neubot.net.poller import POLLER
@@ -64,39 +63,12 @@ from neubot.utils import become_daemon
 from uuid import UUID
 from uuid import uuid4
 
-def XML_get_scalar(tree, name):
-    elements = tree.findall(name)
-    if len(elements) > 1:
-        raise ValueError("More than one '%s' element" % name)
-    if len(elements) == 0:
-        return ""
-    element = elements[0]
-    return element.text
+from neubot.marshal import unmarshal_object
+from neubot.marshal import marshal_object
 
-def XML_get_vector(tree, name):
-    vector = []
-    elements = tree.findall(name)
-    for element in elements:
-        vector.append(element.text)
-    return vector
 
-#
-# <SpeedtestCollect>
-#     <client>af5659e0-b2bd-4a4b-8062-e8437150f2c9</client>
-#     <timestamp>1283790303</timestamp>
-#     <internalAddress>192.168.0.3</internalAddress>
-#     <realAddress>130.192.47.76</realAddress>
-#     <remoteAddress>130.192.47.84</remoteAddress>
-#     <connectTime>0.9</connectTime>
-#     <latency>0.92</latency>
-#     <downloadSpeed>23</downloadSpeed>
-#     <downloadSpeed>22</downloadSpeed>
-#     <uploadSpeed>7.0</uploadSpeed>
-#     <uploadSpeed>7.1</uploadSpeed>
-# </SpeedtestCollect>
-#
+class SpeedtestCollect(object):
 
-class SpeedtestCollect:
     def __init__(self):
         self.client = ""
         self.timestamp = 0
@@ -108,22 +80,16 @@ class SpeedtestCollect:
         self.downloadSpeed = []
         self.uploadSpeed = []
 
-    def parse(self, stringio):
-        tree = ElementTree()
-        try:
-            tree.parse(stringio)
-        except:
-            raise ValueError("Can't parse XML body")
-        else:
-            self.client = XML_get_scalar(tree, "client")
-            self.timestamp = XML_get_scalar(tree, "timestamp")
-            self.internalAddress = XML_get_scalar(tree, "internalAddress")
-            self.realAddress = XML_get_scalar(tree, "realAddress")
-            self.remoteAddress = XML_get_scalar(tree, "remoteAddress")
-            self.connectTime = XML_get_vector(tree, "connectTime")
-            self.latency = XML_get_vector(tree, "latency")
-            self.downloadSpeed = XML_get_vector(tree, "downloadSpeed")
-            self.uploadSpeed = XML_get_vector(tree, "uploadSpeed")
+
+class SpeedtestNegotiate_Response(object):
+
+    def __init__(self):
+        self.authorization = ""
+        self.publicAddress = ""
+        self.unchoked = 0
+        self.queuePos = 0
+        self.queueLen = 0
+
 
 #
 # Code for speedtest server.  It's composed of two mixins.  The former
@@ -137,7 +103,7 @@ class _TestServerMixin(object):
 
     def do_latency(self, connection, request):
         response = Message()
-        compose(response, code="200", reason="Ok")
+        response.compose(code="200", reason="Ok")
         connection.reply(request, response)
 
     def do_download(self, connection, request):
@@ -147,7 +113,7 @@ class _TestServerMixin(object):
             body = open(self.config.path, "rb")
         except (IOError, OSError):
             LOG.exception()
-            compose(response, code="500", reason="Internal Server Error")
+            response.compose(code="500", reason="Internal Server Error")
             connection.reply(request, response)
             return
         # range
@@ -158,7 +124,7 @@ class _TestServerMixin(object):
                 first, last = parse_range(request)
             except ValueError:
                 LOG.exception()
-                compose(response, code="400", reason="Bad Request")
+                response.compose(code="400", reason="Bad Request")
                 connection.reply(request, response)
                 return
             # XXX read() assumes there is enough core
@@ -169,13 +135,13 @@ class _TestServerMixin(object):
             code, reason = "206", "Partial Content"
         else:
             code, reason = "200", "Ok"
-        compose(response, code=code, reason=reason, body=body,
+        response.compose(code=code, reason=reason, body=body,
                 mimetype="application/octet-stream")
         connection.reply(request, response)
 
     def do_upload(self, connection, request):
         response = Message()
-        compose(response, code="200", reason="Ok")
+        response.compose(code="200", reason="Ok")
         connection.reply(request, response)
 
 RESTRICTED = [
@@ -185,19 +151,23 @@ RESTRICTED = [
     "/speedtest/collect",
 ]
 
-class SessionState:
-    active = False
-    timestamp = 0
-    identifier = None
-    queuepos = 0
-    negotiations = 0
+
+class SessionState(object):
+    def __init__(self):
+        self.active = False
+        self.timestamp = 0
+        self.identifier = None
+        self.queuepos = 0
+        self.negotiations = 0
+
 
 class _SessionTrackerMixin(object):
-    identifiers = {}
-    queue = deque()
-    connections = {}
 
     def __init__(self):
+        self.identifiers = {}
+        self.queue = deque()
+        self.connections = {}
+
         POLLER.sched(60, self._sample_queue_length)
 
     def _sample_queue_length(self):
@@ -279,6 +249,7 @@ class _SessionTrackerMixin(object):
                 session = self.identifiers[identifier]
                 self._do_remove(session)
 
+
 class _NegotiateServerMixin(_SessionTrackerMixin):
     def __init__(self, config):
         self.config = config
@@ -323,60 +294,51 @@ class _NegotiateServerMixin(_SessionTrackerMixin):
 
     def do_negotiate(self, connection, request, nodelay=False):
         session = self.session_negotiate(request)
+
+        #
+        # XXX make sure we track ALSO the first connection of the
+        # session (which is assigned an identifier in session_negotiate)
+        # or, should this connection fail, we would not be able to
+        # propagate quickly this information because unregister_connection
+        # would not find an entry in self.connections{}.
+        #
         if session.negotiations == 1:
-            # XXX make sure we track ALSO the first connection of the
-            # session (which is assigned an identifier in session_negotiate)
-            # or, should this connection fail, we would not be able to
-            # propagate quickly this information because unregister_connection
-            # would not find an entry in self.connections{}.
             self.register_connection(connection, request)
             nodelay = True
+
         if not session.active:
             if not nodelay:
                 subscribe(RENEGOTIATE, self._do_renegotiate,
                           (connection, request))
                 return
-        self._send_negotiate(connection, request, session.identifier,
-         session.active, session.queuepos)
 
-    def _send_negotiate(self, connection, request, token, unchoked, queuePos):
-        root = Element("SpeedtestNegotiate_Response")
-        elem = SubElement(root, "authorization")
-        elem.text = token
-        elem = SubElement(root, "queueLen")
-        elem.text = str(len(self.queue))
-        elem = SubElement(root, "queuePos")
-        elem.text = str(queuePos)
-        elem = SubElement(root, "unchoked")
-        elem.text = str(unchoked)
-        elem = SubElement(root, "publicAddress")
-        elem.text = str(connection.handler.stream.peername[0])          # XXX
-        tree = ElementTree(root)
-        stringio = StringIO()
-        tree.write(stringio, encoding="utf-8")
-        stringio.seek(0)
-        # HTTP
+        m1 = SpeedtestNegotiate_Response()
+        m1.authorization = session.identifier
+        m1.unchoked = session.active
+        m1.queuePos = session.queuepos
+        m1.publicAddress = connection.handler.stream.peername[0]        # XXX
+        s = marshal_object(m1, "text/xml")
+
+        stringio = StringIO(s)
         response = Message()
-        compose(response, code="200", reason="Ok",
+        response.compose(code="200", reason="Ok",
          body=stringio, mimetype="application/xml")
         connection.reply(request, response)
 
     def do_collect(self, connection, request):
-        response = Message()
-        collect = SpeedtestCollect()
-        try:
-            collect.parse(request.body)
-        except ValueError:
-            compose(response, code="500", reason="Internal Server Error")
-            connection.reply(request, response)
-            return
+        self._speedtest_complete(request)
+
+        s = request.body.read()
+        m = unmarshal_object(s, "text/xml", SpeedtestCollect)
+
         if database.dbm:
             request.body.seek(0)
             database.dbm.save_result("speedtest", request.body.read(),
-                                     collect.client)
-        compose(response, code="200", reason="Ok")
+                                     m.client)
+
+        response = Message()
+        response.compose(code="200", reason="Ok")
         connection.reply(request, response)
-        self._speedtest_complete(request)
 
     def remove_connection(self, connection):
         self.unregister_connection(connection)
@@ -413,7 +375,7 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
         except:
             LOG.exception()
             response = Message()
-            compose(response, code="500", reason="Internal Server Error")
+            response.compose(code="500", reason="Internal Server Error")
             connection.reply(request, response)
 
     def process_request(self, connection, request):
@@ -421,7 +383,7 @@ class SpeedtestServer(Server, _TestServerMixin, _NegotiateServerMixin):
             self.table[request.uri](connection, request)
         except KeyError:
             response = Message()
-            compose(response, code="404", reason="Not Found")
+            response.compose(code="404", reason="Not Found")
             connection.reply(request, response)
 
     def connection_lost(self, connection):
@@ -531,7 +493,7 @@ class Latency(SpeedtestHelper):
 
     def _start_one(self, client):
         m = Message()
-        compose(m, method="HEAD", uri=self.speedtest.uri + "latency")
+        m.compose(method="HEAD", uri=self.speedtest.uri + "latency")
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
         client.sendrecv(m)
@@ -635,7 +597,7 @@ class Download(SpeedtestHelper):
 
     def _start_one(self, client):
         m = Message()
-        compose(m, method="GET", uri=self.speedtest.uri + "download")
+        m.compose(method="GET", uri=self.speedtest.uri + "download")
         m["range"] = "bytes=0-%d" % self.length
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
@@ -735,7 +697,7 @@ class Upload(SpeedtestHelper):
     def _start_one(self, client):
         m = Message()
         body = StringIO(self.body[:self.length])
-        compose(m, method="POST", uri=self.speedtest.uri + "upload",
+        m.compose(method="POST", uri=self.speedtest.uri + "upload",
                 body=body, mimetype="application/octet-stream")
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
@@ -793,55 +755,6 @@ class Upload(SpeedtestHelper):
         self.speedtest.complete()
 
 
-#
-# <SpeedtestNegotiate_Response>
-#     <authorization>ac2fcbf3-a1db-4bdb-836d-533c2aee9677</authorization>
-#     <publicAddress>130.192.47.84</publicAddress>
-#     <unchoked>True</unchoked>
-#     <queuePos>7</queuePos>
-#     <queueLen>21</queueLen>
-# </SpeedtestNegotiate_Response>
-#
-# Note that the response should contain either an authorization token
-# or the current position in the queue.  Also note that parse() should
-# raise ValueError if the message is not well-formed, for example b/c
-# the authorization is not an UUID.
-#
-
-class SpeedtestNegotiate_Response:
-    def __init__(self):
-        self.authorization = ""
-        self.publicAddress = ""
-        self.unchoked = False
-        self.queuePos = 0
-        self.queueLen = 0
-
-    def __del__(self):
-        pass
-
-    def parse(self, stringio):
-        tree = ElementTree()
-        try:
-            tree.parse(stringio)
-        except:
-            raise ValueError("Can't parse XML body")
-        else:
-            authorization = XML_get_scalar(tree, "authorization")
-            if authorization:
-                self.authorization = UUID(authorization)
-            publicAddress = XML_get_scalar(tree, "publicAddress")
-            if publicAddress:
-                self.publicAddress = publicAddress
-            unchoked = XML_get_scalar(tree, "unchoked")
-            if unchoked.lower() == "true":
-                self.unchoked = True
-            queuePos = XML_get_scalar(tree, "queuePos")
-            if queuePos:
-                self.queuePos = int(queuePos)
-            queueLen = XML_get_scalar(tree, "queueLen")
-            if queueLen:
-                self.queueLen = int(queueLen)
-
 class Negotiate(SpeedtestHelper):
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
@@ -855,7 +768,7 @@ class Negotiate(SpeedtestHelper):
         client = self.speedtest.clients[0]
         LOG.start("* Negotiate permission to take the test")
         m = Message()
-        compose(m, method="GET", uri=self.speedtest.uri + "negotiate")
+        m.compose(method="GET", uri=self.speedtest.uri + "negotiate")
         if self.authorization:
             m["authorization"] = self.authorization
         client.sendrecv(m)
@@ -865,24 +778,28 @@ class Negotiate(SpeedtestHelper):
             self.speedtest.bad_response(response)
             return
         LOG.complete()
-        negotiation = SpeedtestNegotiate_Response()
+
         try:
-            negotiation.parse(response.body)
+            negotiation = unmarshal_object(response.body.read(), "text/xml",
+                                           SpeedtestNegotiate_Response)
+        except (KeyboardInterrupt, SystemExit):
+            raise
         except ValueError:
             LOG.error("* Bad response message")
             LOG.exception()
             self.speedtest.bad_response(response)
             return
-        self.authorization = str(negotiation.authorization)
+
+        self.authorization = str(negotiation.authorization)     # XXX
         self.publicAddress = negotiation.publicAddress
-        if not negotiation.unchoked:
+
+        if negotiation.unchoked.lower() != "true":
             if negotiation.queuePos and negotiation.queueLen:
-                LOG.info("* Waiting in queue: %d/%d" % (negotiation.queuePos,
-                                                        negotiation.queueLen))
-                STATE.update("negotiate",{"queue_pos": negotiation.queuePos,
-                                          "queue_len": negotiation.queueLen})
+                LOG.info("* Waiting in queue: %s" % negotiation.queuePos)
+                STATE.update("negotiate",{"queue_pos": negotiation.queuePos})
             self.start()
             return
+
         LOG.info("* Authorized to take the test!")
         self.speedtest.complete()
 
@@ -896,43 +813,34 @@ class Collect(SpeedtestHelper):
     def start(self):
         client = self.speedtest.clients[0]
         LOG.start("* Collecting results")
-        # XML
-        root = Element("SpeedtestCollect")
+
+        m1 = SpeedtestCollect()
         if database.dbm:
-            element = SubElement(root, "client")
-            element.text = database.dbm.ident
-        timestamp_ = SubElement(root, "timestamp")
-        timestamp_.text = str(timestamp())
-        internalAddress = SubElement(root, "internalAddress")
-        internalAddress.text = client.handler.stream.myname[0]          # XXX
-        realAddress = SubElement(root, "realAddress")
-        realAddress.text = self.speedtest.negotiate.publicAddress
-        remoteAddress = SubElement(root, "remoteAddress")
-        remoteAddress.text = client.handler.stream.peername[0]          # XXX
+            m1.client = database.dbm.ident
+        m1.timestamp = timestamp()
+        m1.internalAddress = client.handler.stream.myname[0]          # XXX
+        m1.realAddress = self.speedtest.negotiate.publicAddress
+        m1.remoteAddress = client.handler.stream.peername[0]          # XXX
+
         for t in self.speedtest.latency.connect:
-            connectTime = SubElement(root, "connectTime")
-            connectTime.text = str(t)
+            m1.connectTime.append(t)
         for t in self.speedtest.latency.latency:
-            latency = SubElement(root, "latency")
-            latency.text = str(t)
+            m1.latency.append(t)
         for s in self.speedtest.download.speed:
-            downloadSpeed = SubElement(root, "downloadSpeed")
-            downloadSpeed.text = str(s)
+            m1.downloadSpeed.append(s)
         for s in self.speedtest.upload.speed:
-            uploadSpeed = SubElement(root, "uploadSpeed")
-            uploadSpeed.text = str(s)
-        tree = ElementTree(root)
-        stringio = StringIO()
-        tree.write(stringio, encoding="utf-8")
-        stringio.seek(0)
-        # DB
+            m1.uploadSpeed.append(s)
+
+        s = marshal_object(m1, "text/xml")
+        stringio = StringIO(s)
+
         if database.dbm:
             database.dbm.save_result("speedtest", stringio.read(),
                                      database.dbm.ident)
             stringio.seek(0)
-        # HTTP
+
         m = Message()
-        compose(m, method="POST", uri=self.speedtest.uri + "collect",
+        m.compose(method="POST", uri=self.speedtest.uri + "collect",
                 body=stringio, mimetype="application/xml")
         if self.speedtest.negotiate.authorization:
             m["authorization"] = self.speedtest.negotiate.authorization
