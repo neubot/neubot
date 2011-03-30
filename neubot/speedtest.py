@@ -144,13 +144,6 @@ class _TestServerMixin(object):
         response.compose(code="200", reason="Ok")
         connection.reply(request, response)
 
-RESTRICTED = [
-    "/speedtest/latency",
-    "/speedtest/download",
-    "/speedtest/upload",
-    "/speedtest/collect",
-]
-
 
 class SessionState(object):
     def __init__(self):
@@ -258,11 +251,11 @@ class _NegotiateServerMixin(object):
     def check_request_headers(self, connection, request):
         ret = True
         TRACKER.register_connection(connection, request["authorization"])
-        if self.config.only_auth and request.uri in RESTRICTED:
-            if not TRACKER.session_active(request["authorization"]):
-                LOG.warning("* Connection %s: Forbidden" % (
-                 connection.handler.stream.logname))
-                ret = False
+        if (self.config.only_auth and request.uri != "/speedtest/negotiate"
+          and not TRACKER.session_active(request["authorization"])):
+            LOG.warning("* Connection %s: Forbidden" % (
+             connection.handler.stream.logname))
+            ret = False
         return ret
 
     #
