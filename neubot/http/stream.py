@@ -146,7 +146,7 @@ class StreamHTTP(Stream):
         offset = 0
         length = len(data)
         while length > 0:
-            ostate = self.state
+            #ostate = self.state        # needed by commented-out code below
 
             # when we know the length we're looking for a piece
             if self.left > 0:
@@ -288,10 +288,12 @@ class StreamHTTP(Stream):
         pass
 
     def got_request_line(self, method, uri, protocol):
-        pass
+        LOG.debug("Unexpected line: %s" % ("".join([method, uri, protocol])))
+        self.close()
 
     def got_response_line(self, protocol, code, reason):
-        pass
+        LOG.debug("Unexpected line: %s" % ("".join([protocol, code, reason])))
+        self.close()
 
     def got_header(self, key, value):
         pass

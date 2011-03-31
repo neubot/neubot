@@ -65,9 +65,6 @@ class ServerStream(StreamHTTP):
     def got_request_line(self, method, uri, protocol):
         self.request = Message(method=method, uri=uri, protocol=protocol)
 
-    def got_response_line(self, protocol, code, reason):
-        self.close()
-
     def got_header(self, key, value):
         if self.request:
             self.request[key] = value
@@ -150,7 +147,7 @@ class HTTPListener(Listener):
 
     def got_request(self, stream, request):
         try:
-            self.process_request(stream, request)
+            self.parent.process_request(self, stream, request)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -159,9 +156,6 @@ class HTTPListener(Listener):
             response.compose(code="500", reason="Internal Server Error",
                     body=StringIO.StringIO("500 Internal Server Error"))
             stream.send_response(request, response)
-
-    def process_request(self, stream, request):
-        return self.parent.process_request(self, stream, request)
 
 
 REDIRECT = """
@@ -174,6 +168,14 @@ REDIRECT = """
  </BODY>
 </HTML>
 """
+
+
+class ServiceHTTP(object):
+
+    """Sample ServiceHTTP object."""
+
+    def serve(self, server, listener, stream, request):
+        pass
 
 
 class ServerHTTP(object):
