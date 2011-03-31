@@ -146,7 +146,7 @@ class StreamHTTP(Stream):
         offset = 0
         length = len(data)
         while length > 0:
-            ostate = self.state
+            #ostate = self.state        # needed by commented-out code below
 
             # when we know the length we're looking for a piece
             if self.left > 0:
