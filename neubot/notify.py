@@ -1,7 +1,7 @@
 # neubot/notify.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -27,7 +27,8 @@
 # time, using T().
 #
 
-from collections import deque
+import collections
+
 from neubot.net.poller import POLLER
 from neubot.times import T
 from neubot.log import LOG
@@ -41,64 +42,49 @@ STATECHANGE = "statechange"
 class Notifier:
     def __init__(self):
         POLLER.sched(INTERVAL, self.periodic)
-        self.timestamps = {}
-        self.subscribers = {}
+        self.timestamps = collections.defaultdict(int)
+        self.subscribers = collections.defaultdict(list)
 
     def subscribe(self, event, func, context):
-        if not self.subscribers.has_key(event):
-            queue = deque()
-            self.subscribers[event] = queue
-        else:
-            queue = self.subscribers[event]
+        queue = self.subscribers[event]
         queue.append((func, context))
 
     def publish(self, event, t=None):
         if not t:
             t = T()
         self.timestamps[event] = t
-        if self.subscribers.has_key(event):
-            queue = self.subscribers[event]
-            del self.subscribers[event]
-            for func, context in queue:
-                try:
-                    func(event, context)
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except:
-                    LOG.exception()
+
+        queue = self.subscribers[event]
+        del self.subscribers[event]
+
+        self.fireq(event, queue)
 
     def periodic(self):
         POLLER.sched(INTERVAL, self.periodic)
+
         subscribers = self.subscribers
-        self.subscribers = {}
+        self.subscribers = collections.defaultdict(list)
+
         for event, queue in subscribers.items():
-            for func, context in queue:
-                try:
-                    func(event, context)
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except:
-                    LOG.exception()
+            self.fireq(event, queue)
+
+    def fireq(self, event, queue):
+        for func, context in queue:
+            try:
+                func(event, context)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                LOG.exception()
 
     def get_event_timestamp(self, event):
-        if self.timestamps.has_key(event):
-            return str(self.timestamps[event])
-        else:
-            return "0"
-
-    # Be defensive and don't publish if timestamp is bad.
+        return str(self.timestamps[event])
 
     def needs_publish(self, event, timestamp):
-        try:
-            timestamp = int(timestamp)
-        except ValueError:
-            LOG.exception()
-            timestamp = -1
+        timestamp = int(timestamp)
         if timestamp < 0:
-            return False
-        if not self.timestamps.has_key(event):
-            return False
-        return timestamp < self.timestamps[event]
+            raise ValueError("Invalid timestamp")
+        return timestamp == 0 or timestamp < self.timestamps[event]
 
 
 NOTIFIER = Notifier()
