@@ -150,7 +150,7 @@ class HTTPListener(Listener):
 
     def got_request(self, stream, request):
         try:
-            self.process_request(stream, request)
+            self.parent.process_request(self, stream, request)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -159,9 +159,6 @@ class HTTPListener(Listener):
             response.compose(code="500", reason="Internal Server Error",
                     body=StringIO.StringIO("500 Internal Server Error"))
             stream.send_response(request, response)
-
-    def process_request(self, stream, request):
-        return self.parent.process_request(self, stream, request)
 
 
 REDIRECT = """
