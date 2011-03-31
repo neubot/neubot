@@ -173,6 +173,14 @@ REDIRECT = """
 """
 
 
+class ServiceHTTP(object):
+
+    """Sample ServiceHTTP object."""
+
+    def serve(self, server, listener, stream, request):
+        pass
+
+
 class ServerHTTP(object):
 
     """Manages multiple HTTP ports."""
