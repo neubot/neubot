@@ -62,9 +62,6 @@ class ClientStream(StreamHTTP):
         request.response = response
         self.send_message(request)
 
-    def got_request_line(self, method, uri, protocol):
-        self.close()
-
     def got_response_line(self, protocol, code, reason):
         if self.requests:
             response = self.requests[0].response

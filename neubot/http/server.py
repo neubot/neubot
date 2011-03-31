@@ -65,9 +65,6 @@ class ServerStream(StreamHTTP):
     def got_request_line(self, method, uri, protocol):
         self.request = Message(method=method, uri=uri, protocol=protocol)
 
-    def got_response_line(self, protocol, code, reason):
-        self.close()
-
     def got_header(self, key, value):
         if self.request:
             self.request[key] = value
