@@ -434,13 +434,7 @@ class SpeedtestModule:
 
 speedtest = SpeedtestModule()
 
-#
-# The purpose of this class is that of emulating the behavior of the
-# test you can perform at speedtest.net.  As you can see, there is
-# much work to do before we achieve our goal, and, in particular, we
-# need to: (i) report the aggregate speed of the N connections; and
-# (ii) improve our upload strategy.
-#
+# Client
 
 class SpeedtestHelper:
     def __init__(self, parent):
@@ -460,13 +454,14 @@ class SpeedtestHelper:
 
 #
 # Here we measure the time required to retrieve just the headers of a
-# resource, and this is an in some way related to the round-trip-time
-# between the client and the server.
+# resource, and this givens an overestimate of the round-trip-time.
 #
 
 REPEAT = 10
 
+
 class Latency(SpeedtestHelper):
+
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
         self.connect = []
@@ -493,33 +488,41 @@ class Latency(SpeedtestHelper):
         if response.code != "200":
             self.speedtest.bad_response(response)
             return
+
         if client.connecting.diff() > 0:
             self.connect.append(client.connecting.diff())
             client.connecting.start = client.connecting.stop = 0
+
         latency = client.receiving.stop - client.sending.start
         self.latency.append(latency)
         self.complete.append(client)
+
         if len(self.complete) == len(self.speedtest.clients):
             self._pass_complete()
 
     def _pass_complete(self):
         LOG.complete()
+
         self.repeat = self.repeat + 1
         if self.repeat <= REPEAT:
             del self.complete[:]
             self.start()
             return
+
         if len(self.latency) > 0:
             latency = sum(self.latency) / len(self.latency)
             del self.latency[:]
             self.latency.append(latency)
             latency = time_formatter(latency)
             STATE.update("speedtest_latency", {"value": latency})
+
         if len(self.connect) > 0:
             connect = sum(self.connect) / len(self.connect)
             del self.connect[:]
             self.connect.append(connect)
+
         self.speedtest.complete()
+
 
 # Measurer object
 
@@ -556,6 +559,7 @@ MAX_DOWNLOAD = 1<<26
 
 
 class Download(SpeedtestHelper):
+
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
         self.calibrating = 3
@@ -650,6 +654,7 @@ MIN_UPLOAD = 1<<15
 
 
 class Upload(SpeedtestHelper):
+
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
         self.calibrating = 3
@@ -747,6 +752,7 @@ class Upload(SpeedtestHelper):
 
 
 class Negotiate(SpeedtestHelper):
+
     def __init__(self, parent):
         SpeedtestHelper.__init__(self, parent)
         self.publicAddress = ""
@@ -793,6 +799,7 @@ class Negotiate(SpeedtestHelper):
 
         LOG.info("* Authorized to take the test!")
         self.speedtest.complete()
+
 
 class Collect(SpeedtestHelper):
     def __init__(self, parent):
@@ -844,13 +851,6 @@ class Collect(SpeedtestHelper):
         LOG.complete()
         self.speedtest.complete()
 
-#
-# We assume that the webserver contains two empty resources,
-# named "/latency" and "/upload" and one BIG resource named
-# "/download".  The user has the freedom to choose the base
-# URI, and so different servers might put these three files
-# at diffent places.
-#
 
 FLAG_LATENCY = (1<<0)
 FLAG_DOWNLOAD = (1<<1)
@@ -874,6 +874,7 @@ FLAG_CLEANUP = (1<<5)
 FLAG_SUCCESS = (1<<6)
 
 class SpeedtestClient1(ClientController):
+
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
         STATE.update("test_name", "speedtest")
         self.negotiate = Negotiate(self)
@@ -976,13 +977,7 @@ class SpeedtestClient1(ClientController):
         LOG.error("* Bad response: aborting speedtest")
         self._doCleanup()
 
-    #
     # Here we manage callbacks from clients.
-    # The management of connection_failed() and connection_lost()
-    # is quite raw and could be refined a bit--expecially if we
-    # consider the fact that after a certain amount of HTTP requests
-    # the server might close the connection.
-    #
 
     def connection_failed(self, client):
         LOG.error("* Connection failed: aborting speedtest")
@@ -1008,6 +1003,7 @@ class SpeedtestClient1(ClientController):
         else:
             raise RuntimeError("Bad flags")
 
+
 class SpeedtestController:
     def start_speedtest_simple(self, uri):
         SpeedtestClient(uri, 4, FLAG_ALL, False, self)
@@ -1015,9 +1011,8 @@ class SpeedtestController:
     def speedtest_complete(self):
         pass
 
-#
+
 # Test unit
-#
 
 USAGE =									\
 "Usage: @PROGNAME@ --help\n"						\
@@ -1040,6 +1035,7 @@ HELP = USAGE +								\
 "  -V            : Print version number and exit.\n"			\
 "  -v            : Run the program in verbose mode.\n"			\
 "  -x            : Avoid negotiation and collection.\n"
+
 
 # TODO move this class near SpeedtestClient1
 class SpeedtestClient(SpeedtestClient1):
@@ -1083,6 +1079,7 @@ class SpeedtestClient(SpeedtestClient1):
                 v.append(" %s" % self.formatter(x))
             LOG.info("".join(v))
         LOG.info("*** End test result ***")
+
 
 FLAGS = {
     "all": FLAG_ALL,
