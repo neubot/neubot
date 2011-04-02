@@ -165,6 +165,8 @@ class Stream(Pollable):
         self.kickoffssl = 0
 
         self.measurer = None
+        self.bytes_recv = 0
+        self.bytes_sent = 0
 
     def fileno(self):
         return self.filenum
@@ -203,8 +205,6 @@ class Stream(Pollable):
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
 
-        self.measurer = conf.get("measurer", None)
-
     def connection_made(self):
         pass
 
@@ -230,7 +230,7 @@ class Stream(Pollable):
             self.parent.connection_lost(self)
 
         if self.measurer:
-            self.measurer.dead = True
+            self.measurer.unregister_stream(self)
 
         self.send_octets = None
         self.send_ticks = 0
@@ -296,8 +296,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and octets:
 
-            if self.measurer:
-                self.measurer.recv += len(octets)
+            self.bytes_recv += len(octets)
 
             self.recv_maxlen = 0
             self.recv_ticks = 0
@@ -372,8 +371,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and count > 0:
 
-            if self.measurer:
-                self.measurer.send += count
+            self.bytes_sent += count
 
             if count == len(self.send_octets):
 
@@ -597,13 +595,6 @@ class Listener(Pollable):
         self.bind_failed(exception)     # XXX
 
 
-class StreamMeasurer(object):
-    def __init__(self):
-        self.dead = False
-        self.recv = 0
-        self.send = 0
-
-
 class Measurer(object):
     def __init__(self):
         self.last = ticks()
@@ -614,9 +605,12 @@ class Measurer(object):
         connector.connect(endpoint, family, self, sobuf)
 
     def register_stream(self, stream):
-        m = StreamMeasurer()
-        stream.configure({"measurer": m})
-        self.streams.append(m)
+        self.streams.append(stream)
+        stream.measurer = self
+
+    def unregister_stream(self, stream):
+        self.streams.remove(stream)
+        stream.measurer = None
 
     def measure(self):
         now = ticks()
@@ -635,27 +629,22 @@ class Measurer(object):
             rttdetails = self.rtts
             self.rtts = []
 
-        alive = []
         recvsum = 0
         sendsum = 0
-        for m in self.streams:
-            recvsum += m.recv
-            sendsum += m.send
-            if not m.dead:
-                alive.append(m)
+        for stream in self.streams:
+            recvsum += stream.bytes_recv
+            sendsum += stream.bytes_sent
         recvavg = recvsum / delta
         sendavg = sendsum / delta
         percentages = []
-        for m in self.streams:
+        for stream in self.streams:
             recvp, sendp = 0, 0
             if recvsum:
-                recvp = 100 * m.recv / recvsum
+                recvp = 100 * stream.bytes_recv / recvsum
             if sendsum:
-                sendp = 100 * m.send / sendsum
+                sendp = 100 * stream.bytes_sent / sendsum
             percentages.append((recvp, sendp))
-            if not m.dead:
-                m.recv = m.send = 0
-        self.streams = alive
+            stream.bytes_recv = stream.bytes_sent = 0
 
         return rttavg, rttdetails, recvavg, sendavg, percentages
 
