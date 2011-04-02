@@ -42,7 +42,6 @@ from neubot.options import OptionParser
 from neubot.utils import asciify
 from neubot.log import LOG
 from neubot.net.poller import POLLER
-from neubot.net.stream import VERBOSER
 
 # 3-letter abbreviation of month names, note that
 # python tm.tm_mon is in range [1,12]
@@ -222,12 +221,6 @@ class ServerHTTP(object):
         listener.parent = self
         listener.configure(self.dictionary)
         listener.listen(endpoint, family, sobuf)
-
-    def bind_failed(self, listener, exception):
-        VERBOSER.bind_failed(listener.endpoint, exception)
-
-    def started_listening(self, listener):
-        VERBOSER.started_listening(listener.endpoint)
 
     def accept_failed(self, listener, exception):
         pass

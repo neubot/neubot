@@ -24,7 +24,6 @@ import collections
 
 from neubot.net.stream import MAXBUF
 from neubot.net.stream import Stream
-from neubot.net.stream import VERBOSER
 from neubot.log import LOG
 
 # Accepted HTTP protocols
@@ -62,7 +61,6 @@ class StreamHTTP(Stream):
         self.left = 0
 
     def connection_made(self):
-        VERBOSER.connection_made(self.logname)
         self.start_recv()
         self.connection_ready()
 
@@ -77,7 +75,6 @@ class StreamHTTP(Stream):
         self.shutdown()
 
     def connection_lost(self, exception):
-        VERBOSER.connection_lost(self.logname, self.eof, exception)
         # it's possible for body to be `up to end of file`
         if self.eof and self.state == UNBOUNDED:
             self.got_end_of_body()
