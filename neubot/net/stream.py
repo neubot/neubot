@@ -178,22 +178,22 @@ class Stream(Pollable):
         self.logname = str((self.myname, self.peername))
         self.sock = SocketWrapper(sock)
 
-    def configure(self, dictionary):
+    def configure(self, conf):
         if not self.sock:
             raise RuntimeError("configure() invoked before make_connection()")
 
-        if "secure" in dictionary and dictionary["secure"]:
+        if "secure" in conf and conf["secure"]:
             if not ssl:
                 raise RuntimeError("SSL support not available")
             if hasattr(self.sock, "need_handshake"):
                 raise RuntimeError("Can't wrap SSL socket twice")
 
             server_side = False
-            if "server_side" in dictionary and dictionary["server_side"]:
-                server_side = dictionary["server_side"]
+            if "server_side" in conf and conf["server_side"]:
+                server_side = conf["server_side"]
             certfile = None
-            if "certfile" in dictionary and dictionary["certfile"]:
-                certfile = dictionary["certfile"]
+            if "certfile" in conf and conf["certfile"]:
+                certfile = conf["certfile"]
 
             so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
@@ -202,16 +202,16 @@ class Stream(Pollable):
             if not server_side:
                 self.kickoffssl = 1
 
-        if "obfuscate" in dictionary and dictionary["obfuscate"]:
+        if "obfuscate" in conf and conf["obfuscate"]:
             key = None
-            if "key" in dictionary and dictionary["key"]:
-                key = dictionary["key"]
+            if "key" in conf and conf["key"]:
+                key = conf["key"]
 
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
 
-        if "measurer" in dictionary and dictionary["measurer"]:
-            self.measurer = dictionary["measurer"]
+        if "measurer" in conf and conf["measurer"]:
+            self.measurer = conf["measurer"]
 
     def connection_made(self):
         pass
