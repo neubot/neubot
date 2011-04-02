@@ -257,7 +257,6 @@ class BTStream(Stream):
         self.closing = True
         VERBOSER.connection_lost(self.logname, self.eof, exception)
         self._reader = None
-        self.parent.connection_lost(self)
         self.upload = None
         self.download = None
         self._buffer = None
