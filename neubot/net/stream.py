@@ -182,18 +182,14 @@ class Stream(Pollable):
         if not self.sock:
             raise RuntimeError("configure() invoked before make_connection()")
 
-        if "secure" in conf and conf["secure"]:
+        if conf.get("secure", False):
             if not ssl:
                 raise RuntimeError("SSL support not available")
             if hasattr(self.sock, "need_handshake"):
                 raise RuntimeError("Can't wrap SSL socket twice")
 
-            server_side = False
-            if "server_side" in conf and conf["server_side"]:
-                server_side = conf["server_side"]
-            certfile = None
-            if "certfile" in conf and conf["certfile"]:
-                certfile = conf["certfile"]
+            server_side = conf.get("server_side", False)
+            certfile = conf.get("certfile", None)
 
             so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
@@ -202,16 +198,12 @@ class Stream(Pollable):
             if not server_side:
                 self.kickoffssl = 1
 
-        if "obfuscate" in conf and conf["obfuscate"]:
-            key = None
-            if "key" in conf and conf["key"]:
-                key = conf["key"]
-
+        if conf.get("obfuscate", False):
+            key = conf.get("key", None)
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
 
-        if "measurer" in conf and conf["measurer"]:
-            self.measurer = conf["measurer"]
+        self.measurer = conf.get("measurer", None)
 
     def connection_made(self):
         pass
