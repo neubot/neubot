@@ -41,8 +41,8 @@ class Upload(object):
 
     """Responds to requests."""
 
-    def __init__(self, handler, scramble):
-        self.handler = handler
+    def __init__(self, stream, scramble):
+        self.stream = stream
         self.scrambler = None
         if scramble:
             self.scrambler = arcfour_new()
@@ -54,28 +54,28 @@ class Upload(object):
         data = "A" * length
         if self.scrambler:
             data = self.scrambler.encrypt(data)
-        self.handler.send_piece(index, begin, data)
+        self.stream.send_piece(index, begin, data)
 
     def got_interested(self):
         self.interested = True
-        self.handler.send_unchoke()
+        self.stream.send_unchoke()
 
     def got_not_interested(self):
         self.interested = False
-        self.handler.send_choke()
+        self.stream.send_choke()
 
 class Download(object):
 
     """Requests missing pieces."""
 
-    def __init__(self, handler):
-        self.handler = handler
+    def __init__(self, stream):
+        self.stream = stream
         self.choked = True
 
     def got_piece(self, index, begin, length):
         if self.choked:
             return
-        self.handler.send_request(index, 0, 1<<15)
+        self.stream.send_request(index, 0, 1<<15)
 
     def got_choke(self):
         self.choked = True
@@ -83,7 +83,7 @@ class Download(object):
     def got_unchoke(self):
         self.choked = False
         for index in range(0, 32):
-            self.handler.send_request(index, 0, 1<<15)
+            self.stream.send_request(index, 0, 1<<15)
 
 class BTConnectingPeer(Connector):
 
@@ -100,16 +100,16 @@ class BTConnectingPeer(Connector):
     def configure(self, dictionary):
         self.dictionary = dictionary
 
-    def connection_made(self, handler):
-        handler.configure(self.dictionary)
-        MEASURER.register_stream(handler)
-        handler.initialize(self, self.my_id, True)
-        handler.download = Download(handler)
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+        MEASURER.register_stream(stream)
+        stream.initialize(self, self.my_id, True)
+        stream.download = Download(stream)
         scramble = not self.dictionary.get("obfuscate", False)
-        handler.upload = Upload(handler, scramble)
+        stream.upload = Upload(stream, scramble)
 
-    def connection_handshake_completed(self, handler):
-        handler.send_interested()
+    def connection_handshake_completed(self, stream):
+        stream.send_interested()
 
 class BTListeningPeer(Listener):
 
@@ -129,15 +129,15 @@ class BTListeningPeer(Listener):
     def accept_failed(self, exception):
         pass
 
-    def connection_made(self, handler):
-        handler.configure(self.dictionary)
-        MEASURER.register_stream(handler)
-        handler.initialize(self, self.my_id, True)
-        handler.download = Download(handler)
+    def connection_made(self, stream):
+        stream.configure(self.dictionary)
+        MEASURER.register_stream(stream)
+        stream.initialize(self, self.my_id, True)
+        stream.download = Download(stream)
         scramble = not self.dictionary.get("obfuscate", False)
-        handler.upload = Upload(handler, scramble)
+        stream.upload = Upload(stream, scramble)
 
-    def connection_handshake_completed(self, handler):
+    def connection_handshake_completed(self, stream):
         pass
 
 USAGE = """Neubot bittorrent -- BitTorrent test
