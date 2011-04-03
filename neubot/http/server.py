@@ -242,9 +242,9 @@ class ServerHTTP(object):
 
         prefixes = self.dictionary.get("prefixes", None)
         if prefixes:
-            for prefix, func in prefixes.items():
+            for prefix, serve in prefixes.items():
                 if request.uri.startswith(prefix):
-                    func(self, listener, stream, request)
+                    serve(self, listener, stream, request)
                     return
 
         rootdir = self.dictionary.get("rootdir", "")
