@@ -218,6 +218,7 @@ def main(args):
 
     endpoint = (address, port)
     dictionary = {
+        "measurer": MEASURER,
         "obfuscate": obfuscate,
         "key": key,
         "sobuf": sobuf,
@@ -245,7 +246,7 @@ def main(args):
 
     connector = BTConnectingPeer(POLLER)
     connector.configure(dictionary)
-    MEASURER.connect(connector, endpoint)
+    connector.connect(endpoint)
     POLLER.loop()
     sys.exit(0)
 

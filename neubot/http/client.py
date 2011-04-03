@@ -205,7 +205,7 @@ def main(args):
         request.compose(method=method, uri=uri, keepalive=False)
         response = Message()
         response.body = sys.stdout
-        dictionary = {}
+        dictionary = { "measurer": MEASURER }
         if request.scheme == "https":
             dictionary["secure"] = True
         endpoint = (request.address, int(request.port))
@@ -231,7 +231,7 @@ def main(args):
                 sys.exit(1)
             response.body = open(output, "wb")
 
-        MEASURER.connect(client, endpoint)
+        client.connect(endpoint)
 
     POLLER.loop()
     sys.exit(0)

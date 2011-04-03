@@ -585,9 +585,6 @@ class Measurer(object):
         self.streams = []
         self.rtts = []
 
-    def connect(self, handler, endpoint):
-        handler.connect(endpoint)
-
     def register_stream(self, stream):
         self.streams.append(stream)
         stream.measurer = self
@@ -874,6 +871,7 @@ def main(args):
         sys.stderr.write(USAGE)
         sys.exit(1)
 
+    dictionary["measurer"] = MEASURER
     dictionary["kind"] = kind
     dictionary["sobuf"] = sobuf
 
@@ -894,7 +892,7 @@ def main(args):
 
     while clients > 0:
         clients = clients - 1
-        MEASURER.connect(handler, endpoint)
+        handler.connect(endpoint)
     POLLER.loop()
     sys.exit(0)
 
