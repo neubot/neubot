@@ -51,9 +51,6 @@ class ClientStream(StreamHTTP):
         StreamHTTP.__init__(self, poller)
         self.requests = collections.deque()
 
-    def connection_ready(self):
-        self.parent.connection_ready(self)
-
     def send_request(self, request, response=None):
         self.requests.append(request)
         if not response:
@@ -120,6 +117,7 @@ class ClientHTTP(StreamHandler):
     def connection_made(self, sock):
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf)
+        self.connection_ready(stream)
 
 
 # Unit test
