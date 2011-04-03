@@ -723,11 +723,10 @@ class GenericProtocolStream(Stream):
         MEASURER.register_stream(self)
         if self.kind == KIND_DISCARD:
             self.start_recv()
-            return
-        if self.kind == KIND_CHARGEN:
+        elif self.kind == KIND_CHARGEN:
             self.start_send(self.buffer)
-            return
-        self.shutdown()
+        else:
+            self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
