@@ -95,17 +95,17 @@ class BTConnectingPeer(Connector):
         self.infohash = "".join( ['\xaa']*20 )
         self.my_id = "".join( ['\xaa']*20 )
         self.stream = BTStream
-        self.dictionary = {}
+        self.conf = {}
 
-    def configure(self, dictionary):
-        self.dictionary = dictionary
+    def configure(self, conf):
+        self.conf = conf
 
     def connection_made(self, stream):
-        stream.configure(self.dictionary)
+        stream.configure(self.conf)
         MEASURER.register_stream(stream)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
-        scramble = not self.dictionary.get("obfuscate", False)
+        scramble = not self.conf.get("obfuscate", False)
         stream.upload = Upload(stream, scramble)
 
     def connection_handshake_completed(self, stream):
@@ -121,20 +121,20 @@ class BTListeningPeer(Listener):
         self.infohash = "".join( ['\xaa']*20 )
         self.my_id = "".join( ['\xaa']*20 )
         self.stream = BTStream
-        self.dictionary = {}
+        self.conf = {}
 
-    def configure(self, dictionary):
-        self.dictionary = dictionary
+    def configure(self, conf):
+        self.conf = conf
 
     def accept_failed(self, exception):
         pass
 
     def connection_made(self, stream):
-        stream.configure(self.dictionary)
+        stream.configure(self.conf)
         MEASURER.register_stream(stream)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
-        scramble = not self.dictionary.get("obfuscate", False)
+        scramble = not self.conf.get("obfuscate", False)
         stream.upload = Upload(stream, scramble)
 
     def connection_handshake_completed(self, stream):
