@@ -127,26 +127,26 @@ class HTTPListener(Listener):
         self.dictionary = dictionary
 
     def bind_failed(self, exception):
-        self.parent.bind_failed(self, exception)
+        self.parent.bind_failed(exception)
 
     def started_listening(self):
-        self.parent.started_listening(self)
+        self.parent.started_listening()
 
     def accept_failed(self, exception):
-        self.parent.accept_failed(self, exception)
+        self.parent.accept_failed(exception)
 
     def connection_lost(self, stream):
-        self.parent.connection_lost(self, stream)
+        self.parent.connection_lost(stream)
 
     def connection_made(self, stream):
         stream.configure(self.dictionary)
 
     def got_request_headers(self, stream, request):
-        return self.parent.got_request_headers(self, stream, request)
+        return self.parent.got_request_headers(stream, request)
 
     def got_request(self, stream, request):
         try:
-            self.parent.process_request(self, stream, request)
+            self.parent.process_request(stream, request)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -222,16 +222,16 @@ class ServerHTTP(object):
         listener.configure(self.dictionary)
         listener.listen(endpoint, family, sobuf)
 
-    def accept_failed(self, listener, exception):
+    def accept_failed(self, exception):
         pass
 
-    def connection_lost(self, listener, stream):
+    def connection_lost(self, stream):
         pass
 
-    def got_request_headers(self, listener, stream, request):
+    def got_request_headers(self, stream, request):
         return True
 
-    def process_request(self, listener, stream, request):
+    def process_request(self, stream, request):
         response = Message()
 
         if not request.uri.startswith("/"):

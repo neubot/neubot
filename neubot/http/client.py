@@ -121,25 +121,25 @@ class HTTPConnector(Connector):
         self.dictionary = dictionary
 
     def connection_failed(self, exception):
-        self.parent.connection_failed(self, exception)
+        self.parent.connection_failed(exception)
 
     def started_connecting(self):
-        self.parent.started_connecting(self)
+        self.parent.started_connecting()
 
     def connection_lost(self, stream):
-        self.parent.connection_lost(self, stream)
+        self.parent.connection_lost(stream)
 
     def connection_ready(self, stream):
-        self.parent.connection_ready(self, stream)
+        self.parent.connection_ready(stream)
 
     def connection_made(self, stream):
         stream.configure(self.dictionary)
 
     def got_response_headers(self, stream, request, response):
-        return self.parent.got_response_headers(self, stream, request, response)
+        return self.parent.got_response_headers(stream, request, response)
 
     def got_response(self, stream, request, response):
-        self.parent.got_response(self, stream, request, response)
+        self.parent.got_response(stream, request, response)
 
 
 class ClientHTTP(object):
@@ -157,16 +157,16 @@ class ClientHTTP(object):
         connector.configure(self.dictionary)
         connector.connect(endpoint, family, measurer, sobuf)
 
-    def connection_lost(self, connector, stream):
+    def connection_lost(self, stream):
         pass
 
-    def connection_ready(self, connector, stream):
+    def connection_ready(self, stream):
         pass
 
-    def got_response_headers(self, connector, stream, request, response):
+    def got_response_headers(self, stream, request, response):
         return True
 
-    def got_response(self, connector, stream, request, response):
+    def got_response(self, stream, request, response):
         pass
 
 
@@ -203,7 +203,7 @@ class TestClient(ClientHTTP):
         self.response = response
         self.request = request
 
-    def connection_ready(self, connector, stream):
+    def connection_ready(self, stream):
         stream.send_request(self.request, self.response)
 
 

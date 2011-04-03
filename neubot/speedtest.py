@@ -362,10 +362,10 @@ class SpeedtestServer(ServerHTTP, _NegotiateServerMixin):
 
         self.tester = Tester(config)
 
-    def got_request_headers(self, listener, stream, request):
+    def got_request_headers(self, stream, request):
         return self.check_request_headers(stream, request)
 
-    def process_request(self, listener, stream, request):
+    def process_request(self, stream, request):
 
         if request.uri == "/speedtest/negotiate":
             self.do_negotiate(stream, request)
@@ -377,7 +377,7 @@ class SpeedtestServer(ServerHTTP, _NegotiateServerMixin):
             request.uri = request.uri.replace("/speedtest", "", 1)
             self.tester.serve(self, stream, request)
 
-    def connection_lost(self, listener, stream):
+    def connection_lost(self, stream):
         self.remove_connection(stream)
 
 
