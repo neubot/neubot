@@ -27,8 +27,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.bittorrent.stream import BTStream
-from neubot.net.stream import Connector
-from neubot.net.stream import Listener
+from neubot.net.stream import StreamHandler
 from neubot.utils import become_daemon
 from neubot.options import OptionParser
 from neubot.net.stream import MEASURER
@@ -85,56 +84,45 @@ class Download(object):
         for index in range(0, 32):
             self.stream.send_request(index, 0, 1<<15)
 
-class BTConnectingPeer(Connector):
+class BTConnectingPeer(StreamHandler):
 
     """Connect to a given BitTorrent peer and controls the
        resulting connection."""
 
     def __init__(self, poller):
-        Connector.__init__(self, poller)
+        StreamHandler.__init__(self, poller)
         self.infohash = "".join( ['\xaa']*20 )
         self.my_id = "".join( ['\xaa']*20 )
-        self.stream = BTStream
-        self.dictionary = {}
 
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
+    def connection_made(self, sock):
+        stream = BTStream(self.poller)
+        stream.attach(self, sock, self.conf)
         MEASURER.register_stream(stream)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
-        scramble = not self.dictionary.get("obfuscate", False)
+        scramble = not self.conf.get("obfuscate", False)
         stream.upload = Upload(stream, scramble)
 
     def connection_handshake_completed(self, stream):
         stream.send_interested()
 
-class BTListeningPeer(Listener):
+class BTListeningPeer(StreamHandler):
 
     """Listens for connections from BitTorrent peers and controls the
        resulting connections."""
 
     def __init__(self, poller):
-        Listener.__init__(self, poller)
+        StreamHandler.__init__(self, poller)
         self.infohash = "".join( ['\xaa']*20 )
         self.my_id = "".join( ['\xaa']*20 )
-        self.stream = BTStream
-        self.dictionary = {}
 
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
-    def accept_failed(self, exception):
-        pass
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
+    def connection_made(self, sock):
+        stream = BTStream(self.poller)
+        stream.attach(self, sock, self.conf)
         MEASURER.register_stream(stream)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
-        scramble = not self.dictionary.get("obfuscate", False)
+        scramble = not self.conf.get("obfuscate", False)
         stream.upload = Upload(stream, scramble)
 
     def connection_handshake_completed(self, stream):
@@ -232,6 +220,7 @@ def main(args):
     dictionary = {
         "obfuscate": obfuscate,
         "key": key,
+        "sobuf": sobuf,
     }
 
     if not (listen and daemonize):
@@ -242,7 +231,7 @@ def main(args):
             become_daemon()
         listener = BTListeningPeer(POLLER)
         listener.configure(dictionary)
-        listener.listen(endpoint, sobuf=sobuf)
+        listener.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
@@ -256,7 +245,7 @@ def main(args):
 
     connector = BTConnectingPeer(POLLER)
     connector.configure(dictionary)
-    MEASURER.connect(connector, endpoint, sobuf=sobuf)
+    MEASURER.connect(connector, endpoint)
     POLLER.loop()
     sys.exit(0)
 

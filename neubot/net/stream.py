@@ -171,26 +171,20 @@ class Stream(Pollable):
     def fileno(self):
         return self.filenum
 
-    def make_connection(self, sock):
-        if self.sock:
-            raise RuntimeError("make_connection() invoked more than once")
+    def attach(self, parent, sock, conf):
+
+        self.parent = parent
+
         self.filenum = sock.fileno()
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
         self.logname = str((self.myname, self.peername))
-        self.sock = SocketWrapper(sock)
 
         LOG.debug("* Connection made %s" % str(self.logname))
-
-    def configure(self, conf):
-        if not self.sock:
-            raise RuntimeError("configure() invoked before make_connection()")
 
         if conf.get("secure", False):
             if not ssl:
                 raise RuntimeError("SSL support not available")
-            if hasattr(self.sock, "need_handshake"):
-                raise RuntimeError("Can't wrap SSL socket twice")
 
             server_side = conf.get("server_side", False)
             certfile = conf.get("certfile", None)
@@ -202,10 +196,15 @@ class Stream(Pollable):
             if not server_side:
                 self.kickoffssl = 1
 
+        else:
+            self.sock = SocketWrapper(sock)
+
         if conf.get("obfuscate", False):
             key = conf.get("key", None)
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
+
+        self.connection_made()
 
     def connection_made(self):
         pass
@@ -430,9 +429,9 @@ class Stream(Pollable):
 
 class Connector(Pollable):
 
-    def __init__(self, poller):
+    def __init__(self, poller, parent):
         self.poller = poller
-        self.stream = None
+        self.parent = parent
         self.sock = None
         self.timeout = 15
         self.timestamp = 0
@@ -440,17 +439,18 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET, measurer=None, sobuf=0):
+    def connect(self, endpoint, conf):
         self.endpoint = endpoint
-        self.family = family
-        self.measurer = measurer
+        self.family = conf.get("family", socket.AF_INET)
+        self.measurer = conf.get("measurer", None)
+        sobuf = conf.get("sobuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
-                                          family, socket.SOCK_STREAM)
+                                          self.family, socket.SOCK_STREAM)
         except socket.error, exception:
             LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
-            self.connection_failed(exception)
+            self.parent.connection_failed(self, exception)
             return
 
         last_exception = None
@@ -471,20 +471,14 @@ class Connector(Pollable):
                 self.poller.set_writable(self)
                 if result != 0:
                     LOG.debug("* Connecting to %s ..." % str(endpoint))
-                    self.started_connecting()
+                    self.parent.started_connecting(self)
                 return
 
             except socket.error, exception:
                 last_exception = exception
 
         LOG.error("* Connection to %s failed: %s" % (endpoint, last_exception))
-        self.connection_failed(last_exception)
-
-    def connection_failed(self, exception):
-        pass
-
-    def started_connecting(self):
-        pass
+        self.parent.connection_failed(self, last_exception)
 
     def fileno(self):
         return self.sock.fileno()
@@ -501,52 +495,43 @@ class Connector(Pollable):
                     self.sock.recv(MAXBUF)
                 except socket.error, exception2:
                     exception = exception2
-            self.connection_failed(exception)
+            self.parent.connection_failed(self, exception)
             return
 
         if self.measurer:
             rtt = ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
-        stream = self.stream(self.poller)
-        stream.parent = self
-        stream.make_connection(self.sock)
-        self.connection_made(stream)
-        stream.connection_made()
-
-    def connection_made(self, stream):
-        pass
-
-    def connection_lost(self, stream):
-        pass
+        self.parent.connection_made(self.sock)
 
     def writetimeout(self, now):
         return now - self.timestamp >= self.timeout
 
     def closing(self, exception=None):
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
-        self.connection_failed(exception)
+        self.parent.connection_failed(self, exception)
 
 
 class Listener(Pollable):
 
-    def __init__(self, poller):
-        self.stream = None
+    def __init__(self, poller, parent):
         self.poller = poller
+        self.parent = parent
         self.lsock = None
         self.endpoint = None
         self.family = 0
 
-    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
+    def listen(self, endpoint, conf):
         self.endpoint = endpoint
-        self.family = family
+        self.family = conf.get("family", socket.AF_INET)
+        sobuf = conf.get("sobuf", 0)
 
         try:
-            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1], family,
-                         socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
+              self.family, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
         except socket.error, exception:
             LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
-            self.bind_failed(exception)
+            self.parent.bind_failed(self, exception)
             return
 
         last_exception = None
@@ -567,20 +552,14 @@ class Listener(Pollable):
 
                 self.lsock = lsock
                 self.poller.set_readable(self)
-                self.started_listening()
+                self.parent.started_listening(self)
                 return
 
             except socket.error, exception:
                 last_exception = exception
 
         LOG.error("* Bind %s failed: %s" % (self.endpoint, last_exception))
-        self.bind_failed(last_exception)
-
-    def bind_failed(self, exception):
-        pass
-
-    def started_listening(self):
-        pass
+        self.parent.bind_failed(self, last_exception)
 
     def fileno(self):
         return self.lsock.fileno()
@@ -590,27 +569,14 @@ class Listener(Pollable):
             sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
         except socket.error, exception:
-            self.accept_failed(exception)
+            self.parent.accept_failed(self, exception)
             return
 
-        stream = self.stream(self.poller)
-        stream.parent = self
-        stream.make_connection(sock)
-        self.connection_made(stream)
-        stream.connection_made()
-
-    def accept_failed(self, exception):
-        pass
-
-    def connection_made(self, stream):
-        pass
-
-    def connection_lost(self, stream):
-        pass
+        self.parent.connection_made(sock)
 
     def closing(self, exception=None):
         LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
-        self.bind_failed(exception)     # XXX
+        self.parent.bind_failed(self, exception)     # XXX
 
 
 class Measurer(object):
@@ -619,8 +585,8 @@ class Measurer(object):
         self.streams = []
         self.rtts = []
 
-    def connect(self, connector, endpoint, family=socket.AF_INET, sobuf=0):
-        connector.connect(endpoint, family, self, sobuf)
+    def connect(self, handler, endpoint):
+        handler.connect(endpoint)
 
     def register_stream(self, stream):
         self.streams.append(stream)
@@ -704,9 +670,57 @@ class VerboseMeasurer(Measurer):
 
 MEASURER = VerboseMeasurer(POLLER)
 
+
+class StreamHandler(object):
+
+    def __init__(self, poller):
+        self.poller = poller
+        self.conf = {}
+
+    def configure(self, conf):
+        self.conf = conf
+
+    def listen(self, endpoint):
+        listener = Listener(self.poller, self)
+        listener.listen(endpoint, self.conf)
+
+    def bind_failed(self, listener, exception):
+        pass
+
+    def started_listening(self, listener):
+        pass
+
+    def accept_failed(self, listener, exception):
+        pass
+
+    def connect(self, endpoint):
+        connector = Connector(self.poller, self)
+        connector.connect(endpoint, self.conf)
+
+    def connection_failed(self, connector, exception):
+        pass
+
+    def started_connecting(self, connector):
+        pass
+
+    def connection_made(self, sock):
+        pass
+
+    def connection_lost(self, stream):
+        pass
+
+
 KIND_NONE = 0
 KIND_DISCARD = 1
 KIND_CHARGEN = 2
+
+
+class GenericHandler(StreamHandler):
+
+    def connection_made(self, sock):
+        stream = GenericProtocolStream(self.poller)
+        stream.kind = self.conf.get("kind", KIND_NONE)
+        stream.attach(self, sock, self.conf)
 
 
 class GenericProtocolStream(Stream):
@@ -723,41 +737,16 @@ class GenericProtocolStream(Stream):
         MEASURER.register_stream(self)
         if self.kind == KIND_DISCARD:
             self.start_recv()
-            return
-        if self.kind == KIND_CHARGEN:
+        elif self.kind == KIND_CHARGEN:
             self.start_send(self.buffer)
-            return
-        self.shutdown()
+        else:
+            self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
 
     def send_complete(self):
         self.start_send(self.buffer)
-
-
-class GenericListener(Listener):
-    def __init__(self, poller, dictionary, kind):
-        Listener.__init__(self, poller)
-        self.stream = GenericProtocolStream
-        self.dictionary = dictionary
-        self.kind = kind
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-        stream.kind = self.kind
-
-
-class GenericConnector(Connector):
-    def __init__(self, poller, dictionary, kind):
-        Connector.__init__(self, poller)
-        self.stream = GenericProtocolStream
-        self.dictionary = dictionary
-        self.kind = kind
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-        stream.kind = self.kind
 
 
 USAGE = """Neubot net -- TCP bulk transfer test
@@ -885,12 +874,17 @@ def main(args):
         sys.stderr.write(USAGE)
         sys.exit(1)
 
+    dictionary["kind"] = kind
+    dictionary["sobuf"] = sobuf
+
+    handler = GenericHandler(POLLER)
+    handler.configure(dictionary)
+
     if listen:
         if daemonize:
             become_daemon()
         dictionary["server_side"] = True
-        listener = GenericListener(POLLER, dictionary, kind)
-        listener.listen(endpoint, sobuf=sobuf)
+        handler.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
@@ -900,8 +894,7 @@ def main(args):
 
     while clients > 0:
         clients = clients - 1
-        connector = GenericConnector(POLLER, dictionary, kind)
-        MEASURER.connect(connector, endpoint, sobuf=sobuf)
+        MEASURER.connect(handler, endpoint)
     POLLER.loop()
     sys.exit(0)
 

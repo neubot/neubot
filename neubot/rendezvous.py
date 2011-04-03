@@ -109,7 +109,7 @@ class ServiceHTTP(object):
     def __init__(self, config):
         self.config = config
 
-    def serve(self, server, listener, stream, request):
+    def serve(self, server, stream, request):
         m = unmarshal_object(request.body.read(),
           "application/xml", RendezvousRequest)
 
@@ -235,11 +235,11 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         STATE.update("next_rendezvous", self.task.timestamp, publish=False)
         STATE.update("idle")
 
-    def connection_failed(self, connector, exception):
+    def connection_failed(self, exception):
         STATE.update("rendezvous", {"status": "failed"})
         self._reschedule()
 
-    def connection_lost(self, connector, stream):
+    def connection_lost(self, stream):
         self._reschedule()
 
     def rendezvous(self):
@@ -250,7 +250,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         r.compose(uri=self.server_uri)
         self.connect((r.address, int(r.port)))
 
-    def connection_ready(self, connector, stream):
+    def connection_ready(self, stream):
 
         m = RendezvousRequest()
         m.accept.append("speedtest")
@@ -271,7 +271,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
 
         stream.send_request(request)
 
-    def got_response(self, connector, stream, request, response):
+    def got_response(self, stream, request, response):
         if response.code != "200":
             LOG.error("Error: %s %s" % (response.code, response.reason))
             self._reschedule()

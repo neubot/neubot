@@ -62,7 +62,6 @@ class StreamHTTP(Stream):
 
     def connection_made(self):
         self.start_recv()
-        self.connection_ready()
 
     # Close
 
@@ -280,9 +279,6 @@ class StreamHTTP(Stream):
             self.close()
 
     # Events for upstream
-
-    def connection_ready(self):
-        pass
 
     def got_request_line(self, method, uri, protocol):
         LOG.debug("Unexpected line: %s" % ("".join([method, uri, protocol])))

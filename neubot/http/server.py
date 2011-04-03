@@ -36,7 +36,7 @@ from neubot.http.messages import Message
 from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.stream import StreamHTTP
-from neubot.net.stream import Listener
+from neubot.net.stream import StreamHandler
 from neubot.utils import safe_seek
 from neubot.options import OptionParser
 from neubot.utils import asciify
@@ -113,50 +113,6 @@ class ServerStream(StreamHTTP):
                                                      nbytes))
 
 
-class HTTPListener(Listener):
-
-    """Reads HTTP requests and dispatch control to some parent class."""
-
-    def __init__(self, poller):
-        Listener.__init__(self, poller)
-        self.stream = ServerStream
-        self.dictionary = {}
-        self.parent = None                      # XXX
-
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
-    def bind_failed(self, exception):
-        self.parent.bind_failed(self, exception)
-
-    def started_listening(self):
-        self.parent.started_listening(self)
-
-    def accept_failed(self, exception):
-        self.parent.accept_failed(self, exception)
-
-    def connection_lost(self, stream):
-        self.parent.connection_lost(self, stream)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-    def got_request_headers(self, stream, request):
-        return self.parent.got_request_headers(self, stream, request)
-
-    def got_request(self, stream, request):
-        try:
-            self.parent.process_request(self, stream, request)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            LOG.exception()
-            response = Message()
-            response.compose(code="500", reason="Internal Server Error",
-                    body=StringIO.StringIO("500 Internal Server Error"))
-            stream.send_response(request, response)
-
-
 REDIRECT = """
 <HTML>
  <HEAD>
@@ -173,26 +129,19 @@ class ServiceHTTP(object):
 
     """Sample ServiceHTTP object."""
 
-    def serve(self, server, listener, stream, request):
+    def serve(self, server, stream, request):
         pass
 
 
-class ServerHTTP(object):
+class ServerHTTP(StreamHandler):
 
     """Manages multiple HTTP ports."""
 
-    def __init__(self, poller):
-        self.poller = poller
-        self.dictionary = {}
-
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
     def register_servicex(self, prefix, service):
-        if not "prefixes" in self.dictionary:
-            self.dictionary["prefixes"] = {}
+        if not "prefixes" in self.conf:
+            self.conf["prefixes"] = {}
 
-        prefixes = self.dictionary["prefixes"]
+        prefixes = self.conf["prefixes"]
         prefixes[prefix] = service.serve
 
     #XXX must be run after configure()
@@ -216,22 +165,10 @@ class ServerHTTP(object):
 
         self.register_servicex(prefix, service)
 
-    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
-        listener = HTTPListener(self.poller)
-        listener.parent = self
-        listener.configure(self.dictionary)
-        listener.listen(endpoint, family, sobuf)
-
-    def accept_failed(self, listener, exception):
-        pass
-
-    def connection_lost(self, listener, stream):
-        pass
-
-    def got_request_headers(self, listener, stream, request):
+    def got_request_headers(self, stream, request):
         return True
 
-    def process_request(self, listener, stream, request):
+    def process_request(self, stream, request):
         response = Message()
 
         if not request.uri.startswith("/"):
@@ -240,14 +177,14 @@ class ServerHTTP(object):
             stream.send_response(request, response)
             return
 
-        prefixes = self.dictionary.get("prefixes", None)
+        prefixes = self.conf.get("prefixes", None)
         if prefixes:
-            for prefix, func in prefixes.items():
+            for prefix, serve in prefixes.items():
                 if request.uri.startswith(prefix):
-                    func(self, listener, stream, request)
+                    serve(self, stream, request)
                     return
 
-        rootdir = self.dictionary.get("rootdir", "")
+        rootdir = self.conf.get("rootdir", "")
         if not rootdir:
             response.compose(code="403", reason="Forbidden",
                     body=StringIO.StringIO("403 Forbidden"))
@@ -285,7 +222,7 @@ class ServerHTTP(object):
         mimetype, encoding = mimetypes.guess_type(fullpath)
 
         if mimetype == "text/html":
-            ssi = self.dictionary.get("ssi", False)
+            ssi = self.conf.get("ssi", False)
             if ssi:
                 body = ssi_replace(rootdir, fp)
                 fp = StringIO.StringIO(body)
@@ -298,6 +235,22 @@ class ServerHTTP(object):
         if request.method == "HEAD":
             safe_seek(fp, 0, os.SEEK_END)
         stream.send_response(request, response)
+
+    def got_request(self, stream, request):
+        try:
+            self.process_request(stream, request)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            LOG.exception()
+            response = Message()
+            response.compose(code="500", reason="Internal Server Error",
+                    body=StringIO.StringIO("500 Internal Server Error"))
+            stream.send_response(request, response)
+
+    def connection_made(self, sock):
+        stream = ServerStream(self.poller)
+        stream.attach(self, sock, self.conf)
 
 
 # unit test
