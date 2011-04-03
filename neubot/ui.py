@@ -170,7 +170,11 @@ uiclient = UIClient("127.0.0.1", "9774")
 
 def dotrack(vector):
     if len(vector) == 0:
-        client = APIStateTracker(ui.config.address, ui.config.port)
+        client = APIStateTracker(POLLER)
+        client.configure({
+            "api.config.addres": ui.config.address,
+            "api.config.port": ui.config.port
+        })
         client.loop()
     else:
         dohelp(["track"])
