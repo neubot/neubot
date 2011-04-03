@@ -36,7 +36,7 @@ from neubot.http.messages import Message
 from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.stream import StreamHTTP
-from neubot.net.stream import Listener
+from neubot.net.stream import StreamHandler
 from neubot.utils import safe_seek
 from neubot.options import OptionParser
 from neubot.utils import asciify
@@ -113,50 +113,6 @@ class ServerStream(StreamHTTP):
                                                      nbytes))
 
 
-class HTTPListener(Listener):
-
-    """Reads HTTP requests and dispatch control to some parent class."""
-
-    def __init__(self, poller):
-        Listener.__init__(self, poller)
-        self.stream = ServerStream
-        self.dictionary = {}
-        self.parent = None                      # XXX
-
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
-    def bind_failed(self, exception):
-        self.parent.bind_failed(exception)
-
-    def started_listening(self):
-        self.parent.started_listening()
-
-    def accept_failed(self, exception):
-        self.parent.accept_failed(exception)
-
-    def connection_lost(self, stream):
-        self.parent.connection_lost(stream)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-    def got_request_headers(self, stream, request):
-        return self.parent.got_request_headers(stream, request)
-
-    def got_request(self, stream, request):
-        try:
-            self.parent.process_request(stream, request)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            LOG.exception()
-            response = Message()
-            response.compose(code="500", reason="Internal Server Error",
-                    body=StringIO.StringIO("500 Internal Server Error"))
-            stream.send_response(request, response)
-
-
 REDIRECT = """
 <HTML>
  <HEAD>
@@ -177,16 +133,9 @@ class ServiceHTTP(object):
         pass
 
 
-class ServerHTTP(object):
+class ServerHTTP(StreamHandler):
 
     """Manages multiple HTTP ports."""
-
-    def __init__(self, poller):
-        self.poller = poller
-        self.conf = {}
-
-    def configure(self, conf):
-        self.conf = conf
 
     def register_servicex(self, prefix, service):
         if not "prefixes" in self.conf:
@@ -215,18 +164,6 @@ class ServerHTTP(object):
             return
 
         self.register_servicex(prefix, service)
-
-    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
-        listener = HTTPListener(self.poller)
-        listener.parent = self
-        listener.configure(self.conf)
-        listener.listen(endpoint, family, sobuf)
-
-    def accept_failed(self, exception):
-        pass
-
-    def connection_lost(self, stream):
-        pass
 
     def got_request_headers(self, stream, request):
         return True
@@ -298,6 +235,22 @@ class ServerHTTP(object):
         if request.method == "HEAD":
             safe_seek(fp, 0, os.SEEK_END)
         stream.send_response(request, response)
+
+    def got_request(self, stream, request):
+        try:
+            self.process_request(stream, request)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            LOG.exception()
+            response = Message()
+            response.compose(code="500", reason="Internal Server Error",
+                    body=StringIO.StringIO("500 Internal Server Error"))
+            stream.send_response(request, response)
+
+    def connection_made(self, sock):
+        stream = ServerStream(self.poller)
+        stream.attach(self, sock, self.conf)
 
 
 # unit test

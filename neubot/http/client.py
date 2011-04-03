@@ -30,7 +30,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.http.stream import StreamHTTP
-from neubot.net.stream import Connector
+from neubot.net.stream import StreamHandler
 from neubot.options import OptionParser
 from neubot.utils import file_length
 from neubot.http.stream import ERROR
@@ -106,59 +106,7 @@ class ClientStream(StreamHTTP):
             self.close()
 
 
-class HTTPConnector(Connector):
-
-    """Specializes Connector defaults to create ClientStream
-       objects on successful connect."""
-
-    def __init__(self, poller):
-        Connector.__init__(self, poller)
-        self.stream = ClientStream
-        self.dictionary = {}
-        self.parent = None              # XXX
-
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
-    def connection_failed(self, exception):
-        self.parent.connection_failed(exception)
-
-    def started_connecting(self):
-        self.parent.started_connecting()
-
-    def connection_lost(self, stream):
-        self.parent.connection_lost(stream)
-
-    def connection_ready(self, stream):
-        self.parent.connection_ready(stream)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-
-    def got_response_headers(self, stream, request, response):
-        return self.parent.got_response_headers(stream, request, response)
-
-    def got_response(self, stream, request, response):
-        self.parent.got_response(stream, request, response)
-
-
-class ClientHTTP(object):
-
-    def __init__(self, poller):
-        self.poller = poller
-        self.dictionary = {}
-
-    def configure(self, dictionary):
-        self.dictionary = dictionary
-
-    def connect(self, endpoint, family=socket.AF_INET, measurer=None, sobuf=0):
-        connector = HTTPConnector(self.poller)
-        connector.parent = self
-        connector.configure(self.dictionary)
-        connector.connect(endpoint, family, measurer, sobuf)
-
-    def connection_lost(self, stream):
-        pass
+class ClientHTTP(StreamHandler):
 
     def connection_ready(self, stream):
         pass
@@ -168,6 +116,10 @@ class ClientHTTP(object):
 
     def got_response(self, stream, request, response):
         pass
+
+    def connection_made(self, sock):
+        stream = ClientStream(self.poller)
+        stream.attach(self, sock, self.conf)
 
 
 # Unit test
