@@ -117,6 +117,9 @@ class ClientHTTP(StreamHandler):
     def connection_made(self, sock):
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf)
+        measurer = self.conf.get("measurer", None)
+        if measurer:
+            measurer.register_stream(stream)
         self.connection_ready(stream)
 
 
