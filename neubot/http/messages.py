@@ -22,7 +22,6 @@
 
 import StringIO
 import collections
-import types
 import socket
 import os
 
