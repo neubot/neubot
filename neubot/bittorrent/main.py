@@ -31,7 +31,6 @@ from neubot.net.stream import Connector
 from neubot.net.stream import Listener
 from neubot.utils import become_daemon
 from neubot.options import OptionParser
-from neubot.net.stream import VERBOSER
 from neubot.net.stream import MEASURER
 from neubot.net.poller import POLLER
 from neubot.arcfour import arcfour_new
@@ -101,12 +100,6 @@ class BTConnectingPeer(Connector):
     def configure(self, dictionary):
         self.dictionary = dictionary
 
-    def connection_failed(self, exception):
-        VERBOSER.connection_failed(self.endpoint, exception, fatal=True)
-
-    def started_connecting(self):
-        VERBOSER.started_connecting(self.endpoint)
-
     def connection_made(self, handler):
         handler.configure(self.dictionary)
         MEASURER.register_stream(handler)
@@ -133,14 +126,8 @@ class BTListeningPeer(Listener):
     def configure(self, dictionary):
         self.dictionary = dictionary
 
-    def started_listening(self):
-        VERBOSER.started_listening(self.endpoint)
-
     def accept_failed(self, exception):
         pass
-
-    def bind_failed(self, exception):
-        VERBOSER.connection_failed(self.endpoint, exception, fatal=True)
 
     def connection_made(self, handler):
         handler.configure(self.dictionary)
