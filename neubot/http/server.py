@@ -173,7 +173,7 @@ class ServiceHTTP(object):
 
     """Sample ServiceHTTP object."""
 
-    def serve(self, server, listener, stream, request):
+    def serve(self, server, stream, request):
         pass
 
 
@@ -244,7 +244,7 @@ class ServerHTTP(object):
         if prefixes:
             for prefix, serve in prefixes.items():
                 if request.uri.startswith(prefix):
-                    serve(self, listener, stream, request)
+                    serve(self, stream, request)
                     return
 
         rootdir = self.dictionary.get("rootdir", "")

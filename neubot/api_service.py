@@ -40,7 +40,7 @@ VERSION = "Neubot 0.3.6\n"
 
 class ServiceHTTP(object):
 
-    def serve(self, server, listener, stream, request):
+    def serve(self, server, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
 
         if path == "/api/config":

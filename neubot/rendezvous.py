@@ -109,7 +109,7 @@ class ServiceHTTP(object):
     def __init__(self, config):
         self.config = config
 
-    def serve(self, server, listener, stream, request):
+    def serve(self, server, stream, request):
         m = unmarshal_object(request.body.read(),
           "application/xml", RendezvousRequest)
 
