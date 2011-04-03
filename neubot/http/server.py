@@ -183,16 +183,16 @@ class ServerHTTP(object):
 
     def __init__(self, poller):
         self.poller = poller
-        self.dictionary = {}
+        self.conf = {}
 
-    def configure(self, dictionary):
-        self.dictionary = dictionary
+    def configure(self, conf):
+        self.conf = conf
 
     def register_servicex(self, prefix, service):
-        if not "prefixes" in self.dictionary:
-            self.dictionary["prefixes"] = {}
+        if not "prefixes" in self.conf:
+            self.conf["prefixes"] = {}
 
-        prefixes = self.dictionary["prefixes"]
+        prefixes = self.conf["prefixes"]
         prefixes[prefix] = service.serve
 
     #XXX must be run after configure()
@@ -219,7 +219,7 @@ class ServerHTTP(object):
     def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
         listener = HTTPListener(self.poller)
         listener.parent = self
-        listener.configure(self.dictionary)
+        listener.configure(self.conf)
         listener.listen(endpoint, family, sobuf)
 
     def accept_failed(self, exception):
@@ -240,14 +240,14 @@ class ServerHTTP(object):
             stream.send_response(request, response)
             return
 
-        prefixes = self.dictionary.get("prefixes", None)
+        prefixes = self.conf.get("prefixes", None)
         if prefixes:
             for prefix, serve in prefixes.items():
                 if request.uri.startswith(prefix):
                     serve(self, stream, request)
                     return
 
-        rootdir = self.dictionary.get("rootdir", "")
+        rootdir = self.conf.get("rootdir", "")
         if not rootdir:
             response.compose(code="403", reason="Forbidden",
                     body=StringIO.StringIO("403 Forbidden"))
@@ -285,7 +285,7 @@ class ServerHTTP(object):
         mimetype, encoding = mimetypes.guess_type(fullpath)
 
         if mimetype == "text/html":
-            ssi = self.dictionary.get("ssi", False)
+            ssi = self.conf.get("ssi", False)
             if ssi:
                 body = ssi_replace(rootdir, fp)
                 fp = StringIO.StringIO(body)
