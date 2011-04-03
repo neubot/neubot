@@ -165,6 +165,8 @@ class Stream(Pollable):
         self.kickoffssl = 0
 
         self.measurer = None
+        self.bytes_recv = 0
+        self.bytes_sent = 0
 
     def fileno(self):
         return self.filenum
@@ -178,22 +180,20 @@ class Stream(Pollable):
         self.logname = str((self.myname, self.peername))
         self.sock = SocketWrapper(sock)
 
-    def configure(self, dictionary):
+        LOG.debug("* Connection made %s" % str(self.logname))
+
+    def configure(self, conf):
         if not self.sock:
             raise RuntimeError("configure() invoked before make_connection()")
 
-        if "secure" in dictionary and dictionary["secure"]:
+        if conf.get("secure", False):
             if not ssl:
                 raise RuntimeError("SSL support not available")
             if hasattr(self.sock, "need_handshake"):
                 raise RuntimeError("Can't wrap SSL socket twice")
 
-            server_side = False
-            if "server_side" in dictionary and dictionary["server_side"]:
-                server_side = dictionary["server_side"]
-            certfile = None
-            if "certfile" in dictionary and dictionary["certfile"]:
-                certfile = dictionary["certfile"]
+            server_side = conf.get("server_side", False)
+            certfile = conf.get("certfile", None)
 
             so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
@@ -202,16 +202,10 @@ class Stream(Pollable):
             if not server_side:
                 self.kickoffssl = 1
 
-        if "obfuscate" in dictionary and dictionary["obfuscate"]:
-            key = None
-            if "key" in dictionary and dictionary["key"]:
-                key = dictionary["key"]
-
+        if conf.get("obfuscate", False):
+            key = conf.get("key", None)
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
-
-        if "measurer" in dictionary and dictionary["measurer"]:
-            self.measurer = dictionary["measurer"]
 
     def connection_made(self):
         pass
@@ -233,12 +227,19 @@ class Stream(Pollable):
 
         self.isclosed = 1
 
+        if exception:
+            LOG.error("* Connection %s: %s" % (self.logname, exception))
+        elif self.eof:
+            LOG.debug("* Connection %s: EOF" % (self.logname))
+        else:
+            LOG.debug("* Closed connection %s" % (self.logname))
+
         self.connection_lost(exception)
         if self.parent:
             self.parent.connection_lost(self)
 
         if self.measurer:
-            self.measurer.dead = True
+            self.measurer.unregister_stream(self)
 
         self.send_octets = None
         self.send_ticks = 0
@@ -304,8 +305,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and octets:
 
-            if self.measurer:
-                self.measurer.recv += len(octets)
+            self.bytes_recv += len(octets)
 
             self.recv_maxlen = 0
             self.recv_ticks = 0
@@ -380,8 +380,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and count > 0:
 
-            if self.measurer:
-                self.measurer.send += count
+            self.bytes_sent += count
 
             if count == len(self.send_octets):
 
@@ -450,6 +449,7 @@ class Connector(Pollable):
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
                                           family, socket.SOCK_STREAM)
         except socket.error, exception:
+            LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
             self.connection_failed(exception)
             return
 
@@ -470,12 +470,14 @@ class Connector(Pollable):
                 self.timestamp = ticks()
                 self.poller.set_writable(self)
                 if result != 0:
+                    LOG.debug("* Connecting to %s ..." % str(endpoint))
                     self.started_connecting()
                 return
 
             except socket.error, exception:
                 last_exception = exception
 
+        LOG.error("* Connection to %s failed: %s" % (endpoint, last_exception))
         self.connection_failed(last_exception)
 
     def connection_failed(self, exception):
@@ -522,6 +524,7 @@ class Connector(Pollable):
         return now - self.timestamp >= self.timeout
 
     def closing(self, exception=None):
+        LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
         self.connection_failed(exception)
 
 
@@ -542,6 +545,7 @@ class Listener(Pollable):
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1], family,
                          socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
         except socket.error, exception:
+            LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
             self.bind_failed(exception)
             return
 
@@ -559,6 +563,8 @@ class Listener(Pollable):
                 # Probably the backlog here is too big
                 lsock.listen(128)
 
+                LOG.debug("* Listening at %s" % str(self.endpoint))
+
                 self.lsock = lsock
                 self.poller.set_readable(self)
                 self.started_listening()
@@ -567,6 +573,7 @@ class Listener(Pollable):
             except socket.error, exception:
                 last_exception = exception
 
+        LOG.error("* Bind %s failed: %s" % (self.endpoint, last_exception))
         self.bind_failed(last_exception)
 
     def bind_failed(self, exception):
@@ -602,14 +609,8 @@ class Listener(Pollable):
         pass
 
     def closing(self, exception=None):
+        LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
         self.bind_failed(exception)     # XXX
-
-
-class StreamMeasurer(object):
-    def __init__(self):
-        self.dead = False
-        self.recv = 0
-        self.send = 0
 
 
 class Measurer(object):
@@ -622,9 +623,12 @@ class Measurer(object):
         connector.connect(endpoint, family, self, sobuf)
 
     def register_stream(self, stream):
-        m = StreamMeasurer()
-        stream.configure({"measurer": m})
-        self.streams.append(m)
+        self.streams.append(stream)
+        stream.measurer = self
+
+    def unregister_stream(self, stream):
+        self.streams.remove(stream)
+        stream.measurer = None
 
     def measure(self):
         now = ticks()
@@ -643,27 +647,22 @@ class Measurer(object):
             rttdetails = self.rtts
             self.rtts = []
 
-        alive = []
         recvsum = 0
         sendsum = 0
-        for m in self.streams:
-            recvsum += m.recv
-            sendsum += m.send
-            if not m.dead:
-                alive.append(m)
+        for stream in self.streams:
+            recvsum += stream.bytes_recv
+            sendsum += stream.bytes_sent
         recvavg = recvsum / delta
         sendavg = sendsum / delta
         percentages = []
-        for m in self.streams:
+        for stream in self.streams:
             recvp, sendp = 0, 0
             if recvsum:
-                recvp = 100 * m.recv / recvsum
+                recvp = 100 * stream.bytes_recv / recvsum
             if sendsum:
-                sendp = 100 * m.send / sendsum
+                sendp = 100 * stream.bytes_sent / sendsum
             percentages.append((recvp, sendp))
-            if not m.dead:
-                m.recv = m.send = 0
-        self.streams = alive
+            stream.bytes_recv = stream.bytes_sent = 0
 
         return rttavg, rttdetails, recvavg, sendavg, percentages
 
@@ -703,37 +702,7 @@ class VerboseMeasurer(Measurer):
                                       (val[0], val[1]))
 
 
-class StreamVerboser(object):
-    def connection_lost(self, logname, eof, exception):
-        if exception:
-            LOG.error("* Connection %s: %s" % (logname, exception))
-        elif eof:
-            LOG.debug("* Connection %s: EOF" % (logname))
-        else:
-            LOG.debug("* Closed connection %s" % (logname))
-
-    def bind_failed(self, endpoint, exception, fatal=False):
-        LOG.error("* Bind %s failed: %s" % (endpoint, exception))
-        if fatal:
-            sys.exit(1)
-
-    def started_listening(self, endpoint):
-        LOG.debug("* Listening at %s" % str(endpoint))
-
-    def connection_made(self, logname):
-        LOG.debug("* Connection made %s" % str(logname))
-
-    def connection_failed(self, endpoint, exception, fatal=False):
-        LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
-        if fatal:
-            sys.exit(1)
-
-    def started_connecting(self, endpoint):
-        LOG.debug("* Connecting to %s ..." % str(endpoint))
-
-
 MEASURER = VerboseMeasurer(POLLER)
-VERBOSER = StreamVerboser()
 
 KIND_NONE = 0
 KIND_DISCARD = 1
@@ -751,7 +720,6 @@ class GenericProtocolStream(Stream):
         self.kind = KIND_NONE
 
     def connection_made(self):
-        VERBOSER.connection_made(self.logname)
         MEASURER.register_stream(self)
         if self.kind == KIND_DISCARD:
             self.start_recv()
@@ -767,9 +735,6 @@ class GenericProtocolStream(Stream):
     def send_complete(self):
         self.start_send(self.buffer)
 
-    def connection_lost(self, exception):
-        VERBOSER.connection_lost(self.logname, self.eof, exception)
-
 
 class GenericListener(Listener):
     def __init__(self, poller, dictionary, kind):
@@ -777,12 +742,6 @@ class GenericListener(Listener):
         self.stream = GenericProtocolStream
         self.dictionary = dictionary
         self.kind = kind
-
-    def bind_failed(self, exception):
-        VERBOSER.bind_failed(self.endpoint, exception, fatal=True)
-
-    def started_listening(self):
-        VERBOSER.started_listening(self.endpoint)
 
     def connection_made(self, stream):
         stream.configure(self.dictionary)
@@ -795,12 +754,6 @@ class GenericConnector(Connector):
         self.stream = GenericProtocolStream
         self.dictionary = dictionary
         self.kind = kind
-
-    def connection_failed(self, exception):
-        VERBOSER.connection_failed(self.endpoint, exception, fatal=True)
-
-    def started_connecting(self):
-        VERBOSER.started_connecting(self.endpoint)
 
     def connection_made(self, stream):
         stream.configure(self.dictionary)

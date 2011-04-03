@@ -37,7 +37,6 @@ from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
 from neubot.http.messages import Message
 from neubot.net.poller import POLLER
-from neubot.net.stream import VERBOSER
 from neubot.net.stream import MEASURER
 from neubot.utils import safe_seek
 from neubot.log import LOG
@@ -157,12 +156,6 @@ class ClientHTTP(object):
         connector.parent = self
         connector.configure(self.dictionary)
         connector.connect(endpoint, family, measurer, sobuf)
-
-    def connection_failed(self, connector, exception):
-        VERBOSER.connection_failed(connector.endpoint, exception)
-
-    def started_connecting(self, connector):
-        VERBOSER.started_connecting(connector.endpoint)
 
     def connection_lost(self, connector, stream):
         pass

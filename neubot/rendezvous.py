@@ -41,7 +41,6 @@ from neubot.utils import versioncmp
 from neubot.log import LOG
 from neubot.state import STATE
 from neubot.http.server import ServerHTTP
-from neubot.http.stream import VERBOSER
 from neubot.http.messages import Message
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
@@ -237,10 +236,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         STATE.update("idle")
 
     def connection_failed(self, connector, exception):
-
-        VERBOSER.connection_failed(connector.endpoint, exception)
         STATE.update("rendezvous", {"status": "failed"})
-
         self._reschedule()
 
     def connection_lost(self, connector, stream):

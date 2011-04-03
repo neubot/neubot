@@ -28,7 +28,6 @@ if __name__ == "__main__":
 
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.stream import Stream
-from neubot.net.stream import VERBOSER
 from neubot.log import LOG
 
 CHOKE = chr(0)
@@ -76,7 +75,6 @@ class BTStream(Stream):
         self._message = None
 
     def connection_made(self):
-        VERBOSER.connection_made(self.logname)
         LOG.debug("> HANDSHAKE")
         self.start_send("".join((chr(len(protocol_name)), protocol_name,
           FLAGS, self.parent.infohash, self.parent.my_id)))
@@ -255,7 +253,6 @@ class BTStream(Stream):
     def connection_lost(self, exception):
         # because we might also be invoked on network error
         self.closing = True
-        VERBOSER.connection_lost(self.logname, self.eof, exception)
         self._reader = None
         self.upload = None
         self.download = None
