@@ -237,8 +237,6 @@ class SessionTracker(object):
             session.queuepos = pos
             pos = pos + 1
 
-    # connection tracking
-
     def register_connection(self, connection, identifier):
         if not connection in self.connections:
             if identifier in self.identifiers:
