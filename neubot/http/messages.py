@@ -173,6 +173,14 @@ class Message(object):
             self["content-length"] = str(self.length)
             if kwargs.get("mimetype", ""):
                 self["content-type"] = kwargs.get("mimetype", "")
+
+        elif kwargs.get("chunked", None):
+            self.body = kwargs.get("chunked", None)
+            self.length = -1
+            self["transfer-encoding"] = "chunked"
+            if kwargs.get("mimetype", ""):
+                self["content-type"] = kwargs.get("mimetype", "")
+
         else:
             self["content-length"] = "0"
 

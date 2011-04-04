@@ -83,7 +83,7 @@ class StreamHTTP(Stream):
     # Send
 
     def send_message(self, m):
-        if m.length <= SMALLMESSAGE:
+        if m.length >= 0 and m.length <= SMALLMESSAGE:
             vector = []
             vector.append(m.serialize_headers().read())
             vector.append(m.serialize_body().read())
