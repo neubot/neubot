@@ -690,9 +690,11 @@ class StreamHandler(object):
     def accept_failed(self, listener, exception):
         pass
 
-    def connect(self, endpoint):
-        connector = Connector(self.poller, self)
-        connector.connect(endpoint, self.conf)
+    def connect(self, endpoint, count=1):
+        while count > 0:
+            connector = Connector(self.poller, self)
+            connector.connect(endpoint, self.conf)
+            count = count - 1
 
     def connection_failed(self, connector, exception):
         pass
