@@ -146,7 +146,9 @@ Options:
     -v                 : Run the program in verbose mode.
 
 Macros (defaults in square brackets):
+    class=name         : Name of the HTTP client class []
     method=method      : Select the method to use [GET]
+    module=module      : Module to load HTTP client from []
     stdout             : Write output to stdout [no]
 
 """
@@ -188,7 +190,9 @@ class TestClient(ClientHTTP):
 def main(args):
 
     conf = OptionParser()
+    conf.set_option("http", "class", "")
     conf.set_option("http", "method", "GET")
+    conf.set_option("http", "module", "")
     conf.set_option("http", "stdout", "no")
 
     try:
@@ -222,11 +226,16 @@ def main(args):
     conf.merge_environ()
     conf.merge_opts()
 
+    classname = conf.get_option("http", "class")
     method = conf.get_option("http", "method")
+    module = conf.get_option("http", "module")
     stdout = conf.get_option_bool("http", "stdout")
 
     if not stdout:
         POLLER.sched(0.5, MEASURER.start)
+
+    if classname and module:
+        exec "from %s import %s as TestClient" % (module, classname)
 
     for uri in arguments:
         conf = {
