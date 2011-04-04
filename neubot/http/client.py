@@ -156,17 +156,33 @@ VERSION = "Neubot 0.3.6\n"
 
 class TestClient(ClientHTTP):
 
-    def __init__(self, poller):
-        ClientHTTP.__init__(self, poller)
-        self.response = None
-        self.request = None
-
-    def set_request_response(self, request, response):
-        self.response = response
-        self.request = request
-
     def connection_ready(self, stream):
-        stream.send_request(self.request, self.response)
+        method = self.conf["http.client.method"]
+        stdout = self.conf["http.client.write_to_stdout"]
+        uri = self.conf["http.client.uri"]
+
+        request = Message()
+        if method == "PUT":
+            fpath = uri.split("/")[-1]
+            if not os.path.exists(fpath):
+                LOG.error("* Local file does not exist: %s" % fpath)
+                sys.exit(1)
+            request.compose(method=method, uri=uri, keepalive=False,
+              mimetype="text/plain", body=open(fpath, "rb"))
+        else:
+            request.compose(method=method, uri=uri, keepalive=False)
+
+        response = Message()
+        if method == "GET" and not stdout:
+            fpath = uri.split("/")[-1]
+            if os.path.exists(fpath):
+                LOG.error("* Local file already exists: %s" % fpath)
+                sys.exit(1)
+            response.body = open(fpath, "wb")
+        else:
+            response.body = sys.stdout
+
+        stream.send_request(request, response)
 
 
 def main(args):
@@ -213,33 +229,15 @@ def main(args):
         POLLER.sched(0.5, MEASURER.start)
 
     for uri in arguments:
-        request = Message()
-        request.compose(method=method, uri=uri, keepalive=False)
-        response = Message()
-        response.body = sys.stdout
-        dictionary = { "measurer": MEASURER }
+        conf = {
+            "http.client.write_to_stdout": stdout,
+            "measurer": MEASURER,
+            "http.client.method": method,
+            "http.client.uri": uri,
+        }
 
         client = TestClient(POLLER)
-        client.configure(dictionary)
-        client.set_request_response(request, response)
-
-        if method == "PUT":
-            fpath = request.pathquery.split("/")[-1]
-            if not os.path.exists(fpath):
-                LOG.error("* Local file does not exist: %s" % fpath)
-                sys.exit(1)
-            request.body = open(fpath, "rb")
-            del request["content-length"]
-            request["content-length"] = str(file_length(request.body))
-            request["content-type"] = "text/plain"
-
-        if method == "GET" and not stdout:
-            output = request.pathquery.split("/")[-1]
-            if os.path.exists(output):
-                LOG.error("* Local file already exists: %s" % output)
-                sys.exit(1)
-            response.body = open(output, "wb")
-
+        client.configure(conf)
         client.connect_uri(uri)
 
     POLLER.loop()
