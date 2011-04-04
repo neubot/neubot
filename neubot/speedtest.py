@@ -175,12 +175,11 @@ class SessionTracker(object):
         self.identifiers = {}
         self.queue = deque()
         self.connections = {}
-
-        POLLER.sched(60, self._sample_queue_length)
+        self.task = None
 
     def _sample_queue_length(self):
         LOG.info("speedtest queue length: %d\n" % len(self.queue))
-        POLLER.sched(60, self._sample_queue_length)
+        self.task = POLLER.sched(60, self._sample_queue_length)
 
     def session_active(self, identifier):
         if identifier in self.identifiers:
@@ -230,12 +229,16 @@ class SessionTracker(object):
         self._do_update_queue()
 
     def _do_update_queue(self):
+
         pos = 1
         for session in self.queue:
             if pos <= 3 and not session.active:
                 session.active = True
             session.queuepos = pos
             pos = pos + 1
+
+        if not self.task:
+            self.task = POLLER.sched(60, self._sample_queue_length)
 
     def register_connection(self, connection, identifier):
         if not connection in self.connections:
