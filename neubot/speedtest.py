@@ -20,6 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import urlparse
+import cgi
+
 if __name__ == "__main__":
     from sys import path
     path.insert(0, ".")
@@ -63,6 +66,7 @@ from neubot.utils import become_daemon
 from uuid import UUID
 from uuid import uuid4
 
+from neubot.arcfour import RandomData
 from neubot.http.server import ServerHTTP
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
@@ -92,37 +96,14 @@ class SpeedtestNegotiate_Response(object):
         self.queueLen = 0
 
 
+# NB This is the *old* TestServer
 class Tester(object):
 
-    def __init__(self, config):
-        self.config = config
-
-    def serve(self, server, stream, request):
-
-        if request.uri == "/latency":
-            self.do_latency(stream, request)
-
-        elif request.uri == "/download":
-            self.do_download(stream, request)
-
-        elif request.uri == "/upload":
-            self.do_upload(stream, request)
-
-        else:
-            response = Message()
-            response.compose(code="500", reason="Internal Server Error")
-            stream.send_response(request, response)
-
-    def do_latency(self, stream, request):
-        response = Message()
-        response.compose(code="200", reason="Ok")
-        stream.send_response(request, response)
-
-    def do_download(self, stream, request):
+    def do_download(self, stream, request, self_config_path):
         response = Message()
 
         try:
-            body = open(self.config.path, "rb")
+            body = open(self_config_path, "rb")
         except (IOError, OSError):
             LOG.exception()
             response.compose(code="500", reason="Internal Server Error")
@@ -154,10 +135,43 @@ class Tester(object):
                 mimetype="application/octet-stream")
         stream.send_response(request, response)
 
-    def do_upload(self, stream, request):
-        response = Message()
-        response.compose(code="200", reason="Ok")
-        stream.send_response(request, response)
+
+class TestServer(ServerHTTP):
+
+    def __init__(self, poller):
+        ServerHTTP.__init__(self, poller)
+        self.old_server = Tester()
+
+    def process_request(self, stream, request):
+
+        if request.uri in ("/speedtest/latency", "/speedtest/upload"):
+            response = Message()
+            response.compose(code="200", reason="Ok")
+            stream.send_response(request, response)
+
+        elif request.uri.startswith("/speedtest/download/2"):
+            query = urlparse.urlsplit(request.uri)[3]
+
+            dictionary = cgi.parse_qs(query)
+            t = dictionary.get("t", (5,))[0]
+            body = RandomData(self.poller, t, chunkify=True)
+
+            response = Message()
+            response.compose(code="200", reason="Ok", chunked=body,
+                             mimetype="application/octet-stream")
+            stream.send_response(request, response)
+
+        elif request.uri == "/speedtest/download":
+            self.old_server.do_download(stream, request,
+              self.conf.get("speedtest.server.path",
+                "/var/neubot/large_file.bin"))
+
+        else:
+            response = Message()
+            stringio = StringIO("500 Internal Server Error")
+            response.compose(code="500", reason="Internal Server Error",
+                             body=stringio, mimetype="text/plain")
+            stream.send_response(request, response)
 
 
 class SessionState(object):
@@ -257,23 +271,40 @@ class SessionTracker(object):
 TRACKER = SessionTracker()
 
 
-class _NegotiateServerMixin(object):
+class SpeedtestServer(ServerHTTP):
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, poller):
+        ServerHTTP.__init__(self, poller)
         self.begin_test = 0
         POLLER.sched(3, self._speedtest_check_timeout)
+        self.test_server = TestServer(poller)
 
-    def check_request_headers(self, stream, request):
+    def initialize(self, config):
+        self.conf["speedtest.server.only_auth"] = config.only_auth
+        self.conf["speedtest.server.path"] = config.path
+
+    def got_request_headers(self, stream, request):
         ret = True
         TRACKER.register_connection(stream, request["authorization"])
 
-        if (self.config.only_auth and request.uri != "/speedtest/negotiate"
-          and not TRACKER.session_active(request["authorization"])):
+        only_auth = self.conf.get("speedtest.server.only_auth", False)
+        if (only_auth and request.uri != "/speedtest/negotiate" and
+          not TRACKER.session_active(request["authorization"])):
             LOG.warning("* Connection %s: Forbidden" % stream.logname)
             ret = False
 
         return ret
+
+    def process_request(self, stream, request):
+
+        if request.uri == "/speedtest/negotiate":
+            self.do_negotiate(stream, request)
+
+        elif request.uri == "/speedtest/collect":
+            self.do_collect(stream, request)
+
+        else:
+            self.test_server.process_request(stream, request)
 
     #
     # A client is allowed to access restricted URIs if: (i) either
@@ -349,37 +380,9 @@ class _NegotiateServerMixin(object):
         response.compose(code="200", reason="Ok")
         stream.send_response(request, response)
 
-    def remove_connection(self, stream):
+    def connection_lost(self, stream):
         TRACKER.unregister_connection(stream)
         publish(RENEGOTIATE)
-
-
-class SpeedtestServer(ServerHTTP, _NegotiateServerMixin):
-
-    def __init__(self, config):
-        ServerHTTP.__init__(self, POLLER)
-        ServerHTTP.listen(self, (config.address, int(config.port)))
-        _NegotiateServerMixin.__init__(self, config)
-
-        self.tester = Tester(config)
-
-    def got_request_headers(self, stream, request):
-        return self.check_request_headers(stream, request)
-
-    def process_request(self, stream, request):
-
-        if request.uri == "/speedtest/negotiate":
-            self.do_negotiate(stream, request)
-
-        elif request.uri == "/speedtest/collect":
-            self.do_collect(stream, request)
-
-        else:
-            request.uri = request.uri.replace("/speedtest", "", 1)
-            self.tester.serve(self, stream, request)
-
-    def connection_lost(self, stream):
-        self.remove_connection(stream)
 
 
 #
@@ -431,7 +434,9 @@ class SpeedtestModule:
         fakerc.seek(0)
 
     def start(self):
-        self.server = SpeedtestServer(self.config)
+        self.server = SpeedtestServer(POLLER)
+        self.server.initialize(self.config)
+        self.server.listen(self, (config.address, int(config.port)))
 
 speedtest = SpeedtestModule()
 

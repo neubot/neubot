@@ -125,47 +125,23 @@ REDIRECT = """
 """
 
 
-class ServiceHTTP(object):
-
-    """Sample ServiceHTTP object."""
-
-    def serve(self, server, stream, request):
-        pass
-
-
 class ServerHTTP(StreamHandler):
 
     """Manages multiple HTTP ports."""
 
-    def register_servicex(self, prefix, service):
-        if not "prefixes" in self.conf:
-            self.conf["prefixes"] = {}
+    def __init__(self, poller):
+        StreamHandler.__init__(self, poller)
+        self.childs = {}
 
-        prefixes = self.conf["prefixes"]
-        prefixes[prefix] = service.serve
-
-    #XXX must be run after configure()
-    def register_service(self, prefix, module):
-
-        try:
-            exec "from %s import ServiceHTTP" % module
-        except ImportError:
-            LOG.error("Failed to import service")
-            LOG.exception()
-            return
-
-        try:
-            service = ServiceHTTP()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            LOG.error("Failed to create service instance")
-            LOG.exception()
-            return
-
-        self.register_servicex(prefix, service)
+    def register_child(self, child, prefix):
+        self.childs[prefix] = child
+        child.child = self
 
     def got_request_headers(self, stream, request):
+        if self.childs:
+            for prefix, child in self.childs.items():
+                if request.uri.startswith(prefix):
+                    return child.got_request_headers(stream, request)
         return True
 
     def process_request(self, stream, request):
@@ -177,12 +153,10 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
-        prefixes = self.conf.get("prefixes", None)
-        if prefixes:
-            for prefix, serve in prefixes.items():
-                if request.uri.startswith(prefix):
-                    serve(self, stream, request)
-                    return
+        for prefix, child in self.childs.items():
+            if request.uri.startswith(prefix):
+                child.process_request(stream, request)
+                return
 
         rootdir = self.conf.get("rootdir", "")
         if not rootdir:
@@ -270,10 +244,10 @@ Macros (defaults in square brackets):
     address=addr       : Select the address to use                 [0.0.0.0]
     ports=port         : Comma-separated list of ports to use      [8080]
     rootdir=dir        : Specify root directory for WWW            []
-    services=list      : Comma separated list of `prefix:mod`
-                         couples, where `prefix` is the API prefix
-                         and `mod` is the module name, e.g.
-                             /api:neubot.api_service               []
+    services=list      : Comma-separated list of services you
+                         want to host.  Each service is a triple
+                         module:constructor:prefix, e.g.:
+                             neubot.api_service:ServerAPI:/api     []
     ssi                : Enable Server-Side Includes (SSI)         [False]
 
 You MUST specify the root directory if you want this webserver to
@@ -281,6 +255,11 @@ serve pages requests.
 """
 
 VERSION = "Neubot 0.3.6\n"
+
+def register_child(server, module, constructor, prefix):
+    exec "from %s import %s as CHILD" % (module, constructor)
+    child = CHILD(server.poller)
+    server.register_child(child, prefix)
 
 def main(args):
 
@@ -333,9 +312,9 @@ def main(args):
     server.configure(dictionary)
 
     if services:
-        for service in services.split(","):
-            prefix, mod = service.split(":")
-            server.register_service(prefix, mod)
+        for x in services.split(","):
+            module, constructor, prefix = x.split(":", 2)
+            register_child(server, module, constructor, prefix)
 
     for port in ports.split(","):
         endpoint = (address, port)

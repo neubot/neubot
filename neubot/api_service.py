@@ -32,15 +32,16 @@ from neubot.config import CONFIG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.database import database
+from neubot.http.server import ServerHTTP
 from neubot.marshal import unmarshal_objectx
 from neubot.marshal import marshal_object
 
 VERSION = "Neubot 0.3.6\n"
 
 
-class ServiceHTTP(object):
+class ServerAPI(ServerHTTP):
 
-    def serve(self, server, stream, request):
+    def process_request(self, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
 
         if path == "/api/config":

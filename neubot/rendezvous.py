@@ -104,23 +104,30 @@ def adhoc_marshaller(obj):
     return document.documentElement.toxml("utf-8")
 
 
-class ServiceHTTP(object):
+class ServerRendezvous(ServerHTTP):
 
-    def __init__(self, config):
-        self.config = config
-
-    def serve(self, server, stream, request):
+    def process_request(self, stream, request):
         m = unmarshal_object(request.body.read(),
           "application/xml", RendezvousRequest)
 
         m1 = RendezvousResponse()
 
         if m.version and versioncmp(VERSION, m.version) > 0:
-            m1.update["uri"] = self.config.update_uri
-            m1.update["version"] = VERSION
+            m1.update["uri"] = self.conf.get(
+              "rendezvous.server.update_uri",
+              "http://www.neubot.org/download"
+            )
+            m1.update["version"] = self.conf.get(
+              "rendezvous.server.update_version",
+              VERSION
+            )
 
         if "speedtest" in m.accept:
-            m1.available["speedtest"] = [self.config.test_uri]
+            generator = self.conf.get(
+              "rendezvous.server.speedtest_uri_generator",
+              lambda: ["http://speedtest1.neubot.org/speedtest"]
+            )
+            m1.available["speedtest"] = generator()
 
         if m.version and versioncmp(m.version, "0.3.7") >= 0:
             s = marshal_object(m1, "application/json")
@@ -141,8 +148,13 @@ class ServiceHTTP(object):
 
 class RendezvousServer(object):
     def __init__(self, config, port):
-        server = ServerHTTP(POLLER)
-        server.register_servicex("/rendezvous", ServiceHTTP(config))
+        server = ServerRendezvous(POLLER)
+        server.conf = {
+            "rendezvous.server.update_uri": config.update_uri,
+            "rendezvous.server.speedtest_uri_generator": lambda: [
+                config.test_uri
+            ]
+        }
         server.listen((config.address, int(config.altport)))
         server.listen((config.address, int(config.port)))
 
