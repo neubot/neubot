@@ -66,6 +66,8 @@ from neubot.utils import become_daemon
 from uuid import UUID
 from uuid import uuid4
 
+from neubot.notify import NOTIFIER
+from neubot.notify import TESTDONE
 from neubot.arcfour import RandomData
 from neubot.http.server import ServerHTTP
 from neubot.marshal import unmarshal_object
@@ -447,6 +449,8 @@ class ClientNegotiator(ClientHTTP):
 
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test", "negotiate")
+        self.done = True
 
     def connection_ready(self, stream):
         LOG.start("* Negotiate")
@@ -474,11 +478,11 @@ class ClientNegotiator(ClientHTTP):
                 LOG.info("* Waiting in queue: %s" % m.queuePos)
                 STATE.update("negotiate",{"queue_pos": m.queuePos})
 
-            self.renegotiate()
+            self.connection_ready(stream)
             return
 
         LOG.info("* Authorized to take the test!")
-        self.conf["speedtest.client.pass_complete"] = True
+        self.done = True
 
         if not self.conf.get("speedtest.client.full_test", False):
             stream.close()
@@ -488,12 +492,12 @@ class LatencyMeasurer(ClientHTTP):
 
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
-
+        STATE.update("test", "speedtest_latency")
+        LOG.start("* Latency")
+        self.done = False
         self.timing = {}
         self.repeat = 1
         self.latency = []
-
-        LOG.start("* Latency")
 
     def connection_ready(self, stream):
         LOG.progress()
@@ -524,17 +528,18 @@ class LatencyMeasurer(ClientHTTP):
         STATE.update("speedtest_latency",
           {"value": time_formatter(latency)})
 
+        self.done = True
         if not self.conf.get("speedtest.client.full_test", False):
             stream.close()
-
-        self.conf["speedtest.client.pass_complete"] = True
 
 
 class DownloadMeasurer(ClientHTTP):
 
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test", "speedtest_download")
         LOG.start("* Download")
+        self.done = False
         self.timing = {}
         self.speed = []
         self.count = 0
@@ -571,15 +576,17 @@ class DownloadMeasurer(ClientHTTP):
             STATE.update("speedtest_download",
               {"value": speed_formatter(speed)})
 
+            self.done = True
             LOG.complete()
-            self.conf["speedtest.client.pass_complete"] = True
 
 
 class UploadMeasurer(ClientHTTP):
 
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test", "speedtest_upload")
         LOG.start("* Upload")
+        self.done = False
         self.timing = {}
         self.speed = []
         self.count = 0
@@ -618,30 +625,32 @@ class UploadMeasurer(ClientHTTP):
             STATE.update("speedtest_upload",
               {"value": speed_formatter(speed)})
 
+            self.done = True
             LOG.complete()
-            self.conf["speedtest.client.pass_complete"] = True
 
 
 class ClientCollector(ClientHTTP):
 
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("collect")
         LOG.start("* Collect")
+        self.done = False
 
     def connection_ready(self, stream):
         LOG.progress()
 
         m1 = SpeedtestCollect()
-        m1.client = self.conf.get("speedtest.client.ident", "")
+        m1.client = self.conf.get("database.ident", "")
         m1.timestamp = timestamp()
         m1.internalAddress = stream.myname[0]
         m1.realAddress = self.conf.get("speedtest.client.public_address", "")
         m1.remoteAddress = stream.peername[0]
 
-        m1.connectTime = self.conf.get("speedtest.client.connect", "")
-        m1.latency = self.conf.get("speedtest.client.latency", "")
-        m1.downloadSpeed = self.conf.get("speedtest.client.download", "")
-        m1.uploadSpeed = self.conf.get("speedtest.client.upload", "")
+        m1.connectTime = self.conf.get("speedtest.client.connect", [])
+        m1.latency = self.conf.get("speedtest.client.latency", [])
+        m1.downloadSpeed = self.conf.get("speedtest.client.download", [])
+        m1.uploadSpeed = self.conf.get("speedtest.client.upload", [])
 
         s = marshal_object(m1, "text/xml")
         stringio = StringIO(s)
@@ -663,10 +672,143 @@ class ClientCollector(ClientHTTP):
 
     def got_response(self, stream, request, response):
         LOG.complete()
-        self.conf["speedtest.client.pass_complete"] = True
-
+        self.done = True
         if not self.conf.get("speedtest.client.full_test", False):
             stream.close()
+
+
+class ClientSpeedtest(ClientHTTP):
+
+    def __init__(self, poller):
+        ClientHTTP.__init__(self, poller)
+        STATE.update("test_name", "speedtest")
+        self.finished = False
+        self.instructions = None
+        self.started = False
+        self.client = None
+        self.streams = []
+
+    def configure(self, conf):
+        ClientHTTP.configure(self, conf)
+
+        nconns = self.conf.get("speedtest.client.nconns", 2)
+        self.instructions = [
+                             (None, nconns),
+                             (ClientNegotiator, 1),
+                             (LatencyMeasurer, 1),
+                             (DownloadMeasurer, nconns),
+                             (UploadMeasurer, nconns),
+                             (ClientCollector, 1),
+                            ]
+
+        self.conf["speedtest.client.full_test"] = True
+
+        if self.conf.get("speedtest.client.debug", False):
+            del self.instructions[-1]
+            del self.instructions[1]
+
+    #
+    # We make sure that the URI ends with "/" because we
+    # need to append "latency", "download" and "upload" to it
+    # and we don't want the result to contain consecutive
+    # slashes.
+    #
+
+    def start(self):
+        self.started = True
+
+        uri = self.conf.get("speedtest.client.uri",
+          "http://neubot.blupixel.net/speedtest/")
+        if uri[-1] != "/":
+            uri = uri + "/"
+        self.conf["http.client.uri"] = uri
+
+        nconns = self.conf.get("speedtest.client.nconns", 2)
+        LOG.start("* Connecting to remote host")
+        self.connect_uri(uri, count=nconns)
+
+    def connection_ready(self, stream):
+
+        #
+        # XXX When we are started by http/client.py the code in
+        # client.py has not invoked our start() method so we aren't
+        # able to start the test.  Note that, in this case, we
+        # close the passed stream.
+        #
+        if not self.started:
+            stream.close()
+            self.configure({"speedtest.client.uri":
+              self.conf["http.client.uri"]})
+            self.start()
+            return
+
+        LOG.progress()
+        self.streams.append(stream)
+        if len(self.streams) == self.conf.get("speedtest.client.nconns", 2):
+            LOG.complete()
+            self.update_speedtest()
+
+    def update_speedtest(self):
+        del self.instructions[0]
+
+        if not self.instructions:
+            self.finish_speedtest()
+            return
+
+        ctor = self.instructions[0][0]
+        self.client = ctor(POLLER)
+        self.client.configure(self.conf)
+
+        nconns = self.instructions[0][1]
+        for index in range(0, nconns):
+            self.client.connection_ready(self.streams[index])
+
+    def finish_speedtest(self):
+        if not self.finished:
+            self.finished = True
+            if self.client:
+                self.client = None
+            for stream in self.streams:
+                stream.close()
+            NOTIFIER.publish(TESTDONE)
+
+    def connection_failed(self, connector, exception):
+        LOG.error("* Aborting speedtest: connection failed")
+        self.finish_speedtest()
+
+    def connection_lost(self, client):
+
+        #
+        # XXX this is the extra connection that we close
+        # before starting the test when we are invoked by
+        # http/client.py
+        #
+        if not self.started:
+            return
+
+        if not self.finished:
+            LOG.error("* Aborting speedtest: connection lost")
+            self.finish_speedtest()
+
+    def got_response(self, stream, request, response):
+
+        if response.code not in ("200", "206"):
+            LOG.error("* Aborting speedtest: bad response code")
+            self.finish_speedtest()
+            return
+
+        try:
+            self.client.got_response(stream, request, response)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            LOG.exception()
+            LOG.error("* Aborting speedtest: unexpected exception")
+            self.finish_speedtest()
+            return
+
+        if self.client.done:
+            self.update_speedtest()
 
 
 class SpeedtestHelper:
