@@ -189,7 +189,7 @@ class Stream(Pollable):
             server_side = conf.get("server_side", False)
             certfile = conf.get("certfile", None)
 
-            so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
+            so = ssl.wrap_socket(sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
 
