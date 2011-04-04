@@ -442,6 +442,233 @@ speedtest = SpeedtestModule()
 
 # Client
 
+
+class ClientNegotiator(ClientHTTP):
+
+    def __init__(self, poller):
+        ClientHTTP.__init__(self, poller)
+
+    def connection_ready(self, stream):
+        LOG.start("* Negotiate")
+
+        uri = self.conf["http.client.uri"] + "negotiate"
+        authorization = self.conf.get("speedtest.client.authorization", "")
+
+        request = Message()
+        request.compose(method="GET", uri=uri)
+        request["authorization"] = authorization
+
+        stream.send_request(request)
+
+    def got_response(self, stream, request, response):
+        LOG.complete()
+
+        m = unmarshal_object(response.body.read(), "text/xml",
+                             SpeedtestNegotiate_Response)
+
+        self.conf["speedtest.client.authorization"] = str(m.authorization) #XXX
+        self.conf["speedtest.client.public_address"] = m.publicAddress
+
+        if m.unchoked.lower() != "true":
+            if m.queuePos:
+                LOG.info("* Waiting in queue: %s" % m.queuePos)
+                STATE.update("negotiate",{"queue_pos": m.queuePos})
+
+            self.renegotiate()
+            return
+
+        LOG.info("* Authorized to take the test!")
+        self.conf["speedtest.client.pass_complete"] = True
+
+        if not self.conf.get("speedtest.client.full_test", False):
+            stream.close()
+
+
+class LatencyMeasurer(ClientHTTP):
+
+    def __init__(self, poller):
+        ClientHTTP.__init__(self, poller)
+
+        self.timing = {}
+        self.repeat = 1
+        self.latency = []
+
+        LOG.start("* Latency")
+
+    def connection_ready(self, stream):
+        LOG.progress()
+
+        uri = self.conf["http.client.uri"] + "latency"
+        authorization = self.conf.get("speedtest.client.authorization", "")
+
+        request = Message()
+        request.compose(method="HEAD", uri=uri)
+        request["authorization"] = authorization
+
+        self.timing[stream] = ticks()
+        stream.send_request(request)
+
+    def got_response(self, stream, request, response):
+        latency = ticks() - self.timing[stream]
+        self.latency.append(latency)
+
+        self.repeat = self.repeat + 1
+        if self.repeat <= self.conf.get("speedtest.client.latency.repeat", 10):
+            self.connection_ready(stream)
+            return
+
+        LOG.complete()
+
+        latency = sum(self.latency) / len(self.latency)
+        self.conf.get("speedtest.client.latency", []).append(latency)
+        STATE.update("speedtest_latency",
+          {"value": time_formatter(latency)})
+
+        if not self.conf.get("speedtest.client.full_test", False):
+            stream.close()
+
+        self.conf["speedtest.client.pass_complete"] = True
+
+
+class DownloadMeasurer(ClientHTTP):
+
+    def __init__(self, poller):
+        ClientHTTP.__init__(self, poller)
+        LOG.start("* Download")
+        self.timing = {}
+        self.speed = []
+        self.count = 0
+
+    def connection_ready(self, stream):
+        LOG.progress()
+
+        t = self.conf.get("speedtest.client.download.duration", 6)
+        uri = self.conf["http.client.uri"] + "download/2?t=" + str(t)
+        authorization = self.conf.get("speedtest.client.authorization", "")
+
+        request = Message()
+        request.compose(method="GET", uri=uri)
+        request["authorization"] = authorization
+
+        self.timing[stream] = ticks()
+        stream.recv_bytes, stream.sent_bytes = 0, 0
+        stream.send_request(request)
+
+        self.count += 1
+
+    def got_response(self, stream, request, response):
+        elapsed = ticks() - self.timing[stream]
+        speed = stream.recv_bytes / elapsed
+        self.speed.append(speed)
+
+        if not self.conf.get("speedtest.client.full_test", False):
+            stream.close()
+
+        self.count -= 1
+        if self.count == 0:
+            speed = sum(self.speed) / len(self.speed)
+            self.conf.get("speedtest.client.download", []).append(speed)
+            STATE.update("speedtest_download",
+              {"value": speed_formatter(speed)})
+
+            LOG.complete()
+            self.conf["speedtest.client.pass_complete"] = True
+
+
+class UploadMeasurer(ClientHTTP):
+
+    def __init__(self, poller):
+        ClientHTTP.__init__(self, poller)
+        LOG.start("* Upload")
+        self.timing = {}
+        self.speed = []
+        self.count = 0
+
+    def connection_ready(self, stream):
+        LOG.progress()
+
+        t = self.conf.get("speedtest.client.upload.duration", 6)
+        body = RandomData(self.poller, t, chunkify=True)
+
+        uri = self.conf["http.client.uri"] + "upload"
+        authorization = self.conf.get("speedtest.client.authorization", "")
+
+        request = Message()
+        request.compose(method="POST", uri=uri, chunked=body)
+        request["authorization"] = authorization
+
+        self.timing[stream] = ticks()
+        stream.recv_bytes, stream.sent_bytes = 0, 0
+        stream.send_request(request)
+
+        self.count += 1
+
+    def got_response(self, stream, request, response):
+        elapsed = ticks() - self.timing[stream]
+        speed = stream.sent_bytes / elapsed
+        self.speed.append(speed)
+
+        if not self.conf.get("speedtest.client.full_test", False):
+            stream.close()
+
+        self.count -= 1
+        if self.count == 0:
+            speed = sum(self.speed) / len(self.speed)
+            self.conf.get("speedtest.client.upload", []).append(speed)
+            STATE.update("speedtest_upload",
+              {"value": speed_formatter(speed)})
+
+            LOG.complete()
+            self.conf["speedtest.client.pass_complete"] = True
+
+
+class ClientCollector(ClientHTTP):
+
+    def __init__(self, poller):
+        ClientHTTP.__init__(self, poller)
+        LOG.start("* Collect")
+
+    def connection_ready(self, stream):
+        LOG.progress()
+
+        m1 = SpeedtestCollect()
+        m1.client = self.conf.get("speedtest.client.ident", "")
+        m1.timestamp = timestamp()
+        m1.internalAddress = stream.myname[0]
+        m1.realAddress = self.conf.get("speedtest.client.public_address", "")
+        m1.remoteAddress = stream.peername[0]
+
+        m1.connectTime = self.conf.get("speedtest.client.connect", "")
+        m1.latency = self.conf.get("speedtest.client.latency", "")
+        m1.downloadSpeed = self.conf.get("speedtest.client.download", "")
+        m1.uploadSpeed = self.conf.get("speedtest.client.upload", "")
+
+        s = marshal_object(m1, "text/xml")
+        stringio = StringIO(s)
+
+        if database.dbm:
+            database.dbm.save_result("speedtest", stringio.read(),
+                                     database.dbm.ident)
+            stringio.seek(0)
+
+        uri = self.conf["http.client.uri"] + "collect"
+        authorization = self.conf.get("speedtest.client.authorization", "")
+
+        request = Message()
+        request.compose(method="POST", uri=uri, body=stringio,
+                        mimetype="application/xml")
+        request["authorization"] = authorization
+
+        stream.send_request(request)
+
+    def got_response(self, stream, request, response):
+        LOG.complete()
+        self.conf["speedtest.client.pass_complete"] = True
+
+        if not self.conf.get("speedtest.client.full_test", False):
+            stream.close()
+
+
 class SpeedtestHelper:
     def __init__(self, parent):
         self.speedtest = parent

@@ -105,6 +105,15 @@ class ClientStream(StreamHTTP):
 
 class ClientHTTP(StreamHandler):
 
+    def connect_uri(self, uri, count=1):
+        m = Message()
+        m.compose(method="GET", uri=uri)
+        if m.scheme == "https":
+            #self.conf["net.stream.secure"] = True
+            self.conf["secure"] = True
+        endpoint = (m.address, int(m.port))
+        self.connect(endpoint, count)
+
     def connection_ready(self, stream):
         pass
 
@@ -137,7 +146,9 @@ Options:
     -v                 : Run the program in verbose mode.
 
 Macros (defaults in square brackets):
+    class=name         : Name of the HTTP client class []
     method=method      : Select the method to use [GET]
+    module=module      : Module to load HTTP client from []
     stdout             : Write output to stdout [no]
 
 """
@@ -147,23 +158,41 @@ VERSION = "Neubot 0.3.6\n"
 
 class TestClient(ClientHTTP):
 
-    def __init__(self, poller):
-        ClientHTTP.__init__(self, poller)
-        self.response = None
-        self.request = None
-
-    def set_request_response(self, request, response):
-        self.response = response
-        self.request = request
-
     def connection_ready(self, stream):
-        stream.send_request(self.request, self.response)
+        method = self.conf["http.client.method"]
+        stdout = self.conf["http.client.write_to_stdout"]
+        uri = self.conf["http.client.uri"]
+
+        request = Message()
+        if method == "PUT":
+            fpath = uri.split("/")[-1]
+            if not os.path.exists(fpath):
+                LOG.error("* Local file does not exist: %s" % fpath)
+                sys.exit(1)
+            request.compose(method=method, uri=uri, keepalive=False,
+              mimetype="text/plain", body=open(fpath, "rb"))
+        else:
+            request.compose(method=method, uri=uri, keepalive=False)
+
+        response = Message()
+        if method == "GET" and not stdout:
+            fpath = uri.split("/")[-1]
+            if os.path.exists(fpath):
+                LOG.error("* Local file already exists: %s" % fpath)
+                sys.exit(1)
+            response.body = open(fpath, "wb")
+        else:
+            response.body = sys.stdout
+
+        stream.send_request(request, response)
 
 
 def main(args):
 
     conf = OptionParser()
+    conf.set_option("http", "class", "")
     conf.set_option("http", "method", "GET")
+    conf.set_option("http", "module", "")
     conf.set_option("http", "stdout", "no")
 
     try:
@@ -197,44 +226,28 @@ def main(args):
     conf.merge_environ()
     conf.merge_opts()
 
+    classname = conf.get_option("http", "class")
     method = conf.get_option("http", "method")
+    module = conf.get_option("http", "module")
     stdout = conf.get_option_bool("http", "stdout")
 
     if not stdout:
         POLLER.sched(0.5, MEASURER.start)
 
+    if classname and module:
+        exec "from %s import %s as TestClient" % (module, classname)
+
     for uri in arguments:
-        request = Message()
-        request.compose(method=method, uri=uri, keepalive=False)
-        response = Message()
-        response.body = sys.stdout
-        dictionary = { "measurer": MEASURER }
-        if request.scheme == "https":
-            dictionary["secure"] = True
-        endpoint = (request.address, int(request.port))
+        conf = {
+            "http.client.write_to_stdout": stdout,
+            "measurer": MEASURER,
+            "http.client.method": method,
+            "http.client.uri": uri,
+        }
 
         client = TestClient(POLLER)
-        client.configure(dictionary)
-        client.set_request_response(request, response)
-
-        if method == "PUT":
-            fpath = request.pathquery.split("/")[-1]
-            if not os.path.exists(fpath):
-                LOG.error("* Local file does not exist: %s" % fpath)
-                sys.exit(1)
-            request.body = open(fpath, "rb")
-            del request["content-length"]
-            request["content-length"] = str(file_length(request.body))
-            request["content-type"] = "text/plain"
-
-        if method == "GET" and not stdout:
-            output = request.pathquery.split("/")[-1]
-            if os.path.exists(output):
-                LOG.error("* Local file already exists: %s" % output)
-                sys.exit(1)
-            response.body = open(output, "wb")
-
-        client.connect(endpoint)
+        client.configure(conf)
+        client.connect_uri(uri)
 
     POLLER.loop()
     sys.exit(0)
