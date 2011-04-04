@@ -105,6 +105,15 @@ class ClientStream(StreamHTTP):
 
 class ClientHTTP(StreamHandler):
 
+    def connect_uri(self, uri, count=1):
+        m = Message()
+        m.compose(method="GET", uri=uri)
+        if m.scheme == "https":
+            #self.conf["net.stream.secure"] = True
+            self.conf["secure"] = True
+        endpoint = (m.address, int(m.port))
+        self.connect(endpoint, count)
+
     def connection_ready(self, stream):
         pass
 
@@ -209,9 +218,6 @@ def main(args):
         response = Message()
         response.body = sys.stdout
         dictionary = { "measurer": MEASURER }
-        if request.scheme == "https":
-            dictionary["secure"] = True
-        endpoint = (request.address, int(request.port))
 
         client = TestClient(POLLER)
         client.configure(dictionary)
@@ -234,7 +240,7 @@ def main(args):
                 sys.exit(1)
             response.body = open(output, "wb")
 
-        client.connect(endpoint)
+        client.connect_uri(uri)
 
     POLLER.loop()
     sys.exit(0)
