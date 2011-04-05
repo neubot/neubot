@@ -1279,6 +1279,27 @@ FLAG_COLLECT = (1<<4)
 FLAG_CLEANUP = (1<<5)
 FLAG_SUCCESS = (1<<6)
 
+
+class SpeedtestClient2(object):
+
+    def __init__(self, uri, nclients, flags, debug=False, parent=None):
+        conf = {
+            "speedtest.client.uri": uri,
+            "speedtest.client.nconns": nclients,
+            "speedtest.client.debug": debug,
+        }
+        if parent:
+            conf["speedtest.client.noisy"] = False
+        client = ClientSpeedtest(POLLER)
+        client.configure(conf)
+        client.start()
+        NOTIFIER.subscribe(TESTDONE, self.speedtest_complete, parent)
+
+    def speedtest_complete(self, event, parent):
+        if parent:
+            parent.speedtest_complete()
+
+
 class SpeedtestClient1(ClientController):
 
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
@@ -1412,7 +1433,7 @@ class SpeedtestClient1(ClientController):
 
 class SpeedtestController:
     def start_speedtest_simple(self, uri):
-        SpeedtestClient(uri, 4, FLAG_ALL, False, self)
+        SpeedtestClient2(uri, 2, FLAG_ALL, False, self)
 
     def speedtest_complete(self):
         pass
@@ -1582,7 +1603,7 @@ def main(args):
     if flags == 0:
         flags = FLAG_ALL
     # run
-    client = SpeedtestClient(uri, nclients, flags, xdebug)
+    client = SpeedtestClient2(uri, nclients, flags, xdebug)
     client.formatter = FORMATTERS[fmt]
     POLLER.loop()
 
