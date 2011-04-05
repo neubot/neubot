@@ -21,6 +21,7 @@
 #
 
 import urlparse
+import pprint
 import cgi
 
 if __name__ == "__main__":
@@ -70,8 +71,11 @@ from neubot.notify import NOTIFIER
 from neubot.notify import TESTDONE
 from neubot.arcfour import RandomData
 from neubot.http.server import ServerHTTP
+from neubot.http.client import ClientHTTP
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
+from neubot.utils import speed_formatter
+from neubot.net.stream import Measurer
 
 
 class SpeedtestCollect(object):
@@ -524,7 +528,7 @@ class LatencyMeasurer(ClientHTTP):
         LOG.complete()
 
         latency = sum(self.latency) / len(self.latency)
-        self.conf.get("speedtest.client.latency", []).append(latency)
+        self.conf.setdefault("speedtest.client.latency", []).append(latency)
         STATE.update("speedtest_latency",
           {"value": time_formatter(latency)})
 
@@ -556,14 +560,14 @@ class DownloadMeasurer(ClientHTTP):
         request["authorization"] = authorization
 
         self.timing[stream] = ticks()
-        stream.recv_bytes, stream.sent_bytes = 0, 0
+        stream.bytes_recv, stream.bytes_sent = 0, 0
         stream.send_request(request)
 
         self.count += 1
 
     def got_response(self, stream, request, response):
         elapsed = ticks() - self.timing[stream]
-        speed = stream.recv_bytes / elapsed
+        speed = stream.bytes_recv / elapsed
         self.speed.append(speed)
 
         if not self.conf.get("speedtest.client.full_test", False):
@@ -572,7 +576,7 @@ class DownloadMeasurer(ClientHTTP):
         self.count -= 1
         if self.count == 0:
             speed = sum(self.speed) / len(self.speed)
-            self.conf.get("speedtest.client.download", []).append(speed)
+            self.conf.setdefault("speedtest.client.download", []).append(speed)
             STATE.update("speedtest_download",
               {"value": speed_formatter(speed)})
 
@@ -605,14 +609,14 @@ class UploadMeasurer(ClientHTTP):
         request["authorization"] = authorization
 
         self.timing[stream] = ticks()
-        stream.recv_bytes, stream.sent_bytes = 0, 0
+        stream.bytes_recv, stream.bytes_sent = 0, 0
         stream.send_request(request)
 
         self.count += 1
 
     def got_response(self, stream, request, response):
         elapsed = ticks() - self.timing[stream]
-        speed = stream.sent_bytes / elapsed
+        speed = stream.bytes_sent / elapsed
         self.speed.append(speed)
 
         if not self.conf.get("speedtest.client.full_test", False):
@@ -621,7 +625,7 @@ class UploadMeasurer(ClientHTTP):
         self.count -= 1
         if self.count == 0:
             speed = sum(self.speed) / len(self.speed)
-            self.conf.get("speedtest.client.upload", []).append(speed)
+            self.conf.setdefault("speedtest.client.upload", []).append(speed)
             STATE.update("speedtest_upload",
               {"value": speed_formatter(speed)})
 
@@ -688,6 +692,16 @@ class ClientSpeedtest(ClientHTTP):
         self.client = None
         self.streams = []
 
+        #
+        # WARNING When we will measure the download and upload
+        # speed using the measurer, remember that we would also
+        # not be able to measure the speed the way we measure
+        # it now too.  This because the measure resets stream's
+        # counters, like we do.
+        #
+
+        self.measurer = Measurer()
+
     def configure(self, conf):
         ClientHTTP.configure(self, conf)
 
@@ -702,6 +716,7 @@ class ClientSpeedtest(ClientHTTP):
                             ]
 
         self.conf["speedtest.client.full_test"] = True
+        self.conf["measurer"] = self.measurer
 
         if self.conf.get("speedtest.client.debug", False):
             del self.instructions[-1]
@@ -746,6 +761,10 @@ class ClientSpeedtest(ClientHTTP):
         self.streams.append(stream)
         if len(self.streams) == self.conf.get("speedtest.client.nconns", 2):
             LOG.complete()
+
+            rtt = self.measurer.measure_rtt()[0]
+            self.conf.setdefault("speedtest.client.connect", []).append(rtt)
+
             self.update_speedtest()
 
     def update_speedtest(self):
@@ -766,10 +785,25 @@ class ClientSpeedtest(ClientHTTP):
     def finish_speedtest(self):
         if not self.finished:
             self.finished = True
+
             if self.client:
                 self.client = None
             for stream in self.streams:
                 stream.close()
+
+            if self.conf.get("speedtest.client.noisy", True):
+                result = {
+                    "connect": self.conf.get("speedtest.client.connect", []),
+                    "latency": self.conf.get("speedtest.client.latency", []),
+                    "download": self.conf.get("speedtest.client.download", []),
+                    "upload": self.conf.get("speedtest.client.upload", []),
+                }
+                result["connect"] = map(time_formatter, result["connect"])
+                result["latency"] = map(time_formatter, result["latency"])
+                result["download"] = map(speed_formatter, result["download"])
+                result["upload"] = map(speed_formatter, result["upload"])
+                pprint.pprint(result)
+
             NOTIFIER.publish(TESTDONE)
 
     def connection_failed(self, connector, exception):
@@ -900,9 +934,6 @@ class Latency(SpeedtestHelper):
 
 
 # Measurer object
-
-from neubot.utils import speed_formatter
-from neubot.net.streams import Measurer
 
 
 class SpeedtestMeasurer(Measurer):
