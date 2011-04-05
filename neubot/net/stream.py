@@ -593,14 +593,7 @@ class Measurer(object):
         self.streams.remove(stream)
         stream.measurer = None
 
-    def measure(self):
-        now = ticks()
-        delta = now - self.last
-        self.last = now
-
-        if delta <= 0:
-            return None
-
+    def measure_rtt(self):
         rttavg = 0
         rttdetails = []
         if len(self.rtts) > 0:
@@ -609,6 +602,17 @@ class Measurer(object):
             rttavg = rttavg / len(self.rtts)
             rttdetails = self.rtts
             self.rtts = []
+        return rttavg, rttdetails
+
+    def measure(self):
+        now = ticks()
+        delta = now - self.last
+        self.last = now
+
+        if delta <= 0:
+            return None
+
+        rttavg, rttdetails = self.measure_rtt()
 
         recvsum = 0
         sendsum = 0
