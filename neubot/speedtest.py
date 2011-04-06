@@ -545,6 +545,7 @@ class DownloadMeasurer(ClientHTTP):
         LOG.start("* Download")
         self.done = False
         self.timing = {}
+        self.obytes = 0
         self.speed = []
         self.count = 0
 
@@ -560,14 +561,14 @@ class DownloadMeasurer(ClientHTTP):
         request["authorization"] = authorization
 
         self.timing[stream] = ticks()
-        stream.bytes_recv, stream.bytes_sent = 0, 0
+        self.obytes = stream.bytes_recv_tot
         stream.send_request(request)
 
         self.count += 1
 
     def got_response(self, stream, request, response):
         elapsed = ticks() - self.timing[stream]
-        speed = stream.bytes_recv / elapsed
+        speed = (stream.bytes_recv_tot - self.obytes) / elapsed
         self.speed.append(speed)
 
         if not self.conf.get("speedtest.client.full_test", False):
@@ -592,6 +593,7 @@ class UploadMeasurer(ClientHTTP):
         LOG.start("* Upload")
         self.done = False
         self.timing = {}
+        self.obytes = 0
         self.speed = []
         self.count = 0
 
@@ -609,14 +611,14 @@ class UploadMeasurer(ClientHTTP):
         request["authorization"] = authorization
 
         self.timing[stream] = ticks()
-        stream.bytes_recv, stream.bytes_sent = 0, 0
+        self.obytes = stream.bytes_sent_tot
         stream.send_request(request)
 
         self.count += 1
 
     def got_response(self, stream, request, response):
         elapsed = ticks() - self.timing[stream]
-        speed = stream.bytes_sent / elapsed
+        speed = (stream.bytes_sent_tot - self.obytes) / elapsed
         self.speed.append(speed)
 
         if not self.conf.get("speedtest.client.full_test", False):
@@ -691,15 +693,6 @@ class ClientSpeedtest(ClientHTTP):
         self.started = False
         self.client = None
         self.streams = []
-
-        #
-        # WARNING When we will measure the download and upload
-        # speed using the measurer, remember that we would also
-        # not be able to measure the speed the way we measure
-        # it now too.  This because the measure resets stream's
-        # counters, like we do.
-        #
-
         self.measurer = Measurer()
 
     def configure(self, conf):
