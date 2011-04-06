@@ -24,11 +24,11 @@ import os.path
 import email.utils
 import urlparse
 
-from neubot.http.handlers import BOUNDED
-from neubot.http.handlers import CHUNK_LENGTH
-from neubot.http.handlers import ERROR
-from neubot.http.handlers import FIRSTLINE
-from neubot.http.handlers import UNBOUNDED
+from neubot.http.stream import BOUNDED
+from neubot.http.stream import CHUNK_LENGTH
+from neubot.http.stream import ERROR
+from neubot.http.stream import FIRSTLINE
+from neubot.http.stream import UNBOUNDED
 
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
@@ -141,30 +141,6 @@ def nextstate(request, response=None):
                 return UNBOUNDED, 8000
             else:
                 return FIRSTLINE, 0
-
-# Guarantee unique filename
-
-def _make_filename(uri, default):
-    scheme, address, port, pathquery = urlsplit(uri)
-    ret = default
-    index = pathquery.rfind("/")
-    if index >= 0:
-        ret = pathquery[index+1:]
-        if not ret:
-            ret = default
-    return ret
-
-def make_filename(uri, default):
-    filename = _make_filename(uri, default)
-    index = 0
-    temp = filename
-    while os.path.exists(temp):
-        if index == 100:
-            raise ValueError("Can't generate unique filename")
-        temp = filename + "." + str(index)
-        index = index + 1
-    filename = temp
-    return filename
 
 #
 # Parse 'range:' header

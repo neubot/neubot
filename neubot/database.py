@@ -39,7 +39,6 @@ import uuid
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot import pathnames
 from neubot.times import timestamp
 from neubot.compat import deque_appendleft
 from neubot.marshal import unmarshal_object
@@ -387,7 +386,7 @@ class DatabaseConfig(ConfigParser.SafeConfigParser):
         ConfigParser.SafeConfigParser.__init__(self)
         self.auto_prune = True
         self.maxcache = 256
-        self.path = pathnames.DATABASE
+        self.path = "neubot.sqlite3"
         self.client = True
 
     def readfp(self, fp, filename=None):
@@ -482,7 +481,6 @@ def main(args):
             action = PRUNE
     # config
     fakerc.seek(0)
-    database.configure(pathnames.CONFIG, fakerc)
     # arguments
     if len(arguments) >= 2:
         sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))

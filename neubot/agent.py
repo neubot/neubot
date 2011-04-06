@@ -27,17 +27,19 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.http.server import ServerHTTP
+from neubot.api_service import ServerAPI
 from neubot.rendezvous import RendezvousClient
 from neubot.options import OptionParser
 from neubot.system import change_dir
 from neubot.system import drop_privileges
 from neubot.system import go_background
 from neubot.net.poller import POLLER
+from neubot.rootdir import WWW
 from neubot.log import LOG
 
 # renames pending
 from neubot.database import database as DATABASE
-from neubot.ui import ui as UI
 
 USAGE = """Neubot agent -- Run in background, periodically run tests
 
@@ -121,12 +123,13 @@ def main(args):
     uri = "http://%s:9773/rendezvous" % master
 
     #XXX
-    UI.config.address = address
-    UI.config.port = str(port)
     DATABASE.path = "database.sqlite3"
 
     if api:
-        UI.start()
+        server = ServerHTTP(POLLER)
+        server.configure({"rootdir": WWW, "ssi": True})
+        server.register_child(ServerAPI(POLLER), "/api")
+        server.listen((address, port))
 
     change_dir()
     DATABASE.start()

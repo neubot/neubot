@@ -31,7 +31,7 @@ if os.environ.has_key("NEUBOT_HOME"):
     NEUBOT_HOME = os.environ["NEUBOT_HOME"]
 sys.path.insert(0, NEUBOT_HOME)
 
-from neubot.boot import main
+from neubot.main import main
 from neubot.log import LOG
 
 #
