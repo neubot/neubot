@@ -1535,7 +1535,7 @@ def main(args):
     xdebug = False
     flags = 0
     fmt = "bits"
-    nclients = 4
+    nclients = 2
     # parse
     try:
         options, arguments = getopt(args[1:], "a:D:dn:O:SsVvx", ["help"])
