@@ -614,7 +614,7 @@ class Measurer(object):
         self.last = now
 
         if delta <= 0:
-            return None
+            return 0, 0, []
 
         recvsum = 0
         sendsum = 0
