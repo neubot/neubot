@@ -732,9 +732,8 @@ class ClientSpeedtest(ClientHTTP):
             uri = uri + "/"
         self.conf["http.client.uri"] = uri
 
-        nconns = self.conf.get("speedtest.client.nconns", 2)
         LOG.start("* Connecting to remote host")
-        self.connect_uri(uri, count=nconns)
+        self.connect_uri(uri)
 
     def connection_ready(self, stream):
 
@@ -753,7 +752,9 @@ class ClientSpeedtest(ClientHTTP):
 
         LOG.progress()
         self.streams.append(stream)
-        if len(self.streams) == self.conf.get("speedtest.client.nconns", 2):
+        if len(self.streams) < self.conf.get("speedtest.client.nconns", 2):
+            self.connect_uri(self.conf["http.client.uri"])
+        else:
             LOG.complete()
 
             rtt = self.measurer.measure_rtt()[0]
