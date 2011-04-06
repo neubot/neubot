@@ -142,30 +142,6 @@ def nextstate(request, response=None):
             else:
                 return FIRSTLINE, 0
 
-# Guarantee unique filename
-
-def _make_filename(uri, default):
-    scheme, address, port, pathquery = urlsplit(uri)
-    ret = default
-    index = pathquery.rfind("/")
-    if index >= 0:
-        ret = pathquery[index+1:]
-        if not ret:
-            ret = default
-    return ret
-
-def make_filename(uri, default):
-    filename = _make_filename(uri, default)
-    index = 0
-    temp = filename
-    while os.path.exists(temp):
-        if index == 100:
-            raise ValueError("Can't generate unique filename")
-        temp = filename + "." + str(index)
-        index = index + 1
-    filename = temp
-    return filename
-
 #
 # Parse 'range:' header
 # Here we don't care of Exceptions as long as these exceptions
