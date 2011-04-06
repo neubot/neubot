@@ -31,7 +31,6 @@ if __name__ == "__main__":
 
 from neubot.config import CONFIG
 
-from neubot import pathnames
 from neubot.speedtest import SpeedtestController
 from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
@@ -387,8 +386,6 @@ def main(args):
             xdebug = True
 
     fakerc.seek(0)
-    database.configure(pathnames.CONFIG, fakerc)
-    rendezvous.configure(pathnames.CONFIG, fakerc)
 
     if servermode:
         if len(arguments) > 0:

@@ -64,7 +64,6 @@ from neubot.utils import file_length
 from neubot.utils import become_daemon
 from neubot.utils import speed_formatter
 
-from neubot import pathnames
 from neubot import version
 
 
@@ -943,8 +942,6 @@ def main(args):
             xdebug = True
     # config
     fakerc.seek(0)
-    database.configure(pathnames.CONFIG, fakerc)
-    speedtest.configure(pathnames.CONFIG, fakerc)
     # server
     if servermode:
         if len(arguments) > 0:
