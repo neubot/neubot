@@ -20,63 +20,52 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import ConfigParser
+import StringIO
 import urlparse
 import pprint
 import cgi
+import sys
+import getopt
+import collections
+import uuid
 
 if __name__ == "__main__":
-    from sys import path
-    path.insert(0, ".")
+    sys.path.insert(0, ".")
 
-from StringIO import StringIO
-from neubot.database import database
-from neubot.http.messages import Message
-from neubot.utils import unit_formatter
-from neubot.http.clients import Client
-from neubot.http.clients import ClientController
-from neubot.net.poller import POLLER
-from neubot.times import timestamp
-from sys import stdout
-from sys import argv
-from neubot.log import LOG
-from neubot import version
-from getopt import GetoptError
-from neubot.state import STATE
-from getopt import getopt
-from sys import stderr
-from sys import exit
-
-from neubot import pathnames
-from collections import deque
-from neubot.times import ticks
-from neubot.notify import publish
-from neubot.notify import subscribe
-from neubot.notify import RENEGOTIATE
-from neubot.utils import time_formatter
-from ConfigParser import SafeConfigParser
-from neubot.http.servers import Connection
-from xml.etree.ElementTree import ElementTree
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import SubElement
-from neubot.http.utils import nextstate
-from neubot.http.utils import parse_range
-from neubot.http.handlers import ERROR
-from neubot.http.servers import Server
-from neubot.utils import file_length
-from neubot.utils import become_daemon
-from uuid import UUID
-from uuid import uuid4
-
-from neubot.notify import NOTIFIER
-from neubot.notify import TESTDONE
 from neubot.arcfour import RandomData
-from neubot.net.stream import HeadlessMeasurer
+
+from neubot.database import database
+
+from neubot.http.messages import Message
+from neubot.http.utils import parse_range
 from neubot.http.server import ServerHTTP
 from neubot.http.client import ClientHTTP
+
+from neubot.log import LOG
+
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
+
+from neubot.net.poller import POLLER
+from neubot.net.stream import HeadlessMeasurer
+
+from neubot.notify import RENEGOTIATE
+from neubot.notify import NOTIFIER
+from neubot.notify import TESTDONE
+
+from neubot.state import STATE
+
+from neubot.times import timestamp
+from neubot.times import ticks
+
+from neubot.utils import time_formatter
+from neubot.utils import file_length
+from neubot.utils import become_daemon
 from neubot.utils import speed_formatter
-from neubot.net.stream import Measurer
+
+from neubot import pathnames
+from neubot import version
 
 
 class SpeedtestCollect(object):
@@ -132,7 +121,7 @@ class Tester(object):
             body.seek(first)
             partial = body.read(last - first + 1)
             response["content-range"] = "bytes %d-%d/%d" % (first, last, total)
-            body = StringIO(partial)
+            body = StringIO.StringIO(partial)
             code, reason = "206", "Partial Content"
 
         else:
@@ -175,7 +164,7 @@ class TestServer(ServerHTTP):
 
         else:
             response = Message()
-            stringio = StringIO("500 Internal Server Error")
+            stringio = StringIO.StringIO("500 Internal Server Error")
             response.compose(code="500", reason="Internal Server Error",
                              body=stringio, mimetype="text/plain")
             stream.send_response(request, response)
@@ -194,7 +183,7 @@ class SessionTracker(object):
 
     def __init__(self):
         self.identifiers = {}
-        self.queue = deque()
+        self.queue = collections.deque()
         self.connections = {}
         self.task = None
 
@@ -230,7 +219,7 @@ class SessionTracker(object):
         if not identifier in self.identifiers:
             session = SessionState()
             # XXX collision is not impossible but very unlikely
-            session.identifier = str(uuid4())
+            session.identifier = str(uuid.uuid4())
             session.timestamp = timestamp()
             self._do_add(session)
         else:
@@ -331,11 +320,11 @@ class SpeedtestServer(ServerHTTP):
     def _speedtest_check_timeout(self):
         POLLER.sched(3, self._speedtest_check_timeout)
         if TRACKER.session_prune():
-            publish(RENEGOTIATE)
+            NOTIFIER.publish(RENEGOTIATE)
 
     def _speedtest_complete(self, request):
         TRACKER.session_delete(request["authorization"])
-        publish(RENEGOTIATE)
+        NOTIFIER.publish(RENEGOTIATE)
 
     def do_negotiate(self, stream, request, nodelay=False):
         session = TRACKER.session_negotiate(request["authorization"])
@@ -355,7 +344,7 @@ class SpeedtestServer(ServerHTTP):
 
         if not session.active:
             if not nodelay:
-                subscribe(RENEGOTIATE, self._do_renegotiate,
+                NOTIFIER.subscribe(RENEGOTIATE, self._do_renegotiate,
                           (stream, request))
                 return
 
@@ -366,7 +355,7 @@ class SpeedtestServer(ServerHTTP):
         m1.publicAddress = stream.peername[0]
         s = marshal_object(m1, "text/xml")
 
-        stringio = StringIO(s)
+        stringio = StringIO.StringIO(s)
         response = Message()
         response.compose(code="200", reason="Ok",
          body=stringio, mimetype="application/xml")
@@ -389,7 +378,7 @@ class SpeedtestServer(ServerHTTP):
 
     def connection_lost(self, stream):
         TRACKER.unregister_connection(stream)
-        publish(RENEGOTIATE)
+        NOTIFIER.publish(RENEGOTIATE)
 
 
 #
@@ -400,9 +389,9 @@ class SpeedtestServer(ServerHTTP):
 # port: 80
 #
 
-class SpeedtestConfig(SafeConfigParser):
+class SpeedtestConfig(ConfigParser.SafeConfigParser):
     def __init__(self):
-        SafeConfigParser.__init__(self)
+        ConfigParser.SafeConfigParser.__init__(self)
         self.address = "0.0.0.0"
         self.only_auth = False
         self.path = ""
@@ -412,7 +401,7 @@ class SpeedtestConfig(SafeConfigParser):
 #       pass
 
     def readfp(self, fp, filename=None):
-        SafeConfigParser.readfp(self, fp, filename)
+        ConfigParser.SafeConfigParser.readfp(self, fp, filename)
         self._do_parse()
 
     def _do_parse(self):
@@ -426,7 +415,7 @@ class SpeedtestConfig(SafeConfigParser):
             self.port = self.get("speedtest", "port")
 
     def read(self, filenames):
-        SafeConfigParser.read(self, filenames)
+        ConfigParser.SafeConfigParser.read(self, filenames)
         self._do_parse()
 
 class SpeedtestModule:
@@ -660,7 +649,7 @@ class ClientCollector(ClientHTTP):
         m1.uploadSpeed = self.conf.get("speedtest.client.upload", [])
 
         s = marshal_object(m1, "text/xml")
-        stringio = StringIO(s)
+        stringio = StringIO.StringIO(s)
 
         if database.dbm:
             database.dbm.save_result("speedtest", stringio.read(),
@@ -904,7 +893,7 @@ HELP = USAGE +								\
 URI = "http://neubot.blupixel.net/speedtest"
 
 def main(args):
-    fakerc = StringIO()
+    fakerc = StringIO.StringIO()
     fakerc.write("[speedtest]\r\n")
     daemonize = True
     servermode = False
@@ -913,10 +902,10 @@ def main(args):
     nclients = 2
     # parse
     try:
-        options, arguments = getopt(args[1:], "a:D:dn:O:SsVvx", ["help"])
-    except GetoptError:
-        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-        exit(1)
+        options, arguments = getopt.getopt(args[1:], "a:D:dn:O:SsVvx", ["help"])
+    except getopt.GetoptError:
+        sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        sys.exit(1)
     # options
     for name, value in options:
         if name == "-a":
@@ -927,8 +916,8 @@ def main(args):
         elif name == "-d":
             daemonize = False
         elif name == "--help":
-            stdout.write(HELP.replace("@PROGNAME@", args[0]))
-            exit(0)
+            sys.stdout.write(HELP.replace("@PROGNAME@", args[0]))
+            sys.exit(0)
         elif name == "-n":
             try:
                 nclients = int(value)
@@ -936,7 +925,7 @@ def main(args):
                 nclients = -1
             if nclients <= 0:
                 LOG.error("Invalid argument to -n: %s" % value)
-                exit(1)
+                sys.exit(1)
         elif name == "-O":
             # XXX for backward compatibility only
             pass
@@ -946,8 +935,8 @@ def main(args):
             # XXX for backward compatibility only
             pass
         elif name == "-V":
-            stdout.write(version + "\n")
-            exit(0)
+            sys.stdout.write(version + "\n")
+            sys.exit(0)
         elif name == "-v":
             LOG.verbose()
         elif name == "-x":
@@ -959,18 +948,18 @@ def main(args):
     # server
     if servermode:
         if len(arguments) > 0:
-            stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-            exit(1)
+            sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+            sys.exit(1)
         database.start()
         speedtest.start()
         if daemonize:
             become_daemon()
         POLLER.loop()
-        exit(0)
+        sys.exit(0)
     # client
     if len(arguments) > 1:
-        stderr.write(USAGE.replace("@PROGNAME@", args[0]))
-        exit(1)
+        sys.stderr.write(USAGE.replace("@PROGNAME@", args[0]))
+        sys.exit(1)
     elif len(arguments) == 1:
         uri = arguments[0]
     else:
@@ -980,4 +969,4 @@ def main(args):
     POLLER.loop()
 
 if __name__ == "__main__":
-    main(argv)
+    main(sys.argv)
