@@ -636,11 +636,6 @@ class Measurer(object):
 
         return recvavg, sendavg, percentages
 
-    def measure(self):
-        rttavg, rttdetails = self.measure_rtt()
-        recvavg, sendavg, percentages = self.measure_speed()
-        return rttavg, rttdetails, recvavg, sendavg, percentages
-
 
 class VerboseMeasurer(Measurer):
     def __init__(self, poller, output=sys.stdout, interval=1):
@@ -657,8 +652,7 @@ class VerboseMeasurer(Measurer):
     def report(self):
         self.poller.sched(self.interval, self.report)
 
-        rttavg, rttdetails, recvavg, sendavg, percentages = self.measure()
-
+        rttavg, rttdetails = self.measure_rtt()
         if len(rttdetails) > 0:
             rttavg = "%d us" % int(1000000 * rttavg)
             self.output.write("\t\t%s\t\t---\t\t---\n" % rttavg)
@@ -667,6 +661,7 @@ class VerboseMeasurer(Measurer):
                     detail = "%d us" % int(1000000 * detail)
                     self.output.write("\t\t  %s\t\t---\t\t---\n" % detail)
 
+        recvavg, sendavg, percentages = self.measure_speed()
         if len(percentages) > 0:
             recv, send = speed_formatter(recvavg), speed_formatter(sendavg)
             self.output.write("\t\t---\t\t%s\t\t%s\n" % (recv, send))

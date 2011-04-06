@@ -938,7 +938,7 @@ class SpeedtestMeasurer(Measurer):
         self.send = []
 
     def poll(self):
-        recvavg, sendavg = self.measure()[2:4]
+        recvavg, sendavg = self.measure_speed()[0:2]
         self.recv.append(recvavg)
         self.send.append(sendavg)
         POLLER.sched(1, self.poll)
