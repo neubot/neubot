@@ -608,19 +608,29 @@ class Measurer(object):
             self.rtts = []
         return rttavg, rttdetails
 
-    def measure_speed(self):
+    def compute_delta_and_sums(self, clear=True):
         now = ticks()
         delta = now - self.last
         self.last = now
 
         if delta <= 0:
-            return 0, 0, []
+            return 0.0, 0, 0
 
         recvsum = 0
         sendsum = 0
         for stream in self.streams:
             recvsum += stream.bytes_recv
             sendsum += stream.bytes_sent
+            if clear:
+                stream.bytes_recv = stream.bytes_sent = 0
+
+        return delta, recvsum, sendsum
+
+    def measure_speed(self):
+        delta, recvsum, sendsum = self.compute_delta_and_sums(clear=False)
+        if delta <= 0:
+            return 0, 0, []
+
         recvavg = recvsum / delta
         sendavg = sendsum / delta
 
@@ -635,6 +645,34 @@ class Measurer(object):
             stream.bytes_recv = stream.bytes_sent = 0
 
         return recvavg, sendavg, percentages
+
+
+class HeadlessMeasurer(Measurer):
+    def __init__(self, poller, interval=1):
+        Measurer.__init__(self)
+        self.poller = poller
+        self.interval = interval
+        self.recv_hist = {}
+        self.send_hist = {}
+        self.marker = None
+        self.task = None
+
+    def start(self, marker):
+        self.collect()
+        self.marker = marker
+
+    def stop(self):
+        if self.task:
+            self.task.unsched()
+
+    def collect(self):
+        if self.task:
+            self.task.unsched()
+        self.task = self.poller.sched(self.interval, self.collect)
+        delta, recvsum, sendsum = self.compute_delta_and_sums()
+        if self.marker:
+            self.recv_hist.setdefault(self.marker, []).append((delta, recvsum))
+            self.send_hist.setdefault(self.marker, []).append((delta, sendsum))
 
 
 class VerboseMeasurer(Measurer):
