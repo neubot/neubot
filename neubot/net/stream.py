@@ -608,15 +608,13 @@ class Measurer(object):
             self.rtts = []
         return rttavg, rttdetails
 
-    def measure(self):
+    def measure_speed(self):
         now = ticks()
         delta = now - self.last
         self.last = now
 
         if delta <= 0:
             return None
-
-        rttavg, rttdetails = self.measure_rtt()
 
         recvsum = 0
         sendsum = 0
@@ -625,6 +623,7 @@ class Measurer(object):
             sendsum += stream.bytes_sent
         recvavg = recvsum / delta
         sendavg = sendsum / delta
+
         percentages = []
         for stream in self.streams:
             recvp, sendp = 0, 0
@@ -635,6 +634,11 @@ class Measurer(object):
             percentages.append((recvp, sendp))
             stream.bytes_recv = stream.bytes_sent = 0
 
+        return recvavg, sendavg, percentages
+
+    def measure(self):
+        rttavg, rttdetails = self.measure_rtt()
+        recvavg, sendavg, percentages = self.measure_speed()
         return rttavg, rttdetails, recvavg, sendavg, percentages
 
 
