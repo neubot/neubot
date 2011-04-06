@@ -24,11 +24,11 @@ import os.path
 import email.utils
 import urlparse
 
-from neubot.http.handlers import BOUNDED
-from neubot.http.handlers import CHUNK_LENGTH
-from neubot.http.handlers import ERROR
-from neubot.http.handlers import FIRSTLINE
-from neubot.http.handlers import UNBOUNDED
+from neubot.http.stream import BOUNDED
+from neubot.http.stream import CHUNK_LENGTH
+from neubot.http.stream import ERROR
+from neubot.http.stream import FIRSTLINE
+from neubot.http.stream import UNBOUNDED
 
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
