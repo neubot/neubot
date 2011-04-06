@@ -165,6 +165,8 @@ class Stream(Pollable):
         self.kickoffssl = 0
 
         self.measurer = None
+        self.bytes_recv_tot = 0
+        self.bytes_sent_tot = 0
         self.bytes_recv = 0
         self.bytes_sent = 0
 
@@ -304,6 +306,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and octets:
 
+            self.bytes_recv_tot += len(octets)
             self.bytes_recv += len(octets)
 
             self.recv_maxlen = 0
@@ -379,6 +382,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and count > 0:
 
+            self.bytes_sent_tot += count
             self.bytes_sent += count
 
             if count == len(self.send_octets):
