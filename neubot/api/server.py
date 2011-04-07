@@ -24,7 +24,7 @@ import StringIO
 import urlparse
 import cgi
 
-from neubot.http.messages import Message
+from neubot.http.message import Message
 from neubot.notify import STATECHANGE
 from neubot.net.poller import POLLER
 from neubot.times import timestamp

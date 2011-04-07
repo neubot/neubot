@@ -32,7 +32,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.http.stream import ERROR
-from neubot.http.messages import Message
+from neubot.http.message import Message
 from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.stream import StreamHTTP

@@ -40,7 +40,7 @@ from neubot.utils import versioncmp
 from neubot.log import LOG
 from neubot.state import STATE
 from neubot.http.server import ServerHTTP
-from neubot.http.messages import Message
+from neubot.http.message import Message
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 from neubot.http.client import ClientHTTP

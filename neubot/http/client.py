@@ -35,7 +35,7 @@ from neubot.options import OptionParser
 from neubot.utils import file_length
 from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
-from neubot.http.messages import Message
+from neubot.http.message import Message
 from neubot.net.poller import POLLER
 from neubot.net.stream import MEASURER
 from neubot.utils import safe_seek

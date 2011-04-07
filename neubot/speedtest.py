@@ -37,7 +37,7 @@ from neubot.arcfour import RandomData
 
 from neubot.database import database
 
-from neubot.http.messages import Message
+from neubot.http.message import Message
 from neubot.http.utils import parse_range
 from neubot.http.server import ServerHTTP
 from neubot.http.client import ClientHTTP
