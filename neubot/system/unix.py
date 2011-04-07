@@ -27,8 +27,6 @@
 import pwd
 import os.path
 import signal
-import sys
-
 import syslog
 
 class BackgroundLogger(object):
