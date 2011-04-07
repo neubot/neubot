@@ -25,53 +25,44 @@
 #
 
 import os.path
+import logging.handlers
 
-__all__ = []
+class BackgroundLogger(object):
 
-# BackgroundLogger
+    """Where to log messages when running in background under
+       windows -- note we nearly always run in background since
+       for windows neubot does not attach to a console."""
 
-if os.name == "nt":
+    def __init__(self):
+        formatter = logging.Formatter("%(message)s")
 
-    import logging.handlers
+        # XXX not passing our dllname here
+        handler = logging.handlers.NTEventLogHandler("neubot")
+        handler.setFormatter(formatter)
 
-    class BackgroundLogger(object):
+        self.logger = logging.Logger("neubot.win32.BackgroundLogger")
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.DEBUG)
 
-        """Where to log messages when running in background under
-           windows -- note we nearly always run in background since
-           for windows neubot does not attach to a console."""
+    def error(self, message):
+        self.logger.error(message)
 
-        def __init__(self):
-            formatter = logging.Formatter("%(message)s")
+    def warning(self, message):
+        self.logger.warning(message)
 
-            # XXX not passing our dllname here
-            handler = logging.handlers.NTEventLogHandler("neubot")
-            handler.setFormatter(formatter)
+    #
+    # We don't log at info() and warning() level when
+    # running as a windows application under Win32 because
+    # that might fill the log and the default policy does
+    # not help: it does not rotate logs, but rather it
+    # prevents further logging.
+    #
 
-            self.logger = logging.Logger("neubot.win32.BackgroundLogger")
-            self.logger.addHandler(handler)
-            self.logger.setLevel(logging.DEBUG)
+    def info(self, message):
+        pass
 
-        def error(self, message):
-            self.logger.error(message)
-
-        def warning(self, message):
-            self.logger.warning(message)
-
-        #
-        # We don't log at info() and warning() level when
-        # running as a windows application under Win32 because
-        # that might fill the log and the default policy does
-        # not help: it does not rotate logs, but rather it
-        # prevents further logging.
-        #
-
-        def info(self, message):
-            pass
-
-        def debug(self, message):
-            pass
-
-    __all__.append("BackgroundLogger")
+    def debug(self, message):
+        pass
 
 def change_dir():
     appdata = os.environ["APPDATA"]
