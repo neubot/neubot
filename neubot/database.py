@@ -43,7 +43,6 @@ from neubot.times import timestamp
 from neubot.compat import deque_appendleft
 from neubot.marshal import unmarshal_object
 from neubot.compat import json
-from neubot import version
 from neubot.log import LOG
 
 if os.name == "posix":
@@ -448,6 +447,8 @@ HELP = USAGE +								\
 
 BRIEF, DELETE, INIT, LIST, PRUNE, REBUILD = range(0,6)
 
+VERSION = "0.3.6"
+
 def main(args):
     fakerc = StringIO.StringIO()
     fakerc.write("[database]\n")
@@ -474,7 +475,7 @@ def main(args):
         elif name == "-l":
             action = LIST
         elif name == "-V":
-            sys.stdout.write(version + "\n")
+            sys.stdout.write(VERSION + "\n")
         elif name == "-v":
             LOG.verbose()
         elif name == "-z":

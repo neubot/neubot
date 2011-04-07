@@ -64,8 +64,6 @@ from neubot.utils import file_length
 from neubot.utils import become_daemon
 from neubot.utils import speed_formatter
 
-from neubot import version
-
 
 class SpeedtestCollect(object):
 
@@ -887,6 +885,8 @@ HELP = USAGE +								\
 
 URI = "http://neubot.blupixel.net/speedtest"
 
+VERSION = "0.3.6"
+
 def main(args):
     fakerc = StringIO.StringIO()
     fakerc.write("[speedtest]\r\n")
@@ -930,7 +930,7 @@ def main(args):
             # XXX for backward compatibility only
             pass
         elif name == "-V":
-            sys.stdout.write(version + "\n")
+            sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif name == "-v":
             LOG.verbose()
