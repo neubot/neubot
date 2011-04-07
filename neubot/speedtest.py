@@ -533,9 +533,8 @@ class DownloadMeasurer(ClientHTTP):
         STATE.update("test", "speedtest_download")
         LOG.start("* Download")
         self.done = False
-        self.timing = {}
-        self.obytes = {}
-        self.speed = []
+        self.timing = 0
+        self.total = {}
         self.count = 0
 
     def connection_ready(self, stream):
@@ -549,23 +548,22 @@ class DownloadMeasurer(ClientHTTP):
         request.compose(method="GET", uri=uri)
         request["authorization"] = authorization
 
-        self.timing[stream] = ticks()
-        self.obytes[stream] = stream.bytes_recv_tot
-        stream.send_request(request)
-
+        if self.count == 0:
+            self.timing = ticks()
         self.count += 1
 
+        self.total[stream] = stream.bytes_recv_tot
+        stream.send_request(request)
+
     def got_response(self, stream, request, response):
-        elapsed = ticks() - self.timing[stream]
-        speed = (stream.bytes_recv_tot - self.obytes[stream]) / elapsed
-        self.speed.append(speed)
+        self.total[stream] = stream.bytes_recv_tot - self.total[stream]
 
         if not self.conf.get("speedtest.client.full_test", False):
             stream.close()
 
         self.count -= 1
         if self.count == 0:
-            speed = sum(self.speed) / len(self.speed)
+            speed = sum(self.total.values()) / (ticks() - self.timing)
             self.conf.setdefault("speedtest.client.download", []).append(speed)
             STATE.update("speedtest_download",
               {"value": speed_formatter(speed)})
@@ -581,9 +579,8 @@ class UploadMeasurer(ClientHTTP):
         STATE.update("test", "speedtest_upload")
         LOG.start("* Upload")
         self.done = False
-        self.timing = {}
-        self.obytes = {}
-        self.speed = []
+        self.timing = 0
+        self.total = {}
         self.count = 0
 
     def connection_ready(self, stream):
@@ -599,23 +596,22 @@ class UploadMeasurer(ClientHTTP):
         request.compose(method="POST", uri=uri, chunked=body)
         request["authorization"] = authorization
 
-        self.timing[stream] = ticks()
-        self.obytes[stream] = stream.bytes_sent_tot
-        stream.send_request(request)
-
+        if self.count == 0:
+            self.timing = ticks()
         self.count += 1
 
+        self.total[stream] = stream.bytes_sent_tot
+        stream.send_request(request)
+
     def got_response(self, stream, request, response):
-        elapsed = ticks() - self.timing[stream]
-        speed = (stream.bytes_sent_tot - self.obytes[stream]) / elapsed
-        self.speed.append(speed)
+        self.total[stream] = stream.bytes_sent_tot - self.total[stream]
 
         if not self.conf.get("speedtest.client.full_test", False):
             stream.close()
 
         self.count -= 1
         if self.count == 0:
-            speed = sum(self.speed) / len(self.speed)
+            speed = sum(self.total.values()) / (ticks() - self.timing)
             self.conf.setdefault("speedtest.client.upload", []).append(speed)
             STATE.update("speedtest_upload",
               {"value": speed_formatter(speed)})
