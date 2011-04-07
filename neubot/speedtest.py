@@ -534,7 +534,7 @@ class DownloadMeasurer(ClientHTTP):
         LOG.start("* Download")
         self.done = False
         self.timing = {}
-        self.obytes = 0
+        self.obytes = {}
         self.speed = []
         self.count = 0
 
@@ -550,14 +550,14 @@ class DownloadMeasurer(ClientHTTP):
         request["authorization"] = authorization
 
         self.timing[stream] = ticks()
-        self.obytes = stream.bytes_recv_tot
+        self.obytes[stream] = stream.bytes_recv_tot
         stream.send_request(request)
 
         self.count += 1
 
     def got_response(self, stream, request, response):
         elapsed = ticks() - self.timing[stream]
-        speed = (stream.bytes_recv_tot - self.obytes) / elapsed
+        speed = (stream.bytes_recv_tot - self.obytes[stream]) / elapsed
         self.speed.append(speed)
 
         if not self.conf.get("speedtest.client.full_test", False):
@@ -582,7 +582,7 @@ class UploadMeasurer(ClientHTTP):
         LOG.start("* Upload")
         self.done = False
         self.timing = {}
-        self.obytes = 0
+        self.obytes = {}
         self.speed = []
         self.count = 0
 
@@ -600,14 +600,14 @@ class UploadMeasurer(ClientHTTP):
         request["authorization"] = authorization
 
         self.timing[stream] = ticks()
-        self.obytes = stream.bytes_sent_tot
+        self.obytes[stream] = stream.bytes_sent_tot
         stream.send_request(request)
 
         self.count += 1
 
     def got_response(self, stream, request, response):
         elapsed = ticks() - self.timing[stream]
-        speed = (stream.bytes_sent_tot - self.obytes) / elapsed
+        speed = (stream.bytes_sent_tot - self.obytes[stream]) / elapsed
         self.speed.append(speed)
 
         if not self.conf.get("speedtest.client.full_test", False):
