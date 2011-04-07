@@ -1,4 +1,4 @@
-# neubot/win32.py
+# neubot/system/win32.py
 
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,

@@ -1,4 +1,4 @@
-# neubot/system.py
+# neubot/system/__init__.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -23,16 +23,16 @@
 import os
 
 if os.name == "nt":
-    from neubot.win32 import BackgroundLogger
+    from neubot.system.win32 import BackgroundLogger
     ismacosx = lambda: False
-    from neubot.win32 import change_dir
-    from neubot.win32 import drop_privileges
-    from neubot.win32 import go_background
+    from neubot.system.win32 import change_dir
+    from neubot.system.win32 import drop_privileges
+    from neubot.system.win32 import go_background
 elif os.name == "posix":
-    from neubot.unix import BackgroundLogger
-    from neubot.unix import ismacosx
-    from neubot.unix import change_dir
-    from neubot.unix import drop_privileges
-    from neubot.unix import go_background
+    from neubot.system.unix import BackgroundLogger
+    from neubot.system.unix import ismacosx
+    from neubot.system.unix import change_dir
+    from neubot.system.unix import drop_privileges
+    from neubot.system.unix import go_background
 else:
     raise ImportError("Your system is not supported")
