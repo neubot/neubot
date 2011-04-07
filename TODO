@@ -1,3 +1,1 @@
-- Remove the length of the queue from the informations returned by
-  speedtest because this is not that interesting for the user.
 - Allow to start a test from /speedtest.html.
