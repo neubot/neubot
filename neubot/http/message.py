@@ -185,8 +185,3 @@ class Message(object):
             self["content-length"] = "0"
 
         self.family = kwargs.get("family", socket.AF_INET)
-
-
-# for compat
-def compose(m, **kwargs):
-    m.compose(**kwargs)
