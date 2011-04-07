@@ -29,37 +29,33 @@ import os.path
 import signal
 import sys
 
-if os.name == "posix":
+import syslog
 
-    import syslog
+class BackgroundLogger(object):
 
-    class BackgroundLogger(object):
+    """We don't use logging.handlers.SysLogHandler because that class
+       does not know the name of the UNIX domain socket in use for the
+       current operating system.  In many Unices the UNIX domain socket
+       name is /dev/log, but this is not true, for example, under the
+       Mac.  A better solution seems to use syslog because this is just
+       a wrapper to the host syslog library.  And who wrote such lib
+       for sure knows the UNIX domain socket location for the current
+       operating system."""
 
-        """
-        We don't use logging.handlers.SysLogHandler because that class
-        does not know the name of the UNIX domain socket in use for the
-        current operating system.  In many Unices the UNIX domain socket
-        name is /dev/log, but this is not true, for example, under the
-        Mac.  A better solution seems to use syslog because this is just
-        a wrapper to the host syslog library.  And who wrote such lib
-        for sure knows the UNIX domain socket location for the current
-        operating system.
-        """
+    def __init__(self):
+        syslog.openlog("neubot", syslog.LOG_PID)
 
-        def __init__(self):
-            syslog.openlog("neubot", syslog.LOG_PID)
+    def error(self, message):
+        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_ERR, message)
 
-        def error(self, message):
-            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_ERR, message)
+    def warning(self, message):
+        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_WARNING, message)
 
-        def warning(self, message):
-            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_WARNING, message)
+    def info(self, message):
+        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_INFO, message)
 
-        def info(self, message):
-            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_INFO, message)
-
-        def debug(self, message):
-            syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
+    def debug(self, message):
+        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
 
 #
 # We need to be the owner of /var/neubot because otherwise
