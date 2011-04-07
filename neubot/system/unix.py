@@ -29,35 +29,6 @@ import os.path
 import signal
 import sys
 
-# ismacosx()
-
-class _IsMacOSX:
-
-    """
-    MacOSX is "posix" and "darwin" but there are significant differences
-    from other Unices.  Therefore we need to identify MacOSX to adapt our
-    behavior.  For example, MacOSX does not use X11 and therefore we cannot
-    check for "DISPLAY" in os.environ to guess whether the graphical user
-    interface is available.
-    """
-
-    SystemVersion = "/System/Library/CoreServices/SystemVersion.plist"
-    ServerVersion = "/System/Library/CoreServices/ServerVersion.plist"
-
-    def __init__(self):
-        self.ismacosx = (sys.platform == "darwin" and
-         (os.path.exists(self.SystemVersion) or
-          os.path.exists(self.ServerVersion)))
-
-    def __call__(self):
-        return self.ismacosx
-
-ismacosx = _IsMacOSX()
-
-__all__ = [ "ismacosx" ]
-
-# BackgroundLogger
-
 if os.name == "posix":
 
     import syslog
@@ -89,8 +60,6 @@ if os.name == "posix":
 
         def debug(self, message):
             syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
-
-    __all__.append("BackgroundLogger")
 
 #
 # We need to be the owner of /var/neubot because otherwise
