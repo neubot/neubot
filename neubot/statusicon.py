@@ -63,7 +63,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.utils import become_daemon
-from neubot.api_client import APIStateTracker
+from neubot.api.client import APIStateTracker
 from neubot.net.poller import POLLER
 from neubot.log import LOG
 

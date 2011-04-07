@@ -247,7 +247,7 @@ Macros (defaults in square brackets):
     services=list      : Comma-separated list of services you
                          want to host.  Each service is a triple
                          module:constructor:prefix, e.g.:
-                             neubot.api_service:ServerAPI:/api     []
+                             neubot.api.server:ServerAPI:/api      []
     ssi                : Enable Server-Side Includes (SSI)         [False]
 
 You MUST specify the root directory if you want this webserver to

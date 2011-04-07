@@ -1,4 +1,4 @@
-# neubot/api_client.py
+# neubot/api/client.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -149,9 +149,9 @@ class APIStateTracker(ClientHTTP):
         sys.stdout.write("\n\n")
 
 
-USAGE = """Neubot api_client -- Minimal client for JSON API
+USAGE = """Neubot api.client -- Minimal client for JSON API
 
-Usage: neubot api_client [-Vv] [-D macro[=value]] [-f file] [--help]
+Usage: neubot api.client [-Vv] [-D macro[=value]] [-f file] [--help]
 
 Options:
     -D macro[=value]   : Set the value of the macro `macro`
@@ -171,8 +171,8 @@ VERSION = "Neubot 0.3.6\n"
 def main(args):
 
     conf = OptionParser()
-    conf.set_option("api_client", "address", "127.0.0.1")
-    conf.set_option("api_client", "port", "9774")
+    conf.set_option("api.client", "address", "127.0.0.1")
+    conf.set_option("api.client", "port", "9774")
 
     try:
         options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
@@ -186,7 +186,7 @@ def main(args):
 
     for name, value in options:
         if name == "-D":
-             conf.register_opt(value, "api_client")
+             conf.register_opt(value, "api.client")
              continue
         if name == "-f":
              conf.register_file(value)
@@ -207,8 +207,8 @@ def main(args):
 
     #XXX KVSTORE will cut this source of complexity off
     dictionary = {
-        "api.client.address": conf.get_option("api_client", "address"),
-        "api.client.port": conf.get_option("api_client", "port"),
+        "api.client.address": conf.get_option("api.client", "address"),
+        "api.client.port": conf.get_option("api.client", "port"),
     }
 
     client = APIStateTracker(POLLER)

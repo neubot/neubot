@@ -1,4 +1,4 @@
-# neubot/api_service.py
+# neubot/api/server.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,

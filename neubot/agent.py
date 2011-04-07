@@ -28,7 +28,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.http.server import ServerHTTP
-from neubot.api_service import ServerAPI
+from neubot.api.server import ServerAPI
 from neubot.rendezvous import RendezvousClient
 from neubot.options import OptionParser
 from neubot.system import change_dir
