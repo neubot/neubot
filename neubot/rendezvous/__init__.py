@@ -250,7 +250,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         STATE.update("next_rendezvous", self.task.timestamp, publish=False)
         STATE.update("idle")
 
-    def connection_failed(self, exception):
+    def connection_failed(self, connector, exception):
         STATE.update("rendezvous", {"status": "failed"})
         self._reschedule()
 
