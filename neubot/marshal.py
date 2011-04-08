@@ -32,23 +32,8 @@ if __name__ == "__main__":
 
 from neubot.compat import json
 
-# Utils
-
-def stringify(value):
-    if type(value) == types.UnicodeType:
-        return value.encode("utf-8")
-    elif type(value) == types.StringType:
-        return value
-    else:
-        return str(value)
-
-def unicodize(value):
-    if type(value) == types.UnicodeType:
-        return value
-    elif type(value) == types.StringType:
-        return value.decode("utf-8")
-    else:
-        return unicode(value)
+from neubot.utils import unicodize
+from neubot.utils import stringify
 
 # Marshal
 

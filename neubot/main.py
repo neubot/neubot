@@ -39,13 +39,6 @@ if __name__ == "__main__":
     path = path[:i]
     sys.path.insert(0, path)
 
-BOOLEANS = {
-    "false": False,
-    "0": False,
-    "no": False,
-    "off": False
-}
-
 USAGE = '''\
 neubot - The network neutrality bot
 
@@ -82,10 +75,12 @@ def main(argv):
         sys.stderr.write("please run neubot using Python >= 2.5 and < 3.0\n")
         sys.exit(1)
 
-    if BOOLEANS.get(os.environ.get("NEUBOT_DEBUG", "off").lower(), True):
-        sys.stderr.write("Running in debug mode\n")
-        from neubot.debug import PROFILER
-        sys.setprofile(PROFILER.notify_event)
+    if os.environ.get("NEUBOT_DEBUG", ""):
+        from neubot.utils import boolize
+        if boolize(os.environ["NEUBOT_DEBUG"]):
+            sys.stderr.write("Running in debug mode\n")
+            from neubot.debug import PROFILER
+            sys.setprofile(PROFILER.notify_event)
 
     # Quick argv classification
 

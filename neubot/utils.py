@@ -22,6 +22,7 @@
 
 import sys
 import os
+import types
 
 from neubot.log import LOG
 
@@ -119,8 +120,24 @@ def time_formatter(n):
 
 # Coerce types
 
-def asciify(s):
-    try:
-        return s.encode("ascii")
-    except UnicodeDecodeError:
-        raise ValueError("ssi: Cannot ASCIIfy path name")
+def asciiify(s):
+    return s.encode("ascii")
+
+def stringify(value):
+    if type(value) == types.UnicodeType:
+        return value.encode("utf-8")
+    elif type(value) == types.StringType:
+        return value
+    else:
+        return str(value)
+
+def unicodize(value):
+    if type(value) == types.UnicodeType:
+        return value
+    elif type(value) == types.StringType:
+        return value.decode("utf-8")
+    else:
+        return unicode(value)
+
+def boolize(s):
+    return str(s).lower() not in ("0", "off", "false", "no")
