@@ -101,3 +101,10 @@ def redirect_to_dev_null():
     os.open("/dev/null", os.O_RDWR)
     os.open("/dev/null", os.O_RDWR)
     os.open("/dev/null", os.O_RDWR)
+
+def want_rw_file(file):
+    open(file, "ab+").close()
+    if os.getuid() == 0:
+        passwd = pwd.getpwnam("_neubot")
+        os.chown(file, passwd.pw_uid, passwd.pw_gid)
+    os.chmod(file, 0644)

@@ -45,8 +45,7 @@ from neubot.marshal import unmarshal_object
 from neubot.compat import json
 from neubot.log import LOG
 
-if os.name == "posix":
-    from neubot.utils import getpwnamlx
+from neubot.system import want_rw_file
 
 #
 # Config table.
@@ -213,27 +212,7 @@ class DatabaseManager:
 
     def _do_connect(self):
         LOG.debug("* Connecting to database: %s" % self.config.path)
-        #
-        # Make sure that we can access the database file or fail making
-        # noise (rationale: the error + stacktrace is likely to be less
-        # obscure than the one sqlite3 would print in this case).
-        #
-        try:
-            fp = open(self.config.path, "ab+")
-        except (IOError, OSError):
-            LOG.error("Can't open/access database file: %s" % self.config.path)
-            LOG.exception()
-            sys.exit(1)
-        else:
-            fp.close()
-        if os.name == "posix" and os.getuid() == 0:
-            #
-            # Make sure that the sqlite3 module will be
-            # able to open/write the database after we drop
-            # root privileges.
-            #
-            passwd = getpwnamlx()
-            os.chown(self.config.path, passwd.pw_uid, passwd.pw_gid)
+        want_rw_file(self.config.path)
         self.connection = sqlite3.connect(self.config.path)
         cursor = self.connection.cursor()
         self._make_config(cursor)

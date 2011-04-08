@@ -79,3 +79,6 @@ def drop_privileges():
 
 def redirect_to_dev_null():
     pass
+
+def want_rw_file(path):
+    pass
