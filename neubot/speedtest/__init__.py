@@ -56,12 +56,16 @@ from neubot.notify import TESTDONE
 
 from neubot.state import STATE
 
+from neubot.system import change_dir
+from neubot.system import go_background
+from neubot.system import write_pidfile
+from neubot.system import drop_privileges
+
 from neubot.times import timestamp
 from neubot.times import ticks
 
 from neubot.utils import time_formatter
 from neubot.utils import file_length
-from neubot.utils import become_daemon
 from neubot.utils import speed_formatter
 
 
@@ -946,7 +950,11 @@ def main(args):
         database.start()
         speedtest.start()
         if daemonize:
-            become_daemon()
+            change_dir()
+            go_background()
+            write_pidfile()
+            LOG.redirect()
+            drop_privileges()
         POLLER.loop()
         sys.exit(0)
     # client

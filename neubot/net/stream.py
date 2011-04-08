@@ -39,11 +39,15 @@ if __name__ == "__main__":
 from neubot.net.poller import Pollable
 from neubot.options import OptionParser
 from neubot.net.poller import POLLER
-from neubot.utils import become_daemon
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.times import ticks
 from neubot.log import LOG
+
+from neubot.system import change_dir
+from neubot.system import go_background
+from neubot.system import write_pidfile
+from neubot.system import drop_privileges
 
 SUCCESS = 0
 ERROR = 1
@@ -927,7 +931,11 @@ def main(args):
 
     if listen:
         if daemonize:
-            become_daemon()
+            change_dir()
+            go_background()
+            write_pidfile()
+            LOG.redirect()
+            drop_privileges()
         dictionary["server_side"] = True
         handler.listen(endpoint)
         POLLER.loop()
