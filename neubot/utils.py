@@ -23,9 +23,6 @@
 import sys
 import os
 
-if os.name == "posix":
-    import pwd
-
 from neubot.log import LOG
 
 def versioncmp(left, right):
@@ -120,31 +117,7 @@ def time_formatter(n):
     else:
         return "%f" % n
 
-#
-# Daemonize
-#
-
-USERS = ["_neubot", "nobody"]
-
-def getpwnaml(users=USERS):
-    passwd = None
-    if os.name == "posix":
-        for user in users:
-            try:
-                passwd = pwd.getpwnam(user)
-            except KeyError:
-                pass
-            else:
-                break
-    return passwd
-
-def getpwnamlx(users=USERS):
-    passwd = getpwnaml(users)
-    if not passwd:
-        LOG.error("* Can't getpwnam for: %s" % str(users))
-        # XXX Because we catch SystemExit where we should not
-        os._exit(1)
-    return passwd
+# Coerce types
 
 def asciify(s):
     try:
