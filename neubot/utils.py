@@ -138,3 +138,6 @@ def unicodize(value):
         return value.decode("utf-8")
     else:
         return unicode(value)
+
+def boolize(s):
+    return str(s).lower() not in ("0", "off", "false", "no")
