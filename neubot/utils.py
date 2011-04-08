@@ -121,10 +121,7 @@ def time_formatter(n):
 # Coerce types
 
 def asciiify(s):
-    try:
-        return s.encode("ascii")
-    except UnicodeDecodeError:
-        raise ValueError("ssi: Cannot ASCIIfy path name")
+    return s.encode("ascii")
 
 def stringify(value):
     if type(value) == types.UnicodeType:
