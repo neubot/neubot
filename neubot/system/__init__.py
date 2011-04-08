@@ -36,3 +36,8 @@ elif os.name == "posix":
     from neubot.system.unix import redirect_to_dev_null
 else:
     raise ImportError("Your system is not supported")
+
+def write_pidfile():
+    with open("neubot.pid", "w") as fp:
+        fp.write(os.getpid())
+        fp.write("\n")
