@@ -123,8 +123,7 @@ class Logger(object):
     # Log functions
 
     def exception(self):
-        content = traceback.format_exc()
-        for line in content.splitlines():
+        for line in traceback.format_exc():
             self._log(self.logger.error, line)
 
     def error(self, message):
