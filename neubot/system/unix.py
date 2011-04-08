@@ -94,3 +94,10 @@ def drop_privileges():
         passwd = pwd.getpwnam("_neubot")
         os.setgid(passwd.pw_gid)
         os.setuid(passwd.pw_uid)
+
+def redirect_to_dev_null():
+    for fd in range(0,3):
+        os.close(fd)
+    os.open("/dev/null", os.O_RDWR)
+    os.open("/dev/null", os.O_RDWR)
+    os.open("/dev/null", os.O_RDWR)

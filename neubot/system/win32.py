@@ -76,3 +76,6 @@ def go_background():
 
 def drop_privileges():
     pass
+
+def redirect_to_dev_null():
+    pass

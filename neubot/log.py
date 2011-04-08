@@ -34,6 +34,7 @@ if __name__ == "__main__":
 
 from neubot.compat import deque_append
 from neubot.system import BackgroundLogger
+from neubot.system import redirect_to_dev_null
 from neubot.compat import json
 from neubot.times import timestamp
 
@@ -79,6 +80,7 @@ class Logger(object):
 
     def redirect(self):
         self.logger = BackgroundLogger()
+        redirect_to_dev_null()
         self.interactive = False
 
     #

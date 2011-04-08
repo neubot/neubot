@@ -27,10 +27,12 @@ if os.name == "nt":
     from neubot.system.win32 import change_dir
     from neubot.system.win32 import go_background
     from neubot.system.win32 import drop_privileges
+    from neubot.system.win32 import redirect_to_dev_null
 elif os.name == "posix":
     from neubot.system.unix import BackgroundLogger
     from neubot.system.unix import change_dir
     from neubot.system.unix import go_background
     from neubot.system.unix import drop_privileges
+    from neubot.system.unix import redirect_to_dev_null
 else:
     raise ImportError("Your system is not supported")
