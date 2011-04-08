@@ -71,8 +71,8 @@ def change_dir():
         os.mkdir(datadir, 0755)
     os.chdir(datadir)
 
-def drop_privileges():
+def go_background():
     pass
 
-def go_background():
+def drop_privileges():
     pass

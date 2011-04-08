@@ -78,12 +78,6 @@ def change_dir():
 
     os.chdir(datadir)
 
-def drop_privileges():
-    if os.getuid() == 0:
-        passwd = pwd.getpwnam("_neubot")
-        os.setgid(passwd.pw_gid)
-        os.setuid(passwd.pw_uid)
-
 def go_background():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
@@ -94,3 +88,9 @@ def go_background():
 
     if os.fork() > 0:
         os._exit(0)
+
+def drop_privileges():
+    if os.getuid() == 0:
+        passwd = pwd.getpwnam("_neubot")
+        os.setgid(passwd.pw_gid)
+        os.setuid(passwd.pw_uid)
