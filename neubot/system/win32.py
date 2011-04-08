@@ -71,8 +71,14 @@ def change_dir():
         os.mkdir(datadir, 0755)
     os.chdir(datadir)
 
+def go_background():
+    pass
+
 def drop_privileges():
     pass
 
-def go_background():
+def redirect_to_dev_null():
+    pass
+
+def want_rw_file(path):
     pass

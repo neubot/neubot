@@ -78,12 +78,6 @@ def change_dir():
 
     os.chdir(datadir)
 
-def drop_privileges():
-    if os.getuid() == 0:
-        passwd = pwd.getpwnam("_neubot")
-        os.setgid(passwd.pw_gid)
-        os.setuid(passwd.pw_uid)
-
 def go_background():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
@@ -94,3 +88,23 @@ def go_background():
 
     if os.fork() > 0:
         os._exit(0)
+
+def drop_privileges():
+    if os.getuid() == 0:
+        passwd = pwd.getpwnam("_neubot")
+        os.setgid(passwd.pw_gid)
+        os.setuid(passwd.pw_uid)
+
+def redirect_to_dev_null():
+    for fd in range(0,3):
+        os.close(fd)
+    os.open("/dev/null", os.O_RDWR)
+    os.open("/dev/null", os.O_RDWR)
+    os.open("/dev/null", os.O_RDWR)
+
+def want_rw_file(file):
+    open(file, "ab+").close()
+    if os.getuid() == 0:
+        passwd = pwd.getpwnam("_neubot")
+        os.chown(file, passwd.pw_uid, passwd.pw_gid)
+    os.chmod(file, 0644)

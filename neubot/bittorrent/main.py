@@ -28,12 +28,16 @@ if __name__ == "__main__":
 
 from neubot.bittorrent.stream import BTStream
 from neubot.net.stream import StreamHandler
-from neubot.utils import become_daemon
 from neubot.options import OptionParser
 from neubot.net.stream import MEASURER
 from neubot.net.poller import POLLER
 from neubot.arcfour import arcfour_new
 from neubot.log import LOG
+
+from neubot.system import change_dir
+from neubot.system import go_background
+from neubot.system import write_pidfile
+from neubot.system import drop_privileges
 
 
 class Upload(object):
@@ -229,7 +233,11 @@ def main(args):
 
     if listen:
         if daemonize:
-            become_daemon()
+            change_dir()
+            go_background()
+            write_pidfile()
+            LOG.redirect()
+            drop_privileges()
         listener = BTListeningPeer(POLLER)
         listener.configure(dictionary)
         listener.listen(endpoint)

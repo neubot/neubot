@@ -21,11 +21,7 @@
 #
 
 import sys
-import signal
 import os
-
-if os.name == "posix":
-    import pwd
 
 from neubot.log import LOG
 
@@ -121,91 +117,7 @@ def time_formatter(n):
     else:
         return "%f" % n
 
-#
-# Daemonize
-#
-
-DAEMON_SYSLOG = 1<<0
-DAEMON_CHDIR = 1<<1
-DAEMON_DETACH = 1<<2
-DAEMON_SIGNAL = 1<<3
-DAEMON_PIDFILE = 1<<4
-DAEMON_DROP = 1<<5
-
-DAEMON_ALL = (DAEMON_SYSLOG|DAEMON_CHDIR|DAEMON_DETACH|DAEMON_SIGNAL|
-              DAEMON_PIDFILE|DAEMON_DROP)
-
-USERS = ["_neubot", "nobody"]
-
-def getpwnaml(users=USERS):
-    passwd = None
-    if os.name == "posix":
-        for user in users:
-            try:
-                passwd = pwd.getpwnam(user)
-            except KeyError:
-                pass
-            else:
-                break
-    return passwd
-
-def getpwnamlx(users=USERS):
-    passwd = getpwnaml(users)
-    if not passwd:
-        LOG.error("* Can't getpwnam for: %s" % str(users))
-        # XXX Because we catch SystemExit where we should not
-        os._exit(1)
-    return passwd
-
-def become_daemon(flags=DAEMON_ALL):
-    if os.name == "posix":
-        try:
-            if flags & DAEMON_SYSLOG:
-                LOG.debug("* Redirect logs to syslog(3)")
-                LOG.redirect()
-                for descriptor in range(0,3):
-                    os.close(descriptor)
-                devnull = os.open("/dev/null", os.O_RDWR)
-                for descriptor in range(1,3):
-                    os.dup2(devnull, descriptor)
-            if flags & DAEMON_CHDIR:
-                LOG.debug("* Move working directory to /")
-                os.chdir("/")
-            if flags & DAEMON_DETACH:
-                LOG.debug("* Detach from controlling tty")
-                if os.fork() > 0:
-                    os._exit(0)
-                LOG.debug("* Become leader of a new session")
-                os.setsid()
-                LOG.debug("* Detach from controlling session")
-                if os.fork() > 0:
-                    os._exit(0)
-            if flags & DAEMON_SIGNAL:
-                LOG.debug("* Ignoring the SIGINT signal")
-                signal.signal(signal.SIGINT, signal.SIG_IGN)
-            if flags & DAEMON_PIDFILE:
-                pidfiles = ["/var/run/neubot.pid"]
-                if os.environ.has_key("HOME"):
-                    pidfiles.append(os.environ["HOME"] + "/.neubot/pidfile")
-                for pidfile in pidfiles:
-                    try:
-                        f = open(pidfile, "wb")
-                        f.write(str(os.getpid()) + "\n")
-                        f.close()
-                        LOG.debug("* Written pidfile: %s" % pidfile)
-                        break
-                    except (IOError, OSError):
-                        pass
-            if flags & DAEMON_DROP and os.getuid() == 0:
-                passwd = getpwnamlx()
-                os.setgid(passwd.pw_gid)
-                os.setuid(passwd.pw_uid)
-        except:
-            LOG.error("fatal: become_daemon() failed")
-            LOG.exception()
-            os._exit(1)
-    else:
-        pass
+# Coerce types
 
 def asciify(s):
     try:

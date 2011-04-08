@@ -32,7 +32,6 @@ if __name__ == "__main__":
 from neubot.config import CONFIG
 
 from neubot.speedtest import SpeedtestController
-from neubot.utils import become_daemon
 from ConfigParser import SafeConfigParser
 from neubot.net.poller import POLLER
 from neubot.database import database
@@ -44,6 +43,11 @@ from neubot.http.message import Message
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 from neubot.http.client import ClientHTTP
+
+from neubot.system import change_dir
+from neubot.system import go_background
+from neubot.system import write_pidfile
+from neubot.system import drop_privileges
 
 VERSION = "0.3.7"
 
@@ -394,7 +398,11 @@ def main(args):
         database.start()
         rendezvous.start()
         if daemonize:
-            become_daemon()
+            change_dir()
+            go_background()
+            write_pidfile()
+            LOG.redirect()
+            drop_privileges()
         POLLER.loop()
         sys.exit(0)
 
@@ -407,7 +415,11 @@ def main(args):
         uri = URI
     database.start()
     if daemonize:
-        become_daemon()
+        change_dir()
+        go_background()
+        write_pidfile()
+        LOG.redirect()
+        drop_privileges()
     client = RendezvousClient(POLLER)
     client.init(uri, interval, dontloop, xdebug)
     client.rendezvous()
