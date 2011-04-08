@@ -1,4 +1,4 @@
-# neubot/debug.py
+# neubot/debug/__init__.py
 
 #
 # Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
