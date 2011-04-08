@@ -39,7 +39,7 @@ from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
 from neubot.utils import safe_seek
 from neubot.options import OptionParser
-from neubot.utils import asciify
+from neubot.utils import asciiify
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 
@@ -174,10 +174,10 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
-        rootdir = asciify(rootdir)
-        uripath = asciify(request.uri)
+        rootdir = asciiify(rootdir)
+        uripath = asciiify(request.uri)
         fullpath = os.path.normpath(rootdir + uripath)
-        fullpath = asciify(fullpath)
+        fullpath = asciiify(fullpath)
 
         if not fullpath.startswith(rootdir):
             response.compose(code="403", reason="Forbidden",

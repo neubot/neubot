@@ -120,7 +120,7 @@ def time_formatter(n):
 
 # Coerce types
 
-def asciify(s):
+def asciiify(s):
     try:
         return s.encode("ascii")
     except UnicodeDecodeError:

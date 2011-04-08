@@ -28,7 +28,7 @@
 # enforce an ASCII-only policy on all the path names.
 #
 
-from neubot.utils import asciify
+from neubot.utils import asciiify
 
 import sys
 import os.path
@@ -38,11 +38,11 @@ MAXDEPTH = 8
 REGEX = '<!--#include virtual="([A-Za-z0-9./_-]+)"-->'
 
 def ssi_open(rootdir, path, mode):
-    rootdir = asciify(rootdir)
-    path = asciify(path)
+    rootdir = asciiify(rootdir)
+    path = asciiify(path)
     path = os.sep.join([rootdir, path])
     path = os.path.normpath(path)
-    path = asciify(path)
+    path = asciiify(path)
     if not path.startswith(rootdir):
         raise ValueError("ssi: Path name below root directory")
     return open(path, mode)
