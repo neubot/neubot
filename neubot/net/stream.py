@@ -41,7 +41,7 @@ from neubot.options import OptionParser
 from neubot.net.poller import POLLER
 from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
-from neubot.times import ticks
+from neubot.utils import ticks
 from neubot.log import LOG
 
 from neubot.system import change_dir

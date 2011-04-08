@@ -39,7 +39,7 @@ import uuid
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.times import timestamp
+from neubot.utils import timestamp
 from neubot.compat import deque_appendleft
 from neubot.marshal import unmarshal_object
 from neubot.compat import json

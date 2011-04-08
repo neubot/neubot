@@ -25,9 +25,9 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.times import timestamp
+from neubot.utils import timestamp
 from neubot.utils import speed_formatter
-from neubot.times import ticks
+from neubot.utils import ticks
 
 from neubot.log import LOG
 

@@ -61,8 +61,8 @@ from neubot.system import go_background
 from neubot.system import write_pidfile
 from neubot.system import drop_privileges
 
-from neubot.times import timestamp
-from neubot.times import ticks
+from neubot.utils import timestamp
+from neubot.utils import ticks
 
 from neubot.utils import time_formatter
 from neubot.utils import file_length

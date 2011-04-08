@@ -36,7 +36,7 @@ from neubot.compat import deque_append
 from neubot.system import BackgroundLogger
 from neubot.system import redirect_to_dev_null
 from neubot.compat import json
-from neubot.times import timestamp
+from neubot.utils import timestamp
 
 
 class InteractiveLogger(object):

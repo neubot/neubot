@@ -30,7 +30,7 @@
 import collections
 
 from neubot.net.poller import POLLER
-from neubot.times import T
+from neubot.utils import T
 from neubot.log import LOG
 
 INTERVAL = 10

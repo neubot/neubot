@@ -23,8 +23,8 @@
 import errno
 import select
 
-from neubot.times import ticks
-from neubot.times import timestamp
+from neubot.utils import ticks
+from neubot.utils import timestamp
 from neubot.log import LOG
 
 # Interval between each check for timed-out I/O operations

@@ -27,7 +27,7 @@ import cgi
 from neubot.http.message import Message
 from neubot.notify import STATECHANGE
 from neubot.net.poller import POLLER
-from neubot.times import timestamp
+from neubot.utils import timestamp
 from neubot.config import CONFIG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE

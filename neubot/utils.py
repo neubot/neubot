@@ -23,8 +23,7 @@
 import sys
 import os
 import types
-
-from neubot.log import LOG
+import time
 
 def versioncmp(left, right):
     left = map(int, left.split("."))
@@ -141,3 +140,37 @@ def unicodize(value):
 
 def boolize(s):
     return str(s).lower() not in ("0", "off", "false", "no")
+
+
+#
+# The various definitions of time available in Neubot.
+#
+# timestamp()
+#   Returns an integer representing the number of seconds elapsed
+#   since the EPOCH in UTC.
+#
+# ticks()
+#   Returns a real representing the most precise clock available
+#   on the current platform.  Note that, depending on the platform,
+#   the returned value MIGHT NOT be a timestamp.  So, you MUST
+#   use this clock to calculate the time elapsed between two events
+#   ONLY.
+#
+# T()
+#   Returns the opaque time, i.e. the time used to identify
+#   events by the web user interface.  This is an integer, and
+#   is calculated as follows: ``int(10^6 * ticks())``.  So,
+#   the same caveat regarding ticks() also applies to this
+#   function.
+#
+
+timestamp = lambda: int(time.time())
+
+if os.name == 'nt':
+    ticks = time.clock
+elif os.name == 'posix':
+    ticks = time.time
+else:
+    raise ImportError("Please, provide a definition of ticks()")
+
+T = lambda: int(1000000 * ticks())
