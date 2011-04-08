@@ -84,8 +84,8 @@ def main(argv):
 
     if BOOLEANS.get(os.environ.get("NEUBOT_DEBUG", "off").lower(), True):
         sys.stderr.write("Running in debug mode\n")
-        from neubot import debug
-        sys.setprofile(debug.trace)
+        from neubot.debug import PROFILER
+        sys.setprofile(PROFILER.notify_event)
 
     # Quick argv classification
 

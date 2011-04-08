@@ -1,7 +1,7 @@
 # neubot/debug/__init__.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,16 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Code for debugging
-#
-# To enable tracing, do::
-#   sys.setprofile(neubot.debug.trace)
-#
-
 import sys
 
-class Profiler:
+
+class Profiler(object):
+
     def __init__(self):
         self.enabled = True
         self.frameno = 0
@@ -37,10 +32,12 @@ class Profiler:
 
     def _getfilename(self, frame):
         if frame.f_globals.has_key("__file__"):
+
             name = frame.f_globals["__file__"]
             if not name:
                 # XXX this is quite unexpected
                 name = "???"
+
             if name.endswith(".pyc") or name.endswith(".pyo"):
                 name = name[:-1]
             for pattern in ["neubot/", "python2.5/", "python2.6/", "python/"]:
@@ -48,18 +45,19 @@ class Profiler:
                 if index > 0:
                     name = name[index+len(pattern):]
                     break
+
         else:
             name = "???"
+
         return name
 
     #
     # We stop tracing when we exit from the frame number zero.
     # This happens because we start tracing when the Python program
     # is already running, and so _our_ zero is actually a positive
-    # frame number in the Python stack.
-    # This seems not a problem because usually we're interested
-    # to trace just a subset of the script (for example the main()
-    # function of neubot/main.py)
+    # frame number in Python's stack.
+    # This is not a problem because usually we're interested in
+    # tracing just a subset of the script.
     #
     # We also avoid diving into the logging module because this module
     # invokes loads of other functions of the standard python library,
@@ -68,8 +66,10 @@ class Profiler:
 
     def notify_event(self, frame, event, arg):
         if event in ["call", "return"]:
+
             fname = self._getfilename(frame)
             func = frame.f_code.co_name
+
             if event == "return":
                 self.frameno -= 1
                 if not self.enabled and self.frameno == self.depth:
@@ -77,16 +77,18 @@ class Profiler:
                 if self.frameno < 0:
                     sys.setprofile(None)
                     return
+
             if self.enabled:
                 lineno = frame.f_lineno
                 prefix  = "    " * self.frameno
                 buff = "%s%s %s:%d:%s()\n" % (prefix,event,fname,lineno,func)
                 sys.stderr.write(buff)
+
             if event == "call":
                 if self.enabled and fname.startswith("logging/"):
                     self.enabled = False
                     self.depth = self.frameno
                 self.frameno += 1
 
-profiler = Profiler()
-trace = profiler.notify_event
+
+PROFILER = Profiler()
