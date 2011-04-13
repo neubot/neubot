@@ -42,6 +42,7 @@ from neubot.options import OptionParser
 from neubot.utils import asciiify
 from neubot.log import LOG
 from neubot.net.poller import POLLER
+from neubot.utils import import_class
 
 # 3-letter abbreviation of month names, note that
 # python tm.tm_mon is in range [1,12]
@@ -243,11 +244,10 @@ Options:
 Macros (defaults in square brackets):
     address=addr       : Select the address to use                 [0.0.0.0]
     ports=port         : Comma-separated list of ports to use      [8080]
+    rdr-to=PREFIX:CLASS: Redirect requests that starts with PREFIX
+                         to the ServerHTTP subclass CLASS, e.g.::
+                             -Drdr-to=/api:api.server.ServerAPI    []
     rootdir=dir        : Specify root directory for WWW            []
-    services=list      : Comma-separated list of services you
-                         want to host.  Each service is a triple
-                         module:constructor:prefix, e.g.:
-                             neubot.api.server:ServerAPI:/api      []
     ssi                : Enable Server-Side Includes (SSI)         [False]
 
 You MUST specify the root directory if you want this webserver to
@@ -256,18 +256,13 @@ serve pages requests.
 
 VERSION = "Neubot 0.3.6\n"
 
-def register_child(server, module, constructor, prefix):
-    exec "from %s import %s as CHILD" % (module, constructor)
-    child = CHILD(server.poller)
-    server.register_child(child, prefix)
-
 def main(args):
 
     conf = OptionParser()
     conf.set_option("httpd", "address", "0.0.0.0")
     conf.set_option("httpd", "ports", "8080")
+    conf.set_option("httpd", "rdr-to", "")
     conf.set_option("httpd", "rootdir", "")
-    conf.set_option("httpd", "services", "")
     conf.set_option("httpd", "ssi", "False")
 
     try:
@@ -299,8 +294,8 @@ def main(args):
 
     address = conf.get_option("httpd", "address")
     ports = conf.get_option("httpd", "ports")
+    rdrto = conf.get_option("httpd", "rdr-to")
     rootdir = conf.get_option("httpd", "rootdir")
-    services = conf.get_option("httpd", "services")
     ssi = conf.get_option_bool("httpd", "ssi")
 
     dictionary = {
@@ -311,10 +306,11 @@ def main(args):
     server = ServerHTTP(POLLER)
     server.configure(dictionary)
 
-    if services:
-        for x in services.split(","):
-            module, constructor, prefix = x.split(":", 2)
-            register_child(server, module, constructor, prefix)
+    if rdrto:
+        prefix, classname = rdrto.split(":", 1)
+        make_child = import_class(classname)
+        child = make_child(server.poller)
+        server.register_child(child, prefix)
 
     for port in ports.split(","):
         endpoint = (address, port)

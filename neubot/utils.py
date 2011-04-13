@@ -174,3 +174,13 @@ else:
     raise ImportError("Please, provide a definition of ticks()")
 
 T = lambda: int(1000000 * ticks())
+
+# dynamic loader
+
+def import_class(name):
+    if not name.startswith("neubot"):
+        name = "neubot." + name
+    index = name.rfind(".")
+    module, ctor = name[:index], name[index+1:]
+    ctx = __import__(module, globals(), locals(), [ctor])
+    return ctx.__dict__[ctor]
