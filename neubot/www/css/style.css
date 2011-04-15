@@ -248,12 +248,9 @@ h2, h2 a, h2 a:hover, h2 a:visited, h3, h3 a, h3 a:hover, h3 a:visited, h4, h4 a
     display: inline;
     font-style: normal;
 }
-.hentry {
-    margin: 5px 0pt
-15px;
-    position: relative;
-}
 .entry-content {
+    margin: 5px 0pt 15px;
+    position: relative;
     color: rgb(68, 68, 68);
     font-size: 1.2em;
     line-height: 1.8em;
@@ -445,4 +442,17 @@ a#x_link_to_status {
     width: 400px;
     left: 32px;
     top: 15px;
+}
+.box-title {
+    text-align: center;
+}
+#box-results {
+    text-align: center;
+    color: #3da64e;
+    font-size: normal;
+}
+#chartdiv1 {
+    margin-bottom: 20px;
+    height: 400px;
+    width: 100%;
 }
