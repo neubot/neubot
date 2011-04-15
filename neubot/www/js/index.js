@@ -1,4 +1,4 @@
-/* neubot/www/js/neubot.js */
+/* neubot/www/js/index.js */
 /*-
  * Copyright (c) 2010 Antonio Servetti <antonio.servetti@polito.it>,
  *  Politecnico di Torino
