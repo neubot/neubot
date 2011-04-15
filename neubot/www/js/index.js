@@ -30,23 +30,8 @@
 
 function process_state(data) {
 
-    var actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
     var now = utils.getNow();
-    var value;
-
-    // Reset style
-
-    jQuery('#testResultsBox h4').text("Latest test details");
-
-    // Keep processing simple to read and understand:
-    // consider each relevant event on its own and delay
-    // the show / hide decisions
-
-    if (data.events.config) {
-        if (data.events.config.enabled != undefined) {
-            setStatusLabels(data.events.config.enabled);
-        }
-    }
+    var value = '';
 
     if (data.events.pid) {
         jQuery("#pid").text(data.events.pid);
@@ -67,14 +52,6 @@ function process_state(data) {
         }
     }
 
-    if (data.events.update && data.events.update.uri
-      && data.events.update.version) {
-        jQuery("#updateUrl").attr("href", data.events.update.uri);
-        jQuery("#updateUrl").text(data.events.update.uri);
-        jQuery("#updateVersion").text(data.events.update.version);
-        setTimeout(function() { jQuery('#update').slideDown("slow"); }, 500);
-    }
-
     if (data.events.negotiate) {
         if (data.events.negotiate.queue_pos) {
             jQuery("#queuePos").text(data.events.negotiate.queue_pos);
@@ -87,19 +64,6 @@ function process_state(data) {
     if (data.events.test_name) {
         // XXX XXX XXX This is sooo ugly!
         jQuery("#testName").text(data.events.test_name);
-        jQuery("#testName1").text(data.events.test_name);
-    }
-
-    if (data.events.speedtest_latency) {
-        jQuery("#latencyResult").text(data.events.speedtest_latency.value);
-    }
-
-    if (data.events.speedtest_download) {
-        jQuery("#downloadResult").text(data.events.speedtest_download.value);
-    }
-
-    if (data.events.speedtest_upload) {
-        jQuery("#uploadResult").text(data.events.speedtest_upload.value);
     }
 
     // Update the results plot after a test
@@ -107,31 +71,10 @@ function process_state(data) {
 
     // Not yet
     /*
-    if (in_array(data.current, actions) && data.current == "collect")
+    if (in_array(data.current, state.actions) && data.current == "collect")
         neubot.update_results_plot();
     */
 
-    // Adjust style
-    // The qtip must be visible while we are testing
-    // and must not be visible otherwise
-    // data.current should always be in_array() but I am leaving the
-    // check in-place for robustness and simmetry with state.py
-
-    if (in_array(data.current, actions)) {
-        if (data.current == "negotiate") {
-            jQuery("#latencyResult").text("---");
-            jQuery("#downloadResult").text("---");
-            jQuery("#uploadResult").text("---");
-        }
-        if (data.current == "test") {
-            jQuery('#testResultsBox').qtip("show");
-        }
-        else {
-            jQuery('#testResultsBox').qtip("hide");
-        }
-        jQuery('table#state tr').css('background-color', 'transparent');
-        jQuery('table#state tr#' + data.current).css('background-color', '#ffc');
-    }
 }
 
 jQuery(document).ready(function() {
