@@ -72,8 +72,11 @@ class ServerAPI(ServerHTTP):
             s = request.body.read()
             unmarshal_objectx(s, "application/x-www-form-urlencoded", CONFIG)
             STATE.update("config", CONFIG.__dict__)
+            # Empty JSON b/c '204 No Content' is treated as an error
+            s = "{}"
+        else:
+            s = marshal_object(CONFIG, "application/json")
 
-        s = marshal_object(CONFIG, "application/json")
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")
