@@ -145,14 +145,20 @@ class Logger(object):
             self._log(self.logger.debug, message)
 
     def log_access(self, message):
-        # Note enqueue MUST be False to avoid /api/logs comet storm
-        self._log(self.logger.info, message, False)
+        #
+        # CAVEAT Currently Neubot do not update logs "in real
+        # time" using AJAX.  If it did we would run in trouble
+        # because each request for /api/log would generate a
+        # new access log record.  A new access log record will
+        # cause a new "logwritten" event.  And the result is
+        # something like a Comet storm.
+        #
+        self._log(self.logger.info, message)
 
-    def _log(self, printlog, message, enqueue=True):
+    def _log(self, printlog, message):
         if message[-1] == "\n":
             message = message[:-1]
-        if enqueue:
-            deque_append(self.queue, self.maxqueue, (timestamp(), message))
+        deque_append(self.queue, self.maxqueue, (timestamp(), message))
         printlog(message)
 
     # Marshal
