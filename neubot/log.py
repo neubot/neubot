@@ -56,6 +56,7 @@ class InteractiveLogger(object):
         def debug(self, message):
             sys.stderr.write(message + "\n")
 
+
 class Logger(object):
 
     """Main wrapper for logging.  The queue allows us to export
@@ -162,6 +163,7 @@ class Logger(object):
                 "message": message,
             })
         return json.dumps(results)
+
 
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
