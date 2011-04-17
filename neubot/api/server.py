@@ -28,6 +28,7 @@ from neubot.config import CONFIG
 from neubot.database import database
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
+from neubot.log import LOG
 from neubot.marshal import marshal_object
 from neubot.marshal import qs_to_dictionary
 from neubot.marshal import unmarshal_objectx
@@ -50,6 +51,9 @@ class ServerAPI(ServerHTTP):
 
         elif path == "/api/exit":
             self.api_exit(stream, request)
+
+        elif path == "/api/log":
+            self.api_log(stream, request)
 
         elif path == "/api/speedtest":
             self.api_speedtest(stream, request, query)
@@ -78,6 +82,14 @@ class ServerAPI(ServerHTTP):
         else:
             s = marshal_object(CONFIG, "application/json")
 
+        stringio = StringIO.StringIO(s)
+        response.compose(code="200", reason="Ok", body=stringio,
+                         mimetype="application/json")
+        stream.send_response(request, response)
+
+    def api_log(self, stream, request):
+        response = Message()
+        s = LOG.serialize()
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")
