@@ -214,10 +214,10 @@ class Config(object):
     def get(self, key, defvalue):
         return self.conf.get(key, defvalue)
 
-    def register_property(self, property, module):
-        if not "." in property:
-            property = "%s.%s" % (module, property)
-        self.properties.append(property)
+    def register_property(self, prop, module):
+        if not "." in prop:
+            prop = "%s.%s" % (module, prop)
+        self.properties.append(prop)
 
     def merge_fp(self, fp):
         map(self.merge_kv, itertools.imap(string_to_kv, fp))
