@@ -128,7 +128,7 @@ class Logger(object):
     # Log functions
 
     def exception(self):
-        for line in traceback.format_exc():
+        for line in traceback.format_exc().split("\n"):
             self._log(self.logger.error, "ERROR", line)
 
     def error(self, message):
@@ -156,8 +156,7 @@ class Logger(object):
         self._log(self.logger.info, "INFO", message)
 
     def _log(self, printlog, severity, message):
-        if message[-1] == "\n":
-            message = message[:-1]
+        message = message.rstrip()
         deque_append(self.queue, self.maxqueue, (timestamp(),severity,message))
         printlog(message)
 
