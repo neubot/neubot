@@ -25,17 +25,17 @@
 #
 
 import collections
+import sys
 import time
 import traceback
-import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.compat import deque_append
+from neubot.compat import json
 from neubot.system import BackgroundLogger
 from neubot.system import redirect_to_dev_null
-from neubot.compat import json
 from neubot.utils import timestamp
 
 
