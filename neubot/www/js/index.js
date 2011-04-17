@@ -22,12 +22,6 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * For results.html we have js/results.js, therefore it might
- * make sense to rename this file js/index.js for consistency.
- * OTOH js/index.js seems odd to me.
- */
-
 function process_state(data) {
 
     var now = utils.getNow();
