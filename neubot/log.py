@@ -59,8 +59,10 @@ class InteractiveLogger(object):
 
 class Logger(object):
 
-    """Main wrapper for logging.  The queue allows us to export
-       recent logs via /api/logs."""
+    """Logging object.  Usually there should be just one instance
+       of this class, accessible with the default logging object
+       LOGGER.  We keep recent logs in a queue in order to implement
+       the /api/log API."""
 
     def __init__(self, maxqueue):
         self.logger = InteractiveLogger()
