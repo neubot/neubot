@@ -291,29 +291,23 @@ class DatabaseManager:
         cursor.close()
         return dictionary
 
-    def query_results_functional(self, func, tag=None, since=-1,
-                                 until=-1, uuid_=None):
+    def query_results_functional(self, func, since=-1, until=-1):
         if since < 0:
             since = 0
         if until < 0:
             until = timestamp()
-        params = {"tag": tag, "since": since, "until": until, "uuid": uuid_}
+        params = {"since": since, "until": until}
         cursor = self.connection.cursor()
         query = """SELECT result, timestamp FROM results
-          WHERE timestamp >= :since AND timestamp < :until"""
-        if tag:
-            query += " AND tag = :tag"
-        if uuid_:
-            query += " AND uuid = :uuid"
-        query += ";"
+          WHERE timestamp >= :since AND timestamp < :until;"""
         cursor.execute(query, params)
         for result in cursor:
             func(result[0])
         cursor.close()
 
-    def query_results_json(self, tag=None, since=-1, until=-1, uuid_=None):
+    def query_results_json(self, since=-1, until=-1):
         vector = []
-        self.query_results_functional(vector.append, tag, since, until, uuid_)
+        self.query_results_functional(vector.append, since, until)
 
         if vector:
             temp, vector = vector, []

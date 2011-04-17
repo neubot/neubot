@@ -138,7 +138,7 @@ class ServerAPI(ServerHTTP):
                 raise ValueError("Invalid query string")
 
         response = Message()
-        stringio = database.dbm.query_results_json(None, since, until, None)
+        stringio = database.dbm.query_results_json(since, until)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")
         stream.send_response(request, response)
