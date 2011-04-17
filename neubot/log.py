@@ -163,15 +163,8 @@ class Logger(object):
 
     # Marshal
 
-    def __str__(self):
-        results = []
-        for tstamp, severity, message in self.queue:
-            results.append({
-                "timestamp": tstamp,
-                "severity": severity,
-                "message": message,
-            })
-        return json.dumps(results)
+    def serialize(self):
+        return map(None, self.queue)
 
 
 MAXQUEUE = 100
@@ -184,7 +177,7 @@ if __name__ == "__main__":
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
-    print str(LOG)
+    print json.dumps(LOG.serialize())
 
     LOG.redirect()
 
