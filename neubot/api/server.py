@@ -24,6 +24,7 @@ import StringIO
 import urlparse
 import cgi
 
+from neubot.compat import json
 from neubot.config import CONFIG
 from neubot.database import database
 from neubot.http.message import Message
