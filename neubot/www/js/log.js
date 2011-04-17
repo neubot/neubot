@@ -50,7 +50,7 @@ jQuery(document).ready(function() {
 
     tracker = state.tracker();
     tracker.start();
-    
+
     jQuery.ajax({
         url: 'api/log',
         dataType: 'json',
@@ -58,13 +58,13 @@ jQuery(document).ready(function() {
             var html = "";
 
             html += '<center><table>';
-            
+
             html += "<thead><tr>";
             html += "<th width='130'>Date/time</th>";
             html += "<th width='60'>Priority</th>";
             html += "<th>Description</th>";
             html += "</tr></thead>";
-            
+
             html += "<tbody>";
 
             for (i = 0; i < data.length; i++) {
