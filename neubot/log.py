@@ -129,20 +129,20 @@ class Logger(object):
 
     def exception(self):
         for line in traceback.format_exc():
-            self._log(self.logger.error, line)
+            self._log(self.logger.error, "ERROR", line)
 
     def error(self, message):
-        self._log(self.logger.error, message)
+        self._log(self.logger.error, "ERROR", message)
 
     def warning(self, message):
-        self._log(self.logger.warning, message)
+        self._log(self.logger.warning, "WARNING", message)
 
     def info(self, message):
-        self._log(self.logger.info, message)
+        self._log(self.logger.info, "INFO", message)
 
     def debug(self, message):
         if self.noisy:
-            self._log(self.logger.debug, message)
+            self._log(self.logger.debug, "DEBUG", message)
 
     def log_access(self, message):
         #
@@ -153,21 +153,22 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self._log(self.logger.info, message)
+        self._log(self.logger.info, "INFO", message)
 
-    def _log(self, printlog, message):
+    def _log(self, printlog, severity, message):
         if message[-1] == "\n":
             message = message[:-1]
-        deque_append(self.queue, self.maxqueue, (timestamp(), message))
+        deque_append(self.queue, self.maxqueue, (timestamp(),severity,message))
         printlog(message)
 
     # Marshal
 
     def __str__(self):
         results = []
-        for tstamp, message in self.queue:
+        for tstamp, severity, message in self.queue:
             results.append({
                 "timestamp": tstamp,
+                "severity": severity,
                 "message": message,
             })
         return json.dumps(results)
