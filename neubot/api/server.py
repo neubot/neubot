@@ -23,6 +23,7 @@
 import StringIO
 import urlparse
 import cgi
+import re
 
 from neubot.compat import json
 from neubot.config import CONFIG
@@ -43,7 +44,24 @@ VERSION = "Neubot 0.3.6\n"
 
 class ServerAPI(ServerHTTP):
 
+    #
+    # For local API services it make sense to disclose some
+    # more information regarding the error that occurred while
+    # in general it is not advisable to print the offending
+    # exception.
+    #
     def process_request(self, stream, request):
+        try:
+            self.serve_request(stream, request)
+        except Exception, error:
+            reason = re.sub(r"[\0-\31]", "", str(error))
+            LOG.exception()
+            response = Message()
+            response.compose(code="500", reason=reason,
+                    body=StringIO.StringIO(reason))
+            stream.send_response(request, response)
+
+    def serve_request(self, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
 
         if path == "/api/config":
