@@ -23,7 +23,7 @@
 
 var state = (function() {
     var self = {};
-    
+
     self.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
 
     self.tracker = function(callback) {
@@ -38,7 +38,7 @@ var state = (function() {
         function get_state_error() {
             setTimeout(get_state, 5000);
         }
-        
+
         function update_sidebar(data) {
             jQuery('#testResultsBox h4').text("Latest test details");
 
