@@ -43,6 +43,7 @@ from neubot.utils import timestamp
 from neubot.compat import deque_appendleft
 from neubot.marshal import unmarshal_object
 from neubot.compat import json
+from neubot.database.migrate import migrate
 from neubot.log import LOG
 
 from neubot import system
@@ -115,38 +116,6 @@ RESULTS_SAVE        = """INSERT INTO results VALUES(null, :tag,
 #
 
 MAXROWS = 103680
-
-#
-#        _               _
-#  _ __ (_)__ _ _ _ __ _| |_ ___
-# | '  \| / _` | '_/ _` |  _/ -_)
-# |_|_|_|_\__, |_| \__,_|\__\___|
-#         |___/
-#
-# code to migrate from one version to another
-#
-
-# add uuid to database
-def migrate_from__v1_0__to__v1_1(connection):
-    cursor = connection.cursor()
-    cursor.execute("SELECT value FROM config WHERE name='version';")
-    ver = cursor.fetchone()[0]
-    if ver == "1.0":
-        LOG.info("* Migrating database from version 1.0 to 1.1")
-        cursor.execute("ALTER TABLE results ADD uuid TEXT;")
-        cursor.execute("""UPDATE config SET value='1.1'
-                          WHERE name='version';""")
-        cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid.uuid4())})
-        connection.commit()
-    cursor.close()
-
-MIGRATORS = [
-    migrate_from__v1_0__to__v1_1,
-]
-
-def migrate(connection):
-    for migrator in MIGRATORS:
-        migrator(connection)
 
 #
 # XXX XXX XXX
