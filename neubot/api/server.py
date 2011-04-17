@@ -29,6 +29,7 @@ from neubot.database import database
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.marshal import marshal_object
+from neubot.marshal import qs_to_dictionary
 from neubot.marshal import unmarshal_objectx
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
@@ -71,7 +72,7 @@ class ServerAPI(ServerHTTP):
         if request.method == "POST":
             s = request.body.read()
             unmarshal_objectx(s, "application/x-www-form-urlencoded", CONFIG)
-            STATE.update("config", CONFIG.__dict__)
+            STATE.update("config", qs_to_dictionary(s))
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
         else:
