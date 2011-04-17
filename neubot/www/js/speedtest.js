@@ -211,7 +211,7 @@ var speedtest = (function() {
     return self;
 })();
 
-// Duplicated code. To be merged in some way with neubot.js.
+// Duplicated code. To be merged in some way with index.js.
 function process_state(data) {
     var value;
 
