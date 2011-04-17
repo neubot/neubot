@@ -1,7 +1,7 @@
 /* neubot/www/state.js */
 /*
  * Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
- *  Università degli Studi di Milano
+ *  Universita` degli Studi di Milano
  * Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
  *  NEXA Center for Internet & Society at Politecnico di Torino
  *
