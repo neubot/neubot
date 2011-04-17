@@ -179,13 +179,16 @@ LOG = Logger(MAXQUEUE)
 
 if __name__ == "__main__":
     LOG.verbose()
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
-    LOG.redirect()
+
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
     print str(LOG)
+
+    LOG.redirect()
+
+    LOG.error("testing neubot logger -- This is an error message")
+    LOG.warning("testing neubot logger -- This is an warning message")
+    LOG.info("testing neubot logger -- This is an info message")
+    LOG.debug("testing neubot logger -- This is a debug message")
