@@ -56,7 +56,6 @@ function process_state(data) {
     }
 
     if (data.events.test_name) {
-        // XXX XXX XXX This is sooo ugly!
         jQuery("#testName").text(data.events.test_name);
     }
 

@@ -57,7 +57,7 @@ var state = (function() {
             }
 
             if (data.events.test_name) {
-                jQuery("#testName1").text(data.events.test_name);
+                jQuery("#testNameSideBar").text(data.events.test_name);
             }
             if (data.events.speedtest_latency) {
                 jQuery("#latencyResult").text(data.events.speedtest_latency.value);
