@@ -187,14 +187,7 @@ def speedtest_result_good_from_xml(obj):
 # XXX XXX XXX
 
 
-#
 # Database manager.
-# This class manages the sqlite3 database and keeps an in-memory
-# cache of the most recent results.  The User Interface API will
-# access this cache when GET /api/results is invoked, to produce
-# the response body.  So, the cache cache makes sense on client-
-# side only, and is therefore disabled on server-side.
-#
 
 class DatabaseManager:
     def __init__(self, config):
