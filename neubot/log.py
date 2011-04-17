@@ -25,17 +25,17 @@
 #
 
 import collections
+import sys
 import time
 import traceback
-import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.compat import deque_append
+from neubot.compat import json
 from neubot.system import BackgroundLogger
 from neubot.system import redirect_to_dev_null
-from neubot.compat import json
 from neubot.utils import timestamp
 
 
@@ -56,10 +56,13 @@ class InteractiveLogger(object):
         def debug(self, message):
             sys.stderr.write(message + "\n")
 
+
 class Logger(object):
 
-    """Main wrapper for logging.  The queue allows us to export
-       recent logs via /api/logs."""
+    """Logging object.  Usually there should be just one instance
+       of this class, accessible with the default logging object
+       LOGGER.  We keep recent logs in a queue in order to implement
+       the /api/log API."""
 
     def __init__(self, maxqueue):
         self.logger = InteractiveLogger()
@@ -125,56 +128,59 @@ class Logger(object):
     # Log functions
 
     def exception(self):
-        for line in traceback.format_exc():
-            self._log(self.logger.error, line)
+        for line in traceback.format_exc().split("\n"):
+            self._log(self.logger.error, "ERROR", line)
 
     def error(self, message):
-        self._log(self.logger.error, message)
+        self._log(self.logger.error, "ERROR", message)
 
     def warning(self, message):
-        self._log(self.logger.warning, message)
+        self._log(self.logger.warning, "WARNING", message)
 
     def info(self, message):
-        self._log(self.logger.info, message)
+        self._log(self.logger.info, "INFO", message)
 
     def debug(self, message):
         if self.noisy:
-            self._log(self.logger.debug, message)
+            self._log(self.logger.debug, "DEBUG", message)
 
     def log_access(self, message):
-        # Note enqueue MUST be False to avoid /api/logs comet storm
-        self._log(self.logger.info, message, False)
+        #
+        # CAVEAT Currently Neubot do not update logs "in real
+        # time" using AJAX.  If it did we would run in trouble
+        # because each request for /api/log would generate a
+        # new access log record.  A new access log record will
+        # cause a new "logwritten" event.  And the result is
+        # something like a Comet storm.
+        #
+        self._log(self.logger.info, "INFO", message)
 
-    def _log(self, printlog, message, enqueue=True):
-        if message[-1] == "\n":
-            message = message[:-1]
-        if enqueue:
-            deque_append(self.queue, self.maxqueue, (timestamp(), message))
+    def _log(self, printlog, severity, message):
+        message = message.rstrip()
+        deque_append(self.queue, self.maxqueue, (timestamp(),severity,message))
         printlog(message)
 
     # Marshal
 
-    def __str__(self):
-        results = []
-        for tstamp, message in self.queue:
-            results.append({
-                "timestamp": tstamp,
-                "message": message,
-            })
-        return json.dumps(results)
+    def serialize(self):
+        return map(None, self.queue)
+
 
 MAXQUEUE = 100
 LOG = Logger(MAXQUEUE)
 
 if __name__ == "__main__":
     LOG.verbose()
+
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
+    print json.dumps(LOG.serialize())
+
     LOG.redirect()
+
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
-    print str(LOG)
