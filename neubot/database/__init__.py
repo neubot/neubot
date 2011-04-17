@@ -30,22 +30,18 @@
 import ConfigParser
 import StringIO
 import getopt
-import os.path
 import sqlite3
 import sys
-import types
 import uuid
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.utils import timestamp
-from neubot.compat import deque_appendleft
-from neubot.marshal import unmarshal_object
 from neubot.compat import json
 from neubot.database.migrate import migrate
 from neubot.log import LOG
-
+from neubot.marshal import unmarshal_object
+from neubot.utils import timestamp
 from neubot import system
 
 #
