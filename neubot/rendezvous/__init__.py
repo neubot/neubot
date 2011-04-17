@@ -312,7 +312,7 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
             self._reschedule()
             return
 
-        if not CONFIG.enabled:
+        if not CONFIG.get("enabled", True):
             self._reschedule()
             return
 

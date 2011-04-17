@@ -23,6 +23,7 @@
 import StringIO
 import urlparse
 import cgi
+import re
 
 from neubot.compat import json
 from neubot.config import CONFIG
@@ -32,7 +33,6 @@ from neubot.http.server import ServerHTTP
 from neubot.log import LOG
 from neubot.marshal import marshal_object
 from neubot.marshal import qs_to_dictionary
-from neubot.marshal import unmarshal_objectx
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
@@ -44,7 +44,24 @@ VERSION = "Neubot 0.3.6\n"
 
 class ServerAPI(ServerHTTP):
 
+    #
+    # For local API services it make sense to disclose some
+    # more information regarding the error that occurred while
+    # in general it is not advisable to print the offending
+    # exception.
+    #
     def process_request(self, stream, request):
+        try:
+            self.serve_request(stream, request)
+        except Exception, error:
+            reason = re.sub(r"[\0-\31]", "", str(error))
+            LOG.exception()
+            response = Message()
+            response.compose(code="500", reason=reason,
+                    body=StringIO.StringIO(reason))
+            stream.send_response(request, response)
+
+    def serve_request(self, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
 
         if path == "/api/config":
@@ -79,12 +96,13 @@ class ServerAPI(ServerHTTP):
 
         if request.method == "POST":
             s = request.body.read()
-            unmarshal_objectx(s, "application/x-www-form-urlencoded", CONFIG)
-            STATE.update("config", qs_to_dictionary(s))
+            updates = qs_to_dictionary(s)
+            CONFIG.merge_api(updates)
+            STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
         else:
-            s = marshal_object(CONFIG, "application/json")
+            s = json.dumps(CONFIG.conf)
 
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
