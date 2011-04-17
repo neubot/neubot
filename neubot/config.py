@@ -87,6 +87,10 @@ class ConfigDict(dict):
             self.update(kwds.iteritems())
 
 
+class ConfigError(Exception):
+    pass
+
+
 class Config(object):
 
     """Configuration manager.  Usually there is just one instance
@@ -167,7 +171,7 @@ class Config(object):
                #
                # You can modify the configuration when the program
                # is running using the API.  The input is a dictionary
-               # containing the changes.  Note that we raise Key/ValueError
+               # containing the changes.  Note that we raise ConfigError
                # when something goes wrong.
                # Note that if database.dbm is not None the changes
                # are propagated to the database.
@@ -242,12 +246,22 @@ class Config(object):
     def merge_kv(self, t, dry=False):
         if t:
             key, value = t
-            if dry:
-                # they raise on failure...
-                cast = utils.smart_cast(self.conf[key])
-                cast(value)
-            else:
+            if not dry:
                 self.conf[key] = value
+
+            else:
+                try:
+                    ovalue = self.conf[key]
+                    cast = utils.smart_cast(ovalue)
+                    cast(value)
+                except KeyError:
+                    raise ConfigError("No such property: %s" % key)
+                except TypeError:
+                    raise ConfigError("Old value '%s' for property '%s'"
+                      " has the wrong type" % (ovalue, key))
+                except ValueError:
+                    raise ConfigError("Invalid value '%s' for property '%s'" %
+                                      (value, key))
 
     def store_fp(self, fp):
         map(fp.write, itertools.imap(kv_to_string, self.conf.iteritems()))
