@@ -141,6 +141,21 @@ def unicodize(value):
 def boolize(s):
     return str(s).lower() not in ("0", "off", "false", "no")
 
+def smart_cast(value):
+    if type(value) == types.StringType:
+        return stringify
+    elif type(value) == types.UnicodeType:
+        return unicodize
+    elif type(value) == types.BooleanType:
+        return boolize
+    elif type(value) == types.IntType:
+        return int
+    elif type(value) == types.LongType:
+        return long
+    elif type(value) == types.FloatType:
+        return float
+    else:
+        raise TypeError("No such cast for this type")
 
 #
 # The various definitions of time available in Neubot.

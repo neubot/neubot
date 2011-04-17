@@ -32,7 +32,6 @@ from neubot.http.server import ServerHTTP
 from neubot.log import LOG
 from neubot.marshal import marshal_object
 from neubot.marshal import qs_to_dictionary
-from neubot.marshal import unmarshal_objectx
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
@@ -79,12 +78,13 @@ class ServerAPI(ServerHTTP):
 
         if request.method == "POST":
             s = request.body.read()
-            unmarshal_objectx(s, "application/x-www-form-urlencoded", CONFIG)
-            STATE.update("config", qs_to_dictionary(s))
+            updates = qs_to_dictionary(s)
+            CONFIG.merge_api(updates)
+            STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
         else:
-            s = marshal_object(CONFIG, "application/json")
+            s = json.dumps(CONFIG.conf)
 
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
