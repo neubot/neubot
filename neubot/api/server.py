@@ -92,7 +92,7 @@ class ServerAPI(ServerHTTP):
 
     def api_log(self, stream, request):
         response = Message()
-        s = LOG.serialize()
+        s = json.dumps(LOG.serialize())
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")
