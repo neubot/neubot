@@ -931,7 +931,7 @@ def main(args):
             system.go_background()
             system.write_pidfile()
             LOG.redirect()
-            system.drop_privileges()
+        system.drop_privileges()
         dictionary["server_side"] = True
         handler.listen(endpoint)
         POLLER.loop()

@@ -398,7 +398,7 @@ def main(args):
             system.go_background()
             system.write_pidfile()
             LOG.redirect()
-            system.drop_privileges()
+        system.drop_privileges()
         POLLER.loop()
         sys.exit(0)
 
@@ -415,7 +415,7 @@ def main(args):
         system.go_background()
         system.write_pidfile()
         LOG.redirect()
-        system.drop_privileges()
+    system.drop_privileges()
     client = RendezvousClient(POLLER)
     client.init(uri, interval, dontloop, xdebug)
     client.rendezvous()

@@ -303,7 +303,7 @@ def main(args):
         system.go_background()
         system.write_pidfile()
         LOG.redirect()
-        system.drop_privileges()
+    system.drop_privileges()
 
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)
