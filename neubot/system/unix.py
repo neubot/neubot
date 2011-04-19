@@ -112,3 +112,9 @@ def _want_rw_file(file):
         passwd = pwd.getpwnam("_neubot")
         os.chown(file, passwd.pw_uid, passwd.pw_gid)
     os.chmod(file, 0644)
+
+def _get_pidfile_dir():
+    if os.getuid() == 0:
+        return "/var/run"
+    else:
+        return None

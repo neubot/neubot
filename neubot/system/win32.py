@@ -89,3 +89,6 @@ def redirect_to_dev_null():
 
 def _want_rw_file(path):
     open(path, "ab+").close()
+
+def _get_pidfile_dir():
+    return None
