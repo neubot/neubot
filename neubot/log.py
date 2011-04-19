@@ -34,9 +34,8 @@ if __name__ == "__main__":
 
 from neubot.compat import deque_append
 from neubot.compat import json
-from neubot.system import BackgroundLogger
-from neubot.system import redirect_to_dev_null
 from neubot.utils import timestamp
+from neubot import system
 
 
 class InteractiveLogger(object):
@@ -82,8 +81,8 @@ class Logger(object):
         self.noisy = False
 
     def redirect(self):
-        self.logger = BackgroundLogger()
-        redirect_to_dev_null()
+        self.logger = system.BackgroundLogger()
+        system.redirect_to_dev_null()
         self.interactive = False
 
     #

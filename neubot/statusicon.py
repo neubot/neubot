@@ -62,11 +62,7 @@ import time
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.system import change_dir
-from neubot.system import go_background
-from neubot.system import write_pidfile
-from neubot.system import drop_privileges
-
+from neubot import system
 from neubot.api.client import APIStateTracker
 from neubot.net.poller import POLLER
 from neubot.log import LOG
@@ -303,11 +299,10 @@ def main(args):
         port = PORT
 
     if daemonize:
-        change_dir()
-        go_background()
-        write_pidfile()
+        system.change_dir()
+        system.go_background()
         LOG.redirect()
-        drop_privileges()
+    system.drop_privileges()
 
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)

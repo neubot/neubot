@@ -45,7 +45,7 @@ from neubot.marshal import unmarshal_object
 from neubot.compat import json
 from neubot.log import LOG
 
-from neubot.system import want_rw_file
+from neubot import system
 
 #
 # Config table.
@@ -212,7 +212,6 @@ class DatabaseManager:
 
     def _do_connect(self):
         LOG.debug("* Connecting to database: %s" % self.config.path)
-        want_rw_file(self.config.path)
         self.connection = sqlite3.connect(self.config.path)
         cursor = self.connection.cursor()
         self._make_config(cursor)
@@ -364,7 +363,7 @@ class DatabaseConfig(ConfigParser.SafeConfigParser):
         ConfigParser.SafeConfigParser.__init__(self)
         self.auto_prune = True
         self.maxcache = 256
-        self.path = "neubot.sqlite3"
+        self.path = system.get_default_database_path()
         self.client = True
 
     def readfp(self, fp, filename=None):
@@ -399,6 +398,7 @@ class DatabaseModule:
         fakerc.seek(0)
 
     def start(self):
+        self.config.path = system.check_database_path(self.config.path)
         self.dbm = DatabaseManager(self.config)
 
 database = DatabaseModule()
