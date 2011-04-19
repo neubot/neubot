@@ -343,6 +343,15 @@ class DatabaseModule:
         self.config = DatabaseConfig()
         self.dbm = None
 
+    def set_path(self, path):
+        self.config.path = path
+
+    def connect(self):
+        self.start()
+
+    def connection(self):
+        return self.dbm.connection
+
     def configure(self, filenames, fakerc):
         self.config.read(filenames)
         self.config.readfp(fakerc)
@@ -353,7 +362,7 @@ class DatabaseModule:
         self.config.path = system.check_database_path(self.config.path)
         self.dbm = DatabaseManager(self.config)
 
-database = DatabaseModule()
+DATABASE = database = DatabaseModule()
 
 #
 # Test unit
