@@ -28,14 +28,18 @@ if os.name == "nt":
     from neubot.system.win32 import go_background
     from neubot.system.win32 import drop_privileges
     from neubot.system.win32 import redirect_to_dev_null
-    from neubot.system.win32 import want_rw_file
+    from neubot.system.win32 import _get_profile_dir
+    from neubot.system.win32 import _want_rwx_dir
+    from neubot.system.win32 import _want_rw_file
 elif os.name == "posix":
     from neubot.system.unix import BackgroundLogger
     from neubot.system.unix import change_dir
     from neubot.system.unix import go_background
     from neubot.system.unix import drop_privileges
     from neubot.system.unix import redirect_to_dev_null
-    from neubot.system.unix import want_rw_file
+    from neubot.system.unix import _get_profile_dir
+    from neubot.system.unix import _want_rwx_dir
+    from neubot.system.unix import _want_rw_file
 else:
     raise ImportError("Your system is not supported")
 
@@ -43,3 +47,12 @@ def write_pidfile():
     with open("neubot.pid", "w") as fp:
         fp.write(os.getpid())
         fp.write("\n")
+
+def get_default_database_path():
+    return os.sep.join([ _get_profile_dir(), "database.sqlite3" ])
+
+def check_database_path(p):
+    p = os.path.abspath(p)
+    _want_rwx_dir(os.path.dirname(p))
+    _want_rw_file(p)
+    return p

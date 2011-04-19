@@ -27,6 +27,7 @@
 import os.path
 import logging.handlers
 
+
 class BackgroundLogger(object):
 
     """Where to log messages when running in background under
@@ -64,12 +65,18 @@ class BackgroundLogger(object):
     def debug(self, message):
         pass
 
+
 def change_dir():
+    pass
+
+def _get_profile_dir():
     appdata = os.environ["APPDATA"]
     datadir = os.sep.join([appdata, "neubot"])
-    if not os.path.isdir(datadir):
-        os.mkdir(datadir, 0755)
-    os.chdir(datadir)
+    return datadir
+
+def _want_rwx_dir(p):
+    if not os.path.isdir(p):
+        os.mkdir(p, 0755)
 
 def go_background():
     pass
@@ -80,5 +87,5 @@ def drop_privileges():
 def redirect_to_dev_null():
     pass
 
-def want_rw_file(path):
-    pass
+def _want_rw_file(path):
+    open(path, "ab+").close()

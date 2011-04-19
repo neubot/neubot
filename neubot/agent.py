@@ -122,19 +122,16 @@ def main(args):
 
     uri = "http://%s:9773/rendezvous" % master
 
-    #XXX
-    DATABASE.path = "database.sqlite3"
-
     if api:
         server = ServerHTTP(POLLER)
         server.configure({"rootdir": WWW, "ssi": True})
         server.register_child(ServerAPI(POLLER), "/api")
         server.listen((address, port))
 
-    change_dir()
     DATABASE.start()
 
     if daemonize:
+        change_dir()
         go_background()
         LOG.redirect()
 

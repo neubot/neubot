@@ -29,6 +29,7 @@ import os.path
 import signal
 import syslog
 
+
 class BackgroundLogger(object):
 
     """We don't use logging.handlers.SysLogHandler because that class
@@ -55,28 +56,31 @@ class BackgroundLogger(object):
     def debug(self, message):
         syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
 
+
+def _get_profile_dir():
+    if os.getuid() != 0:
+        hd = os.environ["HOME"]
+        p = os.sep.join([hd, ".neubot"])
+    else:
+        p = "/var/neubot"
+    return p
+
+def change_dir():
+    os.chdir("/")
+
 #
-# We need to be the owner of /var/neubot because otherwise
+# We need to be the owner of the profile dir, otherwise
 # sqlite3 fails to lock the database for writing.
 #
 # Read more at http://www.neubot.org/node/14
 #
-
-def change_dir():
-    if os.getuid() != 0:
-        homedir = os.environ["HOME"]
-        datadir = os.sep.join([homedir, ".neubot"])
-    else:
-        datadir = "/var/neubot"
-
+def _want_rwx_dir(datadir):
     if not os.path.isdir(datadir):
         os.mkdir(datadir, 0755)
 
     if os.getuid() == 0:
         passwd = pwd.getpwnam("_neubot")
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
-
-    os.chdir(datadir)
 
 def go_background():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -102,7 +106,7 @@ def redirect_to_dev_null():
     os.open("/dev/null", os.O_RDWR)
     os.open("/dev/null", os.O_RDWR)
 
-def want_rw_file(file):
+def _want_rw_file(file):
     open(file, "ab+").close()
     if os.getuid() == 0:
         passwd = pwd.getpwnam("_neubot")
