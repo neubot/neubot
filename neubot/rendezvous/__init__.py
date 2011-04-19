@@ -43,11 +43,7 @@ from neubot.http.message import Message
 from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 from neubot.http.client import ClientHTTP
-
-from neubot.system import change_dir
-from neubot.system import go_background
-from neubot.system import write_pidfile
-from neubot.system import drop_privileges
+from neubot import system
 
 VERSION = "0.3.7"
 
@@ -398,11 +394,11 @@ def main(args):
         database.start()
         rendezvous.start()
         if daemonize:
-            change_dir()
-            go_background()
-            write_pidfile()
+            system.change_dir()
+            system.go_background()
+            system.write_pidfile()
             LOG.redirect()
-            drop_privileges()
+            system.drop_privileges()
         POLLER.loop()
         sys.exit(0)
 
@@ -415,11 +411,11 @@ def main(args):
         uri = URI
     database.start()
     if daemonize:
-        change_dir()
-        go_background()
-        write_pidfile()
+        system.change_dir()
+        system.go_background()
+        system.write_pidfile()
         LOG.redirect()
-        drop_privileges()
+        system.drop_privileges()
     client = RendezvousClient(POLLER)
     client.init(uri, interval, dontloop, xdebug)
     client.rendezvous()

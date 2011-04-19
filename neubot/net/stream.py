@@ -43,11 +43,7 @@ from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
 from neubot.utils import ticks
 from neubot.log import LOG
-
-from neubot.system import change_dir
-from neubot.system import go_background
-from neubot.system import write_pidfile
-from neubot.system import drop_privileges
+from neubot import system
 
 SUCCESS = 0
 ERROR = 1
@@ -931,11 +927,11 @@ def main(args):
 
     if listen:
         if daemonize:
-            change_dir()
-            go_background()
-            write_pidfile()
+            system.change_dir()
+            system.go_background()
+            system.write_pidfile()
             LOG.redirect()
-            drop_privileges()
+            system.drop_privileges()
         dictionary["server_side"] = True
         handler.listen(endpoint)
         POLLER.loop()

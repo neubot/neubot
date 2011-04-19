@@ -31,12 +31,10 @@ from neubot.http.server import ServerHTTP
 from neubot.api.server import ServerAPI
 from neubot.rendezvous import RendezvousClient
 from neubot.options import OptionParser
-from neubot.system import change_dir
-from neubot.system import drop_privileges
-from neubot.system import go_background
 from neubot.net.poller import POLLER
 from neubot.rootdir import WWW
 from neubot.log import LOG
+from neubot import system
 
 # renames pending
 from neubot.database import database as DATABASE
@@ -131,11 +129,11 @@ def main(args):
     DATABASE.start()
 
     if daemonize:
-        change_dir()
-        go_background()
+        system.change_dir()
+        system.go_background()
         LOG.redirect()
 
-    drop_privileges()
+    system.drop_privileges()
 
     if rendezvous:
         client = RendezvousClient(POLLER)
