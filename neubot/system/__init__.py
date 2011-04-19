@@ -45,8 +45,7 @@ else:
 
 def write_pidfile():
     with open("neubot.pid", "w") as fp:
-        fp.write(os.getpid())
-        fp.write("\n")
+        fp.write("%d\n" % os.getpid())
 
 def get_default_database_path():
     return os.sep.join([ _get_profile_dir(), "database.sqlite3" ])
