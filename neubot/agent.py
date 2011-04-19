@@ -131,6 +131,7 @@ def main(args):
     if daemonize:
         system.change_dir()
         system.go_background()
+        system.write_pidfile()
         LOG.redirect()
 
     system.drop_privileges()
