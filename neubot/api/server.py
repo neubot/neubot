@@ -103,7 +103,7 @@ class ServerAPI(ServerHTTP):
         if request.method == "POST":
             s = request.body.read()
             updates = qs_to_dictionary(s)
-            CONFIG.merge_api(updates)
+            CONFIG.merge_api(updates, database.dbm)
             STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
