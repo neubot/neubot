@@ -41,6 +41,12 @@ from neubot.utils import timestamp
 
 VERSION = "Neubot 0.3.6\n"
 
+CONFIG.register_defaults({
+    "privacy.informed": 0,
+    "privacy.can_collect": 0,
+    "privacy.can_share": 0,
+})
+
 
 class ServerAPI(ServerHTTP):
 

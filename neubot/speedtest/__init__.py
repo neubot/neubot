@@ -35,6 +35,8 @@ if __name__ == "__main__":
 
 from neubot.arcfour import RandomData
 
+from neubot.config import CONFIG
+
 from neubot.database import database
 
 from neubot.http.message import Message
@@ -78,6 +80,9 @@ class SpeedtestCollect(object):
         self.latency = []
         self.downloadSpeed = []
         self.uploadSpeed = []
+        self.privacy_informed = 0
+        self.privacy_can_collect = 0
+        self.privacy_can_share = 0
 
 
 class SpeedtestNegotiate_Response(object):
@@ -365,7 +370,8 @@ class SpeedtestServer(ServerHTTP):
         s = request.body.read()
         m = unmarshal_object(s, "text/xml", SpeedtestCollect)
 
-        if database.dbm:
+        if database.dbm and (not m.privacy_informed or
+                             m.privacy_can_collect):
             request.body.seek(0)
             database.dbm.save_result("speedtest", request.body.read(),
                                      m.client)
@@ -641,6 +647,11 @@ class ClientCollector(ClientHTTP):
         m1.latency = self.conf.get("speedtest.client.latency", [])
         m1.downloadSpeed = self.conf.get("speedtest.client.download", [])
         m1.uploadSpeed = self.conf.get("speedtest.client.upload", [])
+
+        #TODO make self.conf a copy of CONFIG and use self.conf here
+        m1.privacy_informed = CONFIG.get("privacy.informed", 0)
+        m1.privacy_can_collect = CONFIG.get("privacy.can_collect", 0)
+        m1.privacy_can_share = CONFIG.get("privacy.can_share", 0)
 
         s = marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)

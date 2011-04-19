@@ -312,6 +312,13 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
             self._reschedule()
             return
 
+        if (CONFIG.get("privacy.informed", 0) and
+          not CONFIG.get("privacy.can_collect", 0)):
+            LOG.warning("refusing to test because you don't give me "
+                        "the permission to collect the results")
+            self._reschedule()
+            return
+
         if "speedtest" in m1.available:
             uri = m1.available["speedtest"][0]
             self.testing = 1
