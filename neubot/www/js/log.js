@@ -20,7 +20,6 @@
  */
 
 jQuery(document).ready(function() {
-    getSetConfigVar(setStatusLabels, false);
     utils.setActiveTab("log");
 
     jQuery('#testResultsBox').qtip({

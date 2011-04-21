@@ -126,7 +126,7 @@ function setStatusLabels(data) {
         jQuery("#statusBoxA").html("Disable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar(setStatusLabels, true, {'enabled': 0});
+            setConfigVars({'enabled': 0});
         });
     }
     else {
@@ -135,12 +135,20 @@ function setStatusLabels(data) {
         jQuery("#statusBoxA").html("Enable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar(setStatusLabels, true, {'enabled': 1});
+            setConfigVars({'enabled': 1});
         });
     }
 }
 
-function getSetConfigVar(myfunction, change, value) {
+function getConfigVars(myfunction) {
+    return getSetConfigVars(myfunction);
+}
+
+function setConfigVars(value) {
+    return getSetConfigVars(null, true, value);
+}
+
+function getSetConfigVars(myfunction, change, value) {
     var data = {};
     var type = "GET";
     var success = undefined;
@@ -163,4 +171,6 @@ function getSetConfigVar(myfunction, change, value) {
         dataType: 'json',
         success: success
     });
+
+    return false;
 }

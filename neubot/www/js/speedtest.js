@@ -215,8 +215,6 @@ jQuery(document).ready(function() {
 
     jQuery.jqplot.config.enablePlugins = true;
 
-    getSetConfigVar(setStatusLabels, false);
-
     speedtest.get_recent_results([speedtest.results_formatter_table,
                                   speedtest.results_formatter_plot]);
 

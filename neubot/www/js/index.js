@@ -75,8 +75,6 @@ jQuery(document).ready(function() {
 
     jQuery.jqplot.config.enablePlugins = true;
 
-    getSetConfigVar(setStatusLabels, false);
-
     jQuery('#testResultsBox').qtip({
         content: "A new test is running.",
         position: {
