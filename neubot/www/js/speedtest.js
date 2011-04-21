@@ -211,6 +211,8 @@ var speedtest = (function() {
 })();
 
 jQuery(document).ready(function() {
+    utils.setActiveTab("speedtest");
+
     jQuery.jqplot.config.enablePlugins = true;
 
     getSetConfigVar("enabled", setStatusLabels, false);

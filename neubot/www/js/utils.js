@@ -110,6 +110,12 @@ var utils = (function() {
           + self.strPad(date.getMinutes());
     }
 
+    self.setActiveTab = function(tabname) {
+        jQuery("#menu_tab_list li").removeClass("active");
+        jQuery("#tab_" + tabname).addClass("active");
+        return false;
+    }
+
     return self;
 })();
 

@@ -71,6 +71,8 @@ function process_state(data) {
 }
 
 jQuery(document).ready(function() {
+    utils.setActiveTab("index");
+
     jQuery.jqplot.config.enablePlugins = true;
 
     getSetConfigVar("enabled", setStatusLabels, false);
