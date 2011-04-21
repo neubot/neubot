@@ -44,7 +44,7 @@ var state = (function() {
 
             if (data.events.config) {
                 if (data.events.config.enabled != undefined) {
-                    setStatusLabels(data.events.config.enabled);
+                    setStatusLabels(data.events.config);
                 }
             }
 

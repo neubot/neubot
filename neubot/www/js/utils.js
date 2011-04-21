@@ -119,14 +119,14 @@ var utils = (function() {
     return self;
 })();
 
-function setStatusLabels(status) {
-    if (status == "1") {
+function setStatusLabels(data) {
+    if (data.enabled == "1") {
         jQuery("#statusBoxSpan").html("enabled");
         jQuery("#statusBoxSpan").css("color", "#3DA64E");
         jQuery("#statusBoxA").html("Disable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 0);
+            getSetConfigVar(setStatusLabels, true, {'enabled': 0});
         });
     }
     else {
@@ -135,24 +135,24 @@ function setStatusLabels(status) {
         jQuery("#statusBoxA").html("Enable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 1);
+            getSetConfigVar(setStatusLabels, true, {'enabled': 1});
         });
     }
 }
 
-function getSetConfigVar(id, myfunction, change, value) {
+function getSetConfigVar(myfunction, change, value) {
     var data = {};
     var type = "GET";
     var success = undefined;
 
     if (change) {
-        data[id] = value;
+        data = value;
         type = "POST";
     }
 
     if (myfunction) {
         success = function(data) {
-            myfunction(data[id]);
+            myfunction(data);
         }
     }
 
