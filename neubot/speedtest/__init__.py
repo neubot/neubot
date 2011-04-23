@@ -704,7 +704,6 @@ class ClientSpeedtest(ClientHTTP):
                             ]
 
         self.conf["speedtest.client.full_test"] = True
-        self.conf["measurer"] = self.measurer
 
         if self.conf.get("speedtest.client.debug", False):
             del self.instructions[-1]

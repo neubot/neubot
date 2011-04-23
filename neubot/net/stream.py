@@ -173,7 +173,7 @@ class Stream(Pollable):
     def fileno(self):
         return self.filenum
 
-    def attach(self, parent, sock, conf):
+    def attach(self, parent, sock, conf, measurer=None):
 
         self.parent = parent
 
@@ -181,6 +181,10 @@ class Stream(Pollable):
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
         self.logname = str((self.myname, self.peername))
+
+        self.measurer = measurer
+        if self.measurer:
+            self.measurer.register_stream(self)
 
         LOG.debug("* Connection made %s" % str(self.logname))
 
@@ -443,10 +447,10 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, conf):
+    def connect(self, endpoint, conf, measurer=None):
         self.endpoint = endpoint
         self.family = conf.get("family", socket.AF_INET)
-        self.measurer = conf.get("measurer", None)
+        self.measurer = measurer
         sobuf = conf.get("sobuf", 0)
 
         try:
@@ -591,9 +595,11 @@ class StreamHandler(object):
         self.epnts = collections.deque()
         self.bad = collections.deque()
         self.good = collections.deque()
+        self.measurer = None
 
-    def configure(self, conf):
+    def configure(self, conf, measurer=None):
         self.conf = conf
+        self.measurer = measurer
 
     def listen(self, endpoint):
         listener = Listener(self.poller, self)
@@ -617,7 +623,7 @@ class StreamHandler(object):
     def _next_connect(self):
         if self.epnts:
             connector = Connector(self.poller, self)
-            connector.connect(self.epnts.popleft(), self.conf)
+            connector.connect(self.epnts.popleft(), self.conf, self.measurer)
         else:
             while self.bad:
                 connector, exception = self.bad.popleft()
@@ -809,12 +815,11 @@ def main(args):
         sys.stderr.write(USAGE)
         sys.exit(1)
 
-    dictionary["measurer"] = MEASURER
     dictionary["kind"] = proto
     dictionary["sobuf"] = sobuf
 
     handler = GenericHandler(POLLER)
-    handler.configure(dictionary)
+    handler.configure(dictionary, MEASURER)
 
     if listen:
         if daemonize:

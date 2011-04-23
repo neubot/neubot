@@ -96,8 +96,7 @@ class BTConnectingPeer(StreamHandler):
 
     def connection_made(self, sock):
         stream = BTStream(self.poller)
-        stream.attach(self, sock, self.conf)
-        MEASURER.register_stream(stream)
+        stream.attach(self, sock, self.conf, self.measurer)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
         scramble = not self.conf.get("obfuscate", False)
@@ -118,8 +117,7 @@ class BTListeningPeer(StreamHandler):
 
     def connection_made(self, sock):
         stream = BTStream(self.poller)
-        stream.attach(self, sock, self.conf)
-        MEASURER.register_stream(stream)
+        stream.attach(self, sock, self.conf, self.measurer)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
         scramble = not self.conf.get("obfuscate", False)
@@ -218,7 +216,6 @@ def main(args):
 
     endpoint = (address, port)
     dictionary = {
-        "measurer": MEASURER,
         "obfuscate": obfuscate,
         "key": key,
         "sobuf": sobuf,
@@ -234,7 +231,7 @@ def main(args):
             LOG.redirect()
         system.drop_privileges()
         listener = BTListeningPeer(POLLER)
-        listener.configure(dictionary)
+        listener.configure(dictionary, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
@@ -248,7 +245,7 @@ def main(args):
         POLLER.sched(duration, POLLER.break_loop)
 
     connector = BTConnectingPeer(POLLER)
-    connector.configure(dictionary)
+    connector.configure(dictionary, MEASURER)
     connector.connect(endpoint)
     POLLER.loop()
     sys.exit(0)

@@ -126,10 +126,7 @@ class ClientHTTP(StreamHandler):
 
     def connection_made(self, sock):
         stream = ClientStream(self.poller)
-        stream.attach(self, sock, self.conf)
-        measurer = self.conf.get("measurer", None)
-        if measurer:
-            measurer.register_stream(stream)
+        stream.attach(self, sock, self.conf, self.measurer)
         self.connection_ready(stream)
 
 
@@ -238,13 +235,12 @@ def main(args):
     for uri in arguments:
         conf = {
             "http.client.write_to_stdout": stdout,
-            "measurer": MEASURER,
             "http.client.method": method,
             "http.client.uri": uri,
         }
 
         client = TestClient(POLLER)
-        client.configure(conf)
+        client.configure(conf, MEASURER)
         client.connect_uri(uri)
 
     POLLER.loop()
