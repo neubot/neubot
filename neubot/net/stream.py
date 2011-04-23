@@ -940,9 +940,7 @@ def main(args):
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
-    while clients > 0:
-        clients = clients - 1
-        handler.connect(endpoint)
+    handler.connect(endpoint, clients)
     POLLER.loop()
     sys.exit(0)
 
