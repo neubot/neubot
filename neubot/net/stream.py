@@ -69,7 +69,7 @@ if ssl:
             try:
                 self.sock.close()
             except ssl.SSLError:
-                pass
+                LOG.exception()
 
         def sorecv(self, maxlen):
             try:
@@ -104,7 +104,7 @@ class SocketWrapper(object):
         try:
             self.sock.close()
         except socket.error:
-            pass
+            LOG.exception()
 
     def sorecv(self, maxlen):
         try:
