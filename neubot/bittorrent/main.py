@@ -29,7 +29,7 @@ if __name__ == "__main__":
 from neubot.bittorrent.stream import BTStream
 from neubot.net.stream import StreamHandler
 from neubot.options import OptionParser
-from neubot.net.stream import MEASURER
+from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
 from neubot.arcfour import arcfour_new
 from neubot.log import LOG

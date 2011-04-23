@@ -37,7 +37,7 @@ from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
-from neubot.net.stream import MEASURER
+from neubot.net.measurer import MEASURER
 from neubot.utils import safe_seek
 from neubot.utils import import_class
 from neubot.log import LOG

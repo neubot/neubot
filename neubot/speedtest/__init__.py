@@ -50,7 +50,7 @@ from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 
 from neubot.net.poller import POLLER
-from neubot.net.stream import HeadlessMeasurer
+from neubot.net.measurer import HeadlessMeasurer
 
 from neubot.notify import RENEGOTIATE
 from neubot.notify import NOTIFIER
