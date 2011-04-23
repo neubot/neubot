@@ -39,11 +39,10 @@ if __name__ == "__main__":
 from neubot.net.poller import Pollable
 from neubot.options import OptionParser
 from neubot.net.poller import POLLER
-from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
-from neubot.utils import ticks
 from neubot.log import LOG
 from neubot import system
+from neubot import utils
 
 SUCCESS = 0
 ERROR = 1
@@ -267,7 +266,7 @@ class Stream(Pollable):
             return
 
         self.recv_maxlen = maxlen
-        self.recv_ticks = ticks()
+        self.recv_ticks = utils.ticks()
         self.recv_pending = 1
 
         if self.recvblocked:
@@ -361,7 +360,7 @@ class Stream(Pollable):
             return
 
         self.send_octets = octets
-        self.send_ticks = ticks()
+        self.send_ticks = utils.ticks()
         self.send_pending = 1
 
         if self.sendblocked:
@@ -389,7 +388,7 @@ class Stream(Pollable):
 
                 if len(self.send_queue) > 0:
                     self.send_octets = self.send_queue.popleft()
-                    self.send_ticks = ticks()
+                    self.send_ticks = utils.ticks()
                     return
 
                 self.send_octets = None
@@ -402,7 +401,7 @@ class Stream(Pollable):
 
             if count < len(self.send_octets):
                 self.send_octets = buffer(self.send_octets, count)
-                self.send_ticks = ticks()
+                self.send_ticks = utils.ticks()
                 self.poller.set_writable(self)
                 return
 
@@ -471,7 +470,7 @@ class Connector(Pollable):
                     raise socket.error(result, os.strerror(result))
 
                 self.sock = sock
-                self.timestamp = ticks()
+                self.timestamp = utils.ticks()
                 self.poller.set_writable(self)
                 if result != 0:
                     LOG.debug("* Connecting to %s ..." % str(endpoint))
@@ -503,7 +502,7 @@ class Connector(Pollable):
             return
 
         if self.measurer:
-            rtt = ticks() - self.timestamp
+            rtt = utils.ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
         self.parent.connection_made(self.sock)
@@ -585,7 +584,7 @@ class Listener(Pollable):
 
 class Measurer(object):
     def __init__(self):
-        self.last = ticks()
+        self.last = utils.ticks()
         self.streams = []
         self.rtts = []
 
@@ -609,7 +608,7 @@ class Measurer(object):
         return rttavg, rttdetails
 
     def compute_delta_and_sums(self, clear=True):
-        now = ticks()
+        now = utils.ticks()
         delta = now - self.last
         self.last = now
 
@@ -701,7 +700,8 @@ class VerboseMeasurer(Measurer):
 
         recvavg, sendavg, percentages = self.measure_speed()
         if len(percentages) > 0:
-            recv, send = speed_formatter(recvavg), speed_formatter(sendavg)
+            recv, send = (utils.speed_formatter(recvavg),
+                          utils.speed_formatter(sendavg))
             self.output.write("\t\t---\t\t%s\t\t%s\n" % (recv, send))
             if len(percentages) > 1:
                 for val in percentages:
