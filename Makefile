@@ -384,8 +384,7 @@ deb:
 
 clean:
 	@echo "[CLEAN]"
-	@find . -type f -name \*.pyc -exec rm -f {} \;
-	@rm -rf -- dist/
+	@./scripts/cleanup
 help:
 	@echo -n "Targets:"
 	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
