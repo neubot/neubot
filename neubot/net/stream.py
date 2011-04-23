@@ -26,7 +26,6 @@ import os
 import socket
 import sys
 import types
-import getopt
 
 try:
     import ssl
@@ -36,14 +35,15 @@ except ImportError:
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.net.poller import Pollable
 from neubot.net.measurer import MEASURER
-from neubot.options import OptionParser
 from neubot.net.poller import POLLER
 from neubot.arcfour import arcfour_new
 from neubot.log import LOG
 from neubot import system
 from neubot import utils
+from neubot import boot
 
 SUCCESS = 0
 ERROR = 1
@@ -188,12 +188,12 @@ class Stream(Pollable):
 
         LOG.debug("* Connection made %s" % str(self.logname))
 
-        if conf.get("secure", False):
+        if conf.get("net.stream.secure", False):
             if not ssl:
                 raise RuntimeError("SSL support not available")
 
-            server_side = conf.get("server_side", False)
-            certfile = conf.get("certfile", None)
+            server_side = conf.get("net.stream.server_side", False)
+            certfile = conf.get("net.stream.certfile", None)
 
             so = ssl.wrap_socket(sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
@@ -205,8 +205,8 @@ class Stream(Pollable):
         else:
             self.sock = SocketWrapper(sock)
 
-        if conf.get("obfuscate", False):
-            key = conf.get("key", None)
+        if conf.get("net.stream.obfuscate", False):
+            key = conf.get("net.stream.key", None)
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
 
@@ -449,9 +449,11 @@ class Connector(Pollable):
 
     def connect(self, endpoint, conf, measurer=None):
         self.endpoint = endpoint
-        self.family = conf.get("family", socket.AF_INET)
+        self.family = socket.AF_INET
+        if conf.get("net.stream.ipv6", False):
+            self.family = socket.AF_INET6
         self.measurer = measurer
-        sobuf = conf.get("sobuf", 0)
+        sobuf = conf.get("net.stream.sobuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -531,8 +533,10 @@ class Listener(Pollable):
 
     def listen(self, endpoint, conf):
         self.endpoint = endpoint
-        self.family = conf.get("family", socket.AF_INET)
-        sobuf = conf.get("sobuf", 0)
+        self.family = socket.AF_INET
+        if conf.get("net.stream.ipv6", False):
+            self.family = socket.AF_INET6
+        sobuf = conf.get("net.stream.sobuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -653,11 +657,31 @@ class StreamHandler(object):
         pass
 
 
+CONFIG.register_defaults({
+    "net.stream.certfile": "",
+    "net.stream.ipv6": False,
+    "net.stream.key": "",
+    "net.stream.obfuscate": False,
+    "net.stream.secure": False,
+    "net.stream.server_side": False,
+    "net.stream.sobuf": 0,
+})
+CONFIG.register_descriptions({
+    "net.stream.certfile": "Set SSL certfile path",
+    "net.stream.ipv6": "Enable IPv6",
+    "net.stream.key": "Set key for ARC4",
+    "net.stream.obfuscate": "Enable scrambling with ARC4",
+    "net.stream.secure": "Enable SSL",
+    "net.stream.server_side": "Enable SSL server-side mode",
+    "net.stream.sobuf": "Set sock buffers (0 = use default)",
+})
+
+
 class GenericHandler(StreamHandler):
 
     def connection_made(self, sock):
         stream = GenericProtocolStream(self.poller)
-        stream.kind = self.conf.get("kind", "")
+        stream.kind = self.conf.get("net.stream.proto", "")
         stream.attach(self, sock, self.conf)
 
 
@@ -694,149 +718,71 @@ class GenericProtocolStream(Stream):
         self.start_send(self.buffer)
 
 
-USAGE = """Neubot net -- TCP bulk transfer test
-
-Usage: neubot net [-Vv] [-D macro[=value]] [-f file] [--help]
-
-Options:
-    -D macro[=value]   : Set the value of the macro `macro`
-    -f file            : Read options from file `file`
-    --help             : Print this help screen and exit
-    -V                 : Print version number and exit
-    -v                 : Run the program in verbose mode
-
-Macros (defaults in square brackets):
-    address=addr       : Select the address to use                 []
-    certfile           : Path to private key and certificate file
-                         to be used together with `-D secure`      []
-    clients=N          : Spawn N client connections at a time      [1]
-    daemonize          : Drop privileges and run in background     [False]
-    duration=N         : Stop the client(s) after N seconds        [10]
-    key=KEY            : Use KEY to initialize ARC4 stream         []
-    listen             : Listen for incoming connections           [False]
-    obfuscate          : Obfuscate traffic using ARC4              [False]
-    port=port          : Select the port to use                    [12345]
-    proto=proto        : Override protocol (see below)             []
-    secure             : Secure the communication using SSL        [False]
-    sobuf=size         : Set socket buffer size to `size`          []
-
-Protocols:
-    There are two available protocols: `discard` and `chargen`.
-    When running in server mode the default is `chargen` and when
-    running in client mode the default is `discard`.
-
-If you don't specify an address Neubot will pick 0.0.0.0 in listen mode
-and neubot.blupixel.net in connect mode.
-
-"""
-
-VERSION = "Neubot 0.3.6\n"
-
 def main(args):
 
-    conf = OptionParser()
-    conf.set_option("stream", "address", "")
-    conf.set_option("stream", "certfile", "")
-    conf.set_option("stream", "clients", "1")
-    conf.set_option("stream", "daemonize", "False")
-    conf.set_option("stream", "duration", "10")
-    conf.set_option("stream", "key", "")
-    conf.set_option("stream", "listen", "False")
-    conf.set_option("stream", "obfuscate", "False")
-    conf.set_option("stream", "port", "12345")
-    conf.set_option("stream", "proto", "")
-    conf.set_option("stream", "secure", "False")
-    conf.set_option("stream", "sobuf", "0")
+    CONFIG.register_defaults({
+        "net.stream.address": "",
+        "net.stream.clients": 1,
+        "net.stream.daemonize": False,
+        "net.stream.duration": 10,
+        "net.stream.listen": False,
+        "net.stream.port": 12345,
+        "net.stream.proto": "",
+    })
+    CONFIG.register_descriptions({
+        "net.stream.address": "Set client or server address",
+        "net.stream.clients": "Set number of client connections",
+        "net.stream.daemonize": "Enable daemon behavior",
+        "net.stream.duration": "Set duration of a test",
+        "net.stream.listen": "Enable server mode",
+        "net.stream.port": "Set client or server port",
+        "net.stream.proto": "Set proto (chargen, discard, or echo)",
+    })
 
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
+    boot.common("net.stream", "TCP bulk transfer test", args)
 
-    if len(arguments) > 0:
-        sys.stdout.write(USAGE)
-        sys.exit(1)
+    conf = CONFIG.select("net.stream")
 
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "stream")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    address = conf.get_option("stream", "address")
-    clients = conf.get_option_uint("stream", "clients")
-    daemonize = conf.get_option_bool("stream", "daemonize")
-    duration = conf.get_option_uint("stream", "duration")
-    listen = conf.get_option_bool("stream", "listen")
-    port = conf.get_option_uint("stream", "port")
-    proto = conf.get_option("stream", "proto")
-    sobuf = conf.get_option_uint("stream", "sobuf")
-
-    if not address:
-        if not listen:
-            address = "neubot.blupixel.net"
+    if not conf["net.stream.address"]:
+        if not conf["net.stream.listen"]:
+            conf["net.stream.address"] = "neubot.blupixel.net"
         else:
-            address = "0.0.0.0"
+            conf["net.stream.address"] = "0.0.0.0"
 
-    if not (listen and daemonize):
+    if not (conf["net.stream.listen"] and conf["net.stream.daemonize"]):
         MEASURER.start()
 
-    dictionary = {
-        "certfile": conf.get_option("stream", "certfile"),
-        "key": conf.get_option("stream", "key"),
-        "obfuscate": conf.get_option_bool("stream", "obfuscate"),
-        "secure": conf.get_option_bool("stream", "secure"),
-    }
+    endpoint = (conf["net.stream.address"], conf["net.stream.port"])
 
-    endpoint = (address, port)
-
-    if not proto:
-        if listen:
-            proto = "chargen"
+    if not conf["net.stream.proto"]:
+        if conf["net.stream.listen"]:
+            conf["net.stream.proto"] = "chargen"
         else:
-            proto = "discard"
-    elif proto not in ("chargen", "discard", "echo"):
-        sys.stderr.write(USAGE)
+            conf["net.stream.proto"] = "discard"
+    elif conf["net.stream.proto"] not in ("chargen", "discard", "echo"):
+        boot.write_help(sys.stderr, "net.stream", "TCP bulk transfer test")
         sys.exit(1)
 
-    dictionary["kind"] = proto
-    dictionary["sobuf"] = sobuf
-
     handler = GenericHandler(POLLER)
-    handler.configure(dictionary, MEASURER)
+    handler.configure(conf, MEASURER)
 
-    if listen:
-        if daemonize:
+    if conf["net.stream.listen"]:
+        if conf["net.stream.daemonize"]:
             system.change_dir()
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        dictionary["server_side"] = True
+        conf["net.stream.server_side"] = True
         handler.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
+    duration = conf["net.stream.duration"]
     if duration >= 0:
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
-    handler.connect(endpoint, clients)
+    handler.connect(endpoint, count=conf["net.stream.clients"])
     POLLER.loop()
     sys.exit(0)
 
