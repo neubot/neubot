@@ -215,8 +215,8 @@ class Config(object):
     def get(self, key, defvalue):
         return self.conf.get(key, defvalue)
 
-    def register_property(self, prop, module):
-        if not "." in prop:
+    def register_property(self, prop, module=""):
+        if module and not prop.startswith(module):
             prop = "%s.%s" % (module, prop)
         self.properties.append(prop)
 
