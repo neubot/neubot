@@ -765,7 +765,7 @@ class GenericHandler(StreamHandler):
 class GenericProtocolStream(Stream):
 
     """Specializes stream in order to handle some byte-oriented
-       protocols like discard and chargen."""
+       protocols like discard, chargen, and echo."""
 
     def __init__(self, poller):
         Stream.__init__(self, poller)
@@ -778,13 +778,20 @@ class GenericProtocolStream(Stream):
             self.start_recv()
         elif self.kind == "chargen":
             self.start_send(self.buffer)
+        elif self.kind == "echo":
+            self.start_recv()
         else:
             self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
+        if self.kind == "echo":
+            self.start_send(octets)
 
     def send_complete(self):
+        if self.kind == "echo":
+            self.start_recv()
+            return
         self.start_send(self.buffer)
 
 
@@ -905,7 +912,7 @@ def main(args):
             proto = "chargen"
         else:
             proto = "discard"
-    elif proto not in ("chargen", "discard"):
+    elif proto not in ("chargen", "discard", "echo"):
         sys.stderr.write(USAGE)
         sys.exit(1)
 
