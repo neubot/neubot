@@ -71,9 +71,10 @@ class ConfigDict(dict):
         if key in self:
             ovalue = self[key]
             cast = utils.smart_cast(ovalue)
-            value = cast(value)
         else:
             ovalue = "(none)"
+            cast = utils.smart_cast(value)
+        value = cast(value)
         LOG.debug("config: %s: %s -> %s" % (key, ovalue, value))
         dict.__setitem__(self, key, value)
 
