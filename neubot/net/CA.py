@@ -20,87 +20,40 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import getopt
 import subprocess
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.options import OptionParser
+from neubot.config import CONFIG
 from neubot.log import LOG
+from neubot import boot
 
-USAGE = """Neubot CA -- Generate test certificates
-
-Usage: neubot CA [-Vv] [-D macro[=value]] [-f file] [--help]
-
-Options:
-    -D macro=value   : Set the value of the macro `macro`
-    -f file          : Read options from the file `file`
-    --help           : Print this help screen and exit
-    -V               : Print version number and exit
-    -v               : Run the program in verbose mode
-
-Macros (defaults in square brackets):
-    bits=count       : Generate count bits RSA privkey   [2048]
-    cacert=file      : Override cacert file name         [cacert.pem]
-    days=count       : Certificate valid for count days  [1095]
-    privkey=file     : Override privkey file name        [privkey.pem]
-
-"""
-
-VERSION = "Neubot 0.3.6\n"
+CONFIG.register_defaults({
+    "net.CA.bits": 2048,
+    "net.CA.cacert": "cacert.pem",
+    "net.CA.days": 1095,
+    "net.CA.privkey": "privkey.pem",
+})
+CONFIG.register_descriptions({
+    "net.CA.bits": "Set private key bits number",
+    "net.CA.cacert": "Set certificate file path",
+    "net.CA.days": "Set days before expire",
+    "net.CA.privkey": "Set private key file path",
+})
 
 def main(args):
+    boot.common("net.CA", "generate test certificates", args)
+    conf = CONFIG.select("net.CA")
 
-    conf = OptionParser()
-    conf.set_option("CA", "bits", "2048")
-    conf.set_option("CA", "cacert", "cacert.pem")
-    conf.set_option("CA", "days", "1095")
-    conf.set_option("CA", "privkey", "privkey.pem")
-
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:Vv", ["help"])
-    except getopt.error:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
-
-    if len(arguments) != 0:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
-
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "CA")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    bits = conf.get_option("CA", "bits")
-    cacert = conf.get_option("CA", "cacert")
-    days = conf.get_option("CA", "days")
-    privkey = conf.get_option("CA", "privkey")
-
-    genrsa = [ "openssl", "genrsa", "-out", privkey, bits ]
+    genrsa = [ "openssl", "genrsa", "-out", conf["net.CA.privkey"],
+               str(conf["net.CA.bits"]) ]
     LOG.debug("CA: exec: %s" % genrsa)
     subprocess.call(genrsa)
 
-    req = [ "openssl", "req", "-new", "-x509", "-key", privkey,
-            "-out", cacert, "-days", days ]
+    req = [ "openssl", "req", "-new", "-x509", "-key", conf["net.CA.privkey"],
+            "-out", conf["net.CA.cacert"], "-days", str(conf["net.CA.days"]) ]
     LOG.debug("CA: exec: %s" % req)
     subprocess.call(req)
 
