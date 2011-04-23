@@ -138,8 +138,13 @@ def unicodize(value):
     else:
         return unicode(value)
 
-def boolize(s):
-    return str(s).lower() not in ("0", "off", "false", "no")
+def intify(s):
+    if type(s) == types.StringType or type(s) == types.UnicodeType:
+        if s.lower() in ("off", "false", "no"):
+            return 0
+        elif s.lower() in ("on", "true", "yes"):
+            return 1
+    return int(s)
 
 def smart_cast(value):
     if type(value) == types.StringType:
@@ -147,11 +152,11 @@ def smart_cast(value):
     elif type(value) == types.UnicodeType:
         return unicodize
     elif type(value) == types.BooleanType:
-        return boolize
+        return intify
     elif type(value) == types.IntType:
-        return int
+        return intify
     elif type(value) == types.LongType:
-        return long
+        return intify
     elif type(value) == types.FloatType:
         return float
     else:

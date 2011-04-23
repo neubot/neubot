@@ -76,8 +76,8 @@ def main(argv):
         sys.exit(1)
 
     if os.environ.get("NEUBOT_DEBUG", ""):
-        from neubot.utils import boolize
-        if boolize(os.environ["NEUBOT_DEBUG"]):
+        from neubot import utils
+        if utils.intify(os.environ["NEUBOT_DEBUG"]):
             sys.stderr.write("Running in debug mode\n")
             from neubot.debug import PROFILER
             sys.setprofile(PROFILER.notify_event)

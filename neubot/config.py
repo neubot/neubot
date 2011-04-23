@@ -71,9 +71,10 @@ class ConfigDict(dict):
         if key in self:
             ovalue = self[key]
             cast = utils.smart_cast(ovalue)
-            value = cast(value)
         else:
             ovalue = "(none)"
+            cast = utils.smart_cast(value)
+        value = cast(value)
         LOG.debug("config: %s: %s -> %s" % (key, ovalue, value))
         dict.__setitem__(self, key, value)
 
@@ -203,9 +204,13 @@ class Config(object):
     def __init__(self):
         self.properties = []
         self.conf = ConfigDict()
+        self.descriptions = {}
 
     def register_defaults(self, kvstore):
         self.conf.update(kvstore)
+
+    def register_descriptions(self, d):
+        self.descriptions.update(d)
 
     def select(self, module):
         return ConfigDict((t for t in self.conf.iteritems()
@@ -214,8 +219,8 @@ class Config(object):
     def get(self, key, defvalue):
         return self.conf.get(key, defvalue)
 
-    def register_property(self, prop, module):
-        if not "." in prop:
+    def register_property(self, prop, module=""):
+        if module and not prop.startswith(module):
             prop = "%s.%s" % (module, prop)
         self.properties.append(prop)
 
@@ -271,6 +276,16 @@ class Config(object):
         database.executemany("INSERT INTO config VALUES(?,?);",
           self.conf.iteritems())
         database.commit()
+
+    def print_descriptions(self, fp):
+        fp.write("Properties (defaults in square brackets):\n")
+        for key in sorted(self.descriptions.keys()):
+            description = self.descriptions[key]
+            value = self.conf[key]
+            if description.lower().startswith("enable"):
+                value = bool(value)
+            fp.write("    %-28s: %s [%s]\n" % (key, description, value))
+        fp.write("\n")
 
 
 CONFIG = Config()
