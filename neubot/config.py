@@ -204,9 +204,13 @@ class Config(object):
     def __init__(self):
         self.properties = []
         self.conf = ConfigDict()
+        self.descriptions = {}
 
     def register_defaults(self, kvstore):
         self.conf.update(kvstore)
+
+    def register_descriptions(self, d):
+        self.descriptions.update(d)
 
     def select(self, module):
         return ConfigDict((t for t in self.conf.iteritems()
@@ -272,6 +276,16 @@ class Config(object):
         database.executemany("INSERT INTO config VALUES(?,?);",
           self.conf.iteritems())
         database.commit()
+
+    def print_descriptions(self, fp):
+        fp.write("Properties (defaults in square brackets):\n")
+        for key in sorted(self.descriptions.keys()):
+            description = self.descriptions[key]
+            value = self.conf[key]
+            if description.lower().startswith("enable"):
+                value = bool(value)
+            fp.write("    %-28s: %s [%s]\n" % (key, description, value))
+        fp.write("\n")
 
 
 CONFIG = Config()
