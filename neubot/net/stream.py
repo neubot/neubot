@@ -754,16 +754,11 @@ class StreamHandler(object):
         pass
 
 
-KIND_NONE = 0
-KIND_DISCARD = 1
-KIND_CHARGEN = 2
-
-
 class GenericHandler(StreamHandler):
 
     def connection_made(self, sock):
         stream = GenericProtocolStream(self.poller)
-        stream.kind = self.conf.get("kind", KIND_NONE)
+        stream.kind = self.conf.get("kind", "")
         stream.attach(self, sock, self.conf)
 
 
@@ -775,13 +770,13 @@ class GenericProtocolStream(Stream):
     def __init__(self, poller):
         Stream.__init__(self, poller)
         self.buffer = "A" * MAXBUF
-        self.kind = KIND_NONE
+        self.kind = ""
 
     def connection_made(self):
         MEASURER.register_stream(self)
-        if self.kind == KIND_DISCARD:
+        if self.kind == "discard":
             self.start_recv()
-        elif self.kind == KIND_CHARGEN:
+        elif self.kind == "chargen":
             self.start_send(self.buffer)
         else:
             self.shutdown()
@@ -905,21 +900,17 @@ def main(args):
 
     endpoint = (address, port)
 
-    if proto == "chargen":
-        kind = KIND_CHARGEN
-    elif proto == "discard":
-        kind = KIND_DISCARD
-    elif proto == "":
+    if not proto:
         if listen:
-            kind = KIND_CHARGEN
+            proto = "chargen"
         else:
-            kind = KIND_DISCARD
-    else:
+            proto = "discard"
+    elif proto not in ("chargen", "discard"):
         sys.stderr.write(USAGE)
         sys.exit(1)
 
     dictionary["measurer"] = MEASURER
-    dictionary["kind"] = kind
+    dictionary["kind"] = proto
     dictionary["sobuf"] = sobuf
 
     handler = GenericHandler(POLLER)
