@@ -454,7 +454,7 @@ class Connector(Pollable):
                                           self.family, socket.SOCK_STREAM)
         except socket.error, exception:
             LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
-            self.parent.connection_failed(self, exception)
+            self.parent._connection_failed(self, exception)
             return
 
         last_exception = None
@@ -482,7 +482,7 @@ class Connector(Pollable):
                 last_exception = exception
 
         LOG.error("* Connection to %s failed: %s" % (endpoint, last_exception))
-        self.parent.connection_failed(self, last_exception)
+        self.parent._connection_failed(self, last_exception)
 
     def fileno(self):
         return self.sock.fileno()
@@ -499,21 +499,21 @@ class Connector(Pollable):
                     self.sock.recv(MAXBUF)
                 except socket.error, exception2:
                     exception = exception2
-            self.parent.connection_failed(self, exception)
+            self.parent._connection_failed(self, exception)
             return
 
         if self.measurer:
             rtt = utils.ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
-        self.parent.connection_made(self.sock)
+        self.parent._connection_made(self.sock)
 
     def writetimeout(self, now):
         return now - self.timestamp >= self.timeout
 
     def closing(self, exception=None):
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
-        self.parent.connection_failed(self, exception)
+        self.parent._connection_failed(self, exception)
 
 
 class Listener(Pollable):
@@ -588,6 +588,9 @@ class StreamHandler(object):
     def __init__(self, poller):
         self.poller = poller
         self.conf = {}
+        self.epnts = collections.deque()
+        self.bad = collections.deque()
+        self.good = collections.deque()
 
     def configure(self, conf):
         self.conf = conf
@@ -607,15 +610,35 @@ class StreamHandler(object):
 
     def connect(self, endpoint, count=1):
         while count > 0:
-            connector = Connector(self.poller, self)
-            connector.connect(endpoint, self.conf)
+            self.epnts.append(endpoint)
             count = count - 1
+        self._next_connect()
+
+    def _next_connect(self):
+        if self.epnts:
+            connector = Connector(self.poller, self)
+            connector.connect(self.epnts.popleft(), self.conf)
+        else:
+            while self.bad:
+                connector, exception = self.bad.popleft()
+                self.connection_failed(connector, exception)
+            while self.good:
+                sock = self.good.popleft()
+                self.connection_made(sock)
+
+    def _connection_failed(self, connector, exception):
+        self.bad.append((connector, exception))
+        self._next_connect()
 
     def connection_failed(self, connector, exception):
         pass
 
     def started_connecting(self, connector):
         pass
+
+    def _connection_made(self, sock):
+        self.good.append(sock)
+        self._next_connect()
 
     def connection_made(self, sock):
         pass

@@ -744,6 +744,10 @@ class ClientSpeedtest(ClientHTTP):
             self.start()
             return
 
+        #
+        # TODO Use net/stream.py support for serializing several
+        # connect and simplify the code here a bit.
+        #
         LOG.progress()
         self.streams.append(stream)
         if len(self.streams) < self.conf.get("speedtest.client.nconns", 2):
