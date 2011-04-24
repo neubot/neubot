@@ -690,8 +690,8 @@ class ClientSpeedtest(ClientHTTP):
         self.streams = []
         self.measurer = None
 
-    def configure(self, conf):
-        ClientHTTP.configure(self, conf)
+    def configure(self, conf, measurer=None):
+        ClientHTTP.configure(self, conf, measurer)
 
         nconns = self.conf.get("speedtest.client.nconns", 2)
         self.instructions = [
@@ -718,7 +718,6 @@ class ClientSpeedtest(ClientHTTP):
 
     def start(self):
         self.started = True
-        self.measurer = HeadlessMeasurer(self.poller)
 
         uri = self.conf.get("speedtest.client.uri",
           "http://neubot.blupixel.net/speedtest/")
@@ -743,6 +742,9 @@ class ClientSpeedtest(ClientHTTP):
               self.conf["http.client.uri"]})
             self.start()
             return
+
+        # Force the measurer we want just before we need it
+        self.measurer = HeadlessMeasurer(self.poller)
 
         #
         # TODO Use net/stream.py support for serializing several
