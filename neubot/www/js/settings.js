@@ -20,11 +20,11 @@
  */
 
 function settingIdSanitize(id) {
-    return id.replace('.', '-');
+    return id.replace(/\./gi, '-');
 }
 
 function settingIdDesanitize(id) {
-    return id.replace('-', '.');
+    return id.replace(/-/gi, '.');
 }
 
 function configError(jqXHR, textStatus, errorThrown) {
@@ -66,7 +66,7 @@ function changeHidden(myinput) {
 function getConfigRow(fieldname, value, label) {
     value = htmlspecialchars(value, 'ENT_QUOTES');
     var fieldnameok = settingIdSanitize(fieldname);
-    return "<tr><td width='80%'>" + label + "</td><td width='20%'><input type='text' id='setting_" +
+    return "<tr><td width='20%'>" + fieldname + "</td><td width='60%'><small>" + label + "</small></td><td width='20%'><input type='text' id='setting_" +
         fieldnameok + "' value='" + value + "' onchange='return changeHidden(this);' /><input type='hidden' value='0' id='setting_" + fieldnameok +
         "_changed' /></td></tr>";
 }
