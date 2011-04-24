@@ -63,12 +63,20 @@ function changeHidden(myinput) {
     return false;
 }
 
-function getConfigRow(fieldname, value, label) {
+function getConfigRow(fieldname, value, label, filter) {
     value = htmlspecialchars(value, 'ENT_QUOTES');
     var fieldnameok = settingIdSanitize(fieldname);
-    return "<tr><td width='20%'>" + fieldname + "</td><td width='60%'><small>" + label + "</small></td><td width='20%'><input type='text' id='setting_" +
-        fieldnameok + "' value='" + value + "' onchange='return changeHidden(this);' /><input type='hidden' value='0' id='setting_" + fieldnameok +
-        "_changed' /></td></tr>";
+
+    if (filter) {
+        html = "<tr><td width='20%'>" + fieldname + "</td><td width='60%'><small>" + label + "</small></td><td width='20%'><strong>" + value + "</strong></td></tr>";
+    }
+    else {
+        html = "<tr><td width='20%'>" + fieldname + "</td><td width='60%'><small>" + label + "</small></td><td width='20%'><input type='text' id='setting_" +
+            fieldnameok + "' value='" + value + "' onchange='return changeHidden(this);' /><input type='hidden' value='0' id='setting_" + fieldnameok +
+            "_changed' /></td></tr>";
+    }
+
+    return html;
 }
 
 function process_state(data) {
@@ -96,10 +104,13 @@ jQuery(document).ready(function() {
                 url: 'api/config',
                 dataType: 'json',
                 success: function(data) {
+                    filtered = Array();
+                    filtered[0] = "agent.api";
+
                     var html = "";
                     html += "<table width='100%' id='table_settings'>";
                     for (var config_var in labels) {
-                        html += getConfigRow(config_var, data[config_var], labels[config_var]);
+                        html += getConfigRow(config_var, data[config_var], labels[config_var], in_array(config_var, filtered));
                     }
                     html += "</table>";
                     jQuery('#configdiv').html(html);
