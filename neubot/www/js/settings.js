@@ -63,10 +63,10 @@ function changeHidden(myinput) {
     return false;
 }
 
-function getConfigRow(fieldname, value) {
+function getConfigRow(fieldname, value, label) {
     value = htmlspecialchars(value, 'ENT_QUOTES');
     var fieldnameok = settingIdSanitize(fieldname);
-    return "<tr><td width='50%'>" + fieldname + "</td><td width='50%'><input type='text' id='setting_" +
+    return "<tr><td width='80%'>" + label + "</td><td width='20%'><input type='text' id='setting_" +
         fieldnameok + "' value='" + value + "' onchange='return changeHidden(this);' /><input type='hidden' value='0' id='setting_" + fieldnameok +
         "_changed' /></td></tr>";
 }
@@ -88,17 +88,26 @@ jQuery(document).ready(function() {
     utils.setActiveTab("settings");
 
     jQuery.ajax({
-        url: 'api/config',
+        url: 'api/configlabels',
         dataType: 'json',
         success: function(data) {
-            var html = "";
-            html += "<table width='100%'>";
-            for (var config_var in data) {
-                html += getConfigRow(config_var, data[config_var]);
-            }
-            html += "</table>";
-            jQuery('#configdiv').html(html);
-            return false;
+            labels = data;
+            jQuery.ajax({
+                url: 'api/config',
+                dataType: 'json',
+                success: function(data) {
+                    var html = "";
+                    html += "<table width='100%' id='table_settings'>";
+                    for (var config_var in labels) {
+                        html += getConfigRow(config_var, data[config_var], labels[config_var]);
+                    }
+                    html += "</table>";
+                    jQuery('#configdiv').html(html);
+                    jQuery('#table_settings tr:even').addClass('coloured');
+                    jQuery('#table_settings tr:odd').addClass('less-coloured');
+                    return false;
+                }
+            });
         }
     });
 

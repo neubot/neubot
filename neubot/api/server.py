@@ -47,6 +47,12 @@ CONFIG.register_defaults({
     "privacy.can_share": 0,
 })
 
+CONFIG.register_descriptions({
+    "privacy.informed": "You assert that you have read and understood the above privacy policy",
+    "privacy.can_collect": "You give Neubot the permission to collect your Internet address",
+    "privacy.can_share": "You give Neubot the permission to share your Internet address with the Internet community",
+})
+
 
 class ServerAPI(ServerHTTP):
 
@@ -72,6 +78,9 @@ class ServerAPI(ServerHTTP):
 
         if path == "/api/config":
             self.api_config(stream, request)
+
+        elif path == "/api/configlabels":
+            self.api_configlabels(stream, request)
 
         elif path == "/api/exit":
             self.api_exit(stream, request)
@@ -110,6 +119,14 @@ class ServerAPI(ServerHTTP):
         else:
             s = json.dumps(CONFIG.conf)
 
+        stringio = StringIO.StringIO(s)
+        response.compose(code="200", reason="Ok", body=stringio,
+                         mimetype="application/json")
+        stream.send_response(request, response)
+
+    def api_configlabels(self, stream, request):
+        response = Message()
+        s = json.dumps(CONFIG.descriptions)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")

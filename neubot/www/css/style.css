@@ -456,3 +456,12 @@ a#x_link_to_status {
     height: 400px;
     width: 100%;
 }
+#table_settings td {
+    padding: 3px 2px;
+}
+#table_settings tr.coloured {
+    background-color: #eee;
+}
+#table_settings tr.less-coloured {
+    background-color: #fff;
+}
