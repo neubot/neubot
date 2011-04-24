@@ -125,9 +125,11 @@ class Logger(object):
 
     # Log functions
 
-    def exception(self):
+    def exception(self, func=None):
+        if not func:
+            func = self.error
         for line in traceback.format_exc().split("\n"):
-            self._log(self.logger.error, "ERROR", line)
+            func(line)
 
     def error(self, message):
         self._log(self.logger.error, "ERROR", message)
@@ -176,6 +178,12 @@ if __name__ == "__main__":
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
     print compat.json.dumps(LOG.serialize())
+
+    try:
+        1/0
+    except:
+        LOG.exception()
+        LOG.exception(LOG.warning)
 
     LOG.redirect()
 
