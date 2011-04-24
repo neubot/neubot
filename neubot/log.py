@@ -125,9 +125,11 @@ class Logger(object):
 
     # Log functions
 
-    def exception(self):
+    def exception(self, func=None):
+        if not func:
+            func = self.error
         for line in traceback.format_exc().split("\n"):
-            self._log(self.logger.error, "ERROR", line)
+            func(line)
 
     def error(self, message):
         self._log(self.logger.error, "ERROR", message)
