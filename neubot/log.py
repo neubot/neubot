@@ -32,10 +32,9 @@ import traceback
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.compat import deque_append
-from neubot.compat import json
 from neubot.utils import timestamp
 from neubot import system
+from neubot import compat
 
 
 class InteractiveLogger(object):
@@ -156,7 +155,8 @@ class Logger(object):
 
     def _log(self, printlog, severity, message):
         message = message.rstrip()
-        deque_append(self.queue, self.maxqueue, (timestamp(),severity,message))
+        compat.deque_appendleft(self.queue, self.maxqueue,
+                                (timestamp(),severity,message))
         printlog(message)
 
     # Marshal
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
-    print json.dumps(LOG.serialize())
+    print compat.json.dumps(LOG.serialize())
 
     LOG.redirect()
 
