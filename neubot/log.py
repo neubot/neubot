@@ -131,6 +131,13 @@ class Logger(object):
         for line in traceback.format_exc().split("\n"):
             func(line)
 
+    def oops(self, message, func=None):
+        if not func:
+            func = self.error
+        func("OOPS: " + message + " (traceback follows)")
+        for line in traceback.format_stack()[:-1]:
+            func(line)
+
     def error(self, message):
         self._log(self.logger.error, "ERROR", message)
 
@@ -184,6 +191,8 @@ if __name__ == "__main__":
     except:
         LOG.exception()
         LOG.exception(LOG.warning)
+
+    LOG.oops("Testing the new oops feature")
 
     LOG.redirect()
 
