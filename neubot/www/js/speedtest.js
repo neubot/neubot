@@ -218,32 +218,6 @@ jQuery(document).ready(function() {
     speedtest.get_recent_results([speedtest.results_formatter_table,
                                   speedtest.results_formatter_plot]);
 
-    jQuery('#testResultsBox').qtip({
-        content: "A new test is running.",
-        position: {
-            target: jQuery('#testTime'),
-            corner: {
-                tooltip: "rightMiddle",
-                target: "leftMiddle"
-            }
-        },
-        show: {
-            when: false,
-            ready: false
-        },
-        hide: false,
-        style: {
-            border: {
-                width: 2,
-                radius: 5
-            },
-            padding: 10,
-            textAlign: 'center',
-            tip: true,
-            name: 'blue'
-        }
-    });
-
     var confirm = function() {
         var n = Number(jQuery("#res_value").val());
         if (n == NaN) {

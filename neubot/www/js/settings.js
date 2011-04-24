@@ -71,37 +71,21 @@ function getConfigRow(fieldname, value) {
         "_changed' /></td></tr>";
 }
 
+function process_state(data) {
+    if (data.events.config) {
+        for (c in data.events.config) {
+            var myinput = '#setting_' + settingIdSanitize(c);
+            // If user change the setting, maybe it is better to lock that feature (?)
+            // if (jQuery(myinput + '_changed').val() == 0) {
+                jQuery(myinput).val(data.events.config[c]);
+            // }
+        }
+    }
+    return false;
+}
+
 jQuery(document).ready(function() {
     utils.setActiveTab("settings");
-
-    jQuery('#testResultsBox').qtip({
-        content: "A new test is running.",
-        position: {
-            target: jQuery('#testTime'),
-            corner: {
-                tooltip: "rightMiddle",
-                target: "leftMiddle"
-            }
-        },
-        show: {
-            when: false,
-            ready: false
-        },
-        hide: false,
-        style: {
-            border: {
-                width: 2,
-                radius: 5
-            },
-            padding: 10,
-            textAlign: 'center',
-            tip: true,
-            name: 'blue'
-        }
-    });
-
-    tracker = state.tracker();
-    tracker.start();
 
     jQuery.ajax({
         url: 'api/config',
@@ -117,4 +101,7 @@ jQuery(document).ready(function() {
             return false;
         }
     });
+
+    tracker = state.tracker(process_state);
+    tracker.start();
 });
