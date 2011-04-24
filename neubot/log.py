@@ -179,6 +179,12 @@ if __name__ == "__main__":
     LOG.debug("testing neubot logger -- This is a debug message")
     print compat.json.dumps(LOG.serialize())
 
+    try:
+        1/0
+    except:
+        LOG.exception()
+        LOG.exception(LOG.warning)
+
     LOG.redirect()
 
     LOG.error("testing neubot logger -- This is an error message")
