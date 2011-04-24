@@ -26,6 +26,7 @@ import cgi
 import re
 
 from neubot.compat import json
+from neubot.config import ConfigError
 from neubot.config import CONFIG
 from neubot.database import database
 from neubot.http.message import Message
@@ -65,9 +66,9 @@ class ServerAPI(ServerHTTP):
     def process_request(self, stream, request):
         try:
             self.serve_request(stream, request)
-        except Exception, error:
+        except ConfigError, error:
             reason = re.sub(r"[\0-\31]", "", str(error))
-            LOG.exception()
+            LOG.exception(LOG.info)
             response = Message()
             response.compose(code="500", reason=reason,
                     body=StringIO.StringIO(reason))
