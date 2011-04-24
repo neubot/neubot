@@ -44,35 +44,9 @@ function checkPrivacy(data) {
 
 jQuery(document).ready(function() {
     utils.setActiveTab("privacy");
-    getConfigVars(checkPrivacy);
 
-    jQuery('#testResultsBox').qtip({
-        content: "A new test is running.",
-        position: {
-            target: jQuery('#testTime'),
-            corner: {
-                tooltip: "rightMiddle",
-                target: "leftMiddle"
-            }
-        },
-        show: {
-            when: false,
-            ready: false
-        },
-        hide: false,
-        style: {
-            border: {
-                width: 2,
-                radius: 5
-            },
-            padding: 10,
-            textAlign: 'center',
-            tip: true,
-            name: 'blue'
-        }
-    });
+    getConfigVars(checkPrivacy);
 
     tracker = state.tracker();
     tracker.start();
-
 });

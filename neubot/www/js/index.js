@@ -75,32 +75,6 @@ jQuery(document).ready(function() {
 
     jQuery.jqplot.config.enablePlugins = true;
 
-    jQuery('#testResultsBox').qtip({
-        content: "A new test is running.",
-        position: {
-            target: jQuery('#testTime'),
-            corner: {
-                tooltip: "rightMiddle",
-                target: "leftMiddle"
-            }
-        },
-        show: {
-            when: false,
-            ready: false
-        },
-        hide: false,
-        style: {
-            border: {
-                width: 2,
-                radius: 5
-            },
-            padding: 10,
-            textAlign: 'center',
-            tip: true,
-            name: 'blue'
-        }
-    });
-
     // Not yet
     /*
     neubot.update_results_plot(500);

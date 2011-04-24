@@ -22,35 +22,6 @@
 jQuery(document).ready(function() {
     utils.setActiveTab("log");
 
-    jQuery('#testResultsBox').qtip({
-        content: "A new test is running.",
-        position: {
-            target: jQuery('#testTime'),
-            corner: {
-                tooltip: "rightMiddle",
-                target: "leftMiddle"
-            }
-        },
-        show: {
-            when: false,
-            ready: false
-        },
-        hide: false,
-        style: {
-            border: {
-                width: 2,
-                radius: 5
-            },
-            padding: 10,
-            textAlign: 'center',
-            tip: true,
-            name: 'blue'
-        }
-    });
-
-    tracker = state.tracker();
-    tracker.start();
-
     jQuery.ajax({
         url: 'api/log',
         dataType: 'json',
@@ -88,4 +59,7 @@ jQuery(document).ready(function() {
             return false;
         }
     });
+
+    tracker = state.tracker();
+    tracker.start();
 });

@@ -128,6 +128,32 @@ var state = (function() {
         // delay the first get_state a bit
 
         my.start = function() {
+            jQuery('#testResultsBox').qtip({
+                content: "A new test is running.",
+                position: {
+                    target: jQuery('#testTime'),
+                    corner: {
+                        tooltip: "rightMiddle",
+                        target: "leftMiddle"
+                    }
+                },
+                show: {
+                    when: false,
+                    ready: false
+                },
+                hide: false,
+                style: {
+                    border: {
+                        width: 2,
+                        radius: 5
+                    },
+                    padding: 10,
+                    textAlign: 'center',
+                    tip: true,
+                    name: 'blue'
+                }
+            });
+            
             setTimeout(get_state, 100);
         }
 
