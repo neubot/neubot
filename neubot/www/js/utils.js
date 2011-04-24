@@ -148,14 +148,15 @@ function getConfigVars(myfunction) {
     return getSetConfigVars(myfunction);
 }
 
-function setConfigVars(value) {
-    return getSetConfigVars(null, true, value);
+function setConfigVars(value, success, error) {
+    return getSetConfigVars(success, true, value, error);
 }
 
-function getSetConfigVars(myfunction, change, value) {
+function getSetConfigVars(myfunction, change, value, myerror) {
     var data = {};
     var type = "GET";
     var success = undefined;
+    var error = undefined;
 
     if (change) {
         data = value;
@@ -168,12 +169,19 @@ function getSetConfigVars(myfunction, change, value) {
         }
     }
 
+    if (myerror) {
+        error = function(jqXHR, textStatus, errorThrown) {
+            myerror(jqXHR, textStatus, errorThrown);
+        }
+    }
+
     jQuery.ajax({
         url: '/api/config',
         data: data,
         type: type,
         dataType: 'json',
-        success: success
+        success: success,
+        error: error
     });
 
     return false;

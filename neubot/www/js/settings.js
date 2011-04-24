@@ -27,6 +27,14 @@ function settingIdDesanitize(id) {
     return id.replace('-', '.');
 }
 
+function configError(jqXHR, textStatus, errorThrown) {
+    alert(jqXHR.statusText + "\nNo setting saved");
+}
+
+function configSuccess() {
+    alert("Settings successfully updated");
+}
+
 function submitConfig() {
     var myreg = /^setting_(.+)_changed$/i;
     var numchanged = 0;
@@ -41,8 +49,7 @@ function submitConfig() {
         }
     });
     if (numchanged) {
-        setConfigVars(changed);
-        alert("Settings successfully updated");
+        setConfigVars(changed, configSuccess, configError);
     }
     else {
         alert("Nothing changed, so no need to save anything");
