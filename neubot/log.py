@@ -164,8 +164,8 @@ class Logger(object):
 
     def _log(self, printlog, severity, message):
         message = message.rstrip()
-        compat.deque_appendleft(self.queue, self.maxqueue,
-                                (timestamp(),severity,message))
+        compat.deque_append(self.queue, self.maxqueue,
+                            (timestamp(),severity,message))
         printlog(message)
 
     # Marshal
