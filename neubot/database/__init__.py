@@ -269,7 +269,7 @@ class DatabaseManager:
         self.query_results_functional(vector.append, since, until)
 
         if vector:
-            temp = []
+            temp = vector
             vector = collections.deque()
             for octets in temp:
                 result = unmarshal_object(octets, "application/xml",
