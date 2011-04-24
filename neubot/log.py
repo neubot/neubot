@@ -174,7 +174,7 @@ class Logger(object):
         return map(None, self.queue)
 
 
-MAXQUEUE = 100
+MAXQUEUE = 4096
 LOG = Logger(MAXQUEUE)
 
 if __name__ == "__main__":
