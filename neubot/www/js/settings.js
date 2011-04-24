@@ -71,6 +71,19 @@ function getConfigRow(fieldname, value) {
         "_changed' /></td></tr>";
 }
 
+function process_state(data) {
+    if (data.events.config) {
+        for (c in data.events.config) {
+            var myinput = '#setting_' + settingIdSanitize(c);
+            // If user change the setting, maybe it is better to lock that feature (?)
+            // if (jQuery(myinput + '_changed').val() == 0) {
+                jQuery(myinput).val(data.events.config[c]);
+            // }
+        }
+    }
+    return false;
+}
+
 jQuery(document).ready(function() {
     utils.setActiveTab("settings");
 
@@ -89,6 +102,6 @@ jQuery(document).ready(function() {
         }
     });
 
-    tracker = state.tracker();
+    tracker = state.tracker(process_state);
     tracker.start();
 });
