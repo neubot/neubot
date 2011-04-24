@@ -43,9 +43,9 @@ USAGE = '''\
 neubot - The network neutrality bot
 
 Usage: neubot [command] [-vV] [-D macro[=value]] [-f file] [args...]
-       neubot start
-       neubot status
-       neubot stop
+       neubot start [[address] port]
+       neubot status [[address] port]
+       neubot stop [[address] port]
        neubot --help|-h
        neubot -V
        neubot help
@@ -88,10 +88,7 @@ def main(argv):
         start = True
         webgui = True
 
-#   Not yet
-#   elif len(argv) >= 2 and len(argv) < 5:
-
-    elif len(argv) == 2:
+    elif len(argv) >= 2 and len(argv) < 5:
         command = argv[1]
         if command == "--help" or command == "-h":
             sys.stdout.write(USAGE)
@@ -108,13 +105,12 @@ def main(argv):
         else:
             slowpath = True
 
-#       Not yet
-#       if not slowpath and len(argv) >= 3:
-#            if len(argv) == 4:
-#                address = argv[2]
-#                port = argv[3]
-#            else:
-#                port = argv[2]
+        if not slowpath and len(argv) >= 3:
+            if len(argv) == 4:
+                address = argv[2]
+                port = argv[3]
+            else:
+                port = argv[2]
 
     else:
         slowpath = True
