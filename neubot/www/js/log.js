@@ -76,7 +76,7 @@ jQuery(document).ready(function() {
                     case "INFO": bgcolor = '#bbffff'; break;
                 }
                 html += "<tr style='background-color: " + bgcolor + ";'>";
-                html += "<td>" + utils.getTimeFromSeconds(result[0], true) + "</td>";
+                html += "<td><small>" + utils.getTimeFromSeconds(result[0], true, true) + "</small></td>";
                 html += "<td>" + result[1] + "</td>";
                 html += "<td><small>" + result[2] + "</small></td>";
                 html += "</tr>";

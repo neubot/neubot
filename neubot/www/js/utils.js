@@ -70,7 +70,7 @@ var utils = (function() {
         return t;
     }
 
-    self.getTimeFromSeconds = function(t, convert) {
+    self.getTimeFromSeconds = function(t, convert, seconds) {
         t = self.getNumber(t);
         if (!t) {
             t = utils.getNow();
@@ -79,7 +79,7 @@ var utils = (function() {
             t *= 1000;
         }
         if (convert) {
-            t = utils.formatDateTime(t);
+            t = utils.formatDateTime(t, seconds);
         }
         return t;
     }
@@ -102,12 +102,16 @@ var utils = (function() {
         return n < 10 ? '0' + n : n
     }
 
-    self.formatDateTime = function(t) {
+    self.formatDateTime = function(t, seconds) {
         var date = new Date(t);
-        return date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
+        var myret = date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
           + '-' + self.strPad(date.getDate()) + '\n'
           + self.strPad(date.getHours()) + ':'
           + self.strPad(date.getMinutes());
+        if (seconds) {
+            myret += ':' + self.strPad(date.getSeconds());
+        }
+        return myret;
     }
 
     self.setActiveTab = function(tabname) {
