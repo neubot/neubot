@@ -26,9 +26,9 @@ import socket
 import os
 
 from neubot.http.utils import urlsplit
-from neubot.utils import safe_seek
 from neubot.http.utils import date
 from neubot.log import LOG
+from neubot import utils
 
 
 class Message(object):
@@ -101,6 +101,7 @@ class Message(object):
         v.append("\r\n")
 
         s = "".join(v)
+        s = utils.stringify(s)
         return StringIO.StringIO(s)
 
     def serialize_body(self):
@@ -167,9 +168,9 @@ class Message(object):
 
         if kwargs.get("body", None):
             self.body = kwargs.get("body", None)
-            safe_seek(self.body, 0, os.SEEK_END)
+            utils.safe_seek(self.body, 0, os.SEEK_END)
             self.length = self.body.tell()
-            safe_seek(self.body, 0, os.SEEK_SET)
+            utils.safe_seek(self.body, 0, os.SEEK_SET)
             self["content-length"] = str(self.length)
             if kwargs.get("mimetype", ""):
                 self["content-type"] = kwargs.get("mimetype", "")
