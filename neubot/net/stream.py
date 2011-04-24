@@ -37,6 +37,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.net.poller import Pollable
+from neubot.net.measurer import MEASURER
 from neubot.options import OptionParser
 from neubot.net.poller import POLLER
 from neubot.arcfour import arcfour_new
@@ -172,7 +173,7 @@ class Stream(Pollable):
     def fileno(self):
         return self.filenum
 
-    def attach(self, parent, sock, conf):
+    def attach(self, parent, sock, conf, measurer=None):
 
         self.parent = parent
 
@@ -180,6 +181,10 @@ class Stream(Pollable):
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
         self.logname = str((self.myname, self.peername))
+
+        self.measurer = measurer
+        if self.measurer:
+            self.measurer.register_stream(self)
 
         LOG.debug("* Connection made %s" % str(self.logname))
 
@@ -442,10 +447,10 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, conf):
+    def connect(self, endpoint, conf, measurer=None):
         self.endpoint = endpoint
         self.family = conf.get("family", socket.AF_INET)
-        self.measurer = conf.get("measurer", None)
+        self.measurer = measurer
         sobuf = conf.get("sobuf", 0)
 
         try:
@@ -453,7 +458,7 @@ class Connector(Pollable):
                                           self.family, socket.SOCK_STREAM)
         except socket.error, exception:
             LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
-            self.parent.connection_failed(self, exception)
+            self.parent._connection_failed(self, exception)
             return
 
         last_exception = None
@@ -481,7 +486,7 @@ class Connector(Pollable):
                 last_exception = exception
 
         LOG.error("* Connection to %s failed: %s" % (endpoint, last_exception))
-        self.parent.connection_failed(self, last_exception)
+        self.parent._connection_failed(self, last_exception)
 
     def fileno(self):
         return self.sock.fileno()
@@ -498,21 +503,21 @@ class Connector(Pollable):
                     self.sock.recv(MAXBUF)
                 except socket.error, exception2:
                     exception = exception2
-            self.parent.connection_failed(self, exception)
+            self.parent._connection_failed(self, exception)
             return
 
         if self.measurer:
             rtt = utils.ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
-        self.parent.connection_made(self.sock)
+        self.parent._connection_made(self.sock)
 
     def writetimeout(self, now):
         return now - self.timestamp >= self.timeout
 
     def closing(self, exception=None):
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
-        self.parent.connection_failed(self, exception)
+        self.parent._connection_failed(self, exception)
 
 
 class Listener(Pollable):
@@ -582,145 +587,19 @@ class Listener(Pollable):
         self.parent.bind_failed(self, exception)     # XXX
 
 
-class Measurer(object):
-    def __init__(self):
-        self.last = utils.ticks()
-        self.streams = []
-        self.rtts = []
-
-    def register_stream(self, stream):
-        self.streams.append(stream)
-        stream.measurer = self
-
-    def unregister_stream(self, stream):
-        self.streams.remove(stream)
-        stream.measurer = None
-
-    def measure_rtt(self):
-        rttavg = 0
-        rttdetails = []
-        if len(self.rtts) > 0:
-            for rtt in self.rtts:
-                rttavg += rtt
-            rttavg = rttavg / len(self.rtts)
-            rttdetails = self.rtts
-            self.rtts = []
-        return rttavg, rttdetails
-
-    def compute_delta_and_sums(self, clear=True):
-        now = utils.ticks()
-        delta = now - self.last
-        self.last = now
-
-        if delta <= 0:
-            return 0.0, 0, 0
-
-        recvsum = 0
-        sendsum = 0
-        for stream in self.streams:
-            recvsum += stream.bytes_recv
-            sendsum += stream.bytes_sent
-            if clear:
-                stream.bytes_recv = stream.bytes_sent = 0
-
-        return delta, recvsum, sendsum
-
-    def measure_speed(self):
-        delta, recvsum, sendsum = self.compute_delta_and_sums(clear=False)
-        if delta <= 0:
-            return 0, 0, []
-
-        recvavg = recvsum / delta
-        sendavg = sendsum / delta
-
-        percentages = []
-        for stream in self.streams:
-            recvp, sendp = 0, 0
-            if recvsum:
-                recvp = 100 * stream.bytes_recv / recvsum
-            if sendsum:
-                sendp = 100 * stream.bytes_sent / sendsum
-            percentages.append((recvp, sendp))
-            stream.bytes_recv = stream.bytes_sent = 0
-
-        return recvavg, sendavg, percentages
-
-
-class HeadlessMeasurer(Measurer):
-    def __init__(self, poller, interval=1):
-        Measurer.__init__(self)
-        self.poller = poller
-        self.interval = interval
-        self.recv_hist = {}
-        self.send_hist = {}
-        self.marker = None
-        self.task = None
-
-    def start(self, marker):
-        self.collect()
-        self.marker = marker
-
-    def stop(self):
-        if self.task:
-            self.task.unsched()
-
-    def collect(self):
-        if self.task:
-            self.task.unsched()
-        self.task = self.poller.sched(self.interval, self.collect)
-        delta, recvsum, sendsum = self.compute_delta_and_sums()
-        if self.marker:
-            self.recv_hist.setdefault(self.marker, []).append((delta, recvsum))
-            self.send_hist.setdefault(self.marker, []).append((delta, sendsum))
-
-
-class VerboseMeasurer(Measurer):
-    def __init__(self, poller, output=sys.stdout, interval=1):
-        Measurer.__init__(self)
-
-        self.poller = poller
-        self.output = output
-        self.interval = interval
-
-    def start(self):
-        self.poller.sched(self.interval, self.report)
-        self.output.write("\t\trtt\t\trecv\t\t\tsend\n")
-
-    def report(self):
-        self.poller.sched(self.interval, self.report)
-
-        rttavg, rttdetails = self.measure_rtt()
-        if len(rttdetails) > 0:
-            rttavg = "%d us" % int(1000000 * rttavg)
-            self.output.write("\t\t%s\t\t---\t\t---\n" % rttavg)
-            if len(rttdetails) > 1:
-                for detail in rttdetails:
-                    detail = "%d us" % int(1000000 * detail)
-                    self.output.write("\t\t  %s\t\t---\t\t---\n" % detail)
-
-        recvavg, sendavg, percentages = self.measure_speed()
-        if len(percentages) > 0:
-            recv, send = (utils.speed_formatter(recvavg),
-                          utils.speed_formatter(sendavg))
-            self.output.write("\t\t---\t\t%s\t\t%s\n" % (recv, send))
-            if len(percentages) > 1:
-                for val in percentages:
-                    val = map(lambda x: "%.2f%%" % x, val)
-                    self.output.write("\t\t---\t\t  %s\t\t  %s\n" %
-                                      (val[0], val[1]))
-
-
-MEASURER = VerboseMeasurer(POLLER)
-
-
 class StreamHandler(object):
 
     def __init__(self, poller):
         self.poller = poller
         self.conf = {}
+        self.epnts = collections.deque()
+        self.bad = collections.deque()
+        self.good = collections.deque()
+        self.measurer = None
 
-    def configure(self, conf):
+    def configure(self, conf, measurer=None):
         self.conf = conf
+        self.measurer = measurer
 
     def listen(self, endpoint):
         listener = Listener(self.poller, self)
@@ -737,15 +616,35 @@ class StreamHandler(object):
 
     def connect(self, endpoint, count=1):
         while count > 0:
-            connector = Connector(self.poller, self)
-            connector.connect(endpoint, self.conf)
+            self.epnts.append(endpoint)
             count = count - 1
+        self._next_connect()
+
+    def _next_connect(self):
+        if self.epnts:
+            connector = Connector(self.poller, self)
+            connector.connect(self.epnts.popleft(), self.conf, self.measurer)
+        else:
+            while self.bad:
+                connector, exception = self.bad.popleft()
+                self.connection_failed(connector, exception)
+            while self.good:
+                sock = self.good.popleft()
+                self.connection_made(sock)
+
+    def _connection_failed(self, connector, exception):
+        self.bad.append((connector, exception))
+        self._next_connect()
 
     def connection_failed(self, connector, exception):
         pass
 
     def started_connecting(self, connector):
         pass
+
+    def _connection_made(self, sock):
+        self.good.append(sock)
+        self._next_connect()
 
     def connection_made(self, sock):
         pass
@@ -754,42 +653,44 @@ class StreamHandler(object):
         pass
 
 
-KIND_NONE = 0
-KIND_DISCARD = 1
-KIND_CHARGEN = 2
-
-
 class GenericHandler(StreamHandler):
 
     def connection_made(self, sock):
         stream = GenericProtocolStream(self.poller)
-        stream.kind = self.conf.get("kind", KIND_NONE)
+        stream.kind = self.conf.get("kind", "")
         stream.attach(self, sock, self.conf)
 
 
 class GenericProtocolStream(Stream):
 
     """Specializes stream in order to handle some byte-oriented
-       protocols like discard and chargen."""
+       protocols like discard, chargen, and echo."""
 
     def __init__(self, poller):
         Stream.__init__(self, poller)
         self.buffer = "A" * MAXBUF
-        self.kind = KIND_NONE
+        self.kind = ""
 
     def connection_made(self):
         MEASURER.register_stream(self)
-        if self.kind == KIND_DISCARD:
+        if self.kind == "discard":
             self.start_recv()
-        elif self.kind == KIND_CHARGEN:
+        elif self.kind == "chargen":
             self.start_send(self.buffer)
+        elif self.kind == "echo":
+            self.start_recv()
         else:
             self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
+        if self.kind == "echo":
+            self.start_send(octets)
 
     def send_complete(self):
+        if self.kind == "echo":
+            self.start_recv()
+            return
         self.start_send(self.buffer)
 
 
@@ -905,25 +806,20 @@ def main(args):
 
     endpoint = (address, port)
 
-    if proto == "chargen":
-        kind = KIND_CHARGEN
-    elif proto == "discard":
-        kind = KIND_DISCARD
-    elif proto == "":
+    if not proto:
         if listen:
-            kind = KIND_CHARGEN
+            proto = "chargen"
         else:
-            kind = KIND_DISCARD
-    else:
+            proto = "discard"
+    elif proto not in ("chargen", "discard", "echo"):
         sys.stderr.write(USAGE)
         sys.exit(1)
 
-    dictionary["measurer"] = MEASURER
-    dictionary["kind"] = kind
+    dictionary["kind"] = proto
     dictionary["sobuf"] = sobuf
 
     handler = GenericHandler(POLLER)
-    handler.configure(dictionary)
+    handler.configure(dictionary, MEASURER)
 
     if listen:
         if daemonize:
@@ -940,9 +836,7 @@ def main(args):
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
-    while clients > 0:
-        clients = clients - 1
-        handler.connect(endpoint)
+    handler.connect(endpoint, clients)
     POLLER.loop()
     sys.exit(0)
 

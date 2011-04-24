@@ -50,7 +50,7 @@ from neubot.marshal import unmarshal_object
 from neubot.marshal import marshal_object
 
 from neubot.net.poller import POLLER
-from neubot.net.stream import HeadlessMeasurer
+from neubot.net.measurer import HeadlessMeasurer
 
 from neubot.notify import RENEGOTIATE
 from neubot.notify import NOTIFIER
@@ -704,7 +704,6 @@ class ClientSpeedtest(ClientHTTP):
                             ]
 
         self.conf["speedtest.client.full_test"] = True
-        self.conf["measurer"] = self.measurer
 
         if self.conf.get("speedtest.client.debug", False):
             del self.instructions[-1]
@@ -744,6 +743,10 @@ class ClientSpeedtest(ClientHTTP):
             self.start()
             return
 
+        #
+        # TODO Use net/stream.py support for serializing several
+        # connect and simplify the code here a bit.
+        #
         LOG.progress()
         self.streams.append(stream)
         if len(self.streams) < self.conf.get("speedtest.client.nconns", 2):
