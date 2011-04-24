@@ -153,7 +153,7 @@ var state = (function() {
                     name: 'blue'
                 }
             });
-            
+
             setTimeout(get_state, 100);
         }
 

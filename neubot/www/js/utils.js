@@ -186,4 +186,3 @@ function getSetConfigVars(myfunction, change, value, myerror) {
 
     return false;
 }
-
