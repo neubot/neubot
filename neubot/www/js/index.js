@@ -59,26 +59,12 @@ function process_state(data) {
         jQuery("#testName").text(data.events.test_name);
     }
 
-    // Update the results plot after a test
-    // Note this is untested code
-
-    // Not yet
-    /*
-    if (in_array(data.current, state.actions) && data.current == "collect")
-        neubot.update_results_plot();
-    */
-
 }
 
 jQuery(document).ready(function() {
     utils.setActiveTab("index");
 
     jQuery.jqplot.config.enablePlugins = true;
-
-    // Not yet
-    /*
-    neubot.update_results_plot(500);
-    */
 
     tracker = state.tracker(process_state);
     tracker.start();
