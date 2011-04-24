@@ -127,7 +127,7 @@ class ServerAPI(ServerHTTP):
 
     def api_configlabels(self, stream, request):
         response = Message()
-        s = json.dumps(CONFIG.descriptions)
+        s = json.dumps(CONFIG.descriptions, sort_keys=True)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="application/json")
