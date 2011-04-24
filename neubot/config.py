@@ -292,5 +292,4 @@ CONFIG = Config()
 
 CONFIG.register_defaults({
     "enabled": 1,
-    "force": 0,
 })
