@@ -45,7 +45,7 @@ function checkPrivacy(data) {
 jQuery(document).ready(function() {
     utils.setActiveTab("privacy");
     getConfigVars(checkPrivacy);
-    
+
     jQuery('#testResultsBox').qtip({
         content: "A new test is running.",
         position: {
