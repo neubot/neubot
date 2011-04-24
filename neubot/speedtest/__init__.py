@@ -717,6 +717,8 @@ class ClientSpeedtest(ClientHTTP):
     #
 
     def start(self):
+        if self.started:
+            return
         self.started = True
 
         uri = self.conf.get("speedtest.client.uri",
@@ -724,6 +726,9 @@ class ClientSpeedtest(ClientHTTP):
         if uri[-1] != "/":
             uri = uri + "/"
         self.conf["http.client.uri"] = uri
+
+        # Force the measurer we want just before we need it
+        self.measurer = HeadlessMeasurer(self.poller)
 
         LOG.start("* Connecting to remote host")
         self.connect_uri(uri)
@@ -742,9 +747,6 @@ class ClientSpeedtest(ClientHTTP):
               self.conf["http.client.uri"]})
             self.start()
             return
-
-        # Force the measurer we want just before we need it
-        self.measurer = HeadlessMeasurer(self.poller)
 
         #
         # TODO Use net/stream.py support for serializing several
