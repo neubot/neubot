@@ -355,7 +355,7 @@ class Stream(Pollable):
             return
 
         if type(octets) == types.UnicodeType:
-            LOG.warning("* send: Working-around Unicode input")
+            LOG.oops("Received unicode input")
             octets = octets.encode("utf-8")
         if self.encrypt:
             octets = self.encrypt(octets)
