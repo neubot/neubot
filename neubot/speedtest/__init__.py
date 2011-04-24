@@ -688,7 +688,7 @@ class ClientSpeedtest(ClientHTTP):
         self.started = False
         self.client = None
         self.streams = []
-        self.measurer = HeadlessMeasurer(self.poller)
+        self.measurer = None
 
     def configure(self, conf):
         ClientHTTP.configure(self, conf)
@@ -718,6 +718,7 @@ class ClientSpeedtest(ClientHTTP):
 
     def start(self):
         self.started = True
+        self.measurer = HeadlessMeasurer(self.poller)
 
         uri = self.conf.get("speedtest.client.uri",
           "http://neubot.blupixel.net/speedtest/")
