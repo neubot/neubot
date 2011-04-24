@@ -33,8 +33,8 @@ function submitConfig() {
     var changed = {};
     jQuery("#configdiv input[type='hidden']").each(function(index, myinput) {
         if (jQuery(myinput).val() == 1) {
-            numchanged++;
             if (myreg.test(myinput.id)) {
+                numchanged++;
                 results = myreg.exec(myinput.id);
                 changed[settingIdDesanitize(results[1])] = jQuery('#setting_' + results[1]).val();
             }
