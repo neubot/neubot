@@ -122,7 +122,8 @@ def main(args):
 
     if api:
         server = ServerHTTP(POLLER)
-        server.configure({"rootdir": WWW, "ssi": True})
+        server.configure({"rootdir": WWW, "ssi": True,
+          "http.server.bind_or_die": True})
         server.register_child(ServerAPI(POLLER), "/api")
         server.listen((address, port))
 

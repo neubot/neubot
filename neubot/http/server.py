@@ -134,6 +134,10 @@ class ServerHTTP(StreamHandler):
         StreamHandler.__init__(self, poller)
         self.childs = {}
 
+    def bind_failed(self, listener, exception):
+        if self.conf.get("http.server.bind_or_die", False):
+            sys.exit(1)
+
     def register_child(self, child, prefix):
         self.childs[prefix] = child
         child.child = self
