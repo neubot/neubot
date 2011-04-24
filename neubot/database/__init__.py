@@ -29,6 +29,7 @@
 
 import ConfigParser
 import StringIO
+import collections
 import getopt
 import sqlite3
 import sys
@@ -268,12 +269,14 @@ class DatabaseManager:
         self.query_results_functional(vector.append, since, until)
 
         if vector:
-            temp, vector = vector, []
+            temp = []
+            vector = collections.deque()
             for octets in temp:
                 result = unmarshal_object(octets, "application/xml",
                                           SpeedtestResultXML)
                 result = speedtest_result_good_from_xml(result)
-                vector.append(result)
+                vector.appendleft(result)
+            vector = list(vector)
 
         octets = json.dumps(vector, ensure_ascii=True)
         stringio = StringIO.StringIO(octets)
