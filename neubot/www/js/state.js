@@ -41,10 +41,11 @@ var state = (function() {
 
         function update_sidebar(data) {
             jQuery('#testResultsBox h4').text("Latest test details");
+            getConfigVars(setStatusLabels);
 
             if (data.events.config) {
                 if (data.events.config.enabled != undefined) {
-                    setStatusLabels(data.events.config.enabled);
+                    setStatusLabels(data.events.config);
                 }
             }
 

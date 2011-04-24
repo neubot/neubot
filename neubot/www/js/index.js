@@ -71,9 +71,9 @@ function process_state(data) {
 }
 
 jQuery(document).ready(function() {
-    jQuery.jqplot.config.enablePlugins = true;
+    utils.setActiveTab("index");
 
-    getSetConfigVar("enabled", setStatusLabels, false);
+    jQuery.jqplot.config.enablePlugins = true;
 
     jQuery('#testResultsBox').qtip({
         content: "A new test is running.",

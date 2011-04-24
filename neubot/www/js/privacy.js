@@ -1,4 +1,4 @@
-/* neubot/www/js/log.js */
+/* neubot/www/js/privacy.js */
 /*-
  * Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
  *  Universita' degli Studi di Milano
@@ -19,8 +19,32 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+function setPrivacy() {
+    setConfigVars({
+        'privacy.informed': jQuery("#check_privacy_informed").attr("checked") ? 1 : 0,
+        'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked") ? 1 : 0,
+        'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked") ? 1 : 0
+    });
+    alert("Privacy settings successfully saved");
+    return false;
+}
+
+function checkPrivacy(data) {
+    if (data['privacy.informed']) {
+        jQuery("#check_privacy_informed").attr("checked", "checked");
+    }
+    if (data['privacy.can_collect']) {
+        jQuery("#check_privacy_can_collect").attr("checked", "checked");
+    }
+    if (data['privacy.can_share']) {
+        jQuery("#check_privacy_can_share").attr("checked", "checked");
+    }
+    return false;
+}
+
 jQuery(document).ready(function() {
-    utils.setActiveTab("log");
+    utils.setActiveTab("privacy");
+    getConfigVars(checkPrivacy);
 
     jQuery('#testResultsBox').qtip({
         content: "A new test is running.",
@@ -51,41 +75,4 @@ jQuery(document).ready(function() {
     tracker = state.tracker();
     tracker.start();
 
-    jQuery.ajax({
-        url: 'api/log',
-        dataType: 'json',
-        success: function(data) {
-            var html = "";
-
-            html += '<center><table>';
-
-            html += "<thead><tr>";
-            html += "<th width='130'>Date/time</th>";
-            html += "<th width='60'>Priority</th>";
-            html += "<th>Description</th>";
-            html += "</tr></thead>";
-
-            html += "<tbody>";
-
-            for (i = 0; i < data.length; i++) {
-                var result = data[i];
-                var bgcolor = 'transparent';
-                switch (result[1]) {
-                    case "ERROR": bgcolor = '#ff9977'; break;
-                    case "WARNING": bgcolor = '#ffff55'; break;
-                    case "INFO": bgcolor = '#bbffff'; break;
-                }
-                html += "<tr style='background-color: " + bgcolor + ";'>";
-                html += "<td><small>" + utils.getTimeFromSeconds(result[0], true, true) + "</small></td>";
-                html += "<td>" + result[1] + "</td>";
-                html += "<td><small>" + result[2] + "</small></td>";
-                html += "</tr>";
-            }
-
-            html += "</tbody></table></center>";
-
-            jQuery("#results").html(html);
-            return false;
-        }
-    });
 });

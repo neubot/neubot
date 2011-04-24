@@ -70,7 +70,7 @@ var utils = (function() {
         return t;
     }
 
-    self.getTimeFromSeconds = function(t, convert) {
+    self.getTimeFromSeconds = function(t, convert, seconds) {
         t = self.getNumber(t);
         if (!t) {
             t = utils.getNow();
@@ -79,7 +79,7 @@ var utils = (function() {
             t *= 1000;
         }
         if (convert) {
-            t = utils.formatDateTime(t);
+            t = utils.formatDateTime(t, seconds);
         }
         return t;
     }
@@ -102,25 +102,35 @@ var utils = (function() {
         return n < 10 ? '0' + n : n
     }
 
-    self.formatDateTime = function(t) {
+    self.formatDateTime = function(t, seconds) {
         var date = new Date(t);
-        return date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
+        var myret = date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
           + '-' + self.strPad(date.getDate()) + '\n'
           + self.strPad(date.getHours()) + ':'
           + self.strPad(date.getMinutes());
+        if (seconds) {
+            myret += ':' + self.strPad(date.getSeconds());
+        }
+        return myret;
+    }
+
+    self.setActiveTab = function(tabname) {
+        jQuery("#menu_tab_list li").removeClass("active");
+        jQuery("#tab_" + tabname).addClass("active");
+        return false;
     }
 
     return self;
 })();
 
-function setStatusLabels(status) {
-    if (status == "1") {
+function setStatusLabels(data) {
+    if (data.enabled == "1") {
         jQuery("#statusBoxSpan").html("enabled");
         jQuery("#statusBoxSpan").css("color", "#3DA64E");
         jQuery("#statusBoxA").html("Disable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 0);
+            setConfigVars({'enabled': 0});
         });
     }
     else {
@@ -129,24 +139,32 @@ function setStatusLabels(status) {
         jQuery("#statusBoxA").html("Enable");
         jQuery("#statusBoxA").unbind('click');
         jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 1);
+            setConfigVars({'enabled': 1});
         });
     }
 }
 
-function getSetConfigVar(id, myfunction, change, value) {
+function getConfigVars(myfunction) {
+    return getSetConfigVars(myfunction);
+}
+
+function setConfigVars(value) {
+    return getSetConfigVars(null, true, value);
+}
+
+function getSetConfigVars(myfunction, change, value) {
     var data = {};
     var type = "GET";
     var success = undefined;
 
     if (change) {
-        data[id] = value;
+        data = value;
         type = "POST";
     }
 
     if (myfunction) {
         success = function(data) {
-            myfunction(data[id]);
+            myfunction(data);
         }
     }
 
@@ -157,4 +175,6 @@ function getSetConfigVar(id, myfunction, change, value) {
         dataType: 'json',
         success: success
     });
+
+    return false;
 }

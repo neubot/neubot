@@ -1,5 +1,7 @@
 <!--#include virtual="header.html"-->
 
+        <script type='text/javascript' src='js/privacy.js'></script>
+
         <div class="entry-content">
 
 
@@ -90,15 +92,15 @@
         <p>This is the current state of your privacy settings:</p>
 
         <p>
-          <input type="checkbox" value="0"><b>Informed</b> You assert that you
-           have read and understood the above privacy policy</input>
+          <input id='check_privacy_informed' type="checkbox" value="0" /><label for='check_privacy_informed'><b>Informed</b> You assert that you
+           have read and understood the above privacy policy</label>
           <br />
-          <input type="checkbox" value="0"><b>Can collect</b> You give Neubot
-           the permission to collect your Internet address</input>
+          <input id='check_privacy_can_collect' type="checkbox" value="0" /><label for='check_privacy_can_collect'><b>Can collect</b> You give Neubot
+           the permission to collect your Internet address</label>
           <br />
-          <input type="checkbox" value="0"><b>Can share</b> You give Neubot the
+          <input id='check_privacy_can_share' type="checkbox" value="0" /><label for='check_privacy_can_share'><b>Can share</b> You give Neubot the
            permission to share your Internet address with the Internet
-           community</input>
+           community</label>
           <br />
         </p>
 
@@ -109,7 +111,7 @@
          that you are <em>informed</em>.</p>
 
         <p>
-          <input type="button" value="Save"/>
+          <input type="button" onclick="return setPrivacy();" value="Save"/>
         </p>
 
         </div>
