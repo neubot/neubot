@@ -21,19 +21,19 @@
 #
 
 import types
-import getopt
 import time
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.http.message import Message
 from neubot.http.client import ClientHTTP
 from neubot.net.poller import POLLER
 from neubot.compat import json
-from neubot.options import OptionParser
 from neubot.log import LOG
+from neubot import boot
 
 
 class APIStateTracker(ClientHTTP):
@@ -149,70 +149,19 @@ class APIStateTracker(ClientHTTP):
         sys.stdout.write("\n\n")
 
 
-USAGE = """Neubot api.client -- Minimal client for JSON API
-
-Usage: neubot api.client [-Vv] [-D macro[=value]] [-f file] [--help]
-
-Options:
-    -D macro[=value]   : Set the value of the macro `macro`
-    -f file            : Read options from file `file`
-    --help             : Print this help screen and exit
-    -V                 : Print version number and exit
-    -v                 : Run the program in verbose mode
-
-Macros (defaults in square brackets):
-    address=addr       : Select the address to use                 [127.0.0.1]
-    port=port          : Select the port to use                    [9774]
-
-"""
-
-VERSION = "Neubot 0.3.6\n"
+CONFIG.register_defaults({
+    "api.client.address": "127.0.0.1",
+    "api.client.port": "9774",
+})
+CONFIG.register_descriptions({
+    "api.client.address": "Set address to connect to",
+    "api.client.port": "Set port to connect to",
+})
 
 def main(args):
-
-    conf = OptionParser()
-    conf.set_option("api.client", "address", "127.0.0.1")
-    conf.set_option("api.client", "port", "9774")
-
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
-
-    if len(arguments) > 0:
-        sys.stdout.write(USAGE)
-        sys.exit(1)
-
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "api.client")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    #XXX KVSTORE will cut this source of complexity off
-    dictionary = {
-        "api.client.address": conf.get_option("api.client", "address"),
-        "api.client.port": conf.get_option("api.client", "port"),
-    }
-
+    boot.common("api.client", "Minimal client for JSON API", args)
     client = APIStateTracker(POLLER)
-    client.configure(dictionary)
+    client.configure(CONFIG.select("api.client"))
     client.loop()
 
 if __name__ == "__main__":

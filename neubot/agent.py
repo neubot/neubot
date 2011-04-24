@@ -20,116 +20,60 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import getopt
 import random
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.http.server import ServerHTTP
 from neubot.api.server import ServerAPI
 from neubot.rendezvous import RendezvousClient
-from neubot.options import OptionParser
 from neubot.net.poller import POLLER
 from neubot.rootdir import WWW
 from neubot.log import LOG
 from neubot import system
+from neubot import boot
 
-# renames pending
-from neubot.database import database as DATABASE
-
-USAGE = """Neubot agent -- Run in background, periodically run tests
-
-Usage: neubot agent [-Vv] [-D OPTION[=VALUE]] [-f FILE] [--help]
-
-Options:
-    -D OPTION[=VALUE]  : Set the VALUE of the option OPTION
-    -f FILE            : Read options from file FILE
-    --help             : Print this help screen and exit
-    -V                 : Print version number and exit
-    -v                 : Run the program in verbose mode
-
-Macros  (defaults in square brackets):
-    -D address=ADDRESS : ADDRESS of the local API server     [127.0.0.1]
-    -D api=BOOL        : Enable/disable the local API server [True]
-    -D daemonize=BOOL  : Run in background as a daemon       [True]
-    -D interval=N      : Seconds between each rendezvous     [see below]
-    -D master=MASTER   : Master-server FQDN                  [master.neubot.org]
-    -D port=PORT       : PORT of the local API server        [9774]
-    -D rendezvous=BOOL : Enable/disable rendezvous module    [True]
-
-If you don't specify the interval Neubot will extract a random value
-within a reasonable interval.
-"""
-
-VERSION = "Neubot 0.3.6\n"
+CONFIG.register_defaults({
+    "agent.api": True,
+    "agent.api.address": "127.0.0.1",
+    "agent.api.port": 9774,
+    "agent.daemonize": True,
+    "agent.interval": 0,
+    "agent.master": "master.neubot.org",
+    "agent.rendezvous": True,
+})
+CONFIG.register_descriptions({
+    "agent.api": "Enable API server",
+    "agent.api.address": "Set API server address",
+    "agent.api.port": "Set API server port",
+    "agent.daemonize": "Enable daemon behavior",
+    "agent.interval": "Set rendezvous interval (0 = random)",
+    "agent.master": "Set master server address",
+    "agent.rendezvous": "Enable rendezvous client",
+})
 
 def main(args):
+    boot.common("agent", "Run in background, periodically run tests", args)
 
-    conf = OptionParser()
-    conf.set_option("agent", "address", "127.0.0.1")
-    conf.set_option("agent", "api", "True")
-    conf.set_option("agent", "daemonize", "True")
-    conf.set_option("agent", "interval", "0")
-    conf.set_option("agent", "master", "master.neubot.org")
-    conf.set_option("agent", "port", "9774")
-    conf.set_option("agent", "rendezvous", "True")
+    conf = CONFIG.select("agent")
 
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
+    if not conf["agent.interval"]:
+        conf["agent.interval"] = 1380 + random.randrange(0, 240)
 
-    if len(arguments) != 0:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
+    uri = "http://%s:9773/rendezvous" % conf["agent.master"]
 
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "agent")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    address = conf.get_option("agent", "address")
-    api = conf.get_option_bool("agent", "api")
-    daemonize = conf.get_option_bool("agent", "daemonize")
-    interval = conf.get_option_uint("agent", "interval")
-    master = conf.get_option("agent", "master")
-    port = conf.get_option_uint("agent", "port")
-    rendezvous = conf.get_option_bool("agent", "rendezvous")
-
-    if not interval:
-        interval = 1380 + random.randrange(0, 240)
-
-    uri = "http://%s:9773/rendezvous" % master
-
-    if api:
+    if conf["agent.api"]:
         server = ServerHTTP(POLLER)
         server.configure({"rootdir": WWW, "ssi": True,
           "http.server.bind_or_die": True})
         server.register_child(ServerAPI(POLLER), "/api")
-        server.listen((address, port))
+        server.listen((conf["agent.api.address"],
+                       conf["agent.api.port"]))
 
-    DATABASE.start()
-
-    if daemonize:
+    if conf["agent.daemonize"]:
         system.change_dir()
         system.go_background()
         system.write_pidfile()
@@ -137,9 +81,9 @@ def main(args):
 
     system.drop_privileges()
 
-    if rendezvous:
+    if conf["agent.rendezvous"]:
         client = RendezvousClient(POLLER)
-        client.init(uri, interval, False, False)
+        client.init(uri, conf["agent.interval"], False, False)
         client.rendezvous()
 
     POLLER.loop()
