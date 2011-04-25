@@ -32,6 +32,86 @@
 
 import uuid
 from neubot.log import LOG
+from neubot.marshal import unmarshal_object
+
+class SpeedtestResultXML(object):
+    def __init__(self):
+        self.client = ""
+        self.timestamp = 0.0            #XXX
+        self.internalAddress = ""
+        self.realAddress = ""
+        self.remoteAddress = ""
+        self.connectTime = 0.0
+        self.latency = 0.0
+        self.downloadSpeed = 0.0
+        self.uploadSpeed = 0.0
+
+def speedtest_result_good_from_xml(obj):
+    dictionary = {
+        "client_uuid": obj.client,
+        "timestamp": int(float(obj.timestamp)),         #XXX
+        "internal_address": obj.internalAddress,
+        "real_address": obj.realAddress,
+        "remote_address": obj.remoteAddress,
+        "connect_time": obj.connectTime,
+        "latency": obj.latency,
+        "download_speed": obj.downloadSpeed,
+        "upload_speed": obj.uploadSpeed,
+    }
+    return dictionary
+
+# delete results table and create speedtest one
+def migrate_from__v1_1__to__v2_0(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "1.1":
+        LOG.info("* Migrating database from version 1.1 to 2.0")
+        connection.execute("""CREATE TABLE speedtest(
+                id INTEGER PRIMARY KEY,
+                timestamp INTEGER,
+                uuid TEXT,
+                internal_address TEXT,
+                real_address TEXT,
+                remote_address TEXT,
+                connect_time NUMERIC,
+                latency NUMERIC,
+                download_speed NUMERIC,
+                upload_speed NUMERIC,
+                privacy_informed NUMERIC,
+                privacy_can_collect NUMERIC,
+                privacy_can_share NUMERIC
+            );""")
+        query = """INSERT INTO speedtest VALUES (
+                null,
+                :timestamp,
+                :uuid,
+                :internal_address,
+                :real_address,
+                :remote_address,
+                :connect_time,
+                :latency,
+                :download_speed,
+                :upload_speed,
+                :privacy_informed,
+                :privacy_can_collect,
+                :privacy_can_share
+            );"""
+        cursor.execute("SELECT result, timestamp, uuid FROM results ORDER BY timestamp;")
+        for result, timestamp, uuid in cursor:
+            result = unmarshal_object(result, "application/xml",
+                                      SpeedtestResultXML)
+            result = speedtest_result_good_from_xml(result)
+            result['timestamp'] = timestamp
+            result['uuid'] = uuid
+            result['privacy_informed'] = 0
+            result['privacy_can_collect'] = 0
+            result['privacy_can_share'] = 0
+            connection.execute(query, result)
+        connection.execute("DROP TABLE results;")
+        connection.execute("""UPDATE config SET value='2.0'
+                          WHERE name='version';""")
+        connection.commit()
 
 # add uuid to database
 def migrate_from__v1_0__to__v1_1(connection):
@@ -41,15 +121,16 @@ def migrate_from__v1_0__to__v1_1(connection):
     if ver == "1.0":
         LOG.info("* Migrating database from version 1.0 to 1.1")
         cursor.execute("ALTER TABLE results ADD uuid TEXT;")
-        cursor.execute("""UPDATE config SET value='1.1'
-                          WHERE name='version';""")
         cursor.execute("INSERT INTO config VALUES('uuid', :ident);",
                        {"ident": str(uuid.uuid4())})
+        cursor.execute("""UPDATE config SET value='1.1'
+                        WHERE name='version';""")
         connection.commit()
     cursor.close()
 
 MIGRATORS = [
     migrate_from__v1_0__to__v1_1,
+    migrate_from__v1_1__to__v2_0,
 ]
 
 def migrate(connection):
