@@ -67,6 +67,9 @@ class Notifier:
         self.subscribers = collections.defaultdict(list)
 
         for event, queue in subscribers.items():
+            # XXX XXX XXX
+            if event == TESTDONE:
+                continue
             self.fireq(event, queue)
 
     def fireq(self, event, queue):
