@@ -69,6 +69,7 @@ class Notifier:
         for event, queue in subscribers.items():
             # XXX XXX XXX
             if event == TESTDONE:
+                self.subscribers[event] = queue
                 continue
             self.fireq(event, queue)
 
