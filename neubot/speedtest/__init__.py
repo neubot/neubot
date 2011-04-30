@@ -637,7 +637,7 @@ class ClientCollector(ClientHTTP):
         LOG.progress()
 
         m1 = SpeedtestCollect()
-        m1.client = self.conf.get("database.ident", "")
+        m1.client = self.conf.get("uuid", "")
         m1.timestamp = timestamp()
         m1.internalAddress = stream.myname[0]
         m1.realAddress = self.conf.get("speedtest.client.public_address", "")
