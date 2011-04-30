@@ -40,87 +40,13 @@ if __name__ == "__main__":
 
 from neubot.compat import json
 from neubot.database import table_config
+from neubot.database import table_speedtest
 from neubot.database.migrate import migrate
 from neubot.log import LOG
 from neubot.marshal import unmarshal_object
 from neubot.utils import timestamp
 from neubot.utils import get_uuid
 from neubot import system
-
-#
-# Results table.
-# Each result is a tuple (tag, result, timestamp, uuid), where:
-# tag is the name of the test that produced the result, and is
-# used to filter by producer; the result is the XML document
-# that contains all the test-dependent fields; timestamp is used
-# to filter just a subset of the results; and uuid is the unique
-# identifier of the client.
-# We don't provide a fine-grained schema for the result because
-# this instance of sqlite3 should only provide a convenient way
-# to store the results on disk.
-# XXX The query to prune the table is not very elegant because I
-# was not able to find a better way to select the last N rows of
-# a table.
-#
-
-RESULTS_MAKE        = """CREATE TABLE results(id INTEGER PRIMARY KEY,
-                         tag TEXT, result TEXT, timestamp INTEGER,
-                         uuid TEXT);"""
-RESULTS_PRUNE       = """DELETE FROM results WHERE id IN (
-                         SELECT id FROM results LIMIT :count);"""
-RESULTS_SAVE        = """INSERT INTO results VALUES(null, :tag,
-                         :result, :timestamp, :ident);"""
-
-#
-# Prune.
-# This operation guarantees that there are not more than MAXROWS
-# in the database and will additionally invoke VACUUM to ensure
-# that we don't waste any space.
-# This might be convenient on the client side where probably the
-# user does not want the neubot database to eat too much hard-disk
-# space.
-#
-
-MAXROWS = 103680
-
-#
-# XXX XXX XXX
-# BEGIN code to marshal/unmarshal
-# The purpose of the code below is to allow easy marshalling and
-# unmarshalling of the speedtest results using the facilities provided
-# by <neubot/marshal.py>.  This code will gone when all the results
-# in the database will be stored as pure SQL rather than as XML.
-#
-
-class SpeedtestResultXML(object):
-    def __init__(self):
-        self.client = ""
-        self.timestamp = 0.0            #XXX
-        self.internalAddress = ""
-        self.realAddress = ""
-        self.remoteAddress = ""
-        self.connectTime = 0.0
-        self.latency = 0.0
-        self.downloadSpeed = 0.0
-        self.uploadSpeed = 0.0
-
-def speedtest_result_good_from_xml(obj):
-    dictionary = {
-        "client_uuid": obj.client,
-        "timestamp": int(float(obj.timestamp)),         #XXX
-        "internal_address": obj.internalAddress,
-        "real_address": obj.realAddress,
-        "remote_address": obj.remoteAddress,
-        "connect_time": obj.connectTime,
-        "latency": obj.latency,
-        "download_speed": obj.downloadSpeed,
-        "upload_speed": obj.uploadSpeed,
-    }
-    return dictionary
-
-# END code to marshal/unmarshal
-# XXX XXX XXX
-
 
 # Database manager.
 
@@ -142,25 +68,7 @@ class DatabaseManager:
         LOG.debug("* Connecting to database: %s" % self.config.path)
         self.connection = sqlite3.connect(self.config.path)
         table_config.create(self.connection)
-        cursor = self.connection.cursor()
-        self._make_results(cursor)
-        cursor.close()
-
-    #
-    # XXX I don't known how the check whether a table already
-    # exists, and so I code this poor-man solution where the
-    # code tries to create the table and reads the exception
-    # string to check whether the table already exists or not.
-    # The possible issue here could be i18n.
-    #
-
-    def _make_results(self, cursor):
-        try:
-            cursor.execute(RESULTS_MAKE)
-            self.connection.commit()
-        except sqlite3.Error, reason:
-            if str(reason) != "table results already exists":
-                raise
+        table_speedtest.create(self.connection)
 
     def _autoprune(self):
         if self.config.auto_prune:
@@ -186,65 +94,22 @@ class DatabaseManager:
     # API
     #
 
-    def save_result(self, tag, result, ident):
-        t = timestamp()
-        cursor = self.connection.cursor()
-        cursor.execute(RESULTS_SAVE, {"tag": tag, "result": result,
-                       "timestamp": t, "ident": ident})
-        self.connection.commit()
-        cursor.close()
+    def save_result(self, obj):
+        table_speedtest.insertxxx(self.connection, obj)
 
     def get_config(self):
         return table_config.dictionarize(self.connection)
 
-    def query_results_functional(self, func, since=-1, until=-1):
-        if since < 0:
-            since = 0
-        if until < 0:
-            until = timestamp()
-        params = {"since": since, "until": until}
-        cursor = self.connection.cursor()
-        query = """SELECT result, timestamp FROM results
-          WHERE timestamp >= :since AND timestamp < :until;"""
-        cursor.execute(query, params)
-        for result in cursor:
-            func(result[0])
-        cursor.close()
-
     def query_results_json(self, since=-1, until=-1):
-        vector = []
-        self.query_results_functional(vector.append, since, until)
-
-        if vector:
-            temp = vector
-            vector = collections.deque()
-            for octets in temp:
-                result = unmarshal_object(octets, "application/xml",
-                                          SpeedtestResultXML)
-                result = speedtest_result_good_from_xml(result)
-                vector.appendleft(result)
-            vector = list(vector)
-
-        octets = json.dumps(vector, ensure_ascii=True)
+        octets = table_speedtest.jsonize(self.connection, since, until)
         stringio = StringIO.StringIO(octets)
         return stringio
 
     def prune(self):
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT COUNT(*) FROM results;")
-        count = int(cursor.fetchone()[0])
-        if count > MAXROWS:
-            count -= MAXROWS
-            cursor.execute(RESULTS_PRUNE, {"count": count})
-            cursor.execute("VACUUM;")
-            self.connection.commit()
-        cursor.close()
+        table_speedtest.prune(self.connection)
 
     def delete(self):
-        cursor = self.connection.cursor()
-        cursor.execute("DELETE FROM results;")
-        cursor.close()
-        self.connection.commit()
+        table_speedtest.prune(self.connection, until=timestamp())
 
     def rebuild_uuid(self):
         table_config.update(self.connection, {"uuid": get_uuid()}.iteritems())

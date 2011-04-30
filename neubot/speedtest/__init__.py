@@ -372,9 +372,7 @@ class SpeedtestServer(ServerHTTP):
 
         if database.dbm and (not m.privacy_informed or
                              m.privacy_can_collect):
-            request.body.seek(0)
-            database.dbm.save_result("speedtest", request.body.read(),
-                                     m.client)
+            database.dbm.save_result(m)
 
         response = Message()
         response.compose(code="200", reason="Ok")
@@ -657,9 +655,7 @@ class ClientCollector(ClientHTTP):
         stringio = StringIO.StringIO(s)
 
         if database.dbm:
-            database.dbm.save_result("speedtest", stringio.read(),
-                                     database.dbm.ident)
-            stringio.seek(0)
+            database.dbm.save_result(m1)
 
         uri = self.conf["http.client.uri"] + "collect"
         authorization = self.conf.get("speedtest.client.authorization", "")
