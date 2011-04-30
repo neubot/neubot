@@ -35,6 +35,7 @@ import os
 import shlex
 
 from neubot.log import LOG
+from neubot.database import table_config
 from neubot import utils
 
 def string_to_kv(string):
@@ -228,9 +229,7 @@ class Config(object):
         map(self.merge_kv, itertools.imap(string_to_kv, fp))
 
     def merge_database(self, database):
-        cursor = database.cursor()
-        cursor.execute("SELECT name, value FROM config;")
-        map(self.merge_kv, cursor)
+        table_config.walk(database, self.merge_kv)
 
     def merge_environ(self):
         map(self.merge_kv, itertools.imap(string_to_kv,
@@ -244,9 +243,7 @@ class Config(object):
         map(lambda t: self.merge_kv(t, dry=True), dictlike.iteritems())
         map(self.merge_kv, dictlike.iteritems())
         if database:
-            database.executemany("INSERT OR REPLACE INTO config VALUES(?,?);",
-              dictlike.iteritems())
-            database.commit()
+            table_config.update(database, dictlike.iteritems())
 
     def merge_kv(self, t, dry=False):
         if t:
@@ -272,10 +269,7 @@ class Config(object):
         map(fp.write, itertools.imap(kv_to_string, self.conf.iteritems()))
 
     def store_database(self, database):
-        database.execute("DELETE FROM config;")
-        database.executemany("INSERT INTO config VALUES(?,?);",
-          self.conf.iteritems())
-        database.commit()
+        table_config.update(database, self.conf.iteritems(), clear=True)
 
     def print_descriptions(self, fp):
         fp.write("Properties (defaults in square brackets):\n")
