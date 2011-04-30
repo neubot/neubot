@@ -67,7 +67,7 @@ class ResultIterator(object):
             self.addrs[myuuid] = get_addr()
         return {
             "timestamp": next(self.times),
-            "client_uuid": myuuid,
+            "uuid": myuuid,
             "internal_address": self.addrs[myuuid],
             "real_address": self.addrs[myuuid],
             "remote_address": "130.192.91.211",
