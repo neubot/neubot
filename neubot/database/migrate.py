@@ -69,7 +69,7 @@ def migrate_from__v1_1__to__v2_0(connection):
     ver = cursor.fetchone()[0]
     if ver == "1.1":
         LOG.info("* Migrating database from version 1.1 to 2.0")
-        connection.execute("""CREATE TABLE speedtest(
+        connection.execute("""CREATE TABLE IF NOT EXISTS speedtest(
                 id INTEGER PRIMARY KEY,
                 timestamp INTEGER,
                 uuid TEXT,
