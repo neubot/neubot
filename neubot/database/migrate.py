@@ -1,6 +1,8 @@
 # neubot/database/migrate.py
 
 #
+# Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>
+#  Universita` degli Studi di Milano
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
