@@ -39,44 +39,13 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.compat import json
+from neubot.database import table_config
 from neubot.database.migrate import migrate
 from neubot.log import LOG
 from neubot.marshal import unmarshal_object
 from neubot.utils import timestamp
+from neubot.utils import get_uuid
 from neubot import system
-
-#
-# Config table.
-# The config table is like a dictionary and keeps some useful
-# variables.  It keeps the version of the database format, that
-# might be useful in the future to convert an old database to
-# a new one, should we change the format.
-#
-# <on uuid and privacy>
-# It also keeps an unique identifier for each neubot client
-# which we believe would help data analysis, e.g. we could
-# review the measurement history of a given neubot looking for
-# certain patterns, such as the connection speed decreasing
-# near the end of the month because the user exceeded a
-# bandwidth cap.
-#
-# We believe this should have a negligible impact on privacy
-# because it would, at most, allow to say that neubot XYZ owner
-# changed IP address, and hence, possibly, provider and/or
-# location (and note that this information is functional to
-# our goal of building a network neutrality map organized by
-# geographic location and provider).
-#
-# So, we believe you should not be concerned by this issue,
-# but, in case you were, the way to go is `neubot database -f`
-# that forces neubot to generate and use A NEW uuid.
-# </on uuid and privacy>
-#
-
-CONFIG_MAKE = "CREATE TABLE config(name TEXT PRIMARY KEY, value TEXT);"
-CONFIG_UPDATE_UUID = "UPDATE config SET value=:ident WHERE name='uuid';"
-CONFIG_FILL_UUID = "INSERT INTO config VALUES('uuid', :ident);"
-CONFIG_FILL_VERSION = "INSERT INTO config VALUES('version', '1.1');"
 
 #
 # Results table.
@@ -172,8 +141,8 @@ class DatabaseManager:
     def _do_connect(self):
         LOG.debug("* Connecting to database: %s" % self.config.path)
         self.connection = sqlite3.connect(self.config.path)
+        table_config.create(self.connection)
         cursor = self.connection.cursor()
-        self._make_config(cursor)
         self._make_results(cursor)
         cursor.close()
 
@@ -184,16 +153,6 @@ class DatabaseManager:
     # string to check whether the table already exists or not.
     # The possible issue here could be i18n.
     #
-
-    def _make_config(self, cursor):
-        try:
-            cursor.execute(CONFIG_MAKE)
-            cursor.execute(CONFIG_FILL_VERSION)
-            cursor.execute(CONFIG_FILL_UUID, {"ident": str(uuid.uuid4())})
-            self.connection.commit()
-        except sqlite3.Error, reason:
-            if str(reason) != "table config already exists":
-                raise
 
     def _make_results(self, cursor):
         try:
@@ -209,10 +168,7 @@ class DatabaseManager:
 
     def _do_fetch_ident(self):
         if self.config.client:
-            cursor = self.connection.cursor()
-            cursor.execute("SELECT value FROM config WHERE name='uuid';")
-            self.ident = cursor.fetchone()[0]
-            cursor.close()
+            self.ident = table_config.dictionarize(self.connection)["uuid"]
 
     #
     # Finish
@@ -239,16 +195,7 @@ class DatabaseManager:
         cursor.close()
 
     def get_config(self):
-        dictionary = {}
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT * from config;")
-        for key, value in cursor:
-            dictionary[key] = value
-        cursor.execute("SELECT COUNT(*) from results;")
-        dictionary["results"] = cursor.fetchone()[0]
-        dictionary["path"] = self.config.path
-        cursor.close()
-        return dictionary
+        return table_config.dictionarize(self.connection)
 
     def query_results_functional(self, func, since=-1, until=-1):
         if since < 0:
@@ -300,10 +247,7 @@ class DatabaseManager:
         self.connection.commit()
 
     def rebuild_uuid(self):
-        cursor = self.connection.cursor()
-        cursor.execute(CONFIG_UPDATE_UUID, {"ident": str(uuid.uuid4())})
-        cursor.close()
-        self.connection.commit()
+        table_config.update(self.connection, {"uuid": get_uuid()}.iteritems())
 
 #
 # [database]
