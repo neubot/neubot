@@ -50,7 +50,7 @@ class SpeedtestResultXML(object):
 
 def speedtest_result_good_from_xml(obj):
     dictionary = {
-        "client_uuid": obj.client,
+        "uuid": obj.client,
         "timestamp": int(float(obj.timestamp)),         #XXX
         "internal_address": obj.internalAddress,
         "real_address": obj.realAddress,
