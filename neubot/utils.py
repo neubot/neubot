@@ -24,6 +24,7 @@ import sys
 import os
 import types
 import time
+import uuid
 
 def versioncmp(left, right):
     left = map(int, left.split("."))
@@ -204,3 +205,8 @@ def import_class(name):
     module, ctor = name[:index], name[index+1:]
     ctx = __import__(module, globals(), locals(), [ctor])
     return ctx.__dict__[ctor]
+
+# per-client random unique identifier
+
+def get_uuid():
+    return str(uuid.uuid4())
