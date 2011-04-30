@@ -21,7 +21,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import datetime
 import random
 import time
 
@@ -30,6 +29,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.utils import get_uuid
+from neubot.utils import timestamp
 
 #
 # DAYS          Time-span of simulation in days
@@ -42,7 +42,7 @@ DAYS = 100
 ROWS = 100
 UUIDS = 100
 IPCHANGETHR = 0.05
-START = time.mktime(datetime.datetime(2011, 1, 1).timetuple())
+START = timestamp() - DAYS * 24 * 60 * 60
 
 def get_addr():
     return "".join(map(str, ["10.0.", random.randint(0, 254), ".",
