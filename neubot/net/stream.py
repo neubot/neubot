@@ -456,7 +456,8 @@ class Connector(Pollable):
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
         self.measurer = measurer
-        sobuf = conf.get("net.stream.sobuf", 0)
+        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -471,9 +472,10 @@ class Connector(Pollable):
             try:
 
                 sock = socket.socket(family, socktype, protocol)
-                if sobuf:
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
+                if rcvbuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
+                if sndbuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sndbuf)
                 sock.setblocking(False)
                 result = sock.connect_ex(sockaddr)
                 if result not in INPROGRESS:
@@ -539,7 +541,8 @@ class Listener(Pollable):
         self.family = socket.AF_INET
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
-        sobuf = conf.get("net.stream.sobuf", 0)
+        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -555,9 +558,10 @@ class Listener(Pollable):
 
                 lsock = socket.socket(family, socktype, protocol)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                if sobuf:
-                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
-                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
+                if rcvbuf:
+                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,rcvbuf)
+                if sndbuf:
+                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,sndbuf)
                 lsock.setblocking(False)
                 lsock.bind(sockaddr)
                 # Probably the backlog here is too big
@@ -667,7 +671,8 @@ CONFIG.register_defaults({
     "net.stream.obfuscate": False,
     "net.stream.secure": False,
     "net.stream.server_side": False,
-    "net.stream.sobuf": 0,
+    "net.stream.rcvbuf": 262144,
+    "net.stream.sndbuf": 0,
 })
 CONFIG.register_descriptions({
     "net.stream.certfile": "Set SSL certfile path",
@@ -676,7 +681,8 @@ CONFIG.register_descriptions({
     "net.stream.obfuscate": "Enable scrambling with ARC4",
     "net.stream.secure": "Enable SSL",
     "net.stream.server_side": "Enable SSL server-side mode",
-    "net.stream.sobuf": "Set sock buffers (0 = use default)",
+    "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
+    "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
 })
 
 
