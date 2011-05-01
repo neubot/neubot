@@ -21,19 +21,19 @@
 #
 
 import sys
-import getopt
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.bittorrent.stream import BTStream
 from neubot.net.stream import StreamHandler
-from neubot.options import OptionParser
 from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
 from neubot.arcfour import arcfour_new
 from neubot.log import LOG
 from neubot import system
+from neubot import boot
 
 
 class Upload(object):
@@ -99,7 +99,7 @@ class BTConnectingPeer(StreamHandler):
         stream.attach(self, sock, self.conf, self.measurer)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
-        scramble = not self.conf.get("obfuscate", False)
+        scramble = not self.conf.get("net.stream.obfuscate", False)
         stream.upload = Upload(stream, scramble)
 
     def connection_handshake_completed(self, stream):
@@ -120,132 +120,64 @@ class BTListeningPeer(StreamHandler):
         stream.attach(self, sock, self.conf, self.measurer)
         stream.initialize(self, self.my_id, True)
         stream.download = Download(stream)
-        scramble = not self.conf.get("obfuscate", False)
+        scramble = not self.conf.get("net.stream.obfuscate", False)
         stream.upload = Upload(stream, scramble)
 
     def connection_handshake_completed(self, stream):
         pass
 
-USAGE = """Neubot bittorrent -- BitTorrent test
-
-Usage: neubot bittorrent [-Vv] [-D macro[=value]] [-f file] [--help]
-
-Options:
-    -D macro[=value]   : Set the value of the macro `macro`
-    -f file            : Read options from file `file`
-    --help             : Print this help screen and exit
-    -V                 : Print version number and exit
-    -v                 : Run the program in verbose mode
-
-Macros (defaults in square brackets):
-    address=addr       : Select address to use                  []
-    daemonize          : Drop privileges and run in background  [False]
-    duration=N         : Stop the test after N seconds          [10]
-    key=KEY            : Use KEY to initialize ARC4 stream      []
-    listen             : Listen for incoming connections        [False]
-    obfuscate          : Obfuscate traffic using ARC4           [False]
-    port=port          : Select the port to use                 [6881]
-    sobuf=size         : Set socket buffer size to `size`       []
-
-If you don't specify an address Neubot will pick 0.0.0.0 in listen mode
-and neubot.blupixel.net in connect mode.
-
-If you don't force socket buffer size Neubot will attempt to make the
-best choice for you.
-"""
-
-VERSION = "Neubot 0.3.6\n"
-
 def main(args):
 
-    conf = OptionParser()
-    conf.set_option("bittorrent", "address", "")
-    conf.set_option("bittorrent", "daemonize", "False")
-    conf.set_option("bittorrent", "duration", "10")
-    conf.set_option("bittorrent", "key", "")
-    conf.set_option("bittorrent", "listen", "False")
-    conf.set_option("bittorrent", "obfuscate", "False")
-    conf.set_option("bittorrent", "port", "6881")
-    conf.set_option("bittorrent", "sobuf", 0)
+    CONFIG.register_defaults({
+        "bittorrent.test.address": "",
+        "bittorrent.test.daemonize": False,
+        "bittorrent.test.duration": 10,
+        "bittorrent.test.listen": False,
+        "bittorrent.test.port": 6881,
+    })
+    CONFIG.register_descriptions({
+        "bittorrent.test.address": "Set client or server address",
+        "bittorrent.test.daemonize": "Enable daemon behavior",
+        "bittorrent.test.duration": "Set duration of a test",
+        "bittorrent.test.listen": "Enable server mode",
+        "bittorrent.test.port": "Set client or server port",
+    })
 
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
+    boot.common("bittorrent.test", "BitTorrent test", args)
+    conf = CONFIG.select("bittorrent.test")
 
-    if len(arguments) > 0:
-        sys.stdout.write(USAGE)
-        sys.exit(1)
-
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "bittorrent")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    address = conf.get_option("bittorrent", "address")
-    daemonize = conf.get_option_bool("bittorrent", "daemonize")
-    duration = conf.get_option_uint("bittorrent", "duration")
-    key = conf.get_option("bittorrent", "key")
-    listen = conf.get_option_bool("bittorrent", "listen")
-    obfuscate = conf.get_option_bool("bittorrent", "obfuscate")
-    port = conf.get_option_uint("bittorrent", "port")
-    sobuf = conf.get_option_uint("bittorrent", "sobuf")
-
-    if not address:
-        if not listen:
-            address = "neubot.blupixel.net"
+    if not conf["bittorrent.test.address"]:
+        if not conf["bittorrent.test.listen"]:
+            conf["bittorrent.test.address"] = "neubot.blupixel.net"
         else:
-            address = "0.0.0.0"
+            conf["bittorrent.test.address"] = "0.0.0.0"
 
-    endpoint = (address, port)
-    dictionary = {
-        "obfuscate": obfuscate,
-        "key": key,
-        "sobuf": sobuf,
-    }
+    endpoint = (conf["bittorrent.test.address"],
+      conf["bittorrent.test.port"])
 
-    if not (listen and daemonize):
+    if not (conf["bittorrent.test.listen"] and
+            conf["bittorrent.test.daemonize"]):
         MEASURER.start()
 
-    if listen:
-        if daemonize:
+    if conf["bittorrent.test.listen"]:
+        if conf["bittorrent.test.daemonize"]:
             system.change_dir()
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
         listener = BTListeningPeer(POLLER)
-        listener.configure(dictionary, MEASURER)
+        listener.configure(conf, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
-    # XXX
-    if sobuf == 0:
-        sobuf = 262144
-
+    duration = conf["bittorrent.test.duration"]
     if duration >= 0:
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
     connector = BTConnectingPeer(POLLER)
-    connector.configure(dictionary, MEASURER)
+    connector.configure(conf, MEASURER)
     connector.connect(endpoint)
     POLLER.loop()
     sys.exit(0)
