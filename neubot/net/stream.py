@@ -170,12 +170,15 @@ class Stream(Pollable):
         self.bytes_recv = 0
         self.bytes_sent = 0
 
+        self.conf = None
+
     def fileno(self):
         return self.filenum
 
     def attach(self, parent, sock, conf, measurer=None):
 
         self.parent = parent
+        self.conf = conf
 
         self.filenum = sock.fileno()
         self.myname = sock.getsockname()
