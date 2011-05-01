@@ -700,6 +700,9 @@ class GenericProtocolStream(Stream):
 
     def connection_made(self):
         MEASURER.register_stream(self)
+        duration = self.conf.get("net.stream.duration", 10)
+        if duration >= 0:
+            POLLER.sched(duration, self.shutdown)
         if self.kind == "discard":
             self.start_recv()
         elif self.kind == "chargen":
@@ -779,11 +782,6 @@ def main(args):
         handler.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
-
-    duration = conf["net.stream.duration"]
-    if duration >= 0:
-        duration = duration + 0.1       # XXX
-        POLLER.sched(duration, POLLER.break_loop)
 
     handler.connect(endpoint, count=conf["net.stream.clients"])
     POLLER.loop()
