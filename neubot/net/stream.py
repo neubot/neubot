@@ -701,10 +701,11 @@ class GenericProtocolStream(Stream):
 
     def __init__(self, poller):
         Stream.__init__(self, poller)
-        self.buffer = "A" * MAXBUF
+        self.buffer = None
         self.kind = ""
 
     def connection_made(self):
+        self.buffer = "A" * self.conf.get("net.stream.chunk", 32768)
         MEASURER.register_stream(self)
         duration = self.conf.get("net.stream.duration", 10)
         if duration >= 0:
@@ -734,6 +735,7 @@ def main(args):
 
     CONFIG.register_defaults({
         "net.stream.address": "",
+        "net.stream.chunk": 32768,
         "net.stream.clients": 1,
         "net.stream.daemonize": False,
         "net.stream.duration": 10,
@@ -743,6 +745,7 @@ def main(args):
     })
     CONFIG.register_descriptions({
         "net.stream.address": "Set client or server address",
+        "net.stream.chunk": "Chunk written by each write",
         "net.stream.clients": "Set number of client connections",
         "net.stream.daemonize": "Enable daemon behavior",
         "net.stream.duration": "Set duration of a test",
