@@ -636,12 +636,17 @@ class StreamHandler(object):
             connector = Connector(self.poller, self)
             connector.connect(self.epnts.popleft(), self.conf, self.measurer)
         else:
-            while self.bad:
-                connector, exception = self.bad.popleft()
-                self.connection_failed(connector, exception)
-            while self.good:
-                sock = self.good.popleft()
-                self.connection_made(sock)
+            if self.bad:
+                while self.bad:
+                    connector, exception = self.bad.popleft()
+                    self.connection_failed(connector, exception)
+                while self.good:
+                    sock = self.good.popleft()
+                    sock.close()
+            else:
+                while self.good:
+                    sock = self.good.popleft()
+                    self.connection_made(sock)
 
     def _connection_failed(self, connector, exception):
         self.bad.append((connector, exception))
