@@ -181,6 +181,11 @@ MAXQUEUE = 4096
 LOG = Logger(MAXQUEUE)
 
 if __name__ == "__main__":
+    LOG.start("Testing the in-progress feature")
+    LOG.progress("...")
+    LOG.progress()
+    LOG.complete("success!")
+
     LOG.verbose()
 
     LOG.error("testing neubot logger -- This is an error message")
@@ -194,6 +199,11 @@ if __name__ == "__main__":
     except:
         LOG.exception()
         LOG.exception(LOG.warning)
+
+    LOG.start("Testing the in-progress feature")
+    LOG.progress("...")
+    LOG.progress()
+    LOG.complete("success!")
 
     LOG.oops("Testing the new oops feature")
 
