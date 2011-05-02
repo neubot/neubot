@@ -102,6 +102,10 @@ class HeadlessMeasurer(Measurer):
     def start(self, marker):
         self.collect()
         self.marker = marker
+        if marker in self.recv_hist:
+            del self.recv_hist[marker]
+        if marker in self.send_hist:
+            del self.send_hist[marker]
 
     def stop(self):
         if self.task:
