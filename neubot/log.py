@@ -190,7 +190,7 @@ if __name__ == "__main__":
     print compat.json.dumps(LOG.serialize())
 
     try:
-        1/0
+        raise Exception("Testing LOG.exception")
     except:
         LOG.exception()
         LOG.exception(LOG.warning)
