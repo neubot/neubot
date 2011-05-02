@@ -170,12 +170,15 @@ class Stream(Pollable):
         self.bytes_recv = 0
         self.bytes_sent = 0
 
+        self.conf = None
+
     def fileno(self):
         return self.filenum
 
     def attach(self, parent, sock, conf, measurer=None):
 
         self.parent = parent
+        self.conf = conf
 
         self.filenum = sock.fileno()
         self.myname = sock.getsockname()
@@ -453,7 +456,8 @@ class Connector(Pollable):
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
         self.measurer = measurer
-        sobuf = conf.get("net.stream.sobuf", 0)
+        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -468,9 +472,10 @@ class Connector(Pollable):
             try:
 
                 sock = socket.socket(family, socktype, protocol)
-                if sobuf:
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
+                if rcvbuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
+                if sndbuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sndbuf)
                 sock.setblocking(False)
                 result = sock.connect_ex(sockaddr)
                 if result not in INPROGRESS:
@@ -536,7 +541,8 @@ class Listener(Pollable):
         self.family = socket.AF_INET
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
-        sobuf = conf.get("net.stream.sobuf", 0)
+        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
@@ -552,9 +558,10 @@ class Listener(Pollable):
 
                 lsock = socket.socket(family, socktype, protocol)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                if sobuf:
-                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
-                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
+                if rcvbuf:
+                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,rcvbuf)
+                if sndbuf:
+                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,sndbuf)
                 lsock.setblocking(False)
                 lsock.bind(sockaddr)
                 # Probably the backlog here is too big
@@ -664,7 +671,8 @@ CONFIG.register_defaults({
     "net.stream.obfuscate": False,
     "net.stream.secure": False,
     "net.stream.server_side": False,
-    "net.stream.sobuf": 0,
+    "net.stream.rcvbuf": 262144,
+    "net.stream.sndbuf": 0,
 })
 CONFIG.register_descriptions({
     "net.stream.certfile": "Set SSL certfile path",
@@ -673,7 +681,8 @@ CONFIG.register_descriptions({
     "net.stream.obfuscate": "Enable scrambling with ARC4",
     "net.stream.secure": "Enable SSL",
     "net.stream.server_side": "Enable SSL server-side mode",
-    "net.stream.sobuf": "Set sock buffers (0 = use default)",
+    "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
+    "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
 })
 
 
@@ -692,11 +701,15 @@ class GenericProtocolStream(Stream):
 
     def __init__(self, poller):
         Stream.__init__(self, poller)
-        self.buffer = "A" * MAXBUF
+        self.buffer = None
         self.kind = ""
 
     def connection_made(self):
+        self.buffer = "A" * self.conf.get("net.stream.chunk", 32768)
         MEASURER.register_stream(self)
+        duration = self.conf.get("net.stream.duration", 10)
+        if duration >= 0:
+            POLLER.sched(duration, self.shutdown)
         if self.kind == "discard":
             self.start_recv()
         elif self.kind == "chargen":
@@ -722,6 +735,7 @@ def main(args):
 
     CONFIG.register_defaults({
         "net.stream.address": "",
+        "net.stream.chunk": 32768,
         "net.stream.clients": 1,
         "net.stream.daemonize": False,
         "net.stream.duration": 10,
@@ -731,6 +745,7 @@ def main(args):
     })
     CONFIG.register_descriptions({
         "net.stream.address": "Set client or server address",
+        "net.stream.chunk": "Chunk written by each write",
         "net.stream.clients": "Set number of client connections",
         "net.stream.daemonize": "Enable daemon behavior",
         "net.stream.duration": "Set duration of a test",
@@ -776,11 +791,6 @@ def main(args):
         handler.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
-
-    duration = conf["net.stream.duration"]
-    if duration >= 0:
-        duration = duration + 0.1       # XXX
-        POLLER.sched(duration, POLLER.break_loop)
 
     handler.connect(endpoint, count=conf["net.stream.clients"])
     POLLER.loop()
