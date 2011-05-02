@@ -25,24 +25,22 @@ import mimetypes
 import sys
 import os.path
 import socket
-import getopt
 import time
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.http.stream import ERROR
 from neubot.http.message import Message
 from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
-from neubot.utils import safe_seek
-from neubot.options import OptionParser
-from neubot.utils import asciiify
 from neubot.log import LOG
 from neubot.net.poller import POLLER
-from neubot.utils import import_class
+from neubot import utils
+from neubot import boot
 
 # 3-letter abbreviation of month names, note that
 # python tm.tm_mon is in range [1,12]
@@ -52,7 +50,6 @@ MONTH = [
     "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
     "Sep", "Oct", "Nov", "Dec",
 ]
-
 
 class ServerStream(StreamHTTP):
 
@@ -87,7 +84,7 @@ class ServerStream(StreamHTTP):
 
     def got_end_of_body(self):
         if self.request:
-            safe_seek(self.request.body, 0)
+            utils.safe_seek(self.request.body, 0)
             self.parent.got_request(self, self.request)
             self.request = None
         else:
@@ -113,7 +110,6 @@ class ServerStream(StreamHTTP):
                                                      requestline, statuscode,
                                                      nbytes))
 
-
 REDIRECT = """
 <HTML>
  <HEAD>
@@ -124,7 +120,6 @@ REDIRECT = """
  </BODY>
 </HTML>
 """
-
 
 class ServerHTTP(StreamHandler):
 
@@ -163,7 +158,7 @@ class ServerHTTP(StreamHandler):
                 child.process_request(stream, request)
                 return
 
-        rootdir = self.conf.get("rootdir", "")
+        rootdir = self.conf.get("http.server.rootdir", "")
         if not rootdir:
             response.compose(code="403", reason="Forbidden",
                     body=StringIO.StringIO("403 Forbidden"))
@@ -179,10 +174,10 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
-        rootdir = asciiify(rootdir)
-        uripath = asciiify(request.uri)
+        rootdir = utils.asciiify(rootdir)
+        uripath = utils.asciiify(request.uri)
         fullpath = os.path.normpath(rootdir + uripath)
-        fullpath = asciiify(fullpath)
+        fullpath = utils.asciiify(fullpath)
 
         if not fullpath.startswith(rootdir):
             response.compose(code="403", reason="Forbidden",
@@ -198,21 +193,24 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
-        mimetype, encoding = mimetypes.guess_type(fullpath)
+        if self.conf.get("http.server.mime", True):
+            mimetype, encoding = mimetypes.guess_type(fullpath)
 
-        if mimetype == "text/html":
-            ssi = self.conf.get("ssi", False)
-            if ssi:
-                body = ssi_replace(rootdir, fp)
-                fp = StringIO.StringIO(body)
+            if mimetype == "text/html":
+                ssi = self.conf.get("http.server.ssi", False)
+                if ssi:
+                    body = ssi_replace(rootdir, fp)
+                    fp = StringIO.StringIO(body)
 
-        if encoding:
-            mimetype = "; charset=".join((mimetype, encoding))
+            if encoding:
+                mimetype = "; charset=".join((mimetype, encoding))
+        else:
+            mimetype = "text/plain"
 
         response.compose(code="200", reason="Ok", body=fp,
                          mimetype=mimetype)
         if request.method == "HEAD":
-            safe_seek(fp, 0, os.SEEK_END)
+            utils.safe_seek(fp, 0, os.SEEK_END)
         stream.send_response(request, response)
 
     def got_request(self, stream, request):
@@ -231,94 +229,40 @@ class ServerHTTP(StreamHandler):
         stream = ServerStream(self.poller)
         stream.attach(self, sock, self.conf)
 
-
-# unit test
-
-USAGE = """Neubot httpd -- Test unit for the http server module
-
-Usage: neubot httpd [-Vv] [-D macro[=value]] [-f file] [--help]
-
-Options:
-    -D macro[=value]   : Set the value of the macro `macro`.
-    -f file            : Read options from file `file`.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
-
-Macros (defaults in square brackets):
-    address=addr       : Select the address to use                 [0.0.0.0]
-    ports=port         : Comma-separated list of ports to use      [8080]
-    rdr-to=PREFIX:CLASS: Redirect requests that starts with PREFIX
-                         to the ServerHTTP subclass CLASS, e.g.::
-                             -Drdr-to=/api:api.server.ServerAPI    []
-    rootdir=dir        : Specify root directory for WWW            []
-    ssi                : Enable Server-Side Includes (SSI)         [False]
-
-You MUST specify the root directory if you want this webserver to
-serve pages requests.
-"""
-
-VERSION = "Neubot 0.3.6\n"
+CONFIG.register_defaults({
+    "http.server.address": "0.0.0.0",
+    "http.server.class": "",
+    "http.server.mime": True,
+    "http.server.ports": "8080,",
+    "http.server.rootdir": "",
+    "http.server.ssi": False,
+})
+CONFIG.register_descriptions({
+    "http.server.address": "Address to listen to",
+    "http.server.class": "Use alternate ServerHTTP-like class",
+    "http.server.mime": "Enable code that guess mime types",
+    "http.server.ports": "List of ports to listen to",
+    "http.server.rootdir": "Root directory for static pages",
+    "http.server.ssi": "Enable server-side includes",
+})
 
 def main(args):
+    boot.common("http.server", "Neubot simple HTTP server", args)
+    conf = CONFIG.select("http.server")
 
-    conf = OptionParser()
-    conf.set_option("httpd", "address", "0.0.0.0")
-    conf.set_option("httpd", "ports", "8080")
-    conf.set_option("httpd", "rdr-to", "")
-    conf.set_option("httpd", "rootdir", "")
-    conf.set_option("httpd", "ssi", "False")
+    make_child = ServerHTTP
+    if conf["http.server.class"]:
+        make_child = utils.import_class(conf["http.server.class"])
 
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
+    server = make_child(POLLER)
+    server.configure(conf)
 
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "httpd")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
+    if conf["http.server.rootdir"] == ".":
+        conf["http.server.rootdir"] = os.path.abspath(".")
 
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    address = conf.get_option("httpd", "address")
-    ports = conf.get_option("httpd", "ports")
-    rdrto = conf.get_option("httpd", "rdr-to")
-    rootdir = conf.get_option("httpd", "rootdir")
-    ssi = conf.get_option_bool("httpd", "ssi")
-
-    dictionary = {
-        "rootdir": rootdir,
-        "ssi": ssi,
-    }
-
-    server = ServerHTTP(POLLER)
-    server.configure(dictionary)
-
-    if rdrto:
-        prefix, classname = rdrto.split(":", 1)
-        make_child = import_class(classname)
-        child = make_child(server.poller)
-        server.register_child(child, prefix)
-
-    for port in ports.split(","):
-        endpoint = (address, port)
-        server.listen(endpoint)
+    for port in conf["http.server.ports"].split(","):
+        if port:
+            server.listen((conf["http.server.address"], int(port)))
 
     POLLER.loop()
 
