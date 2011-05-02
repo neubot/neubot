@@ -32,15 +32,13 @@ if __name__ == "__main__":
 from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
 from neubot.options import OptionParser
-from neubot.utils import file_length
 from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
 from neubot.net.measurer import MEASURER
-from neubot.utils import safe_seek
-from neubot.utils import import_class
 from neubot.log import LOG
+from neubot import utils
 
 
 class ClientStream(StreamHTTP):
@@ -95,7 +93,7 @@ class ClientStream(StreamHTTP):
     def got_end_of_body(self):
         if self.requests:
             request = self.requests.popleft()
-            safe_seek(request.response.body, 0)
+            utils.safe_seek(request.response.body, 0)
             self.parent.got_response(self, request, request.response)
             if (request["connection"] == "close" or
               request.response["connection"] == "close"):
@@ -230,7 +228,7 @@ def main(args):
         POLLER.sched(0.5, MEASURER.start)
 
     if classname:
-        TestClient = import_class(classname)
+        TestClient = utils.import_class(classname)
 
     for uri in arguments:
         conf = {
