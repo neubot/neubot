@@ -114,14 +114,14 @@ class Logger(object):
         if not self.noisy and self.interactive:
             sys.stderr.write(".")
 
-    def complete(self):
+    def complete(self, done="done\n"):
         if self.noisy or not self.interactive:
             if not self.message:
                 self.message = "???"
-            self.info(self.message + ": complete")
+            self.info(self.message + "..." + done)
             self.message = None
         else:
-            sys.stderr.write(" done\n")
+            sys.stderr.write(done)
 
     # Log functions
 
