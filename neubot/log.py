@@ -32,9 +32,9 @@ import traceback
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.utils import timestamp
 from neubot import system
 from neubot import compat
+from neubot import utils
 
 
 class InteractiveLogger(object):
@@ -72,6 +72,7 @@ class Logger(object):
         self.noisy = False
 
         self.message = None
+        self.ticks = 0
 
     def verbose(self):
         self.noisy = True
@@ -104,6 +105,7 @@ class Logger(object):
     #
 
     def start(self, message):
+        self.ticks = utils.ticks()
         if self.noisy or not self.interactive:
             self.info(message + " in progress...")
             self.message = message
@@ -115,6 +117,8 @@ class Logger(object):
             sys.stderr.write(".")
 
     def complete(self, done="done\n"):
+        elapsed = utils.time_formatter(utils.ticks() - self.ticks)
+        done = "".join([done.rstrip(), " [in ", elapsed, "]\n"])
         if self.noisy or not self.interactive:
             if not self.message:
                 self.message = "???"
@@ -165,7 +169,7 @@ class Logger(object):
     def _log(self, printlog, severity, message):
         message = message.rstrip()
         compat.deque_append(self.queue, self.maxqueue,
-                            (timestamp(),severity,message))
+                            (utils.timestamp(),severity,message))
         printlog(message)
 
     # Marshal
