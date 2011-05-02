@@ -257,6 +257,9 @@ def main(args):
     server = make_child(POLLER)
     server.configure(conf)
 
+    if conf["http.server.rootdir"] == ".":
+        conf["http.server.rootdir"] = os.path.abspath(".")
+
     for port in conf["http.server.ports"].split(","):
         if port:
             server.listen((conf["http.server.address"], int(port)))
