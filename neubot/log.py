@@ -196,6 +196,8 @@ if __name__ == "__main__":
 
     try:
         raise Exception("Testing LOG.exception")
+    except (KeyboardInterrupt, SystemExit):
+        raise
     except:
         LOG.exception()
         LOG.exception(LOG.warning)
