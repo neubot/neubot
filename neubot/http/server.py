@@ -193,16 +193,19 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
-        mimetype, encoding = mimetypes.guess_type(fullpath)
+        if self.conf.get("http.server.mime", True):
+            mimetype, encoding = mimetypes.guess_type(fullpath)
 
-        if mimetype == "text/html":
-            ssi = self.conf.get("http.server.ssi", False)
-            if ssi:
-                body = ssi_replace(rootdir, fp)
-                fp = StringIO.StringIO(body)
+            if mimetype == "text/html":
+                ssi = self.conf.get("http.server.ssi", False)
+                if ssi:
+                    body = ssi_replace(rootdir, fp)
+                    fp = StringIO.StringIO(body)
 
-        if encoding:
-            mimetype = "; charset=".join((mimetype, encoding))
+            if encoding:
+                mimetype = "; charset=".join((mimetype, encoding))
+        else:
+            mimetype = "text/plain"
 
         response.compose(code="200", reason="Ok", body=fp,
                          mimetype=mimetype)
@@ -229,6 +232,7 @@ class ServerHTTP(StreamHandler):
 CONFIG.register_defaults({
     "http.server.address": "0.0.0.0",
     "http.server.class": "",
+    "http.server.mime": True,
     "http.server.ports": "8080,",
     "http.server.rootdir": "",
     "http.server.ssi": False,
@@ -236,6 +240,7 @@ CONFIG.register_defaults({
 CONFIG.register_descriptions({
     "http.server.address": "Address to listen to",
     "http.server.class": "Use alternate ServerHTTP-like class",
+    "http.server.mime": "Enable code that guess mime types",
     "http.server.ports": "List of ports to listen to",
     "http.server.rootdir": "Root directory for static pages",
     "http.server.ssi": "Enable server-side includes",
