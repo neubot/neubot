@@ -26,7 +26,6 @@
 
 import collections
 import sys
-import time
 import traceback
 
 if __name__ == "__main__":
