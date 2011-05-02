@@ -22,7 +22,6 @@
 
 import collections
 import os.path
-import socket
 import getopt
 import sys
 
