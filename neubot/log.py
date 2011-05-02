@@ -112,9 +112,9 @@ class Logger(object):
         else:
             sys.stderr.write(message + "...")
 
-    def progress(self):
+    def progress(self, dot="."):
         if not self.noisy and self.interactive:
-            sys.stderr.write(".")
+            sys.stderr.write(dot)
 
     def complete(self, done="done\n"):
         elapsed = utils.time_formatter(utils.ticks() - self.ticks)
