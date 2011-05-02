@@ -26,15 +26,14 @@
 
 import collections
 import sys
-import time
 import traceback
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.utils import timestamp
 from neubot import system
 from neubot import compat
+from neubot import utils
 
 
 class InteractiveLogger(object):
@@ -72,6 +71,7 @@ class Logger(object):
         self.noisy = False
 
         self.message = None
+        self.ticks = 0
 
     def verbose(self):
         self.noisy = True
@@ -104,24 +104,27 @@ class Logger(object):
     #
 
     def start(self, message):
+        self.ticks = utils.ticks()
         if self.noisy or not self.interactive:
             self.info(message + " in progress...")
             self.message = message
         else:
             sys.stderr.write(message + "...")
 
-    def progress(self):
+    def progress(self, dot="."):
         if not self.noisy and self.interactive:
-            sys.stderr.write(".")
+            sys.stderr.write(dot)
 
-    def complete(self):
+    def complete(self, done="done\n"):
+        elapsed = utils.time_formatter(utils.ticks() - self.ticks)
+        done = "".join([done.rstrip(), " [in ", elapsed, "]\n"])
         if self.noisy or not self.interactive:
             if not self.message:
                 self.message = "???"
-            self.info(self.message + ": complete")
+            self.info(self.message + "..." + done)
             self.message = None
         else:
-            sys.stderr.write(" done\n")
+            sys.stderr.write(done)
 
     # Log functions
 
@@ -165,7 +168,7 @@ class Logger(object):
     def _log(self, printlog, severity, message):
         message = message.rstrip()
         compat.deque_append(self.queue, self.maxqueue,
-                            (timestamp(),severity,message))
+                            (utils.timestamp(),severity,message))
         printlog(message)
 
     # Marshal
@@ -178,6 +181,11 @@ MAXQUEUE = 4096
 LOG = Logger(MAXQUEUE)
 
 if __name__ == "__main__":
+    LOG.start("Testing the in-progress feature")
+    LOG.progress("...")
+    LOG.progress()
+    LOG.complete("success!")
+
     LOG.verbose()
 
     LOG.error("testing neubot logger -- This is an error message")
@@ -187,10 +195,15 @@ if __name__ == "__main__":
     print compat.json.dumps(LOG.serialize())
 
     try:
-        1/0
+        raise Exception("Testing LOG.exception")
     except:
         LOG.exception()
         LOG.exception(LOG.warning)
+
+    LOG.start("Testing the in-progress feature")
+    LOG.progress("...")
+    LOG.progress()
+    LOG.complete("success!")
 
     LOG.oops("Testing the new oops feature")
 
