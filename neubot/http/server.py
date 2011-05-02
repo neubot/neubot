@@ -37,12 +37,10 @@ from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
-from neubot.utils import safe_seek
 from neubot.options import OptionParser
-from neubot.utils import asciiify
 from neubot.log import LOG
 from neubot.net.poller import POLLER
-from neubot.utils import import_class
+from neubot import utils
 
 # 3-letter abbreviation of month names, note that
 # python tm.tm_mon is in range [1,12]
@@ -87,7 +85,7 @@ class ServerStream(StreamHTTP):
 
     def got_end_of_body(self):
         if self.request:
-            safe_seek(self.request.body, 0)
+            utils.safe_seek(self.request.body, 0)
             self.parent.got_request(self, self.request)
             self.request = None
         else:
@@ -179,10 +177,10 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
-        rootdir = asciiify(rootdir)
-        uripath = asciiify(request.uri)
+        rootdir = utils.asciiify(rootdir)
+        uripath = utils.asciiify(request.uri)
         fullpath = os.path.normpath(rootdir + uripath)
-        fullpath = asciiify(fullpath)
+        fullpath = utils.asciiify(fullpath)
 
         if not fullpath.startswith(rootdir):
             response.compose(code="403", reason="Forbidden",
@@ -212,7 +210,7 @@ class ServerHTTP(StreamHandler):
         response.compose(code="200", reason="Ok", body=fp,
                          mimetype=mimetype)
         if request.method == "HEAD":
-            safe_seek(fp, 0, os.SEEK_END)
+            utils.safe_seek(fp, 0, os.SEEK_END)
         stream.send_response(request, response)
 
     def got_request(self, stream, request):
@@ -312,7 +310,7 @@ def main(args):
 
     if rdrto:
         prefix, classname = rdrto.split(":", 1)
-        make_child = import_class(classname)
+        make_child = utils.import_class(classname)
         child = make_child(server.poller)
         server.register_child(child, prefix)
 
