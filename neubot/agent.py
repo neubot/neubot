@@ -67,7 +67,7 @@ def main(args):
 
     if conf["agent.api"]:
         server = ServerHTTP(POLLER)
-        server.configure({"rootdir": WWW, "ssi": True,
+        server.configure({"http.server.rootdir": WWW, "http.server.ssi": True,
           "http.server.bind_or_die": True})
         server.register_child(ServerAPI(POLLER), "/api")
         server.listen((conf["agent.api.address"],
