@@ -254,7 +254,6 @@ h2, h2 a, h2 a:hover, h2 a:visited, h3, h3 a, h3 a:hover, h3 a:visited, h4, h4 a
     color: rgb(68, 68, 68);
     font-size: 1.2em;
     line-height: 1.8em;
-    text-align: justify;
 }
 .entry-content p,
 .entry-content ul, .entry-content ol, .entry-content div, .entry-content blockquote {
