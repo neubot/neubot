@@ -461,10 +461,9 @@ from neubot.speedtest.client import ClientSpeedtest
 class SpeedtestClient2(object):
 
     def __init__(self, uri, nclients, flags, debug=False, parent=None):
-        conf = {
-            "speedtest.client.uri": uri,
-            "speedtest.client.nconn": nclients,
-        }
+        conf = CONFIG.select("speedtest.client")
+        conf["speedtest.client.uri"] = uri
+        conf["speedtest.client.nconn"] = nclients
         client = ClientSpeedtest(POLLER)
         client.configure(conf)
         client.connect_uri()
