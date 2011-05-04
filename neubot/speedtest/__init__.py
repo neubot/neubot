@@ -22,18 +22,16 @@
 
 import ConfigParser
 import StringIO
-import urlparse
-import pprint
-import cgi
 import sys
 import getopt
 import collections
+import os.path
 import uuid
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.arcfour import RandomData
+from neubot.arcfour import RandomBody
 
 from neubot.config import CONFIG
 
@@ -134,6 +132,11 @@ class Tester(object):
                 mimetype="application/octet-stream")
         stream.send_response(request, response)
 
+FAKE_NEGOTIATION = '''\
+<SpeedtestNegotiate_Response>
+ <unchoked>True</unchoked>
+</SpeedtestNegotiate_Response>
+'''
 
 class TestServer(ServerHTTP):
 
@@ -148,22 +151,27 @@ class TestServer(ServerHTTP):
             response.compose(code="200", reason="Ok")
             stream.send_response(request, response)
 
-        elif request.uri.startswith("/speedtest/download/2"):
-            query = urlparse.urlsplit(request.uri)[3]
-
-            dictionary = cgi.parse_qs(query)
-            t = dictionary.get("t", (5,))[0]
-            body = RandomData(self.poller, t, chunkify=True)
-
-            response = Message()
-            response.compose(code="200", reason="Ok", chunked=body,
-                             mimetype="application/octet-stream")
-            stream.send_response(request, response)
-
         elif request.uri == "/speedtest/download":
-            self.old_server.do_download(stream, request,
-              self.conf.get("speedtest.server.path",
-                "/var/neubot/large_file.bin"))
+            fpath = self.conf.get("speedtest.server.path",
+              "/var/neubot/large_file.bin")
+            if os.path.isfile(fpath):
+                self.old_server.do_download(stream, request, fpath)
+            else:
+                first, last = parse_range(request)
+                response = Message()
+                response.compose(code="200", reason="Ok",
+                  body=RandomBody(last - first + 1),
+                  mimetype="application/octet-stream")
+                stream.send_response(request, response)
+
+        # Fake for testing purpose only
+        elif request.uri in ("/speedtest/negotiate", "/speedtest/collect"):
+            response = Message()
+            body = None
+            if request.uri == "/speedtest/negotiate":
+                body = StringIO.StringIO(FAKE_NEGOTIATION)
+            response.compose(code="200", reason="Ok", body=body)
+            stream.send_response(request, response)
 
         else:
             response = Message()
