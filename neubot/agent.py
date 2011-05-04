@@ -58,7 +58,7 @@ CONFIG.register_descriptions({
 def main(args):
     boot.common("agent", "Run in background, periodically run tests", args)
 
-    conf = CONFIG.select("agent")
+    conf = CONFIG.copy()
 
     if not conf["agent.interval"]:
         conf["agent.interval"] = 1380 + random.randrange(0, 240)

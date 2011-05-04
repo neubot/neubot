@@ -161,7 +161,7 @@ CONFIG.register_descriptions({
 def main(args):
     boot.common("api.client", "Minimal client for JSON API", args)
     client = APIStateTracker(POLLER)
-    client.configure(CONFIG.select("api.client"))
+    client.configure(CONFIG.copy())
     client.loop()
 
 if __name__ == "__main__":

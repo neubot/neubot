@@ -250,7 +250,7 @@ CONFIG.register_descriptions({
 
 def main(args):
     boot.common("http.server", "Neubot simple HTTP server", args)
-    conf = CONFIG.select("http.server")
+    conf = CONFIG.copy()
 
     make_child = ServerHTTP
     if conf["http.server.class"]:

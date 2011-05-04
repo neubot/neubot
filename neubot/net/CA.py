@@ -45,7 +45,7 @@ CONFIG.register_descriptions({
 
 def main(args):
     boot.common("net.CA", "generate test certificates", args)
-    conf = CONFIG.select("net.CA")
+    conf = CONFIG.copy()
 
     genrsa = [ "openssl", "genrsa", "-out", conf["net.CA.privkey"],
                str(conf["net.CA.bits"]) ]

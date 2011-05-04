@@ -172,7 +172,7 @@ CONFIG.register_descriptions({
 
 def main(args):
     boot.common("http.client", "Simple Neubot HTTP client", args)
-    conf = CONFIG.select("http.client")
+    conf = CONFIG.copy()
 
     if conf["http.client.stats"]:
         POLLER.sched(0.5, MEASURER.start)

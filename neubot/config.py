@@ -125,7 +125,7 @@ class Config(object):
                #
                def create_test(self):
                    ...
-                   k = CONFIG.select("module")
+                   k = CONFIG.copy()
                    if k.get("enabled", True):
                        self.listen(k.get("module.address", "127.0.0.1"),
                          k.get("module.port", 9774))
@@ -213,9 +213,8 @@ class Config(object):
     def register_descriptions(self, d):
         self.descriptions.update(d)
 
-    def select(self, module):
-        return dict((t for t in self.conf.iteritems()
-                    if t[0].startswith(module)))
+    def copy(self):
+        return dict(self.conf)
 
     def get(self, key, defvalue):
         return self.conf.get(key, defvalue)

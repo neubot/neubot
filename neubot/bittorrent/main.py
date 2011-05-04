@@ -144,7 +144,7 @@ def main(args):
     })
 
     boot.common("bittorrent.test", "BitTorrent test", args)
-    conf = CONFIG.select("bittorrent.test")
+    conf = CONFIG.copy()
 
     if not conf["bittorrent.test.address"]:
         if not conf["bittorrent.test.listen"]:

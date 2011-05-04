@@ -761,7 +761,7 @@ def main(args):
 
     boot.common("net.stream", "TCP bulk transfer test", args)
 
-    conf = CONFIG.select("net.stream")
+    conf = CONFIG.copy()
 
     if not conf["net.stream.address"]:
         if not conf["net.stream.listen"]:
