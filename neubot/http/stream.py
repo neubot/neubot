@@ -130,7 +130,8 @@ class StreamHTTP(Stream):
         if self.closing:
             return
 
-        LOG.debug("HTTP receiver: got %d bytes" % len(data))
+        #This one should be debug2 as well
+        #LOG.debug("HTTP receiver: got %d bytes" % len(data))
 
         # merge with previous fragments (if any)
         if self.incoming:
