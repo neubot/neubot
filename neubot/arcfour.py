@@ -31,7 +31,6 @@ from neubot.utils import ticks
 
 from neubot.log import LOG
 
-
 class PassThrough(object):
     def __init__(self, key):
         LOG.debug("arcfour: ARC4 support not available")
@@ -42,7 +41,6 @@ class PassThrough(object):
 
     def decrypt(self, data):
         return data
-
 
 try:
     from Crypto.Cipher import ARC4
@@ -74,51 +72,6 @@ class RandomBody(object):
 
     def tell(self):
         return self.total
-
-class RandomData(object):
-
-    """Ugly class that at the same time implements chunked
-       transfer encoding and obfuscation."""
-
-    def __init__(self, poller, t, chunkify=False):
-        self.done = False
-        self.chunkify = chunkify
-        self.eof = False
-
-        key = str(ticks())
-        encoder = arcfour_new(key)
-        self.encode = encoder.encrypt
-
-        poller.sched(float(t), self.end_of_file)
-
-    def end_of_file(self):
-        self.eof = True
-
-    def read(self, n):
-        vector = []
-
-        if self.done:
-            pass
-
-        elif self.eof:
-            if self.chunkify:
-                vector.append("0\r\n")
-                vector.append("\r\n")
-            self.done = True
-
-        else:
-            if self.chunkify:
-                vector.append("%x\r\n" % n)
-
-            data = "A" * n
-            data = self.encode(data)
-            vector.append(data)
-
-            if self.chunkify:
-                vector.append("\r\n")
-
-        return "".join(vector)
-
 
 if __name__ == "__main__":
     begin = ticks()
