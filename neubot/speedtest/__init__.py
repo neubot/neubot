@@ -132,6 +132,11 @@ class Tester(object):
                 mimetype="application/octet-stream")
         stream.send_response(request, response)
 
+FAKE_NEGOTIATION = '''\
+<SpeedtestNegotiate_Response>
+ <unchoked>True</unchoked>
+</SpeedtestNegotiate_Response>
+'''
 
 class TestServer(ServerHTTP):
 
@@ -158,6 +163,15 @@ class TestServer(ServerHTTP):
                   body=RandomBody(last - first + 1),
                   mimetype="application/octet-stream")
                 stream.send_response(request, response)
+
+        # Fake for testing purpose only
+        elif request.uri in ("/speedtest/negotiate", "/speedtest/collect"):
+            response = Message()
+            body = None
+            if request.uri == "/speedtest/negotiate":
+                body = StringIO.StringIO(FAKE_NEGOTIATION)
+            response.compose(code="200", reason="Ok", body=body)
+            stream.send_response(request, response)
 
         else:
             response = Message()
