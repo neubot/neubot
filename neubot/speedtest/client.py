@@ -348,7 +348,7 @@ class ClientSpeedtest(ClientHTTP):
             if self.state not in ("negotiate", "collect"):
                 STATE.update("test", "speedtest_%s" % self.state)
             else:
-                STATE.update("test", self.state)
+                STATE.update(self.state)
             LOG.start("* speedtest: %s" % self.state)
 
         self.measurer.start(self.state)
