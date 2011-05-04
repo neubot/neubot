@@ -163,11 +163,12 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self._log(self.logger.info, "INFO", message)
+        self._log(self.logger.info, "ACCESS", message)
 
     def _log(self, printlog, severity, message):
         message = message.rstrip()
-        compat.deque_append(self.queue, self.maxqueue,
+        if severity != "ACCESS":
+            compat.deque_append(self.queue, self.maxqueue,
                             (utils.timestamp(),severity,message))
         printlog(message)
 
