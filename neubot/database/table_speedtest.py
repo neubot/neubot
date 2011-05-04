@@ -33,13 +33,10 @@ from neubot import utils
 #
 # FIXME The following function glues the speedtest code and
 # the database code.  The speedtest code passes downstream a
-# an object with at least two problems:
+# an object with the following problems:
 #
 # 1. the timestamp _might_ be a floating because old
 #    neubot clients have this bug;
-#
-# 2. some fields are vectors instead of scalars and this
-#    is very clumsy as well.
 #
 def obj_to_dict(obj):
     dictionary = {
@@ -48,10 +45,10 @@ def obj_to_dict(obj):
         "internal_address": obj.internalAddress,
         "real_address": obj.realAddress,
         "remote_address": obj.remoteAddress,
-        "connect_time": obj.connectTime[0],
-        "latency": obj.latency[0],
-        "download_speed": obj.downloadSpeed[0],
-        "upload_speed": obj.uploadSpeed[0],
+        "connect_time": obj.connectTime,
+        "latency": obj.latency,
+        "download_speed": obj.downloadSpeed,
+        "upload_speed": obj.uploadSpeed,
         "privacy_informed": obj.privacy_informed,
         "privacy_can_collect": obj.privacy_can_collect,
         "privacy_can_share": obj.privacy_can_share,

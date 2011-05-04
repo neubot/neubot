@@ -214,8 +214,8 @@ class Config(object):
         self.descriptions.update(d)
 
     def select(self, module):
-        return ConfigDict((t for t in self.conf.iteritems()
-                            if t[0].startswith(module)))
+        return dict((t for t in self.conf.iteritems()
+                    if t[0].startswith(module)))
 
     def get(self, key, defvalue):
         return self.conf.get(key, defvalue)

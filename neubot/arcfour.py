@@ -55,6 +55,25 @@ def arcfour_new(key=None):
         key = "neubot"
     return ARCFOUR(key)
 
+class RandomBody(object):
+    def __init__(self, total):
+        self.total = int(total)
+        self.encoder = arcfour_new(str(ticks()))
+
+    def read(self, n):
+        if self.total:
+            amt = min(n, self.total)
+            data = self.encoder.encrypt("A" * amt)
+            self.total -= amt
+        else:
+            data = ""
+        return data
+
+    def seek(self, offset=0, whence=0):
+        pass
+
+    def tell(self):
+        return self.total
 
 class RandomData(object):
 
