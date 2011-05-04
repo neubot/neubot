@@ -133,7 +133,6 @@ class ClientCollect(ClientHTTP):
         m1.realAddress = self.conf.get("speedtest.client.public_address", "")
         m1.remoteAddress = stream.peername[0]
 
-        m1.connectTime = self.conf.get("speedtest.client.connect", 0.0)
         m1.latency = self.conf.get("speedtest.client.latency", 0.0)
         m1.downloadSpeed = self.conf.get("speedtest.client.download", 0.0)
         m1.uploadSpeed = self.conf.get("speedtest.client.upload", 0.0)
@@ -142,8 +141,9 @@ class ClientCollect(ClientHTTP):
         m1.privacy_can_collect = self.conf.get("privacy.can_collect", 0)
         m1.privacy_can_share = self.conf.get("privacy.can_share", 0)
 
-#       Not yet the time for that
-#       if self.measurer:
+        if self.measurer:
+            m1.connectTime = self.measurer.measure_rtt()[0]
+
 #           import pprint
 #           if hasattr(self.measurer, "recv_hist"):
 #               download = self.measurer.recv_hist.get("download", [])
