@@ -144,6 +144,11 @@ class TestServer(ServerHTTP):
         ServerHTTP.__init__(self, poller)
         self.old_server = Tester()
 
+    def got_request_headers(self, stream, request):
+        if request.uri == "/speedtest/upload":
+            request.body.write = lambda octets: None
+        return True
+
     def process_request(self, stream, request):
 
         if request.uri in ("/speedtest/latency", "/speedtest/upload"):
@@ -293,6 +298,9 @@ class SpeedtestServer(ServerHTTP):
     def got_request_headers(self, stream, request):
         ret = True
         TRACKER.register_connection(stream, request["authorization"])
+
+        if request.uri == "/speedtest/upload":
+            request.body.write = lambda octets: None
 
         only_auth = self.conf.get("speedtest.server.only_auth", False)
         if (only_auth and request.uri != "/speedtest/negotiate" and

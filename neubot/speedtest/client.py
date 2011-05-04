@@ -77,7 +77,9 @@ class ClientDownload(ClientHTTP):
           "speedtest.client.authorization", "")
         self.ticks[stream] = utils.ticks()
         self.bytes[stream] = stream.bytes_recv_tot
-        stream.send_request(request)
+        response = Message()
+        response.body.write = lambda piece: None
+        stream.send_request(request, response)
 
     def got_response(self, stream, request, response):
         total = stream.bytes_recv_tot - self.bytes[stream]
