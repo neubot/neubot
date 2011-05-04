@@ -22,26 +22,22 @@
 
 import collections
 import os.path
-import socket
-import getopt
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
-from neubot.options import OptionParser
-from neubot.utils import file_length
 from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
 from neubot.net.measurer import MEASURER
-from neubot.utils import safe_seek
-from neubot.utils import import_class
 from neubot.log import LOG
-
+from neubot import utils
+from neubot import boot
 
 class ClientStream(StreamHTTP):
 
@@ -95,7 +91,7 @@ class ClientStream(StreamHTTP):
     def got_end_of_body(self):
         if self.requests:
             request = self.requests.popleft()
-            safe_seek(request.response.body, 0)
+            utils.safe_seek(request.response.body, 0)
             self.parent.got_response(self, request, request.response)
             if (request["connection"] == "close" or
               request.response["connection"] == "close"):
@@ -103,15 +99,13 @@ class ClientStream(StreamHTTP):
         else:
             self.close()
 
-
 class ClientHTTP(StreamHandler):
 
     def connect_uri(self, uri, count=1):
         m = Message()
         m.compose(method="GET", uri=uri)
         if m.scheme == "https":
-            #self.conf["net.stream.secure"] = True
-            self.conf["secure"] = True
+            self.conf["net.stream.secure"] = True
         endpoint = (m.address, int(m.port))
         self.connect(endpoint, count)
 
@@ -129,35 +123,11 @@ class ClientHTTP(StreamHandler):
         stream.attach(self, sock, self.conf, self.measurer)
         self.connection_ready(stream)
 
-
-# Unit test
-
-USAGE = """Neubot http -- Test unit for the http client module
-
-Usage: neubot http [-Vv] [-D macro[=value]] [-f file] [--help] uri ...
-
-Options:
-    -D macro[=value]   : Set the value of the macro `macro`.
-    -f file            : Read options from file `file`.
-    --help             : Print this help screen and exit.
-    -V                 : Print version number and exit.
-    -v                 : Run the program in verbose mode.
-
-Macros (defaults in square brackets):
-    class=name         : Name of the HTTP client class []
-    method=method      : Select the method to use [GET]
-    stdout             : Write output to stdout [no]
-
-"""
-
-VERSION = "Neubot 0.3.6\n"
-
-
 class TestClient(ClientHTTP):
 
     def connection_ready(self, stream):
         method = self.conf["http.client.method"]
-        stdout = self.conf["http.client.write_to_stdout"]
+        stdout = self.conf["http.client.stdout"]
         uri = self.conf["http.client.uri"]
 
         request = Message()
@@ -183,65 +153,39 @@ class TestClient(ClientHTTP):
 
         stream.send_request(request, response)
 
+CONFIG.register_defaults({
+    "http.client.class": "",
+    "http.client.method": "GET",
+    "http.client.stats": True,
+    "http.client.stdout": False,
+    "http.client.uri": "",
+})
+CONFIG.register_descriptions({
+    "http.client.class": "Specify alternate ClientHTTP-like class",
+    "http.client.method": "Specify alternate HTTP method",
+    "http.client.stats": "Enable printing download stats on stdout",
+    "http.client.stdout": "Enable writing response to stdout",
+    "http.client.uri": "Specify URI to download from/upload to",
+})
 
 def main(args):
+    boot.common("http.client", "Simple Neubot HTTP client", args)
+    conf = CONFIG.select("http.client")
 
-    conf = OptionParser()
-    conf.set_option("http", "class", "")
-    conf.set_option("http", "method", "GET")
-    conf.set_option("http", "stdout", "no")
-
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
-
-    if len(arguments) == 0:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
-
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "http")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    classname = conf.get_option("http", "class")
-    method = conf.get_option("http", "method")
-    stdout = conf.get_option_bool("http", "stdout")
-
-    if not stdout:
+    if conf["http.client.stats"]:
         POLLER.sched(0.5, MEASURER.start)
 
-    if classname:
-        TestClient = import_class(classname)
+    make_client = TestClient
+    if conf["http.client.class"]:
+        make_client = utils.import_class(conf["http.client.class"])
 
-    for uri in arguments:
-        conf = {
-            "http.client.write_to_stdout": stdout,
-            "http.client.method": method,
-            "http.client.uri": uri,
-        }
+    if not conf["http.client.uri"]:
+        sys.stdout.write("Please, specify URI via -D http.client.uri=URI\n")
+        sys.exit(0)
 
-        client = TestClient(POLLER)
-        client.configure(conf, MEASURER)
-        client.connect_uri(uri)
+    client = make_client(POLLER)
+    client.configure(conf, MEASURER)
+    client.connect_uri(conf["http.client.uri"])
 
     POLLER.loop()
     sys.exit(0)
