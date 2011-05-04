@@ -82,6 +82,13 @@ def main(argv):
             from neubot.debug import PROFILER
             sys.setprofile(PROFILER.notify_event)
 
+    if os.environ.get("NEUBOT_MEMLEAK", ""):
+        from neubot import utils
+        if utils.intify(os.environ["NEUBOT_MEMLEAK"]):
+            sys.stderr.write("Running in leak-detection mode\n")
+            import gc
+            gc.set_debug(gc.DEBUG_LEAK)
+
     # Quick argv classification
 
     if len(argv) == 1:
