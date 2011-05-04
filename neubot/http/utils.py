@@ -29,6 +29,9 @@ from neubot.http.stream import CHUNK_LENGTH
 from neubot.http.stream import ERROR
 from neubot.http.stream import FIRSTLINE
 from neubot.http.stream import UNBOUNDED
+from neubot.log import LOG
+from neubot import utils
+from neubot import compat
 
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
@@ -155,3 +158,19 @@ def parse_range(message):
     if first < 0 or last < 0 or last < first:
         raise ValueError("Cannot parse range header")
     return first, last
+
+#
+# pretty print body
+#
+
+def prettyprintbody(m, prefix):
+    if m["content-type"] == "application/json":
+        s = compat.json.dumps(compat.json.loads(m.body.read()),
+          indent=4, sort_keys=True)
+    elif m["content-type"] in ("text/xml", "application/xml"):
+        s = m.body.read()
+    else:
+        return
+    for ln in s.split("\n"):
+        LOG.debug("%s %s" % (prefix, ln.rstrip()))
+    utils.safe_seek(m.body, 0)

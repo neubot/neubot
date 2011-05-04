@@ -32,6 +32,7 @@ from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
 from neubot.http.stream import ERROR
 from neubot.http.utils import nextstate
+from neubot.http.utils import prettyprintbody
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
 from neubot.net.measurer import MEASURER
@@ -92,6 +93,7 @@ class ClientStream(StreamHTTP):
         if self.requests:
             request = self.requests.popleft()
             utils.safe_seek(request.response.body, 0)
+            prettyprintbody(request.response, "<")
             self.parent.got_response(self, request, request.response)
             if (request["connection"] == "close" or
               request.response["connection"] == "close"):

@@ -27,6 +27,7 @@ import os
 
 from neubot.http.utils import urlsplit
 from neubot.http.utils import date
+from neubot.http.utils import prettyprintbody
 from neubot.log import LOG
 from neubot import utils
 
@@ -105,6 +106,7 @@ class Message(object):
         return StringIO.StringIO(s)
 
     def serialize_body(self):
+        prettyprintbody(self, ">")
         return self.body
 
     #

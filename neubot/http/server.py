@@ -35,6 +35,7 @@ from neubot.http.stream import ERROR
 from neubot.http.message import Message
 from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
+from neubot.http.utils import prettyprintbody
 from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
 from neubot.log import LOG
@@ -85,6 +86,7 @@ class ServerStream(StreamHTTP):
     def got_end_of_body(self):
         if self.request:
             utils.safe_seek(self.request.body, 0)
+            prettyprintbody(self.request, "<")
             self.parent.got_request(self, self.request)
             self.request = None
         else:
