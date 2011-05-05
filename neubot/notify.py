@@ -93,12 +93,3 @@ class Notifier:
 
 
 NOTIFIER = Notifier()
-
-### BEGIN DEPRECATED ###
-notifier = NOTIFIER
-subscribe = notifier.subscribe
-publish = notifier.publish
-periodic = notifier.periodic
-get_event_timestamp = notifier.get_event_timestamp
-needs_publish = notifier.needs_publish
-### END DEPRECATED ###
