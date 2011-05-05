@@ -217,6 +217,7 @@ class ClientSpeedtest(ClientHTTP):
                 LOG.error("* speedtest: %s" % message)
             while self.streams:
                 self.streams.popleft().close()
+            self.measurer.stop()
             self.measurer = None
             self.child = None
             NOTIFIER.publish(TESTDONE)
