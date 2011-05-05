@@ -100,10 +100,8 @@ class DatabaseManager:
     def get_config(self):
         return table_config.dictionarize(self.connection)
 
-    def query_results_json(self, since=-1, until=-1):
-        octets = table_speedtest.jsonize(self.connection, since, until)
-        stringio = StringIO.StringIO(octets)
-        return stringio
+    def query_results_list(self, since=-1, until=-1):
+        return table_speedtest.listify(self.connection, since, until)
 
     def prune(self):
         table_speedtest.prune(self.connection)
@@ -253,7 +251,8 @@ def main(args):
         elif action == DELETE:
             database.dbm.delete()
         elif action == LIST:
-            results = database.dbm.query_results_json()
+            lst = database.dbm.query_results_list()
+            results = StringIO.StringIO(json.dumps(lst))
             if results:
                 sys.stdout.write(results.read())
                 sys.stdout.write("\n")

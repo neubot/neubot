@@ -106,9 +106,6 @@ def listify(connection, since=-1, until=-1):
       "privacy_can_collect": t[11], "privacy_can_share": t[12], },
       since, until)
 
-def jsonize(connection, since=-1, until=-1):
-    return compat.json.dumps(listify(connection, since, until))
-
 def prune(connection, until=None, commit=True):
     if not until:
         until = utils.timestamp() - 365 * 24 * 60 * 60

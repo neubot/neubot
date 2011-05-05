@@ -174,7 +174,7 @@ class Logger(object):
 
     # Marshal
 
-    def serialize(self):
+    def listify(self):
         return map(None, self.queue)
 
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
-    print compat.json.dumps(LOG.serialize())
+    print compat.json.dumps(LOG.listify())
 
     try:
         raise Exception("Testing LOG.exception")

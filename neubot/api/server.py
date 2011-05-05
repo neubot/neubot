@@ -23,6 +23,7 @@
 import StringIO
 import urlparse
 import cgi
+import pprint
 import re
 
 from neubot.compat import json
@@ -38,7 +39,7 @@ from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
 from neubot.state import STATE
-from neubot.utils import timestamp
+from neubot import utils
 
 VERSION = "Neubot 0.3.6\n"
 
@@ -56,6 +57,21 @@ CONFIG.register_descriptions({
 
 
 class ServerAPI(ServerHTTP):
+
+    def __init__(self, poller):
+        ServerHTTP.__init__(self, poller)
+        self.dispatch = {
+            "/api": self.api,
+            "/api/": self.api,
+            "/api/config": self.api_config,
+            "/api/configlabels": self.api_configlabels,
+            "/api/debug": self.api_debug,
+            "/api/exit": self.api_exit,
+            "/api/log": self.api_log,
+            "/api/speedtest": self.api_speedtest,
+            "/api/state": self.api_state,
+            "/api/version": self.api_version,
+        }
 
     #
     # For local API services it make sense to disclose some
@@ -76,39 +92,27 @@ class ServerAPI(ServerHTTP):
 
     def serve_request(self, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
-
-        if path == "/api/config":
-            self.api_config(stream, request)
-
-        elif path == "/api/configlabels":
-            self.api_configlabels(stream, request)
-
-        elif path == "/api/exit":
-            self.api_exit(stream, request)
-
-        elif path == "/api/log":
-            self.api_log(stream, request)
-
-        elif path == "/api/speedtest":
-            self.api_speedtest(stream, request, query)
-
-        elif path == "/api/state":
-            self.api_state(stream, request, query)
-
-        elif path == "/api/testnow":
-            self.api_testnow(stream, request, query)
-
-        elif path == "/api/version":
-            self.api_version(stream, request)
-
+        if path in self.dispatch:
+            self.dispatch[path](stream, request, query)
         else:
             response = Message()
             response.compose(code="404", reason="Not Found",
                     body=StringIO.StringIO("404 Not Found"))
             stream.send_response(request, response)
 
-    def api_config(self, stream, request):
+    def api(self, stream, request, query):
         response = Message()
+        response.compose(code="200", reason="Ok", body=StringIO.StringIO(
+          json.dumps(sorted(self.dispatch.keys()), indent=4)))
+        stream.send_response(request, response)
+
+    def api_config(self, stream, request, query):
+        response = Message()
+
+        indent, mimetype, sort_keys = None, "application/json", False
+        dictionary = cgi.parse_qs(query)
+        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
+            indent, mimetype, sort_keys = 4, "text/plain", True
 
         if request.method == "POST":
             s = request.body.read()
@@ -118,32 +122,64 @@ class ServerAPI(ServerHTTP):
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
         else:
-            s = json.dumps(CONFIG.conf)
+            s = json.dumps(CONFIG.conf, sort_keys=sort_keys, indent=indent)
 
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="application/json")
+                         mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_configlabels(self, stream, request):
+    def api_configlabels(self, stream, request, query):
+
+        indent, mimetype = None, "application/json"
+        dictionary = cgi.parse_qs(query)
+        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
+            indent, mimetype = 4, "text/plain"
+
         response = Message()
-        s = json.dumps(CONFIG.descriptions, sort_keys=True)
+        s = json.dumps(CONFIG.descriptions, sort_keys=True, indent=indent)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="application/json")
+                         mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_log(self, stream, request):
+    def api_debug(self, stream, request, query):
         response = Message()
-        s = json.dumps(LOG.serialize())
-        stringio = StringIO.StringIO(s)
+        debuginfo = {}
+        NOTIFIER.snap(debuginfo)
+        POLLER.snap(debuginfo)
+        stringio = StringIO.StringIO()
+        pprint.pprint(debuginfo, stringio)
+        stringio.seek(0)
         response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="application/json")
+                         mimetype="text/plain")
+        stream.send_response(request, response)
+
+    def api_log(self, stream, request, query):
+
+        response = Message()
+
+        dictionary = cgi.parse_qs(query)
+        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
+            stringio = StringIO.StringIO()
+            for ln in LOG.listify():
+                ln = map(str, ln)
+                stringio.write(" ".join(ln))
+                stringio.write("\r\n")
+            stringio.seek(0)
+            mimetype = "text/plain"
+        else:
+            s = json.dumps(LOG.listify())
+            stringio = StringIO.StringIO(s)
+            mimetype = "application/json"
+
+        response.compose(code="200", reason="Ok", body=stringio,
+                         mimetype=mimetype)
         stream.send_response(request, response)
 
     def api_speedtest(self, stream, request, query):
         since = 0
-        until = timestamp()
+        until = utils.timestamp()
 
         dictionary = cgi.parse_qs(query)
         if dictionary.has_key("since"):
@@ -155,10 +191,17 @@ class ServerAPI(ServerHTTP):
             if until < 0:
                 raise ValueError("Invalid query string")
 
+        indent, mimetype, sort_keys = None, "application/json", False
+        dictionary = cgi.parse_qs(query)
+        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
+            indent, mimetype, sort_keys = 4, "text/plain", True
+
         response = Message()
-        stringio = database.dbm.query_results_json(since, until)
+        lst = database.dbm.query_results_list(since, until)
+        s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
+        stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="application/json")
+                         mimetype=mimetype)
         stream.send_response(request, response)
 
     def api_state(self, stream, request, query):
@@ -177,46 +220,28 @@ class ServerAPI(ServerHTTP):
 
     def api_state_complete(self, event, context):
         stream, request, query, t = context
-        octets = STATE.marshal(t=t)
+
+        indent, mimetype = None, "application/json"
+        dictionary = cgi.parse_qs(query)
+        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
+            indent, mimetype = 4, "text/plain"
+
+        dictionary = STATE.dictionarize(t=t)
+        octets = json.dumps(dictionary, indent=indent)
         stringio = StringIO.StringIO(octets)
         response = Message()
         response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="application/json")
+                         mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_testnow(self, stream, request, query):
-        dictionary = cgi.parse_qs(query)
-        response = Message()
-
-        if not "test" in dictionary:
-            response.compose(code="500", reason="Missing test parameter",
-              body=StringIO.StringIO("Missing test parameter"),
-              mimetype="application/json")
-            stream.send_response(request, response)
-            return
-
-        test = dictionary["test"][0]
-        if test != "speedtest":
-            response.compose(code="500", reason="No such test",
-              body=StringIO.StringIO("No such test"),
-              mimetype="application/json")
-            stream.send_response(request, response)
-            return
-
-        #SPEEDTEST.start()
-        response.compose(code="200", reason="Will run the test ASAP",
-          body=StringIO.StringIO("Will run the test ASAP"),
-          mimetype="application/json")
-        stream.send_response(request, response)
-
-    def api_version(self, stream, request):
+    def api_version(self, stream, request, query):
         response = Message()
         stringio = StringIO.StringIO(VERSION)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def api_exit(self, stream, request):
+    def api_exit(self, stream, request, query):
         POLLER.sched(1, POLLER.break_loop)
         response = Message()
         stringio = StringIO.StringIO("See you, space cowboy\n")

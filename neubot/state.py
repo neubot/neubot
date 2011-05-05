@@ -30,7 +30,6 @@ if __name__ == "__main__":
 from neubot.notify import T
 from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
-from neubot.compat import json
 
 STATES = [ "idle", "rendezvous", "negotiate", "test", "collect" ]
 
@@ -45,7 +44,7 @@ class State(object):
         self.update("since", int(time.time()))
         self.update("pid", os.getpid())
 
-    def marshal(self, indent=None, t=None):
+    def dictionarize(self, t=None):
         state = vars(self)
 
         #
@@ -71,7 +70,7 @@ class State(object):
                 state["events"] = evts
                 state["t"] = self.t
 
-        return json.dumps(state, indent=indent)
+        return state
 
     def update(self, name, event=None, publish=True):
         if event == None:
@@ -89,43 +88,45 @@ class State(object):
 STATE = State()
 
 if __name__ == "__main__":
+    import pprint
+
     STATE.update("update", {"version": "0.4.1",
       "uri": "http://www.example.com/"})
     STATE.update("idle")
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("rendezvous")
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("rendezvous", {"status": "failed"})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("idle")
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("rendezvous")
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("negotiate", {"queue_pos": 3, "queue_len": 7})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("negotiate", {"queue_pos": 2, "queue_len": 8})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("negotiate", {"queue_pos": 1, "queue_len": 7})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("speedtest_latency", {"avg": 0.013, "unit": "s"})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("speedtest_download", {"avg": 6.94, "unit": "Mbit/s"})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("speedtest_upload", {"avg": 0.97, "unit": "Mbit/s"})
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("collect")
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())
 
     STATE.update("idle")
-    print STATE.marshal(indent=4)
+    pprint.pprint(STATE.dictionarize())

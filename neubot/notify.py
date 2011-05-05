@@ -39,7 +39,6 @@ RENEGOTIATE = "renegotiate"
 STATECHANGE = "statechange"
 TESTDONE = "testdone"
 
-
 class Notifier:
     def __init__(self):
         POLLER.sched(INTERVAL, self.periodic)
@@ -91,5 +90,8 @@ class Notifier:
             raise ValueError("Invalid timestamp")
         return timestamp == 0 or timestamp < self.timestamps[event]
 
+    def snap(self, d):
+        d['notifier'] = {'timestamps': dict(self.timestamps),
+          'subscribers': dict(self.subscribers)}
 
 NOTIFIER = Notifier()

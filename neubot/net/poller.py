@@ -30,7 +30,6 @@ from neubot.log import LOG
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
 
-
 class Pollable(object):
 
     def fileno(self):
@@ -50,7 +49,6 @@ class Pollable(object):
 
     def closed(self, exception=None):
         pass
-
 
 class Task(object):
 
@@ -76,6 +74,9 @@ class Task(object):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
 
+    def __repr__(self):
+        return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
+          self.__dict__)
 
 class Poller(object):
 
@@ -230,5 +231,8 @@ class Poller(object):
                 if stream.writetimeout(now):
                     self.close(stream)
 
+    def snap(self, d):
+        d['poller'] = {"pending": self.pending, "tasks": self.tasks,
+          "readset": self.readset, "writeset": self.writeset}
 
 POLLER = Poller(1)
