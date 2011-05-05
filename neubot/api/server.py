@@ -23,6 +23,7 @@
 import StringIO
 import urlparse
 import cgi
+import pprint
 import re
 
 from neubot.compat import json
@@ -64,6 +65,7 @@ class ServerAPI(ServerHTTP):
             "/api/": self.api,
             "/api/config": self.api_config,
             "/api/configlabels": self.api_configlabels,
+            "/api/debug": self.api_debug,
             "/api/exit": self.api_exit,
             "/api/log": self.api_log,
             "/api/speedtest": self.api_speedtest,
@@ -139,6 +141,18 @@ class ServerAPI(ServerHTTP):
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype=mimetype)
+        stream.send_response(request, response)
+
+    def api_debug(self, stream, request, query):
+        response = Message()
+        debuginfo = {}
+        NOTIFIER.snap(debuginfo)
+        POLLER.snap(debuginfo)
+        stringio = StringIO.StringIO()
+        pprint.pprint(debuginfo, stringio)
+        stringio.seek(0)
+        response.compose(code="200", reason="Ok", body=stringio,
+                         mimetype="text/plain")
         stream.send_response(request, response)
 
     def api_log(self, stream, request, query):
