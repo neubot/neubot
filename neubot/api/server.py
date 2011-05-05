@@ -95,9 +95,6 @@ class ServerAPI(ServerHTTP):
         elif path == "/api/state":
             self.api_state(stream, request, query)
 
-        elif path == "/api/testnow":
-            self.api_testnow(stream, request, query)
-
         elif path == "/api/version":
             self.api_version(stream, request)
 
@@ -221,31 +218,6 @@ class ServerAPI(ServerHTTP):
         response = Message()
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype=mimetype)
-        stream.send_response(request, response)
-
-    def api_testnow(self, stream, request, query):
-        dictionary = cgi.parse_qs(query)
-        response = Message()
-
-        if not "test" in dictionary:
-            response.compose(code="500", reason="Missing test parameter",
-              body=StringIO.StringIO("Missing test parameter"),
-              mimetype="application/json")
-            stream.send_response(request, response)
-            return
-
-        test = dictionary["test"][0]
-        if test != "speedtest":
-            response.compose(code="500", reason="No such test",
-              body=StringIO.StringIO("No such test"),
-              mimetype="application/json")
-            stream.send_response(request, response)
-            return
-
-        #SPEEDTEST.start()
-        response.compose(code="200", reason="Will run the test ASAP",
-          body=StringIO.StringIO("Will run the test ASAP"),
-          mimetype="application/json")
         stream.send_response(request, response)
 
     def api_version(self, stream, request):
