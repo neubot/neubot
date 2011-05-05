@@ -190,17 +190,17 @@ class Poller(object):
             self.tasks.sort(key=lambda task: task.time)
             index = 0
             for task in self.tasks:
-                if task.time == -1 or task.func == None:
-                    continue
                 if task.time > now:
                     break
+                index = index + 1
+                if task.time == -1 or task.func == None:
+                    continue
                 try:
                     task.func()
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
                     LOG.exception()
-                index = index + 1
             del self.tasks[:index]
 
     def dispatch_events(self):
