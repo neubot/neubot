@@ -57,6 +57,20 @@ CONFIG.register_descriptions({
 
 class ServerAPI(ServerHTTP):
 
+    def __init__(self, poller):
+        ServerHTTP.__init__(self, poller)
+        self.dispatch = {
+            "/api": self.api,
+            "/api/": self.api,
+            "/api/config": self.api_config,
+            "/api/configlabels": self.api_configlabels,
+            "/api/exit": self.api_exit,
+            "/api/log": self.api_log,
+            "/api/speedtest": self.api_speedtest,
+            "/api/state": self.api_state,
+            "/api/version": self.api_version,
+        }
+
     #
     # For local API services it make sense to disclose some
     # more information regarding the error that occurred while
@@ -76,33 +90,19 @@ class ServerAPI(ServerHTTP):
 
     def serve_request(self, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
-
-        if path == "/api/config":
-            self.api_config(stream, request, query)
-
-        elif path == "/api/configlabels":
-            self.api_configlabels(stream, request, query)
-
-        elif path == "/api/exit":
-            self.api_exit(stream, request)
-
-        elif path == "/api/log":
-            self.api_log(stream, request, query)
-
-        elif path == "/api/speedtest":
-            self.api_speedtest(stream, request, query)
-
-        elif path == "/api/state":
-            self.api_state(stream, request, query)
-
-        elif path == "/api/version":
-            self.api_version(stream, request)
-
+        if path in self.dispatch:
+            self.dispatch[path](stream, request, query)
         else:
             response = Message()
             response.compose(code="404", reason="Not Found",
                     body=StringIO.StringIO("404 Not Found"))
             stream.send_response(request, response)
+
+    def api(self, stream, request, query):
+        response = Message()
+        response.compose(code="200", reason="Ok", body=StringIO.StringIO(
+          json.dumps(sorted(self.dispatch.keys()), indent=4)))
+        stream.send_response(request, response)
 
     def api_config(self, stream, request, query):
         response = Message()
@@ -220,14 +220,14 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_version(self, stream, request):
+    def api_version(self, stream, request, query):
         response = Message()
         stringio = StringIO.StringIO(VERSION)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def api_exit(self, stream, request):
+    def api_exit(self, stream, request, query):
         POLLER.sched(1, POLLER.break_loop)
         response = Message()
         stringio = StringIO.StringIO("See you, space cowboy\n")
