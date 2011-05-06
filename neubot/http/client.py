@@ -104,12 +104,18 @@ class ClientStream(StreamHTTP):
 class ClientHTTP(StreamHandler):
 
     def connect_uri(self, uri, count=1):
-        m = Message()
-        m.compose(method="GET", uri=uri)
-        if m.scheme == "https":
-            self.conf["net.stream.secure"] = True
-        endpoint = (m.address, int(m.port))
-        self.connect(endpoint, count)
+        try:
+            m = Message()
+            m.compose(method="GET", uri=uri)
+            if m.scheme == "https":
+                self.conf["net.stream.secure"] = True
+            endpoint = (m.address, int(m.port))
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception, e:
+            self.connection_failed(None, e)
+        else:
+            self.connect(endpoint, count)
 
     def connection_ready(self, stream):
         pass
