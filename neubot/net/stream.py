@@ -522,7 +522,7 @@ class Connector(Pollable):
     def writetimeout(self, now):
         return now - self.timestamp >= self.timeout
 
-    def closing(self, exception=None):
+    def closed(self, exception=None):
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
         self.parent._connection_failed(self, exception)
 
@@ -593,7 +593,7 @@ class Listener(Pollable):
 
         self.parent.connection_made(sock)
 
-    def closing(self, exception=None):
+    def closed(self, exception=None):
         LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
         self.parent.bind_failed(self, exception)     # XXX
 
