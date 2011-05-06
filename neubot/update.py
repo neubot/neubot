@@ -86,7 +86,7 @@ class Download(threading.Thread):
                     self.mysig = v[0]
                     break
             if not self.mysig:
-                self.log("ERROR: cannot find signature for %s\n" % self.version)
+                self.log("ERROR: cannot find signature for %s\n" % self.path)
                 self.notify(None)
             else:
                 self.machinery(self.baseuri + self.path,
@@ -101,7 +101,7 @@ class Download(threading.Thread):
         if os.name == "nt":
             self.path = "-".join(["neubot", self.version, "setup.exe"])
         elif os.name == "posix" and sys.platform == "darwin":
-            self.path = "-".join(["neubot", self.version, "app.zip"])
+            self.path = "".join(["neubot-", self.version, ".app.zip"])
         else:
             self.path = "".join(["neubot-", self.version, ".zip"])
 
