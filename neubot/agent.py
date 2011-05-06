@@ -29,7 +29,7 @@ if __name__ == "__main__":
 from neubot.config import CONFIG
 from neubot.http.server import ServerHTTP
 from neubot.api.server import ServerAPI
-from neubot.rendezvous import RendezvousClient
+from neubot.rendezvous.client import ClientRendezvous
 from neubot.net.poller import POLLER
 from neubot.rootdir import WWW
 from neubot.log import LOG
@@ -82,9 +82,11 @@ def main(args):
     system.drop_privileges()
 
     if conf["agent.rendezvous"]:
-        client = RendezvousClient(POLLER)
-        client.init(uri, conf["agent.interval"], False, False)
-        client.rendezvous()
+        client = ClientRendezvous(POLLER)
+        conf["rendezvous.client.uri"] = uri
+        conf["rendezvous.client.interval"] = conf["agent.interval"]
+        client.configure(conf)
+        client.connect_uri()
 
     POLLER.loop()
 
