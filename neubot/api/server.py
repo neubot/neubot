@@ -40,8 +40,7 @@ from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
 from neubot.state import STATE
 from neubot import utils
-
-VERSION = "Neubot 0.3.6\n"
+from neubot.boot import VERSION
 
 CONFIG.register_defaults({
     "privacy.informed": 0,
