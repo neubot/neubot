@@ -32,9 +32,9 @@ class _SysInfo(object):
 
         vector = []
 
-        with open("/proc/loadavg", "rb") as fp:
-            octets = fp.read()
-            vector = octets.split()[0:3]
+        fp = open("/proc/loadavg", "rb")
+        octets = fp.read()
+        vector = octets.split()[0:3]
 
         return vector
 
@@ -47,15 +47,15 @@ class _SysInfo(object):
 
         dictionary = {}
 
-        with open("/proc/meminfo", "rb") as fp:
-            total, free = -1, -1
-            for line in fp:
-                if line.startswith("MemTotal:"):
-                    total = int(line.replace("MemTotal:", "").split()[0])
-                elif line.startswith("MemFree:"):
-                    free = int(line.replace("MemFree:", "").split()[0])
-            if total >= 0 and free >= 0:
-                dictionary = {"free": free, "total": total}
+        fp = open("/proc/meminfo", "rb")
+        total, free = -1, -1
+        for line in fp:
+            if line.startswith("MemTotal:"):
+                total = int(line.replace("MemTotal:", "").split()[0])
+            elif line.startswith("MemFree:"):
+                free = int(line.replace("MemFree:", "").split()[0])
+        if total >= 0 and free >= 0:
+            dictionary = {"free": free, "total": total}
 
         return dictionary
 
@@ -71,10 +71,10 @@ class _SysInfo(object):
 
         vector = []
 
-        with open("/proc/net/dev", "rb") as fp:
-            for line in fp:
-                if ":" in line:
-                    vector.append(line.split(":")[0].strip())
+        fp = open("/proc/net/dev", "rb")
+        for line in fp:
+            if ":" in line:
+                vector.append(line.split(":")[0].strip())
 
         return vector
 
@@ -90,13 +90,13 @@ class _SysInfo(object):
 
         dictionary = {}
 
-        with open("/sys/class/net/%s/statistics/rx_bytes" % dev) as fp:
-            rx_bytes = long(fp.read().strip())
-            dictionary["rx_bytes"] = rx_bytes
+        fp = open("/sys/class/net/%s/statistics/rx_bytes" % dev)
+        rx_bytes = long(fp.read().strip())
+        dictionary["rx_bytes"] = rx_bytes
 
-        with open("/sys/class/net/%s/statistics/tx_bytes" % dev) as fp:
-            tx_bytes = long(fp.read().strip())
-            dictionary["tx_bytes"] = tx_bytes
+        fp = open("/sys/class/net/%s/statistics/tx_bytes" % dev)
+        tx_bytes = long(fp.read().strip())
+        dictionary["tx_bytes"] = tx_bytes
 
         return dictionary
 
@@ -119,8 +119,8 @@ class _SysInfo(object):
                 pid = int(entry)
             except ValueError:
                 continue
-            with open("/proc/%d/stat" % pid, "rb") as fp:
-                result.add(fp.read().split()[1][1:-1])
+            fp = open("/proc/%d/stat" % pid, "rb")
+            result.add(fp.read().split()[1][1:-1])
 
         return sorted(result)
 
@@ -128,15 +128,15 @@ class _SysInfo(object):
 
         """Get the name of the default gateway."""
 
-        with open("/proc/net/route", "rb") as fp:
-            for line in fp:
-                iface, dest = line.split()[0:2]
-                try:
-                    gateway = int(dest, 16)
-                except ValueError:
-                    continue
-                if gateway == 0:
-                    return iface
+        fp = open("/proc/net/route", "rb")
+        for line in fp:
+            iface, dest = line.split()[0:2]
+            try:
+                gateway = int(dest, 16)
+            except ValueError:
+                continue
+            if gateway == 0:
+                return iface
 
         return None
 
