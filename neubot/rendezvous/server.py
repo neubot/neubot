@@ -62,9 +62,9 @@ class ServerRendezvous(ServerHTTP):
             # addresses of registered test servers.  That makes more
             # sense than keeping the list into the configuration.
             #
-            m1.available["speedtest"] = self.conf.get(
-              "rendezvous.server.speedtest",
-              "http://speedtest1.neubot.org/speedtest")
+            m1.available["speedtest"] = [
+              self.conf.get("rendezvous.server.speedtest",
+              "http://speedtest1.neubot.org/speedtest")]
 
         #
         # Neubot <=0.3.6 expects to receive an XML document while
