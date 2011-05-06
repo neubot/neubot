@@ -229,6 +229,7 @@ MODULES = {
     "http"       : "http.client",
     "httpd"      : "http.server",
     "rendezvous" : "rendezvous",
+    "rendezvous.server": "rendezvous.server",
     "speedtest"  : "speedtest",
     "statusicon" : "statusicon",
     "stream"     : "net.stream",
