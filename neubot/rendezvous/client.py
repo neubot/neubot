@@ -118,9 +118,15 @@ class ClientRendezvous(ClientHTTP):
                                                               "speedtest"][0]
                             client = ClientSpeedtest(POLLER)
                             client.configure(conf)
-                            client.connect_uri()
+
+                            #
+                            # Subscribe _before_ connecting.  This way we
+                            # immediately see TESTDONE if the connection fails
+                            # and we can schedule the next attempt.
+                            #
                             NOTIFIER.subscribe(TESTDONE,
                               self.end_of_test, None)
+                            client.connect_uri()
 
                         else:
                             self.schedule()
