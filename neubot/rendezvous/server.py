@@ -49,7 +49,7 @@ class ServerRendezvous(ServerHTTP):
         if m.version and utils.versioncmp(boot.VERSION, m.version) > 0:
             m1.update["uri"] = self.conf.get(
               "rendezvous.server.update_uri",
-              "http://www.neubot.org/download"
+              "http://releases.neubot.org/"
             )
             m1.update["version"] = self.conf.get(
               "rendezvous.server.update_version",
@@ -93,7 +93,7 @@ CONFIG.register_defaults({
     "rendezvous.server.address": "0.0.0.0",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.update_uri": "http://www.neubot.org/download",
+    "rendezvous.server.update_uri": "http://releases.neubot.org/",
     "rendezvous.server.update_version": boot.VERSION,
 })
 CONFIG.register_descriptions({
