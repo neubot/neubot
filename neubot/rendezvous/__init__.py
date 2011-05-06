@@ -53,12 +53,10 @@ class RendezvousRequest(object):
         self.accept = []
         self.version = ""
 
-
 class RendezvousResponse(object):
     def __init__(self):
         self.update = {}
         self.available = {}
-
 
 #
 # Backward-compat ad-hoc stuff.  BLEAH.
@@ -102,7 +100,6 @@ def adhoc_marshaller(obj):
 
     return document.documentElement.toxml("utf-8")
 
-
 class ServerRendezvous(ServerHTTP):
 
     def process_request(self, stream, request):
@@ -122,12 +119,22 @@ class ServerRendezvous(ServerHTTP):
             )
 
         if "speedtest" in m.accept:
+            #
+            # TODO! Here we should read a table with the internet
+            # addresses of registered test servers.  That makes more
+            # sense than keeping the list into the configuration.
+            #
             generator = self.conf.get(
               "rendezvous.server.speedtest_uri_generator",
               lambda: ["http://speedtest1.neubot.org/speedtest"]
             )
             m1.available["speedtest"] = generator()
 
+        #
+        # Neubot <=0.3.6 expects to receive an XML document while
+        # newer Neubots want a JSON.  I hope old clients will upgrade
+        # pretty soon.
+        #
         if m.version and versioncmp(m.version, "0.3.7") >= 0:
             s = marshal_object(m1, "application/json")
             mimetype = "application/json"
@@ -144,7 +151,6 @@ class ServerRendezvous(ServerHTTP):
           mimetype=mimetype, body=stringio)
         stream.send_response(request, response)
 
-
 class RendezvousServer(object):
     def __init__(self, config, port):
         server = ServerRendezvous(POLLER)
@@ -156,7 +162,6 @@ class RendezvousServer(object):
         }
         server.listen((config.address, int(config.altport)))
         server.listen((config.address, int(config.port)))
-
 
 #
 # [rendezvous]
@@ -219,7 +224,13 @@ class RendezvousModule:
 
 rendezvous = RendezvousModule()
 
-
+#
+# TODO This client should wait for 'testdone' instead of
+# inheriting from SpeedtestController.  So we can start and
+# wait for more tests.  Note that the code in speedtest is
+# ready for that and there is some old compatibility glue
+# that guarantees the old behavior.
+#
 class RendezvousClient(ClientHTTP, SpeedtestController):
 
     def init(self, server_uri, interval, dontloop, xdebug):
@@ -253,6 +264,14 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
     def connection_lost(self, stream):
         self._reschedule()
 
+    #
+    # TODO Here we should use the ClientHTTP model more
+    # effectively as it is already used in speedtest.
+    # Also we should read the configuration from config.py
+    # to allow to configure from, e.g. the WUI.
+    # Finally, here we can use connect_uri() instead of
+    # just connect().
+    #
     def rendezvous(self):
         self.task = None
         STATE.update("rendezvous")
@@ -269,6 +288,11 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
 
         s = marshal_object(m, "application/xml")
 
+        #
+        # TODO Here we can safely remove this debug statement
+        # because the HTTP code can now pretty-print XML and JSON
+        # API messages.
+        #
         if self.xdebug:
             sys.stdout.write(s + "\n")
 
@@ -289,6 +313,11 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
             return
 
         s = response.body.read()
+        #
+        # TODO Here we can safely remove this debug statement
+        # because the HTTP code can now pretty-print XML and JSON
+        # API messages.
+        #
         if self.xdebug:
             sys.stdout.write(s)
 
@@ -304,10 +333,19 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
             LOG.warning("Version %s available at %s" % (ver, uri))
             STATE.update("update", {"version": ver, "uri": uri})
 
+        #
+        # TODO This one should be an option in config.py
+        # instead of an attribute of this class.
+        #
         if self.xdebug:
             self._reschedule()
             return
 
+        #
+        # Below we use the global CONFIG object and not its
+        # local copy because, of course, the user can change
+        # its preferences at any time.
+        #
         if not CONFIG.get("enabled", True):
             self._reschedule()
             return
@@ -319,6 +357,11 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
             self._reschedule()
             return
 
+        #
+        # TODO This should become something like
+        # SPEEDTEST.start().  We will think at that
+        # in the next release cycle.
+        #
         if "speedtest" in m1.available:
             uri = m1.available["speedtest"][0]
             self.testing = 1
@@ -328,7 +371,11 @@ class RendezvousClient(ClientHTTP, SpeedtestController):
         self.testing = 0
         self._reschedule()
 
-
+#
+# TODO Here we should use neubot/boot.py and neubot/options.py
+# to save in space and provide outside a consistent interface with
+# other Neubot commands.
+#
 USAGE = 								\
 "Usage: @PROGNAME@ -V\n"						\
 "       @PROGNAME@ --help\n"						\

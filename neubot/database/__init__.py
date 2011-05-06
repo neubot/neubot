@@ -50,6 +50,12 @@ from neubot import system
 
 # Database manager.
 
+#
+# TODO This class should just wrap the connection with the
+# database and make sure all the required table exists.
+# Most of the per-table code should be moved into the relevant
+# files, e.g. neubot/database/table_FOO.py.
+#
 class DatabaseManager:
     def __init__(self, config):
         self.config = config
@@ -87,6 +93,11 @@ class DatabaseManager:
             self.connection.close()
             self.connection = None
 
+    #
+    # TODO Hmm... do we need to disconnect() explicitly if we
+    # invoke commit() each time is needed?  I don't know, so better
+    # to check for that again.
+    #
     def __del__(self):
         self._do_disconnect()
 
@@ -148,6 +159,12 @@ class DatabaseConfig(ConfigParser.SafeConfigParser):
         if self.has_option("database", "path"):
             self.path = self.get("database", "path")
 
+#
+# TODO We should use neubot/config.py for the configuration
+# and we need to merge this class and DatabaseManager().
+# I would like a default database, perhaps in memory, to
+# always be available.
+#
 class DatabaseModule:
     def __init__(self):
         self.config = DatabaseConfig()
@@ -176,6 +193,10 @@ DATABASE = database = DatabaseModule()
 
 #
 # Test unit
+#
+# TODO The code below should be replaced with neubot/config.py
+# and neubot/boot.py.  I would like this file too to provide an
+# uniform interface using -D property style.
 #
 
 USAGE =									\

@@ -65,9 +65,7 @@ from neubot.utils import time_formatter
 from neubot.utils import file_length
 from neubot.utils import speed_formatter
 
-
 class SpeedtestCollect(object):
-
     def __init__(self):
         self.client = ""
         self.timestamp = 0
@@ -82,9 +80,7 @@ class SpeedtestCollect(object):
         self.privacy_can_collect = 0
         self.privacy_can_share = 0
 
-
 class SpeedtestNegotiate_Response(object):
-
     def __init__(self):
         self.authorization = ""
         self.publicAddress = ""
@@ -92,6 +88,11 @@ class SpeedtestNegotiate_Response(object):
         self.queuePos = 0
         self.queueLen = 0
 
+#
+# TODO The chunk of code below is the test part of the
+# speedtest test.  I think this code should be moved into
+# a separate file ``neubot/speedtest/server.py``.
+#
 
 # NB This is the *old* TestServer
 class Tester(object):
@@ -185,6 +186,18 @@ class TestServer(ServerHTTP):
                              body=stringio, mimetype="text/plain")
             stream.send_response(request, response)
 
+#
+# TODO Make sure that the session tracker is actually
+# protocol-independent and move it to another source file,
+# so other tests can use it as well.  I'm not sure yet
+# about the shape this stuff should take but I guess we
+# need negotiation to be implemented in HTTP and work
+# like an Auth service for tests.  Hmm... maybe something
+# like `/negotiate?test=TEST` and `/collect?test=TEST`
+# is more clean.  But, FOR SURE, the tracker must be not
+# dependent on the protocol, so we can have, say, HTTP
+# for negotation and BitTorrent for the test.
+#
 
 class SessionState(object):
     def __init__(self):
@@ -193,7 +206,6 @@ class SessionState(object):
         self.identifier = None
         self.queuepos = 0
         self.negotiations = 0
-
 
 class SessionTracker(object):
 
@@ -279,10 +291,13 @@ class SessionTracker(object):
                 session = self.identifiers[identifier]
                 self._do_remove(session)
 
-
 TRACKER = SessionTracker()
 
-
+#
+# TODO This class is actually a mix of the negotiator and
+# the tester.  We need to split the two pieces a bit, don't
+# we?
+#
 class SpeedtestServer(ServerHTTP):
 
     def __init__(self, poller):
@@ -398,6 +413,10 @@ class SpeedtestServer(ServerHTTP):
         TRACKER.unregister_connection(stream)
         NOTIFIER.publish(RENEGOTIATE)
 
+#
+# TODO The code below should go away.  We should use config.py
+# and boot.py as other Neubot modules do.
+#
 
 #
 # [speedtest]
@@ -456,6 +475,11 @@ speedtest = SpeedtestModule()
 
 # Client
 
+#
+# TODO This is glue that allows the current rendezvous client
+# to work and should go away when we upgrade it.
+#
+
 from neubot.speedtest.client import ClientSpeedtest
 
 class SpeedtestClient2(object):
@@ -473,7 +497,6 @@ class SpeedtestClient2(object):
         if parent:
             parent.speedtest_complete()
 
-
 class SpeedtestController:
     def start_speedtest_simple(self, uri):
         SpeedtestClient2(uri, 2, 0, False, self)
@@ -481,8 +504,13 @@ class SpeedtestController:
     def speedtest_complete(self):
         pass
 
-
 # Test unit
+
+#
+# TODO This code should be replaced with proper usage of
+# neubot/boot.py and neubot/config.py to provide an uniform
+# interface with other modules.
+#
 
 USAGE =									\
 "Usage: @PROGNAME@ --help\n"						\
