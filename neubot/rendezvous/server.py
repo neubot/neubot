@@ -62,11 +62,9 @@ class ServerRendezvous(ServerHTTP):
             # addresses of registered test servers.  That makes more
             # sense than keeping the list into the configuration.
             #
-            generator = self.conf.get(
-              "rendezvous.server.speedtest_uri_generator",
-              lambda: ["http://speedtest1.neubot.org/speedtest"]
-            )
-            m1.available["speedtest"] = generator()
+            m1.available["speedtest"] = self.conf.get(
+              "rendezvous.server.speedtest",
+              "http://speedtest1.neubot.org/speedtest")
 
         #
         # Neubot <=0.3.6 expects to receive an XML document while
@@ -93,6 +91,7 @@ CONFIG.register_defaults({
     "rendezvous.server.address": "0.0.0.0",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
+    "rendezvous.server.speedtest": "http://speedtest1.neubot.org/speedtest",
     "rendezvous.server.update_uri": "http://releases.neubot.org/",
     "rendezvous.server.update_version": boot.VERSION,
 })
@@ -100,6 +99,7 @@ CONFIG.register_descriptions({
     "rendezvous.server.address": "Set rendezvous server address",
     "rendezvous.server.daemonize": "Enable daemon behavior",
     "rendezvous.server.ports": "List of rendezvous server ports",
+    "rendezvous.server.speedtest": "Default speedtest server to use",
     "rendezvous.server.update_uri": "Where to download updates from",
     "rendezvous.server.update_version": "Update Neubot version number",
 })
