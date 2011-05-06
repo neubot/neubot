@@ -45,60 +45,11 @@ from neubot.marshal import marshal_object
 from neubot.http.client import ClientHTTP
 from neubot import system
 
+from neubot.rendezvous.compat import RendezvousRequest
+from neubot.rendezvous.compat import RendezvousResponse
+from neubot.rendezvous.compat import adhoc_marshaller
+
 VERSION = "0.3.7"
-
-
-class RendezvousRequest(object):
-    def __init__(self):
-        self.accept = []
-        self.version = ""
-
-class RendezvousResponse(object):
-    def __init__(self):
-        self.update = {}
-        self.available = {}
-
-#
-# Backward-compat ad-hoc stuff.  BLEAH.
-#
-# <rendezvous_response>
-#  <available name="speedtest">
-#   <uri>http://speedtest1.neubot.org/speedtest</uri>
-#   <uri>http://speedtest2.neubot.org/speedtest</uri>
-#  </available>
-#  <update uri="http://releases.neubot.org/neubot-0.2.4.exe">0.2.4</update>
-# </rendezvous_response>
-#
-
-def adhoc_element(document, root, name, value, attributes):
-    element = document.createElement(name)
-    root.appendChild(element)
-
-    if value:
-        text = document.createTextNode(value)
-        element.appendChild(text)
-
-    if attributes:
-        for name, value in attributes.items():
-            element.setAttribute(name, value)
-
-    return element
-
-def adhoc_marshaller(obj):
-    document = xml.dom.minidom.parseString("<rendezvous_response/>")
-
-    if obj.update:
-        adhoc_element(document, document.documentElement, "update",
-          obj.update["version"], {"uri": obj.update["uri"]})
-
-    for name, vector in obj.available.items():
-        element = adhoc_element(document, document.documentElement,
-          "available", None, {"name": name})
-
-        for uri in vector:
-            adhoc_element(document, element, "uri", uri, None)
-
-    return document.documentElement.toxml("utf-8")
 
 class ServerRendezvous(ServerHTTP):
 
