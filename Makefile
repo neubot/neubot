@@ -24,7 +24,6 @@
 # The scripts/release script will automatically update the
 # version number each time we tag with a new release.
 #
-
 VERSION	= 0.3.6
 
 #
@@ -34,12 +33,11 @@ VERSION	= 0.3.6
 # Here we list targets in file order because this makes it easier
 # to maintain this list.
 #
-
-PHONIES += _all
+PHONIES += help
+PHONIES += clean
 PHONIES += archive
 PHONIES += _install_skel
 PHONIES += _install_sources
-PHONIES += _install_www
 PHONIES += _install_man
 PHONIES += _install_bin
 PHONIES += _install_icon
@@ -47,8 +45,6 @@ PHONIES += _install_menu
 PHONIES += _install_edit
 PHONIES += _install_compile
 PHONIES += _install
-PHONIES += _bdist
-PHONIES += bdist.tgz
 PHONIES += install
 PHONIES += app
 PHONIES += app.zip
@@ -62,15 +58,23 @@ PHONIES += _deb_control.tgz
 PHONIES += _deb_binary
 PHONIES += _deb
 PHONIES += deb
-PHONIES += clean
-PHONIES += help
-PHONIES += lint
 PHONIES += _release
 PHONIES += release
 PHONIES += release_stable
 
 .PHONY: $(PHONIES)
-_all: help
+
+help:
+	@printf "Targets:"
+	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
+	     if echo $$TARGET|grep -qv ^_; then				\
+	         printf " $$TARGET";					\
+	     fi;							\
+	 done
+	@printf '\n'
+clean:
+	@echo "[CLEAN]"
+	@./scripts/cleanup
 
 #                 _     _
 #   __ _ _ __ ___| |__ (_)_   _____
@@ -83,14 +87,12 @@ _all: help
 
 STEM = neubot-$(VERSION)
 ARCHIVE = git archive --prefix=$(STEM)/
-FORMATS += tar
-FORMATS += zip
 
 archive:
 	@echo "[ARCHIVE]"
 	@install -m755 -d dist/
-	@for FORMAT in $(FORMATS); do \
-	 $(ARCHIVE) --format=$$FORMAT HEAD > dist/$(STEM).$$FORMAT; \
+	@for FMT in tar zip; do \
+	 $(ARCHIVE) --format=$$FMT HEAD > dist/$(STEM).$$FMT; \
 	done
 	@gzip -9 dist/$(STEM).tar
 
@@ -108,7 +110,6 @@ archive:
 # we install from sources because in this case we want to
 # enforce root's ownership.
 #
-
 INSTALL	= install
 
 #
@@ -126,9 +127,7 @@ INSTALL	= install
 # [1] http://bit.ly/aLduJz (gnu.org)
 # [2] http://bit.ly/ayYyAR (debian.org)
 #
-
 DESTDIR =
-SYSCONFDIR = /etc/neubot
 LOCALSTATEDIR = /var/neubot
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
@@ -137,30 +136,13 @@ MANDIR = $(PREFIX)/man
 ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
 MENUDIR = $(DATADIR)/applications
 
-SUBDIRS = `find neubot/ -type d`
-SRCS = `find neubot/ -type f -name \*.py`
-WEBPAGES = `find neubot/www -type f`
-
 _install_skel:
-	@$(INSTALL) -d -m755 $(DESTDIR)$(SYSCONFDIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(LOCALSTATEDIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(BINDIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(MANDIR)/man1
-	@$(INSTALL) -d -m755 $(DESTDIR)$(ICONDIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(MENUDIR)
-	@for SUBDIR in $(SUBDIRS); do \
-	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/$$SUBDIR; \
-	done
 
 _install_sources:
-	@for SRC in $(SRCS); do \
-	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC; \
-	done
-
-_install_www:
-	@for WWW in $(WEBPAGES); do \
-	 $(INSTALL) -m644 $$WWW $(DESTDIR)$(DATADIR)/$$WWW; \
+	@for SRC in `find neubot -type f|grep -v \.DS_Store`; do \
+	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
+	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC || exit $$?; \
 	done
 
 #
@@ -168,62 +150,50 @@ _install_www:
 # does not have rst2man installed is still able to install
 # neubot.
 #
-
 _install_man:
+	@$(INSTALL) -m755 -d $(DESTDIR)$(MANDIR)/man1
 	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
 
 _install_bin:
+	@$(INSTALL) -m755 -d $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -m755 bin/neubot $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -m755 bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
 
 _install_icon:
+	@$(INSTALL) -m755 -d $(DESTDIR)$(ICONDIR)
 	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
 
 _install_menu:
+	@$(INSTALL) -d -m755 $(DESTDIR)$(MENUDIR)
 	@for F in `cd applications/ && ls`; do \
-	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F; \
+	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F ||exit $$?;\
 	done
 
 #
 # After the install we need to edit the following files to
 # tell neubot the path where it's installed.
-# The original sources contain the @DATADIR@ placeholder and
+# The original sources contain the @PREFIX@ placeholder and
 # will use a sane default if they find the placeholder instead
 # of a valid path.
-# FIXME Actually the sources contain PREFIX but it should use
-# DATADIR; however now we don't have time to fix that and so
-# the above comment is not (yet) right.
 #
-
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
-NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/pathnames.py
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
 
-# New style:
-#
-#_install_edit:
-#	@for EDIT in $(NEEDEDIT); do \
-#	 ./scripts/sed_inplace 's|@DATADIR@|$(DATADIR)|g' $$EDIT; \
-#	done
-#
-# Old style:
-#
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
-	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT; \
+	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT || exit $$?; \
 	done
 
 _install_compile:
 	@python -m compileall -q $(DESTDIR)$(DATADIR)/neubot
-	@LIST=`find $(DESTDIR)$(DATADIR)/neubot -type f -name \*.pyc` && \
-	 chmod 644 $$LIST
+	@find $(DESTDIR)$(DATADIR)/neubot -type f -name \*.pyc \
+                                          -exec chmod 644 {} \;
 
 INSTALL_RULES += _install_skel
 INSTALL_RULES += _install_sources
-INSTALL_RULES += _install_www
 INSTALL_RULES += _install_man
 INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_icon
@@ -233,23 +203,14 @@ INSTALL_RULES += _install_compile
 
 _install:
 	@for RULE in $(INSTALL_RULES); do \
-	 make -f Makefile $$RULE; \
+	 make -f Makefile $$RULE || exit $$?; \
 	done
-
-_bdist:
-	@echo "[BDIST]"
-	@make -f Makefile _install DESTDIR=dist/bdist
-
-bdist.tgz: bdist
-	@echo "[BDIST.TGZ]"
-	@cd dist/data && tar czf ../$(STEM)_`uname -m`.tgz *
 
 #
 # install should be invoked as root and will actually
 # copy neubot on the filesystem, making sure that root
 # owns the installed files.
 #
-
 install:
 	@make -f Makefile _install INSTALL='install -o root'
 
@@ -333,7 +294,7 @@ _deb_control_skel:
 
 _deb_control_md5sums:
 	@install -m644 /dev/null dist/control/md5sums
-	@./scripts/md5sum `find dist/data -type f` > dist/control/md5sums
+	@./scripts/cksum.py -a md5 `find dist/data -type f` > dist/control/md5sums
 	@./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
 
 _deb_control_size:
@@ -359,7 +320,6 @@ _deb_binary:
 # don't want to ship a deb with ordinary user ownership by
 # mistake.
 #
-
 _deb:
 	@make -f Makefile _deb_data.tgz
 	@make -f Makefile _deb_control.tgz
@@ -372,25 +332,6 @@ _deb:
 deb:
 	@echo "[DEB]"
 	@make -f Makefile _deb INSTALL='install -o root'
-
-#
-# Other targets
-#
-
-clean:
-	@echo "[CLEAN]"
-	@./scripts/cleanup
-help:
-	@echo -n "Targets:"
-	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
-	     if echo $$TARGET|grep -qv ^_; then				\
-	         echo -n " $$TARGET";					\
-	     fi;							\
-	 done
-	@echo ""
-lint:
-	@echo "[LINT]"
-	@find . -type f -name \*.py -exec pychecker {} \;
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
@@ -407,7 +348,7 @@ _release:
 	@make deb
 	@make archive
 	@./scripts/update_apt
-	@cd dist && ../scripts/sha256sum neubot-* >> SHA256.inc
+	@cd dist && ../scripts/cksum.py -a sha256 neubot-* >> SHA256.inc
 	@cd dist && chmod 644 *
 	@chmod 777 dist
 
