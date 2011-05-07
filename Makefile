@@ -184,13 +184,13 @@ NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
 
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
-	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT; \
+	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT || exit $$?; \
 	done
 
 _install_compile:
 	@python -m compileall -q $(DESTDIR)$(DATADIR)/neubot
-	@LIST=`find $(DESTDIR)$(DATADIR)/neubot -type f -name \*.pyc` && \
-	 chmod 644 $$LIST
+	@find $(DESTDIR)$(DATADIR)/neubot -type f -name \*.pyc \
+                                          -exec chmod 644 {} \;
 
 INSTALL_RULES += _install_skel
 INSTALL_RULES += _install_sources
@@ -203,7 +203,7 @@ INSTALL_RULES += _install_compile
 
 _install:
 	@for RULE in $(INSTALL_RULES); do \
-	 make -f Makefile $$RULE; \
+	 make -f Makefile $$RULE || exit $$?; \
 	done
 
 #
