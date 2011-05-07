@@ -38,7 +38,6 @@ PHONIES += clean
 PHONIES += archive
 PHONIES += _install_skel
 PHONIES += _install_sources
-PHONIES += _install_www
 PHONIES += _install_man
 PHONIES += _install_bin
 PHONIES += _install_icon
@@ -137,29 +136,13 @@ MANDIR = $(PREFIX)/man
 ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
 MENUDIR = $(DATADIR)/applications
 
-SUBDIRS = `find neubot/ -type d`
-SRCS = `find neubot/ -type f -name \*.py`
-WEBPAGES = `find neubot/www -type f`
-
 _install_skel:
 	@$(INSTALL) -d -m755 $(DESTDIR)$(LOCALSTATEDIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(BINDIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(MANDIR)/man1
-	@$(INSTALL) -d -m755 $(DESTDIR)$(ICONDIR)
-	@$(INSTALL) -d -m755 $(DESTDIR)$(MENUDIR)
-	@for SUBDIR in $(SUBDIRS); do \
-	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/$$SUBDIR; \
-	done
 
 _install_sources:
-	@for SRC in $(SRCS); do \
-	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC; \
-	done
-
-_install_www:
-	@for WWW in $(WEBPAGES); do \
-	 $(INSTALL) -m644 $$WWW $(DESTDIR)$(DATADIR)/$$WWW; \
+	@for SRC in `find neubot -type f`; do \
+	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
+	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC || exit $$?; \
 	done
 
 #
@@ -168,18 +151,22 @@ _install_www:
 # neubot.
 #
 _install_man:
+	@$(INSTALL) -m755 -d $(DESTDIR)$(MANDIR)/man1
 	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
 
 _install_bin:
+	@$(INSTALL) -m755 -d $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -m755 bin/neubot $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -m755 bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
 
 _install_icon:
+	@$(INSTALL) -m755 -d $(DESTDIR)$(ICONDIR)
 	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
 
 _install_menu:
+	@$(INSTALL) -d -m755 $(DESTDIR)$(MENUDIR)
 	@for F in `cd applications/ && ls`; do \
-	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F; \
+	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F ||exit $$?;\
 	done
 
 #
@@ -207,7 +194,6 @@ _install_compile:
 
 INSTALL_RULES += _install_skel
 INSTALL_RULES += _install_sources
-INSTALL_RULES += _install_www
 INSTALL_RULES += _install_man
 INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_icon
