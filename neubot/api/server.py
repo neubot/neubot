@@ -178,18 +178,13 @@ class ServerAPI(ServerHTTP):
         stream.send_response(request, response)
 
     def api_speedtest(self, stream, request, query):
-        since = 0
-        until = utils.timestamp()
+        since, until = -1, -1
 
         dictionary = cgi.parse_qs(query)
         if dictionary.has_key("since"):
             since = int(dictionary["since"][0])
-            if since < 0:
-                raise ValueError("Invalid query string")
         if dictionary.has_key("until"):
             until = int(dictionary["until"][0])
-            if until < 0:
-                raise ValueError("Invalid query string")
 
         indent, mimetype, sort_keys = None, "application/json", False
         dictionary = cgi.parse_qs(query)
