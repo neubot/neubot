@@ -20,10 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Wrapper for logging
-#
-
 import collections
 import sys
 import traceback
@@ -34,7 +30,6 @@ if __name__ == "__main__":
 from neubot import system
 from neubot import compat
 from neubot import utils
-
 
 class InteractiveLogger(object):
 
@@ -53,12 +48,11 @@ class InteractiveLogger(object):
         def debug(self, message):
             sys.stderr.write(message + "\n")
 
-
 class Logger(object):
 
     """Logging object.  Usually there should be just one instance
        of this class, accessible with the default logging object
-       LOGGER.  We keep recent logs in a queue in order to implement
+       LOG.  We keep recent logs in a queue in order to implement
        the /api/log API."""
 
     def __init__(self, maxqueue):

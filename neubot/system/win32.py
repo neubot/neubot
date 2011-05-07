@@ -20,51 +20,26 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Code for Win32
-#
-
 import os.path
-import logging.handlers
 
-
+#
+# Just a stub.  Under Windows we go immediately in background
+# because indeed we're not attached to a console.  The logs are
+# entirely managed by log.py.  We tried to use NT Event Logger
+# but it's not as friendly as syslog.
+#
 class BackgroundLogger(object):
-
-    """Where to log messages when running in background under
-       windows -- note we nearly always run in background since
-       for windows neubot does not attach to a console."""
-
-    def __init__(self):
-        formatter = logging.Formatter("%(message)s")
-
-        # XXX not passing our dllname here
-        handler = logging.handlers.NTEventLogHandler("neubot")
-        handler.setFormatter(formatter)
-
-        self.logger = logging.Logger("neubot.win32.BackgroundLogger")
-        self.logger.addHandler(handler)
-        self.logger.setLevel(logging.DEBUG)
-
     def error(self, message):
-        self.logger.error(message)
+        pass
 
     def warning(self, message):
-        self.logger.warning(message)
-
-    #
-    # We don't log at info() and warning() level when
-    # running as a windows application under Win32 because
-    # that might fill the log and the default policy does
-    # not help: it does not rotate logs, but rather it
-    # prevents further logging.
-    #
+        pass
 
     def info(self, message):
         pass
 
     def debug(self, message):
         pass
-
 
 def change_dir():
     pass
