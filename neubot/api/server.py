@@ -21,11 +21,12 @@
 #
 
 import StringIO
-import urlparse
 import cgi
 import pprint
 import re
+import urlparse
 
+from neubot.boot import VERSION
 from neubot.compat import json
 from neubot.config import ConfigError
 from neubot.config import CONFIG
@@ -39,8 +40,8 @@ from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
 from neubot.state import STATE
+
 from neubot import utils
-from neubot.boot import VERSION
 
 CONFIG.register_defaults({
     "privacy.informed": 0,
