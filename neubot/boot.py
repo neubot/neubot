@@ -36,21 +36,25 @@ def write_help(fp, name, descr):
     fp.write('''\
 Neubot %(name)s -- %(descr)s
 
-Usage: neubot %(name)s [-Vv] [-D PROPERTY[=VALUE]] [-f FILE] [--help]
+Usage: neubot %(name)s [-ElVv] [-D PROPERTY[=VALUE]] [-f FILE] [--help]
 
 Options:
-    -D PROPERTY[=VALUE]         : Set the VALUE of the property PROPERTY
-    -f FILE                     : Use FILE instead of the default database
-    --help                      : Print this help screen and exit
-    -V                          : Print version number and exit
-    -v                          : Run the program in verbose mode
+    -D PROPERTY[=VALUE] : Define the VALUE of the given PROPERTY
+    -E                  : Ignore NEUBOT_OPTIONS environment variable
+    -f FILE             : Force file name of the database to FILE
+    --help              : Print this help screen and exit
+    -l                  : List all the available properties and exit
+    -V                  : Print version number and exit
+    -v                  : Verbose: print much more log messages
 
 ''' % locals())
 
 def common(name, descr, args):
+    Eflag = False
+    lflag = False
 
     try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
+        options, arguments = getopt.getopt(args[1:], "D:Ef:lVv", ["help"])
     except getopt.GetoptError:
         write_help(sys.stderr, name, descr)
         sys.exit(1)
@@ -61,25 +65,33 @@ def common(name, descr, args):
 
     for key, value in options:
         if key == "-D":
-             # No shortcuts because it grows too confusing
-             CONFIG.register_property(value)
+            # No shortcuts because it grows too confusing
+            CONFIG.register_property(value)
+        elif key == "-E":
+            Eflag = True
         elif key == "-f":
-             DATABASE.set_path(value)
+            DATABASE.set_path(value)
         elif key == "--help":
-             write_help(sys.stdout, name, descr)
-             CONFIG.print_descriptions(sys.stdout)
-             sys.exit(0)
+            write_help(sys.stdout, name, descr)
+            sys.exit(0)
+        elif key == "-l":
+            lflag = True
         elif key == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
+            sys.stdout.write(VERSION)
+            sys.exit(0)
         elif key == "-v":
-             LOG.verbose()
+            LOG.verbose()
 
     DATABASE.connect()
 
     CONFIG.merge_database(DATABASE.connection())
-    CONFIG.merge_environ()
+    if not Eflag:
+        CONFIG.merge_environ()
     CONFIG.merge_properties()
+
+    if lflag:
+        CONFIG.print_descriptions(sys.stdout)
+        sys.exit(0)
 
 if __name__ == "__main__":
     common("cmdline", "Generic bootstrap code for Neubot commands", sys.argv)
