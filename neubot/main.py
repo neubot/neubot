@@ -224,7 +224,7 @@ def main(argv):
 
 MODULES = {
     "agent"      : "agent",
-    "database"   : "database",
+    "database"   : "database.main",
     "bittorrent" : "bittorrent.main",
     "http"       : "http.client",
     "httpd"      : "http.server",
