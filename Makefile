@@ -129,7 +129,6 @@ INSTALL	= install
 # [2] http://bit.ly/ayYyAR (debian.org)
 #
 DESTDIR =
-SYSCONFDIR = /etc/neubot
 LOCALSTATEDIR = /var/neubot
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
@@ -143,7 +142,6 @@ SRCS = `find neubot/ -type f -name \*.py`
 WEBPAGES = `find neubot/www -type f`
 
 _install_skel:
-	@$(INSTALL) -d -m755 $(DESTDIR)$(SYSCONFDIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(LOCALSTATEDIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(BINDIR)
 	@$(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)
