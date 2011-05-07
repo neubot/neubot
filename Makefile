@@ -294,7 +294,7 @@ _deb_control_skel:
 
 _deb_control_md5sums:
 	@install -m644 /dev/null dist/control/md5sums
-	@./scripts/md5sum `find dist/data -type f` > dist/control/md5sums
+	@./scripts/cksum.py -a md5 `find dist/data -type f` > dist/control/md5sums
 	@./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
 
 _deb_control_size:
@@ -348,7 +348,7 @@ _release:
 	@make deb
 	@make archive
 	@./scripts/update_apt
-	@cd dist && ../scripts/sha256sum neubot-* >> SHA256.inc
+	@cd dist && ../scripts/cksum.py -a sha256 neubot-* >> SHA256.inc
 	@cd dist && chmod 644 *
 	@chmod 777 dist
 

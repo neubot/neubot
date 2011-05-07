@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env python
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -20,13 +20,30 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if env md5sum </dev/null >/dev/null 2>/dev/null; then
-    md5sum $@
-elif env cksum </dev/null >/dev/null 2>/dev/null; then
-    for FILE in $@; do
-        CKSUM=`cat $FILE|cksum -a md5` && echo "$CKSUM  $FILE"
-    done
-else
-    echo "error: can't calculate md5sum" 1>&2
-    exit 1
-fi
+import getopt
+import hashlib
+import sys
+import traceback
+
+def main():
+    try:
+        aarg = "sha1"
+        options, arguments = getopt.getopt(sys.argv[1:], "a:")
+        for key, value in options:
+            if key == "-a":
+                aarg = value
+
+        for path in arguments:
+            k = hashlib.new(aarg)
+            filep = open(path, "rb")
+            k.update(filep.read())
+            sys.stdout.write("%s  %s\n" % (k.hexdigest(), path))
+
+    except:
+        traceback.print_exc()
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()
