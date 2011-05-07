@@ -44,9 +44,9 @@ from neubot.state import STATE
 from neubot import utils
 
 CONFIG.register_defaults({
-    "privacy.informed": 0,
-    "privacy.can_collect": 0,
-    "privacy.can_share": 0,
+    "privacy.informed": False,
+    "privacy.can_collect": False,
+    "privacy.can_share": False,
 })
 
 CONFIG.register_descriptions({
