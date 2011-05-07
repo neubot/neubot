@@ -284,5 +284,14 @@ class Config(object):
 CONFIG = Config()
 
 CONFIG.register_defaults({
-    "enabled": 1,
+    "enabled": True,
+    "privacy.informed": False,
+    "privacy.can_collect": False,
+    "privacy.can_share": False,
+})
+CONFIG.register_descriptions({
+    "enabled": "Enable Neubot to perform transmission tests",
+    "privacy.informed": "You assert that you have read and understood the above privacy policy",
+    "privacy.can_collect": "You give Neubot the permission to collect your Internet address",
+    "privacy.can_share": "You give Neubot the permission to share your Internet address with the Internet community",
 })
