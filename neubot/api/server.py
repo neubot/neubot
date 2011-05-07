@@ -34,7 +34,6 @@ from neubot.database import database
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
-from neubot.marshal import marshal_object
 from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
