@@ -62,7 +62,6 @@ PHONIES += _deb
 PHONIES += deb
 PHONIES += clean
 PHONIES += help
-PHONIES += lint
 PHONIES += _release
 PHONIES += release
 PHONIES += release_stable
@@ -377,9 +376,6 @@ help:
 	     fi;							\
 	 done
 	@echo ""
-lint:
-	@echo "[LINT]"
-	@find . -type f -name \*.py -exec pychecker {} \;
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
