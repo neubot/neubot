@@ -24,7 +24,6 @@
 # The scripts/release script will automatically update the
 # version number each time we tag with a new release.
 #
-
 VERSION	= 0.3.6
 
 #
@@ -34,7 +33,6 @@ VERSION	= 0.3.6
 # Here we list targets in file order because this makes it easier
 # to maintain this list.
 #
-
 PHONIES += help
 PHONIES += clean
 PHONIES += archive
@@ -115,7 +113,6 @@ archive:
 # we install from sources because in this case we want to
 # enforce root's ownership.
 #
-
 INSTALL	= install
 
 #
@@ -133,7 +130,6 @@ INSTALL	= install
 # [1] http://bit.ly/aLduJz (gnu.org)
 # [2] http://bit.ly/ayYyAR (debian.org)
 #
-
 DESTDIR =
 SYSCONFDIR = /etc/neubot
 LOCALSTATEDIR = /var/neubot
@@ -175,7 +171,6 @@ _install_www:
 # does not have rst2man installed is still able to install
 # neubot.
 #
-
 _install_man:
 	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
 
@@ -201,7 +196,6 @@ _install_menu:
 # DATADIR; however now we don't have time to fix that and so
 # the above comment is not (yet) right.
 #
-
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
@@ -247,7 +241,6 @@ _install:
 # copy neubot on the filesystem, making sure that root
 # owns the installed files.
 #
-
 install:
 	@make -f Makefile _install INSTALL='install -o root'
 
@@ -357,7 +350,6 @@ _deb_binary:
 # don't want to ship a deb with ordinary user ownership by
 # mistake.
 #
-
 _deb:
 	@make -f Makefile _deb_data.tgz
 	@make -f Makefile _deb_control.tgz
