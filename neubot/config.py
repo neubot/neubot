@@ -271,7 +271,7 @@ class Config(object):
         table_config.update(database, self.conf.iteritems(), clear=True)
 
     def print_descriptions(self, fp):
-        fp.write("Properties (defaults in square brackets):\n")
+        fp.write("Properties (current value in square brackets):\n")
         for key in sorted(self.descriptions.keys()):
             description = self.descriptions[key]
             value = self.conf[key]
