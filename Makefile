@@ -212,6 +212,7 @@ _install:
 # owns the installed files.
 #
 install:
+	@echo "[INSTALL]"
 	@make -f Makefile _install INSTALL='install -o root'
 
 #   __ _ _ __  _ __
