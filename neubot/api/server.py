@@ -21,26 +21,27 @@
 #
 
 import StringIO
-import urlparse
 import cgi
 import pprint
 import re
+import urlparse
 
+from neubot.boot import VERSION
 from neubot.compat import json
 from neubot.config import ConfigError
 from neubot.config import CONFIG
-from neubot.database import database
+from neubot.database import DATABASE
+from neubot.database import table_speedtest
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
-from neubot.marshal import marshal_object
 from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
 from neubot.state import STATE
+
 from neubot import utils
-from neubot.boot import VERSION
 
 CONFIG.register_defaults({
     "privacy.informed": 0,
@@ -116,7 +117,7 @@ class ServerAPI(ServerHTTP):
         if request.method == "POST":
             s = request.body.read()
             updates = qs_to_dictionary(s)
-            CONFIG.merge_api(updates, database.connection())
+            CONFIG.merge_api(updates, DATABASE.connection())
             STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
@@ -177,18 +178,13 @@ class ServerAPI(ServerHTTP):
         stream.send_response(request, response)
 
     def api_speedtest(self, stream, request, query):
-        since = 0
-        until = utils.timestamp()
+        since, until = -1, -1
 
         dictionary = cgi.parse_qs(query)
         if dictionary.has_key("since"):
             since = int(dictionary["since"][0])
-            if since < 0:
-                raise ValueError("Invalid query string")
         if dictionary.has_key("until"):
             until = int(dictionary["until"][0])
-            if until < 0:
-                raise ValueError("Invalid query string")
 
         indent, mimetype, sort_keys = None, "application/json", False
         dictionary = cgi.parse_qs(query)
@@ -196,7 +192,7 @@ class ServerAPI(ServerHTTP):
             indent, mimetype, sort_keys = 4, "text/plain", True
 
         response = Message()
-        lst = database.dbm.query_results_list(since, until)
+        lst = table_speedtest.listify(DATABASE.connection(), since, until)
         s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
