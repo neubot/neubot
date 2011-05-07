@@ -35,7 +35,8 @@ VERSION	= 0.3.6
 # to maintain this list.
 #
 
-PHONIES += _all
+PHONIES += help
+PHONIES += clean
 PHONIES += archive
 PHONIES += _install_skel
 PHONIES += _install_sources
@@ -60,14 +61,23 @@ PHONIES += _deb_control.tgz
 PHONIES += _deb_binary
 PHONIES += _deb
 PHONIES += deb
-PHONIES += clean
-PHONIES += help
 PHONIES += _release
 PHONIES += release
 PHONIES += release_stable
 
 .PHONY: $(PHONIES)
-_all: help
+
+help:
+	@echo -n "Targets:"
+	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
+	     if echo $$TARGET|grep -qv ^_; then				\
+	         echo -n " $$TARGET";					\
+	     fi;							\
+	 done
+	@echo ""
+clean:
+	@echo "[CLEAN]"
+	@./scripts/cleanup
 
 #                 _     _
 #   __ _ _ __ ___| |__ (_)_   _____
@@ -360,22 +370,6 @@ _deb:
 deb:
 	@echo "[DEB]"
 	@make -f Makefile _deb INSTALL='install -o root'
-
-#
-# Other targets
-#
-
-clean:
-	@echo "[CLEAN]"
-	@./scripts/cleanup
-help:
-	@echo -n "Targets:"
-	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
-	     if echo $$TARGET|grep -qv ^_; then				\
-	         echo -n " $$TARGET";					\
-	     fi;							\
-	 done
-	@echo ""
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
