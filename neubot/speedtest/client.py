@@ -355,6 +355,8 @@ class ClientSpeedtest(ClientHTTP):
             else:
                 STATE.update(self.state)
             LOG.start("* speedtest: %s" % self.state)
+        elif self.state == "negotiate":
+            LOG.start("* speedtest: %s" % self.state)
 
         self.measurer.start(self.state)
         while self.streams:
