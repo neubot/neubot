@@ -26,6 +26,7 @@ import collections
 from neubot.arcfour import RandomBody
 from neubot.config import CONFIG
 from neubot.database import DATABASE
+from neubot.database import table_speedtest
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 from neubot.log import LOG
@@ -157,8 +158,8 @@ class ClientCollect(ClientHTTP):
         s = marshal.marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)
 
-        if DATABASE.dbm:
-            DATABASE.dbm.save_result(m1)
+        if not m1.privacy_informed or m1.privacy_can_collect:
+            table_speedtest.insertxxx(DATABASE.connection(), m1)
 
         request = Message()
         request.compose(method="POST", pathquery="/speedtest/collect",
