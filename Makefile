@@ -140,7 +140,7 @@ _install_skel:
 	@$(INSTALL) -d -m755 $(DESTDIR)$(LOCALSTATEDIR)
 
 _install_sources:
-	@for SRC in `find neubot -type f`; do \
+	@for SRC in `find neubot -type f|grep -v \.DS_Store`; do \
 	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
 	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC || exit $$?; \
 	done
