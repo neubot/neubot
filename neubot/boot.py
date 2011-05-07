@@ -36,10 +36,11 @@ def write_help(fp, name, descr):
     fp.write('''\
 Neubot %(name)s -- %(descr)s
 
-Usage: neubot %(name)s [-Vv] [-D PROPERTY[=VALUE]] [-f FILE] [--help]
+Usage: neubot %(name)s [-EVv] [-D PROPERTY[=VALUE]] [-f FILE] [--help]
 
 Options:
     -D PROPERTY[=VALUE]         : Set the VALUE of the property PROPERTY
+    -E                          : Ignore NEUBOT_OPTIONS environment variable
     -f FILE                     : Use FILE instead of the default database
     --help                      : Print this help screen and exit
     -V                          : Print version number and exit
@@ -48,9 +49,10 @@ Options:
 ''' % locals())
 
 def common(name, descr, args):
+    Eflag = False
 
     try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
+        options, arguments = getopt.getopt(args[1:], "D:Ef:Vv", ["help"])
     except getopt.GetoptError:
         write_help(sys.stderr, name, descr)
         sys.exit(1)
@@ -63,6 +65,8 @@ def common(name, descr, args):
         if key == "-D":
              # No shortcuts because it grows too confusing
              CONFIG.register_property(value)
+        elif key == "-E":
+             Eflag = True
         elif key == "-f":
              DATABASE.set_path(value)
         elif key == "--help":
@@ -78,7 +82,8 @@ def common(name, descr, args):
     DATABASE.connect()
 
     CONFIG.merge_database(DATABASE.connection())
-    CONFIG.merge_environ()
+    if not Eflag:
+        CONFIG.merge_environ()
     CONFIG.merge_properties()
 
 if __name__ == "__main__":
