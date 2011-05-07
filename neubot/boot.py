@@ -39,13 +39,13 @@ Neubot %(name)s -- %(descr)s
 Usage: neubot %(name)s [-ElVv] [-D PROPERTY[=VALUE]] [-f FILE] [--help]
 
 Options:
-    -D PROPERTY[=VALUE]         : Set the VALUE of the property PROPERTY
-    -E                          : Ignore NEUBOT_OPTIONS environment variable
-    -f FILE                     : Use FILE instead of the default database
-    --help                      : Print this help screen and exit
-    -l                          : List all the available properties
-    -V                          : Print version number and exit
-    -v                          : Run the program in verbose mode
+    -D PROPERTY[=VALUE] : Define the VALUE of the given PROPERTY
+    -E                  : Ignore NEUBOT_OPTIONS environment variable
+    -f FILE             : Force file name of the database to FILE
+    --help              : Print this help screen and exit
+    -l                  : List all the available properties and exit
+    -V                  : Print version number and exit
+    -v                  : Verbose: print much more log messages
 
 ''' % locals())
 
@@ -65,22 +65,22 @@ def common(name, descr, args):
 
     for key, value in options:
         if key == "-D":
-             # No shortcuts because it grows too confusing
-             CONFIG.register_property(value)
+            # No shortcuts because it grows too confusing
+            CONFIG.register_property(value)
         elif key == "-E":
-             Eflag = True
+            Eflag = True
         elif key == "-f":
-             DATABASE.set_path(value)
+            DATABASE.set_path(value)
         elif key == "--help":
-             write_help(sys.stdout, name, descr)
-             sys.exit(0)
+            write_help(sys.stdout, name, descr)
+            sys.exit(0)
         elif key == "-l":
-             lflag = True
+            lflag = True
         elif key == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
+            sys.stdout.write(VERSION)
+            sys.exit(0)
         elif key == "-v":
-             LOG.verbose()
+            LOG.verbose()
 
     DATABASE.connect()
 
