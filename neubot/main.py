@@ -42,23 +42,24 @@ if __name__ == "__main__":
 USAGE = '''\
 neubot - The network neutrality bot
 
-Usage: neubot [command] [-vV] [-D macro[=value]] [-f file] [args...]
-       neubot start [[address] port]
-       neubot status [[address] port]
-       neubot stop [[address] port]
-       neubot --help|-h
+Usage: neubot COMMAND [-ElvV] [-D PROPERTY[=VALUE]] [-f FILE]
+       neubot start [[ADDRESS] PORT]
+       neubot status [[ADDRESS] PORT]
+       neubot stop [[ADDRESS] PORT]
+       neubot --help
        neubot -V
        neubot help
        neubot
 
-Without arguments, starts the daemon in background, if needed, and,
-then, opens the web user interface, using 127.0.0.1 as address and 9774
-as port.
+When invoked without arguments neubot ensures that there is a neubot
+agent running in background.  Then, neubot seeks to start you default
+web browser and opens the Web User Interface (WUI) URI.  In turn the
+WUI allows you to review the results and control the background agent.
 
-Run `neubot help` to get more extended help.
+Try `neubot help` to get a list of available commands.
 '''
 
-VERSION = "Neubot 0.3.6\n"
+VERSION = "0.3.6\n"
 
 def main(argv):
 
@@ -97,7 +98,7 @@ def main(argv):
 
     elif len(argv) >= 2 and len(argv) < 5:
         command = argv[1]
-        if command == "--help" or command == "-h":
+        if command == "--help":
             sys.stdout.write(USAGE)
             sys.exit(0)
         elif command == "-V":
@@ -226,8 +227,8 @@ MODULES = {
     "agent"      : "agent",
     "database"   : "database.main",
     "bittorrent" : "bittorrent.main",
-    "http"       : "http.client",
-    "httpd"      : "http.server",
+    "http.client" : "http.client",
+    "http.server" : "http.server",
     "rendezvous.client": "rendezvous.client",
     "rendezvous.server": "rendezvous.server",
     "speedtest"  : "speedtest.client",
