@@ -275,8 +275,6 @@ class Config(object):
         for key in sorted(self.descriptions.keys()):
             description = self.descriptions[key]
             value = self.conf[key]
-            if description.lower().startswith("enable"):
-                value = bool(value)
             fp.write("    %-28s: %s [%s]\n" % (key, description, value))
         fp.write("\n")
 
