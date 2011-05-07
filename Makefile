@@ -88,14 +88,12 @@ clean:
 
 STEM = neubot-$(VERSION)
 ARCHIVE = git archive --prefix=$(STEM)/
-FORMATS += tar
-FORMATS += zip
 
 archive:
 	@echo "[ARCHIVE]"
 	@install -m755 -d dist/
-	@for FORMAT in $(FORMATS); do \
-	 $(ARCHIVE) --format=$$FORMAT HEAD > dist/$(STEM).$$FORMAT; \
+	@for FMT in tar zip; do \
+	 $(ARCHIVE) --format=$$FMT HEAD > dist/$(STEM).$$FMT; \
 	done
 	@gzip -9 dist/$(STEM).tar
 
