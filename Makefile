@@ -47,8 +47,6 @@ PHONIES += _install_menu
 PHONIES += _install_edit
 PHONIES += _install_compile
 PHONIES += _install
-PHONIES += _bdist
-PHONIES += bdist.tgz
 PHONIES += install
 PHONIES += app
 PHONIES += app.zip
@@ -234,14 +232,6 @@ _install:
 	@for RULE in $(INSTALL_RULES); do \
 	 make -f Makefile $$RULE; \
 	done
-
-_bdist:
-	@echo "[BDIST]"
-	@make -f Makefile _install DESTDIR=dist/bdist
-
-bdist.tgz: bdist
-	@echo "[BDIST.TGZ]"
-	@cd dist/data && tar czf ../$(STEM)_`uname -m`.tgz *
 
 #
 # install should be invoked as root and will actually
