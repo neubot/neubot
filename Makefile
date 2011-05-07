@@ -189,12 +189,9 @@ _install_menu:
 #
 # After the install we need to edit the following files to
 # tell neubot the path where it's installed.
-# The original sources contain the @DATADIR@ placeholder and
+# The original sources contain the @PREFIX@ placeholder and
 # will use a sane default if they find the placeholder instead
 # of a valid path.
-# FIXME Actually the sources contain PREFIX but it should use
-# DATADIR; however now we don't have time to fix that and so
-# the above comment is not (yet) right.
 #
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
@@ -202,15 +199,6 @@ NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
 
-# New style:
-#
-#_install_edit:
-#	@for EDIT in $(NEEDEDIT); do \
-#	 ./scripts/sed_inplace 's|@DATADIR@|$(DATADIR)|g' $$EDIT; \
-#	done
-#
-# Old style:
-#
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
 	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT; \
