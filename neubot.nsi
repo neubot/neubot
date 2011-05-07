@@ -20,15 +20,13 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Use NSIS to create neubot installer
-#
-
 name "neubot 0.3.6"
 outfile "neubot-0.3.6-setup.exe"
 installdir "$PROGRAMFILES\neubot"
 setcompressor lzma
+
 section
+
     #
     # If a previous version is already installed uninstall it. We need
     # to pass uninstall.exe the magic argument below otherwise execwait
@@ -39,9 +37,11 @@ section
     iffileexists "$INSTDIR\uninstall.exe" 0 +3
         execwait '"$INSTDIR\uninstall.exe" _?=$INSTDIR'
         sleep 2000
+
     setoutpath "$INSTDIR"
     file /r "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
+
     createdirectory "$SMPROGRAMS\neubot"
     createshortcut "$SMPROGRAMS\neubot\neubot (gui).lnk"		\
       "$INSTDIR\neubotw.exe"
@@ -49,27 +49,39 @@ section
       "$INSTDIR\neubotw.exe" "start"
     createshortcut "$SMPROGRAMS\neubot\neubot (stop).lnk"		\
       "$INSTDIR\neubotw.exe" "stop"
-    createshortcut "$SMPROGRAMS\neubot\uninstall.lnk" "$INSTDIR\uninstall.exe"
+    createshortcut "$SMPROGRAMS\neubot\uninstall.lnk"			\
+      "$INSTDIR\uninstall.exe"
+
     createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
       "$INSTDIR\neubotw.exe" "start"
+
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "DisplayName" "neubot 0.3.6"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
+
+    # This will start Neubot in background
+
     exec '"$INSTDIR\neubotw.exe" start'
+
 sectionend
+
 section "uninstall"
+
     #
     # To be sure that the system is not locking anymore neubotw.exe
     # so that we can remove it, we sleep for a while.
     #
     execwait '"$INSTDIR\neubotw.exe" stop'
     sleep 2000
+
     rmdir /r "$INSTDIR"
     rmdir /r "$SMPROGRAMS\neubot"
+
     delete "$SMSTARTUP\neubot (autostart).lnk"
     deleteregkey HKLM                                                   \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
+
 sectionend
