@@ -68,13 +68,13 @@ PHONIES += release_stable
 .PHONY: $(PHONIES)
 
 help:
-	@echo -n "Targets:"
+	@printf "Targets:"
 	@for TARGET in `grep ^PHONIES Makefile|sed 's/^.*+= //'`; do	\
 	     if echo $$TARGET|grep -qv ^_; then				\
-	         echo -n " $$TARGET";					\
+	         printf " $$TARGET";					\
 	     fi;							\
 	 done
-	@echo ""
+	@printf '\n'
 clean:
 	@echo "[CLEAN]"
 	@./scripts/cleanup
