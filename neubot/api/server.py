@@ -31,6 +31,7 @@ from neubot.compat import json
 from neubot.config import ConfigError
 from neubot.config import CONFIG
 from neubot.database import DATABASE
+from neubot.database import table_speedtest
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
@@ -196,7 +197,7 @@ class ServerAPI(ServerHTTP):
             indent, mimetype, sort_keys = 4, "text/plain", True
 
         response = Message()
-        lst = DATABASE.dbm.query_results_list(since, until)
+        lst = table_speedtest.listify(DATABASE.connection(), since, until)
         s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
