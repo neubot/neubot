@@ -77,11 +77,9 @@ to specify an alternate \fIURI\fP.
 The third form of the command starts the master server, which will
 daemonize, eventually dropping root privileges, and then will accept()
 connections from neubot daemons and will return information on available
-software updates and tests to be performed. The configuration of
-the master server is specified in the system\-wide configuration file
-\fB/etc/neubot/config\fP, but it is possible to override its settings
-using the \fI\-D option\fP switch, that allows to specify an option in the
-format used by the configuration file (see below).
+software updates and tests to be performed. The configuration of the
+master server is specified inside the database, but it is possible to
+override these settings using the \fI-D option\fP switch (see below).
 .sp
 The fourth form of the command prints a subset of the program synopsys
 (just the second, third, fourth, and fifth form) and documents briefly
@@ -122,7 +120,7 @@ synopsys of this command pass it the \-\-help option).
 .TP
 .BI \-D \ option
 .
-Set configuration file option. The accepted format is either
+Set configuration property. The accepted format is either
 \fIname:value\fP or \fIname=value\fP (note that neubot will \fIstrip()\fP
 name and value and so you can add whitespaces at will).
 .sp
@@ -234,10 +232,6 @@ ones being \fB/usr/local\fP and \fB/usr\fP). In this section of the manual
 we assume that it has been installed below \fB/usr/local\fP:
 .INDENT 0.0
 .TP
-.B /etc/neubot/config
-.
-System\-wide configuration file that neubot reads at startup.
-.TP
 .B /usr/local/bin/neubot
 .
 The neubot program, a simple python script that imports neubot and passes
@@ -255,10 +249,6 @@ for the first time.
 .sp
 In addition, if you run neubot as an unprivileged user:
 .INDENT 0.0
-.TP
-.B $HOME/.neubot/config
-.
-User\-specific configuration file.
 .TP
 .B $HOME/.neubot/database.sqlite3
 .

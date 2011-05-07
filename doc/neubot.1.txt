@@ -75,13 +75,12 @@ server URI is *http://master.neubot.org/rendezvous*, but it is possible
 to specify an alternate *URI*.
 
 The third form of the command starts the master server, which will
-daemonize, eventually dropping root privileges, and then will accept()
-connections from neubot daemons and will return information on available
-software updates and tests to be performed. The configuration of
-the master server is specified in the system-wide configuration file
-**/etc/neubot/config**, but it is possible to override its settings
-using the *-D option* switch, that allows to specify an option in the
-format used by the configuration file (see below).
+daemonize, eventually dropping root privileges, and then will
+accept() connections from neubot daemons and will return information
+on available software updates and tests to be performed. The
+configuration of the master server is specified inside the database,
+but it is possible to override these settings using the *-D option*
+switch (see below).
 
 The fourth form of the command prints a subset of the program synopsys
 (just the second, third, fourth, and fifth form) and documents briefly
@@ -121,7 +120,7 @@ synopsys of this command pass it the --help option).
 OPTIONS
 ```````
 
--D option	Set configuration file option. The accepted format is either
+-D option	Set configuration property. The accepted format is either
                 *name:value* or *name=value* (note that neubot will *strip()*
                 name and value and so you can add whitespaces at will).
 
@@ -188,9 +187,6 @@ Neubot could be installed below many different prefixes (the most common
 ones being **/usr/local** and **/usr**). In this section of the manual
 we assume that it has been installed below **/usr/local**:
 
-/etc/neubot/config
-  System-wide configuration file that neubot reads at startup.
-
 /usr/local/bin/neubot
   The neubot program, a simple python script that imports neubot and passes
   the control to **neubot.main** module.
@@ -203,9 +199,6 @@ we assume that it has been installed below **/usr/local**:
   for the first time.
 
 In addition, if you run neubot as an unprivileged user:
-
-$HOME/.neubot/config
-  User-specific configuration file.
 
 $HOME/.neubot/database.sqlite3
   User-specific results database.
