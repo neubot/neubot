@@ -196,7 +196,6 @@ _install_menu:
 #
 
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
-NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/pathnames.py
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
