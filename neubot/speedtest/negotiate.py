@@ -38,6 +38,7 @@ from neubot.speedtest.session import TRACKER
 from neubot import boot
 from neubot import marshal
 from neubot import system
+from neubot import utils
 
 #
 # The current implementation wraps the TestServer and this
@@ -140,7 +141,8 @@ class ServerSpeedtest(ServerHTTP):
         s = request.body.read()
         m = marshal.unmarshal_object(s, "text/xml", compat.SpeedtestCollect)
 
-        if not m.privacy_informed or m.privacy_can_collect:
+        if (not utils.intify(m.privacy_informed) or
+            utils.intify(m.privacy_can_collect)):
             table_speedtest.insertxxx(DATABASE.connection(), m)
 
         response = Message()
