@@ -231,6 +231,9 @@ MODULES = {
     "rendezvous.client": "rendezvous.client",
     "rendezvous.server": "rendezvous.server",
     "speedtest"  : "speedtest",
+    "speedtest.client": "speedtest.client",
+    "speedtest.negotiate": "speedtest.negotiate",
+    "speedtest.server": "speedtest.server",
     "statusicon" : "statusicon",
     "stream"     : "net.stream",
 }

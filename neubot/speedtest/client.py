@@ -24,17 +24,20 @@ import StringIO
 import collections
 
 from neubot.arcfour import RandomBody
+from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 from neubot.log import LOG
 from neubot.net.measurer import HeadlessMeasurer
+from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.notify import TESTDONE
 from neubot.state import STATE
 from neubot.speedtest import SpeedtestCollect
 from neubot.speedtest import SpeedtestNegotiate_Response
 
+from neubot import boot
 from neubot import marshal
 from neubot import utils
 
@@ -357,3 +360,22 @@ class ClientSpeedtest(ClientHTTP):
             self.child.connection_ready(self.streams.popleft())
             if justone:
                 break
+
+CONFIG.register_defaults({
+    "speedtest.client.uri": "http://neubot.blupixel.net/",
+    "speedtest.client.nconn": 2,
+    "speedtest.client.latency_tries": 10,
+})
+CONFIG.register_descriptions({
+    "speedtest.client.uri": "Base URI to connect to",
+    "speedtest.client.nconn": "Number of concurrent connections to use",
+    "speedtest.client.latency_tries": "Number of latency measurements",
+})
+
+def main(args):
+    boot.common("speedtest.client", "Speedtest client", args)
+    conf = CONFIG.copy()
+    client = ClientSpeedtest(POLLER)
+    client.configure(conf)
+    client.connect_uri()
+    POLLER.loop()
