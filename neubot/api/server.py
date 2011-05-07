@@ -30,7 +30,7 @@ from neubot.boot import VERSION
 from neubot.compat import json
 from neubot.config import ConfigError
 from neubot.config import CONFIG
-from neubot.database import database
+from neubot.database import DATABASE
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
@@ -116,7 +116,7 @@ class ServerAPI(ServerHTTP):
         if request.method == "POST":
             s = request.body.read()
             updates = qs_to_dictionary(s)
-            CONFIG.merge_api(updates, database.connection())
+            CONFIG.merge_api(updates, DATABASE.connection())
             STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error
             s = "{}"
@@ -196,7 +196,7 @@ class ServerAPI(ServerHTTP):
             indent, mimetype, sort_keys = 4, "text/plain", True
 
         response = Message()
-        lst = database.dbm.query_results_list(since, until)
+        lst = DATABASE.dbm.query_results_list(since, until)
         s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
