@@ -53,6 +53,10 @@ class ServerSpeedtest(ServerHTTP):
         POLLER.sched(3, self._speedtest_check_timeout)
         self.test_server = ServerTest(poller)
 
+    def configure(self, conf, measurer=None):
+        conf["http.server.rootdir"] = ""
+        ServerHTTP.configure(self, conf, measurer)
+
     def got_request_headers(self, stream, request):
         ret = True
         TRACKER.register_connection(stream, request["authorization"])
@@ -170,7 +174,6 @@ def main(args):
     boot.common("speedtest.negotiate", "Speedtest negotiation server", args)
 
     conf = CONFIG.copy()
-    conf['http.server.rootdir'] = ''
 
     server = ServerSpeedtest(POLLER)
     server.configure(conf)

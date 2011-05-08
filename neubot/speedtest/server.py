@@ -85,6 +85,10 @@ class ServerTest(ServerHTTP):
         ServerHTTP.__init__(self, poller)
         self.old_server = DeprecatedServerTest()
 
+    def configure(self, conf, measurer=None):
+        conf["http.server.rootdir"] = ""
+        ServerHTTP.configure(self, conf, measurer)
+
     def got_request_headers(self, stream, request):
         if request.uri == "/speedtest/upload":
             request.body.write = lambda octets: None
@@ -140,7 +144,6 @@ def main(args):
     boot.common("speedtest.server", "Speedtest Test Server", args)
 
     conf = CONFIG.copy()
-    conf['http.server.rootdir'] = ''
 
     server = ServerTest(POLLER)
     server.configure(conf)

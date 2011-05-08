@@ -40,6 +40,10 @@ from neubot import utils
 
 class ServerRendezvous(ServerHTTP):
 
+    def configure(self, conf, measurer=None):
+        conf["http.server.rootdir"] = ""
+        ServerHTTP.configure(self, conf, measurer)
+
     def process_request(self, stream, request):
         m = marshal.unmarshal_object(request.body.read(),
           "application/xml", compat.RendezvousRequest)
