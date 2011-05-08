@@ -33,6 +33,9 @@ class SessionState(object):
         self.queuepos = 0
         self.negotiations = 0
 
+    def __repr__(self):
+        return self.identifier
+
 class SessionTracker(object):
     def __init__(self):
         self.identifiers = {}
