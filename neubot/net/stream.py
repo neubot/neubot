@@ -172,6 +172,9 @@ class Stream(Pollable):
 
         self.conf = None
 
+    def __repr__(self):
+        return "stream %s" % self.logname
+
     def fileno(self):
         return self.filenum
 
