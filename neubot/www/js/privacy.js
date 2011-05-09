@@ -30,7 +30,7 @@ function setPrivacyError(jqXHR, textStatus, errorThrown) {
 }
 
 function setPrivacy() {
-    setConfigVars({
+    utils.setConfigVars({
         'privacy.informed': jQuery("#check_privacy_informed").attr("checked"),
         'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked"),
         'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked")
@@ -57,7 +57,7 @@ function checkPrivacy(data) {
 jQuery(document).ready(function() {
     utils.setActiveTab("privacy");
 
-    getConfigVars(checkPrivacy);
+    utils.getConfigVars(checkPrivacy);
 
     tracker = state.tracker();
     tracker.start();

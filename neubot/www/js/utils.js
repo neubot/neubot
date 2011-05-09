@@ -119,70 +119,71 @@ var utils = (function() {
         jQuery("#tab_" + tabname).addClass("active");
         return false;
     }
+    
+    self.setStatusLabels = function(data) {
+        if (data.enabled == "1") {
+            jQuery("#statusBoxSpan").html("enabled");
+            jQuery("#statusBoxSpan").css("color", "#3DA64E");
+            jQuery("#statusBoxA").html("Disable");
+            jQuery("#statusBoxA").unbind('click');
+            jQuery("#statusBoxA").click(function () {
+                self.setConfigVars({'enabled': 0});
+            });
+        }
+        else {
+            jQuery("#statusBoxSpan").html("disabled");
+            jQuery("#statusBoxSpan").css("color", "#c00");
+            jQuery("#statusBoxA").html("Enable");
+            jQuery("#statusBoxA").unbind('click');
+            jQuery("#statusBoxA").click(function () {
+                self.setConfigVars({'enabled': 1});
+            });
+        }
+    }
+
+    self.getConfigVars = function(myfunction) {
+        return self.getSetConfigVars(myfunction);
+    }
+
+    self.setConfigVars = function(value, success, error) {
+        return self.getSetConfigVars(success, true, value, error);
+    }
+
+    self.getSetConfigVars = function(myfunction, change, value, myerror) {
+        var data = {};
+        var type = "GET";
+        var success = undefined;
+        var error = undefined;
+
+        if (change) {
+            data = value;
+            type = "POST";
+        }
+
+        if (myfunction) {
+            success = function(data) {
+                myfunction(data);
+            }
+        }
+
+        if (myerror) {
+            error = function(jqXHR, textStatus, errorThrown) {
+                myerror(jqXHR, textStatus, errorThrown);
+            }
+        }
+
+        jQuery.ajax({
+            url: '/api/config',
+            data: data,
+            type: type,
+            dataType: 'json',
+            success: success,
+            error: error
+        });
+
+        return false;
+    }
 
     return self;
 })();
 
-function setStatusLabels(data) {
-    if (data.enabled == "1") {
-        jQuery("#statusBoxSpan").html("enabled");
-        jQuery("#statusBoxSpan").css("color", "#3DA64E");
-        jQuery("#statusBoxA").html("Disable");
-        jQuery("#statusBoxA").unbind('click');
-        jQuery("#statusBoxA").click(function () {
-            setConfigVars({'enabled': 0});
-        });
-    }
-    else {
-        jQuery("#statusBoxSpan").html("disabled");
-        jQuery("#statusBoxSpan").css("color", "#c00");
-        jQuery("#statusBoxA").html("Enable");
-        jQuery("#statusBoxA").unbind('click');
-        jQuery("#statusBoxA").click(function () {
-            setConfigVars({'enabled': 1});
-        });
-    }
-}
-
-function getConfigVars(myfunction) {
-    return getSetConfigVars(myfunction);
-}
-
-function setConfigVars(value, success, error) {
-    return getSetConfigVars(success, true, value, error);
-}
-
-function getSetConfigVars(myfunction, change, value, myerror) {
-    var data = {};
-    var type = "GET";
-    var success = undefined;
-    var error = undefined;
-
-    if (change) {
-        data = value;
-        type = "POST";
-    }
-
-    if (myfunction) {
-        success = function(data) {
-            myfunction(data);
-        }
-    }
-
-    if (myerror) {
-        error = function(jqXHR, textStatus, errorThrown) {
-            myerror(jqXHR, textStatus, errorThrown);
-        }
-    }
-
-    jQuery.ajax({
-        url: '/api/config',
-        data: data,
-        type: type,
-        dataType: 'json',
-        success: success,
-        error: error
-    });
-
-    return false;
-}

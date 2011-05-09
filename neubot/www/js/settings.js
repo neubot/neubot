@@ -49,7 +49,7 @@ function submitConfig() {
         }
     });
     if (numchanged) {
-        setConfigVars(changed, configSuccess, configError);
+        utils.setConfigVars(changed, configSuccess, configError);
     }
     else {
         alert("Nothing changed, so no need to save anything");

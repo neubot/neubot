@@ -44,7 +44,7 @@ var state = (function() {
 
             if (data.events.config) {
                 if (data.events.config.enabled != undefined) {
-                    setStatusLabels(data.events.config);
+                    utils.setStatusLabels(data.events.config);
                 }
             }
 
@@ -153,7 +153,7 @@ var state = (function() {
                 }
             });
 
-            getConfigVars(setStatusLabels);
+            utils.getConfigVars(utils.setStatusLabels);
             setTimeout(get_state, 100);
         }
 
