@@ -23,7 +23,7 @@
 import StringIO
 import collections
 
-from neubot.arcfour import RandomBody
+from neubot.blocks import RandomBody
 from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_speedtest

@@ -24,7 +24,7 @@ import StringIO
 import os.path
 
 from neubot.config import CONFIG
-from neubot.arcfour import RandomBody
+from neubot.blocks import RandomBody
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.http import utils as http_utils
