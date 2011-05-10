@@ -21,9 +21,9 @@
 
 function setPrivacy() {
     setConfigVars({
-        'privacy.informed': jQuery("#check_privacy_informed").attr("checked") ? 1 : 0,
-        'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked") ? 1 : 0,
-        'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked") ? 1 : 0
+        'privacy.informed': jQuery("#check_privacy_informed").attr("checked"),
+        'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked"),
+        'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked")
     });
     alert("Privacy settings successfully saved");
     return false;
