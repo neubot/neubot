@@ -19,13 +19,25 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+function setPrivacySuccess() {
+    alert("Privacy settings successfully saved");
+    return false;
+}
+
+function setPrivacyError(jqXHR, textStatus, errorThrown) {
+    alert(jqXHR.statusText + "\nNo setting saved");
+    return False;
+}
+
 function setPrivacy() {
     setConfigVars({
-        'privacy.informed': jQuery("#check_privacy_informed").attr("checked") ? 1 : 0,
-        'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked") ? 1 : 0,
-        'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked") ? 1 : 0
-    });
-    alert("Privacy settings successfully saved");
+        'privacy.informed': jQuery("#check_privacy_informed").attr("checked"),
+        'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked"),
+        'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked")
+      },
+      setPrivacySuccess,
+      setPrivacyError
+    );
     return false;
 }
 

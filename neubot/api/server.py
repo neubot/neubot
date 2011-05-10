@@ -41,6 +41,7 @@ from neubot.notify import NOTIFIER
 from neubot.notify import STATECHANGE
 from neubot.state import STATE
 
+from neubot import privacy
 from neubot import utils
 
 CONFIG.register_defaults({
@@ -118,6 +119,7 @@ class ServerAPI(ServerHTTP):
         if request.method == "POST":
             s = request.body.read()
             updates = qs_to_dictionary(s)
+            privacy.check(updates)
             CONFIG.merge_api(updates, DATABASE.connection())
             STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error
