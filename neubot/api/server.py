@@ -84,6 +84,7 @@ class ServerAPI(ServerHTTP):
             self.serve_request(stream, request)
         except ConfigError, error:
             reason = re.sub(r"[\0-\31]", "", str(error))
+            reason = re.sub(r"[\x7f-\xff]", "", reason)
             LOG.exception(LOG.info)
             response = Message()
             response.compose(code="500", reason=reason,
