@@ -119,7 +119,7 @@ var utils = (function() {
         jQuery("#tab_" + tabname).addClass("active");
         return false;
     }
-    
+
     self.setStatusLabels = function(data) {
         if (data.enabled == "1") {
             jQuery("#statusBoxSpan").html("enabled");
