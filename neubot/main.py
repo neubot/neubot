@@ -61,6 +61,55 @@ Try `neubot help` to get a list of available commands.
 
 VERSION = "0.3.6\n"
 
+#
+# When the migration takes too much time, the agent is stuck
+# in DATABASE.connect() and the web user interface is not ready
+# because we migrate the database and _then_ we bind the local
+# address and port.  This is a wise thing to do because it's
+# dangerous to split the migration in small pieces.
+# The problem is that the user is likely to be scared if the
+# connection fails.  We don't want that, so we ensure that
+# the web user interface is ready before we start the web
+# browser.
+#
+def webbrowser_open_patient(address, port):
+    import httplib
+    import webbrowser
+    import time
+
+    sys.stderr.write("Waiting for the web gui to become ready...")
+
+    count = 0
+    running = False
+    while True:
+        try:
+
+            connection = httplib.HTTPConnection(address, port)
+            connection.request("GET", "/api/version")
+            response = connection.getresponse()
+            if response.status == 200:
+                running = True
+            connection.close()
+
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except:
+            pass
+
+        if running:
+            sys.stderr.write("ok\n")
+            break
+        if count >= 5:
+            sys.stderr.write("timeout\n")
+            break
+
+        sys.stderr.write(".")
+        time.sleep(1)
+        count = count + 1
+
+    sys.stderr.write("Opening Neubot web gui\n")
+    webbrowser.open("http://%s:%s/" % (address, port))
+
 def main(argv):
 
     address = "127.0.0.1"
@@ -191,9 +240,7 @@ def main(argv):
                 os.environ["DISPLAY"] = "fake-neubot-display:0.0"
 
             if webgui and "DISPLAY" in os.environ:
-                import webbrowser
-                sys.stderr.write("Opening Neubot web gui\n")
-                webbrowser.open("http://%s:%s/" % (address, port))
+                webbrowser_open_patient(address, port)
 
         elif os.name == "nt":
 
@@ -201,7 +248,7 @@ def main(argv):
                 import webbrowser
 
                 func = lambda: \
-		  webbrowser.open("http://%s:%s/" % (address, port))
+		  webbrowser_open_patient(address, port)
 
                 if not running and start:
                     import threading
