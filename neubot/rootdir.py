@@ -26,7 +26,7 @@ path = os.path.abspath(__file__)
 me = os.sep.join(["", "rootdir.py"])
 i = path.find(me)
 path = path[:i]
-path = path.replace("\\library.zip\\neubot\\", "")
+path = path.replace(r"\library.zip\neubot", "")
 WWW = os.sep.join([path, "www"])
 
 if __name__ == "__main__":

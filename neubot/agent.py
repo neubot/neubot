@@ -67,6 +67,7 @@ def main(args):
 
     if conf["agent.api"]:
         server = ServerHTTP(POLLER)
+        LOG.debug("* API server root directory: %s" % WWW)
         server.configure({"http.server.rootdir": WWW, "http.server.ssi": True,
           "http.server.bind_or_die": True})
         server.register_child(ServerAPI(POLLER), "/api")
