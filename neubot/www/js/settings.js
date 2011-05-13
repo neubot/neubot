@@ -106,6 +106,8 @@ jQuery(document).ready(function() {
                 success: function(data) {
                     filtered = Array();
                     filtered[0] = "agent.api";
+                    filtered[1] = "version";
+                    filtered[2] = "uuid";
 
                     var html = "";
                     html += "<table width='100%' id='table_settings'>";
