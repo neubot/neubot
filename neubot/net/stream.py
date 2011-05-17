@@ -586,15 +586,21 @@ class Listener(Pollable):
     def fileno(self):
         return self.lsock.fileno()
 
+    #
+    # Catch all types of exception because an error in
+    # connection_made() MUST NOT cause the server to stop
+    # listening for new connections.
+    #
     def readable(self):
         try:
             sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
-        except socket.error, exception:
+            self.parent.connection_made(sock)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception, exception:
             self.parent.accept_failed(self, exception)
             return
-
-        self.parent.connection_made(sock)
 
     def closed(self, exception=None):
         LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
