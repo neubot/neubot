@@ -20,51 +20,65 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import getopt
 import sys
 
-from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_config
 from neubot.database import table_speedtest
 
-from neubot import boot
 from neubot import compat
 from neubot import utils
 
+USAGE = '''\
+Neubot database -- Low-level database operations
+
+Usage: neubot database [-f FILE] delete_all
+       neubot database [-f FILE] dump
+       neubot database [-f FILE] prune
+       neubot database [-f FILE] regen_uuid
+       neubot database [-f FILE] show
+       neubot database --help
+
+'''
+
+
 def main(args):
-    CONFIG.register_defaults({
-        "database.delete_all": False,
-        "database.dump": False,
-        "database.prune": False,
-        "database.regen_uuid": False,
-        "database.show": False,
-    })
-    CONFIG.register_descriptions({
-        "database.delete_all": "Delete all database entries",
-        "database.dump": "Dump content in JSON format to standard output",
-        "database.prune": "Remove old entries older than one year",
-        "database.regen_uuid": "Regenerate unique identifier",
-        "database.show": "Pretty-print database content",
-    })
 
-    boot.common("database", "Database manager", args)
-    conf = CONFIG.copy()
+    try:
+        options, arguments = getopt.getopt(args[1:], "f:", ["help"])
+    except getopt.GetoptError:
+        sys.stderr.write(USAGE)
+        sys.exit(1)
 
-    if conf["database.regen_uuid"]:
+    for key, value in options:
+        if key == "-f":
+            DATABASE.set_path(value)
+        elif key == "--help":
+            sys.stdout.write(USAGE)
+            sys.exit(0)
+
+    DATABASE.connect()
+
+    if not arguments:
+        sys.stdout.write(USAGE)
+        sys.exit(0)
+
+    if arguments[0] == "regen_uuid":
         table_config.update(DATABASE.connection(),
           {"uuid": utils.get_uuid()}.iteritems())
 
-    if conf["database.prune"]:
+    elif arguments[0] == "prune":
         table_speedtest.prune(DATABASE.connection())
 
-    if conf["database.delete_all"]:
+    elif arguments[0] == "delete_all":
         table_speedtest.prune(DATABASE.connection(), until=utils.timestamp())
         DATABASE.connection().execute("VACUUM;")
 
-    if conf["database.show"] or conf["database.dump"]:
+    elif arguments[0] in ("show", "dump"):
         d = { "config": table_config.dictionarize(DATABASE.connection()),
              "speedtest": table_speedtest.listify(DATABASE.connection()) }
-        if conf["database.show"]:
+        if arguments[0] == "show":
             compat.json.dump(d, sys.stdout, indent=4)
-        elif conf["database.dump"]:
+        elif arguments[0] == "dump":
             compat.json.dump(d, sys.stdout)
