@@ -1,12 +1,12 @@
 .\" Man page generated from reStructeredText.
 .
-.TH NEUBOT 1 "2011-03-16" "Neubot 0.3.6" "Neubot manual"
+.TH NEUBOT 1 "2011-05-18" "Neubot 0.3.6" "Neubot manual"
 .SH NAME
 neubot \- The network neutrality bot
 .
 .nr rst2man-indent-level 0
 .
-.de rstReportMargin
+.de1 rstReportMargin
 \\$1 \\n[an-margin]
 level \\n[rst2man-indent-level]
 level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
@@ -15,7 +15,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 \\n[rst2man-indent1]
 \\n[rst2man-indent2]
 ..
-.de INDENT
+.de1 INDENT
 .\" .rstReportMargin pre:
 . RS \\$1
 . nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
@@ -30,139 +30,183 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.SH SYNOPSYS
+.\" 
+.
+.\" Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+.
+.\" NEXA Center for Internet & Society at Politecnico di Torino
+.
+.\" 
+.
+.\" This file is part of Neubot <http://www.neubot.org/>.
+.
+.\" 
+.
+.\" Neubot is free software: you can redistribute it and/or modify
+.
+.\" it under the terms of the GNU General Public License as published by
+.
+.\" the Free Software Foundation, either version 3 of the License, or
+.
+.\" (at your option) any later version.
+.
+.\" 
+.
+.\" Neubot is distributed in the hope that it will be useful,
+.
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.
+.\" GNU General Public License for more details.
+.
+.\" 
+.
+.\" You should have received a copy of the GNU General Public License
+.
+.\" along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+.
+.\" 
+.
+.SH SYNOPSIS
 .nf
 neubot
-neubot [\-dnvx] [\-T \fIinterval\fP] [\fIURI\fP]
-neubot \-S [\-dv] [\-D \fIoption\fP]
+neubot start [[\fIADDRESS\fP] \fIPORT\fP]
+neubot status [[\fIADDRESS\fP] \fIPORT\fP]
+neubot stop [[\fIADDRESS\fP] \fIPORT\fP]
 neubot \-\-help
 neubot \-V
-neubot help
-neubot \fIcommand\fP \-\-help
-neubot \fIcommand\fP [\fIarguments\fP]
-neubot speedtest
-neubot stream
-neubot bittorrent
+neubot \fICOMMAND\fP [\-ElvV] [\-D \fIPROPERTY[=VALUE\fP]] [\-f \fIFILE\fP]
+start\-neubot\-daemon
 .fi
 .sp
 .SH DESCRIPTION
 .sp
-Neubot is the network neutrality bot, a lightweight open\-source
-program that runs in background and periodically performs transmission
-tests with some test servers and with other instances of the program
-itself. These transmission tests probe the Internet using various
-application level protocols. The program saves tests results locally
-and uploads them on the project servers. The collected dataset
-contains samples from various Providers and allows to monitor network
-neutrality.
+\fINeubot\fP is a research project on network neutrality of the \fINEXA Center
+for Internet & Society\fP at \fIPolitecnico di Torino\fP.  The general idea
+behind Neubot is to deploy to interested users a lightweight computer
+program that performs distributed measurements and collects quantitative
+data on the behavior of \fIInternet Service Providers\fP (ISPs) with respect
+to \fItraffic discrimination\fP and \fIInternet access quality\fP.
 .sp
-This is a beta release of neubot that implements just client/server
-transmission tests, for HTTP (the \fIspeedtest\fP command), BitTorrent
-(\fIbittorrent\fP), and raw TCP (\fIstream\fP).
+This manual page documents the \fINeubot Agent\fP, i.e. the piece of software
+that you install on your computer.  Typically, the Agent \fIruns in the
+background\fP without your intervention, and periodically performs \fITests\fP
+with remote Test Servers and (in future) with other Agents.  Each test
+emulates the syntax and/or behavior of a given application protocol and
+consists of sending and/or receiving \fIrandom data only\fP, i.e. the Agent
+does not monitor or analyze your traffic.
 .sp
-The first form of the command will make sure that neubot \fIdaemon\fP is
-running (and will start it if not), and then will open neubot \fIweb user
-interface\fP directing the default browser to \fIhttp://127.0.0.1:9774\fP.
-Note that neubot will not attempt to start a web browser if there is
-not an available graphical environment (e.g. \fBDISPLAY\fP is not set.)
+You can configure and control the Agent either via \fIcommand line\fP or
+via its \fIWeb User Interface\fP (WUI).  The Command Line Interface (CLI)
+allows to start, stop, and query the Agent status, run on\-demand tests,
+and much more.  The WUI, based on a \fIWeb API\fP, permits to configure and
+control the Agent, and to navigate recent results.
 .sp
-The second form of the command starts neubot daemon, which will daemonize,
-eventually dropping root privileges, and then will routinely connect()
-to the \fImaster\fP server to check for software updates and tests to
-be performed. The \fIinterval\fP parameter could be used to control how
-frequently the daemon connects to the master server. The default master
-server URI is \fIhttp://master.neubot.org/rendezvous\fP, but it is possible
-to specify an alternate \fIURI\fP.
+The \fIfirst form\fP of the command starts the Web User Interface in the
+default browser.  Before opening the browser, this command ensures that an
+instance of the Agent is running in background, and starts it otherwise.
+Then, the command tries to open the Web User Interface in the default
+browser, using this URI: \fIhttp://127.0.0.1:9774/\fP.  Note that it\(aqs not
+possible to open a browser if a graphical environment is not available,
+i.e. if the \fIDISPLAY\fP environment variable is not set.
 .sp
-The third form of the command starts the master server, which will
-daemonize, eventually dropping root privileges, and then will accept()
-connections from neubot daemons and will return information on available
-software updates and tests to be performed. The configuration of the
-master server is specified inside the database, but it is possible to
-override these settings using the \fI-D option\fP switch (see below).
+The \fIsecond form\fP of the command starts the Agent, which will daemonize,
+drop privileges if running as root, and then run in the background.
+(Note that the Agent drops privileges to the user \fB_neubot\fP, so,
+if you install Neubot from sources you need to create this user.)
+By default, the Agent listens at \fI127.0.0.1:9774\fP for Web API requests,
+but you can use the optional \fIaddress\fP and \fIport\fP arguments to override
+the defaults.
 .sp
-The fourth form of the command prints a subset of the program synopsys
-(just the second, third, fourth, and fifth form) and documents briefly
-the available options.
+The \fIthird form\fP of the command queries the status of the Agent, and
+prints the result on the standard output.  To do that, the command
+connects to \fI127.0.0.1:9774\fP, and sends a request to the Web API.
+The Agent is reported to be running if the response is successful,
+i.e. \fI200 Ok\fP, and not running otherwise.  You can use the optional
+\fIaddress\fP and \fIport\fP parameters to query the status of an Agent started
+with non\-standard address and port.
 .sp
-The fifth form of the command prints neubot version.
+The \fIfourth form\fP of the command stops the agent, using the proper Web API
+command.  Upon receiving this request, the Agent will immediately exit.
+You can use the optional \fIaddress\fP and \fIport\fP parameters to stop an
+Agent started with non\-standard address and port.
 .sp
-The sixth form of the command prints the available \fIsub\-commands\fP
-list. Indeed, neubot is a modular software and many modules provide
-a main() function that could be invoked with arguments. For example,
-the \fIrendezvous\fP module is the one that implements the second, third,
-firth, and fifth form of the command.
+The \fIfifth form\fP of the command prints on the standard output a brief
+help message that summarizes the synopsis.  While, the \fIsixth form\fP
+prints on the standard output the version number.
 .sp
-The seventh form of the command prints the synopys and documents briefly
-the available options of the selected sub\-command \fIcommand\fP.
-.sp
-The eight form of the command runs the sub\-command \fIcommand\fP with
-zero or more \fIarguments\fP.
-.sp
-The nineth form of the command runs a speed test, invoking the \fIspeedtest\fP
-sub\-command. We include this form here because you might want to start a
-speedtest from command line (for more info on the full synopsys of this
-command pass it the \-\-help option).
-.sp
-The tenth form of the command runs a raw TCP transmission test that
-attempts to download as much data as possible from a remote server
-for about ten seconds.  We include this form here because you might
-want to start such test from command line (for more info on the full
-synopsys of this command pass it the \-\-help option).
-.sp
-The eleventh form of the command runs a BitTorrent transmission test
-that attempts to download as much data as possible from a remote server
-for about ten seconds.  We include this form here because you might
-want to start such test from command line (for more info on the full
-synopsys of this command pass it the \-\-help option).
-.SH OPTIONS
+The \fIseventh form\fP of the command allows to run an arbitrary Neubot
+module. The design of Neubot is module\-oriented: most modules export a
+function, named \fImain()\fP, that parses command line options and implements
+some behavior.  The available modules are:
 .INDENT 0.0
 .TP
-.BI \-D \ option
+.B agent
 .
-Set configuration property. The accepted format is either
-\fIname:value\fP or \fIname=value\fP (note that neubot will \fIstrip()\fP
-name and value and so you can add whitespaces at will).
+This module implements the Agent behavior described in this manual page.
+I.e. forks in background, starts the Web API server, drops privileges
+if needed, and then periodically performs Tests.  When you run \fIneubot
+start\fP this module is invoked under the hood.
+.TP
+.B bittorrent
+.
+This module performs an on\-demand BitTorrent transmission Test with
+an alternative Test Server reserved for this purpose.
+.TP
+.B database
+.
+This module allows to perform some low\-level tasks with the database.
+It allows to dump the content of the database, delete the content of
+the database, remove old entries, and \fIregenerate the Neubot identifier\fP
+associated to the Agent.
 .sp
-FIXME The support for this command line switch is rather
-buggy because it\(aqs only possible to specify options defined
-by the \fIrendezvous\fP module (other options will be ignored).
+(Each Agent is associated with an unique identifier that allows to
+perform time series analysis.  We believe it does not breach your
+privacy, but you might not agree and might want to change it from time
+to time.)
+.TP
+.B speedtest
+.
+This module performs an on\-demand HTTP transmission Test with an
+alternative Test Server reserved for this purpose.
+.TP
+.B speedtest.client
+.
+Alias for \fIspeedtest\fP.
+.TP
+.B stream
+.
+This module performs an on\-demand TCP bulk transfer transmission Test
+with an alternative Test Server reserved for this purpose.
+.UNINDENT
 .sp
-We don\(aqt document the accepted options because they\(aqre likely
-to change slightly when we\(aqll fix the above mentioned bug, and
-so we think it\(aqs better not to make promises here.
+The \fIeight form\fP of the command is a convenience shell script that
+attempts to start the Agent in a very robust way.  E.g., if the Python
+interpreter is not in the \fBPATH\fP, the script will try to locate it.
+If you install Neubot from sources, please use this command to start
+Neubot from your \fI/etc/rc.local\fP script.
+.SH OPTIONS
 .TP
-.B \-d
+.BI \-D \ PROPERTY[=VALUE]
 .
-Debug mode, don\(aqt become a daemon.
+Define the \fIVALUE\fP of the given \fIPROPERTY\fP.
 .TP
-.B \-\-help
+.B \-E
 .
-Print an help screen and exits.
+Ignore \fINEUBOT_OPTIONS\fP environment variable.
 .TP
-.B \-n
+.BI \-f \ FILE
 .
-Just connect once to the master server.
+Force file name of the database to \fIFILE\fP.
 .TP
-.B \-S
+.B \-l
 .
-Run the program in server mode.
-.TP
-.BI \-T \ interval
-.
-Interval between each rendez\-vous.
-.TP
-.B \-V
-.
-Print version number and exit.
+List all the available properties and exit.
 .TP
 .B \-v
 .
-Run the program in verbose mode.
-.TP
-.B \-x
-.
-Just retrieve information but don\(aqt run tests.
+Verbose: print much more log messages.
 .UNINDENT
 .SH EXAMPLES
 .sp
@@ -170,7 +214,7 @@ In this section we will follow the well\-established convention of
 representing the unprivileged user prompt with \fI$\fP and the privileged
 user prompt with \fI#\fP.
 .sp
-Perform a single speedtest:
+Run an on\-demand HTTP Test:
 .nf
 
 .in +2
@@ -179,7 +223,25 @@ $ neubot speedtest
 .fi
 .sp
 .sp
-Stop neubot daemon:
+Run an on\-demand BitTorrent Test:
+.nf
+
+.in +2
+$ neubot bittorrent
+.in -2
+.fi
+.sp
+.sp
+Start a system\-wide Agent:
+.nf
+
+.in +2
+# neubot start
+.in -2
+.fi
+.sp
+.sp
+Stop the Agent:
 .nf
 
 .in +2
@@ -188,36 +250,34 @@ $ neubot stop
 .fi
 .sp
 .sp
-Debug neubot, running it in verbose mode and preventing it to become
-a daemon:
+Run the Agent in foreground and in debug mode for debugging purposes:
 .nf
 
 .in +2
-$ neubot \-v \-d
+$ neubot agent \-v \-D agent.daemonize=no
 .in -2
 .fi
 .sp
 .sp
-Export results to JSON:
+Export system\-wide results to JSON:
 .nf
 
 .in +2
-# neubot database \-l > output.json
+# neubot database \-f /var/neubot/database.sqlite3 dump > output.json
 .in -2
 .fi
 .sp
 .sp
-Track neubot daemon state using the command line:
+Track the Agent state using the command line:
 .nf
 
 .in +2
-$ neubot ui track
+$ neubot api.client
 .in -2
 .fi
 .sp
 .sp
-It is possible to run neubot from the sources directory without installing
-it, e.g.:
+Run Neubot in\-place from the sources directory:
 .nf
 
 .in +2
@@ -227,7 +287,7 @@ $ ./bin/neubot help
 .sp
 .SH FILES
 .sp
-Neubot could be installed below many different prefixes (the most common
+Neubot can be installed below many different prefixes (the most common
 ones being \fB/usr/local\fP and \fB/usr\fP). In this section of the manual
 we assume that it has been installed below \fB/usr/local\fP:
 .INDENT 0.0
@@ -273,7 +333,7 @@ Marco Scopesi                 <\fI\%marco.scopesi@gmail.com\fP>
 .fi
 .sp
 .sp
-The following poeple have helped to translate the website:
+The following people have helped to translate the website:
 .nf
 
 Claudio Artusio               <\fI\%claudioartusio@gmail.com\fP>
