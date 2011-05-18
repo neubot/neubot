@@ -94,8 +94,8 @@ that you install on your computer.  Typically, the Agent \fIruns in the
 background\fP without your intervention, and periodically performs \fITests\fP
 with remote Test Servers and (in future) with other Agents.  Each test
 emulates the syntax and/or behavior of a given application protocol and
-consists of sending and/or receiving \fIrandom data only\fP, i.e. the Agent
-does not monitor or analyze your traffic.
+consists of sending and/or receiving random data only, \fIi.e. the Agent
+does not monitor or analyze your traffic.\fP
 .sp
 You can configure and control the Agent either via \fIcommand line\fP or
 via its \fIWeb User Interface\fP (WUI).  The Command Line Interface (CLI)
@@ -103,15 +103,16 @@ allows to start, stop, and query the Agent status, run on\-demand tests,
 and much more.  The WUI, based on a \fIWeb API\fP, permits to configure and
 control the Agent, and to navigate recent results.
 .sp
-The \fIfirst form\fP of the command starts the Web User Interface in the
-default browser.  Before opening the browser, this command ensures that an
-instance of the Agent is running in background, and starts it otherwise.
+The \fIfirst form\fP of the command (with no arguments) starts the Web User
+Interface in the default browser.  Before opening the browser, this command
+ensures that an instance of the Agent is running in background, and starts it
+otherwise.
 Then, the command tries to open the Web User Interface in the default
 browser, using this URI: \fIhttp://127.0.0.1:9774/\fP.  Note that it\(aqs not
 possible to open a browser if a graphical environment is not available,
 i.e. if the \fIDISPLAY\fP environment variable is not set.
 .sp
-The \fIsecond form\fP of the command starts the Agent, which will daemonize,
+The \fIsecond form\fP of the command (start) starts the Agent, which will daemonize,
 drop privileges if running as root, and then run in the background.
 (Note that the Agent drops privileges to the user \fB_neubot\fP, so,
 if you install Neubot from sources you need to create this user.)
@@ -119,7 +120,7 @@ By default, the Agent listens at \fI127.0.0.1:9774\fP for Web API requests,
 but you can use the optional \fIaddress\fP and \fIport\fP arguments to override
 the defaults.
 .sp
-The \fIthird form\fP of the command queries the status of the Agent, and
+The \fIthird form\fP of the command (status) queries the status of the Agent, and
 prints the result on the standard output.  To do that, the command
 connects to \fI127.0.0.1:9774\fP, and sends a request to the Web API.
 The Agent is reported to be running if the response is successful,
@@ -127,19 +128,21 @@ i.e. \fI200 Ok\fP, and not running otherwise.  You can use the optional
 \fIaddress\fP and \fIport\fP parameters to query the status of an Agent started
 with non\-standard address and port.
 .sp
-The \fIfourth form\fP of the command stops the agent, using the proper Web API
-command.  Upon receiving this request, the Agent will immediately exit.
+The \fIfourth form\fP of the command (stop) stops the agent, using the proper Web
+API command.  Upon receiving this request, the Agent will immediately exit.
 You can use the optional \fIaddress\fP and \fIport\fP parameters to stop an
 Agent started with non\-standard address and port.
 .sp
-The \fIfifth form\fP of the command prints on the standard output a brief
-help message that summarizes the synopsis.  While, the \fIsixth form\fP
-prints on the standard output the version number.
+The \fIfifth form\fP of the command (\-\-help) prints on the standard output a brief
+help message that summarizes the synopsis.
 .sp
-The \fIseventh form\fP of the command allows to run an arbitrary Neubot
-module. The design of Neubot is module\-oriented: most modules export a
-function, named \fImain()\fP, that parses command line options and implements
-some behavior.  The available modules are:
+The \fIsixth form\fP of the command (\-V) prints on the standard output the version
+number.
+.sp
+The \fIseventh form\fP of the command (COMMAND) allows to run an arbitrary Neubot
+module. The design of Neubot is module\-oriented:
+most modules export a function, named \fImain()\fP, that parses command line options
+and implements some behavior.  The available modules are:
 .INDENT 0.0
 .TP
 .B agent
@@ -181,9 +184,10 @@ This module performs an on\-demand TCP bulk transfer transmission Test
 with an alternative Test Server reserved for this purpose.
 .UNINDENT
 .sp
-The \fIeight form\fP of the command is a convenience shell script that
-attempts to start the Agent in a very robust way.  E.g., if the Python
-interpreter is not in the \fBPATH\fP, the script will try to locate it.
+The \fIeight form\fP (start\-neubot\-daemon) of the command is a convenience shell
+script that attempts to start the Agent in a very robust way.
+E.g., if the Python interpreter is not in the \fBPATH\fP, the script will try to
+locate it.
 If you install Neubot from sources, please use this command to start
 Neubot from your \fI/etc/rc.local\fP script.
 .SH OPTIONS

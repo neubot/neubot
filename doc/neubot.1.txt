@@ -56,8 +56,8 @@ that you install on your computer.  Typically, the Agent *runs in the
 background* without your intervention, and periodically performs *Tests*
 with remote Test Servers and (in future) with other Agents.  Each test
 emulates the syntax and/or behavior of a given application protocol and
-consists of sending and/or receiving *random data only*, i.e. the Agent
-does not monitor or analyze your traffic.
+consists of sending and/or receiving random data only, *i.e. the Agent
+does not monitor or analyze your traffic.*
 
 You can configure and control the Agent either via *command line* or
 via its *Web User Interface* (WUI).  The Command Line Interface (CLI)
@@ -65,15 +65,16 @@ allows to start, stop, and query the Agent status, run on-demand tests,
 and much more.  The WUI, based on a *Web API*, permits to configure and
 control the Agent, and to navigate recent results.
 
-The *first form* of the command starts the Web User Interface in the
-default browser.  Before opening the browser, this command ensures that an
-instance of the Agent is running in background, and starts it otherwise.
+The *first form* of the command (with no arguments) starts the Web User
+Interface in the default browser.  Before opening the browser, this command
+ensures that an instance of the Agent is running in background, and starts it
+otherwise.
 Then, the command tries to open the Web User Interface in the default
 browser, using this URI: *http://127.0.0.1:9774/*.  Note that it's not
 possible to open a browser if a graphical environment is not available,
 i.e. if the *DISPLAY* environment variable is not set.
 
-The *second form* of the command starts the Agent, which will daemonize,
+The *second form* of the command (start) starts the Agent, which will daemonize,
 drop privileges if running as root, and then run in the background.
 (Note that the Agent drops privileges to the user **_neubot**, so,
 if you install Neubot from sources you need to create this user.)
@@ -81,7 +82,7 @@ By default, the Agent listens at *127.0.0.1:9774* for Web API requests,
 but you can use the optional *address* and *port* arguments to override
 the defaults.
 
-The *third form* of the command queries the status of the Agent, and
+The *third form* of the command (status) queries the status of the Agent, and
 prints the result on the standard output.  To do that, the command
 connects to *127.0.0.1:9774*, and sends a request to the Web API.
 The Agent is reported to be running if the response is successful,
@@ -89,19 +90,21 @@ i.e. *200 Ok*, and not running otherwise.  You can use the optional
 *address* and *port* parameters to query the status of an Agent started
 with non-standard address and port.
 
-The *fourth form* of the command stops the agent, using the proper Web API
-command.  Upon receiving this request, the Agent will immediately exit.
+The *fourth form* of the command (stop) stops the agent, using the proper Web
+API command.  Upon receiving this request, the Agent will immediately exit.
 You can use the optional *address* and *port* parameters to stop an
 Agent started with non-standard address and port.
 
-The *fifth form* of the command prints on the standard output a brief
-help message that summarizes the synopsis.  While, the *sixth form*
-prints on the standard output the version number.
+The *fifth form* of the command (--help) prints on the standard output a brief
+help message that summarizes the synopsis.
 
-The *seventh form* of the command allows to run an arbitrary Neubot
-module. The design of Neubot is module-oriented: most modules export a
-function, named `main()`, that parses command line options and implements
-some behavior.  The available modules are:
+The *sixth form* of the command (-V) prints on the standard output the version
+number.
+
+The *seventh form* of the command (COMMAND) allows to run an arbitrary Neubot
+module. The design of Neubot is module-oriented:
+most modules export a function, named `main()`, that parses command line options
+and implements some behavior.  The available modules are:
 
 agent
   This module implements the Agent behavior described in this manual page.
@@ -135,9 +138,10 @@ stream
   This module performs an on-demand TCP bulk transfer transmission Test
   with an alternative Test Server reserved for this purpose.
 
-The *eight form* of the command is a convenience shell script that
-attempts to start the Agent in a very robust way.  E.g., if the Python
-interpreter is not in the **PATH**, the script will try to locate it.
+The *eight form* (start-neubot-daemon) of the command is a convenience shell
+script that attempts to start the Agent in a very robust way.
+E.g., if the Python interpreter is not in the **PATH**, the script will try to
+locate it.
 If you install Neubot from sources, please use this command to start
 Neubot from your */etc/rc.local* script.
 
