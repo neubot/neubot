@@ -42,21 +42,16 @@ if __name__ == "__main__":
 USAGE = '''\
 neubot - The network neutrality bot
 
-Usage: neubot COMMAND [-ElvV] [-D PROPERTY[=VALUE]] [-f FILE]
+Usage: neubot
        neubot start [[ADDRESS] PORT]
        neubot status [[ADDRESS] PORT]
        neubot stop [[ADDRESS] PORT]
        neubot --help
        neubot -V
-       neubot help
-       neubot
+       neubot COMMAND [-ElvV] [-D PROPERTY[=VALUE]] [-f FILE]
 
-When invoked without arguments neubot ensures that there is a neubot
-agent running in background.  Then, neubot seeks to start you default
-web browser and opens the Web User Interface (WUI) URI.  In turn the
-WUI allows you to review the results and control the background agent.
-
-Try `neubot help` to get a list of available commands.
+Try `neubot help` to get a list of available subcommands.
+Try `neubot COMMAND --help` for more help on COMMAND.
 '''
 
 VERSION = "0.3.6\n"
@@ -306,7 +301,7 @@ def run_module(argv):
         for s in lines[1:]:
             sys.stdout.write("          " + s + "\n")
 
-        sys.stdout.write("Try `neubot COMMAND --help` for more help\n")
+        sys.stdout.write("Try `neubot COMMAND --help` for more help on COMMAND.\n")
         sys.exit(0)
 
     if not module in MODULES:
