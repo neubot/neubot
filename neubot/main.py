@@ -273,6 +273,7 @@ def main(argv):
 
 MODULES = {
     "agent"      : "agent",
+    "api.client" : "api.client",
     "database"   : "database.main",
     "bittorrent" : "bittorrent.main",
     "http.client" : "http.client",
