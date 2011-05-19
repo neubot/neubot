@@ -193,7 +193,7 @@ Run the Agent in foreground and in debug mode for debugging purposes:
 Export system-wide results to JSON:
 
 |
-|    # neubot database -f /var/neubot/database.sqlite3 dump > output.json
+|    # neubot database dump > output.json
 
 Track the Agent state using the command line:
 
