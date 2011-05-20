@@ -33,7 +33,8 @@ from neubot import utils
 USAGE = '''\
 Neubot database -- Low-level database operations
 
-Usage: neubot database [-f FILE] delete_all
+Usage: neubot database [-f FILE] [info]
+       neubot database [-f FILE] delete_all
        neubot database [-f FILE] dump
        neubot database [-f FILE] prune
        neubot database [-f FILE] regen_uuid
@@ -60,11 +61,10 @@ def main(args):
 
     DATABASE.connect()
 
-    if not arguments:
-        sys.stdout.write(USAGE)
-        sys.exit(0)
+    if not arguments or arguments[0] == "info":
+        print DATABASE.path
 
-    if arguments[0] == "regen_uuid":
+    elif arguments[0] == "regen_uuid":
         table_config.update(DATABASE.connection(),
           {"uuid": utils.get_uuid()}.iteritems())
 
@@ -82,3 +82,7 @@ def main(args):
             compat.json.dump(d, sys.stdout, indent=4)
         elif arguments[0] == "dump":
             compat.json.dump(d, sys.stdout)
+
+    else:
+        sys.stdout.write(USAGE)
+        sys.exit(0)
