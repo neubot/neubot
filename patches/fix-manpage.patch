@@ -1,0 +1,16 @@
+--- a/man/man1/neubot.1.old	2011-05-18 15:27:06.000000000 +0200
++++ b/man/man1/neubot.1	2011-05-18 15:27:04.000000000 +0200
+@@ -187,9 +187,10 @@
+ If you install Neubot from sources, please use this command to start
+ Neubot from your \fI/etc/rc.local\fP script.
+ .SH OPTIONS
+-.sp
+-\-D PROPERTY[=VALUE]  Define the \fIVALUE\fP of the given \fIPROPERTY\fP.
+-.INDENT 0.0
++.TP
++.BI \-D \ PROPERTY[=VALUE]
++.
++Define the \fIVALUE\fP of the given \fIPROPERTY\fP.
+ .TP
+ .B \-E
+ .

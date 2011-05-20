@@ -70,7 +70,7 @@ var utils = (function() {
         return t;
     }
 
-    self.getTimeFromSeconds = function(t, convert) {
+    self.getTimeFromSeconds = function(t, convert, seconds) {
         t = self.getNumber(t);
         if (!t) {
             t = utils.getNow();
@@ -79,7 +79,7 @@ var utils = (function() {
             t *= 1000;
         }
         if (convert) {
-            t = utils.formatDateTime(t);
+            t = utils.formatDateTime(t, seconds);
         }
         return t;
     }
@@ -102,59 +102,88 @@ var utils = (function() {
         return n < 10 ? '0' + n : n
     }
 
-    self.formatDateTime = function(t) {
+    self.formatDateTime = function(t, seconds) {
         var date = new Date(t);
-        return date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
+        var myret = date.getFullYear() + '-' + self.strPad(date.getMonth() + 1)
           + '-' + self.strPad(date.getDate()) + '\n'
           + self.strPad(date.getHours()) + ':'
           + self.strPad(date.getMinutes());
+        if (seconds) {
+            myret += ':' + self.strPad(date.getSeconds());
+        }
+        return myret;
+    }
+
+    self.setActiveTab = function(tabname) {
+        jQuery("#menu_tab_list li").removeClass("active");
+        jQuery("#tab_" + tabname).addClass("active");
+        return false;
+    }
+
+    self.setStatusLabels = function(data) {
+        if (data.enabled == "1") {
+            jQuery("#statusBoxSpan").html("enabled");
+            jQuery("#statusBoxSpan").css("color", "#3DA64E");
+            jQuery("#statusBoxA").html("Disable");
+            jQuery("#statusBoxA").unbind('click');
+            jQuery("#statusBoxA").click(function () {
+                self.setConfigVars({'enabled': 0});
+            });
+        }
+        else {
+            jQuery("#statusBoxSpan").html("disabled");
+            jQuery("#statusBoxSpan").css("color", "#c00");
+            jQuery("#statusBoxA").html("Enable");
+            jQuery("#statusBoxA").unbind('click');
+            jQuery("#statusBoxA").click(function () {
+                self.setConfigVars({'enabled': 1});
+            });
+        }
+    }
+
+    self.getConfigVars = function(myfunction) {
+        return self.getSetConfigVars(myfunction);
+    }
+
+    self.setConfigVars = function(value, success, error) {
+        return self.getSetConfigVars(success, true, value, error);
+    }
+
+    self.getSetConfigVars = function(myfunction, change, value, myerror) {
+        var data = {};
+        var type = "GET";
+        var success = undefined;
+        var error = undefined;
+
+        if (change) {
+            data = value;
+            type = "POST";
+        }
+
+        if (myfunction) {
+            success = function(data) {
+                myfunction(data);
+            }
+        }
+
+        if (myerror) {
+            error = function(jqXHR, textStatus, errorThrown) {
+                myerror(jqXHR, textStatus, errorThrown);
+            }
+        }
+
+        jQuery.ajax({
+            url: '/api/config',
+            data: data,
+            type: type,
+            dataType: 'json',
+            success: success,
+            error: error
+        });
+
+        return false;
     }
 
     return self;
 })();
 
-function setStatusLabels(status) {
-    if (status == "1") {
-        jQuery("#statusBoxSpan").html("enabled");
-        jQuery("#statusBoxSpan").css("color", "#3DA64E");
-        jQuery("#statusBoxA").html("Disable");
-        jQuery("#statusBoxA").unbind('click');
-        jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 0);
-        });
-    }
-    else {
-        jQuery("#statusBoxSpan").html("disabled");
-        jQuery("#statusBoxSpan").css("color", "#c00");
-        jQuery("#statusBoxA").html("Enable");
-        jQuery("#statusBoxA").unbind('click');
-        jQuery("#statusBoxA").click(function () {
-            getSetConfigVar("enabled", setStatusLabels, true, 1);
-        });
-    }
-}
-
-function getSetConfigVar(id, myfunction, change, value) {
-    var data = {};
-    var type = "GET";
-    var success = undefined;
-
-    if (change) {
-        data[id] = value;
-        type = "POST";
-    }
-
-    if (myfunction) {
-        success = function(data) {
-            myfunction(data[id]);
-        }
-    }
-
-    jQuery.ajax({
-        url: '/api/config',
-        data: data,
-        type: type,
-        dataType: 'json',
-        success: success
-    });
-}

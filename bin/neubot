@@ -27,11 +27,6 @@ NEUBOT_HOME = "@PREFIX@/share"
 if NEUBOT_HOME.startswith("@"):
     NEUBOT_HOME = "."
 
-if sys.version_info[0] > 2 or sys.version_info[1] < 5:
-    sys.stderr.write("fatal: wrong Python version\n")
-    sys.stderr.write("please run neubot using Python >= 2.5 and < 3.0\n")
-    sys.exit(1)
-
 if os.environ.has_key("NEUBOT_HOME"):
     NEUBOT_HOME = os.environ["NEUBOT_HOME"]
 sys.path.insert(0, NEUBOT_HOME)

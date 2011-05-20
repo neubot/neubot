@@ -1,7 +1,7 @@
 # neubot/utils.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,36 +20,26 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from StringIO import StringIO
-from neubot.times import ticks
-from time import clock
-from time import sleep
-from time import time
-from neubot.log import LOG
-from sys import stdin
-from sys import stdout
-from sys import stderr
-
-import signal
+import sys
 import os
-
-if os.name == "posix":
-    import pwd
+import types
+import time
+import uuid
 
 def versioncmp(left, right):
     left = map(int, left.split("."))
     right = map(int, right.split("."))
-    for i in range(0, 3):
+
+    if len(left) > len(right):
+        [right.append(0) for i in range(len(left) - len(right))]
+    elif len(right) > len(left):
+        [left.append(0) for i in range(len(right) - len(left))]
+
+    for i in range(len(left)):
         diff = left[i] - right[i]
         if diff:
             return diff
     return 0
-
-def fixkwargs(kwargs, defaults):
-    for key in defaults.keys():
-        if not kwargs.has_key(key):
-            kwargs[key] = defaults[key]
-    return kwargs
 
 #
 # When stdin, stdout, stderr are attached to console, seek(0)
@@ -62,7 +52,7 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
     try:
         afile.seek(offset, whence)
     except IOError:
-        if afile not in [stdin, stdout, stderr]:
+        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
             raise
 
 #
@@ -128,143 +118,95 @@ def time_formatter(n):
     else:
         return "%f" % n
 
-#
-# Daemonize
-#
+# Coerce types
 
-DAEMON_SYSLOG = 1<<0
-DAEMON_CHDIR = 1<<1
-DAEMON_DETACH = 1<<2
-DAEMON_SIGNAL = 1<<3
-DAEMON_PIDFILE = 1<<4
-DAEMON_DROP = 1<<5
+def asciiify(s):
+    return s.encode("ascii")
 
-DAEMON_ALL = (DAEMON_SYSLOG|DAEMON_CHDIR|DAEMON_DETACH|DAEMON_SIGNAL|
-              DAEMON_PIDFILE|DAEMON_DROP)
-
-USERS = ["_neubot", "nobody"]
-
-def getpwnaml(users=USERS):
-    passwd = None
-    if os.name == "posix":
-        for user in users:
-            try:
-                passwd = pwd.getpwnam(user)
-            except KeyError:
-                pass
-            else:
-                break
-    return passwd
-
-def getpwnamlx(users=USERS):
-    passwd = getpwnaml(users)
-    if not passwd:
-        LOG.error("* Can't getpwnam for: %s" % str(users))
-        # XXX Because we catch SystemExit where we should not
-        os._exit(1)
-    return passwd
-
-def become_daemon(flags=DAEMON_ALL):
-    if os.name == "posix":
-        try:
-            if flags & DAEMON_SYSLOG:
-                LOG.debug("* Redirect logs to syslog(3)")
-                LOG.redirect()
-                for descriptor in range(0,3):
-                    os.close(descriptor)
-                devnull = os.open("/dev/null", os.O_RDWR)
-                for descriptor in range(1,3):
-                    os.dup2(devnull, descriptor)
-            if flags & DAEMON_CHDIR:
-                LOG.debug("* Move working directory to /")
-                os.chdir("/")
-            if flags & DAEMON_DETACH:
-                LOG.debug("* Detach from controlling tty")
-                if os.fork() > 0:
-                    os._exit(0)
-                LOG.debug("* Become leader of a new session")
-                os.setsid()
-                LOG.debug("* Detach from controlling session")
-                if os.fork() > 0:
-                    os._exit(0)
-            if flags & DAEMON_SIGNAL:
-                LOG.debug("* Ignoring the SIGINT signal")
-                signal.signal(signal.SIGINT, signal.SIG_IGN)
-            if flags & DAEMON_PIDFILE:
-                pidfiles = ["/var/run/neubot.pid"]
-                if os.environ.has_key("HOME"):
-                    pidfiles.append(os.environ["HOME"] + "/.neubot/pidfile")
-                for pidfile in pidfiles:
-                    try:
-                        f = open(pidfile, "wb")
-                        f.write(str(os.getpid()) + "\n")
-                        f.close()
-                        LOG.debug("* Written pidfile: %s" % pidfile)
-                        break
-                    except (IOError, OSError):
-                        pass
-            if flags & DAEMON_DROP and os.getuid() == 0:
-                passwd = getpwnamlx()
-                os.setgid(passwd.pw_gid)
-                os.setuid(passwd.pw_uid)
-        except:
-            LOG.error("fatal: become_daemon() failed")
-            LOG.exception()
-            os._exit(1)
+def stringify(value):
+    if type(value) == types.UnicodeType:
+        return value.encode("utf-8")
+    elif type(value) == types.StringType:
+        return value
     else:
-        pass
+        return str(value)
+
+def unicodize(value):
+    if type(value) == types.UnicodeType:
+        return value
+    elif type(value) == types.StringType:
+        return value.decode("utf-8")
+    else:
+        return unicode(value)
+
+def intify(s):
+    if type(s) == types.StringType or type(s) == types.UnicodeType:
+        if s.lower() in ("off", "false", "no"):
+            return 0
+        elif s.lower() in ("on", "true", "yes"):
+            return 1
+    return int(s)
+
+def smart_cast(value):
+    if type(value) == types.StringType:
+        return stringify
+    elif type(value) == types.UnicodeType:
+        return unicodize
+    elif type(value) == types.BooleanType:
+        return intify
+    elif type(value) == types.IntType:
+        return intify
+    elif type(value) == types.LongType:
+        return intify
+    elif type(value) == types.FloatType:
+        return float
+    else:
+        raise TypeError("No such cast for this type")
 
 #
-# XML
+# The various definitions of time available in Neubot.
+#
+# timestamp()
+#   Returns an integer representing the number of seconds elapsed
+#   since the EPOCH in UTC.
+#
+# ticks()
+#   Returns a real representing the most precise clock available
+#   on the current platform.  Note that, depending on the platform,
+#   the returned value MIGHT NOT be a timestamp.  So, you MUST
+#   use this clock to calculate the time elapsed between two events
+#   ONLY.
+#
+# T()
+#   Returns the opaque time, i.e. the time used to identify
+#   events by the web user interface.  This is an integer, and
+#   is calculated as follows: ``int(10^6 * ticks())``.  So,
+#   the same caveat regarding ticks() also applies to this
+#   function.
 #
 
-def XML_text(node):
-    vector = []
-    if node.nodeType != node.ELEMENT_NODE:
-        raise ValueError("Bad node type")
-    element = node
-    for node in element.childNodes:
-        if node.nodeType != node.TEXT_NODE:
-            continue
-        text = node
-        vector.append(text.data)
-    return "".join(vector).strip()
+timestamp = lambda: int(time.time())
 
-def XML_to_string(document):
-    return document.toprettyxml(indent="    ", newl="\n", encoding="utf-8")
+if os.name == 'nt':
+    ticks = time.clock
+elif os.name == 'posix':
+    ticks = time.time
+else:
+    raise ImportError("Please, provide a definition of ticks()")
 
-def XML_to_stringio(document):
-    return StringIO(XML_to_string(document))
+T = lambda: int(1000000 * ticks())
 
-#
-# Stats
-#
+# dynamic loader
 
-class SimpleStats(object):
-    def __init__(self):
-        self.begin()
+def import_class(name):
+    if not name.startswith("neubot"):
+        name = "neubot." + name
+    index = name.rfind(".")
+    module, ctor = name[:index], name[index+1:]
+    ctx = __import__(module, globals(), locals(), [ctor])
+    return ctx.__dict__[ctor]
 
-    def __del__(self):
-        pass
+# per-client random unique identifier
 
-    def begin(self):
-        self.start = ticks()
-        self.stop = 0
-        self.length = 0
-
-    def end(self):
-        self.stop = ticks()
-
-    def account(self, count):
-        self.length += count
-
-    def diff(self):
-        return self.stop - self.start
-
-    def speed(self):
-        return self.length / self.diff()
-
-class Stats(object):
-    def __init__(self):
-        self.send = SimpleStats()
-        self.recv = SimpleStats()
+def get_uuid():
+    return str(uuid.uuid4())

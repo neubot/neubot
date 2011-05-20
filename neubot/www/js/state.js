@@ -1,7 +1,7 @@
 /* neubot/www/state.js */
 /*
  * Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
- *  Università degli Studi di Milano
+ *  Universita` degli Studi di Milano
  * Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
  *  NEXA Center for Internet & Society at Politecnico di Torino
  *
@@ -24,6 +24,8 @@
 var state = (function() {
     var self = {};
 
+    self.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
+
     self.tracker = function(callback) {
         var my = {};
         var curtime = 0;
@@ -35,6 +37,53 @@ var state = (function() {
 
         function get_state_error() {
             setTimeout(get_state, 5000);
+        }
+
+        function update_sidebar(data) {
+            jQuery('#testResultsBox h4').text("Latest test details");
+
+            if (data.events.config) {
+                if (data.events.config.enabled != undefined) {
+                    utils.setStatusLabels(data.events.config);
+                }
+            }
+
+            if (data.events.update && data.events.update.uri
+              && data.events.update.version) {
+                jQuery("#updateUrl").attr("href", data.events.update.uri);
+                jQuery("#updateUrl").text(data.events.update.uri);
+                jQuery("#updateVersion").text(data.events.update.version);
+                setTimeout(function() { jQuery('#update').slideDown("slow"); }, 500);
+            }
+
+            if (data.events.test_name) {
+                jQuery("#testNameSideBar").text(data.events.test_name);
+            }
+            if (data.events.speedtest_latency) {
+                jQuery("#latencyResult").text(data.events.speedtest_latency.value);
+            }
+            if (data.events.speedtest_download) {
+                jQuery("#downloadResult").text(data.events.speedtest_download.value);
+            }
+            if (data.events.speedtest_upload) {
+                jQuery("#uploadResult").text(data.events.speedtest_upload.value);
+            }
+
+            if (in_array(data.current, state.actions)) {
+                if (data.current == "negotiate") {
+                    jQuery("#latencyResult").text("---");
+                    jQuery("#downloadResult").text("---");
+                    jQuery("#uploadResult").text("---");
+                }
+                if (data.current == "test") {
+                    jQuery('#testResultsBox').qtip("show");
+                }
+                else {
+                    jQuery('#testResultsBox').qtip("hide");
+                }
+                jQuery('table#state tr').css('background-color', 'transparent');
+                jQuery('table#state tr#' + data.current).css('background-color', '#ffc');
+            }
         }
 
         function get_state_success(data) {
@@ -57,7 +106,10 @@ var state = (function() {
                 }
                 curtime = t;
             }
-            callback(data);
+            update_sidebar(data);
+            if (callback != undefined) {
+                callback(data);
+            }
             setTimeout(get_state, 0);
         }
 
@@ -75,6 +127,33 @@ var state = (function() {
         // delay the first get_state a bit
 
         my.start = function() {
+            jQuery('#testResultsBox').qtip({
+                content: "A new test is running.",
+                position: {
+                    target: jQuery('#testTime'),
+                    corner: {
+                        tooltip: "rightMiddle",
+                        target: "leftMiddle"
+                    }
+                },
+                show: {
+                    when: false,
+                    ready: false
+                },
+                hide: false,
+                style: {
+                    border: {
+                        width: 2,
+                        radius: 5
+                    },
+                    padding: 10,
+                    textAlign: 'center',
+                    tip: true,
+                    name: 'blue'
+                }
+            });
+
+            utils.getConfigVars(utils.setStatusLabels);
             setTimeout(get_state, 100);
         }
 

@@ -26,7 +26,6 @@ import os
 import socket
 import sys
 import types
-import getopt
 
 try:
     import ssl
@@ -36,14 +35,15 @@ except ImportError:
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.net.poller import Pollable
-from neubot.options import OptionParser
+from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
-from neubot.utils import become_daemon
-from neubot.utils import speed_formatter
 from neubot.arcfour import arcfour_new
-from neubot.times import ticks
 from neubot.log import LOG
+from neubot import system
+from neubot import utils
+from neubot import boot
 
 SUCCESS = 0
 ERROR = 1
@@ -70,7 +70,7 @@ if ssl:
             try:
                 self.sock.close()
             except ssl.SSLError:
-                pass
+                LOG.exception()
 
         def sorecv(self, maxlen):
             try:
@@ -105,7 +105,7 @@ class SocketWrapper(object):
         try:
             self.sock.close()
         except socket.error:
-            pass
+            LOG.exception()
 
     def sorecv(self, maxlen):
         try:
@@ -165,53 +165,58 @@ class Stream(Pollable):
         self.kickoffssl = 0
 
         self.measurer = None
+        self.bytes_recv_tot = 0
+        self.bytes_sent_tot = 0
+        self.bytes_recv = 0
+        self.bytes_sent = 0
+
+        self.conf = None
+
+    def __repr__(self):
+        return "stream %s" % self.logname
 
     def fileno(self):
         return self.filenum
 
-    def make_connection(self, sock):
-        if self.sock:
-            raise RuntimeError("make_connection() invoked more than once")
+    def attach(self, parent, sock, conf, measurer=None):
+
+        self.parent = parent
+        self.conf = conf
+
         self.filenum = sock.fileno()
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
         self.logname = str((self.myname, self.peername))
-        self.sock = SocketWrapper(sock)
 
-    def configure(self, dictionary):
-        if not self.sock:
-            raise RuntimeError("configure() invoked before make_connection()")
+        self.measurer = measurer
+        if self.measurer:
+            self.measurer.register_stream(self)
 
-        if "secure" in dictionary and dictionary["secure"]:
+        LOG.debug("* Connection made %s" % str(self.logname))
+
+        if conf.get("net.stream.secure", False):
             if not ssl:
                 raise RuntimeError("SSL support not available")
-            if hasattr(self.sock, "need_handshake"):
-                raise RuntimeError("Can't wrap SSL socket twice")
 
-            server_side = False
-            if "server_side" in dictionary and dictionary["server_side"]:
-                server_side = dictionary["server_side"]
-            certfile = None
-            if "certfile" in dictionary and dictionary["certfile"]:
-                certfile = dictionary["certfile"]
+            server_side = conf.get("net.stream.server_side", False)
+            certfile = conf.get("net.stream.certfile", None)
 
-            so = ssl.wrap_socket(self.sock.sock, do_handshake_on_connect=False,
+            so = ssl.wrap_socket(sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
 
             if not server_side:
                 self.kickoffssl = 1
 
-        if "obfuscate" in dictionary and dictionary["obfuscate"]:
-            key = None
-            if "key" in dictionary and dictionary["key"]:
-                key = dictionary["key"]
+        else:
+            self.sock = SocketWrapper(sock)
 
+        if conf.get("net.stream.obfuscate", False):
+            key = conf.get("net.stream.key", None)
             self.encrypt = arcfour_new(key).encrypt
             self.decrypt = arcfour_new(key).decrypt
 
-        if "measurer" in dictionary and dictionary["measurer"]:
-            self.measurer = dictionary["measurer"]
+        self.connection_made()
 
     def connection_made(self):
         pass
@@ -233,12 +238,19 @@ class Stream(Pollable):
 
         self.isclosed = 1
 
+        if exception:
+            LOG.error("* Connection %s: %s" % (self.logname, exception))
+        elif self.eof:
+            LOG.debug("* Connection %s: EOF" % (self.logname))
+        else:
+            LOG.debug("* Closed connection %s" % (self.logname))
+
         self.connection_lost(exception)
         if self.parent:
             self.parent.connection_lost(self)
 
         if self.measurer:
-            self.measurer.dead = True
+            self.measurer.unregister_stream(self)
 
         self.send_octets = None
         self.send_ticks = 0
@@ -265,7 +277,7 @@ class Stream(Pollable):
             return
 
         self.recv_maxlen = maxlen
-        self.recv_ticks = ticks()
+        self.recv_ticks = utils.ticks()
         self.recv_pending = 1
 
         if self.recvblocked:
@@ -304,8 +316,8 @@ class Stream(Pollable):
 
         if status == SUCCESS and octets:
 
-            if self.measurer:
-                self.measurer.recv += len(octets)
+            self.bytes_recv_tot += len(octets)
+            self.bytes_recv += len(octets)
 
             self.recv_maxlen = 0
             self.recv_ticks = 0
@@ -349,7 +361,7 @@ class Stream(Pollable):
             return
 
         if type(octets) == types.UnicodeType:
-            LOG.warning("* send: Working-around Unicode input")
+            LOG.oops("Received unicode input")
             octets = octets.encode("utf-8")
         if self.encrypt:
             octets = self.encrypt(octets)
@@ -359,7 +371,7 @@ class Stream(Pollable):
             return
 
         self.send_octets = octets
-        self.send_ticks = ticks()
+        self.send_ticks = utils.ticks()
         self.send_pending = 1
 
         if self.sendblocked:
@@ -380,14 +392,14 @@ class Stream(Pollable):
 
         if status == SUCCESS and count > 0:
 
-            if self.measurer:
-                self.measurer.send += count
+            self.bytes_sent_tot += count
+            self.bytes_sent += count
 
             if count == len(self.send_octets):
 
                 if len(self.send_queue) > 0:
                     self.send_octets = self.send_queue.popleft()
-                    self.send_ticks = ticks()
+                    self.send_ticks = utils.ticks()
                     return
 
                 self.send_octets = None
@@ -400,7 +412,7 @@ class Stream(Pollable):
 
             if count < len(self.send_octets):
                 self.send_octets = buffer(self.send_octets, count)
-                self.send_ticks = ticks()
+                self.send_ticks = utils.ticks()
                 self.poller.set_writable(self)
                 return
 
@@ -431,9 +443,9 @@ class Stream(Pollable):
 
 class Connector(Pollable):
 
-    def __init__(self, poller):
+    def __init__(self, poller, parent):
         self.poller = poller
-        self.stream = None
+        self.parent = parent
         self.sock = None
         self.timeout = 15
         self.timestamp = 0
@@ -441,16 +453,21 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
-    def connect(self, endpoint, family=socket.AF_INET, measurer=None, sobuf=0):
+    def connect(self, endpoint, conf, measurer=None):
         self.endpoint = endpoint
-        self.family = family
+        self.family = socket.AF_INET
+        if conf.get("net.stream.ipv6", False):
+            self.family = socket.AF_INET6
         self.measurer = measurer
+        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
             addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
-                                          family, socket.SOCK_STREAM)
+                                          self.family, socket.SOCK_STREAM)
         except socket.error, exception:
-            self.connection_failed(exception)
+            LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
+            self.parent._connection_failed(self, exception)
             return
 
         last_exception = None
@@ -458,31 +475,28 @@ class Connector(Pollable):
             try:
 
                 sock = socket.socket(family, socktype, protocol)
-                if sobuf:
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
+                if rcvbuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
+                if sndbuf:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sndbuf)
                 sock.setblocking(False)
                 result = sock.connect_ex(sockaddr)
                 if result not in INPROGRESS:
                     raise socket.error(result, os.strerror(result))
 
                 self.sock = sock
-                self.timestamp = ticks()
+                self.timestamp = utils.ticks()
                 self.poller.set_writable(self)
                 if result != 0:
-                    self.started_connecting()
+                    LOG.debug("* Connecting to %s ..." % str(endpoint))
+                    self.parent.started_connecting(self)
                 return
 
             except socket.error, exception:
                 last_exception = exception
 
-        self.connection_failed(last_exception)
-
-    def connection_failed(self, exception):
-        pass
-
-    def started_connecting(self):
-        pass
+        LOG.error("* Connection to %s failed: %s" % (endpoint, last_exception))
+        self.parent._connection_failed(self, last_exception)
 
     def fileno(self):
         return self.sock.fileno()
@@ -499,50 +513,46 @@ class Connector(Pollable):
                     self.sock.recv(MAXBUF)
                 except socket.error, exception2:
                     exception = exception2
-            self.connection_failed(exception)
+            self.parent._connection_failed(self, exception)
             return
 
         if self.measurer:
-            rtt = ticks() - self.timestamp
+            rtt = utils.ticks() - self.timestamp
             self.measurer.rtts.append(rtt)
 
-        stream = self.stream(self.poller)
-        stream.parent = self
-        stream.make_connection(self.sock)
-        self.connection_made(stream)
-        stream.connection_made()
-
-    def connection_made(self, stream):
-        pass
-
-    def connection_lost(self, stream):
-        pass
+        self.parent._connection_made(self.sock)
 
     def writetimeout(self, now):
         return now - self.timestamp >= self.timeout
 
-    def closing(self, exception=None):
-        self.connection_failed(exception)
+    def closed(self, exception=None):
+        LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
+        self.parent._connection_failed(self, exception)
 
 
 class Listener(Pollable):
 
-    def __init__(self, poller):
-        self.stream = None
+    def __init__(self, poller, parent):
         self.poller = poller
+        self.parent = parent
         self.lsock = None
         self.endpoint = None
         self.family = 0
 
-    def listen(self, endpoint, family=socket.AF_INET, sobuf=0):
+    def listen(self, endpoint, conf):
         self.endpoint = endpoint
-        self.family = family
+        self.family = socket.AF_INET
+        if conf.get("net.stream.ipv6", False):
+            self.family = socket.AF_INET6
+        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
-            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1], family,
-                         socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
+              self.family, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
         except socket.error, exception:
-            self.bind_failed(exception)
+            LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
+            self.parent.bind_failed(self, exception)
             return
 
         last_exception = None
@@ -551,404 +561,252 @@ class Listener(Pollable):
 
                 lsock = socket.socket(family, socktype, protocol)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                if sobuf:
-                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, sobuf)
-                    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sobuf)
+                if rcvbuf:
+                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,rcvbuf)
+                if sndbuf:
+                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,sndbuf)
                 lsock.setblocking(False)
                 lsock.bind(sockaddr)
                 # Probably the backlog here is too big
                 lsock.listen(128)
 
+                LOG.debug("* Listening at %s" % str(self.endpoint))
+
                 self.lsock = lsock
                 self.poller.set_readable(self)
-                self.started_listening()
+                self.parent.started_listening(self)
                 return
 
             except socket.error, exception:
                 last_exception = exception
 
-        self.bind_failed(last_exception)
-
-    def bind_failed(self, exception):
-        pass
-
-    def started_listening(self):
-        pass
+        LOG.error("* Bind %s failed: %s" % (self.endpoint, last_exception))
+        self.parent.bind_failed(self, last_exception)
 
     def fileno(self):
         return self.lsock.fileno()
 
+    #
+    # Catch all types of exception because an error in
+    # connection_made() MUST NOT cause the server to stop
+    # listening for new connections.
+    #
     def readable(self):
         try:
             sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
-        except socket.error, exception:
-            self.accept_failed(exception)
+            self.parent.connection_made(sock)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception, exception:
+            self.parent.accept_failed(self, exception)
             return
 
-        stream = self.stream(self.poller)
-        stream.parent = self
-        stream.make_connection(sock)
-        self.connection_made(stream)
-        stream.connection_made()
+    def closed(self, exception=None):
+        LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
+        self.parent.bind_failed(self, exception)     # XXX
 
-    def accept_failed(self, exception):
+
+class StreamHandler(object):
+
+    def __init__(self, poller):
+        self.poller = poller
+        self.conf = {}
+        self.epnts = collections.deque()
+        self.bad = collections.deque()
+        self.good = collections.deque()
+        self.measurer = None
+
+    def configure(self, conf, measurer=None):
+        self.conf = conf
+        self.measurer = measurer
+
+    def listen(self, endpoint):
+        listener = Listener(self.poller, self)
+        listener.listen(endpoint, self.conf)
+
+    def bind_failed(self, listener, exception):
         pass
 
-    def connection_made(self, stream):
+    def started_listening(self, listener):
+        pass
+
+    def accept_failed(self, listener, exception):
+        pass
+
+    def connect(self, endpoint, count=1):
+        while count > 0:
+            self.epnts.append(endpoint)
+            count = count - 1
+        self._next_connect()
+
+    def _next_connect(self):
+        if self.epnts:
+            connector = Connector(self.poller, self)
+            connector.connect(self.epnts.popleft(), self.conf, self.measurer)
+        else:
+            if self.bad:
+                while self.bad:
+                    connector, exception = self.bad.popleft()
+                    self.connection_failed(connector, exception)
+                while self.good:
+                    sock = self.good.popleft()
+                    sock.close()
+            else:
+                while self.good:
+                    sock = self.good.popleft()
+                    self.connection_made(sock)
+
+    def _connection_failed(self, connector, exception):
+        self.bad.append((connector, exception))
+        self._next_connect()
+
+    def connection_failed(self, connector, exception):
+        pass
+
+    def started_connecting(self, connector):
+        pass
+
+    def _connection_made(self, sock):
+        self.good.append(sock)
+        self._next_connect()
+
+    def connection_made(self, sock):
         pass
 
     def connection_lost(self, stream):
         pass
 
-    def closing(self, exception=None):
-        self.bind_failed(exception)     # XXX
+
+CONFIG.register_defaults({
+    "net.stream.certfile": "",
+    "net.stream.ipv6": False,
+    "net.stream.key": "",
+    "net.stream.obfuscate": False,
+    "net.stream.secure": False,
+    "net.stream.server_side": False,
+    "net.stream.rcvbuf": 262144,
+    "net.stream.sndbuf": 0,
+})
+CONFIG.register_descriptions({
+    "net.stream.certfile": "Set SSL certfile path",
+    "net.stream.ipv6": "Enable IPv6",
+    "net.stream.key": "Set key for ARC4",
+    "net.stream.obfuscate": "Enable scrambling with ARC4",
+    "net.stream.secure": "Enable SSL",
+    "net.stream.server_side": "Enable SSL server-side mode",
+    "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
+    "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
+})
 
 
-class StreamMeasurer(object):
-    def __init__(self):
-        self.dead = False
-        self.recv = 0
-        self.send = 0
+class GenericHandler(StreamHandler):
 
-
-class Measurer(object):
-    def __init__(self):
-        self.last = ticks()
-        self.streams = []
-        self.rtts = []
-
-    def connect(self, connector, endpoint, family=socket.AF_INET, sobuf=0):
-        connector.connect(endpoint, family, self, sobuf)
-
-    def register_stream(self, stream):
-        m = StreamMeasurer()
-        stream.configure({"measurer": m})
-        self.streams.append(m)
-
-    def measure(self):
-        now = ticks()
-        delta = now - self.last
-        self.last = now
-
-        if delta <= 0:
-            return None
-
-        rttavg = 0
-        rttdetails = []
-        if len(self.rtts) > 0:
-            for rtt in self.rtts:
-                rttavg += rtt
-            rttavg = rttavg / len(self.rtts)
-            rttdetails = self.rtts
-            self.rtts = []
-
-        alive = []
-        recvsum = 0
-        sendsum = 0
-        for m in self.streams:
-            recvsum += m.recv
-            sendsum += m.send
-            if not m.dead:
-                alive.append(m)
-        recvavg = recvsum / delta
-        sendavg = sendsum / delta
-        percentages = []
-        for m in self.streams:
-            recvp, sendp = 0, 0
-            if recvsum:
-                recvp = 100 * m.recv / recvsum
-            if sendsum:
-                sendp = 100 * m.send / sendsum
-            percentages.append((recvp, sendp))
-            if not m.dead:
-                m.recv = m.send = 0
-        self.streams = alive
-
-        return rttavg, rttdetails, recvavg, sendavg, percentages
-
-
-class VerboseMeasurer(Measurer):
-    def __init__(self, poller, output=sys.stdout, interval=1):
-        Measurer.__init__(self)
-
-        self.poller = poller
-        self.output = output
-        self.interval = interval
-
-    def start(self):
-        self.poller.sched(self.interval, self.report)
-        self.output.write("\t\trtt\t\trecv\t\t\tsend\n")
-
-    def report(self):
-        self.poller.sched(self.interval, self.report)
-
-        rttavg, rttdetails, recvavg, sendavg, percentages = self.measure()
-
-        if len(rttdetails) > 0:
-            rttavg = "%d us" % int(1000000 * rttavg)
-            self.output.write("\t\t%s\t\t---\t\t---\n" % rttavg)
-            if len(rttdetails) > 1:
-                for detail in rttdetails:
-                    detail = "%d us" % int(1000000 * detail)
-                    self.output.write("\t\t  %s\t\t---\t\t---\n" % detail)
-
-        if len(percentages) > 0:
-            recv, send = speed_formatter(recvavg), speed_formatter(sendavg)
-            self.output.write("\t\t---\t\t%s\t\t%s\n" % (recv, send))
-            if len(percentages) > 1:
-                for val in percentages:
-                    val = map(lambda x: "%.2f%%" % x, val)
-                    self.output.write("\t\t---\t\t  %s\t\t  %s\n" %
-                                      (val[0], val[1]))
-
-
-class StreamVerboser(object):
-    def connection_lost(self, logname, eof, exception):
-        if exception:
-            LOG.error("* Connection %s: %s" % (logname, exception))
-        elif eof:
-            LOG.debug("* Connection %s: EOF" % (logname))
-        else:
-            LOG.debug("* Closed connection %s" % (logname))
-
-    def bind_failed(self, endpoint, exception, fatal=False):
-        LOG.error("* Bind %s failed: %s" % (endpoint, exception))
-        if fatal:
-            sys.exit(1)
-
-    def started_listening(self, endpoint):
-        LOG.debug("* Listening at %s" % str(endpoint))
-
-    def connection_made(self, logname):
-        LOG.debug("* Connection made %s" % str(logname))
-
-    def connection_failed(self, endpoint, exception, fatal=False):
-        LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
-        if fatal:
-            sys.exit(1)
-
-    def started_connecting(self, endpoint):
-        LOG.debug("* Connecting to %s ..." % str(endpoint))
-
-
-MEASURER = VerboseMeasurer(POLLER)
-VERBOSER = StreamVerboser()
-
-KIND_NONE = 0
-KIND_DISCARD = 1
-KIND_CHARGEN = 2
+    def connection_made(self, sock):
+        stream = GenericProtocolStream(self.poller)
+        stream.kind = self.conf.get("net.stream.proto", "")
+        stream.attach(self, sock, self.conf)
 
 
 class GenericProtocolStream(Stream):
 
     """Specializes stream in order to handle some byte-oriented
-       protocols like discard and chargen."""
+       protocols like discard, chargen, and echo."""
 
     def __init__(self, poller):
         Stream.__init__(self, poller)
-        self.buffer = "A" * MAXBUF
-        self.kind = KIND_NONE
+        self.buffer = None
+        self.kind = ""
 
     def connection_made(self):
-        VERBOSER.connection_made(self.logname)
+        self.buffer = "A" * self.conf.get("net.stream.chunk", 32768)
         MEASURER.register_stream(self)
-        if self.kind == KIND_DISCARD:
+        duration = self.conf.get("net.stream.duration", 10)
+        if duration >= 0:
+            POLLER.sched(duration, self.shutdown)
+        if self.kind == "discard":
             self.start_recv()
-            return
-        if self.kind == KIND_CHARGEN:
+        elif self.kind == "chargen":
             self.start_send(self.buffer)
-            return
-        self.shutdown()
+        elif self.kind == "echo":
+            self.start_recv()
+        else:
+            self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()
+        if self.kind == "echo":
+            self.start_send(octets)
 
     def send_complete(self):
+        if self.kind == "echo":
+            self.start_recv()
+            return
         self.start_send(self.buffer)
 
-    def connection_lost(self, exception):
-        VERBOSER.connection_lost(self.logname, self.eof, exception)
-
-
-class GenericListener(Listener):
-    def __init__(self, poller, dictionary, kind):
-        Listener.__init__(self, poller)
-        self.stream = GenericProtocolStream
-        self.dictionary = dictionary
-        self.kind = kind
-
-    def bind_failed(self, exception):
-        VERBOSER.bind_failed(self.endpoint, exception, fatal=True)
-
-    def started_listening(self):
-        VERBOSER.started_listening(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-        stream.kind = self.kind
-
-
-class GenericConnector(Connector):
-    def __init__(self, poller, dictionary, kind):
-        Connector.__init__(self, poller)
-        self.stream = GenericProtocolStream
-        self.dictionary = dictionary
-        self.kind = kind
-
-    def connection_failed(self, exception):
-        VERBOSER.connection_failed(self.endpoint, exception, fatal=True)
-
-    def started_connecting(self):
-        VERBOSER.started_connecting(self.endpoint)
-
-    def connection_made(self, stream):
-        stream.configure(self.dictionary)
-        stream.kind = self.kind
-
-
-USAGE = """Neubot net -- TCP bulk transfer test
-
-Usage: neubot net [-Vv] [-D macro[=value]] [-f file] [--help]
-
-Options:
-    -D macro[=value]   : Set the value of the macro `macro`
-    -f file            : Read options from file `file`
-    --help             : Print this help screen and exit
-    -V                 : Print version number and exit
-    -v                 : Run the program in verbose mode
-
-Macros (defaults in square brackets):
-    address=addr       : Select the address to use                 []
-    certfile           : Path to private key and certificate file
-                         to be used together with `-D secure`      []
-    clients=N          : Spawn N client connections at a time      [1]
-    daemonize          : Drop privileges and run in background     [False]
-    duration=N         : Stop the client(s) after N seconds        [10]
-    key=KEY            : Use KEY to initialize ARC4 stream         []
-    listen             : Listen for incoming connections           [False]
-    obfuscate          : Obfuscate traffic using ARC4              [False]
-    port=port          : Select the port to use                    [12345]
-    proto=proto        : Override protocol (see below)             []
-    secure             : Secure the communication using SSL        [False]
-    sobuf=size         : Set socket buffer size to `size`          []
-
-Protocols:
-    There are two available protocols: `discard` and `chargen`.
-    When running in server mode the default is `chargen` and when
-    running in client mode the default is `discard`.
-
-If you don't specify an address Neubot will pick 0.0.0.0 in listen mode
-and neubot.blupixel.net in connect mode.
-
-"""
-
-VERSION = "Neubot 0.3.6\n"
 
 def main(args):
 
-    conf = OptionParser()
-    conf.set_option("stream", "address", "")
-    conf.set_option("stream", "certfile", "")
-    conf.set_option("stream", "clients", "1")
-    conf.set_option("stream", "daemonize", "False")
-    conf.set_option("stream", "duration", "10")
-    conf.set_option("stream", "key", "")
-    conf.set_option("stream", "listen", "False")
-    conf.set_option("stream", "obfuscate", "False")
-    conf.set_option("stream", "port", "12345")
-    conf.set_option("stream", "proto", "")
-    conf.set_option("stream", "secure", "False")
-    conf.set_option("stream", "sobuf", "0")
+    CONFIG.register_defaults({
+        "net.stream.address": "",
+        "net.stream.chunk": 32768,
+        "net.stream.clients": 1,
+        "net.stream.daemonize": False,
+        "net.stream.duration": 10,
+        "net.stream.listen": False,
+        "net.stream.port": 12345,
+        "net.stream.proto": "",
+    })
+    CONFIG.register_descriptions({
+        "net.stream.address": "Set client or server address",
+        "net.stream.chunk": "Chunk written by each write",
+        "net.stream.clients": "Set number of client connections",
+        "net.stream.daemonize": "Enable daemon behavior",
+        "net.stream.duration": "Set duration of a test",
+        "net.stream.listen": "Enable server mode",
+        "net.stream.port": "Set client or server port",
+        "net.stream.proto": "Set proto (chargen, discard, or echo)",
+    })
 
-    try:
-        options, arguments = getopt.getopt(args[1:], "D:f:Vv", ["help"])
-    except getopt.GetoptError:
-        sys.stderr.write(USAGE)
-        sys.exit(1)
+    boot.common("net.stream", "TCP bulk transfer test", args)
 
-    if len(arguments) > 0:
-        sys.stdout.write(USAGE)
-        sys.exit(1)
+    conf = CONFIG.copy()
 
-    for name, value in options:
-        if name == "-D":
-             conf.register_opt(value, "stream")
-             continue
-        if name == "-f":
-             conf.register_file(value)
-             continue
-        if name == "--help":
-             sys.stdout.write(USAGE)
-             sys.exit(0)
-        if name == "-V":
-             sys.stdout.write(VERSION)
-             sys.exit(0)
-        if name == "-v":
-             LOG.verbose()
-             continue
-
-    conf.merge_files()
-    conf.merge_environ()
-    conf.merge_opts()
-
-    address = conf.get_option("stream", "address")
-    clients = conf.get_option_uint("stream", "clients")
-    daemonize = conf.get_option_bool("stream", "daemonize")
-    duration = conf.get_option_uint("stream", "duration")
-    listen = conf.get_option_bool("stream", "listen")
-    port = conf.get_option_uint("stream", "port")
-    proto = conf.get_option("stream", "proto")
-    sobuf = conf.get_option_uint("stream", "sobuf")
-
-    if not address:
-        if not listen:
-            address = "neubot.blupixel.net"
+    if not conf["net.stream.address"]:
+        if not conf["net.stream.listen"]:
+            conf["net.stream.address"] = "neubot.blupixel.net"
         else:
-            address = "0.0.0.0"
+            conf["net.stream.address"] = "0.0.0.0"
 
-    if not (listen and daemonize):
+    if not (conf["net.stream.listen"] and conf["net.stream.daemonize"]):
         MEASURER.start()
 
-    dictionary = {
-        "certfile": conf.get_option("stream", "certfile"),
-        "key": conf.get_option("stream", "key"),
-        "obfuscate": conf.get_option_bool("stream", "obfuscate"),
-        "secure": conf.get_option_bool("stream", "secure"),
-    }
+    endpoint = (conf["net.stream.address"], conf["net.stream.port"])
 
-    endpoint = (address, port)
-
-    if proto == "chargen":
-        kind = KIND_CHARGEN
-    elif proto == "discard":
-        kind = KIND_DISCARD
-    elif proto == "":
-        if listen:
-            kind = KIND_CHARGEN
+    if not conf["net.stream.proto"]:
+        if conf["net.stream.listen"]:
+            conf["net.stream.proto"] = "chargen"
         else:
-            kind = KIND_DISCARD
-    else:
-        sys.stderr.write(USAGE)
+            conf["net.stream.proto"] = "discard"
+    elif conf["net.stream.proto"] not in ("chargen", "discard", "echo"):
+        boot.write_help(sys.stderr, "net.stream", "TCP bulk transfer test")
         sys.exit(1)
 
-    if listen:
-        if daemonize:
-            become_daemon()
-        dictionary["server_side"] = True
-        listener = GenericListener(POLLER, dictionary, kind)
-        listener.listen(endpoint, sobuf=sobuf)
+    handler = GenericHandler(POLLER)
+    handler.configure(conf, MEASURER)
+
+    if conf["net.stream.listen"]:
+        if conf["net.stream.daemonize"]:
+            system.change_dir()
+            system.go_background()
+            LOG.redirect()
+        system.drop_privileges()
+        conf["net.stream.server_side"] = True
+        handler.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
-    if duration >= 0:
-        duration = duration + 0.1       # XXX
-        POLLER.sched(duration, POLLER.break_loop)
-
-    while clients > 0:
-        clients = clients - 1
-        connector = GenericConnector(POLLER, dictionary, kind)
-        MEASURER.connect(connector, endpoint, sobuf=sobuf)
+    handler.connect(endpoint, count=conf["net.stream.clients"])
     POLLER.loop()
     sys.exit(0)
 

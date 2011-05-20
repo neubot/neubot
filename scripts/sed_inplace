@@ -20,15 +20,21 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if [ $# -ne 2 ]; then
+if [ $# -lt 2 ]; then
     echo "Usage: sed_inplace PATTERN FILE" 1>&2
     exit 1
 fi
 
 #
-# The `cat $2.tmp > $2` part below is because we want to
-# retain the original permissions of $2.  This is paramount
+# The `cat $1.tmp > $1` part below is because we want to
+# retain the original permissions of $1.  This is paramount
 # or we'll ship a non-executable $(PREFIX)/bin/neubot.
 #
 
-{ sed $1 $2 > $2.tmp && cat $2.tmp > $2 && rm $2.tmp; } || exit $?
+P=$1
+shift
+
+while [ $1 ]; do
+    { sed $P $1 > $1.tmp && cat $1.tmp > $1 && rm $1.tmp; } || exit $?
+    shift
+done

@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!--
+ Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
+  Universita` degli Studi di Milano
+ Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+  NEXA Center for Internet & Society at Politecnico di Torino
+ Copyright (c) 2010 Antonio Servetti <antonio.servetti@polito.it>,
+  Politecnico di Torino
+
+ This file is part of Neubot <http://www.neubot.org/>.
+
+ Neubot is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Neubot is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+
+    <script type="text/javascript" src="js/jquery.jqplot.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.cursor.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.highlighter.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.canvasTextRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
+    <script type="text/javascript" src="js/jqplot.dateAxisRenderer.min.js"></script>
+    <!--[if IE]>
+        <script type="text/javascript" src="js/excanvas.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
+
+    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/state.js"></script>
+    <script type="text/javascript" src="js/contrib.js"></script>
+
+    <title>Neubot 0.3.6 | Web interface</title>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" media='screen' type="text/css" href="css/jquery.jqplot.css" />
+    <link rel="stylesheet" media='screen' type="text/css" href="css/style.css" />
+
+  </head>
+
+  <body class="one-sidebar">
+    <div id="page">
+
+      <div id="header">
+        <a id="x_link_to_nexa" href="http://nexa.polito.it/"></a>
+        <a id="x_link_to_status" href="index.html"></a>
+        <h1 class="blog-title hidden-tag">
+         <a href="index.html">Neubot web interface</a>
+        </h1>
+        <p class="description hidden-tag">
+         The web-interface to control the neubot daemon
+        </p>
+        <h2 class="hidden-tag">
+         <a href="http://nexa.polito.it/">Nexa</a>
+        </h2>
+        <ul class="k2menu" id='menu_tab_list'>
+          <li id='tab_index'>
+            <a href="index.html" title="The status of the daemon" class="active">Status</a>
+          </li>
+          <li id='tab_speedtest'>
+            <a href="speedtest.html" title="Your recent speedtest results">Speedtest</a>
+          </li>
+          <li id='tab_log'>
+            <a href="log.html" title="Log">Log</a>
+          </li>
+          <li id='tab_privacy'>
+            <a href="privacy.html" title="Privacy">Privacy</a>
+          </li>
+          <li id='tab_settings'>
+            <a href="settings.html" title="Settings">Settings</a>
+          </li>
+          <li id='tab_site'>
+            <a href="http://www.neubot.org/" title="Go to Neubot web site">Neubot web site</a>
+          </li>
+        </ul>
+      </div>
+
+      <hr />
+
+      <div class="content">
+
+        <!-- Taken from drupal and k2, therefore here we might have
+          more DIVs than needed and one day we might want to merge -->
+        <div id="primary-wrapper">
+        <div id="primary">
+
+        <!-- end header -->

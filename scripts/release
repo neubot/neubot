@@ -21,10 +21,14 @@
 #
 
 #
-# Get current version number
+# Make sure there is not garbage around
 #
+./scripts/cleanup
 
+#
+# Get current version number
 # Note: the two char classes below contain a space and a tab
+#
 CURRENT=`grep ^VERSION Makefile | sed 's/^VERSION[ 	]*=[ 	]*//'`
 CURRENT_MAJOR=`echo $CURRENT | cut -d. -f1`
 CURRENT_MINOR=`echo $CURRENT | cut -d. -f2`
@@ -33,7 +37,6 @@ CURRENT_PATCH=`echo $CURRENT | cut -d. -f3`
 #
 # Compute new version number
 #
-
 if [ $# -eq 1 ]; then
     NEW=$1
 elif [ $# -eq 0 ]; then
@@ -46,7 +49,6 @@ fi
 #
 # Update ChangeLog.
 #
-
 DATE=`date +%F`
 printf "Neubot $NEW [$DATE]\n" > ChangeLog.in
 git log --oneline --reverse --format="%x09* %s" $CURRENT..HEAD >> ChangeLog.in
@@ -59,7 +61,6 @@ mv ChangeLog.in ChangeLog
 # Make sure we don't touch the ChangeLog.
 # We don't assume `sed -i' is valid.
 #
-
 PATTERN="$CURRENT_MAJOR\\.$CURRENT_MINOR\\.$CURRENT_PATCH"
 FILES=`grep -Rn $PATTERN *|grep -v ^ChangeLog|awk -F: '{print $1}'|sort -u`
 for FILE in $FILES; do
@@ -69,6 +70,5 @@ done
 #
 # Commit
 #
-
 git commit -a -m "Release neubot/$NEW"
 git tag $NEW

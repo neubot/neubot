@@ -20,23 +20,16 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Wrapper for logging
-#
-
 import collections
-import time
-import traceback
 import sys
+import traceback
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.compat import deque_append
-from neubot.system import BackgroundLogger
-from neubot.compat import json
-from neubot.times import timestamp
-
+from neubot import system
+from neubot import compat
+from neubot import utils
 
 class InteractiveLogger(object):
 
@@ -57,8 +50,10 @@ class InteractiveLogger(object):
 
 class Logger(object):
 
-    """Main wrapper for logging.  The queue allows us to export
-       recent logs via /api/logs."""
+    """Logging object.  Usually there should be just one instance
+       of this class, accessible with the default logging object
+       LOG.  We keep recent logs in a queue in order to implement
+       the /api/log API."""
 
     def __init__(self, maxqueue):
         self.logger = InteractiveLogger()
@@ -70,6 +65,7 @@ class Logger(object):
         self.noisy = False
 
         self.message = None
+        self.ticks = 0
 
     def verbose(self):
         self.noisy = True
@@ -78,7 +74,8 @@ class Logger(object):
         self.noisy = False
 
     def redirect(self):
-        self.logger = BackgroundLogger()
+        self.logger = system.BackgroundLogger()
+        system.redirect_to_dev_null()
         self.interactive = False
 
     #
@@ -101,79 +98,115 @@ class Logger(object):
     #
 
     def start(self, message):
+        self.ticks = utils.ticks()
         if self.noisy or not self.interactive:
             self.info(message + " in progress...")
             self.message = message
         else:
             sys.stderr.write(message + "...")
 
-    def progress(self):
+    def progress(self, dot="."):
         if not self.noisy and self.interactive:
-            sys.stderr.write(".")
+            sys.stderr.write(dot)
 
-    def complete(self):
+    def complete(self, done="done\n"):
+        elapsed = utils.time_formatter(utils.ticks() - self.ticks)
+        done = "".join([done.rstrip(), " [in ", elapsed, "]\n"])
         if self.noisy or not self.interactive:
             if not self.message:
                 self.message = "???"
-            self.info(self.message + ": complete")
+            self.info(self.message + "..." + done)
             self.message = None
         else:
-            sys.stderr.write(" done\n")
+            sys.stderr.write(done)
 
     # Log functions
 
-    def exception(self):
-        content = traceback.format_exc()
-        for line in content.splitlines():
-            self._log(self.logger.error, line)
+    def exception(self, func=None):
+        if not func:
+            func = self.error
+        for line in traceback.format_exc().split("\n"):
+            func(line)
+
+    def oops(self, message, func=None):
+        if not func:
+            func = self.error
+        func("OOPS: " + message + " (traceback follows)")
+        for line in traceback.format_stack()[:-1]:
+            func(line)
 
     def error(self, message):
-        self._log(self.logger.error, message)
+        self._log(self.logger.error, "ERROR", message)
 
     def warning(self, message):
-        self._log(self.logger.warning, message)
+        self._log(self.logger.warning, "WARNING", message)
 
     def info(self, message):
-        self._log(self.logger.info, message)
+        self._log(self.logger.info, "INFO", message)
 
     def debug(self, message):
         if self.noisy:
-            self._log(self.logger.debug, message)
+            self._log(self.logger.debug, "DEBUG", message)
 
     def log_access(self, message):
-        # Note enqueue MUST be False to avoid /api/logs comet storm
-        self._log(self.logger.info, message, False)
+        #
+        # CAVEAT Currently Neubot do not update logs "in real
+        # time" using AJAX.  If it did we would run in trouble
+        # because each request for /api/log would generate a
+        # new access log record.  A new access log record will
+        # cause a new "logwritten" event.  And the result is
+        # something like a Comet storm.
+        #
+        self._log(self.logger.info, "ACCESS", message)
 
-    def _log(self, printlog, message, enqueue=True):
-        if message[-1] == "\n":
-            message = message[:-1]
-        if enqueue:
-            deque_append(self.queue, self.maxqueue, (timestamp(), message))
+    def _log(self, printlog, severity, message):
+        message = message.rstrip()
+        if severity != "ACCESS":
+            compat.deque_append(self.queue, self.maxqueue,
+                            (utils.timestamp(),severity,message))
         printlog(message)
 
     # Marshal
 
-    def __str__(self):
-        results = []
-        for tstamp, message in self.queue:
-            results.append({
-                "timestamp": tstamp,
-                "message": message,
-            })
-        return json.dumps(results)
+    def listify(self):
+        return map(None, self.queue)
 
-MAXQUEUE = 100
+
+MAXQUEUE = 4096
 LOG = Logger(MAXQUEUE)
 
 if __name__ == "__main__":
+    LOG.start("Testing the in-progress feature")
+    LOG.progress("...")
+    LOG.progress()
+    LOG.complete("success!")
+
     LOG.verbose()
+
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
+    print compat.json.dumps(LOG.listify())
+
+    try:
+        raise Exception("Testing LOG.exception")
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        LOG.exception()
+        LOG.exception(LOG.warning)
+
+    LOG.start("Testing the in-progress feature")
+    LOG.progress("...")
+    LOG.progress()
+    LOG.complete("success!")
+
+    LOG.oops("Testing the new oops feature")
+
     LOG.redirect()
+
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")
     LOG.info("testing neubot logger -- This is an info message")
     LOG.debug("testing neubot logger -- This is a debug message")
-    print str(LOG)

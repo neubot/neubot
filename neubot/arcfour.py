@@ -25,16 +25,15 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.utils import timestamp
 from neubot.utils import speed_formatter
-
-from neubot.times import timestamp
-from neubot.times import ticks
+from neubot.utils import ticks
 
 from neubot.log import LOG
 
 class PassThrough(object):
     def __init__(self, key):
-        LOG.debug("arcfour: ARC4 support not available")
+        LOG.warning("arcfour: ARC4 support not available")
         self.key = key
 
     def encrypt(self, data):
@@ -53,6 +52,26 @@ def arcfour_new(key=None):
     if not key:
         key = "neubot"
     return ARCFOUR(key)
+
+class RandomBody(object):
+    def __init__(self, total):
+        self.total = int(total)
+        self.encoder = arcfour_new(str(ticks()))
+
+    def read(self, n):
+        if self.total:
+            amt = min(n, self.total)
+            data = self.encoder.encrypt("A" * amt)
+            self.total -= amt
+        else:
+            data = ""
+        return data
+
+    def seek(self, offset=0, whence=0):
+        pass
+
+    def tell(self):
+        return self.total
 
 if __name__ == "__main__":
     begin = ticks()

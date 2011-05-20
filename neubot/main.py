@@ -1,7 +1,7 @@
 # neubot/main.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -21,263 +21,305 @@
 #
 
 #
-# Main function.
-# Dispatch control to the module passed as the first
-# argument or fallback to a safe default.
+# We rely on lazy import to keep this script's delay as near
+# to zero as possible.  It's not acceptable for the user to wait
+# for several milliseconds just to get the help message or the
+# version number.
+# This idea was initially proposed by Roberto D'Auria during
+# an XMPP chat session.
 #
+
+import os.path
+import sys
 
 if __name__ == "__main__":
-    from sys import path
-    path.insert(0, ".")
+    path = os.path.abspath(__file__)
+    me = os.sep.join(["neubot", "main.py"])
+    i = path.find(me)
+    path = path[:i]
+    sys.path.insert(0, path)
 
-from neubot import debug
-from sys import setprofile
-from neubot.system import ismacosx
-from neubot import pathnames
-from neubot.log import LOG
-from sys import stderr
-from sys import stdout
-from sys import argv
-from sys import exit
+USAGE = '''\
+neubot - The network neutrality bot
 
-# cheating a bit
-from neubot.bittorrent import main as bittorrent
-from neubot.http import clients as http
-from neubot.http import servers as httpd
+Usage: neubot
+       neubot start [[ADDRESS] PORT]
+       neubot status [[ADDRESS] PORT]
+       neubot stop [[ADDRESS] PORT]
+       neubot --help
+       neubot -V
+       neubot COMMAND [-ElvV] [-D PROPERTY[=VALUE]] [-f FILE]
 
-from neubot.net import stream
-from neubot import database
-from neubot import rendezvous
-from neubot import speedtest
-from neubot import ui
+Try `neubot help` to get a list of available subcommands.
+Try `neubot COMMAND --help` for more help on COMMAND.
+'''
 
-import textwrap
-import os.path
+VERSION = "0.3.6\n"
 
 #
-# Internal commands
+# When the migration takes too much time, the agent is stuck
+# in DATABASE.connect() and the web user interface is not ready
+# because we migrate the database and _then_ we bind the local
+# address and port.  This is a wise thing to do because it's
+# dangerous to split the migration in small pieces.
+# The problem is that the user is likely to be scared if the
+# connection fails.  We don't want that, so we ensure that
+# the web user interface is ready before we start the web
+# browser.
 #
+def webbrowser_open_patient(address, port):
+    import httplib
+    import webbrowser
+    import time
 
-def dohelp(args, fp=stdout):
-     fp.write("Available commands: ")
-     commands = " ".join(sorted(TABLE.keys()))
-     lines = textwrap.wrap(commands, 50)
-     fp.write("%s\n" % lines[0])
-     for line in lines[1:]:
-         fp.write("%s%s\n" % (" " * 20, line))
-     fp.write("Try `neubot COMMAND --help' for more help on COMMAND\n")
+    sys.stderr.write("Waiting for the web gui to become ready...")
 
-def dostart(args):
-    if len(args) == 2 and args[1] == "--help":
-        stdout.write("Start the background neubot instance.\n")
-        stdout.write("Usage: %s\n" % args[0])
-        exit(0)
-    if len(args) > 1:
-        stderr.write("Usage: %s\n" % args[0])
-        exit(1)
-    conf = ui.UIConfig()
-    conf.read(pathnames.CONFIG)
-    if not daemon_running(conf.address, conf.port):
-        # need to remove the command from the program name
-        args[0] = args[0].replace(" start", "")
-        start_daemon(args)
+    count = 0
+    running = False
+    while True:
+        try:
 
-def dostop(args):
-    if len(args) == 2 and args[1] == "--help":
-        stdout.write("Stop the background neubot instance.\n")
-        stdout.write("Usage: %s\n" % args[0])
-        exit(0)
-    if len(args) > 1:
-        stderr.write("Usage: %s\n" % args[0])
-        exit(1)
-    conf = ui.UIConfig()
-    conf.read(pathnames.CONFIG)
-    if daemon_running(conf.address, conf.port):
-        stop_daemon(conf.address, conf.port)
+            connection = httplib.HTTPConnection(address, port)
+            connection.request("GET", "/api/version")
+            response = connection.getresponse()
+            if response.status == 200:
+                running = True
+            connection.close()
 
-#
-# Gtk bindings might not be installed and we don't want
-# to prevent the user running neubot in this case, but
-# just to warn she that some graphical features are not
-# available.
-# We lazy import Gtk because otherwise we will get an
-# ugly warning about $DISPLAY when starting the daemon
-# from /etc/rc.local.
-#
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except:
+            pass
 
-def dostatusicon(args):
-    try:
-        import gtk
-    except ImportError:
-        LOG.error("fatal: Can't import Gtk bindings for Python.")
-        exit(1)
+        if running:
+            sys.stderr.write("ok\n")
+            break
+        if count >= 5:
+            sys.stderr.write("timeout\n")
+            break
+
+        sys.stderr.write(".")
+        time.sleep(1)
+        count = count + 1
+
+    sys.stderr.write("Opening Neubot web gui\n")
+    webbrowser.open("http://%s:%s/" % (address, port))
+
+def main(argv):
+
+    address = "127.0.0.1"
+    slowpath = False
+    webgui = False
+    port = "9774"
+    start = False
+    status = False
+    stop = False
+
+    if sys.version_info[0] > 2 or sys.version_info[1] < 5:
+        sys.stderr.write("fatal: wrong Python version\n")
+        sys.stderr.write("please run neubot using Python >= 2.5 and < 3.0\n")
+        sys.exit(1)
+
+    if os.environ.get("NEUBOT_DEBUG", ""):
+        from neubot import utils
+        if utils.intify(os.environ["NEUBOT_DEBUG"]):
+            sys.stderr.write("Running in debug mode\n")
+            from neubot.debug import PROFILER
+            sys.setprofile(PROFILER.notify_event)
+
+    if os.environ.get("NEUBOT_MEMLEAK", ""):
+        from neubot import utils
+        if utils.intify(os.environ["NEUBOT_MEMLEAK"]):
+            sys.stderr.write("Running in leak-detection mode\n")
+            import gc
+            gc.set_debug(gc.DEBUG_LEAK)
+
+    # Quick argv classification
+
+    if len(argv) == 1:
+        start = True
+        webgui = True
+
+    elif len(argv) >= 2 and len(argv) < 5:
+        command = argv[1]
+        if command == "--help":
+            sys.stdout.write(USAGE)
+            sys.exit(0)
+        elif command == "-V":
+            sys.stdout.write(VERSION)
+            sys.exit(0)
+        elif command == "start":
+            start = True
+        elif command == "status":
+            status = True
+        elif command == "stop":
+            stop = True
+        else:
+            slowpath = True
+
+        if not slowpath and len(argv) >= 3:
+            if len(argv) == 4:
+                address = argv[2]
+                port = argv[3]
+            else:
+                port = argv[2]
+
     else:
-        from neubot import statusicon
-        statusicon.main(args)
+        slowpath = True
 
-TABLE = {
-    "database"   : database.main,
-    "bittorrent" : bittorrent.main,
-    "help"       : dohelp,
-    "http"       : http.main,
-    "httpd"      : httpd.main,
-    "rendezvous" : rendezvous.main,
-    "speedtest"  : speedtest.main,
-    "statusicon" : dostatusicon,
-    "start"      : dostart,
-    "stop"       : dostop,
-    "stream"     : stream.main,
-    "ui"         : ui.main,
+    # Slow / quick startup
+
+    if slowpath:
+        run_module(argv)
+
+    else:
+        running = False
+
+        # Running?
+        if start or status or stop:
+            try:
+                import httplib
+
+                connection = httplib.HTTPConnection(address, port)
+                connection.request("GET", "/api/version")
+                response = connection.getresponse()
+                if response.status == 200:
+                    running = True
+                connection.close()
+
+            except (SystemExit, KeyboardInterrupt):
+                raise
+            except:
+                pass
+
+        if status:
+            if not running:
+                sys.stdout.write("Not running\n")
+            else:
+                sys.stdout.write("Running\n")
+            sys.exit(0)
+
+        if running and start:
+            sys.stdout.write("Already running\n")
+        if not running and stop:
+            sys.stdout.write("Not running\n")
+
+        # Stop
+        if running and stop:
+            try:
+
+                connection = httplib.HTTPConnection(address, port)
+                connection.request("POST", "/api/exit")
+                response = connection.getresponse()
+                connection.close()
+
+            except (SystemExit, KeyboardInterrupt):
+                raise
+            except:
+                from neubot.log import LOG
+                LOG.exception()
+                sys.exit(1)
+
+        # start / webbrowser
+
+        if os.name == "posix":
+
+            if not running and start and os.fork() == 0:
+                from neubot import agent
+                agent.main([argv[0], "-Dagent.api.port=%s" % port,
+                             "-Dagent.api.address=%s" % address])
+                sys.exit(0)
+
+            # XXX
+            if sys.platform == "darwin":
+                os.environ["DISPLAY"] = "fake-neubot-display:0.0"
+
+            if webgui and "DISPLAY" in os.environ:
+                webbrowser_open_patient(address, port)
+
+        elif os.name == "nt":
+
+            if webgui:
+                import webbrowser
+
+                func = lambda: \
+		  webbrowser_open_patient(address, port)
+
+                if not running and start:
+                    import threading
+
+                    t = threading.Thread(target=func)
+                    sys.stderr.write("Opening Neubot web gui\n")
+                    t.daemon = True
+                    t.start()
+                else:
+                    sys.stderr.write("Opening Neubot web gui\n")
+                    func()
+
+            if not running and start:
+                from neubot import agent
+                agent.main([argv[0]])
+
+        else:
+            sys.stderr.write("Your operating system is not supported\n")
+            sys.exit(1)
+
+    sys.exit(0)
+
+MODULES = {
+    "agent"      : "agent",
+    "api.client" : "api.client",
+    "database"   : "database.main",
+    "bittorrent" : "bittorrent.main",
+    "http.client" : "http.client",
+    "http.server" : "http.server",
+    "rendezvous.client": "rendezvous.client",
+    "rendezvous.server": "rendezvous.server",
+    "speedtest"  : "speedtest.client",
+    "speedtest.client": "speedtest.client",
+    "speedtest.negotiate": "speedtest.negotiate",
+    "speedtest.server": "speedtest.server",
+    "statusicon" : "statusicon",
+    "stream"     : "net.stream",
 }
 
-DEFAULT = "rendezvous"
+def run_module(argv):
 
-#
-# Without arguments try to guess "the right thing to do"
-# depending on the operating system and on the available
-# environment.
-#
+    # /usr/bin/neubot module ...
+    del argv[0]
+    module = argv[0]
 
-def main(args):
-    pathnames.checkdirs()
-    if len(args) == 1:
-        conf = ui.UIConfig()
-        conf.read(pathnames.CONFIG)
-        if not daemon_running(conf.address, conf.port):
-            start_daemon(args)
-        uri = "http://%s:%s/" % (conf.address, conf.port)
-        #
-        # MacOS X is "posix" and "darwin" but does not employ X
-        # and therefore $DISPLAY is not set.
-        #
-        if (os.name != "posix" or os.environ.has_key("DISPLAY")
-         or ismacosx()):
-            webbrowser.open(uri, new=2, autoraise=True)
-    else:
-        _main_with_args(args)
+    if module == "help":
 
-#
-# Make sure that _do_main() always receives
-# the program name as the first argument and
-# a command (not an option) as the second
-# argument.
-#
+        import textwrap
 
-def _main_with_args(args):
-    command = args[1]
-    if command.startswith("-"):
-        args.insert(1, DEFAULT)
-        _do_main(args, added_command=True)
-        return
-    if command.startswith("http://"):
-        args.insert(1, DEFAULT)
-        _do_main(args, added_command=True)
-        return
-    _do_main(args)
+        sys.stdout.write("Neubot help -- prints available commands\n")
 
-#
-# Lookup the main function for the specified
-# command or print an error message.
-#
+        commands = " ".join(sorted(MODULES.keys()))
+        lines =  textwrap.wrap(commands, 60)
+        sys.stdout.write("Commands: " + lines[0] + "\n")
+        for s in lines[1:]:
+            sys.stdout.write("          " + s + "\n")
 
-def _do_main(args, added_command=False):
-    command = args[1]
-    try:
-        func = TABLE[command]
-    except KeyError:
-        stderr.write("The '%s' command does not exist\n" % command)
-        dohelp(args, stderr)
-        exit(1)
-    _do_fixup_and_invoke(func, args, added_command)
+        sys.stdout.write("Try `neubot COMMAND --help` for more help on COMMAND.\n")
+        sys.exit(0)
 
-#
-# Make sure that args[] mirrors what the user typed:
-# remove the command name if we added it, or collapse
-# the program name and the command into the first arg
-# for the invoked main to treat it as the program
-# name.
-#
+    if not module in MODULES:
+        sys.stderr.write("Invalid module: %s\n" % module)
+        sys.stderr.write("Try `neubot help` to see the available modules\n")
+        sys.exit(1)
 
-def _do_fixup_and_invoke(func, args, added_command):
-    if not added_command:
-        copy, args = args, []
-        args.append(copy[0] + " " + copy[1])
-        for arg in copy[2:]:
-            args.append(arg)
-    else:
-        del args[1]
-    _do_invoke(func, args)
+    module = MODULES[module]
+    exec("from neubot.%s import main as MAIN" % module)
 
-#
-# And finally invoke main()...
-#
+    argv[0] = "neubot " + argv[0]
 
-def _do_invoke(func, args):
-    try:
-        if os.environ.has_key("NEUBOT_TRACE"):
-            setprofile(debug.trace)
-        func(args)
-    except SystemExit, e:
-        code = int(str(e))
-        exit(code)
-    except:
-        LOG.exception()
-        exit(1)
+#   Not yet
+#   status = MAIN(argv)
+#   sys.exit(status)
 
-#
-# Daemon functions
-# Here there is code to guess whether an instance of neubot
-# is already running and code to start a background instance
-# if needed.
-#
-
-import webbrowser
-import subprocess
-import httplib
-import socket
-
-def daemon_running(address, port):
-    isrunning = False
-    try:
-        connection = httplib.HTTPConnection(address, port)
-        connection.request("GET", "/api/version")
-        response = connection.getresponse()
-        if response.status == 200:
-            isrunning = True
-        connection.close()
-    except (httplib.HTTPException, socket.error):
-        pass
-    return isrunning
-
-def start_daemon(args):
-    args[0] = os.path.abspath(args[0])
-    args.append("rendezvous")
-    #
-    # With UNIX we use call() because we know that
-    # the called instance of neubot is going to fork
-    # in background.
-    #
-    if os.name != "posix":
-        call = subprocess.Popen
-    else:
-        call = subprocess.call
-    try:
-        call(args)
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        LOG.error("Can't exec: %s" % str(args))
-        LOG.exception()
-        exit(1)
-
-def stop_daemon(address, port):
-    try:
-        connection = httplib.HTTPConnection(address, port)
-        connection.request("POST", "/api/exit")
-        response = connection.getresponse()
-        connection.close()
-    except (httplib.HTTPException, socket.error):
-        pass
+    MAIN(argv)
+    sys.exit(0)
 
 if __name__ == "__main__":
-    main(argv)
+    main(sys.argv)

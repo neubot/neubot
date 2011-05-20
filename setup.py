@@ -46,10 +46,16 @@ CONSOLE = [{
 }]
 
 PACKAGES = [
+    "neubot/api",
     "neubot/bittorrent",
+    "neubot/database",
+    "neubot/debug",
     "neubot/http",
     "neubot/net",
+    "neubot/rendezvous",
     "neubot/simplejson",
+    "neubot/speedtest",
+    "neubot/system",
     "neubot",
 ]
 
@@ -63,6 +69,7 @@ PACKAGE_DATA = [
 SCRIPTS = [
     "bin/start-neubot-daemon",
     "bin/neubot",
+    "bin/neubotw",
 ]
 
 WINDOWS = [{
@@ -70,10 +77,10 @@ WINDOWS = [{
     "script": "bin/neubotw",
 }]
 
-PY2EXE = False
+RUN_PY2EXE = False
 if os.name == "nt" and len(sys.argv) == 1 and py2exe:
     sys.argv.append("py2exe")
-    PY2EXE = True
+    RUN_PY2EXE = True
 
 distutils.core.setup(name="neubot",
                      description="the network neutrality bot",
@@ -89,7 +96,7 @@ distutils.core.setup(name="neubot",
                      scripts=SCRIPTS,
                     )
 
-if PY2EXE:
+if RUN_PY2EXE:
     shutil.copytree("neubot/www", "dist/www")
     if "PROGRAMFILES" in os.environ:
         MAKENSIS = os.environ["PROGRAMFILES"] + "\\NSIS\\makensis.exe"

@@ -27,11 +27,6 @@ NEUBOT_HOME = "@PREFIX@/share"
 if NEUBOT_HOME.startswith("@"):
     NEUBOT_HOME = "."
 
-if sys.version_info[0] > 2 or sys.version_info[1] < 5:
-    sys.stderr.write("fatal: wrong Python version\n")
-    sys.stderr.write("please run neubot using Python >= 2.5 and < 3.0\n")
-    sys.exit(1)
-
 if os.environ.has_key("NEUBOT_HOME"):
     NEUBOT_HOME = os.environ["NEUBOT_HOME"]
 sys.path.insert(0, NEUBOT_HOME)
@@ -42,17 +37,9 @@ from neubot.log import LOG
 #
 # Redirect the logger immediately because we're going to run in
 # windows mode and therefore there is neither a console nor a standard
-# error for the default logger.  The logs are redirected to the NT
-# EventLog handler (Start -> Settings -> Control Panel -> Administrative
-# Tools -> Event Viewer).
-# FIXME Apparently under windows 7 you cannot access the system logger
-# if you're unprivileged and you have not registered a logging source
-# for your application.  This strikes me as very weird because I would
-# have expected it to work like syslog (tho I should already have learnt
-# that Windows is not as predictable as Unix).  Since the release is due
-# as soon as possible, I think it's safer to just disable logging for
-# another cycle.  Umpf.
+# error for the default logger.  The logs are available in the proper
+# tab of the Web User Interface (WUI) or via the API.
 #
+LOG.redirect()
 
-#LOG.redirect()
 main(sys.argv)

@@ -20,24 +20,17 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os.path
 import email.utils
 import urlparse
 
-from neubot.http.handlers import BOUNDED
-from neubot.http.handlers import CHUNK_LENGTH
-from neubot.http.handlers import ERROR
-from neubot.http.handlers import FIRSTLINE
-from neubot.http.handlers import UNBOUNDED
-
-def prettyprint(write, direction, msg, eol=""):
-    stringio = msg.serialize_headers()
-    content = stringio.read()
-    headers = content.split("\r\n")
-    for line in headers:
-        write(direction + line + eol)
-        if line == "":
-            break
+from neubot.http.stream import BOUNDED
+from neubot.http.stream import CHUNK_LENGTH
+from neubot.http.stream import ERROR
+from neubot.http.stream import FIRSTLINE
+from neubot.http.stream import UNBOUNDED
+from neubot.log import LOG
+from neubot import utils
+from neubot import compat
 
 def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
@@ -151,30 +144,6 @@ def nextstate(request, response=None):
             else:
                 return FIRSTLINE, 0
 
-# Guarantee unique filename
-
-def _make_filename(uri, default):
-    scheme, address, port, pathquery = urlsplit(uri)
-    ret = default
-    index = pathquery.rfind("/")
-    if index >= 0:
-        ret = pathquery[index+1:]
-        if not ret:
-            ret = default
-    return ret
-
-def make_filename(uri, default):
-    filename = _make_filename(uri, default)
-    index = 0
-    temp = filename
-    while os.path.exists(temp):
-        if index == 100:
-            raise ValueError("Can't generate unique filename")
-        temp = filename + "." + str(index)
-        index = index + 1
-    filename = temp
-    return filename
-
 #
 # Parse 'range:' header
 # Here we don't care of Exceptions as long as these exceptions
@@ -188,3 +157,19 @@ def parse_range(message):
     if first < 0 or last < 0 or last < first:
         raise ValueError("Cannot parse range header")
     return first, last
+
+#
+# pretty print body
+#
+
+def prettyprintbody(m, prefix):
+    if m["content-type"] == "application/json":
+        s = compat.json.dumps(compat.json.loads(m.body.read()),
+          indent=4, sort_keys=True)
+    elif m["content-type"] in ("text/xml", "application/xml"):
+        s = m.body.read()
+    else:
+        return
+    for ln in s.split("\n"):
+        LOG.debug("%s %s" % (prefix, ln.rstrip()))
+    utils.safe_seek(m.body, 0)

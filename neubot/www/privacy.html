@@ -1,0 +1,110 @@
+<!--#include virtual="header.html"-->
+
+        <script type='text/javascript' src='js/privacy.js'></script>
+
+        <div class="entry-content">
+
+
+        <p>In this page we spell out the details of our <a
+        href="#policy">privacy policy</a>, in order to comply with
+        European law. And we provide a simple <a href="#dashboard">privacy
+        dashboard</a> to manage the permissions you give us with
+        respect to the treatment of your Internet address, which
+        is personal data in EU.</p>
+
+        <h4 id="policy">Privacy policy</h4>
+
+        <!-- NOTE this section should be kept in sync with the
+             PRIVACY file, possibly using docutils because PRIVACY
+             is restructuredtext. -->
+        <p><textarea cols="80" rows="12" readonly="true">
+    The purpose of Neubot is to measure the quality and neutrality of
+    your Internet connection and to share the results with the Internet
+    community, in order to rebalance the information asymmetry between
+    ordinary Internet users and Service Providers.
+
+    Neubot does not monitor or analyze your Internet traffic. It just
+    uses a tiny fraction of your connection capacity to perform background
+    transmission tests, sending and/or receiving random data.  The
+    result contains the measured performance metrics, such as the
+    download speed, or the latency, as well as your computer load, as
+    a percentage.  Also, the result contains your Internet address.
+    After the test, the result is uploaded to Neubot servers.
+
+    The Neubot project needs to collect your Internet address because
+    that allows to infer your Internet Service Provider and to have a
+    rough idea of your location.  This is paramount for Neubot's
+    goal of monitoring the quality and neutrality of the Internet, by
+    provider and geographical area.
+
+    However, in Europe Internet addresses are personal data. So, Neubot
+    cannot store, process, or share your Internet address without your
+    prior *informed consent*, under the provisions of the "Codice in
+    materia di protezione dei dati personali" `(Decree 196/03)
+    <http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248>`_.  In
+    accordance with the law, data controller is the NEXA Center for
+    Internet & Society, represented by its co-director Juan Carlos
+    De Martin.
+
+    Neubot asks you to explicitly assert that you have read this privacy
+    policy and to give it the permission to collect and share your IP
+    address.  If you don't confirm that you have read the privacy policy,
+    Neubot collects your Internet address under a special provision,
+    that allows researchers to do that `for statistical purposes only
+    <http://www.garanteprivacy.it/garante/doc.jsp?ID=1556635>`_.  Internet
+    addresses collected under this regime will be flagged in a special
+    way, and will not be shared with anyone.  They will be treated by
+    the researchers authorized by the data controller only.  This data,
+    however, will not be of great value for the Internet community,
+    because they cannot be shared with and analyzed by other researchers.
+
+    The project needs at least the permission to collect your Internet
+    address, because otherwise it cannot process your results and publish
+    aggregate data.  If you don't give Neubot the permission to share,
+    of course your Internet address will not be shared with others, and
+    will be processed by the researchers authorized by the data controller
+    only.  Please note that there is a great benefit in sharing your
+    Internet address, because that allows other researchers to study
+    and criticize Neubot methodology and data set.  This will empower
+    the Internet community, eventually leading to a better understanding
+    of the Net.
+
+    The data controller guarantees you the rights as per Section 7 of
+    the above mentioned decree.  Basically, you have total control over
+    you personal data, and you can, for example, inquire Neubot to
+    remove your Internet address from its data sets.  To exercise your
+    rights, please write to Dipartimento di Automatica e Infomatica
+    (DAUIN) - Politecnico di Torino - Corso Duca degli Abruzzi, 24 -
+    10129 Torino, ITALY.
+        </textarea></p>
+
+        <h4 id="dashboard">Privacy dashboard</h4>
+
+        <p>This is the current state of your privacy settings:</p>
+
+        <p>
+          <input id='check_privacy_informed' type="checkbox" value="0" /><label for='check_privacy_informed'><b>Informed</b> You assert that you
+           have read and understood the above privacy policy</label>
+          <br />
+          <input id='check_privacy_can_collect' type="checkbox" value="0" /><label for='check_privacy_can_collect'><b>Can collect</b> You give Neubot
+           the permission to collect your Internet address</label>
+          <br />
+          <input id='check_privacy_can_share' type="checkbox" value="0" /><label for='check_privacy_can_share'><b>Can share</b> You give Neubot the
+           permission to share your Internet address with the Internet
+           community</label>
+          <br />
+        </p>
+
+        <p>If you don't assert that you are <em>Informed</em>, your Internet
+         address will be treated under the special provisions for statistical
+         purposes only, as explained above.  You can decide whether Neubot
+         <em>can collect</em> and <em>can share</em> only if you acknowledge
+         that you are <em>informed</em>.</p>
+
+        <p>
+          <input type="button" onclick="return setPrivacy();" value="Save"/>
+        </p>
+
+        </div>
+
+<!--#include virtual="footer.html"-->

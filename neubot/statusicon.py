@@ -62,8 +62,9 @@ import time
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.utils import become_daemon
-from neubot.api_client import APIStateTracker
+from neubot import system
+from neubot.api.client import APIStateTracker
+from neubot.net.poller import POLLER
 from neubot.log import LOG
 
 # default address and port
@@ -73,9 +74,6 @@ PORT = "9774"
 VERSION = "0.3.6"
 
 class StateTrackerAdapter(APIStateTracker):
-    def __init__(self, icon, address, port):
-        APIStateTracker.__init__(self, address, port)
-        self.icon = icon
 
     def process_dictionary(self, dictionary):
         update = ()
@@ -86,15 +84,25 @@ class StateTrackerAdapter(APIStateTracker):
                 update = udict["version"], udict["uri"]
 
         state = dictionary["current"]
-        self.icon.update_state(state, update)
+
+        icon = self.conf.get("statusicon.icon", None)
+        if icon:
+            icon.update_state(state, update)
 
     def notify_error(self, message):
-        self.icon.update_state(None, None)
+        icon = self.conf.get("statusicon.icon", None)
+        if icon:
+            icon.update_state(None, None)
 
 class StateTrackerThread(threading.Thread):
     def __init__(self, icon, address, port):
         threading.Thread.__init__(self)
-        self.adapter = StateTrackerAdapter(icon, address, port)
+        self.adapter = StateTrackerAdapter(POLLER)
+        self.adapter.configure({
+            "statusicon.icon": icon,
+            "api.client.address": address,
+            "api.client.port": port,
+        })
         # XXX
         self.interrupt = self.adapter.interrupt
 
@@ -291,7 +299,10 @@ def main(args):
         port = PORT
 
     if daemonize:
-        become_daemon()
+        system.change_dir()
+        system.go_background()
+        LOG.redirect()
+    system.drop_privileges()
 
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)

@@ -29,118 +29,134 @@ The network neutrality bot
 :Manual group: Neubot manual
 :Version: Neubot 0.3.6
 
-SYNOPSYS
+SYNOPSIS
 ````````
 
 |   neubot
-|   neubot [-dnvx] [-T *interval*] [*URI*]
-|   neubot -S [-dv] [-D *option*]
+|   neubot start [[*ADDRESS*] *PORT*]
+|   neubot status [[*ADDRESS*] *PORT*]
+|   neubot stop [[*ADDRESS*] *PORT*]
 |   neubot --help
 |   neubot -V
-|   neubot help
-|   neubot *command* --help
-|   neubot *command* [*arguments*]
-|   neubot speedtest
-|   neubot stream
-|   neubot bittorrent
+|   neubot *COMMAND* [-ElvV] [-D *PROPERTY[=VALUE*]] [-f *FILE*]
+|   start-neubot-daemon
 
 DESCRIPTION
 ```````````
 
-Neubot is the network neutrality bot, a lightweight open-source
-program that runs in background and periodically performs transmission
-tests with some test servers and with other instances of the program
-itself. These transmission tests probe the Internet using various
-application level protocols. The program saves tests results locally
-and uploads them on the project servers. The collected dataset
-contains samples from various Providers and allows to monitor network
-neutrality.
+*Neubot* is a research project on network neutrality of the *NEXA Center
+for Internet & Society* at *Politecnico di Torino*.  The general idea
+behind Neubot is to deploy to interested users a lightweight computer
+program that performs distributed measurements and collects quantitative
+data on the behavior of *Internet Service Providers* (ISPs) with respect
+to *traffic discrimination* and *Internet access quality*.
 
-This is a beta release of neubot that implements just client/server
-transmission tests, for HTTP (the *speedtest* command), BitTorrent
-(*bittorrent*), and raw TCP (*stream*).
+This manual page documents the *Neubot Agent*, i.e. the piece of software
+that you install on your computer.  Typically, the Agent *runs in the
+background* without your intervention, and periodically performs *Tests*
+with remote Test Servers and (in future) with other Agents.  Each test
+emulates the syntax and/or behavior of a given application protocol and
+consists of sending and/or receiving random data only, *i.e. the Agent
+does not monitor or analyze your traffic.*
 
-The first form of the command will make sure that neubot *daemon* is
-running (and will start it if not), and then will open neubot *web user
-interface* directing the default browser to *http://127.0.0.1:9774*.
-Note that neubot will not attempt to start a web browser if there is
-not an available graphical environment (e.g. **DISPLAY** is not set.)
+You can configure and control the Agent either via *command line* or
+via its *Web User Interface* (WUI).  The Command Line Interface (CLI)
+allows to start, stop, and query the Agent status, run on-demand tests,
+and much more.  The WUI, based on a *Web API*, permits to configure and
+control the Agent, and to navigate recent results.
 
-The second form of the command starts neubot daemon, which will daemonize,
-eventually dropping root privileges, and then will routinely connect()
-to the *master* server to check for software updates and tests to
-be performed. The *interval* parameter could be used to control how
-frequently the daemon connects to the master server. The default master
-server URI is *http://master.neubot.org/rendezvous*, but it is possible
-to specify an alternate *URI*.
+The *first form* of the command (with no arguments) starts the Web User
+Interface in the default browser.  Before opening the browser, this command
+ensures that an instance of the Agent is running in background, and starts it
+otherwise.
+Then, the command tries to open the Web User Interface in the default
+browser, using this URI: *http://127.0.0.1:9774/*.  Note that it's not
+possible to open a browser if a graphical environment is not available,
+i.e. if the *DISPLAY* environment variable is not set.
 
-The third form of the command starts the master server, which will
-daemonize, eventually dropping root privileges, and then will accept()
-connections from neubot daemons and will return information on available
-software updates and tests to be performed. The configuration of
-the master server is specified in the system-wide configuration file
-**/etc/neubot/config**, but it is possible to override its settings
-using the *-D option* switch, that allows to specify an option in the
-format used by the configuration file (see below).
+The *second form* of the command (start) starts the Agent, which will daemonize,
+drop privileges if running as root, and then run in the background.
+(Note that the Agent drops privileges to the user **_neubot**, so,
+if you install Neubot from sources you need to create this user.)
+By default, the Agent listens at *127.0.0.1:9774* for Web API requests,
+but you can use the optional *address* and *port* arguments to override
+the defaults.
 
-The fourth form of the command prints a subset of the program synopsys
-(just the second, third, fourth, and fifth form) and documents briefly
-the available options.
+The *third form* of the command (status) queries the status of the Agent, and
+prints the result on the standard output.  To do that, the command
+connects to *127.0.0.1:9774*, and sends a request to the Web API.
+The Agent is reported to be running if the response is successful,
+i.e. *200 Ok*, and not running otherwise.  You can use the optional
+*address* and *port* parameters to query the status of an Agent started
+with non-standard address and port.
 
-The fifth form of the command prints neubot version.
+The *fourth form* of the command (stop) stops the agent, using the proper Web
+API command.  Upon receiving this request, the Agent will immediately exit.
+You can use the optional *address* and *port* parameters to stop an
+Agent started with non-standard address and port.
 
-The sixth form of the command prints the available *sub-commands*
-list. Indeed, neubot is a modular software and many modules provide
-a main() function that could be invoked with arguments. For example,
-the *rendezvous* module is the one that implements the second, third,
-firth, and fifth form of the command.
+The *fifth form* of the command (--help) prints on the standard output a brief
+help message that summarizes the synopsis.
 
-The seventh form of the command prints the synopys and documents briefly
-the available options of the selected sub-command *command*.
+The *sixth form* of the command (-V) prints on the standard output the version
+number.
 
-The eight form of the command runs the sub-command *command* with
-zero or more *arguments*.
+The *seventh form* of the command (COMMAND) allows to run an arbitrary Neubot
+module. The design of Neubot is module-oriented:
+most modules export a function, named `main()`, that parses command line options
+and implements some behavior.  The available modules are:
 
-The nineth form of the command runs a speed test, invoking the *speedtest*
-sub-command. We include this form here because you might want to start a
-speedtest from command line (for more info on the full synopsys of this
-command pass it the --help option).
+agent
+  This module implements the Agent behavior described in this manual page.
+  I.e. forks in background, starts the Web API server, drops privileges
+  if needed, and then periodically performs Tests.  When you run `neubot
+  start` this module is invoked under the hood.
 
-The tenth form of the command runs a raw TCP transmission test that
-attempts to download as much data as possible from a remote server
-for about ten seconds.  We include this form here because you might
-want to start such test from command line (for more info on the full
-synopsys of this command pass it the --help option).
+bittorrent
+  This module performs an on-demand BitTorrent transmission Test with
+  an alternative Test Server reserved for this purpose.
 
-The eleventh form of the command runs a BitTorrent transmission test
-that attempts to download as much data as possible from a remote server
-for about ten seconds.  We include this form here because you might
-want to start such test from command line (for more info on the full
-synopsys of this command pass it the --help option).
+database
+  This module allows to perform some low-level tasks with the database.
+  It allows to dump the content of the database, delete the content of
+  the database, remove old entries, and *regenerate the Neubot identifier*
+  associated to the Agent.
+
+  (Each Agent is associated with an unique identifier that allows to
+  perform time series analysis.  We believe it does not breach your
+  privacy, but you might not agree and might want to change it from time
+  to time.)
+
+speedtest
+  This module performs an on-demand HTTP transmission Test with an
+  alternative Test Server reserved for this purpose.
+
+speedtest.client
+  Alias for `speedtest`.
+
+stream
+  This module performs an on-demand TCP bulk transfer transmission Test
+  with an alternative Test Server reserved for this purpose.
+
+The *eight form* (start-neubot-daemon) of the command is a convenience shell
+script that attempts to start the Agent in a very robust way.
+E.g., if the Python interpreter is not in the **PATH**, the script will try to
+locate it.
+If you install Neubot from sources, please use this command to start
+Neubot from your */etc/rc.local* script.
 
 OPTIONS
 ```````
 
--D option	Set configuration file option. The accepted format is either
-                *name:value* or *name=value* (note that neubot will *strip()*
-                name and value and so you can add whitespaces at will).
+-D PROPERTY[=VALUE]  Define the *VALUE* of the given *PROPERTY*.
 
-                FIXME The support for this command line switch is rather
-                buggy because it's only possible to specify options defined
-                by the *rendezvous* module (other options will be ignored).
+-E  Ignore *NEUBOT_OPTIONS* environment variable.
 
-                We don't document the accepted options because they're likely
-                to change slightly when we'll fix the above mentioned bug, and
-                so we think it's better not to make promises here.
+-f FILE  Force file name of the database to *FILE*.
 
--d		Debug mode, don't become a daemon.
---help		Print an help screen and exits.
--n		Just connect once to the master server.
--S		Run the program in server mode.
--T interval	Interval between each rendez-vous.
--V		Print version number and exit.
--v		Run the program in verbose mode.
--x		Just retrieve information but don't run tests.
+-l  List all the available properties and exit.
+
+-v  Verbose: print much more log messages.  
 
 EXAMPLES
 ````````
@@ -149,34 +165,42 @@ In this section we will follow the well-established convention of
 representing the unprivileged user prompt with *$* and the privileged
 user prompt with *#*.
 
-Perform a single speedtest:
+Run an on-demand HTTP Test:
 
 |
 |    $ neubot speedtest
 
-Stop neubot daemon:
+Run an on-demand BitTorrent Test:
+
+|
+|    $ neubot bittorrent
+
+Start a system-wide Agent:
+
+|
+|    # neubot start
+
+Stop the Agent:
 
 |
 |    $ neubot stop
 
-Debug neubot, running it in verbose mode and preventing it to become
-a daemon:
+Run the Agent in foreground and in debug mode for debugging purposes:
 
 |
-|    $ neubot -v -d
+|    $ neubot agent -v -D agent.daemonize=no
 
-Export results to JSON:
-
-|
-|    # neubot database -l > output.json
-
-Track neubot daemon state using the command line:
+Export system-wide results to JSON:
 
 |
-|    $ neubot ui track
+|    # neubot database -f /var/neubot/database.sqlite3 dump > output.json
 
-It is possible to run neubot from the sources directory without installing
-it, e.g.:
+Track the Agent state using the command line:
+
+|
+|    $ neubot api.client
+
+Run Neubot in-place from the sources directory:
 
 |
 |    $ ./bin/neubot help
@@ -184,12 +208,9 @@ it, e.g.:
 FILES
 `````
 
-Neubot could be installed below many different prefixes (the most common
+Neubot can be installed below many different prefixes (the most common
 ones being **/usr/local** and **/usr**). In this section of the manual
 we assume that it has been installed below **/usr/local**:
-
-/etc/neubot/config
-  System-wide configuration file that neubot reads at startup.
 
 /usr/local/bin/neubot
   The neubot program, a simple python script that imports neubot and passes
@@ -203,9 +224,6 @@ we assume that it has been installed below **/usr/local**:
   for the first time.
 
 In addition, if you run neubot as an unprivileged user:
-
-$HOME/.neubot/config
-  User-specific configuration file.
 
 $HOME/.neubot/database.sqlite3
   User-specific results database.
@@ -226,7 +244,7 @@ The following people have contributed patches to the project:
 | Roberto D'Auria		<everlastingfire@autistici.org>
 | Marco Scopesi			<marco.scopesi@gmail.com>
 
-The following poeple have helped to translate the website:
+The following people have helped to translate the website:
 
 |
 | Claudio Artusio               <claudioartusio@gmail.com>

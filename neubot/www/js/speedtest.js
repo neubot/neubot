@@ -146,6 +146,9 @@ var speedtest = (function() {
         }
 
         mydata = downloadData.concat(uploadData);
+        if (!mydata.length) {
+            return;
+        }
 
         var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
         var xaxis = {
@@ -207,88 +210,13 @@ var speedtest = (function() {
     return self;
 })();
 
-// Duplicated code. To be merged in some way with neubot.js.
-function process_state(data) {
-    var value;
-
-    var actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
-
-    jQuery('#testResultsBox h4').text("Latest test details");
-
-    if (data.events.config) {
-        if (data.events.config.enabled != undefined) {
-            setStatusLabels(data.events.config.enabled);
-        }
-    }
-
-    if (data.update_version) {
-        jQuery("#updateUrl").attr("href", data.update_uri);
-        jQuery("#updateUrl").text(data.update_uri);
-        jQuery("#updateVersion").text(data.update_version);
-        setTimeout(function() { jQuery('#update').slideDown("slow"); }, 5000);
-    }
-
-    if (data.events.test_name) {
-        jQuery("#testName1").text(data.events.test_name);
-    }
-    if (data.events.speedtest_latency) {
-        jQuery("#latencyResult").text(data.events.speedtest_latency.value);
-    }
-    if (data.events.speedtest_download) {
-        jQuery("#downloadResult").text(data.events.speedtest_download.value);
-    }
-    if (data.events.speedtest_upload) {
-        jQuery("#uploadResult").text(data.events.speedtest_upload.value);
-    }
-
-    if (in_array(data.current, actions)) {
-        if (data.current == "negotiate") {
-            jQuery("#latencyResult").text("---");
-            jQuery("#downloadResult").text("---");
-            jQuery("#uploadResult").text("---");
-        }
-        if (data.current == "test") {
-            jQuery('#testResultsBox').qtip("show");
-        }
-        else {
-            jQuery('#testResultsBox').qtip("hide");
-        }
-    }
-}
-
 jQuery(document).ready(function() {
-    jQuery.jqplot.config.enablePlugins = true;
+    utils.setActiveTab("speedtest");
 
-    getSetConfigVar("enabled", setStatusLabels, false);
+    jQuery.jqplot.config.enablePlugins = true;
 
     speedtest.get_recent_results([speedtest.results_formatter_table,
                                   speedtest.results_formatter_plot]);
-
-    jQuery('#testResultsBox').qtip({
-        content: "A new test is running.",
-        position: {
-            target: jQuery('#testTime'),
-            corner: {
-                tooltip: "rightMiddle",
-                target: "leftMiddle"
-            }
-        },
-        show: {
-            when: false,
-            ready: false
-        },
-        hide: false,
-        style: {
-            border: {
-                width: 2,
-                radius: 5
-            },
-            padding: 10,
-            textAlign: 'center',
-            tip: true,
-            name: 'blue'
-        }
-    });
 
     var confirm = function() {
         var n = Number(jQuery("#res_value").val());
@@ -320,6 +248,6 @@ jQuery(document).ready(function() {
     });
     jQuery("#res_submit").click(confirm);
 
-    tracker = state.tracker(process_state);
+    tracker = state.tracker();
     tracker.start();
 });

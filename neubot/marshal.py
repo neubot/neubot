@@ -1,4 +1,5 @@
 # neubot/marshal.py
+# -*- coding: utf-8 -*-
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -21,6 +22,7 @@
 #
 
 import xml.dom.minidom
+import urllib
 import types
 import sys
 import cgi
@@ -28,222 +30,136 @@ import cgi
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.log import LOG
 from neubot.compat import json
 
-def XML_append_attribute(document, element, name, value):
+from neubot.utils import unicodize
+from neubot.utils import stringify
 
-    """
-    Append to `element` an element with tagName `name` that contains
-    a text node with value `value`.  All nodes are created in the context
-    of the document `document`.  While at it, we also try to indent
-    the resulting XML file in a way similar to what Firefox does in order
-    to make it more human readable.
-    """
+# Marshal
 
-    indent = document.createTextNode("    ")
-    element.appendChild(indent)
+def object_to_json(obj):
+    return json.dumps(obj.__dict__)
 
-    child_element = document.createElement(name)
-    element.appendChild(child_element)
-
-    text_node = document.createTextNode(value)
-    child_element.appendChild(text_node)
-
-    newline = document.createTextNode("\r\n")
-    element.appendChild(newline)
-
-SIMPLETYPES = [ types.IntType, types.FloatType, types.StringType,
-                types.UnicodeType ]
-
-def XML_marshal(obj, root_elem_name):
-
-    """
-    Marshal the attributes of `obj` into XML.  Note that this method
-    will marshal scalar attributes only--vectors, hashes, and classes are
-    going to be ignored.
-    """
-
-    document = xml.dom.minidom.parseString("<" + root_elem_name + "/>")
-
-    root = document.documentElement
-    newline = document.createTextNode("\r\n")
-    root.appendChild(newline)
-
-    #
-    # Note that vars() works as long as the class has been
-    # created using __init__() to initialize attributes.
-    #
-
-    allvars = vars(obj)
-    for name, value in allvars.items():
-        if type(value) not in SIMPLETYPES:
-            continue
-        XML_append_attribute(document, root, name, str(value))
-
-    try:
-        data = root.toxml("utf-8")
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        LOG.exception()
-        LOG.warning("Unicode encode or decode error (see above)")
-
-        #
-        # Return a non XML string so that the parser will notice
-        # and will -hopefully- complain aloud.
-        #
-
-        data = ""
-
-    return data
-
-def JSON_marshal(obj):
-
-    """
-    Marshal the attributes of `obj` into JSON.  Note that this method
-    will marshal scalar attributes only--vectors, hashes, and classes are
-    going to be ignored.
-    """
-
-    #
-    # Note that vars() works as long as the class has been
-    # created using __init__() to initialize attributes.
-    #
-
+def object_to_qs(obj):
     dictionary = {}
-    allvars = vars(obj)
-    for name, value in allvars.items():
-        if type(value) not in SIMPLETYPES:
-            continue
-        dictionary[name] = str(value)
+    for name, value in obj.__dict__.items():
+        dictionary[name] = stringify(value)
+    s = urllib.urlencode(dictionary)
+    return s
 
-    try:
-        data = json.dumps(dictionary, ensure_ascii=True)
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        LOG.exception()
-        LOG.warning("Unicode encode or decode error (see above)")
-
-        #
-        # Return a non JSON string so that the parser will notice
-        # and will -hopefully- complain aloud.
-        #
-
-        data = ""
-
-    return data
-
-def XML_unmarshal(obj, data, root_elem_name):
-
-    """Unmarshal the content of `data` -- which must be a serialized
-       XML file using utf-8 encoding -- into the given object, provided
-       that the object already contains an attribute with such name
-       and the same type."""
-
-    document = xml.dom.minidom.parseString(data)
+def object_to_xml(obj):
+    name = obj.__class__.__name__
+    document = xml.dom.minidom.parseString("<" + name + "/>")
 
     root = document.documentElement
-    if root.tagName != root_elem_name:
-        LOG.warning("Ignoring unexpected root element: %s" % root.tagName)
-        return
+    root.appendChild( document.createTextNode("\r\n") )
 
-    root.normalize()
-    for element in root.childNodes:
-        if element.nodeType != element.ELEMENT_NODE:
-            continue
+    for name, value in obj.__dict__.items():
 
-        if not hasattr(obj, element.tagName):
-            continue
-        value = getattr(obj, element.tagName)
-        if type(value) == types.IntType:
-            cast = int
-        elif type(value) == types.FloatType:
-            cast = float
-        elif type(value) == types.StringType:
-            cast = str
-        elif type(value) == types.UnicodeType:
-            cast = unicode
-        else:
-            continue
+        if type(value) != types.ListType:
+            value = [value]
 
-        text = None
-        for node in element.childNodes:
-            if node.nodeType == element.TEXT_NODE:
-                text = node
-                # Normalized tree, OK to break here
-                break
-        if not text:
-            continue
+        for v in value:
+            root.appendChild( document.createTextNode("    ") )
 
-        #XXX Workaround a bug in speedtest.py
-        if element.tagName == "timestamp":
-            cast = lambda x: int(float(x))
+            element = document.createElement(name)
+            root.appendChild(element)
+            element.appendChild( document.createTextNode( unicodize(v) ))
 
-        textdata = text.data.strip()
-        try:
-            value = cast(textdata)
-        except ValueError:
-            LOG.warning("failed to convert: %s" % textdata)
-            continue
+            root.appendChild( document.createTextNode("\r\n") )
 
-        setattr(obj, element.tagName, value)
+    return root.toxml("utf-8")
 
-def QS_unmarshal(obj, data):
+MARSHALLERS = {
+    "application/json": object_to_json,
+    "application/x-www-form-urlencoded": object_to_qs,
+    "application/xml": object_to_xml,
+    "text/xml": object_to_xml,
+}
 
-    """
-    Unmarshal the content of data -- which must be a www-urlencoded
-    string -- into the given object, provided that the object already
-    contains an attribute with such name and the same type.
-    """
+def marshal_object(obj, mimetype):
+    return MARSHALLERS[mimetype](obj)
 
-    dictionary = cgi.parse_qs(data)
-    for key in dictionary:
+# Unmarshal
 
-        if not hasattr(obj, key):
-            continue
+def json_to_dictionary(s):
+    return dict(json.loads(s))
 
-        value = getattr(obj, key)
-        if type(value) == types.IntType:
-            cast = int
-        elif type(value) == types.FloatType:
-            cast = float
-        elif type(value) == types.StringType:
-            cast = str
-        elif type(value) == types.UnicodeType:
-            cast = unicode
-        else:
-            continue
+def qs_to_dictionary(s):
+    dictionary = {}
+    for name, value in cgi.parse_qs(s).items():
+        dictionary[name] = value[0]
+    return dictionary
 
-        orig = dictionary[key][0]
-        try:
-            value = cast(orig)
-        except ValueError:
-            continue
+def xml_to_dictionary(s):
+    dictionary = {}
 
-        setattr(obj, key, value)
+    document = xml.dom.minidom.parseString(s)
+    document.documentElement.normalize()        # XXX
 
-__all__ = [ "JSON_marshal", "XML_marshal", "QS_unmarshal" ]
+    for element in document.documentElement.childNodes:
+        if element.nodeType == element.ELEMENT_NODE:
 
-class TestClass(object):
+            for node in element.childNodes:
+                if node.nodeType == node.TEXT_NODE:
+
+                    if not element.tagName in dictionary:
+                        dictionary[element.tagName] = []
+
+                    dictionary[element.tagName].append(node.data.strip())
+                    break
+
+    return dictionary
+
+UNMARSHALLERS = {
+    "application/json": json_to_dictionary,
+    "application/x-www-form-urlencoded": qs_to_dictionary,
+    "application/xml": xml_to_dictionary,
+    "text/xml": xml_to_dictionary,
+}
+
+def unmarshal_objectx(s, mimetype, instance):
+    dictionary = UNMARSHALLERS[mimetype](s)
+    for name, value in instance.__dict__.items():
+        if name in dictionary:
+            nval = dictionary[name]
+            if type(value) != types.ListType and type(nval) == types.ListType:
+                nval = nval[0]
+            setattr(instance, name, nval)
+
+def unmarshal_object(s, mimetype, ctor):
+    obj = ctor()
+    unmarshal_objectx(s, mimetype, obj)
+    return obj
+
+# Unit test
+
+import pprint
+
+class Test(object):
     def __init__(self):
-        self.floating = 1.1
-        self.func = lambda: None
-        self.integer = 0
-        self.string = "string"
-        self.ustring = u"ustring"
+        # the city name that prompted all unicode issues...
+        self.uname = u"Aglié"
+        self.sname = "Aglie"
+        self.fval = 1.43
+        self.ival = 1<<17
+        self.vect = [1,2,3,4,5,12,u"Aglié",1.43]
+        self.v2 = ["urbinek"]
+
+def test(mimetype):
+    pprint.pprint("--- %s ---" % mimetype)
+    m = Test()
+    pprint.pprint(m.__dict__)
+    e = marshal_object(m, mimetype)
+    print e
+    d = unmarshal_object(e, mimetype, Test)
+    pprint.pprint(d.__dict__)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or sys.argv[1] not in [ "-json", "-xml" ]:
-        sys.stdout.write("Usage: marshal.py -json|-xml\n")
-        sys.exit(1)
-    elif sys.argv[1] == "-xml":
-        marshal = lambda obj: XML_marshal(obj, "TestClass")
+    if len(sys.argv) == 1:
+        mimetypes = MARSHALLERS.keys()
     else:
-        marshal = JSON_marshal
+        mimetypes = sys.argv[1:]
 
-    test = TestClass()
-    print marshal(test)
-
-    QS_unmarshal(test, "floating=3.0&integer=2&string=asd&ustring=")
-    print marshal(test)
-
-    QS_unmarshal(test, "floating=three&integer=two&string=&ustring=be")
-    print marshal(test)
+    for mimetype in mimetypes:
+        test(mimetype)

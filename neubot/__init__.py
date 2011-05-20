@@ -20,4 +20,4 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-version = "0.3.6"
+pass

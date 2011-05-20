@@ -23,13 +23,12 @@
 import errno
 import select
 
-from neubot.times import ticks
-from neubot.times import timestamp
+from neubot.utils import ticks
+from neubot.utils import timestamp
 from neubot.log import LOG
 
 # Interval between each check for timed-out I/O operations
 CHECK_TIMEOUT = 10
-
 
 class Pollable(object):
 
@@ -50,7 +49,6 @@ class Pollable(object):
 
     def closed(self, exception=None):
         pass
-
 
 class Task(object):
 
@@ -76,6 +74,9 @@ class Task(object):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
 
+    def __repr__(self):
+        return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
+          self.__dict__)
 
 class Poller(object):
 
@@ -189,17 +190,17 @@ class Poller(object):
             self.tasks.sort(key=lambda task: task.time)
             index = 0
             for task in self.tasks:
-                if task.time == -1 or task.func == None:
-                    continue
                 if task.time > now:
                     break
+                index = index + 1
+                if task.time == -1 or task.func == None:
+                    continue
                 try:
                     task.func()
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
                     LOG.exception()
-                index = index + 1
             del self.tasks[:index]
 
     def dispatch_events(self):
@@ -230,5 +231,8 @@ class Poller(object):
                 if stream.writetimeout(now):
                     self.close(stream)
 
+    def snap(self, d):
+        d['poller'] = {"pending": self.pending, "tasks": self.tasks,
+          "readset": self.readset, "writeset": self.writeset}
 
 POLLER = Poller(1)
