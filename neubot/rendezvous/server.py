@@ -71,7 +71,7 @@ class ServerRendezvous(ServerHTTP):
               "http://speedtest1.neubot.org/speedtest")]
 
         #
-        # Neubot <=0.3.6 expects to receive an XML document while
+        # Neubot <=0.3.7 expects to receive an XML document while
         # newer Neubots want a JSON.  I hope old clients will upgrade
         # pretty soon.
         #

@@ -54,7 +54,7 @@ Try `neubot help` to get a list of available subcommands.
 Try `neubot COMMAND --help` for more help on COMMAND.
 '''
 
-VERSION = "0.3.6\n"
+VERSION = "0.3.7\n"
 
 #
 # When the migration takes too much time, the agent is stuck
