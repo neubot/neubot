@@ -1,3 +1,488 @@
+Neubot 0.3.7 [2011-05-20]
+	* debian prerm: Consistent check and action
+	* http/messages.py: Add response field
+	* neubot/utils.py: Add asciify()
+	* http/ssi.py: Add minimal support for server-side includes
+	* http: add stream.py client.py server.py
+	* Merge branch 'new-http-core' into next
+	* api_service.py: Service for /api/foo requests
+	* ui.py: Reimplement UIServer using http.server
+	* Merge branch 'api_service' into next
+	* TODO: We should SSI only text/html files
+	* http/server.py: SSI text/html resources only
+	* www: extract and use header.html, footer.html from index.html
+	* Merge branch 'www-split' into next
+	* speedtest.js: 80x24 orthodoxy
+	* speedtest.js: don't attempt to plot empty data sets
+	* www: Append .min to minified javascripts and update header.html
+	* header.html: deploy one more media=screen
+	* Merge branch 'www-settle' into next
+	* README: refer to PRIVACY for privacy policy details
+	* PRIVACY: spell out the details of our privacy policy
+	* privacy.html: rst2html PRIVACY > privacy.html plus some editing
+	* Merge branch 'privacy-policy' into next
+	* marshal.py: Rewrite with more knowledge
+	* neubot: Move config.py complexity to api_service.py
+	* database.py: Hack for XML-on-database oddities
+	* Merge branch 'new-marshal' into next
+	* www: load the proper javascript for each page
+	* http/server.py: Don't attempt to process empty services list
+	* shell.py: Very simple command line shell
+	* boot.py: Faster boot procedure
+	* neubot neubotw: Try using new startup procedure
+	* Merge branch 'main-maint' into next
+	* start-neubot-daemon: Now safe to run neubot start
+	* boot.py: Zap two premature sys.exit()
+	* boot.py: We don't need to specify /index.html
+	* boot.py: win32: Do not spawn a thread when already running
+	* boot.py: Simplify logic
+	* boot.py: The webgui command does not make sense
+	* rootdir.py: Auto-compute location of WWW files
+	* ui.py: Import WWW from neubot.rootdir
+	* pathnames.py: Moved WWW to neubot.rootdir
+	* boot.py: Auto-compute location of Neubot sources
+	* Merge branch 'auto-paths' into next
+	* system.px unix.py win32.py: Import code for daemons from utils.py
+	* agent.py: The new default command
+	* shell.py: Include the agent command
+	* boot.py: Launch agent.py not rendezvous.py
+	* rendezvous.py: Delete not-true-anymore comment
+	* Merge branch 'agent' into next
+	* api_service.py: Add missing blank line
+	* http/server.py: Allow to register already-instantiated service
+	* http/messages.py: Cosmetic changes
+	* http/messages.py: Use collections.defaultdict
+	* http: Automatically print headers, decommission prettyprint
+	* http/stream.py: Do not debug() receiver state
+	* Merge branch 'decommission-prettyprint' into next
+	* utils.py: Decommission unused XML code
+	* neubot: One step closer decommissioning fixkwargs()
+	* neubot: Start decommissioning Stats and SimpleStats
+	* utils.py: Sanitize imports
+	* utils.py: I'm taking heed of it for 2011 too
+	* Merge branch 'utils-maint' into next
+	* marshal.py: Allow to serialize/unserialize vectors too
+	* rendezvous.py: Preparatory work for the next patch
+	* rendezvous.py: Convert to ServiceHTTP
+	* rendezvous.py: Use marshal.py for RendezvousRequest
+	* rendezvous.py: Use marshal.py for RendezvousResponse
+	* rendezvous.py: Use new http client
+	* rendezvous.py: Zap unused imports, style
+	* rendezvous.py: Don't need to import/use ui anymore
+	* rendezvous.py: Replace flags with boolean
+	* rendezvous.py: Hardcode VERSION to 0.3.7
+	* Merge branch 'rendezvous-maint' into next
+	* agent.py: Bugfix RendezvousClient.__init__() invocation
+	* database.py: Work-around timestamp being a float
+	* speedtest.py: Make sure SpeedtestCollect.timestamp is an integer
+	* utils.py: improved version comparation algorithm
+	* boot.py: Merge shell.py and dispose of shell.py
+	* api_client.py: Use m.compose(...) not compose(m, ...)
+	* speedtest.py: Make sure we use __init__() and inherit from object
+	* speedtest.py: Use marshal.py for marshalling/unmarshalling
+	* speedtest.py: Use m.compose(...) and not compose(m, ...)
+	* Merge branch 'speedtest-maint' into next
+	* HTTPListener: Immediately pass new request to the parent
+	* http/stream.py: Avoid pychecker warning
+	* http/server.py: Add sample ServiceHTTP to avoid pychecker warning
+	* neubot/http: Avoid another pychecker warning
+	* Merge branch 'http-reduce-warnings' into next
+	* notify.py: Rewritten using collections.defaultdict()
+	* speedtest.py: Unblur negotiator to tracker boundaries
+	* speedtest.py: One more put-two-blank-lines-around-classes patch
+	* speedtest.py: Get rid of RESTRICTED
+	* speedtest.py: Re-implement server-side using ServerHTTP
+	* speedtest.py: s/connection/stream/ after previous patch
+	* doc/speedtest-server.png: Dispose of now-obsolete documentation
+	* Merge branch 'speedtest-use-new-http-server' into next
+	* bittorrent/stream.py: Don't upcall parent on connection lost
+	* bittorrent/main.py: Get rid of VERBOSER
+	* bittorrent/main.py: s/handler/stream/
+	* http/message.py: Remove unused import
+	* net/stream.py: configure(): s/dictionary/conf/
+	* net/stream.py: configure(): Use dictionary.get(key, default)
+	* net/streams.py: Get rid of StreamMeasurer
+	* VERBOSER was actually not such a good idea
+	* Merge branch 'stream-simplify' into next
+	* http/server.py: process_request: s/func/serve/
+	* Don't pass listener param to http services
+	* net/stream.py: GenericProtocolStream: Cosmetic changes
+	* http: Don't pass upstream reference to connector or listener
+	* http/server.py: ServerHTTP: s/dictionary/conf/
+	* BTListeningPeer BTConnectingPeer: s/dictionary/conf/
+	* net/stream.py: Simplify stream construction
+	* http: Move connection_ready() up one level
+	* Merge branch 'stream-v3' into next
+	* Make sure we compute time-to-connect()
+	* http/client.py: Register with measurer when needed
+	* Migrate ap_client.py to http/client.py and propagate changes
+	* http: support for sending chunked transfer encoding
+	* arcfour.py: add support for generating random data for N seconds
+	* speedtest.py: Cosmetic changes
+	* speedtest.py: SessionTracker: zap comment
+	* speedtest.py: Don't routinely print queue length if not needed
+	* Elaborate on the idea of http server and child server
+	* net/stream.py: allow to connect() more than one socket at a time
+	* net/stream.py: Make sure SSL works
+	* http/client.py: allow to connect to a given uri
+	* http/client.py: seminal work to load arbitrary http clients
+	* http/client.py: allow to load http class from another module
+	* speedtest.py: deploy bits of the new speedtest client
+	* Merge branch 'new-speedtest-client-alpha' into next
+	* speedtest.py: new complete speedtest client
+	* net/stream.py: allow to measure RTT only
+	* speedtest.py: Make sure new tests collects results
+	* speedtest.py: start using new speedtest client
+	* net/stream.py: add two extra stat counters
+	* speedtest.py: use bytes_*_tot to measure speed
+	* net/streams.py: Measure: factor measure_speed() out
+	* net/stream.py: measure_speed(): safer delta <=0 retval
+	* net/stream.py: Measurer: gargabe collect measure()
+	* Allow speedtest.py to perform incremental measurements
+	* speedtest.py: don't connect() all connections at the same time
+	* Merge branch 'incremental-measurements' into next
+	* speedtest.py: always use two connections
+	* speedtest.py: decommission old client code
+	* speedtest.py: Prefer import to from..import for stdlib classes
+	* Move neubot/boot.py to neubot/main.py
+	* agent.py: Bypass neubot/ui.py
+	* neubot/ui.py: F.O.D.
+	* rm http/clients.py http/servers.py
+	* http/utils.py: Fetch defs from http.stream not http.handlers
+	* http/utils.py: throw away unused make_filename wankery
+	* decommission http/handlers.py net/streams.py
+	* neubot/tools: decommission
+	* My dying neubot/pathnames.py
+	* pathnames.py sleeps with the fishes
+	* Merge branch 'slaughterhouse-number-five' into next
+	* speedtest.py: Use one obytes per stream
+	* Fix broken speedtest.py measurements
+	* Update TODO file
+	* Move system stuff below neubot/system/
+	* Funeral portrait for ismacosx()
+	* system/unix.py should not test for if os.name == "posix"
+	* system/unix.py: Remove unused import
+	* system/win32.py: Zap __all__ and if os.name == "nt" check
+	* Move api stuff into neubot/api/
+	* http: Rename messages.py to message.py
+	* Version in neubot/__init__.py passed away
+	* New home for compose() in messages.py: the recyle bin
+	* Move database.py to database/__init__.py
+	* Move rendezvous.py to rendezvous/__init__.py
+	* Move speedtest.py to speedtest/__init__.py
+	* Move debug-related files to neubot/debug
+	* Merge branch 'tidy' into next
+	* log.py: simplify code
+	* system: move drop_privileges after go_background
+	* Implement and use system-dependent redirect_to_dev_null()
+	* Implement and use system-independent write_pidfile()
+	* Dirge for utils.py's become_daemon()
+	* Implement and use want_rw_file() in database.py
+	* utils.py: ditch getpwnaml() getpwnamlx()
+	* Merge branch 'cleanup-utils' into next
+	* Taking care of neubot/debug/__init__.py
+	* marshal.py: Move unicodize() stringify() to utils.py
+	* s/asciify/asciiify/g using the new sed_inplace
+	* scripts: Tweak sed_inplace to accept more than one file
+	* utils.py: Simplify asciiify() implementation
+	* utils.py: Implement and share function to convert string to bool
+	* Merge branch 'coercers' into next
+	* rendezvous/__init__.py: Adjust connection_failed() signature
+	* Meld times.py into utils.py and propagate changes
+	* utils.py: Add and use support to cherry-pick classes at runtime
+	* www js: mv neubot.js index.js and propagate changes
+	* www: get rid of non-existent CSS classes
+	* www: replace absolute links with relative links
+	* css/style.css: add newline at end of file
+	* Merge branch 'www-maint-alessio' into next
+	* www js: created function update_sidebar() and called it from comet
+	* js/state.js: ... and justice for stray whitespaces
+	* js/index.js: kill outdated comment
+	* www: s/testName1/testNameSideBar/
+	* js/state.js: UTF-7 integralism
+	* Merge branch 'js-maint' into next
+	* api/server.py: Sort imports
+	* api/server.py: Return {} on POST /api/config
+	* After POST /api/config return only what changed via /api/state
+	* Merge branch 'api-config-tweaks' into next
+	* log.py: Sort imports
+	* log.py: Two blank lines around Log, please!
+	* log.py: Reword docstring
+	* log.py: Remove protection against comet storms
+	* log.py: Add _log() a SEVERITY argument
+	* log.py: Improve test unit
+	* log.py: Rewrite that crappy serialization mechanism
+	* api/server.py: Add /api/log to read recent logs
+	* log.py: Fix exception() with respect to splitting lines
+	* Merge branch 'exhume-api-log' into next
+	* api/server.py: Provide API support for /api/testnow
+	* api/server.py: Make sure we JSONize logs
+	* api/server.py: Unbreak previous by importing json
+	* config.py: Keep configuration into a modified dictionary
+	* api/server.py: Provide more information on internal errors
+	* config.py: Spit out more meaningful errors
+	* Merge branch 'config-on-dict' into next
+	* config.py: Avoid pychecker warning
+	* www: add log page
+	* www: seek and destroy some more white spaces
+	* Do not change directory to profile dir
+	* From neubot import system to reduce number of imports
+	* Unconditionally drop root privileges
+	* Only the agent must write pidfile
+	* write_pidfile(): Convert integer to string to avoid exception
+	* Write pidfile only when needed
+	* Merge branch 'system-love' into next
+	* Add CONFIG flags to manage privacy settings
+	* api/server.py: Write the database after POST /api/config
+	* database: query_results_functional(): zap unused arguments
+	* database/__init__.py: Remove outdated comment
+	* database: Move code to migrate to database/migrate.py
+	* database/__init__.py: Zap unused imports, sort remaining ones
+	* Merge branch 'update-database' into next
+	* database/__init__.py: Abstraction with sugar
+	* api/server.py: database.dbm != sqlite3.Connection
+	* scripts: Move make clean logic into a script
+	* utils.py: Make sure we use integers to represent booleans
+	* Keep boolean values consistent across CONFIG lifetime
+	* config.py: Allow properties names to contain dots
+	* config.py: store properties descriptions too
+	* Merge branch 'improve-config' into next
+	* boot.py: generic bootstrap code for neubot commands
+	* net/stream.py: Avoid multiple from neubot.utils import
+	* net/stream.py: do not hide soclose() errors
+	* Merge branch 'stream-love' into next
+	* net/stream.py: unit test: connect multiple sockets at once
+	* net/stream.py: We don't need to define KIND* constants
+	* net/stream.py: test unit: add echo protocol
+	* Move measurer bits from net/stream.py to net/measurer.py
+	* Support for serializing connect() landed into net/stream.py
+	* Don't store reference to measurer into configuration
+	* Merge branch 'more-stream-love' into next
+	* www: highlight of tabs
+	* www: improve getSetConfigVar function to get/set multiple values
+	* www: added getConfigVars and setConfigVars
+	* www: privacy now works
+	* www: modified n/a in status
+	* www: added settings page
+	* www: added seconds to log page
+	* www: moved numchanged variable
+	* www: more whitespace intolerance
+	* Merge branch 'palmero-www' into next
+	* log.py: Put latest log first
+	* www: added error function in setConfigVars
+	* database: sort latest result first
+	* speedtest/__init__.py: quick hack for measurer
+	* agent: Bind or die when UI is enabled
+	* www: moved tooltip code in state.js
+	* www: abandoned idea to insert chart in homepage
+	* www: when config variable change, the setting page is updated
+	* Beating the ass of white lines again
+	* Merge branch 'palmero-www' into next
+	* speedtest: force the measurer we want just before we need it
+	* www: added support for config labels and improve colors in Settings page
+	* agent.py: Use boot.py config.py instead of options.py
+	* api/client.py: Use boot.py config.py instead of options.py
+	* net/CA.py: Use boot.py config.py instead of options.py
+	* Merge branch 'decommission-options' into next
+	* net/stream.py: Use boot.py config.py instead of options.py
+	* main.py: updated options to start/stop/status
+	* www: bugfix in settings.js
+	* database: Make sure /api/speedtest returns real results
+	* www: added feature not to modify dangerous settings
+	* log.py: allow to print exceptions at different error levels
+	* log.py: unit test: make sure we deal with exceptions gracefully
+	* api/server.py: Use LOG.info() for ConfigError errors
+	* Merge branch 'config-errors' into next
+	* speedtest: Maybe this time I'll fix measurer for real
+	* www: now charts rule
+	* log.py: Add oops() function
+	* net/stream.py: Use oops for the unicode warning
+	* Merge branch 'discourage-sending-utf8' into next
+	* api/server.py: sort configlabels
+	* config.py: killed force property
+	* http/message.py: check that the http request is utf8
+	* log.py: increase log size
+	* log.py: reverse log order again
+	* notify.py: TESTDONE should not run periodically
+	* notify.py: Bugfix the TESTDONE hack
+	* system/linux.py: collect system-dependent stats
+	* utils.py: Add get_uuid()
+	* speedtest/gen.py: Generate random results
+	* database/table_config.py: Algorithms for config table
+	* database/__init__.py: Use table_config
+	* config.py: Use table_config
+	* Merge branch 'table-config' into next
+	* speedtest/__init__.py: Make sure we use client uuid
+	* database/migrate.py: migrate from 1.1 to 2.0
+	* database/migrate.py: Give credit to Alessio
+	* database/migrate.py: s/client_uuid/uuid/g
+	* speedtest/get.py: s/client_uuid/uuid/
+	* speedtest/gen.py: use relative not absolute time
+	* database/table_speedtest.py: Algorithms for speedtest table
+	* database/migrate.py: Make 1.1 -> 2.0 migration more robust
+	* Use code in database/table_speedtest.py
+	* Merge branch 'table-speedtest' into next
+	* net/stream.py: save conf reference into stream
+	* net/stream.py: move duration checks in GenericProtocolStream
+	* net/stream.py: separate handling of send and recv socket buffers
+	* net/stream.py: allow to tune and reduce default chunk size
+	* Merge branch 'stream-love' into next
+	* bittorrent/main.py: migrate to neubot/config.py
+	* log.py: allow to print custom message on complete()
+	* log.py: add timing for operations
+	* log.py: allow to personalize progress indicator
+	* log.py: remove unused import
+	* log.py: avoid pychecker warnings
+	* log.py: add testing code for in-progress feature
+	* Merge branch 'log-love' into next
+	* net/stream.py: all-or-nothing semantic for multi-connect
+	* HeadlessMeasurer: allow to restart from scratch
+	* log.py: more precise check for exceptions in unit test
+	* http/server.py: collapse all imports from neubot.utils
+	* http/server.py: convert from options.py to config.py model
+	* http/server.py: allow to disable mime-guessing code
+	* http/server.py: syntactic sugar to serve current directory
+	* Merge branch 'http-love' into next
+	* agent.py: pass correct properties names to http/server.py
+	* http/client.py: collapse imports from neubot.utils
+	* http/client.py: remove unused import
+	* http/client.py: migrate from options.py to config.py
+	* Merge branch 'http-love' into next
+	* Move neubot/options.py into the attic
+	* Return to old-style speedtest
+	* config.py: do not return ConfigDict() on select()
+	* Merge branch 'speedtest-backout' into next
+	* speedtest: Remove /speedtest/download/2 code
+	* speedtest: make TestServer self-sustained
+	* Merge branch 'speedtest-love' into next
+	* arcfour.py: No more RandomData users
+	* log.py: don't flood log with access logs
+	* privacy: Responsible is JC, not DAUIN director
+	* speedtest: don't save body when not needed
+	* main.py: allow to turn on memleak debugging
+	* speedtest/client.py: make sure we measure connect_time
+	* speedtest: pass ClientSpeedtest the real configuration
+	* http/stream.py: silence http stream a bit
+	* http: pretty print body if possible
+	* config: Not a good idea to copy just a subset
+	* js/state.js: fetch /api/config just once
+	* www/settings.html: do not encourage people to make random changes
+	* css/style.css: there is no justification for this commit
+	* speedtest/client.py: unbreak /api/state for negotiate and collect
+	* http/utils.py: remove unused import
+	* notify.py: dispose of deprecated code
+	* api/server.py: Make /api more transparent and debuggable
+	* api/server.py: garbage collect /api/testnow
+	* api/server.py: return available APIs on GET /api
+	* api/server.py: allow to inspect POLLER and NOTIFIER state
+	* Merge branch 'api-love' into next
+	* Remove neubot.dia icon from the repository
+	* Make sure update_tasks() does not misbehave
+	* speedtest/client.py: remember to stop the measurer
+	* net: s/closing/closed/ in Connector and Listener
+	* api/server.py: import version from boot
+	* Comment on what should be done just after release
+	* rendezvous: move message-handling code to compat.py
+	* Copy rendezvous server code to rendezvous/server.py
+	* Copy rendezvous client code to rendezvous/client.py
+	* agent.py: use new rendezvous code by default
+	* Shrink neubot/rendezvous/__init__.py
+	* Merge branch 'rendezvous-love' into next
+	* update.py: download and verify next version archive
+	* update.py: specify the correct file name for MacOSX
+	* rendezvous/server.py: use releases.n.o instead of w.n.o/download
+	* Do not use with because Python 2.5 does not support it
+	* rendezvous/server.py: allow to decide default speedtest server
+	* rendezvous/server.py: we must return a list not a scalar
+	* http/client.py: make connect_uri() more robust
+	* rendezvous/client.py: subscribe before connect_uri
+	* Add main() to speedtest client
+	* Move speedtest TestServer into speedtest/server.py
+	* arcfour.py: use warning again
+	* Move a copy of speedtest messages to speedtest/compat.py
+	* Copy to speedtest/session.py session-management code
+	* Copy to speedtest/negotiate.py speedtest NegotiateServer
+	* Merge branch 'speedtest-love' into next
+	* speedtest/client.py: fetch structures from speedtest/compat.py
+	* main.py: implement speedtest command using speedtest.client
+	* We can now dispose of speedtest/__init__.py unused code
+	* Merge branch 'speedtest-love' into next
+	* api/server.py: alphabetically sort imports
+	* api/server.py: remove unused import
+	* api/server.py: import DATABASE not database from neubot.database
+	* api/server.py: use table_speedtest.listify()
+	* api/server.py: api_speedtest: relax checks on since, until
+	* Merge branch 'api-server-love' into next
+	* speedtest/negotiate.py: use table_speedtest
+	* speedtest/client.py: use table_speedtest
+	* api/server.py: Start moving properties to config.py
+	* speedtest: cast privacy settings to integers
+	* Merge branch 'speedtest-db-and-privacy' into next
+	* Improve database code
+	* boot.py: let the user decide not to merge from environment
+	* boot.py: allow to list all the available properties
+	* config.py: undo the starts-with-enable hack
+	* boot.py: cosmetic changes
+	* main.py: sync
+	* Merge branch 'main-and-options' into next
+	* log.py: cosmetic changes
+	* system/win32.py: decommission NTEventHandler code
+	* bin/neubotw: re-enable redirect-from-the-beginning
+	* Merge branch 'log-love' into next
+	* start-neubot-daemon: search for python2.7 too
+	* Remove obsolete etc/neubot/config
+	* doc/neubot.1.txt: remove references to /etc/neubot/config
+	* man1/neubot.1: sync with doc/neubot.1.txt
+	* Makefile: remove rules to install configuration file
+	* Merge branch 'delete-old-etc-file' into next
+	* Makefile: pathnames.py no longer exists
+	* Makefile: remove seldom used bdist commands
+	* Makefile: even lint was not used very often
+	* Makefile: we can avoid the hidden _all target
+	* Makefile: echo -n does not work on the Mac, so use printf
+	* Makefile: we can kill some more blank lines
+	* Makefile: PREFIX is just fine
+	* neubot.nsi: deploy some more white lines
+	* setup.py: update list of things to install
+	* Makefile: shrink archive a little bit
+	* Makefile: /etc/neubot is not relevant anymore
+	* Makefile: simplify and improve source-installing procedure
+	* Makefile: make some loops more robust
+	* Makefile: do not install apple .DS_Store
+	* Replace scripts to compute sums with python equivalent
+	* Merge branch 'build-system-love' into next
+	* Makefile: tell the user we're going to install
+	* main.py: make sure we can start neubot using an alternate port
+	* speedtest/client.py: adjust log messages for negotiation
+	* database: Special case for when database is in memory
+	* net/stream.py: add __repr__ to Stream
+	* speedtest/session.py: add __repr__ to SessionState
+	* regress: add test for speedtest
+	* Be a little more paranoid about http.server.rootdir
+	* Good-enough generator for data to exchange during tests
+	* api/server.py: more UTF-7 integralism
+	* privacy.html: move privacy policy into a textarea
+	* privacy.py: Make sure privacy settings make sense
+	* privacy.js: remove now unneeded ternary-operator gymnastics
+	* privacy.js: notify the user if we cannot save privacy settings
+	* Merge branch 'privacy-love' into next
+	* main.py: be patient, wait for web gui to become ready
+	* js: make sure we always put functions inside namespaces
+	* utils.js :s/^\ *$//g
+	* Make sure root directory guessing works for frozen win32 exe
+	* scripts/release: run ./scripts/cleanup to remove garbage
+	* Immediately break POLLER.loop() on /api/exit
+	* config.py: Export uuid and version
+	* Listener: make the accept() procedure much more robust
+	* main.py: export api.client module
+	* main.py: more terse --help output
+	* database/main.py: don't use boot.common
+	* doc man: Updated manual page
+	* patches: add patch to fix some bits of the manual page
+	* Manpage tweaks
+	* Merge branch 'next'
+	* Release neubot/0.3.7
+
 Neubot 0.3.6 [2011-03-18]
 	* arcfour.py: New home for ARC4 code
 	* net/streams.py: Import ARC4 code from arcfour.py
