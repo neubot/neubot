@@ -21,22 +21,28 @@
 #
 
 import StringIO
+import random
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
+from neubot.database import DATABASE
+from neubot.database import table_geoloc
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
 from neubot.net.poller import POLLER
+from neubot.rendezvous.geoip_wrapper import Geolocator
 from neubot.rendezvous import compat
 
 from neubot import boot
 from neubot import marshal
 from neubot import system
 from neubot import utils
+
+GEOLOCATOR = Geolocator()
 
 class ServerRendezvous(ServerHTTP):
 
@@ -60,15 +66,32 @@ class ServerRendezvous(ServerHTTP):
               boot.VERSION
             )
 
+        #
+        # Select test server address.
+        # The default test server is the master server itself.
+        # If we know the country, lookup the list of servers for
+        # that country in the database.
+        # If there are no servers for that country, register
+        # the master server for the country so that we can notice
+        # we have new users and can take the proper steps to
+        # deploy nearby servers.
+        #
+        server = self.conf.get("rendezvous.server.default",
+                               "master.neubot.org")
+        agent_address = stream.peername[0]
+        country = GEOLOCATOR.lookup_country(agent_address)
+        if country:
+            servers = table_geoloc.lookup_servers(DATABASE.connection(),
+                                                  country)
+            if not servers:
+                LOG.info("* learning new country: %s" % country)
+                table_geoloc.insert_server(DATABASE.connection(),
+                                           country, server)
+                servers = [server]
+            server = random.choice(servers)
+
         if "speedtest" in m.accept:
-            #
-            # TODO! Here we should read a table with the internet
-            # addresses of registered test servers.  That makes more
-            # sense than keeping the list into the configuration.
-            #
-            m1.available["speedtest"] = [
-              self.conf.get("rendezvous.server.speedtest",
-              "http://speedtest1.neubot.org/speedtest")]
+            m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while
@@ -95,7 +118,6 @@ CONFIG.register_defaults({
     "rendezvous.server.address": "0.0.0.0",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.speedtest": "http://speedtest1.neubot.org/speedtest",
     "rendezvous.server.update_uri": "http://releases.neubot.org/",
     "rendezvous.server.update_version": boot.VERSION,
 })
@@ -103,7 +125,6 @@ CONFIG.register_descriptions({
     "rendezvous.server.address": "Set rendezvous server address",
     "rendezvous.server.daemonize": "Enable daemon behavior",
     "rendezvous.server.ports": "List of rendezvous server ports",
-    "rendezvous.server.speedtest": "Default speedtest server to use",
     "rendezvous.server.update_uri": "Where to download updates from",
     "rendezvous.server.update_version": "Update Neubot version number",
 })
@@ -111,6 +132,13 @@ CONFIG.register_descriptions({
 def main(args):
     boot.common("rendezvous.server", "Rendezvous server", args)
     conf = CONFIG.copy()
+
+    #
+    # Open the databases needed to perform geolocation after
+    # boot.common() because the pathnames for the databases
+    # are configurable.
+    #
+    GEOLOCATOR.open_or_die()
 
     server = ServerRendezvous(POLLER)
     server.configure(conf)
@@ -121,6 +149,10 @@ def main(args):
         system.change_dir()
         system.go_background()
         LOG.redirect()
+
+    # Honour MaxMind license.
+    LOG.info("This product includes GeoLite data created by MaxMind, "
+             "available from <http://www.maxmind.com/>.")
 
     system.drop_privileges()
     POLLER.loop()
