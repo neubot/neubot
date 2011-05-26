@@ -78,6 +78,7 @@ class ServerRendezvous(ServerHTTP):
         #
         server = self.conf.get("rendezvous.server.default",
                                "master.neubot.org")
+        LOG.debug("* default test server: %s" % server)
         agent_address = stream.peername[0]
         country = GEOLOCATOR.lookup_country(agent_address)
         if country:
@@ -89,6 +90,7 @@ class ServerRendezvous(ServerHTTP):
                                            country, server)
                 servers = [server]
             server = random.choice(servers)
+            LOG.debug("* selected test server: %s" % server)
 
         if "speedtest" in m.accept:
             m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
