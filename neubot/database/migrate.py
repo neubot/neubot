@@ -36,6 +36,22 @@ import uuid
 from neubot.log import LOG
 from neubot.marshal import unmarshal_object
 
+#
+# Bump version number because now we have also the geolocation
+# table.  Do not create the table here because it is auto-created
+# by the database initialization code, that runs before us.
+#
+def migrate_from__v2_0__to__v2_1(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "2.0":
+        LOG.info("* Migrating database from version 2.0 to 2.1")
+        cursor.execute("""UPDATE config SET value='2.1'
+                        WHERE name='version';""")
+        connection.commit()
+    cursor.close()
+
 class SpeedtestResultXML(object):
     def __init__(self):
         self.client = ""
@@ -133,6 +149,7 @@ def migrate_from__v1_0__to__v1_1(connection):
 MIGRATORS = [
     migrate_from__v1_0__to__v1_1,
     migrate_from__v1_1__to__v2_0,
+    migrate_from__v2_0__to__v2_1,
 ]
 
 def migrate(connection):
