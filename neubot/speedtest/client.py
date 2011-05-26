@@ -202,6 +202,7 @@ class ClientSpeedtest(ClientHTTP):
               "http://neubot.blupixel.net/")
         if not count:
             count = self.conf.get("speedtest.client.nconn", 2)
+        LOG.info("* speedtest with %s" % uri)
         ClientHTTP.connect_uri(self, uri, count)
 
     def connection_ready(self, stream):
