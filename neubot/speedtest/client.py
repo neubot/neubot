@@ -170,6 +170,17 @@ class ClientCollect(ClientHTTP):
 
         stream.send_request(request)
 
+#
+# History of our position in queue, useful to ensure that
+# the server-side queueing algorithm works well.
+# The general idea is to reset the queue at the beginning of
+# a new test and then append the queue position until we're
+# authorized to take the test.
+# We export this history via /api/debug, so it sneaks in when
+# users send us bug reports et similia.
+#
+QUEUE_HISTORY = []
+
 class ClientSpeedtest(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
@@ -261,6 +272,7 @@ class ClientSpeedtest(ClientHTTP):
 
         if not self.state:
             self.state = "negotiate"
+            del QUEUE_HISTORY[:]
 
         elif self.state == "negotiate":
             if self.conf.get("speedtest.client.unchoked", False):
@@ -270,6 +282,7 @@ class ClientSpeedtest(ClientHTTP):
                 queuepos = self.conf["speedtest.client.queuepos"]
                 LOG.complete("waiting in queue, pos %s\n" % queuepos)
                 STATE.update("negotiate", {"queue_pos": queuepos})
+                QUEUE_HISTORY.append(queuepos)
 
         elif self.state == "latency":
             tries = self.conf.get("speedtest.client.latency_tries", 10)
