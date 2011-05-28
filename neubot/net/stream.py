@@ -678,28 +678,6 @@ class StreamHandler(object):
         pass
 
 
-CONFIG.register_defaults({
-    "net.stream.certfile": "",
-    "net.stream.ipv6": False,
-    "net.stream.key": "",
-    "net.stream.obfuscate": False,
-    "net.stream.secure": False,
-    "net.stream.server_side": False,
-    "net.stream.rcvbuf": 262144,
-    "net.stream.sndbuf": 0,
-})
-CONFIG.register_descriptions({
-    "net.stream.certfile": "Set SSL certfile path",
-    "net.stream.ipv6": "Enable IPv6",
-    "net.stream.key": "Set key for ARC4",
-    "net.stream.obfuscate": "Enable scrambling with ARC4",
-    "net.stream.secure": "Enable SSL",
-    "net.stream.server_side": "Enable SSL server-side mode",
-    "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
-    "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
-})
-
-
 class GenericHandler(StreamHandler):
 
     def connection_made(self, sock):
@@ -747,6 +725,23 @@ class GenericProtocolStream(Stream):
 
 def main(args):
 
+    # TODO merge the two tables below
+    CONFIG.register_defaults({
+        "net.stream.certfile": "",
+        "net.stream.ipv6": False,
+        "net.stream.key": "",
+        "net.stream.obfuscate": False,
+        "net.stream.secure": False,
+        "net.stream.server_side": False,
+    })
+    CONFIG.register_descriptions({
+        "net.stream.certfile": "Set SSL certfile path",
+        "net.stream.ipv6": "Enable IPv6",
+        "net.stream.key": "Set key for ARC4",
+        "net.stream.obfuscate": "Enable scrambling with ARC4",
+        "net.stream.secure": "Enable SSL",
+        "net.stream.server_side": "Enable SSL server-side mode",
+    })
     CONFIG.register_defaults({
         "net.stream.address": "",
         "net.stream.chunk": 32768,

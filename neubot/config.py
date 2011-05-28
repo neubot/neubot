@@ -283,6 +283,8 @@ CONFIG = Config()
 
 CONFIG.register_defaults({
     "enabled": True,
+    "net.stream.rcvbuf": 262144,
+    "net.stream.sndbuf": 0,
     "privacy.informed": False,
     "privacy.can_collect": False,
     "privacy.can_share": False,
@@ -293,6 +295,8 @@ CONFIG.register_defaults({
 })
 CONFIG.register_descriptions({
     "enabled": "Enable Neubot to perform transmission tests",
+    "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
+    "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
     "privacy.informed": "You assert that you have read and understood the above privacy policy",
     "privacy.can_collect": "You give Neubot the permission to collect your Internet address",
     "privacy.can_share": "You give Neubot the permission to share your Internet address with the Internet community",
