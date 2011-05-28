@@ -161,22 +161,23 @@ class TestClient(ClientHTTP):
 
         stream.send_request(request, response)
 
-CONFIG.register_defaults({
-    "http.client.class": "",
-    "http.client.method": "GET",
-    "http.client.stats": True,
-    "http.client.stdout": False,
-    "http.client.uri": "",
-})
-CONFIG.register_descriptions({
-    "http.client.class": "Specify alternate ClientHTTP-like class",
-    "http.client.method": "Specify alternate HTTP method",
-    "http.client.stats": "Enable printing download stats on stdout",
-    "http.client.stdout": "Enable writing response to stdout",
-    "http.client.uri": "Specify URI to download from/upload to",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "http.client.class": "",
+        "http.client.method": "GET",
+        "http.client.stats": True,
+        "http.client.stdout": False,
+        "http.client.uri": "",
+    })
+    CONFIG.register_descriptions({
+        "http.client.class": "Specify alternate ClientHTTP-like class",
+        "http.client.method": "Specify alternate HTTP method",
+        "http.client.stats": "Enable printing download stats on stdout",
+        "http.client.stdout": "Enable writing response to stdout",
+        "http.client.uri": "Specify URI to download from/upload to",
+    })
+
     boot.common("http.client", "Simple Neubot HTTP client", args)
     conf = CONFIG.copy()
 
