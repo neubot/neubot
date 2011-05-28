@@ -269,10 +269,10 @@ _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@cd dist/data && mv usr/man usr/share/man
 	@for DIR in $(DEB_DATA_DIRS); do \
-	 install -m755 -d $$DIR; \
+	 $(INSTALL) -m755 -d $$DIR; \
 	done
 	@for FILE in $(DEB_DATA_FILES); do \
-	 install -m644 debian/$$FILE dist/data/$$FILE; \
+	 $(INSTALL) -m644 debian/$$FILE dist/data/$$FILE; \
 	done
 	@for FILE in $(DEB_DATA_EXEC); do \
 	 chmod 755 $$FILE; \
@@ -288,13 +288,13 @@ DEB_CONTROL_FILE += control/postinst
 DEB_CONTROL_FILE += control/prerm
 
 _deb_control_skel:
-	@install -d -m755 dist/control
+	@$(INSTALL) -d -m755 dist/control
 	@for FILE in $(DEB_CONTROL_FILE); do \
-	 install -m644 debian/$$FILE dist/$$FILE; \
+	 $(INSTALL) -m644 debian/$$FILE dist/$$FILE; \
 	done
 
 _deb_control_md5sums:
-	@install -m644 /dev/null dist/control/md5sums
+	@$(INSTALL) -m644 /dev/null dist/control/md5sums
 	@./scripts/cksum.py -a md5 `find dist/data -type f` > dist/control/md5sums
 	@./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
 
