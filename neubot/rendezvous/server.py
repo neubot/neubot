@@ -116,22 +116,23 @@ class ServerRendezvous(ServerHTTP):
           mimetype=mimetype, body=stringio)
         stream.send_response(request, response)
 
-CONFIG.register_defaults({
-    "rendezvous.server.address": "0.0.0.0",
-    "rendezvous.server.daemonize": True,
-    "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.update_uri": "http://releases.neubot.org/",
-    "rendezvous.server.update_version": boot.VERSION,
-})
-CONFIG.register_descriptions({
-    "rendezvous.server.address": "Set rendezvous server address",
-    "rendezvous.server.daemonize": "Enable daemon behavior",
-    "rendezvous.server.ports": "List of rendezvous server ports",
-    "rendezvous.server.update_uri": "Where to download updates from",
-    "rendezvous.server.update_version": "Update Neubot version number",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "rendezvous.server.address": "0.0.0.0",
+        "rendezvous.server.daemonize": True,
+        "rendezvous.server.ports": "9773,8080",
+        "rendezvous.server.update_uri": "http://releases.neubot.org/",
+        "rendezvous.server.update_version": boot.VERSION,
+    })
+    CONFIG.register_descriptions({
+        "rendezvous.server.address": "Set rendezvous server address",
+        "rendezvous.server.daemonize": "Enable daemon behavior",
+        "rendezvous.server.ports": "List of rendezvous server ports",
+        "rendezvous.server.update_uri": "Where to download updates from",
+        "rendezvous.server.update_version": "Update Neubot version number",
+    })
+
     boot.common("rendezvous.server", "Rendezvous server", args)
     conf = CONFIG.copy()
 
