@@ -30,20 +30,21 @@ from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot import boot
 
-CONFIG.register_defaults({
-    "net.CA.bits": 2048,
-    "net.CA.cacert": "cacert.pem",
-    "net.CA.days": 1095,
-    "net.CA.privkey": "privkey.pem",
-})
-CONFIG.register_descriptions({
-    "net.CA.bits": "Set private key bits number",
-    "net.CA.cacert": "Set certificate file path",
-    "net.CA.days": "Set days before expire",
-    "net.CA.privkey": "Set private key file path",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "net.CA.bits": 2048,
+        "net.CA.cacert": "cacert.pem",
+        "net.CA.days": 1095,
+        "net.CA.privkey": "privkey.pem",
+    })
+    CONFIG.register_descriptions({
+        "net.CA.bits": "Set private key bits number",
+        "net.CA.cacert": "Set certificate file path",
+        "net.CA.days": "Set days before expire",
+        "net.CA.privkey": "Set private key file path",
+    })
+
     boot.common("net.CA", "generate test certificates", args)
     conf = CONFIG.copy()
 
