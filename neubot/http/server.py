@@ -231,24 +231,25 @@ class ServerHTTP(StreamHandler):
         stream = ServerStream(self.poller)
         stream.attach(self, sock, self.conf)
 
-CONFIG.register_defaults({
-    "http.server.address": "0.0.0.0",
-    "http.server.class": "",
-    "http.server.mime": True,
-    "http.server.ports": "8080,",
-    "http.server.rootdir": "",
-    "http.server.ssi": False,
-})
-CONFIG.register_descriptions({
-    "http.server.address": "Address to listen to",
-    "http.server.class": "Use alternate ServerHTTP-like class",
-    "http.server.mime": "Enable code that guess mime types",
-    "http.server.ports": "List of ports to listen to",
-    "http.server.rootdir": "Root directory for static pages",
-    "http.server.ssi": "Enable server-side includes",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "http.server.address": "0.0.0.0",
+        "http.server.class": "",
+        "http.server.mime": True,
+        "http.server.ports": "8080,",
+        "http.server.rootdir": "",
+        "http.server.ssi": False,
+    })
+    CONFIG.register_descriptions({
+        "http.server.address": "Address to listen to",
+        "http.server.class": "Use alternate ServerHTTP-like class",
+        "http.server.mime": "Enable code that guess mime types",
+        "http.server.ports": "List of ports to listen to",
+        "http.server.rootdir": "Root directory for static pages",
+        "http.server.ssi": "Enable server-side includes",
+    })
+
     boot.common("http.server", "Neubot simple HTTP server", args)
     conf = CONFIG.copy()
 
