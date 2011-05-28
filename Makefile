@@ -90,7 +90,7 @@ ARCHIVE = git archive --prefix=$(STEM)/
 
 archive:
 	@echo "[ARCHIVE]"
-	@install -m755 -d dist/
+	@install -d dist/
 	@for FMT in tar zip; do \
 	 $(ARCHIVE) --format=$$FMT HEAD > dist/$(STEM).$$FMT; \
 	done
@@ -137,11 +137,11 @@ ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
 MENUDIR = $(DATADIR)/applications
 
 _install_skel:
-	@$(INSTALL) -d -m755 $(DESTDIR)$(LOCALSTATEDIR)
+	@$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
 
 _install_sources:
 	@for SRC in `find neubot -type f|grep -v \.DS_Store`; do \
-	 $(INSTALL) -d -m755 $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
+	 $(INSTALL) -d $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
 	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC || exit $$?; \
 	done
 
@@ -151,20 +151,20 @@ _install_sources:
 # neubot.
 #
 _install_man:
-	@$(INSTALL) -m755 -d $(DESTDIR)$(MANDIR)/man1
+	@$(INSTALL) -d $(DESTDIR)$(MANDIR)/man1
 	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
 
 _install_bin:
-	@$(INSTALL) -m755 -d $(DESTDIR)$(BINDIR)
-	@$(INSTALL) -m755 bin/neubot $(DESTDIR)$(BINDIR)
-	@$(INSTALL) -m755 bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
+	@$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	@$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)
+	@$(INSTALL) bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
 
 _install_icon:
-	@$(INSTALL) -m755 -d $(DESTDIR)$(ICONDIR)
+	@$(INSTALL) -d $(DESTDIR)$(ICONDIR)
 	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
 
 _install_menu:
-	@$(INSTALL) -d -m755 $(DESTDIR)$(MENUDIR)
+	@$(INSTALL) -d $(DESTDIR)$(MENUDIR)
 	@for F in `cd applications/ && ls`; do \
 	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F ||exit $$?;\
 	done
@@ -269,7 +269,7 @@ _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@cd dist/data && mv usr/man usr/share/man
 	@for DIR in $(DEB_DATA_DIRS); do \
-	 $(INSTALL) -m755 -d $$DIR; \
+	 $(INSTALL) -d $$DIR; \
 	done
 	@for FILE in $(DEB_DATA_FILES); do \
 	 $(INSTALL) -m644 debian/$$FILE dist/data/$$FILE; \
@@ -284,7 +284,7 @@ _deb_data.tgz: _deb_data
 	@cd dist/data && tar czf ../data.tar.gz ./*
 
 _deb_control_skel:
-	@$(INSTALL) -d -m755 dist/control
+	@$(INSTALL) -d dist/control
 	@$(INSTALL) -m644 debian/control/control dist/control/control
 	@$(INSTALL) debian/control/postinst dist/control/postinst
 	@$(INSTALL) debian/control/prerm dist/control/prerm
