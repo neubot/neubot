@@ -36,25 +36,6 @@ from neubot.log import LOG
 from neubot import system
 from neubot import boot
 
-CONFIG.register_defaults({
-    "agent.api": True,
-    "agent.api.address": "127.0.0.1",
-    "agent.api.port": 9774,
-    "agent.daemonize": True,
-    "agent.interval": 0,
-    "agent.master": "master.neubot.org",
-    "agent.rendezvous": True,
-})
-CONFIG.register_descriptions({
-    "agent.api": "Enable API server",
-    "agent.api.address": "Set API server address",
-    "agent.api.port": "Set API server port",
-    "agent.daemonize": "Enable daemon behavior",
-    "agent.interval": "Set rendezvous interval (0 = random)",
-    "agent.master": "Set master server address",
-    "agent.rendezvous": "Enable rendezvous client",
-})
-
 def main(args):
     boot.common("agent", "Run in background, periodically run tests", args)
 

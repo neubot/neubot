@@ -282,6 +282,13 @@ class Config(object):
 CONFIG = Config()
 
 CONFIG.register_defaults({
+    "agent.api": True,
+    "agent.api.address": "127.0.0.1",
+    "agent.api.port": 9774,
+    "agent.daemonize": True,
+    "agent.interval": 0,
+    "agent.master": "master.neubot.org",
+    "agent.rendezvous": True,
     "enabled": True,
     "net.stream.rcvbuf": 262144,
     "net.stream.sndbuf": 0,
@@ -294,6 +301,13 @@ CONFIG.register_defaults({
     "version": "",
 })
 CONFIG.register_descriptions({
+    "agent.api": "Enable API server",
+    "agent.api.address": "Set API server address",
+    "agent.api.port": "Set API server port",
+    "agent.daemonize": "Enable daemon behavior",
+    "agent.interval": "Set rendezvous interval (0 = random)",
+    "agent.master": "Set master server address",
+    "agent.rendezvous": "Enable rendezvous client",
     "enabled": "Enable Neubot to perform transmission tests",
     "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
     "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
