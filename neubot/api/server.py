@@ -45,19 +45,6 @@ from neubot.state import STATE
 from neubot import privacy
 from neubot import utils
 
-CONFIG.register_defaults({
-    "privacy.informed": False,
-    "privacy.can_collect": False,
-    "privacy.can_share": False,
-})
-
-CONFIG.register_descriptions({
-    "privacy.informed": "You assert that you have read and understood the above privacy policy",
-    "privacy.can_collect": "You give Neubot the permission to collect your Internet address",
-    "privacy.can_share": "You give Neubot the permission to share your Internet address with the Internet community",
-})
-
-
 class ServerAPI(ServerHTTP):
 
     def __init__(self, poller):

@@ -147,20 +147,21 @@ class ClientRendezvous(ClientHTTP):
             STATE.update("idle", publish=False)
             STATE.update("next_rendezvous", self.task.timestamp)
 
-CONFIG.register_defaults({
-    "rendezvous.client.debug": False,
-    "rendezvous.client.interval": 0,
-    "rendezvous.client.uri": "http://master.neubot.org:9773/",
-    "rendezvous.client.version": boot.VERSION,
-})
-CONFIG.register_descriptions({
-    "rendezvous.client.debug": "Do not perform any test",
-    "rendezvous.client.interval": "Interval between rendezvous (0 = random)",
-    "rendezvous.client.uri": "Set master server URI",
-    "rendezvous.client.version": "Set rendezvous client version",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "rendezvous.client.debug": False,
+        "rendezvous.client.interval": 0,
+        "rendezvous.client.uri": "http://master.neubot.org:9773/",
+        "rendezvous.client.version": boot.VERSION,
+    })
+    CONFIG.register_descriptions({
+        "rendezvous.client.debug": "Do not perform any test",
+        "rendezvous.client.interval": "Interval between rendezvous (0 = random)",
+        "rendezvous.client.uri": "Set master server URI",
+        "rendezvous.client.version": "Set rendezvous client version",
+    })
+
     boot.common("rendezvous.client", "Rendezvous client", args)
     conf = CONFIG.copy()
 

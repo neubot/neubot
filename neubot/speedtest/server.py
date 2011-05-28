@@ -130,17 +130,18 @@ class ServerTest(ServerHTTP):
                              body=stringio, mimetype="text/plain")
             stream.send_response(request, response)
 
-CONFIG.register_defaults({
-    "speedtest.server.address": "0.0.0.0",
-    "speedtest.server.daemonize": True,
-    "speedtest.server.path": "/var/neubot/large_file.bin",
-    "speedtest.server.port": "80",
-})
-CONFIG.register_descriptions({
-    "speedtest.server.path": "Read response pieces from this large file",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "speedtest.server.address": "0.0.0.0",
+        "speedtest.server.daemonize": True,
+        "speedtest.server.path": "/var/neubot/large_file.bin",
+        "speedtest.server.port": "80",
+    })
+    CONFIG.register_descriptions({
+        "speedtest.server.path": "Read response pieces from this large file",
+    })
+
     boot.common("speedtest.server", "Speedtest Test Server", args)
 
     conf = CONFIG.copy()

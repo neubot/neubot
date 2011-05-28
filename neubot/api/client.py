@@ -35,7 +35,6 @@ from neubot.compat import json
 from neubot.log import LOG
 from neubot import boot
 
-
 class APIStateTracker(ClientHTTP):
 
     """Polls the state of the Neubot daemon and prints the JSON
@@ -148,17 +147,17 @@ class APIStateTracker(ClientHTTP):
         sys.stdout.write(octets)
         sys.stdout.write("\n\n")
 
-
-CONFIG.register_defaults({
-    "api.client.address": "127.0.0.1",
-    "api.client.port": "9774",
-})
-CONFIG.register_descriptions({
-    "api.client.address": "Set address to connect to",
-    "api.client.port": "Set port to connect to",
-})
-
 def main(args):
+
+    CONFIG.register_defaults({
+        "api.client.address": "127.0.0.1",
+        "api.client.port": "9774",
+    })
+    CONFIG.register_descriptions({
+        "api.client.address": "Set address to connect to",
+        "api.client.port": "Set port to connect to",
+    })
+
     boot.common("api.client", "Minimal client for JSON API", args)
     client = APIStateTracker(POLLER)
     client.configure(CONFIG.copy())
