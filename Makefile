@@ -283,15 +283,11 @@ _deb_data:
 _deb_data.tgz: _deb_data
 	@cd dist/data && tar czf ../data.tar.gz ./*
 
-DEB_CONTROL_FILE += control/control
-DEB_CONTROL_FILE += control/postinst
-DEB_CONTROL_FILE += control/prerm
-
 _deb_control_skel:
 	@$(INSTALL) -d -m755 dist/control
-	@for FILE in $(DEB_CONTROL_FILE); do \
-	 $(INSTALL) -m644 debian/$$FILE dist/$$FILE; \
-	done
+	@$(INSTALL) -m644 debian/control/control dist/control/control
+	@$(INSTALL) debian/control/postinst dist/control/postinst
+	@$(INSTALL) debian/control/prerm dist/control/prerm
 
 _deb_control_md5sums:
 	@$(INSTALL) -m644 /dev/null dist/control/md5sums
