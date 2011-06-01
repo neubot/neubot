@@ -30,6 +30,8 @@ from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.stream import Stream
 from neubot.log import LOG
 
+from neubot import utils
+
 CHOKE = chr(0)
 UNCHOKE = chr(1)
 INTERESTED = chr(2)
@@ -117,6 +119,18 @@ class BTStream(Stream):
         self._send_message('')
 
     def send_piece(self, index, begin, block):
+        if not isinstance(block, basestring):
+            length = utils.file_length(block)
+            LOG.debug("> PIECE %d %d len=%d" % (index, begin, length))
+            preamble = struct.pack("!cii", PIECE, index, begin)
+            l = len(preamble) + length
+            d = [tobinary(l), ]
+            d.extend(preamble)
+            s = "".join(d)
+            self.start_send(s)
+            self.start_send(block)
+            return
+
         LOG.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
         self._send_message(struct.pack("!cii%ss" % len(block), PIECE,
           index, begin, block))
