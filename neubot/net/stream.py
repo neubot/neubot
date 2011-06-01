@@ -356,21 +356,42 @@ class Stream(Pollable):
 
     # Send path
 
+    def read_send_queue(self):
+        octets = ""
+
+        while self.send_queue:
+            octets = self.send_queue[0]
+            if isinstance(octets, basestring):
+                self.send_queue.popleft()
+                if octets:
+                    break
+                continue
+            octets = octets.read(MAXBUF)
+            if octets:
+                break
+            self.send_queue.popleft()
+
+        if octets:
+            if type(octets) == types.UnicodeType:
+                LOG.oops("Received unicode input")
+                octets = octets.encode("utf-8")
+            if self.encrypt:
+                octets = self.encrypt(octets)
+
+        return octets
+
     def start_send(self, octets):
         if self.isclosed:
             return
 
-        if type(octets) == types.UnicodeType:
-            LOG.oops("Received unicode input")
-            octets = octets.encode("utf-8")
-        if self.encrypt:
-            octets = self.encrypt(octets)
-
+        self.send_queue.append(octets)
         if self.send_pending:
-            self.send_queue.append(octets)
             return
 
-        self.send_octets = octets
+        self.send_octets = self.read_send_queue()
+        if not self.send_octets:
+            return
+
         self.send_ticks = utils.ticks()
         self.send_pending = 1
 
@@ -397,12 +418,11 @@ class Stream(Pollable):
 
             if count == len(self.send_octets):
 
-                if len(self.send_queue) > 0:
-                    self.send_octets = self.send_queue.popleft()
+                self.send_octets = self.read_send_queue()
+                if self.send_octets:
                     self.send_ticks = utils.ticks()
                     return
 
-                self.send_octets = None
                 self.send_ticks = 0
                 self.send_pending = 0
                 self.poller.unset_writable(self)
