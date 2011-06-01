@@ -45,6 +45,20 @@ FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
 protocol_name = 'BitTorrent protocol'
 
+#
+# When messages are bigger than SMALLMESSAGE we stop
+# buffering the whole message and we pass upstream the
+# incoming chunks.
+# Note that SMALLMESSAGE is the maximum message size
+# suggested by BEP 0003 ("All current implementations
+# close connections which request an amount greater
+# than 2^17").
+# So, the original behavior is preserved for messages
+# in the expected range, and we avoid buffering for
+# jumbo messages only.
+#
+SMALLMESSAGE = 1<<17
+
 def toint(s):
     return struct.unpack("!i", s)[0]
 
@@ -174,18 +188,44 @@ class BTStream(Stream):
             # Bufferize and pass upstream messages
             else:
                 amt = min(len(s), self.left)
-                self.buff.append(s[:amt])
+                if self.count <= SMALLMESSAGE:
+                    self.buff.append(s[:amt])
+                else:
+                    if self.buff:
+                        self._got_message_start("".join(self.buff))
+                        del self.buff[:]
+                    mp = buffer(s, 0, amt)
+                    self._got_message_part(mp)
                 s = buffer(s, amt)
                 self.left -= amt
                 self.count += amt
 
                 if self.left == 0:
-                    self._got_message("".join(self.buff))
+                    if self.buff:
+                        self._got_message("".join(self.buff))
+                    else:
+                        self._got_message_end()
                     del self.buff[:]
                     self.count = 0
 
         if not self.closing:
             self.start_recv()
+
+    def _got_message_start(self, message):
+        t = message[0]
+        if t != PIECE:
+            raise RuntimeError("BT receiver: unexpected jumbo message")
+        if len(message) <= 9:
+            raise RuntimeError("BT receiver: PIECE: invalid message length")
+        n = len(message) - 9
+        i, a, b = struct.unpack("!xii%ss" % n, message)
+        self.download.piece_start(i, a, b)
+
+    def _got_message_part(self, s):
+        self.download.piece_part(s)
+
+    def _got_message_end(self):
+        self.download.piece_end()
 
     def _got_message(self, message):
         if not self.complete:

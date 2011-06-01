@@ -84,6 +84,15 @@ class Download(object):
         for index in range(0, 32):
             self.stream.send_request(index, 0, 1<<15)
 
+    def piece_start(self, index, begin, block):
+        pass
+
+    def piece_part(self, block):
+        pass
+
+    def piece_end(self):
+        pass
+
 class BTConnectingPeer(StreamHandler):
 
     """Connect to a given BitTorrent peer and controls the
