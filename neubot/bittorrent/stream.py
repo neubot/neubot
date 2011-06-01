@@ -19,7 +19,6 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
-import cStringIO
 import struct
 import sys
 
@@ -46,8 +45,6 @@ FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
 protocol_name = 'BitTorrent protocol'
 
-MAX_MESSAGE_LENGTH = 1<<16
-
 def toint(s):
     return struct.unpack("!i", s)[0]
 
@@ -71,10 +68,9 @@ class BTStream(Stream):
         self.got_anything = False
         self.upload = None
         self.download = None
-        self._buffer = cStringIO.StringIO()
-        self._reader = self._read_messages()
-        self._next_len = self._reader.next()
-        self._message = None
+        self.left = 68
+        self.buff = []
+        self.count = 0
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
@@ -152,59 +148,53 @@ class BTStream(Stream):
         if self.closing:
             self.shutdown()
 
+    #
+    # We use three state variables in this loop: self.left is the
+    # size left to read in the next message, self.count is the amount
+    # of bytes we've read so far, and self.buff contains a portion
+    # of the next message.
+    #
     def recv_complete(self, s):
-        while True:
-            if self.closing:
-                LOG.debug("BT receiver: stop because we're closing")
-                return
-            i = self._next_len - self._buffer.tell()
-            if i > len(s):
-                self._buffer.write(s)
-                break
-            if self._buffer.tell() > 0:
-                self._buffer.write(buffer(s, 0, i))
-                m = self._buffer.getvalue()
-                self._buffer.close()
-                self._buffer = cStringIO.StringIO()
-            else:
-                m = s[:i]
-            s = buffer(s, i)
-            self._message = m
-            self._rest = s
-            try:
-                self._next_len = self._reader.next()
-            except StopIteration:
-                LOG.debug("BT receiver: stop iteration")
-                self.close()
-                return
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                LOG.exception()
-                self.close()
-                return
-        self.start_recv()
+        while s and not self.closing:
 
-    def _read_messages(self):
-        yield 1 + len(protocol_name) + 8 + 20 + 20
-        LOG.debug("< HANDSHAKE")
-        if not self.id:
-            self.id = self._message
-        self.complete = True
-        self.parent.connection_handshake_completed(self)
-        while True:
-            yield 4
-            l = toint(self._message)
-            LOG.debug("BT receiver: expect %d bytes" % l)
-            if l > MAX_MESSAGE_LENGTH or l < 0:
-                LOG.error("BT receiver: max message length exceeded")
-                return
-            if l > 0:
-                yield l
-                LOG.debug("BT receiver: got %d bytes" % l)
-                self._got_message(self._message)
+            # If we don't know the length then read it
+            if self.left == 0:
+                amt = min(len(s), 4)
+                self.buff.append(s[:amt])
+                s = buffer(s, amt)
+                self.count += amt
+
+                if self.count == 4:
+                    self.left = toint("".join(self.buff))
+                    if self.left < 0:
+                        raise RuntimeError("Message length overflow")
+                    del self.buff[:]
+                    self.count = 0
+
+            # Bufferize and pass upstream messages
+            else:
+                amt = min(len(s), self.left)
+                self.buff.append(s[:amt])
+                s = buffer(s, amt)
+                self.left -= amt
+                self.count += amt
+
+                if self.left == 0:
+                    self._got_message("".join(self.buff))
+                    del self.buff[:]
+                    self.count = 0
+
+        if not self.closing:
+            self.start_recv()
 
     def _got_message(self, message):
+        if not self.complete:
+            LOG.debug("< HANDSHAKE")
+            if not self.id:
+                self.id = message[-20:]
+            self.complete = True
+            self.parent.connection_handshake_completed(self)
+            return
         t = message[0]
         if t in [BITFIELD] and self.got_anything:
             LOG.error("BT receiver: bitfield after we got something")
@@ -267,9 +257,7 @@ class BTStream(Stream):
     def connection_lost(self, exception):
         # because we might also be invoked on network error
         self.closing = True
-        self._reader = None
         self.upload = None
         self.download = None
-        self._buffer = None
         self.parent = None
-        self._message = None
+        del self.buff[:]
