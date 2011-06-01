@@ -97,6 +97,8 @@ class StreamHTTP(Stream):
         if self.closing:
             return
 
+        self.writing = True
+
         if self.outgoing:
             self.outgoing.append(data)
             return
@@ -119,6 +121,8 @@ class StreamHTTP(Stream):
                 continue
             self.start_send(data)
             return
+
+        self.writing = False
 
         self.message_sent()
         if self.closing:
