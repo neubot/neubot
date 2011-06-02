@@ -214,9 +214,9 @@ class BTStream(Stream):
     def _got_message_start(self, message):
         t = message[0]
         if t != PIECE:
-            raise RuntimeError("BT receiver: unexpected jumbo message")
+            raise RuntimeError("unexpected jumbo message")
         if len(message) <= 9:
-            raise RuntimeError("BT receiver: PIECE: invalid message length")
+            raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xii%ss" % n, message)
         self.download.piece_start(i, a, b)
@@ -237,15 +237,11 @@ class BTStream(Stream):
             return
         t = message[0]
         if t in [BITFIELD] and self.got_anything:
-            LOG.error("BT receiver: bitfield after we got something")
-            self.close()
-            return
+            raise RuntimeError("Bitfield after we got something")
         self.got_anything = True
         if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
           len(message) != 1):
-            LOG.error("BT receiver: expecting one-byte-long message, got more")
-            self.close()
-            return
+            raise RuntimeError("Expecting one-byte-long message, got more")
         if t == CHOKE:
             LOG.debug("< CHOKE")
             self.download.got_choke()
@@ -264,9 +260,7 @@ class BTStream(Stream):
             pass
         elif t == REQUEST:
             if len(message) != 13:
-                LOG.error("BT receiver: REQUEST: invalid message length")
-                self.close()
-                return
+                raise RuntimeError("REQUEST: invalid message length")
             i, a, b = struct.unpack("!xiii", message)
             LOG.debug("< REQUEST %d %d %d" % (i, a, b))
             self.upload.got_request(i, a, b)
@@ -274,16 +268,13 @@ class BTStream(Stream):
             pass
         elif t == PIECE:
             if len(message) <= 9:
-                LOG.error("BT receiver: PIECE: invalid message length")
-                self.close()
-                return
+                raise RuntimeError("PIECE: invalid message length")
             n = len(message) - 9
             i, a, b = struct.unpack("!xii%ss" % n, message)
             LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
             self.download.got_piece(i, a, b)
         else:
-            LOG.error("BT receiver: unexpected message type")
-            self.close()
+            raise RuntimeError("Unexpected message type")
 
     def close(self):
         if self.closing:
