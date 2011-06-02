@@ -93,9 +93,16 @@ class StreamHTTP(Stream):
             self._write(m.serialize_headers())
             self._write(m.serialize_body())
 
+    #
+    # TODO Instead of using outgoing pass directly all
+    # down the chain because now net/stream.py duplicates
+    # outgoing functionality.
+    #
     def _write(self, data):
         if self.closing:
             return
+
+        self.writing = True
 
         if self.outgoing:
             self.outgoing.append(data)
@@ -119,6 +126,8 @@ class StreamHTTP(Stream):
                 continue
             self.start_send(data)
             return
+
+        self.writing = False
 
         self.message_sent()
         if self.closing:
