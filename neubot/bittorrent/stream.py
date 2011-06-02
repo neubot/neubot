@@ -65,6 +65,11 @@ def toint(s):
 def tobinary(i):
     return struct.pack("!i", i)
 
+class PieceMessage(object):
+    def __init__(self, index, begin):
+        self.index = index
+        self.begin = begin
+
 class StreamBitTorrent(Stream):
 
     """Specializes stream in order to handle the BitTorrent peer
@@ -81,6 +86,7 @@ class StreamBitTorrent(Stream):
         self.buff = []
         self.count = 0
         self.id = None
+        self.piece = None
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
@@ -215,13 +221,15 @@ class StreamBitTorrent(Stream):
             raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xii%ss" % n, message)
+        self.piece = PieceMessage(i, a)
         self.parent.piece_start(self, i, a, b)
 
     def _got_message_part(self, s):
-        self.parent.piece_part(self, s)
+        self.parent.piece_part(self, self.piece.index, self.piece.begin, s)
 
     def _got_message_end(self):
-        self.parent.piece_end(self)
+        self.parent.piece_end(self, self.piece.index, self.piece.begin)
+        self.piece = None
 
     def _got_message(self, message):
         if not self.complete:

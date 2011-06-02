@@ -76,19 +76,14 @@ class Peer(StreamHandler):
 
     def got_piece(self, stream, index, begin, block):
         self.piece_start(stream, index, begin, "")
-        self.piece_part(stream, block)
-        self.piece_end(stream)
-
-    #
-    # TODO cache (index, begin) on the stream
-    # so we don't need to cache 'em here.
-    #
+        self.piece_part(stream, index, begin, block)
+        self.piece_end(stream, index, begin)
 
     def piece_start(self, stream, index, begin, block):
         """Invoked when a piece starts."""
 
-    def piece_part(self, stream, block):
+    def piece_part(self, stream, index, begin, block):
         """Invoked when you receive a portion of a piece."""
 
-    def piece_end(self, stream):
+    def piece_end(self, stream, index, begin):
         """Invoked at the end of the piece."""
