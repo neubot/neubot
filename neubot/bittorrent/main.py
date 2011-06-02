@@ -25,16 +25,21 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.config import CONFIG
+from neubot.arcfour import arcfour_new
 from neubot.bittorrent.peer import Peer
+from neubot.config import CONFIG
+from neubot.log import LOG
 from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
-from neubot.arcfour import arcfour_new
-from neubot.log import LOG
-from neubot import system
-from neubot import boot
 
-class ConnectingPeer(Peer):
+from neubot import boot
+from neubot import system
+
+class PeerSimple(Peer):
+    def __init__(self, poller):
+        Peer.__init__(self, poller)
+        self.scrambler = arcfour_new()
+
     def connection_ready(self, stream):
         stream.send_interested()
 
@@ -44,11 +49,6 @@ class ConnectingPeer(Peer):
 
     def got_piece(self, stream, index, begin, length):
         stream.send_request(index, 0, 1<<15)
-
-class ListeningPeer(Peer):
-    def __init__(self, poller):
-        Peer.__init__(self, poller)
-        self.scrambler = arcfour_new()
 
     def got_request(self, stream, index, begin, length):
         data = self.scrambler.encrypt("A" * length)
@@ -93,7 +93,7 @@ def main(args):
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        listener = ListeningPeer(POLLER)
+        listener = PeerSimple(POLLER)
         listener.configure(conf, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
@@ -104,7 +104,7 @@ def main(args):
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
-    connector = ConnectingPeer(POLLER)
+    connector = PeerSimple(POLLER)
     connector.configure(conf, MEASURER)
     connector.connect(endpoint)
     POLLER.loop()
