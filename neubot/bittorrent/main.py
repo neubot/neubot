@@ -25,115 +25,34 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.arcfour import arcfour_new
+from neubot.bittorrent.peer import Peer
 from neubot.config import CONFIG
-from neubot.bittorrent.stream import BTStream
-from neubot.net.stream import StreamHandler
+from neubot.log import LOG
 from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
-from neubot.arcfour import arcfour_new
-from neubot.log import LOG
-from neubot import system
+
 from neubot import boot
+from neubot import system
 
-
-class Upload(object):
-
-    """Responds to requests."""
-
-    def __init__(self, stream, scramble):
-        self.stream = stream
-        self.scrambler = None
-        if scramble:
-            self.scrambler = arcfour_new()
-        self.interested = False
-
-    def got_request(self, index, begin, length):
-        if not self.interested:
-            return
-        data = "A" * length
-        if self.scrambler:
-            data = self.scrambler.encrypt(data)
-        self.stream.send_piece(index, begin, data)
-
-    def got_interested(self):
-        self.interested = True
-        self.stream.send_unchoke()
-
-    def got_not_interested(self):
-        self.interested = False
-        self.stream.send_choke()
-
-class Download(object):
-
-    """Requests missing pieces."""
-
-    def __init__(self, stream):
-        self.stream = stream
-        self.choked = True
-
-    def got_piece(self, index, begin, length):
-        if self.choked:
-            return
-        self.stream.send_request(index, 0, 1<<15)
-
-    def got_choke(self):
-        self.choked = True
-
-    def got_unchoke(self):
-        self.choked = False
-        for index in range(0, 32):
-            self.stream.send_request(index, 0, 1<<15)
-
-    def piece_start(self, index, begin, block):
-        pass
-
-    def piece_part(self, block):
-        pass
-
-    def piece_end(self):
-        pass
-
-class BTConnectingPeer(StreamHandler):
-
-    """Connect to a given BitTorrent peer and controls the
-       resulting connection."""
-
+class PeerSimple(Peer):
     def __init__(self, poller):
-        StreamHandler.__init__(self, poller)
-        self.infohash = "".join( ['\xaa']*20 )
-        self.my_id = "".join( ['\xaa']*20 )
+        Peer.__init__(self, poller)
+        self.scrambler = arcfour_new()
 
-    def connection_made(self, sock):
-        stream = BTStream(self.poller)
-        stream.attach(self, sock, self.conf, self.measurer)
-        stream.initialize(self, self.my_id, True)
-        stream.download = Download(stream)
-        scramble = not self.conf.get("net.stream.obfuscate", False)
-        stream.upload = Upload(stream, scramble)
-
-    def connection_handshake_completed(self, stream):
+    def connection_ready(self, stream):
         stream.send_interested()
 
-class BTListeningPeer(StreamHandler):
+    def got_unchoke(self, stream):
+        for _ in range(0, 32):
+            stream.send_request(0, 0, 1<<15)
 
-    """Listens for connections from BitTorrent peers and controls the
-       resulting connections."""
+    def got_piece(self, stream, index, begin, length):
+        stream.send_request(index, 0, 1<<15)
 
-    def __init__(self, poller):
-        StreamHandler.__init__(self, poller)
-        self.infohash = "".join( ['\xaa']*20 )
-        self.my_id = "".join( ['\xaa']*20 )
-
-    def connection_made(self, sock):
-        stream = BTStream(self.poller)
-        stream.attach(self, sock, self.conf, self.measurer)
-        stream.initialize(self, self.my_id, True)
-        stream.download = Download(stream)
-        scramble = not self.conf.get("net.stream.obfuscate", False)
-        stream.upload = Upload(stream, scramble)
-
-    def connection_handshake_completed(self, stream):
-        pass
+    def got_request(self, stream, index, begin, length):
+        data = self.scrambler.encrypt("A" * length)
+        stream.send_piece(index, begin, data)
 
 def main(args):
 
@@ -174,7 +93,7 @@ def main(args):
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        listener = BTListeningPeer(POLLER)
+        listener = PeerSimple(POLLER)
         listener.configure(conf, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
@@ -185,7 +104,7 @@ def main(args):
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
-    connector = BTConnectingPeer(POLLER)
+    connector = PeerSimple(POLLER)
     connector.configure(conf, MEASURER)
     connector.connect(endpoint)
     POLLER.loop()

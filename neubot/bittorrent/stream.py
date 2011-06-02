@@ -65,26 +65,28 @@ def toint(s):
 def tobinary(i):
     return struct.pack("!i", i)
 
-class BTStream(Stream):
+class PieceMessage(object):
+    def __init__(self, index, begin):
+        self.index = index
+        self.begin = begin
+
+class StreamBitTorrent(Stream):
 
     """Specializes stream in order to handle the BitTorrent peer
        wire protocol.  See also the finite state machine documented
        at `doc/protocol.png`."""
 
-    def initialize(self, parent, id, locally_initiated):
-        self.parent = parent
-        self.id = id
-        self.hostname = None
-        self.locally_initiated = locally_initiated
+    def __init__(self, poller):
+        Stream.__init__(self, poller)
         self.complete = False
         self.closing = False
         self.writing = False
         self.got_anything = False
-        self.upload = None
-        self.download = None
         self.left = 68
         self.buff = []
         self.count = 0
+        self.id = None
+        self.piece = None
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
@@ -214,18 +216,20 @@ class BTStream(Stream):
     def _got_message_start(self, message):
         t = message[0]
         if t != PIECE:
-            raise RuntimeError("BT receiver: unexpected jumbo message")
+            raise RuntimeError("unexpected jumbo message")
         if len(message) <= 9:
-            raise RuntimeError("BT receiver: PIECE: invalid message length")
+            raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xii%ss" % n, message)
-        self.download.piece_start(i, a, b)
+        self.piece = PieceMessage(i, a)
+        self.parent.piece_start(self, i, a, b)
 
     def _got_message_part(self, s):
-        self.download.piece_part(s)
+        self.parent.piece_part(self, self.piece.index, self.piece.begin, s)
 
     def _got_message_end(self):
-        self.download.piece_end()
+        self.parent.piece_end(self, self.piece.index, self.piece.begin)
+        self.piece = None
 
     def _got_message(self, message):
         if not self.complete:
@@ -233,57 +237,52 @@ class BTStream(Stream):
             if not self.id:
                 self.id = message[-20:]
             self.complete = True
-            self.parent.connection_handshake_completed(self)
+            # NOTE The bitfield is optional
+            if self.parent.bitfield:
+                self.send_bitfield(self.parent.bitfield.tostring())
+            self.parent.connection_ready(self)
             return
         t = message[0]
         if t in [BITFIELD] and self.got_anything:
-            LOG.error("BT receiver: bitfield after we got something")
-            self.close()
-            return
+            raise RuntimeError("Bitfield after we got something")
         self.got_anything = True
         if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
           len(message) != 1):
-            LOG.error("BT receiver: expecting one-byte-long message, got more")
-            self.close()
-            return
+            raise RuntimeError("Expecting one-byte-long message, got more")
         if t == CHOKE:
             LOG.debug("< CHOKE")
-            self.download.got_choke()
+            self.parent.got_choke(self)
         elif t == UNCHOKE:
             LOG.debug("< UNCHOKE")
-            self.download.got_unchoke()
+            self.parent.got_unchoke(self)
         elif t == INTERESTED:
             LOG.debug("< INTERESTED")
-            self.upload.got_interested()
+            self.parent.got_interested(self)
         elif t == NOT_INTERESTED:
             LOG.debug("< NOT_INTERESTED")
-            self.upload.got_not_interested()
+            self.parent.got_not_interested(self)
         elif t == HAVE:
             pass
         elif t == BITFIELD:
-            pass
+            b = Bitfield(self.parent.numpieces, message[1:])
+            self.parent.got_bitfield(b)
         elif t == REQUEST:
             if len(message) != 13:
-                LOG.error("BT receiver: REQUEST: invalid message length")
-                self.close()
-                return
+                raise RuntimeError("REQUEST: invalid message length")
             i, a, b = struct.unpack("!xiii", message)
             LOG.debug("< REQUEST %d %d %d" % (i, a, b))
-            self.upload.got_request(i, a, b)
+            self.parent.got_request(self, i, a, b)
         elif t == CANCEL:
             pass
         elif t == PIECE:
             if len(message) <= 9:
-                LOG.error("BT receiver: PIECE: invalid message length")
-                self.close()
-                return
+                raise RuntimeError("PIECE: invalid message length")
             n = len(message) - 9
             i, a, b = struct.unpack("!xii%ss" % n, message)
             LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
-            self.download.got_piece(i, a, b)
+            self.parent.got_piece(self, i, a, b)
         else:
-            LOG.error("BT receiver: unexpected message type")
-            self.close()
+            raise RuntimeError("Unexpected message type")
 
     def close(self):
         if self.closing:
@@ -297,7 +296,4 @@ class BTStream(Stream):
     def connection_lost(self, exception):
         # because we might also be invoked on network error
         self.closing = True
-        self.upload = None
-        self.download = None
-        self.parent = None
         del self.buff[:]
