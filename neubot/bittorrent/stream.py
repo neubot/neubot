@@ -237,7 +237,9 @@ class StreamBitTorrent(Stream):
             if not self.id:
                 self.id = message[-20:]
             self.complete = True
-            self.send_bitfield(self.parent.bitfield.tostring())
+            # NOTE The bitfield is optional
+            if self.parent.bitfield:
+                self.send_bitfield(self.parent.bitfield.tostring())
             self.parent.connection_ready(self)
             return
         t = message[0]
