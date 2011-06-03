@@ -36,18 +36,20 @@ def random_bytes(n):
 class Peer(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
-        self.numpieces = NUMPIECES
-        self.bitfield = make_bitfield(NUMPIECES)
-        self.peer_bitfield = make_bitfield(NUMPIECES)
-        self.infohash = random_bytes(20)
-        self.my_id = random_bytes(20)
         self.interested = False
         self.choked = True
+        self.setup({})
 
     def configure(self, conf, measurer=None):
         StreamHandler.configure(self, conf, measurer)
-        if "bittorrent.peer.infohash" in conf:
-            self.infohash = conf["bittorrent.peer.infohash"]
+        self.setup(conf)
+
+    def setup(self, conf):
+        self.numpieces = int(conf.get("bittorrent.numpieces", NUMPIECES))
+        self.bitfield = make_bitfield(self.numpieces)
+        self.peer_bitfield = make_bitfield(self.numpieces)
+        self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
+        self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
 
     def connection_ready(self, stream):
         """Invoked when the handshake is complete."""
