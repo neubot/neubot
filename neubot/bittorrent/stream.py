@@ -280,7 +280,13 @@ class StreamBitTorrent(Stream):
             LOG.debug("< REQUEST %d %d %d" % (i, a, b))
             self.parent.got_request(self, i, a, b)
         elif t == CANCEL:
-            pass
+            if len(message) != 13:
+                raise RuntimeError("CANCEL: invalid message length")
+            i, a, b = struct.unpack("!xiii", message)
+            LOG.debug("< CANCEL %d %d %d" % (i, a, b))
+            if i >= self.parent.numpieces:
+                raise RuntimeError("CANCEL: index out of bounds")
+            # NOTE Ignore CANCEL message
         elif t == PIECE:
             if len(message) <= 9:
                 raise RuntimeError("PIECE: invalid message length")
