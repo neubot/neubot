@@ -267,8 +267,10 @@ class StreamBitTorrent(Stream):
             i = struct.unpack("!xi", message)[0]
             if i >= self.parent.numpieces:
                 raise RuntimeError("HAVE: index out of bounds")
+            LOG.debug("< HAVE %d" % i)
             self.parent.got_have(i)
         elif t == BITFIELD:
+            LOG.debug("< BITFIELD <bitfield>")
             b = Bitfield(self.parent.numpieces, message[1:])
             self.parent.got_bitfield(b)
         elif t == REQUEST:
