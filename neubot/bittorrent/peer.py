@@ -38,10 +38,16 @@ class Peer(StreamHandler):
         StreamHandler.__init__(self, poller)
         self.numpieces = NUMPIECES
         self.bitfield = Bitfield(NUMPIECES)
+        self.peer_bitfield = Bitfield(NUMPIECES)
         self.infohash = random_bytes(20)
         self.my_id = random_bytes(20)
         self.interested = False
         self.choked = True
+
+    def configure(self, conf, measurer=None):
+        StreamHandler.configure(self, conf, measurer)
+        if "bittorrent.peer.infohash" in conf:
+            self.infohash = conf["bittorrent.peer.infohash"]
 
     def connection_ready(self, stream):
         """Invoked when the handshake is complete."""
@@ -51,7 +57,7 @@ class Peer(StreamHandler):
         stream.attach(self, sock, self.conf, self.measurer)
 
     def got_bitfield(self, b):
-        """Invoked when you receive the bitfield."""
+        self.peer_bitfield = b
 
     # Upload
 
@@ -60,11 +66,9 @@ class Peer(StreamHandler):
 
     def got_interested(self, stream):
         self.interested = True
-        stream.send_unchoke()
 
     def got_not_interested(self, stream):
         self.interested = False
-        stream.send_choke()
 
     # Download
 
@@ -73,6 +77,9 @@ class Peer(StreamHandler):
 
     def got_unchoke(self, stream):
         self.choked = False
+
+    def got_have(self, index):
+        self.peer_bitfield[index] = 1
 
     def got_piece(self, stream, index, begin, block):
         self.piece_start(stream, index, begin, "")

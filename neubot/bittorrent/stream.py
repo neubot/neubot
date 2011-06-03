@@ -60,10 +60,10 @@ protocol_name = 'BitTorrent protocol'
 SMALLMESSAGE = 1<<17
 
 def toint(s):
-    return struct.unpack("!i", s)[0]
+    return struct.unpack("!I", s)[0]
 
 def tobinary(i):
-    return struct.pack("!i", i)
+    return struct.pack("!I", i)
 
 class PieceMessage(object):
     def __init__(self, index, begin):
@@ -112,11 +112,11 @@ class StreamBitTorrent(Stream):
 
     def send_request(self, index, begin, length):
         LOG.debug("> REQUEST %d %d %d" % (index, begin, length))
-        self._send_message(struct.pack("!ciii", REQUEST, index, begin, length))
+        self._send_message(struct.pack("!cIII", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
         LOG.debug("> CANCEL %d %d %d" % (index, begin, length))
-        self._send_message(struct.pack("!ciii", CANCEL, index, begin, length))
+        self._send_message(struct.pack("!cIII", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
         LOG.debug("> BITFIELD <bitfield>")
@@ -124,7 +124,7 @@ class StreamBitTorrent(Stream):
 
     def send_have(self, index):
         LOG.debug("> HAVE %d" % index)
-        self._send_message(struct.pack("!ci", HAVE, index))
+        self._send_message(struct.pack("!cI", HAVE, index))
 
     def send_keepalive(self):
         LOG.debug("> KEEPALIVE")
@@ -134,7 +134,7 @@ class StreamBitTorrent(Stream):
         if not isinstance(block, basestring):
             length = utils.file_length(block)
             LOG.debug("> PIECE %d %d len=%d" % (index, begin, length))
-            preamble = struct.pack("!cii", PIECE, index, begin)
+            preamble = struct.pack("!cII", PIECE, index, begin)
             l = len(preamble) + length
             d = [tobinary(l), ]
             d.extend(preamble)
@@ -144,7 +144,7 @@ class StreamBitTorrent(Stream):
             return
 
         LOG.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
-        self._send_message(struct.pack("!cii%ss" % len(block), PIECE,
+        self._send_message(struct.pack("!cII%ss" % len(block), PIECE,
           index, begin, block))
 
     def _send_message(self, *msg_a):
@@ -182,8 +182,6 @@ class StreamBitTorrent(Stream):
 
                 if self.count == 4:
                     self.left = toint("".join(self.buff))
-                    if self.left < 0:
-                        raise RuntimeError("Message length overflow")
                     del self.buff[:]
                     self.count = 0
 
@@ -220,7 +218,7 @@ class StreamBitTorrent(Stream):
         if len(message) <= 9:
             raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
-        i, a, b = struct.unpack("!xii%ss" % n, message)
+        i, a, b = struct.unpack("!xII%ss" % n, message)
         self.piece = PieceMessage(i, a)
         self.parent.piece_start(self, i, a, b)
 
@@ -232,6 +230,7 @@ class StreamBitTorrent(Stream):
         self.piece = None
 
     def _got_message(self, message):
+
         if not self.complete:
             LOG.debug("< HANDSHAKE")
             if not self.id:
@@ -242,6 +241,7 @@ class StreamBitTorrent(Stream):
                 self.send_bitfield(self.parent.bitfield.tostring())
             self.parent.connection_ready(self)
             return
+
         t = message[0]
         if t in [BITFIELD] and self.got_anything:
             raise RuntimeError("Bitfield after we got something")
@@ -249,38 +249,65 @@ class StreamBitTorrent(Stream):
         if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
           len(message) != 1):
             raise RuntimeError("Expecting one-byte-long message, got more")
+
         if t == CHOKE:
             LOG.debug("< CHOKE")
             self.parent.got_choke(self)
+
         elif t == UNCHOKE:
             LOG.debug("< UNCHOKE")
             self.parent.got_unchoke(self)
+
         elif t == INTERESTED:
             LOG.debug("< INTERESTED")
             self.parent.got_interested(self)
+
         elif t == NOT_INTERESTED:
             LOG.debug("< NOT_INTERESTED")
             self.parent.got_not_interested(self)
+
         elif t == HAVE:
-            pass
+            if len(message) != 5:
+                raise RuntimeError("HAVE: invalid message length")
+            i = struct.unpack("!xI", message)[0]
+            if i >= self.parent.numpieces:
+                raise RuntimeError("HAVE: index out of bounds")
+            LOG.debug("< HAVE %d" % i)
+            self.parent.got_have(i)
+
         elif t == BITFIELD:
+            LOG.debug("< BITFIELD <bitfield>")
             b = Bitfield(self.parent.numpieces, message[1:])
             self.parent.got_bitfield(b)
+
         elif t == REQUEST:
             if len(message) != 13:
                 raise RuntimeError("REQUEST: invalid message length")
-            i, a, b = struct.unpack("!xiii", message)
+            i, a, b = struct.unpack("!xIII", message)
             LOG.debug("< REQUEST %d %d %d" % (i, a, b))
+            if i >= self.parent.numpieces:
+                raise RuntimeError("REQUEST: index out of bounds")
             self.parent.got_request(self, i, a, b)
+
         elif t == CANCEL:
-            pass
+            if len(message) != 13:
+                raise RuntimeError("CANCEL: invalid message length")
+            i, a, b = struct.unpack("!xIII", message)
+            LOG.debug("< CANCEL %d %d %d" % (i, a, b))
+            if i >= self.parent.numpieces:
+                raise RuntimeError("CANCEL: index out of bounds")
+            # NOTE Ignore CANCEL message
+
         elif t == PIECE:
             if len(message) <= 9:
                 raise RuntimeError("PIECE: invalid message length")
             n = len(message) - 9
-            i, a, b = struct.unpack("!xii%ss" % n, message)
+            i, a, b = struct.unpack("!xII%ss" % n, message)
             LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
+            if i >= self.parent.numpieces:
+                raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)
+
         else:
             raise RuntimeError("Unexpected message type")
 
