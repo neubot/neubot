@@ -25,7 +25,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.arcfour import arcfour_new
+from neubot.bittorrent.peer import PIECE_LEN
 from neubot.bittorrent.peer import Peer
 from neubot.config import CONFIG
 from neubot.log import LOG
@@ -35,76 +35,59 @@ from neubot.net.poller import POLLER
 from neubot import boot
 from neubot import system
 
-class PeerSimple(Peer):
-    def __init__(self, poller):
-        Peer.__init__(self, poller)
-        self.scrambler = arcfour_new()
-
-    def connection_ready(self, stream):
-        stream.send_interested()
-
-    def got_unchoke(self, stream):
-        for _ in range(0, 32):
-            stream.send_request(0, 0, 1<<15)
-
-    def got_piece(self, stream, index, begin, length):
-        stream.send_request(index, 0, 1<<15)
-
-    def got_request(self, stream, index, begin, length):
-        data = self.scrambler.encrypt("A" * length)
-        stream.send_piece(index, begin, data)
-
 def main(args):
 
     CONFIG.register_defaults({
-        "bittorrent.test.address": "",
-        "bittorrent.test.daemonize": False,
-        "bittorrent.test.duration": 10,
-        "bittorrent.test.listen": False,
-        "bittorrent.test.port": 6881,
+        "bittorrent.address": "",
+        "bittorrent.daemonize": False,
+        "bittorrent.duration": 10,
+        "bittorrent.listen": False,
+        "bittorrent.piece_len": PIECE_LEN,
+        "bittorrent.port": 6881,
     })
     CONFIG.register_descriptions({
-        "bittorrent.test.address": "Set client or server address",
-        "bittorrent.test.daemonize": "Enable daemon behavior",
-        "bittorrent.test.duration": "Set duration of a test",
-        "bittorrent.test.listen": "Enable server mode",
-        "bittorrent.test.port": "Set client or server port",
+        "bittorrent.address": "Set client or server address",
+        "bittorrent.daemonize": "Enable daemon behavior",
+        "bittorrent.duration": "Set duration of a test",
+        "bittorrent.listen": "Enable server mode",
+        "bittorrent.piece_len": "Length of a single piece",
+        "bittorrent.port": "Set client or server port",
     })
 
-    boot.common("bittorrent.test", "BitTorrent test", args)
+    boot.common("bittorrent", "BitTorrent test", args)
     conf = CONFIG.copy()
 
-    if not conf["bittorrent.test.address"]:
-        if not conf["bittorrent.test.listen"]:
-            conf["bittorrent.test.address"] = "neubot.blupixel.net"
+    if not conf["bittorrent.address"]:
+        if not conf["bittorrent.listen"]:
+            conf["bittorrent.address"] = "neubot.blupixel.net"
         else:
-            conf["bittorrent.test.address"] = "0.0.0.0"
+            conf["bittorrent.address"] = "0.0.0.0"
 
-    endpoint = (conf["bittorrent.test.address"],
-      conf["bittorrent.test.port"])
+    endpoint = (conf["bittorrent.address"],
+      conf["bittorrent.port"])
 
-    if not (conf["bittorrent.test.listen"] and
-            conf["bittorrent.test.daemonize"]):
+    if not (conf["bittorrent.listen"] and
+            conf["bittorrent.daemonize"]):
         MEASURER.start()
 
-    if conf["bittorrent.test.listen"]:
-        if conf["bittorrent.test.daemonize"]:
+    if conf["bittorrent.listen"]:
+        if conf["bittorrent.daemonize"]:
             system.change_dir()
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        listener = PeerSimple(POLLER)
+        listener = Peer(POLLER)
         listener.configure(conf, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
-    duration = conf["bittorrent.test.duration"]
+    duration = conf["bittorrent.duration"]
     if duration >= 0:
         duration = duration + 0.1       # XXX
         POLLER.sched(duration, POLLER.break_loop)
 
-    connector = PeerSimple(POLLER)
+    connector = Peer(POLLER)
     connector.configure(conf, MEASURER)
     connector.connect(endpoint)
     POLLER.loop()
