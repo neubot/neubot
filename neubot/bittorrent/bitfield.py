@@ -12,9 +12,11 @@
 # License.
 #
 # Written by Bram Cohen, Uoti Urpala, and John Hoffman
+# Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
 from array import array
+import random
 
 #counts = [chr(sum([(i >> j) & 1 for j in xrange(8)])) for i in xrange(256)]
 counts = []
@@ -98,3 +100,10 @@ try:
     Bitfield = BTL.cBitfield.Bitfield
 except ImportError:
     pass
+
+def make_bitfield(numpieces):
+    bitfield = Bitfield(numpieces)
+    length = len(bitfield.bits)
+    for idx in random.sample(range(length), length//2):
+        bitfield.bits[idx] = 255
+    return bitfield
