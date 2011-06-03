@@ -22,13 +22,22 @@
 
 import random
 
-from neubot.bittorrent.bitfield import Bitfield
+from neubot.blocks import RandomBody
+from neubot.bittorrent.bitfield import make_bitfield
+from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
+from neubot.bittorrent.stream import SMALLMESSAGE
 from neubot.net.stream import StreamHandler
 
 from neubot import utils
 
 NUMPIECES = 1<<20
+PIECE_LEN = SMALLMESSAGE
+PIPELINE = 1<<20
+TARGET_BYTES = 64000
+
+MIN_TIME = 3
+EXP_TIME = 5
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
@@ -36,21 +45,38 @@ def random_bytes(n):
 class Peer(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
-        self.numpieces = NUMPIECES
-        self.bitfield = Bitfield(NUMPIECES)
-        self.peer_bitfield = Bitfield(NUMPIECES)
-        self.infohash = random_bytes(20)
-        self.my_id = random_bytes(20)
         self.interested = False
         self.choked = True
+        self.saved_bytes = 0
+        self.saved_ticks = 0
+        self.inflight = 0
+        self.setup({})
 
     def configure(self, conf, measurer=None):
         StreamHandler.configure(self, conf, measurer)
-        if "bittorrent.peer.infohash" in conf:
-            self.infohash = conf["bittorrent.peer.infohash"]
+        self.setup(conf)
 
+    def setup(self, conf):
+        self.numpieces = int(conf.get("bittorrent.numpieces", NUMPIECES))
+        self.bitfield = make_bitfield(self.numpieces)
+        self.peer_bitfield = make_bitfield(self.numpieces)
+        self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
+        self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
+        self.make_sched()
+
+    def make_sched(self):
+        self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
+          int(self.conf.get("bittorrent.target_bytes", TARGET_BYTES)),
+          int(self.conf.get("bittorrent.piece_len", PIECE_LEN)), PIPELINE)
+
+    #
+    # Once the connection is ready immediately tell the
+    # peer we're interested and unchoke it so we can start
+    # the test without further delays.
+    #
     def connection_ready(self, stream):
-        """Invoked when the handshake is complete."""
+        stream.send_interested()
+        stream.send_unchoke()
 
     def connection_made(self, sock):
         stream = StreamBitTorrent(self.poller)
@@ -61,8 +87,20 @@ class Peer(StreamHandler):
 
     # Upload
 
+    #
+    # XXX As suggested by BEP0003, we should keep blocks into
+    # an application level queue and just pipe a few of them
+    # into the socket buffer, so we can abort the upload in a
+    # more easy way on NOT_INTERESTED.
+    #
     def got_request(self, stream, index, begin, length):
-        """Invoked when you receive a request."""
+        if not self.interested:
+            raise RuntimeError("REQUEST but not interested")
+        if length <= SMALLMESSAGE:
+            block = chr(random.randint(32, 126)) * length
+        else:
+            block = RandomBody(length)
+        stream.send_piece(index, begin, block)
 
     def got_interested(self, stream):
         self.interested = True
@@ -75,8 +113,21 @@ class Peer(StreamHandler):
     def got_choke(self, stream):
         self.choked = True
 
+    #
+    # When we're unchoked immediately pipeline a number
+    # of requests and then put another request on the pipe
+    # as soon as a piece arrives.  Note that the pipe-
+    # lining is done by the schedule generator.
+    #
     def got_unchoke(self, stream):
-        self.choked = False
+        if self.choked:
+            self.choked = False
+            self.saved_bytes = stream.bytes_recv_tot
+            self.saved_ticks = utils.ticks()
+            burst = next(self.sched_req)
+            for index, begin, length in burst:
+                stream.send_request(index, begin, length)
+                self.inflight += 1
 
     def got_have(self, index):
         self.peer_bitfield[index] = 1
@@ -92,5 +143,39 @@ class Peer(StreamHandler):
     def piece_part(self, stream, index, begin, block):
         """Invoked when you receive a portion of a piece."""
 
+    #
+    # Time to put another piece on the wire, assuming
+    # that we can do that.
+    #
     def piece_end(self, stream, index, begin):
-        """Invoked at the end of the piece."""
+        try:
+            vector = next(self.sched_req)
+        except StopIteration:
+            vector = None
+
+        if vector:
+            index, begin, length = vector[0]
+            stream.send_request(index, begin, length)
+
+        else:
+            self.inflight -= 1
+            if self.inflight == 0:
+                xfered = stream.bytes_recv_tot - self.saved_bytes
+                elapsed = utils.ticks() - self.saved_ticks
+                speed = xfered/elapsed
+
+                if elapsed < MIN_TIME:
+                    self.bytes_recv_tot = 0
+                    self.saved_ticks = 0
+
+                    target_bytes = int(self.conf.get("bittorrent.target_bytes",
+                      TARGET_BYTES))
+                    target_bytes *= EXP_TIME/elapsed
+                    self.conf["bittorrent.target_bytes"] = int(target_bytes)
+                    self.make_sched()
+
+                    self.choked = True          #XXX
+                    self.got_unchoke(stream)
+
+                else:
+                    print utils.speed_formatter(speed)
