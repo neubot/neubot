@@ -278,6 +278,8 @@ class StreamBitTorrent(Stream):
                 raise RuntimeError("REQUEST: invalid message length")
             i, a, b = struct.unpack("!xiii", message)
             LOG.debug("< REQUEST %d %d %d" % (i, a, b))
+            if i >= self.parent.numpieces:
+                raise RuntimeError("REQUEST: index out of bounds")
             self.parent.got_request(self, i, a, b)
         elif t == CANCEL:
             if len(message) != 13:
@@ -293,6 +295,8 @@ class StreamBitTorrent(Stream):
             n = len(message) - 9
             i, a, b = struct.unpack("!xii%ss" % n, message)
             LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
+            if i >= self.parent.numpieces:
+                raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)
         else:
             raise RuntimeError("Unexpected message type")
