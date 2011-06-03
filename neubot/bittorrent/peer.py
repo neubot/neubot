@@ -38,6 +38,7 @@ class Peer(StreamHandler):
         StreamHandler.__init__(self, poller)
         self.numpieces = NUMPIECES
         self.bitfield = Bitfield(NUMPIECES)
+        self.peer_bitfield = Bitfield(NUMPIECES)
         self.infohash = random_bytes(20)
         self.my_id = random_bytes(20)
         self.interested = False
@@ -51,7 +52,7 @@ class Peer(StreamHandler):
         stream.attach(self, sock, self.conf, self.measurer)
 
     def got_bitfield(self, b):
-        """Invoked when you receive the bitfield."""
+        self.peer_bitfield = b
 
     # Upload
 
