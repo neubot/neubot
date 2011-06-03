@@ -66,11 +66,9 @@ class Peer(StreamHandler):
 
     def got_interested(self, stream):
         self.interested = True
-        stream.send_unchoke()
 
     def got_not_interested(self, stream):
         self.interested = False
-        stream.send_choke()
 
     # Download
 
