@@ -44,6 +44,11 @@ class Peer(StreamHandler):
         self.interested = False
         self.choked = True
 
+    def configure(self, conf, measurer=None):
+        StreamHandler.configure(self, conf, measurer)
+        if "bittorrent.peer.infohash" in conf:
+            self.infohash = conf["bittorrent.peer.infohash"]
+
     def connection_ready(self, stream):
         """Invoked when the handshake is complete."""
 
