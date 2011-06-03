@@ -232,6 +232,7 @@ class StreamBitTorrent(Stream):
         self.piece = None
 
     def _got_message(self, message):
+
         if not self.complete:
             LOG.debug("< HANDSHAKE")
             if not self.id:
@@ -242,6 +243,7 @@ class StreamBitTorrent(Stream):
                 self.send_bitfield(self.parent.bitfield.tostring())
             self.parent.connection_ready(self)
             return
+
         t = message[0]
         if t in [BITFIELD] and self.got_anything:
             raise RuntimeError("Bitfield after we got something")
@@ -249,18 +251,23 @@ class StreamBitTorrent(Stream):
         if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
           len(message) != 1):
             raise RuntimeError("Expecting one-byte-long message, got more")
+
         if t == CHOKE:
             LOG.debug("< CHOKE")
             self.parent.got_choke(self)
+
         elif t == UNCHOKE:
             LOG.debug("< UNCHOKE")
             self.parent.got_unchoke(self)
+
         elif t == INTERESTED:
             LOG.debug("< INTERESTED")
             self.parent.got_interested(self)
+
         elif t == NOT_INTERESTED:
             LOG.debug("< NOT_INTERESTED")
             self.parent.got_not_interested(self)
+
         elif t == HAVE:
             if len(message) != 5:
                 raise RuntimeError("HAVE: invalid message length")
@@ -269,10 +276,12 @@ class StreamBitTorrent(Stream):
                 raise RuntimeError("HAVE: index out of bounds")
             LOG.debug("< HAVE %d" % i)
             self.parent.got_have(i)
+
         elif t == BITFIELD:
             LOG.debug("< BITFIELD <bitfield>")
             b = Bitfield(self.parent.numpieces, message[1:])
             self.parent.got_bitfield(b)
+
         elif t == REQUEST:
             if len(message) != 13:
                 raise RuntimeError("REQUEST: invalid message length")
@@ -281,6 +290,7 @@ class StreamBitTorrent(Stream):
             if i >= self.parent.numpieces:
                 raise RuntimeError("REQUEST: index out of bounds")
             self.parent.got_request(self, i, a, b)
+
         elif t == CANCEL:
             if len(message) != 13:
                 raise RuntimeError("CANCEL: invalid message length")
@@ -289,6 +299,7 @@ class StreamBitTorrent(Stream):
             if i >= self.parent.numpieces:
                 raise RuntimeError("CANCEL: index out of bounds")
             # NOTE Ignore CANCEL message
+
         elif t == PIECE:
             if len(message) <= 9:
                 raise RuntimeError("PIECE: invalid message length")
@@ -298,6 +309,7 @@ class StreamBitTorrent(Stream):
             if i >= self.parent.numpieces:
                 raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)
+
         else:
             raise RuntimeError("Unexpected message type")
 
