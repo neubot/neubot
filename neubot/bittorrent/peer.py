@@ -75,6 +75,9 @@ class Peer(StreamHandler):
     def got_unchoke(self, stream):
         self.choked = False
 
+    def got_have(self, index):
+        self.peer_bitfield[index] = 1
+
     def got_piece(self, stream, index, begin, block):
         self.piece_start(stream, index, begin, "")
         self.piece_part(stream, index, begin, block)
