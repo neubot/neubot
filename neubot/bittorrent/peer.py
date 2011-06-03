@@ -22,7 +22,7 @@
 
 import random
 
-from neubot.bittorrent.bitfield import Bitfield
+from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.net.stream import StreamHandler
 
@@ -37,8 +37,8 @@ class Peer(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
         self.numpieces = NUMPIECES
-        self.bitfield = Bitfield(NUMPIECES)
-        self.peer_bitfield = Bitfield(NUMPIECES)
+        self.bitfield = make_bitfield(NUMPIECES)
+        self.peer_bitfield = make_bitfield(NUMPIECES)
         self.infohash = random_bytes(20)
         self.my_id = random_bytes(20)
         self.interested = False
