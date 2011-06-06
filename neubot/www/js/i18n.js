@@ -64,12 +64,13 @@ var i18n = {
                     var classList = jQuery(element).attr('class').split(/\s+/);
                     jQuery.each(classList, function(i, v) {
                         var patt = /^i18n_(.*)$/i;
-                        if (result = patt.exec(v)) {
+                        if ((result = patt.exec(v)) && LANG[result[1]]) {
                             switch (element.tagName) {
-                                default:
-                                if (LANG[result[1]]) {
-                                    jQuery(element).html(LANG[result[1]]);
-                                }
+                            case "textarea":
+                                jQuery(element).text(LANG[result[1]]);
+                                break;
+                            default:
+                                jQuery(element).html(LANG[result[1]]);
                                 break;
                             }
                         }
