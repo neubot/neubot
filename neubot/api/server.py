@@ -52,6 +52,7 @@ class ServerAPI(ServerHTTP):
         self.dispatch = {
             "/api": self.api,
             "/api/": self.api,
+            "/api/bittorrent": self.api_speedtest,              #XXX
             "/api/config": self.api_config,
             "/api/configlabels": self.api_configlabels,
             "/api/debug": self.api_debug,
