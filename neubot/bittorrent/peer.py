@@ -124,6 +124,7 @@ class Peer(StreamHandler):
     #
     def got_unchoke(self, stream):
         if self.choked:
+            LOG.info("BitTorrent: using %d bytes" % self.target_bytes)
             self.choked = False
             burst = next(self.sched_req)
             for index, begin, length in burst:
@@ -172,6 +173,11 @@ class Peer(StreamHandler):
                 elapsed = utils.ticks() - self.saved_ticks
                 speed = xfered/elapsed
 
+                LOG.info("BitTorrent: download speed: %s" %
+                  utils.speed_formatter(speed))
+                LOG.info("BitTorrent: measurement time: %s" %
+                  utils.time_formatter(elapsed))
+
                 if elapsed < MIN_TIME:
                     self.bytes_recv_tot = 0
                     self.saved_ticks = 0
@@ -183,7 +189,7 @@ class Peer(StreamHandler):
                     self.got_unchoke(stream)
 
                 else:
-                    print utils.speed_formatter(speed)
+                    LOG.info("BitTorrent: test complete")
                     self.complete(speed)
 
     def complete(self, speed):
