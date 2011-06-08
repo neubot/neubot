@@ -50,6 +50,8 @@ def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, pipeline):
     idx = sched_idx(bitfield, peer_bitfield)
     npieces = targetbytes // piecelen + 1
     npiecespipe = pipeline // piecelen + 1
+    if npieces < npiecespipe:
+        npieces = npiecespipe + 1
     burst = []
     for _ in range(min(npieces, npiecespipe)):
         burst.append((next(idx), 0, piecelen))
