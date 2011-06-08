@@ -122,8 +122,6 @@ class Peer(StreamHandler):
     def got_unchoke(self, stream):
         if self.choked:
             self.choked = False
-            self.saved_bytes = stream.bytes_recv_tot
-            self.saved_ticks = utils.ticks()
             burst = next(self.sched_req)
             for index, begin, length in burst:
                 stream.send_request(index, begin, length)
@@ -145,9 +143,16 @@ class Peer(StreamHandler):
 
     #
     # Time to put another piece on the wire, assuming
-    # that we can do that.
+    # that we can do that.  Note that we start measuring
+    # after the first PIECE message: at that point we
+    # can assume the pipeline to be full (note that this
+    # holds iff bdp < PIPELINE).
     #
     def piece_end(self, stream, index, begin):
+        if not self.saved_ticks:
+            self.saved_bytes = stream.bytes_recv_tot
+            self.saved_ticks = utils.ticks()
+
         try:
             vector = next(self.sched_req)
         except StopIteration:
