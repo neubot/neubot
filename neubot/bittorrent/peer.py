@@ -37,8 +37,8 @@ PIECE_LEN = SMALLMESSAGE
 PIPELINE = 1<<20
 TARGET_BYTES = 64000
 
-MIN_TIME = 3
-EXP_TIME = 5
+LO_THRESH = 3
+TARGET = 5
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
@@ -178,19 +178,19 @@ class Peer(StreamHandler):
                 LOG.info("BitTorrent: measurement time: %s" %
                   utils.time_formatter(elapsed))
 
-                if elapsed < MIN_TIME:
-                    self.bytes_recv_tot = 0
+                if elapsed > LO_THRESH:
+                    LOG.info("BitTorrent: test complete")
+                    self.complete(speed)
+                else:
                     self.saved_ticks = 0
-
-                    self.target_bytes *= EXP_TIME/elapsed
+                    if elapsed > LO_THRESH/3:
+                        self.target_bytes *= TARGET/elapsed
+                    else:
+                        self.target_bytes *= 2
                     self.make_sched()
-
                     self.choked = True          #XXX
                     self.got_unchoke(stream)
 
-                else:
-                    LOG.info("BitTorrent: test complete")
-                    self.complete(speed)
 
     def complete(self, speed):
         pass
