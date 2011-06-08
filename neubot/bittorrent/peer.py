@@ -62,12 +62,14 @@ class Peer(StreamHandler):
         self.peer_bitfield = make_bitfield(self.numpieces)
         self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
+        self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
+                              TARGET_BYTES))
         self.make_sched()
 
     def make_sched(self):
         self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
-          int(self.conf.get("bittorrent.target_bytes", TARGET_BYTES)),
-          int(self.conf.get("bittorrent.piece_len", PIECE_LEN)), PIPELINE)
+          self.target_bytes, int(self.conf.get("bittorrent.piece_len",
+          PIECE_LEN)), PIPELINE)
 
     #
     # Once the connection is ready immediately tell the
@@ -173,10 +175,7 @@ class Peer(StreamHandler):
                     self.bytes_recv_tot = 0
                     self.saved_ticks = 0
 
-                    target_bytes = int(self.conf.get("bittorrent.target_bytes",
-                      TARGET_BYTES))
-                    target_bytes *= EXP_TIME/elapsed
-                    self.conf["bittorrent.target_bytes"] = int(target_bytes)
+                    self.target_bytes *= EXP_TIME/elapsed
                     self.make_sched()
 
                     self.choked = True          #XXX
