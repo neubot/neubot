@@ -69,10 +69,6 @@ def main(args):
     endpoint = (conf["bittorrent.address"],
       conf["bittorrent.port"])
 
-    if not (conf["bittorrent.listen"] and
-            conf["bittorrent.daemonize"]):
-        MEASURER.start()
-
     if conf["bittorrent.listen"]:
         if conf["bittorrent.daemonize"]:
             system.change_dir()
