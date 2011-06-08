@@ -26,6 +26,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.bittorrent.peer import PIECE_LEN
+from neubot.bittorrent.peer import ListeningPeer
 from neubot.bittorrent.peer import Peer
 from neubot.config import CONFIG
 from neubot.log import LOG
@@ -35,12 +36,15 @@ from neubot.net.poller import POLLER
 from neubot import boot
 from neubot import system
 
+class ConnectingPeer(Peer):
+    def complete(self, speed):
+        POLLER.sched(1, POLLER.break_loop)
+
 def main(args):
 
     CONFIG.register_defaults({
         "bittorrent.address": "",
         "bittorrent.daemonize": False,
-        "bittorrent.duration": 10,
         "bittorrent.listen": False,
         "bittorrent.piece_len": PIECE_LEN,
         "bittorrent.port": 6881,
@@ -48,7 +52,6 @@ def main(args):
     CONFIG.register_descriptions({
         "bittorrent.address": "Set client or server address",
         "bittorrent.daemonize": "Enable daemon behavior",
-        "bittorrent.duration": "Set duration of a test",
         "bittorrent.listen": "Enable server mode",
         "bittorrent.piece_len": "Length of a single piece",
         "bittorrent.port": "Set client or server port",
@@ -76,18 +79,13 @@ def main(args):
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        listener = Peer(POLLER)
+        listener = ListeningPeer(POLLER)
         listener.configure(conf, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
-    duration = conf["bittorrent.duration"]
-    if duration >= 0:
-        duration = duration + 0.1       # XXX
-        POLLER.sched(duration, POLLER.break_loop)
-
-    connector = Peer(POLLER)
+    connector = ConnectingPeer(POLLER)
     connector.configure(conf, MEASURER)
     connector.connect(endpoint)
     POLLER.loop()

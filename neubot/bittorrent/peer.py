@@ -27,6 +27,7 @@ from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.bittorrent.stream import SMALLMESSAGE
+from neubot.log import LOG
 from neubot.net.stream import StreamHandler
 
 from neubot import utils
@@ -36,8 +37,8 @@ PIECE_LEN = SMALLMESSAGE
 PIPELINE = 1<<20
 TARGET_BYTES = 64000
 
-MIN_TIME = 3
-EXP_TIME = 5
+LO_THRESH = 3
+TARGET = 5
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
@@ -62,12 +63,14 @@ class Peer(StreamHandler):
         self.peer_bitfield = make_bitfield(self.numpieces)
         self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
+        self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
+                              TARGET_BYTES))
         self.make_sched()
 
     def make_sched(self):
         self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
-          int(self.conf.get("bittorrent.target_bytes", TARGET_BYTES)),
-          int(self.conf.get("bittorrent.piece_len", PIECE_LEN)), PIPELINE)
+          self.target_bytes, int(self.conf.get("bittorrent.piece_len",
+          PIECE_LEN)), PIPELINE)
 
     #
     # Once the connection is ready immediately tell the
@@ -121,9 +124,8 @@ class Peer(StreamHandler):
     #
     def got_unchoke(self, stream):
         if self.choked:
+            LOG.info("BitTorrent: using %d bytes" % self.target_bytes)
             self.choked = False
-            self.saved_bytes = stream.bytes_recv_tot
-            self.saved_ticks = utils.ticks()
             burst = next(self.sched_req)
             for index, begin, length in burst:
                 stream.send_request(index, begin, length)
@@ -145,9 +147,16 @@ class Peer(StreamHandler):
 
     #
     # Time to put another piece on the wire, assuming
-    # that we can do that.
+    # that we can do that.  Note that we start measuring
+    # after the first PIECE message: at that point we
+    # can assume the pipeline to be full (note that this
+    # holds iff bdp < PIPELINE).
     #
     def piece_end(self, stream, index, begin):
+        if not self.saved_ticks:
+            self.saved_bytes = stream.bytes_recv_tot
+            self.saved_ticks = utils.ticks()
+
         try:
             vector = next(self.sched_req)
         except StopIteration:
@@ -164,18 +173,36 @@ class Peer(StreamHandler):
                 elapsed = utils.ticks() - self.saved_ticks
                 speed = xfered/elapsed
 
-                if elapsed < MIN_TIME:
-                    self.bytes_recv_tot = 0
+                LOG.info("BitTorrent: download speed: %s" %
+                  utils.speed_formatter(speed))
+                LOG.info("BitTorrent: measurement time: %s" %
+                  utils.time_formatter(elapsed))
+
+                if elapsed > LO_THRESH:
+                    LOG.info("BitTorrent: test complete")
+                    self.complete(speed)
+                else:
                     self.saved_ticks = 0
-
-                    target_bytes = int(self.conf.get("bittorrent.target_bytes",
-                      TARGET_BYTES))
-                    target_bytes *= EXP_TIME/elapsed
-                    self.conf["bittorrent.target_bytes"] = int(target_bytes)
+                    if elapsed > LO_THRESH/3:
+                        self.target_bytes *= TARGET/elapsed
+                    else:
+                        self.target_bytes *= 2
                     self.make_sched()
-
                     self.choked = True          #XXX
                     self.got_unchoke(stream)
 
-                else:
-                    print utils.speed_formatter(speed)
+
+    def complete(self, speed):
+        pass
+
+#
+# Create a private fresh copy of peer for each new
+# connecting client.  This is the difference from client
+# and server in the world of peers.
+#
+class ListeningPeer(Peer):
+    def connection_made(self, sock):
+        stream = StreamBitTorrent(self.poller)
+        peer = Peer(self.poller)
+        peer.configure(self.conf, self.measurer)
+        stream.attach(peer, sock, peer.conf, peer.measurer)
