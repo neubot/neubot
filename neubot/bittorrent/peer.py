@@ -183,3 +183,15 @@ class Peer(StreamHandler):
 
                 else:
                     print utils.speed_formatter(speed)
+
+#
+# Create a private fresh copy of peer for each new
+# connecting client.  This is the difference from client
+# and server in the world of peers.
+#
+class ListeningPeer(Peer):
+    def connection_made(self, sock):
+        stream = StreamBitTorrent(self.poller)
+        peer = Peer(self.poller)
+        peer.configure(self.conf, self.measurer)
+        stream.attach(peer, sock, peer.conf, peer.measurer)

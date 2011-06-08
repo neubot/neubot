@@ -26,6 +26,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.bittorrent.peer import PIECE_LEN
+from neubot.bittorrent.peer import ListeningPeer
 from neubot.bittorrent.peer import Peer
 from neubot.config import CONFIG
 from neubot.log import LOG
@@ -76,7 +77,7 @@ def main(args):
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        listener = Peer(POLLER)
+        listener = ListeningPeer(POLLER)
         listener.configure(conf, MEASURER)
         listener.listen(endpoint)
         POLLER.loop()
