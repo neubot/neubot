@@ -45,6 +45,7 @@ def main(args):
     CONFIG.register_defaults({
         "bittorrent.address": "",
         "bittorrent.daemonize": False,
+        "bittorrent.dload_speed": 0,
         "bittorrent.listen": False,
         "bittorrent.piece_len": PIECE_LEN,
         "bittorrent.port": 6881,
@@ -52,6 +53,7 @@ def main(args):
     CONFIG.register_descriptions({
         "bittorrent.address": "Set client or server address",
         "bittorrent.daemonize": "Enable daemon behavior",
+        "bittorrent.dload_speed": "Estimate dload speed [Mbit/s] (0 = guess)",
         "bittorrent.listen": "Enable server mode",
         "bittorrent.piece_len": "Length of a single piece",
         "bittorrent.port": "Set client or server port",
@@ -68,6 +70,16 @@ def main(args):
 
     endpoint = (conf["bittorrent.address"],
       conf["bittorrent.port"])
+
+    if conf["bittorrent.dload_speed"]:
+        dload_speed = int(conf["bittorrent.dload_speed"])
+
+        # Mbit/s -> bytes/s
+        dload_speed *= 1000 * 1000
+        dload_speed >>= 3
+
+        # We want about 5 seconds of test
+        conf["bittorrent.target_bytes"] = 5 * dload_speed
 
     if conf["bittorrent.listen"]:
         if conf["bittorrent.daemonize"]:
