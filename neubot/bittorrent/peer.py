@@ -27,6 +27,7 @@ from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.bittorrent.stream import SMALLMESSAGE
+from neubot.log import LOG
 from neubot.net.stream import StreamHandler
 
 from neubot import utils
@@ -183,6 +184,10 @@ class Peer(StreamHandler):
 
                 else:
                     print utils.speed_formatter(speed)
+                    self.complete(speed)
+
+    def complete(self, speed):
+        pass
 
 #
 # Create a private fresh copy of peer for each new
