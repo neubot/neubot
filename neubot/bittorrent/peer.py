@@ -51,6 +51,7 @@ class Peer(StreamHandler):
         self.saved_bytes = 0
         self.saved_ticks = 0
         self.inflight = 0
+        self.dload_speed = 0
         self.setup({})
 
     def configure(self, conf, measurer=None):
@@ -110,6 +111,9 @@ class Peer(StreamHandler):
 
     def got_not_interested(self, stream):
         self.interested = False
+        if self.dload_speed:
+            LOG.info("BitTorrent: test complete")
+            self.complete(self.dload_speed)
 
     # Download
 
@@ -179,8 +183,12 @@ class Peer(StreamHandler):
                   utils.time_formatter(elapsed))
 
                 if elapsed > LO_THRESH:
-                    LOG.info("BitTorrent: test complete")
-                    self.complete(speed)
+                    self.dload_speed = speed
+                    LOG.info("BitTorrent: my side complete")
+                    stream.send_not_interested()
+                    if not self.interested:
+                        LOG.info("BitTorrent: test complete")
+                        self.complete(self.dload_speed)
                 else:
                     self.saved_ticks = 0
                     if elapsed > LO_THRESH/3:
@@ -190,7 +198,6 @@ class Peer(StreamHandler):
                     self.make_sched()
                     self.choked = True          #XXX
                     self.got_unchoke(stream)
-
 
     def complete(self, speed):
         pass
