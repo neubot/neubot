@@ -182,6 +182,8 @@ class StreamBitTorrent(Stream):
 
                 if self.count == 4:
                     self.left = toint("".join(self.buff))
+                    if self.left == 0:
+                        LOG.debug("< KEEPALIVE")
                     del self.buff[:]
                     self.count = 0
 
