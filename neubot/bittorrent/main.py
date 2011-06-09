@@ -37,7 +37,7 @@ from neubot import boot
 from neubot import system
 
 class ConnectingPeer(Peer):
-    def complete(self, speed):
+    def complete(self, speed, rtt):
         POLLER.sched(1, POLLER.break_loop)
 
 def main(args):

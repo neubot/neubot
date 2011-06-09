@@ -117,7 +117,7 @@ class Peer(StreamHandler):
         self.interested = False
         if self.dload_speed:
             LOG.info("BitTorrent: test complete")
-            self.complete(self.dload_speed)
+            self.complete(self.dload_speed, self.rtt)
 
     # Download
 
@@ -192,7 +192,7 @@ class Peer(StreamHandler):
                     stream.send_not_interested()
                     if not self.interested:
                         LOG.info("BitTorrent: test complete")
-                        self.complete(self.dload_speed)
+                        self.complete(self.dload_speed, self.rtt)
                 else:
                     self.saved_ticks = 0
                     if elapsed > LO_THRESH/3:
@@ -206,7 +206,7 @@ class Peer(StreamHandler):
             elif self.inflight < 0:
                 raise RuntimeError("Inflight became negative")
 
-    def complete(self, speed):
+    def complete(self, speed, rtt):
         pass
 
 #
