@@ -39,7 +39,7 @@ CANCEL = chr(8)
 
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
-protocol_name = 'BitTorrent protocol'
+PROTOCOL_NAME = 'BitTorrent protocol'
 
 #
 # When messages are bigger than SMALLMESSAGE we stop
@@ -86,7 +86,7 @@ class StreamBitTorrent(Stream):
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
-        self.start_send("".join((chr(len(protocol_name)), protocol_name,
+        self.start_send("".join((chr(len(PROTOCOL_NAME)), PROTOCOL_NAME,
           FLAGS, self.parent.infohash, self.parent.my_id)))
         self.start_recv()
 
