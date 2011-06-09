@@ -37,8 +37,8 @@ PIECE_LEN = SMALLMESSAGE
 PIPELINE = 1<<20
 TARGET_BYTES = 64000
 
-LO_THRESH = 3
-TARGET = 5
+LO_THRESH = 5
+TARGET = 8
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
