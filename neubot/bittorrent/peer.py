@@ -199,6 +199,9 @@ class Peer(StreamHandler):
                     self.choked = True          #XXX
                     self.got_unchoke(stream)
 
+            elif self.inflight < 0:
+                raise RuntimeError("Inflight became negative")
+
     def complete(self, speed):
         pass
 
