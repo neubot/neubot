@@ -67,6 +67,7 @@ class Peer(StreamHandler):
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
         self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
                               TARGET_BYTES))
+        self.seeder = conf.get("bittorrent.seeder", False)
         self.make_sched()
 
     def make_sched(self):
@@ -80,7 +81,8 @@ class Peer(StreamHandler):
     # the test without further delays.
     #
     def connection_ready(self, stream):
-        stream.send_interested()
+        if not self.seeder:
+            stream.send_interested()
         stream.send_unchoke()
 
     def connection_made(self, sock, rtt=0):
@@ -115,7 +117,7 @@ class Peer(StreamHandler):
 
     def got_not_interested(self, stream):
         self.interested = False
-        if self.dload_speed:
+        if self.seeder or self.dload_speed:
             LOG.info("BitTorrent: test complete")
             self.complete(self.dload_speed, self.rtt)
 
@@ -131,7 +133,7 @@ class Peer(StreamHandler):
     # lining is done by the schedule generator.
     #
     def got_unchoke(self, stream):
-        if self.choked:
+        if not self.seeder and self.choked:
             LOG.info("BitTorrent: using %d bytes" % self.target_bytes)
             self.choked = False
             burst = next(self.sched_req)
@@ -148,7 +150,8 @@ class Peer(StreamHandler):
         self.piece_end(stream, index, begin)
 
     def piece_start(self, stream, index, begin, block):
-        """Invoked when a piece starts."""
+        if self.seeder:
+            raise RuntimeError("Got unexpected piece")
 
     def piece_part(self, stream, index, begin, block):
         """Invoked when you receive a portion of a piece."""
