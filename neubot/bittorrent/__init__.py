@@ -89,12 +89,12 @@ def main(args):
         listener = Peer(POLLER)
         listener.configure(conf)
         listener.listen(endpoint)
-        POLLER.loop()
-        sys.exit(0)
 
-    connector = ConnectingPeer(POLLER)
-    connector.configure(conf)
-    connector.connect(endpoint)
+    else:
+        connector = ConnectingPeer(POLLER)
+        connector.configure(conf)
+        connector.connect(endpoint)
+
     POLLER.loop()
     sys.exit(0)
 
