@@ -78,9 +78,12 @@ class Peer(StreamHandler):
           PIECE_LEN)), PIPELINE)
 
     #
-    # Once the connection is ready immediately tell the
-    # peer we're interested and unchoke it so we can start
-    # the test without further delays.
+    # Do not say we're interested unless we want to
+    # download something from the peer.
+    # We immediately unchoke the peer so it can make us
+    # requests if it's interested (the test terminates
+    # when we have done our business and the peer becomes
+    # not interested).
     #
     def connection_ready(self, stream):
         if not self.seeder:
@@ -127,6 +130,12 @@ class Peer(StreamHandler):
     def got_interested(self, stream):
         self.interested = True
 
+    #
+    # The test terminates when we have done our
+    # business and the peer becomes not interested,
+    # meaning that it has done its business with
+    # us.
+    #
     def got_not_interested(self, stream):
         self.interested = False
         if self.seeder or self.dload_speed:
