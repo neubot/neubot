@@ -29,7 +29,6 @@ from neubot.bittorrent.peer import PIECE_LEN
 from neubot.bittorrent.peer import Peer
 from neubot.config import CONFIG
 from neubot.log import LOG
-from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
 
 from neubot import boot
@@ -87,13 +86,13 @@ def main(args):
             LOG.redirect()
         system.drop_privileges()
         listener = Peer(POLLER)
-        listener.configure(conf, MEASURER)
+        listener.configure(conf)
         listener.listen(endpoint)
         POLLER.loop()
         sys.exit(0)
 
     connector = ConnectingPeer(POLLER)
-    connector.configure(conf, MEASURER)
+    connector.configure(conf)
     connector.connect(endpoint)
     POLLER.loop()
     sys.exit(0)
