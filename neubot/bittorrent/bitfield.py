@@ -95,6 +95,6 @@ class Bitfield(object):
 def make_bitfield(numpieces):
     bitfield = Bitfield(numpieces)
     length = len(bitfield.bits)
-    for idx in random.sample(range(length), length//2):
+    for idx in random.sample(range(length), int(length/2)):
         bitfield.bits[idx] = 255
     return bitfield
