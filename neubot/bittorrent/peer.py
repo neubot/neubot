@@ -90,7 +90,10 @@ class Peer(StreamHandler):
             LOG.info("BitTorrent: latency: %s" % utils.time_formatter(rtt))
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
-        stream.attach(self, sock, self.conf, self.measurer)
+        # Just in case we're a subclass of Peer
+        peer = self.__class__(self.poller)
+        peer.configure(self.conf, self.measurer)
+        stream.attach(peer, sock, peer.conf, peer.measurer)
 
     def got_bitfield(self, b):
         self.peer_bitfield = b
@@ -211,15 +214,3 @@ class Peer(StreamHandler):
 
     def complete(self, speed, rtt):
         pass
-
-#
-# Create a private fresh copy of peer for each new
-# connecting client.  This is the difference from client
-# and server in the world of peers.
-#
-class ListeningPeer(Peer):
-    def connection_made(self, sock, rtt=0):
-        stream = StreamBitTorrent(self.poller)
-        peer = Peer(self.poller)
-        peer.configure(self.conf, self.measurer)
-        stream.attach(peer, sock, peer.conf, peer.measurer)
