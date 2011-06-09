@@ -52,6 +52,7 @@ class Peer(StreamHandler):
         self.saved_ticks = 0
         self.inflight = 0
         self.dload_speed = 0
+        self.rtt = 0
         self.setup({})
 
     def configure(self, conf, measurer=None):
@@ -83,6 +84,9 @@ class Peer(StreamHandler):
         stream.send_unchoke()
 
     def connection_made(self, sock, rtt=0):
+        if rtt:
+            LOG.info("BitTorrent: latency: %s" % utils.time_formatter(rtt))
+            self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
         stream.attach(self, sock, self.conf, self.measurer)
 
