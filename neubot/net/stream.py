@@ -35,12 +35,14 @@ except ImportError:
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.arcfour import arcfour_new
 from neubot.config import CONFIG
-from neubot.net.poller import Pollable
+from neubot.log import LOG
+from neubot.net.dns import getaddrinfo
 from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
-from neubot.arcfour import arcfour_new
-from neubot.log import LOG
+from neubot.net.poller import Pollable
+
 from neubot import system
 from neubot import utils
 from neubot import boot
@@ -469,8 +471,8 @@ class Connector(Pollable):
         sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
-            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
-                                          self.family, socket.SOCK_STREAM)
+            addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
+                                   socket.SOCK_STREAM)
         except socket.error, exception:
             LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
             self.parent._connection_failed(self, exception)
@@ -554,8 +556,8 @@ class Listener(Pollable):
         sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
-            addrinfo = socket.getaddrinfo(endpoint[0], endpoint[1],
-              self.family, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+            addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
+                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
         except socket.error, exception:
             LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
             self.parent.bind_failed(self, exception)
