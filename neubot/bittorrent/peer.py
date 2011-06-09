@@ -202,6 +202,20 @@ class Peer(StreamHandler):
                 LOG.info("BitTorrent: measurement time: %s" %
                   utils.time_formatter(elapsed))
 
+                #
+                # Make sure that next test would take about
+                # TARGET secs, under current conditions.
+                # But, multiply by two below a given threshold
+                # because we don't want to overestimate the
+                # achievable bandwidth.
+                # TODO If we're the connector, store somewhere
+                # the target_bytes so we can reuse it later.
+                #
+                if elapsed > LO_THRESH/3:
+                    self.target_bytes *= TARGET/elapsed
+                else:
+                    self.target_bytes *= 2
+
                 if elapsed > LO_THRESH:
                     self.dload_speed = speed
                     LOG.info("BitTorrent: my side complete")
@@ -211,10 +225,6 @@ class Peer(StreamHandler):
                         self.complete(self.dload_speed, self.rtt)
                 else:
                     self.saved_ticks = 0
-                    if elapsed > LO_THRESH/3:
-                        self.target_bytes *= TARGET/elapsed
-                    else:
-                        self.target_bytes *= 2
                     self.make_sched()
                     self.choked = True          #XXX
                     self.got_unchoke(stream)
