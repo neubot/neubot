@@ -227,7 +227,7 @@ class ServerHTTP(StreamHandler):
                     body=StringIO.StringIO("500 Internal Server Error"))
             stream.send_response(request, response)
 
-    def connection_made(self, sock):
+    def connection_made(self, sock, rtt=0):
         stream = ServerStream(self.poller)
         stream.attach(self, sock, self.conf)
 

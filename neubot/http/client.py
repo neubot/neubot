@@ -126,7 +126,7 @@ class ClientHTTP(StreamHandler):
     def got_response(self, stream, request, response):
         pass
 
-    def connection_made(self, sock):
+    def connection_made(self, sock, rtt=0):
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf, self.measurer)
         self.connection_ready(stream)

@@ -82,7 +82,7 @@ class Peer(StreamHandler):
         stream.send_interested()
         stream.send_unchoke()
 
-    def connection_made(self, sock):
+    def connection_made(self, sock, rtt=0):
         stream = StreamBitTorrent(self.poller)
         stream.attach(self, sock, self.conf, self.measurer)
 
@@ -211,7 +211,7 @@ class Peer(StreamHandler):
 # and server in the world of peers.
 #
 class ListeningPeer(Peer):
-    def connection_made(self, sock):
+    def connection_made(self, sock, rtt=0):
         stream = StreamBitTorrent(self.poller)
         peer = Peer(self.poller)
         peer.configure(self.conf, self.measurer)
