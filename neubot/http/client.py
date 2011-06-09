@@ -102,6 +102,9 @@ class ClientStream(StreamHTTP):
             self.close()
 
 class ClientHTTP(StreamHandler):
+    def __init__(self, poller):
+        StreamHandler.__init__(self, poller)
+        self.rtt = 0
 
     def connect_uri(self, uri, count=1):
         try:
@@ -126,7 +129,10 @@ class ClientHTTP(StreamHandler):
     def got_response(self, stream, request, response):
         pass
 
-    def connection_made(self, sock):
+    def connection_made(self, sock, rtt=0):
+        if rtt:
+            LOG.info("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
+            self.rtt = rtt
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf, self.measurer)
         self.connection_ready(stream)
