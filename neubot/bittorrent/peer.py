@@ -38,6 +38,7 @@ PIPELINE = 1<<20
 TARGET_BYTES = 64000
 
 LO_THRESH = 5
+MAX_REPEAT = 7
 TARGET = 8
 
 def random_bytes(n):
@@ -52,6 +53,7 @@ class Peer(StreamHandler):
         self.saved_ticks = 0
         self.inflight = 0
         self.dload_speed = 0
+        self.repeat = MAX_REPEAT
         self.rtt = 0
         self.setup({})
 
@@ -216,7 +218,15 @@ class Peer(StreamHandler):
                 else:
                     self.target_bytes *= 2
 
-                if elapsed > LO_THRESH:
+                #
+                # The stopping rule is when the test has run
+                # for more than LO_THRESH seconds or after some
+                # number of runs (just to be sure that we can
+                # not run forever due to unexpected network
+                # conditions).
+                #
+                self.repeat -= 1
+                if elapsed > LO_THRESH or self.repeat <= 0:
                     self.dload_speed = speed
                     LOG.info("BitTorrent: my side complete")
                     stream.send_not_interested()
