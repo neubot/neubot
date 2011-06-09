@@ -85,12 +85,19 @@ class Peer(StreamHandler):
             stream.send_interested()
         stream.send_unchoke()
 
+    #
+    # Always handle the BitTorrent connection using a
+    # new object, so we can use the same code both for
+    # the connector and the listener.
+    # Note that we use self.__class__() because the
+    # current object might be an instance of a subclass
+    # of Peer.
+    #
     def connection_made(self, sock, rtt=0):
         if rtt:
             LOG.info("BitTorrent: latency: %s" % utils.time_formatter(rtt))
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
-        # Just in case we're a subclass of Peer
         peer = self.__class__(self.poller)
         peer.configure(self.conf, self.measurer)
         stream.attach(peer, sock, peer.conf, peer.measurer)
@@ -132,8 +139,11 @@ class Peer(StreamHandler):
     #
     # When we're unchoked immediately pipeline a number
     # of requests and then put another request on the pipe
-    # as soon as a piece arrives.  Note that the pipe-
-    # lining is done by the schedule generator.
+    # as soon as a piece arrives.  Note that the pipelining
+    # is automagically done by the scheduler generator.
+    # The idea of pipelining is that of filling with many
+    # messages the space between us and the peer to do
+    # something that approxymates a continuous download.
     #
     def got_unchoke(self, stream):
         if not self.seeder and self.choked:
