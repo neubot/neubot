@@ -36,7 +36,9 @@ def sched_idx(bitfield, peer_bitfield):
     for index in vector:
         if not bitfield.bits[index] and peer_bitfield.bits[index]:
             idx = index << 3
-            for k in range(8):
+            kv = range(8)
+            random.shuffle(kv)
+            for k in kv:
                 yield idx + k
 
 #
