@@ -26,6 +26,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.bittorrent.peer import PIECE_LEN
+from neubot.bittorrent.peer import TARGET
 from neubot.bittorrent.peer import Peer
 from neubot.config import CONFIG
 from neubot.log import LOG
@@ -76,8 +77,8 @@ def main(args):
         dload_speed *= 1000 * 1000
         dload_speed >>= 3
 
-        # We want about 5 seconds of test
-        conf["bittorrent.target_bytes"] = 5 * dload_speed
+        # We want about TARGET seconds of test
+        conf["bittorrent.target_bytes"] = TARGET * dload_speed
 
     if conf["bittorrent.listen"]:
         if conf["bittorrent.daemonize"]:
