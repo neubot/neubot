@@ -20,10 +20,6 @@
 #
 
 import struct
-import sys
-
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
 
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.stream import Stream
@@ -43,7 +39,7 @@ CANCEL = chr(8)
 
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
-protocol_name = 'BitTorrent protocol'
+PROTOCOL_NAME = 'BitTorrent protocol'
 
 #
 # When messages are bigger than SMALLMESSAGE we stop
@@ -65,17 +61,26 @@ def toint(s):
 def tobinary(i):
     return struct.pack("!I", i)
 
+#
+# Keep safe the parameters of PIECE messages
+# for very large piece messages, that are not
+# buffered and passed as a single bag of bytes
+# to the message-reading code.
+#
 class PieceMessage(object):
     def __init__(self, index, begin):
         self.index = index
         self.begin = begin
 
+
+#
+# Specializes stream in order to handle the BitTorrent peer
+# wire protocol.  See also the finite state machine documented
+# at `doc/protocol.png`.
+# Note that we start with left = 68 because that is the size
+# of the BitTorrent handshake.
+#
 class StreamBitTorrent(Stream):
-
-    """Specializes stream in order to handle the BitTorrent peer
-       wire protocol.  See also the finite state machine documented
-       at `doc/protocol.png`."""
-
     def __init__(self, poller):
         Stream.__init__(self, poller)
         self.complete = False
@@ -90,7 +95,7 @@ class StreamBitTorrent(Stream):
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
-        self.start_send("".join((chr(len(protocol_name)), protocol_name,
+        self.start_send("".join((chr(len(PROTOCOL_NAME)), PROTOCOL_NAME,
           FLAGS, self.parent.infohash, self.parent.my_id)))
         self.start_recv()
 
@@ -119,7 +124,7 @@ class StreamBitTorrent(Stream):
         self._send_message(struct.pack("!cIII", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
-        LOG.debug("> BITFIELD <bitfield>")
+        LOG.debug("> BITFIELD {bitfield}")
         self._send_message(BITFIELD, bitfield)
 
     def send_have(self, index):
@@ -278,7 +283,7 @@ class StreamBitTorrent(Stream):
             self.parent.got_have(i)
 
         elif t == BITFIELD:
-            LOG.debug("< BITFIELD <bitfield>")
+            LOG.debug("< BITFIELD {bitfield}")
             b = Bitfield(self.parent.numpieces, message[1:])
             self.parent.got_bitfield(b)
 

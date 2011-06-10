@@ -15,10 +15,9 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
-from array import array
+import array
 import random
 
-#counts = [chr(sum([(i >> j) & 1 for j in xrange(8)])) for i in xrange(256)]
 counts = []
 for i in xrange(256):
     t = 0
@@ -27,16 +26,16 @@ for i in xrange(256):
     counts.append(chr(t))
 counts = ''.join(counts)
 
-class Bitfield:
+class Bitfield(object):
     def __init__(self, length, bitstring=None):
         self.length = length
         rlen, extra = divmod(length, 8)
         if bitstring is None:
             self.numfalse = length
             if extra:
-                self.bits = array('B', chr(0) * (rlen + 1))
+                self.bits = array.array('B', chr(0) * (rlen + 1))
             else:
-                self.bits = array('B', chr(0) * rlen)
+                self.bits = array.array('B', chr(0) * rlen)
         else:
             if extra:
                 if len(bitstring) != rlen + 1:
@@ -47,10 +46,10 @@ class Bitfield:
             else:
                 if len(bitstring) != rlen:
                     raise ValueError("%s != %s" % (len(bitstring), rlen))
-            self.numfalse = length - sum(array('B',
-                                               bitstring.translate(counts)))
+            self.numfalse = length - sum(array.array('B',
+              bitstring.translate(counts)))
             if self.numfalse != 0:
-                self.bits = array('B', bitstring)
+                self.bits = array.array('B', bitstring)
             else:
                 self.bits = None
 
@@ -93,17 +92,9 @@ class Bitfield:
     def __setstate__(self, d):
         Bitfield.__init__(self, d['length'], d['s'])
 
-# hmm we don't have cBitfield here in neubot
-old_Bitfield = Bitfield
-try:
-    import BTL.cBitfield
-    Bitfield = BTL.cBitfield.Bitfield
-except ImportError:
-    pass
-
 def make_bitfield(numpieces):
     bitfield = Bitfield(numpieces)
     length = len(bitfield.bits)
-    for idx in random.sample(range(length), length//2):
+    for idx in random.sample(range(length), int(length/2)):
         bitfield.bits[idx] = 255
     return bitfield

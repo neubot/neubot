@@ -45,8 +45,11 @@ def sched_idx(bitfield, peer_bitfield):
 # Given our bitfield, the peer's bitfield, the number of bytes
 # we want to transfer, the length of the piece, and the amount of
 # bytes we want to keep in the pipeline between us and the peer,
-# this generator returns a vector of (index, begin, length) we
-# should request to our peer at any given time.
+# this generator returns the vector of (index, begin, length) that
+# we should request to our peer at any given time.
+# Note that there is an initial burst whose goal is to try to
+# fill the pipeline between us and the peer, in order to emulate
+# a continuous transfer of a huge file.
 #
 def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, pipeline):
     idx = sched_idx(bitfield, peer_bitfield)
