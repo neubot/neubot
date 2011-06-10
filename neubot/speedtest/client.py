@@ -311,7 +311,13 @@ class ClientSpeedtest(ClientHTTP):
                 LOG.progress(".[%s,%s]." % (utils.time_formatter(elapsed),
                        utils.speed_formatter(speed)))
 
+                #
                 # O(N) loopless adaptation to the channel w/ memory
+                # TODO bittorrent/peer.py implements an enhanced version
+                # of this algorithm, with a cap to the max number of
+                # subsequent tests.  In addition to that, the bittorrent
+                # code also anticipates the update of target_bytes.
+                #
                 if elapsed > LO_THRESH:
                     ESTIMATE[self.state] *= TARGET/elapsed
                     self.conf["speedtest.client.%s" % self.state] = speed
