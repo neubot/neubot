@@ -249,7 +249,7 @@ app.zip:
 # Make package for debian/ubuntu
 #
 
-DEB_PACKAGE = dist/$(STEM)-1_all.deb
+DEB_PACKAGE = dist/$(STEM)-2_all.deb
 
 # Directories to create.
 DEB_DATA_DIRS += dist/data/etc/init.d/
