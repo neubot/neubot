@@ -95,7 +95,7 @@ class ServerSpeedtest(ServerHTTP):
         stream, request = atuple
         self.do_negotiate(stream, request, True)
 
-    def _speedtest_check_timeout(self):
+    def _speedtest_check_timeout(self, *args, **kwargs):
         POLLER.sched(3, self._speedtest_check_timeout)
         if TRACKER.session_prune():
             NOTIFIER.publish(RENEGOTIATE)

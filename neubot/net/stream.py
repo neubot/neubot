@@ -700,7 +700,7 @@ class GenericProtocolStream(Stream):
         MEASURER.register_stream(self)
         duration = self.conf.get("net.stream.duration", 10)
         if duration >= 0:
-            POLLER.sched(duration, self.shutdown)
+            POLLER.sched(duration, self._do_shutdown)
         if self.kind == "discard":
             self.start_recv()
         elif self.kind == "chargen":
@@ -709,6 +709,9 @@ class GenericProtocolStream(Stream):
             self.start_recv()
         else:
             self.shutdown()
+
+    def _do_shutdown(self, *args, **kwargs):
+        self.shutdown()
 
     def recv_complete(self, octets):
         self.start_recv()

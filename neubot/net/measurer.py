@@ -111,7 +111,7 @@ class HeadlessMeasurer(Measurer):
         if self.task:
             self.task.unsched()
 
-    def collect(self):
+    def collect(self, *args, **kwargs):
         if self.task:
             self.task.unsched()
         self.task = self.poller.sched(self.interval, self.collect)
@@ -129,11 +129,11 @@ class VerboseMeasurer(Measurer):
         self.output = output
         self.interval = interval
 
-    def start(self):
+    def start(self, *args, **kwargs):
         self.poller.sched(self.interval, self.report)
         self.output.write("\t\trtt\t\trecv\t\t\tsend\n")
 
-    def report(self):
+    def report(self, *args, **kwargs):
         self.poller.sched(self.interval, self.report)
 
         rttavg, rttdetails = self.measure_rtt()

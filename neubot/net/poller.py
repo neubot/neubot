@@ -52,28 +52,38 @@ class Pollable(object):
 
 class Task(object):
 
-    def __init__(self, delta, func):
+    #
+    # We need to add timestamp because ticks() might be just the
+    # time since neubot started (as happens with Windows).
+    #
+    def __init__(self, delta, func, *args, **kwargs):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
         self.func = func
+        self.args = args
+        self.kwargs = kwargs
 
     #
     # Set time to -1 so that sort() move the task at the beginning
     # of the list.  And clear func to allow garbage collection of
     # the referenced object.
-    # We need to add timestamp because ticks() might be just the
-    # time since neubot started (as happens with Windows).
     #
-
     def unsched(self):
         self.time = -1
         self.timestamp = -1
         self.func = None
+        self.args = None
+        self.kwargs = None
 
-    def resched(self, delta):
+    def resched(self, delta, *args, **kwargs):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
+        if args:
+            self.args = args
+        if kwargs:
+            self.kwargs = kwargs
 
+    # TODO We should represent args and kwargs as well
     def __repr__(self):
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
@@ -89,8 +99,8 @@ class Poller(object):
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
 
-    def sched(self, delta, func):
-        task = Task(delta, func)
+    def sched(self, delta, func, *args, **kwargs):
+        task = Task(delta, func, *args, **kwargs)
         self.pending.append(task)
         return task
 
@@ -166,7 +176,11 @@ class Poller(object):
             self.update_tasks()
             self.dispatch_events()
 
-    def break_loop(self):
+    #
+    # Has optional arguments because often we need to schedule
+    # this function after a given time.
+    #
+    def break_loop(self, *args, **kwargs):
         self.again = False
 
     #
@@ -177,7 +191,6 @@ class Poller(object):
     # suggest that we loose more with the sort than we gain with the
     # delete.
     #
-
     def update_tasks(self):
         now = ticks()
         if self.pending:
@@ -196,7 +209,7 @@ class Poller(object):
                 if task.time == -1 or task.func == None:
                     continue
                 try:
-                    task.func()
+                    task.func(task.args, task.kwargs)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
@@ -218,7 +231,7 @@ class Poller(object):
                 for fileno in res[1]:
                     self._writable(fileno)
 
-    def check_timeout(self):
+    def check_timeout(self, *args, **kwargs):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
             now = ticks()

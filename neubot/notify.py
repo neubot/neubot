@@ -59,7 +59,7 @@ class Notifier:
 
         self.fireq(event, queue)
 
-    def periodic(self):
+    def periodic(self, *args, **kwargs):
         POLLER.sched(INTERVAL, self.periodic)
 
         subscribers = self.subscribers
