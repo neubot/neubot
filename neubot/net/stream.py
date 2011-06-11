@@ -149,6 +149,7 @@ class Stream(Pollable):
         self.eof = False
 
         self.close_complete = False
+        self.close_pending = False
         self.recv_blocked = False
         self.recv_maxlen = 0
         self.recv_pending = False
@@ -224,6 +225,10 @@ class Stream(Pollable):
         self.shutdown(exception)
 
     def shutdown(self, exception=None):
+        self.close_pending = True
+
+        if self.send_pending and not exception:
+            return
         if self.close_complete:
             return
 
@@ -262,7 +267,7 @@ class Stream(Pollable):
     # Recv path
 
     def start_recv(self, maxlen=MAXBUF):
-        if self.close_complete:
+        if self.close_pending:
             return
         if self.recv_pending:
             return
@@ -371,7 +376,7 @@ class Stream(Pollable):
         return octets
 
     def start_send(self, octets):
-        if self.close_complete:
+        if self.close_pending:
             return
 
         self.send_queue.append(octets)
@@ -418,6 +423,8 @@ class Stream(Pollable):
                 self.poller.unset_writable(self)
 
                 self.send_complete()
+                if self.close_pending:
+                    self.shutdown()
                 return
 
             if count < len(self.send_octets):
