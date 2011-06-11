@@ -146,20 +146,19 @@ class Stream(Pollable):
         self.timeout = TIMEOUT
         self.encrypt = None
         self.decrypt = None
+        self.eof = False
 
+        self.close_complete = 0
+        self.kickoffssl = 0
+        self.recv_blocked = 0
+        self.recv_maxlen = 0
+        self.recv_pending = 0
+        self.recv_ticks = 0
+        self.send_blocked = 0
         self.send_octets = None
         self.send_queue = collections.deque()
         self.send_ticks = 0
-        self.recv_maxlen = 0
-        self.recv_ticks = 0
-
-        self.eof = False
-        self.close_complete = 0
         self.send_pending = 0
-        self.send_blocked = 0
-        self.recv_pending = 0
-        self.recv_blocked = 0
-        self.kickoffssl = 0
 
         self.measurer = None
         self.bytes_recv_tot = 0
