@@ -135,6 +135,7 @@ class Stream(Pollable):
     def __init__(self, poller):
         self.poller = poller
         self.parent = None
+        self.conf = None
 
         self.sock = None
         self.filenum = -1
@@ -165,8 +166,6 @@ class Stream(Pollable):
         self.bytes_sent_tot = 0
         self.bytes_recv = 0
         self.bytes_sent = 0
-
-        self.conf = None
 
     def __repr__(self):
         return "stream %s" % self.logname
