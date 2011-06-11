@@ -222,12 +222,8 @@ class Stream(Pollable):
 
     def shutdown(self):
         self.close_pending = True
-
-        if self.send_pending:
+        if self.send_pending or self.close_complete:
             return
-        if self.close_complete:
-            return
-
         self.poller.close(self)
 
     def closed(self, exception=None):
