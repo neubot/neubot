@@ -265,9 +265,8 @@ class Stream(Pollable):
     # Recv path
 
     def start_recv(self):
-        if self.close_pending:
-            return
-        if self.recv_pending:
+        if (self.close_complete or self.close_pending
+          or self.recv_pending):
             return
 
         self.recv_ticks = utils.ticks()
@@ -371,7 +370,7 @@ class Stream(Pollable):
         return octets
 
     def start_send(self, octets):
-        if self.close_pending:
+        if self.close_complete or self.close_pending:
             return
 
         self.send_queue.append(octets)
