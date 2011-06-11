@@ -156,9 +156,9 @@ class Stream(Pollable):
         self.eof = False
         self.isclosed = 0
         self.send_pending = 0
-        self.sendblocked = 0
+        self.send_blocked = 0
         self.recv_pending = 0
-        self.recvblocked = 0
+        self.recv_blocked = 0
         self.kickoffssl = 0
 
         self.measurer = None
@@ -275,7 +275,7 @@ class Stream(Pollable):
         self.recv_ticks = utils.ticks()
         self.recv_pending = 1
 
-        if self.recvblocked:
+        if self.recv_blocked:
             return
 
         self.poller.set_readable(self)
@@ -298,11 +298,11 @@ class Stream(Pollable):
             self.readable()
 
     def readable(self):
-        if self.recvblocked:
+        if self.recv_blocked:
             self.poller.set_writable(self)
             if not self.recv_pending:
                 self.poller.unset_readable(self)
-            self.recvblocked = 0
+            self.recv_blocked = 0
             self.writable()
             return
 
@@ -330,7 +330,7 @@ class Stream(Pollable):
         if status == WANT_WRITE:
             self.poller.unset_readable(self)
             self.poller.set_writable(self)
-            self.sendblocked = 1
+            self.send_blocked = 1
             return
 
         if status == SUCCESS and not octets:
@@ -389,17 +389,17 @@ class Stream(Pollable):
         self.send_ticks = utils.ticks()
         self.send_pending = 1
 
-        if self.sendblocked:
+        if self.send_blocked:
             return
 
         self.poller.set_writable(self)
 
     def writable(self):
-        if self.sendblocked:
+        if self.send_blocked:
             self.poller.set_readable(self)
             if not self.send_pending:
                 self.poller.unset_writable(self)
-            self.sendblocked = 0
+            self.send_blocked = 0
             self.readable()
             return
 
@@ -438,7 +438,7 @@ class Stream(Pollable):
         if status == WANT_READ:
             self.poller.unset_writable(self)
             self.poller.set_readable(self)
-            self.recvblocked = 1
+            self.recv_blocked = 1
             return
 
         if status == ERROR:
