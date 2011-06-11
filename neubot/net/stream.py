@@ -154,7 +154,7 @@ class Stream(Pollable):
         self.recv_ticks = 0
 
         self.eof = False
-        self.isclosed = 0
+        self.close_complete = 0
         self.send_pending = 0
         self.send_blocked = 0
         self.recv_pending = 0
@@ -225,10 +225,10 @@ class Stream(Pollable):
         self.shutdown(exception)
 
     def shutdown(self, exception=None):
-        if self.isclosed:
+        if self.close_complete:
             return
 
-        self.isclosed = 1
+        self.close_complete = 1
 
         if exception:
             LOG.error("* Connection %s: %s" % (self.logname, exception))
@@ -263,7 +263,7 @@ class Stream(Pollable):
     # Recv path
 
     def start_recv(self, maxlen=MAXBUF):
-        if self.isclosed:
+        if self.close_complete:
             return
         if self.recv_pending:
             return
@@ -372,7 +372,7 @@ class Stream(Pollable):
         return octets
 
     def start_send(self, octets):
-        if self.isclosed:
+        if self.close_complete:
             return
 
         self.send_queue.append(octets)
