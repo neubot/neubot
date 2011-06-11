@@ -222,12 +222,9 @@ class Stream(Pollable):
         pass
 
     def closed(self, exception=None):
-        self._do_close(exception)
+        self.shutdown(exception)
 
-    def shutdown(self):
-        self._do_close()
-
-    def _do_close(self, exception=None):
+    def shutdown(self, exception=None):
         if self.isclosed:
             return
 
@@ -335,12 +332,12 @@ class Stream(Pollable):
 
         if status == SUCCESS and not octets:
             self.eof = True
-            self._do_close()
+            self.shutdown()
             return
 
         if status == ERROR:
             # Here octets is the exception that occurred
-            self._do_close(octets)
+            self.shutdown(octets)
             return
 
         raise RuntimeError("Unexpected status value")
@@ -443,7 +440,7 @@ class Stream(Pollable):
 
         if status == ERROR:
             # Here count is the exception that occurred
-            self._do_close(count)
+            self.shutdown(count)
             return
 
         if status == SUCCESS and count <= 0:
