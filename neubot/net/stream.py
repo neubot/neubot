@@ -148,17 +148,17 @@ class Stream(Pollable):
         self.decrypt = None
         self.eof = False
 
-        self.close_complete = 0
-        self.recv_blocked = 0
+        self.close_complete = False
+        self.recv_blocked = False
         self.recv_maxlen = 0
-        self.recv_pending = 0
+        self.recv_pending = False
         self.recv_ssl_needs_kickoff = 0
         self.recv_ticks = 0
-        self.send_blocked = 0
+        self.send_blocked = False
         self.send_octets = None
         self.send_queue = collections.deque()
         self.send_ticks = 0
-        self.send_pending = 0
+        self.send_pending = False
 
         self.measurer = None
         self.bytes_recv_tot = 0
@@ -227,7 +227,7 @@ class Stream(Pollable):
         if self.close_complete:
             return
 
-        self.close_complete = 1
+        self.close_complete = True
 
         if exception:
             LOG.error("* Connection %s: %s" % (self.logname, exception))
@@ -269,7 +269,7 @@ class Stream(Pollable):
 
         self.recv_maxlen = maxlen
         self.recv_ticks = utils.ticks()
-        self.recv_pending = 1
+        self.recv_pending = True
 
         if self.recv_blocked:
             return
@@ -298,7 +298,7 @@ class Stream(Pollable):
             self.poller.set_writable(self)
             if not self.recv_pending:
                 self.poller.unset_readable(self)
-            self.recv_blocked = 0
+            self.recv_blocked = False
             self.writable()
             return
 
@@ -311,7 +311,7 @@ class Stream(Pollable):
 
             self.recv_maxlen = 0
             self.recv_ticks = 0
-            self.recv_pending = 0
+            self.recv_pending = False
             self.poller.unset_readable(self)
 
             if self.decrypt:
@@ -326,7 +326,7 @@ class Stream(Pollable):
         if status == WANT_WRITE:
             self.poller.unset_readable(self)
             self.poller.set_writable(self)
-            self.send_blocked = 1
+            self.send_blocked = True
             return
 
         if status == SUCCESS and not octets:
@@ -383,7 +383,7 @@ class Stream(Pollable):
             return
 
         self.send_ticks = utils.ticks()
-        self.send_pending = 1
+        self.send_pending = True
 
         if self.send_blocked:
             return
@@ -395,7 +395,7 @@ class Stream(Pollable):
             self.poller.set_readable(self)
             if not self.send_pending:
                 self.poller.unset_writable(self)
-            self.send_blocked = 0
+            self.send_blocked = False
             self.readable()
             return
 
@@ -414,7 +414,7 @@ class Stream(Pollable):
                     return
 
                 self.send_ticks = 0
-                self.send_pending = 0
+                self.send_pending = False
                 self.poller.unset_writable(self)
 
                 self.send_complete()
@@ -434,7 +434,7 @@ class Stream(Pollable):
         if status == WANT_READ:
             self.poller.unset_writable(self)
             self.poller.set_readable(self)
-            self.recv_blocked = 1
+            self.recv_blocked = True
             return
 
         if status == ERROR:
