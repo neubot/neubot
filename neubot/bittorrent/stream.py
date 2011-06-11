@@ -219,6 +219,8 @@ class StreamBitTorrent(Stream):
             raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xII%ss" % n, message)
+        if self.piece:
+            raise RuntimeError("Jumbo message not ended properly")
         self.piece = PieceMessage(i, a)
         self.parent.piece_start(self, i, a, b)
 
