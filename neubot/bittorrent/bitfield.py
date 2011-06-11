@@ -73,7 +73,7 @@ class Bitfield(object):
     def __len__(self):
         return self.length
 
-    def tostring(self):
+    def __str__(self):
         if self.bits is None:
             rlen, extra = divmod(self.length, 8)
             r = chr(0xFF) * rlen
@@ -86,7 +86,7 @@ class Bitfield(object):
     def __getstate__(self):
         d = {}
         d['length'] = self.length
-        d['s'] = self.tostring()
+        d['s'] = str(self)
         return d
 
     def __setstate__(self, d):

@@ -239,7 +239,7 @@ class StreamBitTorrent(Stream):
             self.complete = True
             # NOTE The bitfield is optional
             if self.parent.bitfield:
-                self.send_bitfield(self.parent.bitfield.tostring())
+                self.send_bitfield(str(self.parent.bitfield))
             self.parent.connection_ready(self)
             return
 
