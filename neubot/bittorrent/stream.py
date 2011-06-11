@@ -233,6 +233,9 @@ class StreamBitTorrent(Stream):
     def _got_message(self, message):
 
         if not self.complete:
+            if (len(message) != 68 or message[0] != chr(19) or
+               message[1:20] != PROTOCOL_NAME):
+                raise RuntimeError("Invalid handshake")
             LOG.debug("< HANDSHAKE")
             if not self.id:
                 self.id = message[-20:]
