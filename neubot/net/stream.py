@@ -151,7 +151,6 @@ class Stream(Pollable):
         self.close_complete = False
         self.close_pending = False
         self.recv_blocked = False
-        self.recv_maxlen = 0
         self.recv_pending = False
         self.recv_ssl_needs_kickoff = 0
         self.recv_ticks = 0
@@ -252,7 +251,6 @@ class Stream(Pollable):
 
         self.send_octets = None
         self.send_ticks = 0
-        self.recv_maxlen = 0
         self.recv_ticks = 0
         self.sock.soclose()
 
@@ -266,13 +264,12 @@ class Stream(Pollable):
 
     # Recv path
 
-    def start_recv(self, maxlen=MAXBUF):
+    def start_recv(self):
         if self.close_pending:
             return
         if self.recv_pending:
             return
 
-        self.recv_maxlen = maxlen
         self.recv_ticks = utils.ticks()
         self.recv_pending = True
 
@@ -307,14 +304,13 @@ class Stream(Pollable):
             self.writable()
             return
 
-        status, octets = self.sock.sorecv(self.recv_maxlen)
+        status, octets = self.sock.sorecv(MAXBUF)
 
         if status == SUCCESS and octets:
 
             self.bytes_recv_tot += len(octets)
             self.bytes_recv += len(octets)
 
-            self.recv_maxlen = 0
             self.recv_ticks = 0
             self.recv_pending = False
             self.poller.unset_readable(self)
