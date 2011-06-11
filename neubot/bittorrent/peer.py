@@ -23,6 +23,7 @@
 import random
 
 from neubot.blocks import RandomBody
+from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
@@ -86,6 +87,7 @@ class Peer(StreamHandler):
     # not interested).
     #
     def connection_ready(self, stream):
+        stream.send_bitfield(str(self.bitfield))
         if not self.seeder:
             stream.send_interested()
         stream.send_unchoke()
@@ -108,7 +110,7 @@ class Peer(StreamHandler):
         stream.attach(peer, sock, peer.conf, peer.measurer)
 
     def got_bitfield(self, b):
-        self.peer_bitfield = b
+        self.peer_bitfield = Bitfield(self.numpieces, b)
 
     # Upload
 

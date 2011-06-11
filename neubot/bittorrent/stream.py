@@ -21,21 +21,27 @@
 
 import struct
 
-from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.stream import Stream
 from neubot.log import LOG
 
 from neubot import utils
 
-CHOKE = chr(0)
-UNCHOKE = chr(1)
-INTERESTED = chr(2)
-NOT_INTERESTED = chr(3)
-HAVE = chr(4)
-BITFIELD = chr(5)
-REQUEST = chr(6)
-PIECE = chr(7)
-CANCEL = chr(8)
+MESSAGES = [CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
+            REQUEST, PIECE, CANCEL] = map(chr, range(9))
+
+MESSAGESET = set(MESSAGES)
+
+INVALID_LENGTH = {
+    CHOKE: lambda l: l != 1,
+    UNCHOKE: lambda l: l != 1,
+    INTERESTED: lambda l: l != 1,
+    NOT_INTERESTED: lambda l: l != 1,
+    HAVE: lambda l: l != 5,
+    BITFIELD: lambda l: l <= 1,
+    REQUEST: lambda l: l != 13,
+    PIECE: lambda l: l <= 9,
+    CANCEL: lambda l: l != 13,
+}
 
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
@@ -72,7 +78,6 @@ class PieceMessage(object):
         self.index = index
         self.begin = begin
 
-
 #
 # Specializes stream in order to handle the BitTorrent peer
 # wire protocol.  See also the finite state machine documented
@@ -92,6 +97,7 @@ class StreamBitTorrent(Stream):
         self.count = 0
         self.id = None
         self.piece = None
+        self.smallmessage = SMALLMESSAGE
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
@@ -137,6 +143,12 @@ class StreamBitTorrent(Stream):
 
     def send_piece(self, index, begin, block):
         if not isinstance(block, basestring):
+
+            # TODO move this functionality into the stream
+            if self.closing:
+                return
+            self.writing = True
+
             length = utils.file_length(block)
             LOG.debug("> PIECE %d %d len=%d" % (index, begin, length))
             preamble = struct.pack("!cII", PIECE, index, begin)
@@ -153,9 +165,12 @@ class StreamBitTorrent(Stream):
           index, begin, block))
 
     def _send_message(self, *msg_a):
+
+        # TODO move this functionality into the stream
         if self.closing:
             return
         self.writing = True
+
         l = 0
         for e in msg_a:
             l += len(e)
@@ -180,7 +195,7 @@ class StreamBitTorrent(Stream):
 
             # If we don't know the length then read it
             if self.left == 0:
-                amt = min(len(s), 4)
+                amt = min(len(s), 4 - self.count)
                 self.buff.append(s[:amt])
                 s = buffer(s, amt)
                 self.count += amt
@@ -192,10 +207,13 @@ class StreamBitTorrent(Stream):
                     del self.buff[:]
                     self.count = 0
 
+                elif self.count > 4:
+                    raise RuntimeError("Invalid self.count")
+
             # Bufferize and pass upstream messages
             else:
                 amt = min(len(s), self.left)
-                if self.count <= SMALLMESSAGE:
+                if self.count <= self.smallmessage:
                     self.buff.append(s[:amt])
                 else:
                     if self.buff:
@@ -215,6 +233,9 @@ class StreamBitTorrent(Stream):
                     del self.buff[:]
                     self.count = 0
 
+                elif self.left < 0:
+                    raise RuntimeError("Invalid self.left")
+
         if not self.closing:
             self.start_recv()
 
@@ -226,6 +247,8 @@ class StreamBitTorrent(Stream):
             raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xII%ss" % n, message)
+        if self.piece:
+            raise RuntimeError("Jumbo message not ended properly")
         self.piece = PieceMessage(i, a)
         self.parent.piece_start(self, i, a, b)
 
@@ -239,23 +262,24 @@ class StreamBitTorrent(Stream):
     def _got_message(self, message):
 
         if not self.complete:
+            if (len(message) != 68 or message[0] != chr(19) or
+               message[1:20] != PROTOCOL_NAME):
+                raise RuntimeError("Invalid handshake")
             LOG.debug("< HANDSHAKE")
             if not self.id:
                 self.id = message[-20:]
             self.complete = True
-            # NOTE The bitfield is optional
-            if self.parent.bitfield:
-                self.send_bitfield(self.parent.bitfield.tostring())
             self.parent.connection_ready(self)
             return
 
         t = message[0]
+        if t not in MESSAGESET:
+            raise RuntimeError("Invalid message type")
+        if INVALID_LENGTH[t](len(message)):
+            raise RuntimeError("Invalid message length")
         if t in [BITFIELD] and self.got_anything:
             raise RuntimeError("Bitfield after we got something")
         self.got_anything = True
-        if (t in (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED) and
-          len(message) != 1):
-            raise RuntimeError("Expecting one-byte-long message, got more")
 
         if t == CHOKE:
             LOG.debug("< CHOKE")
@@ -274,8 +298,6 @@ class StreamBitTorrent(Stream):
             self.parent.got_not_interested(self)
 
         elif t == HAVE:
-            if len(message) != 5:
-                raise RuntimeError("HAVE: invalid message length")
             i = struct.unpack("!xI", message)[0]
             if i >= self.parent.numpieces:
                 raise RuntimeError("HAVE: index out of bounds")
@@ -284,12 +306,9 @@ class StreamBitTorrent(Stream):
 
         elif t == BITFIELD:
             LOG.debug("< BITFIELD {bitfield}")
-            b = Bitfield(self.parent.numpieces, message[1:])
-            self.parent.got_bitfield(b)
+            self.parent.got_bitfield(message[1:])
 
         elif t == REQUEST:
-            if len(message) != 13:
-                raise RuntimeError("REQUEST: invalid message length")
             i, a, b = struct.unpack("!xIII", message)
             LOG.debug("< REQUEST %d %d %d" % (i, a, b))
             if i >= self.parent.numpieces:
@@ -297,8 +316,6 @@ class StreamBitTorrent(Stream):
             self.parent.got_request(self, i, a, b)
 
         elif t == CANCEL:
-            if len(message) != 13:
-                raise RuntimeError("CANCEL: invalid message length")
             i, a, b = struct.unpack("!xIII", message)
             LOG.debug("< CANCEL %d %d %d" % (i, a, b))
             if i >= self.parent.numpieces:
@@ -306,17 +323,12 @@ class StreamBitTorrent(Stream):
             # NOTE Ignore CANCEL message
 
         elif t == PIECE:
-            if len(message) <= 9:
-                raise RuntimeError("PIECE: invalid message length")
             n = len(message) - 9
             i, a, b = struct.unpack("!xII%ss" % n, message)
             LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
             if i >= self.parent.numpieces:
                 raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)
-
-        else:
-            raise RuntimeError("Unexpected message type")
 
     def close(self):
         if self.closing:
