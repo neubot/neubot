@@ -45,15 +45,16 @@ from neubot import system
 from neubot import utils
 from neubot import boot
 
-SUCCESS = 0
-ERROR = 1
-WANT_READ = 2
-WANT_WRITE = 3
+# States returned by the socket model
+STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
 
+# Default timeout (in seconds)
 TIMEOUT = 300
 
+# Maximum amount of bytes we read from a socket
 MAXBUF = 1<<18
 
+# Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 
 # Winsock returns EWOULDBLOCK
