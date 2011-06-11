@@ -221,17 +221,17 @@ class Stream(Pollable):
     def connection_lost(self, exception):
         pass
 
-    def closed(self, exception=None):
-        self.shutdown(exception)
-
-    def shutdown(self, exception=None):
+    def shutdown(self):
         self.close_pending = True
 
-        if self.send_pending and not exception:
+        if self.send_pending:
             return
         if self.close_complete:
             return
 
+        self.poller.close(self)
+
+    def closed(self, exception=None):
         self.close_complete = True
 
         if exception:
@@ -252,8 +252,6 @@ class Stream(Pollable):
         self.recv_maxlen = 0
         self.recv_ticks = 0
         self.sock.soclose()
-
-        self.poller.close(self)
 
     # Timeouts
 
@@ -340,8 +338,7 @@ class Stream(Pollable):
 
         if status == ERROR:
             # Here octets is the exception that occurred
-            self.shutdown(octets)
-            return
+            raise octets
 
         raise RuntimeError("Unexpected status value")
 
@@ -445,8 +442,7 @@ class Stream(Pollable):
 
         if status == ERROR:
             # Here count is the exception that occurred
-            self.shutdown(count)
-            return
+            raise count
 
         if status == SUCCESS and count <= 0:
             raise RuntimeError("Unexpected count value")
