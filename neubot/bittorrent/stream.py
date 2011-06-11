@@ -97,6 +97,7 @@ class StreamBitTorrent(Stream):
         self.count = 0
         self.id = None
         self.piece = None
+        self.smallmessage = SMALLMESSAGE
 
     def connection_made(self):
         LOG.debug("> HANDSHAKE")
@@ -203,7 +204,7 @@ class StreamBitTorrent(Stream):
             # Bufferize and pass upstream messages
             else:
                 amt = min(len(s), self.left)
-                if self.count <= SMALLMESSAGE:
+                if self.count <= self.smallmessage:
                     self.buff.append(s[:amt])
                 else:
                     if self.buff:
