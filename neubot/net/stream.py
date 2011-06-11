@@ -232,6 +232,9 @@ class Stream(Pollable):
         self.poller.close(self)
 
     def closed(self, exception=None):
+        if self.close_complete:
+            return
+
         self.close_complete = True
 
         if exception:
