@@ -152,7 +152,7 @@ class Stream(Pollable):
         self.close_pending = False
         self.recv_blocked = False
         self.recv_pending = False
-        self.recv_ssl_needs_kickoff = 0
+        self.recv_ssl_needs_kickoff = False
         self.recv_ticks = 0
         self.send_blocked = False
         self.send_octets = None
@@ -199,8 +199,7 @@ class Stream(Pollable):
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
 
-            if not server_side:
-                self.recv_ssl_needs_kickoff = 1
+            self.recv_ssl_needs_kickoff = not server_side
 
         else:
             self.sock = SocketWrapper(sock)
@@ -287,7 +286,7 @@ class Stream(Pollable):
         # invokes SSL_read() that starts the negotiation.
         #
         if self.recv_ssl_needs_kickoff:
-            self.recv_ssl_needs_kickoff = 0
+            self.recv_ssl_needs_kickoff = False
             self.readable()
 
     def readable(self):
