@@ -65,7 +65,6 @@ class PieceMessage(object):
         self.index = index
         self.begin = begin
 
-
 #
 # Specializes stream in order to handle the BitTorrent peer
 # wire protocol.  See also the finite state machine documented
