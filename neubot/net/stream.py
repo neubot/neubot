@@ -60,8 +60,6 @@ SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
 if ssl:
-
-
     class SSLWrapper(object):
         def __init__(self, sock):
             self.sock = sock
@@ -96,7 +94,6 @@ if ssl:
                 else:
                     return ERROR, exception
 
-
 class SocketWrapper(object):
     def __init__(self, sock):
         self.sock = sock
@@ -127,15 +124,14 @@ class SocketWrapper(object):
             else:
                 return ERROR, exception
 
-
+#
+# To implement the protocol syntax, subclass this class and
+# implement the finite state machine described in the file
+# `doc/protocol.png`.  The low level finite state machines for
+# the send and recv path are documented, respectively, in
+# `doc/sendpath.png` and `doc/recvpath.png`.
+#
 class Stream(Pollable):
-
-    """To implement the protocol syntax, subclass this class and
-       implement the finite state machine described in the file
-       `doc/protocol.png`.  The low level finite state machines for
-       the send and recv path are documented, respectively, in
-       `doc/sendpath.png` and `doc/recvpath.png`."""
-
     def __init__(self, poller):
         self.poller = poller
         self.parent = None
@@ -298,7 +294,6 @@ class Stream(Pollable):
         # of the client invokes readable() that invokes sorecv() that
         # invokes SSL_read() that starts the negotiation.
         #
-
         if self.kickoffssl:
             self.kickoffssl = 0
             self.readable()
@@ -460,9 +455,7 @@ class Stream(Pollable):
     def send_complete(self):
         pass
 
-
 class Connector(Pollable):
-
     def __init__(self, poller, parent):
         self.poller = poller
         self.parent = parent
@@ -549,9 +542,7 @@ class Connector(Pollable):
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
         self.parent._connection_failed(self, exception)
 
-
 class Listener(Pollable):
-
     def __init__(self, poller, parent):
         self.poller = poller
         self.parent = parent
@@ -626,9 +617,7 @@ class Listener(Pollable):
         LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
         self.parent.bind_failed(self, exception)     # XXX
 
-
 class StreamHandler(object):
-
     def __init__(self, poller):
         self.poller = poller
         self.conf = {}
@@ -697,20 +686,17 @@ class StreamHandler(object):
     def connection_lost(self, stream):
         pass
 
-
 class GenericHandler(StreamHandler):
-
     def connection_made(self, sock, rtt=0):
         stream = GenericProtocolStream(self.poller)
         stream.kind = self.conf.get("net.stream.proto", "")
         stream.attach(self, sock, self.conf)
 
-
+#
+# Specializes stream in order to handle some byte-oriented
+# protocols like discard, chargen, and echo.
+#
 class GenericProtocolStream(Stream):
-
-    """Specializes stream in order to handle some byte-oriented
-       protocols like discard, chargen, and echo."""
-
     def __init__(self, poller):
         Stream.__init__(self, poller)
         self.buffer = None
@@ -742,9 +728,7 @@ class GenericProtocolStream(Stream):
             return
         self.start_send(self.buffer)
 
-
 def main(args):
-
     # TODO merge the two tables below
     CONFIG.register_defaults({
         "net.stream.certfile": "",
