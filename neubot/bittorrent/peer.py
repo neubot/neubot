@@ -86,6 +86,7 @@ class Peer(StreamHandler):
     # not interested).
     #
     def connection_ready(self, stream):
+        stream.send_bitfield(str(self.bitfield))
         if not self.seeder:
             stream.send_interested()
         stream.send_unchoke()
