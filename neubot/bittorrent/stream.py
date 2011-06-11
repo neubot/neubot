@@ -27,15 +27,8 @@ from neubot.log import LOG
 
 from neubot import utils
 
-CHOKE = chr(0)
-UNCHOKE = chr(1)
-INTERESTED = chr(2)
-NOT_INTERESTED = chr(3)
-HAVE = chr(4)
-BITFIELD = chr(5)
-REQUEST = chr(6)
-PIECE = chr(7)
-CANCEL = chr(8)
+MESSAGES = [CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
+            REQUEST, PIECE, CANCEL] = map(chr, range(9))
 
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
