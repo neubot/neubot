@@ -242,8 +242,7 @@ class Stream(Pollable):
             LOG.debug("* Closed connection %s" % (self.logname))
 
         self.connection_lost(exception)
-        if self.parent:
-            self.parent.connection_lost(self)
+        self.parent.connection_lost(self)
 
         if self.measurer:
             self.measurer.unregister_stream(self)
