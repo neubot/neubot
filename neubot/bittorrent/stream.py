@@ -21,7 +21,6 @@
 
 import struct
 
-from neubot.bittorrent.bitfield import Bitfield
 from neubot.net.stream import Stream
 from neubot.log import LOG
 
@@ -291,8 +290,7 @@ class StreamBitTorrent(Stream):
 
         elif t == BITFIELD:
             LOG.debug("< BITFIELD {bitfield}")
-            b = Bitfield(self.parent.numpieces, message[1:])
-            self.parent.got_bitfield(b)
+            self.parent.got_bitfield(message[1:])
 
         elif t == REQUEST:
             i, a, b = struct.unpack("!xIII", message)
