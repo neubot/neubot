@@ -185,7 +185,7 @@ class StreamBitTorrent(Stream):
 
             # If we don't know the length then read it
             if self.left == 0:
-                amt = min(len(s), 4)
+                amt = min(len(s), 4 - self.count)
                 self.buff.append(s[:amt])
                 s = buffer(s, amt)
                 self.count += amt
@@ -196,6 +196,9 @@ class StreamBitTorrent(Stream):
                         LOG.debug("< KEEPALIVE")
                     del self.buff[:]
                     self.count = 0
+
+                elif self.count > 4:
+                    raise RuntimeError("Invalid self.count")
 
             # Bufferize and pass upstream messages
             else:
@@ -219,6 +222,9 @@ class StreamBitTorrent(Stream):
                         self._got_message_end()
                     del self.buff[:]
                     self.count = 0
+
+                elif self.left < 0:
+                    raise RuntimeError("Invalid self.left")
 
         if not self.closing:
             self.start_recv()
