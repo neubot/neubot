@@ -143,6 +143,12 @@ class StreamBitTorrent(Stream):
 
     def send_piece(self, index, begin, block):
         if not isinstance(block, basestring):
+
+            # TODO move this functionality into the stream
+            if self.closing:
+                return
+            self.writing = True
+
             length = utils.file_length(block)
             LOG.debug("> PIECE %d %d len=%d" % (index, begin, length))
             preamble = struct.pack("!cII", PIECE, index, begin)
@@ -159,9 +165,12 @@ class StreamBitTorrent(Stream):
           index, begin, block))
 
     def _send_message(self, *msg_a):
+
+        # TODO move this functionality into the stream
         if self.closing:
             return
         self.writing = True
+
         l = 0
         for e in msg_a:
             l += len(e)
