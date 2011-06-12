@@ -45,15 +45,16 @@ from neubot import system
 from neubot import utils
 from neubot import boot
 
-SUCCESS = 0
-ERROR = 1
-WANT_READ = 2
-WANT_WRITE = 3
+# States returned by the socket model
+STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
 
+# Default timeout (in seconds)
 TIMEOUT = 300
 
+# Maximum amount of bytes we read from a socket
 MAXBUF = 1<<18
 
+# Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 
 # Winsock returns EWOULDBLOCK
@@ -151,9 +152,8 @@ class Stream(Pollable):
         self.close_complete = False
         self.close_pending = False
         self.recv_blocked = False
-        self.recv_maxlen = 0
         self.recv_pending = False
-        self.recv_ssl_needs_kickoff = 0
+        self.recv_ssl_needs_kickoff = False
         self.recv_ticks = 0
         self.send_blocked = False
         self.send_octets = None
@@ -200,8 +200,7 @@ class Stream(Pollable):
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
 
-            if not server_side:
-                self.recv_ssl_needs_kickoff = 1
+            self.recv_ssl_needs_kickoff = not server_side
 
         else:
             self.sock = SocketWrapper(sock)
@@ -221,14 +220,13 @@ class Stream(Pollable):
     def connection_lost(self, exception):
         pass
 
-    def closed(self, exception=None):
-        self.shutdown(exception)
-
-    def shutdown(self, exception=None):
+    def shutdown(self):
         self.close_pending = True
-
-        if self.send_pending and not exception:
+        if self.send_pending or self.close_complete:
             return
+        self.poller.close(self)
+
+    def closed(self, exception=None):
         if self.close_complete:
             return
 
@@ -242,19 +240,15 @@ class Stream(Pollable):
             LOG.debug("* Closed connection %s" % (self.logname))
 
         self.connection_lost(exception)
-        if self.parent:
-            self.parent.connection_lost(self)
+        self.parent.connection_lost(self)
 
         if self.measurer:
             self.measurer.unregister_stream(self)
 
         self.send_octets = None
         self.send_ticks = 0
-        self.recv_maxlen = 0
         self.recv_ticks = 0
         self.sock.soclose()
-
-        self.poller.close(self)
 
     # Timeouts
 
@@ -266,13 +260,11 @@ class Stream(Pollable):
 
     # Recv path
 
-    def start_recv(self, maxlen=MAXBUF):
-        if self.close_pending:
-            return
-        if self.recv_pending:
+    def start_recv(self):
+        if (self.close_complete or self.close_pending
+          or self.recv_pending):
             return
 
-        self.recv_maxlen = maxlen
         self.recv_ticks = utils.ticks()
         self.recv_pending = True
 
@@ -295,7 +287,7 @@ class Stream(Pollable):
         # invokes SSL_read() that starts the negotiation.
         #
         if self.recv_ssl_needs_kickoff:
-            self.recv_ssl_needs_kickoff = 0
+            self.recv_ssl_needs_kickoff = False
             self.readable()
 
     def readable(self):
@@ -307,14 +299,13 @@ class Stream(Pollable):
             self.writable()
             return
 
-        status, octets = self.sock.sorecv(self.recv_maxlen)
+        status, octets = self.sock.sorecv(MAXBUF)
 
         if status == SUCCESS and octets:
 
             self.bytes_recv_tot += len(octets)
             self.bytes_recv += len(octets)
 
-            self.recv_maxlen = 0
             self.recv_ticks = 0
             self.recv_pending = False
             self.poller.unset_readable(self)
@@ -341,8 +332,7 @@ class Stream(Pollable):
 
         if status == ERROR:
             # Here octets is the exception that occurred
-            self.shutdown(octets)
-            return
+            raise octets
 
         raise RuntimeError("Unexpected status value")
 
@@ -357,14 +347,16 @@ class Stream(Pollable):
         while self.send_queue:
             octets = self.send_queue[0]
             if isinstance(octets, basestring):
+                # remove the piece in any case
                 self.send_queue.popleft()
                 if octets:
                     break
-                continue
-            octets = octets.read(MAXBUF)
-            if octets:
-                break
-            self.send_queue.popleft()
+            else:
+                octets = octets.read(MAXBUF)
+                if octets:
+                    break
+                # remove the file-like when it is empty
+                self.send_queue.popleft()
 
         if octets:
             if type(octets) == types.UnicodeType:
@@ -376,7 +368,7 @@ class Stream(Pollable):
         return octets
 
     def start_send(self, octets):
-        if self.close_pending:
+        if self.close_complete or self.close_pending:
             return
 
         self.send_queue.append(octets)
@@ -446,8 +438,7 @@ class Stream(Pollable):
 
         if status == ERROR:
             # Here count is the exception that occurred
-            self.shutdown(count)
-            return
+            raise count
 
         if status == SUCCESS and count <= 0:
             raise RuntimeError("Unexpected count value")
