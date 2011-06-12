@@ -347,14 +347,16 @@ class Stream(Pollable):
         while self.send_queue:
             octets = self.send_queue[0]
             if isinstance(octets, basestring):
+                # remove the piece in any case
                 self.send_queue.popleft()
                 if octets:
                     break
-                continue
-            octets = octets.read(MAXBUF)
-            if octets:
-                break
-            self.send_queue.popleft()
+            else:
+                octets = octets.read(MAXBUF)
+                if octets:
+                    break
+                # remove the file-like when it is empty
+                self.send_queue.popleft()
 
         if octets:
             if type(octets) == types.UnicodeType:
