@@ -519,6 +519,8 @@ class Connector(Pollable):
                     self.sock.recv(MAXBUF)
                 except socket.error, exception2:
                     exception = exception2
+            LOG.error("* Connection to %s failed: %s" % (self.endpoint,
+              exception))
             self.parent._connection_failed(self, exception)
             return
 
