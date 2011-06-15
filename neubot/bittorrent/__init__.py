@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
 from neubot.bittorrent.peer import PIECE_LEN
 from neubot.bittorrent.peer import TARGET
-from neubot.bittorrent.peer import Peer
+from neubot.bittorrent.peer import PeerNeubot
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.net.poller import POLLER
@@ -35,7 +35,7 @@ from neubot.net.poller import POLLER
 from neubot import boot
 from neubot import system
 
-class ConnectingPeer(Peer):
+class ConnectingPeer(PeerNeubot):
     def complete(self, speed, rtt):
         POLLER.sched(1, POLLER.break_loop)
 
@@ -86,7 +86,7 @@ def main(args):
             system.go_background()
             LOG.redirect()
         system.drop_privileges()
-        listener = Peer(POLLER)
+        listener = PeerNeubot(POLLER)
         listener.configure(conf)
         listener.listen(endpoint)
 
