@@ -24,7 +24,6 @@ var LANG = {};
 var i18n = {
     languages: {
         it: 'Italian',
-        en: 'English'
     },
 
     get: function(label) {
@@ -45,15 +44,16 @@ var i18n = {
             lang = navigator.language.toLowerCase();
         }
         else {
-            lang = 'en';
+            lang = undefined;
         }
         return lang;
     },
 
     translate: function() {
         var lang = this.getLanguageInUse();
-        if (!this.languages[lang]) {
-            lang = 'en';
+        if (!lang || !this.languages[lang]) {
+            jQuery(".i18n").css("visibility", "visible");
+            return;
         }
 
         jQuery.ajax({
