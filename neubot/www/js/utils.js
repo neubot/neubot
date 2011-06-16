@@ -122,18 +122,18 @@ var utils = (function() {
 
     self.setStatusLabels = function(data) {
         if (data.enabled == "1") {
-            jQuery("#statusBoxSpan").html("enabled");
+            jQuery("#statusBoxSpan").html(i18n.get("enabled"));
             jQuery("#statusBoxSpan").css("color", "#3DA64E");
-            jQuery("#statusBoxA").html("Disable");
+            jQuery("#statusBoxA").html(i18n.get("Disable"));
             jQuery("#statusBoxA").unbind('click');
             jQuery("#statusBoxA").click(function () {
                 self.setConfigVars({'enabled': 0});
             });
         }
         else {
-            jQuery("#statusBoxSpan").html("disabled");
+            jQuery("#statusBoxSpan").html(i18n.get("disabled"));
             jQuery("#statusBoxSpan").css("color", "#c00");
-            jQuery("#statusBoxA").html("Enable");
+            jQuery("#statusBoxA").html(i18n.get("Enable"));
             jQuery("#statusBoxA").unbind('click');
             jQuery("#statusBoxA").click(function () {
                 self.setConfigVars({'enabled': 1});

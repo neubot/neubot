@@ -40,8 +40,6 @@ var state = (function() {
         }
 
         function update_sidebar(data) {
-            jQuery('#testResultsBox h4').text("Latest test details");
-
             if (data.events.config) {
                 if (data.events.config.enabled != undefined) {
                     utils.setStatusLabels(data.events.config);
@@ -77,9 +75,11 @@ var state = (function() {
                 }
                 if (data.current == "test") {
                     jQuery('#testResultsBox').qtip("show");
+                    jQuery('#testResultsBox h4').text(i18n.get("Current test results"));
                 }
                 else {
                     jQuery('#testResultsBox').qtip("hide");
+                    jQuery('#testResultsBox h4').text(i18n.get("Latest test results"));
                 }
                 jQuery('table#state tr').css('background-color', 'transparent');
                 jQuery('table#state tr#' + data.current).css('background-color', '#ffc');
@@ -128,7 +128,7 @@ var state = (function() {
 
         my.start = function() {
             jQuery('#testResultsBox').qtip({
-                content: "A new test is running.",
+                content: i18n.get("Test running"),
                 position: {
                     target: jQuery('#testTime'),
                     corner: {
