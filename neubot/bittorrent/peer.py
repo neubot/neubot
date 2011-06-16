@@ -38,23 +38,32 @@ PIECE_LEN = SMALLMESSAGE
 PIPELINE = 1<<20
 TARGET_BYTES = 64000
 
-LO_THRESH = 5
+LO_THRESH = 3
 MAX_REPEAT = 7
-TARGET = 8
+TARGET = 5
+
+# States of the PeerNeubot object
+STATES = [INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
+          SENT_NOT_INTERESTED] = range(5)
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
 
-class Peer(StreamHandler):
+#
+# This class implements the test finite state
+# machine and message exchange that are documented
+# in <doc/bittorrent/peer.png>.
+#
+class PeerNeubot(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
-        self.interested = False
-        self.choked = True
+        self.connector_side = False
         self.saved_bytes = 0
         self.saved_ticks = 0
         self.inflight = 0
         self.dload_speed = 0
         self.repeat = MAX_REPEAT
+        self.state = INITIAL
         self.rtt = 0
         self.setup({})
 
@@ -70,7 +79,6 @@ class Peer(StreamHandler):
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
         self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
                               TARGET_BYTES))
-        self.seeder = conf.get("bittorrent.seeder", False)
         self.make_sched()
 
     def make_sched(self):
@@ -78,27 +86,22 @@ class Peer(StreamHandler):
           self.target_bytes, int(self.conf.get("bittorrent.piece_len",
           PIECE_LEN)), PIPELINE)
 
-    #
-    # Do not say we're interested unless we want to
-    # download something from the peer.
-    # We immediately unchoke the peer so it can make us
-    # requests if it's interested (the test terminates
-    # when we have done our business and the peer becomes
-    # not interested).
-    #
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))
-        if not self.seeder:
+        if self.connector_side:
+            self.state = SENT_INTERESTED
             stream.send_interested()
-        stream.send_unchoke()
+
+    def connect(self, endpoint, count=1):
+        self.connector_side = True
+        StreamHandler.connect(self, endpoint, count)
 
     #
     # Always handle the BitTorrent connection using a
     # new object, so we can use the same code both for
     # the connector and the listener.
-    # Note that we use self.__class__() because the
-    # current object might be an instance of a subclass
-    # of Peer.
+    # Note that we use self.__class__() because self
+    # might be a subclass of PeerNeubot.
     #
     def connection_made(self, sock, rtt=0):
         if rtt:
@@ -107,6 +110,7 @@ class Peer(StreamHandler):
         stream = StreamBitTorrent(self.poller)
         peer = self.__class__(self.poller)
         peer.configure(self.conf, self.measurer)
+        peer.connector_side = self.connector_side               #XXX
         stream.attach(peer, sock, peer.conf, peer.measurer)
 
     def got_bitfield(self, b):
@@ -118,11 +122,11 @@ class Peer(StreamHandler):
     # XXX As suggested by BEP0003, we should keep blocks into
     # an application level queue and just pipe a few of them
     # into the socket buffer, so we can abort the upload in a
-    # more easy way on NOT_INTERESTED.
+    # graceful way.
     #
     def got_request(self, stream, index, begin, length):
-        if not self.interested:
-            raise RuntimeError("REQUEST but not interested")
+        if self.state != UPLOADING:
+            raise RuntimeError("REQUEST when state != UPLOADING")
         if length <= SMALLMESSAGE:
             block = chr(random.randint(32, 126)) * length
         else:
@@ -130,24 +134,28 @@ class Peer(StreamHandler):
         stream.send_piece(index, begin, block)
 
     def got_interested(self, stream):
-        self.interested = True
+        if self.connector_side and self.state != SENT_NOT_INTERESTED:
+            raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")
+        if not self.connector_side and self.state != INITIAL:
+            raise RuntimeError("INTERESTED when state != INITIAL")
+        self.state = UPLOADING
+        stream.send_unchoke()
 
-    #
-    # The test terminates when we have done our
-    # business and the peer becomes not interested,
-    # meaning that it has done its business with
-    # us.
-    #
     def got_not_interested(self, stream):
-        self.interested = False
-        if self.seeder or self.dload_speed:
+        if self.state != UPLOADING:
+            raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
+        if self.connector_side:
             LOG.info("BitTorrent: test complete")
             self.complete(self.dload_speed, self.rtt)
+            stream.close()
+        else:
+            self.state = SENT_INTERESTED
+            stream.send_interested()
 
     # Download
 
     def got_choke(self, stream):
-        self.choked = True
+        raise RuntimeError("Unexpected CHOKE message")
 
     #
     # When we're unchoked immediately pipeline a number
@@ -159,15 +167,20 @@ class Peer(StreamHandler):
     # something that approxymates a continuous download.
     #
     def got_unchoke(self, stream):
-        if not self.seeder and self.choked:
+        if self.state != SENT_INTERESTED:
+            raise RuntimeError("UNCHOKE when state != SENT_INTERESTED")
+        else:
+            self.state = DOWNLOADING
             LOG.info("BitTorrent: using %d bytes" % self.target_bytes)
-            self.choked = False
             burst = next(self.sched_req)
             for index, begin, length in burst:
                 stream.send_request(index, begin, length)
                 self.inflight += 1
 
+    # We don't use HAVE messages at the moment
     def got_have(self, index):
+        if self.state != UPLOADING:
+            raise RuntimeError("HAVE when state != UPLOADING")
         self.peer_bitfield[index] = 1
 
     def got_piece(self, stream, index, begin, block):
@@ -176,11 +189,9 @@ class Peer(StreamHandler):
         self.piece_end(stream, index, begin)
 
     def piece_start(self, stream, index, begin, block):
-        if self.seeder:
-            raise RuntimeError("Got unexpected piece")
-
+        pass
     def piece_part(self, stream, index, begin, block):
-        """Invoked when you receive a portion of a piece."""
+        pass
 
     #
     # Time to put another piece on the wire, assuming
@@ -190,20 +201,27 @@ class Peer(StreamHandler):
     # holds iff bdp < PIPELINE).
     #
     def piece_end(self, stream, index, begin):
+        if self.state != DOWNLOADING:
+            raise RuntimeError("PIECE when state != DOWNLOADING")
+
+        # Start measuring
         if not self.saved_ticks:
             self.saved_bytes = stream.bytes_recv_tot
             self.saved_ticks = utils.ticks()
 
+        # Get next piece
         try:
             vector = next(self.sched_req)
         except StopIteration:
             vector = None
 
         if vector:
+            # Send next piece
             index, begin, length = vector[0]
             stream.send_request(index, begin, length)
 
         else:
+            # No more pieces: Wait for the pipeline to empty
             self.inflight -= 1
             if self.inflight == 0:
                 xfered = stream.bytes_recv_tot - self.saved_bytes
@@ -223,6 +241,8 @@ class Peer(StreamHandler):
                 # achievable bandwidth.
                 # TODO If we're the connector, store somewhere
                 # the target_bytes so we can reuse it later.
+                # TODO Don't start from scratch but use speedtest
+                # estimate, maybe /2.
                 #
                 if elapsed > LO_THRESH/3:
                     self.target_bytes *= TARGET/elapsed
@@ -240,14 +260,15 @@ class Peer(StreamHandler):
                 if elapsed > LO_THRESH or self.repeat <= 0:
                     self.dload_speed = speed
                     LOG.info("BitTorrent: my side complete")
+                    self.state = SENT_NOT_INTERESTED
                     stream.send_not_interested()
-                    if not self.interested:
+                    if not self.connector_side:
                         LOG.info("BitTorrent: test complete")
                         self.complete(self.dload_speed, self.rtt)
                 else:
                     self.saved_ticks = 0
                     self.make_sched()
-                    self.choked = True          #XXX
+                    self.state = SENT_INTERESTED        #XXX
                     self.got_unchoke(stream)
 
             elif self.inflight < 0:
