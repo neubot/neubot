@@ -124,7 +124,7 @@ var utils = (function() {
         if (data.enabled == "1") {
             jQuery("#statusBoxSpan").html(i18n.get("enabled"));
             jQuery("#statusBoxSpan").css("color", "#3DA64E");
-            jQuery("#statusBoxA").html(i18n.get("disable"));
+            jQuery("#statusBoxA").html(i18n.get("Disable"));
             jQuery("#statusBoxA").unbind('click');
             jQuery("#statusBoxA").click(function () {
                 self.setConfigVars({'enabled': 0});
@@ -133,7 +133,7 @@ var utils = (function() {
         else {
             jQuery("#statusBoxSpan").html(i18n.get("disabled"));
             jQuery("#statusBoxSpan").css("color", "#c00");
-            jQuery("#statusBoxA").html(i18n.get("enable"));
+            jQuery("#statusBoxA").html(i18n.get("Enable"));
             jQuery("#statusBoxA").unbind('click');
             jQuery("#statusBoxA").click(function () {
                 self.setConfigVars({'enabled': 1});

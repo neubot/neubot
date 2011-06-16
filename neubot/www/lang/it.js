@@ -20,6 +20,14 @@
  */
 
 LANG = {
+    'Latest test results': "Risultati ultimo test",
+    'Current test results': "Risultati test corrente",
+    'enabled': "attivo",
+    'disabled': "disattivato",
+    'Enable': "Attiva",
+    'Disable': "Disattiva",
+    'Test running': "Test in corso",
+
     'text_direction': "ltr",
     'settings': "Impostazioni",
     'status': "Stato",
@@ -30,12 +38,6 @@ LANG = {
     'updavailable': "Aggiornamenti disponibili",
     'infonav': "(informazione non disponibile)",
     'neubotis': "Neubot è",
-    'latest': "Risultati ultimo test",
-    'current': "Risultati test corrente",
-    'enabled': "attivo",
-    'disabled': "disattivato",
-    'enable': "Attiva",
-    'disable': "Disattiva",
     'resultof': "Risultati di",
     'latency': "Latenza",
     'dlspeed': "Velocità download",
@@ -52,7 +54,6 @@ LANG = {
     'collect_status_text': "L'Agent sta esegendo l'upload dei risultati sul server di Neubot.",
     'about_text': "Questa è l'interfaccia web di Neubot v0.3.7. Neubot è un programma <a href='http://www.neubot.org/copying'>open-source</a> leggero che viene eseguito in background ed esegue periodicamente test di trasmissione dati per testare la tua connessione a Internet utilizzando diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi le FAQ</a>",
     'footer_text': "Neubot è un progetto di ricerca sulla neutralità della rete realizzato dal<br /><a href='http://nexa.polito.it/'>Centro NEXA su Internet &amp; Società</a> del <a href='http://www.dauin.polito.it/'>Politecnico di Torino</a>.",
-    'test_running': "Test in corso",
     'welcome_text': "Grazie per aver installato Neubot! Ora avrai le idee più chiare sulla tua connessione a Internet e potrai aiutare la comunità a capire cosa accade nella rete. Questa sezione fornisce un prospetto generale dell'agent Neubot. Clicca sui vari tab per visualizzare le informazioni relative ai vari test.",
     'current_status': "Stato di Neubot",
     'status_text': "Questo è il pannello di controllo dell'Agent di Neubot, in esecuzione con PID <em><span id='pid'>(n/a)</span></em> da <em><span id='since'>(n/a)</span></em>. La tabella sottostante fornisce dettagli aggiuntivi sullo stato dell'Agent. La riga evidenziata rappresenta lo stato corrente."

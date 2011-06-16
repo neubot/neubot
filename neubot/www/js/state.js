@@ -75,11 +75,11 @@ var state = (function() {
                 }
                 if (data.current == "test") {
                     jQuery('#testResultsBox').qtip("show");
-                    jQuery('#testResultsBox h4').text(i18n.get("current"));
+                    jQuery('#testResultsBox h4').text(i18n.get("Current test results"));
                 }
                 else {
                     jQuery('#testResultsBox').qtip("hide");
-                    jQuery('#testResultsBox h4').text(i18n.get("latest"));
+                    jQuery('#testResultsBox h4').text(i18n.get("Latest test results"));
                 }
                 jQuery('table#state tr').css('background-color', 'transparent');
                 jQuery('table#state tr#' + data.current).css('background-color', '#ffc');
@@ -128,7 +128,7 @@ var state = (function() {
 
         my.start = function() {
             jQuery('#testResultsBox').qtip({
-                content: i18n.get("test_running"),
+                content: i18n.get("Test running"),
                 position: {
                     target: jQuery('#testTime'),
                     corner: {
