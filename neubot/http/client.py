@@ -131,7 +131,7 @@ class ClientHTTP(StreamHandler):
 
     def connection_made(self, sock, rtt=0):
         if rtt:
-            LOG.info("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
+            LOG.debug("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
             self.rtt = rtt
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf, self.measurer)
