@@ -31,13 +31,9 @@ from neubot.http.utils import prettyprintbody
 from neubot.log import LOG
 from neubot import utils
 
-
+# Represents an HTTP message
 class Message(object):
-
-    """Represents an HTTP message."""
-
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
-
         self.method = method
         self.uri = uri
         self.scheme = ""
@@ -64,7 +60,6 @@ class Message(object):
     # precedence to self.pathquery--or we will send requests
     # that some web servers do not accept.
     #
-
     def serialize_headers(self):
         v = []
 
@@ -115,7 +110,6 @@ class Message(object):
     # names are case-insensitive."  So, for simplicity, we use all-
     # lowercase header names.
     #
-
     def __getitem__(self, key):
         return self.headers[key]
 
@@ -138,7 +132,6 @@ class Message(object):
     # not guess that there is an unbounded response when we send a
     # "200 Ok" response with no attached body.
     #
-
     def compose(self, **kwargs):
         self.method = kwargs.get("method", "")
 
@@ -152,6 +145,16 @@ class Message(object):
             self.address = kwargs.get("address", "")
             self.port = kwargs.get("port", "")
             self.pathquery = kwargs.get("pathquery", "")
+            #
+            # "A client MUST include a Host header field in all HTTP/1.1
+            # request messages.  If the requested URI does not include
+            # an Internet host name for the service being requested, then
+            # the Host header field MUST be given with an empty value."
+            #               -- RFC 2616
+            #
+            self["host"] = kwargs.get("host", "")
+            if not self["host"]:
+                LOG.oops("Missing host header")
 
         self.code = kwargs.get("code", "")
         self.reason = kwargs.get("reason", "")

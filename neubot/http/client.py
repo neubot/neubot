@@ -104,6 +104,7 @@ class ClientStream(StreamHTTP):
 class ClientHTTP(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
+        self.host_header = ""
         self.rtt = 0
 
     def connect_uri(self, uri, count=1):
@@ -113,6 +114,7 @@ class ClientHTTP(StreamHandler):
             if m.scheme == "https":
                 self.conf["net.stream.secure"] = True
             endpoint = (m.address, int(m.port))
+            self.host_header = "%s:%s" % (m.address, m.port)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception, e:

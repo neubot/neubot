@@ -55,7 +55,8 @@ class ClientLatency(ClientHTTP):
 
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="HEAD", pathquery="/speedtest/latency")
+        request.compose(method="HEAD", pathquery="/speedtest/latency",
+          host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         self.ticks[stream] = utils.ticks()
@@ -74,7 +75,8 @@ class ClientDownload(ClientHTTP):
 
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="GET", pathquery="/speedtest/download")
+        request.compose(method="GET", pathquery="/speedtest/download",
+          host=self.host_header)
         request["range"] = "bytes=0-%d" % ESTIMATE['download']
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
@@ -98,7 +100,7 @@ class ClientUpload(ClientHTTP):
     def connection_ready(self, stream):
         request = Message()
         request.compose(method="POST", body=RandomBody(ESTIMATE["upload"]),
-          pathquery="/speedtest/upload")
+          pathquery="/speedtest/upload", host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         self.ticks[stream] = utils.ticks()
@@ -113,7 +115,8 @@ class ClientUpload(ClientHTTP):
 class ClientNegotiate(ClientHTTP):
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="GET", pathquery="/speedtest/negotiate")
+        request.compose(method="GET", pathquery="/speedtest/negotiate",
+          host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         stream.send_request(request)
@@ -164,7 +167,8 @@ class ClientCollect(ClientHTTP):
 
         request = Message()
         request.compose(method="POST", pathquery="/speedtest/collect",
-                        body=stringio, mimetype="application/xml")
+                        body=stringio, mimetype="application/xml",
+                        host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
 
@@ -370,6 +374,7 @@ class ClientSpeedtest(ClientHTTP):
         if ostate != self.state:
             self.child = ctor(self.poller)
             self.child.configure(self.conf, self.measurer)
+            self.child.host_header = self.host_header
             if self.state not in ("negotiate", "collect"):
                 STATE.update("test", "speedtest_%s" % self.state)
             else:

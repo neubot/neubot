@@ -78,7 +78,7 @@ class ClientRendezvous(ClientHTTP):
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",
           mimetype="text/xml", keepalive=False, body=StringIO.StringIO(
-            marshal.marshal_object(m, "text/xml")))
+            marshal.marshal_object(m, "text/xml")), host=self.host_header)
 
         stream.send_request(request)
 
