@@ -145,16 +145,17 @@ class Message(object):
             self.address = kwargs.get("address", "")
             self.port = kwargs.get("port", "")
             self.pathquery = kwargs.get("pathquery", "")
-            #
-            # "A client MUST include a Host header field in all HTTP/1.1
-            # request messages.  If the requested URI does not include
-            # an Internet host name for the service being requested, then
-            # the Host header field MUST be given with an empty value."
-            #               -- RFC 2616
-            #
-            self["host"] = kwargs.get("host", "")
-            if not self["host"]:
-                LOG.oops("Missing host header")
+            if self.method:
+                #
+                # "A client MUST include a Host header field in all HTTP/1.1
+                # request messages.  If the requested URI does not include
+                # an Internet host name for the service being requested, then
+                # the Host header field MUST be given with an empty value."
+                #               -- RFC 2616
+                #
+                self["host"] = kwargs.get("host", "")
+                if not self["host"]:
+                    LOG.oops("Missing host header")
 
         self.code = kwargs.get("code", "")
         self.reason = kwargs.get("reason", "")
