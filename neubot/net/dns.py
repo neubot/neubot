@@ -34,10 +34,10 @@ DNS_TIMEOUT = 5
 def getaddrinfo(address, port, family=0, socktype=0, proto=0, flags=0):
     now = utils.ticks()
     if address in DNS_CACHE:
-        addrinfo, ticks = DNS_CACHE[address]
+        addrinfo, ticks = DNS_CACHE[(address, port)]
         if now - ticks <= DNS_TIMEOUT:
             return addrinfo
     addrinfo = socket.getaddrinfo(address, port, family,
                                   socktype, proto, flags)
-    DNS_CACHE[address] = (addrinfo, now)
+    DNS_CACHE[(address, port)] = (addrinfo, now)
     return addrinfo
