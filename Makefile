@@ -267,6 +267,7 @@ DEB_UPDATE_URI = "testing"
 
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
+	@$(INSTALL) debian/neubot dist/data/usr/bin
 	@cd dist/data && mv usr/man usr/share/man
 	@for DIR in $(DEB_DATA_DIRS); do \
 	 $(INSTALL) -d $$DIR; \
