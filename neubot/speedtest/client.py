@@ -33,13 +33,14 @@ from neubot.log import LOG
 from neubot.net.measurer import HeadlessMeasurer
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.notify import TESTDONE
 from neubot.state import STATE
 from neubot.speedtest import compat
 
 from neubot import boot
 from neubot import marshal
 from neubot import utils
+
+TESTDONE = "testdone"
 
 ESTIMATE = {
     "download": 64000,

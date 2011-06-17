@@ -35,10 +35,6 @@ from neubot.log import LOG
 
 INTERVAL = 10
 
-RENEGOTIATE = "renegotiate"
-STATECHANGE = "statechange"
-TESTDONE = "testdone"
-
 class Notifier(object):
     def __init__(self):
         POLLER.sched(INTERVAL, self.periodic)

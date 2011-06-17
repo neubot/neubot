@@ -29,13 +29,14 @@ if __name__ == "__main__":
 
 from neubot.notify import T
 from neubot.notify import NOTIFIER
-from neubot.notify import STATECHANGE
 
+# states of neubot
 STATES = [ "idle", "rendezvous", "negotiate", "test", "collect" ]
 
+# name of 'state changed' notification
+STATECHANGE = "statechange"
 
 class State(object):
-
     def __init__(self):
         self.current = ""
         self.events = {}
@@ -54,7 +55,6 @@ class State(object):
         # This should reduce the neubot-to-browser traffic when
         # the neubot agent is idle.
         #
-
         if t:
             t = int(t)
             evts = {}
@@ -83,7 +83,6 @@ class State(object):
 
         if publish:
             NOTIFIER.publish(STATECHANGE, self.t)
-
 
 STATE = State()
 

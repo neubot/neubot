@@ -30,7 +30,6 @@ from neubot.http.server import ServerHTTP
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.notify import RENEGOTIATE
 from neubot.speedtest import compat
 from neubot.speedtest.server import ServerTest
 from neubot.speedtest.session import TRACKER
@@ -39,6 +38,8 @@ from neubot import boot
 from neubot import marshal
 from neubot import system
 from neubot import utils
+
+RENEGOTIATE = "renegotiate"
 
 #
 # The current implementation wraps the TestServer and this

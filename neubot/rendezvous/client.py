@@ -33,7 +33,7 @@ from neubot.http.message import Message
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.notify import TESTDONE
+from neubot.speedtest.client import TESTDONE
 from neubot.rendezvous import compat
 from neubot.speedtest.client import ClientSpeedtest
 from neubot.state import STATE

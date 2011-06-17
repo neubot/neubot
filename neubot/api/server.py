@@ -38,7 +38,7 @@ from neubot.log import LOG
 from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.notify import STATECHANGE
+from neubot.state import STATECHANGE
 from neubot.speedtest.client import QUEUE_HISTORY
 from neubot.state import STATE
 
