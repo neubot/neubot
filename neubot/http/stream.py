@@ -40,22 +40,21 @@ MAXLINE = 1<<15
 STATES = ["IDLE", "BOUNDED", "UNBOUNDED", "CHUNK", "CHUNK_END", "FIRSTLINE",
           "HEADER", "CHUNK_LENGTH", "TRAILER", "ERROR"]
 
+#
 # When messages are not bigger than SMALLMESSAGE we join headers
 # and body in a single buffer and we send that buffer.  If the buffer
 # happens to be very small, it might fit a single L2 packet.
+#
 SMALLMESSAGE = 8000
 
+#
+# Specializes stream in order to handle the Hyper-Text Transfer
+# Protocol (HTTP).  See also the finite state machine documented
+# at `doc/protocol.png`.
+#
 class StreamHTTP(Stream):
-
-    """Specializes stream in order to handle the Hyper-Text Transfer
-       Protocol (HTTP).  See also the finite state machine documented
-       at `doc/protocol.png`."""
-
     def __init__(self, poller):
         Stream.__init__(self, poller)
-        self.closing = False
-        self.writing = False
-        self.outgoing = collections.deque()
         self.incoming = []
         self.state = FIRSTLINE
         self.left = 0
@@ -66,11 +65,6 @@ class StreamHTTP(Stream):
     # Close
 
     def close(self):
-        if self.closing:
-            return
-        self.closing = True
-        if self.writing:
-            return
         self.shutdown()
 
     def connection_lost(self, exception):
@@ -78,65 +72,24 @@ class StreamHTTP(Stream):
         if self.eof and self.state == UNBOUNDED:
             self.got_end_of_body()
         self.incoming = None
-        self.outgoing = None
 
     # Send
 
-    def send_message(self, m):
-        if m.length >= 0 and m.length <= SMALLMESSAGE:
+    def send_message(self, m, smallmessage=SMALLMESSAGE):
+        if m.length >= 0 and m.length <= smallmessage:
             vector = []
             vector.append(m.serialize_headers().read())
             vector.append(m.serialize_body().read())
             data = "".join(vector)
-            self._write(data)
-        else:
-            self._write(m.serialize_headers())
-            self._write(m.serialize_body())
-
-    #
-    # TODO Instead of using outgoing pass directly all
-    # down the chain because now net/stream.py duplicates
-    # outgoing functionality.
-    #
-    def _write(self, data):
-        if self.closing:
-            return
-
-        self.writing = True
-
-        if self.outgoing:
-            self.outgoing.append(data)
-            return
-
-        if not isinstance(data, basestring):
-            self.outgoing.append(data)
-            # XXX unclean but better than duplicating code
-            self.send_complete()
-            return
-
-        self.start_send(data)
-
-    def send_complete(self):
-        while self.outgoing:
-            data = self.outgoing[0]
-            if not isinstance(data, basestring):
-                data = data.read(MAXBUF)
-            if not data:
-                self.outgoing.popleft()
-                continue
             self.start_send(data)
-            return
-
-        self.writing = False
-
-        self.message_sent()
-        if self.closing:
-            self.shutdown()
+        else:
+            self.start_send(m.serialize_headers())
+            self.start_send(m.serialize_body())
 
     # Recv
 
     def recv_complete(self, data):
-        if self.closing:
+        if self.close_complete or self.close_pending:
             return
 
         #This one should be debug2 as well
@@ -168,8 +121,7 @@ class StreamHTTP(Stream):
                 index = data.find("\n", offset)
                 if index == -1:
                     if length > MAXLINE:
-                        self.close()
-                        return
+                        raise RuntimeError("Line too long")
                     break
                 index = index + 1
                 line = data[offset:index]
@@ -179,11 +131,10 @@ class StreamHTTP(Stream):
 
             # robustness
             else:
-                LOG.debug("HTTP receiver: internal error")
-                self.close()
+                raise RuntimeError("Left become negative")
 
-            # we close connection on protocol violation
-            if self.closing:
+            # robustness
+            if self.close_complete or self.close_pending:
                 return
 
 #           Should be debug2() not debug()
@@ -214,11 +165,11 @@ class StreamHTTP(Stream):
                     if protocol in PROTOCOLS:
                         self.got_request_line(method, uri, protocol)
                 if protocol not in PROTOCOLS:
-                    self.close()
+                    raise RuntimeError("Invalid protocol")
                 else:
                     self.state = HEADER
             else:
-                self.close()
+                raise RuntimeError("Invalid first line")
         elif self.state == HEADER:
             if line.strip():
                 LOG.debug("< %s" % line)
@@ -228,7 +179,7 @@ class StreamHTTP(Stream):
                     key, value = line.split(":", 1)
                     self.got_header(key.strip(), value.strip())
                 else:
-                    self.close()
+                    raise RuntimeError("Invalid header line")
             else:
                 LOG.debug("<")
                 self.state, self.left = self.got_end_of_headers()
@@ -241,23 +192,19 @@ class StreamHTTP(Stream):
         elif self.state == CHUNK_LENGTH:
             vector = line.split()
             if vector:
-                try:
-                    length = int(vector[0], 16)
-                except ValueError:
-                    self.close()
+                length = int(vector[0], 16)
+                if length < 0:
+                    raise RuntimeError("Negative chunk-length")
+                elif length == 0:
+                    self.state = TRAILER
                 else:
-                    if length < 0:
-                        self.close()
-                    elif length == 0:
-                        self.state = TRAILER
-                    else:
-                        self.left = length
-                        self.state = CHUNK
+                    self.left = length
+                    self.state = CHUNK
             else:
-                self.close()
+                raise RuntimeError("Invalid chunk-length line")
         elif self.state == CHUNK_END:
             if line.strip():
-                self.close()
+                raise RuntimeError("Invalid chunk-end line")
             else:
                 self.state = CHUNK_LENGTH
         elif self.state == TRAILER:
@@ -268,8 +215,7 @@ class StreamHTTP(Stream):
                 # Ignoring trailers
                 pass
         else:
-            LOG.debug("Not expecting a line")
-            self.close()
+            raise RuntimeError("Not expecting a line")
 
     def _got_piece(self, piece):
         if self.state == BOUNDED:
@@ -285,18 +231,15 @@ class StreamHTTP(Stream):
             if self.left == 0:
                 self.state = CHUNK_END
         else:
-            LOG.debug("Not expecting a piece")
-            self.close()
+            raise RuntimeError("Not expecting a piece")
 
     # Events for upstream
 
     def got_request_line(self, method, uri, protocol):
-        LOG.debug("Unexpected line: %s" % ("".join([method, uri, protocol])))
-        self.close()
+        raise RuntimeError("Not expecting a request-line")
 
     def got_response_line(self, protocol, code, reason):
-        LOG.debug("Unexpected line: %s" % ("".join([protocol, code, reason])))
-        self.close()
+        raise RuntimeError("Not expecting a reponse-line")
 
     def got_header(self, key, value):
         pass
