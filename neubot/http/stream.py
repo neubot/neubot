@@ -64,6 +64,7 @@ class StreamHTTP(Stream):
 
     # Close
 
+    # TODO move this in net/stream.py
     def close(self):
         self.shutdown()
 

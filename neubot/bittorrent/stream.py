@@ -311,6 +311,7 @@ class StreamBitTorrent(Stream):
                 raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)
 
+    # TODO move this into net/stream.py
     def close(self):
         self.shutdown()
 
