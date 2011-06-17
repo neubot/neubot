@@ -55,9 +55,6 @@ SMALLMESSAGE = 8000
 class StreamHTTP(Stream):
     def __init__(self, poller):
         Stream.__init__(self, poller)
-        self.closing = False
-        self.writing = False
-        self.outgoing = collections.deque()
         self.incoming = []
         self.state = FIRSTLINE
         self.left = 0
@@ -68,11 +65,6 @@ class StreamHTTP(Stream):
     # Close
 
     def close(self):
-        if self.closing:
-            return
-        self.closing = True
-        if self.writing:
-            return
         self.shutdown()
 
     def connection_lost(self, exception):
@@ -80,7 +72,6 @@ class StreamHTTP(Stream):
         if self.eof and self.state == UNBOUNDED:
             self.got_end_of_body()
         self.incoming = None
-        self.outgoing = None
 
     # Send
 
@@ -90,55 +81,15 @@ class StreamHTTP(Stream):
             vector.append(m.serialize_headers().read())
             vector.append(m.serialize_body().read())
             data = "".join(vector)
-            self._write(data)
-        else:
-            self._write(m.serialize_headers())
-            self._write(m.serialize_body())
-
-    #
-    # TODO Instead of using outgoing pass directly all
-    # down the chain because now net/stream.py duplicates
-    # outgoing functionality.
-    #
-    def _write(self, data):
-        if self.closing:
-            return
-
-        self.writing = True
-
-        if self.outgoing:
-            self.outgoing.append(data)
-            return
-
-        if not isinstance(data, basestring):
-            self.outgoing.append(data)
-            # XXX unclean but better than duplicating code
-            self.send_complete()
-            return
-
-        self.start_send(data)
-
-    def send_complete(self):
-        while self.outgoing:
-            data = self.outgoing[0]
-            if not isinstance(data, basestring):
-                data = data.read(MAXBUF)
-            if not data:
-                self.outgoing.popleft()
-                continue
             self.start_send(data)
-            return
-
-        self.writing = False
-
-        self.message_sent()
-        if self.closing:
-            self.shutdown()
+        else:
+            self.start_send(m.serialize_headers())
+            self.start_send(m.serialize_body())
 
     # Recv
 
     def recv_complete(self, data):
-        if self.closing:
+        if self.close_complete or self.close_pending:
             return
 
         #This one should be debug2 as well
@@ -185,7 +136,7 @@ class StreamHTTP(Stream):
                 self.close()
 
             # we close connection on protocol violation
-            if self.closing:
+            if self.close_complete or self.close_pending:
                 return
 
 #           Should be debug2() not debug()
