@@ -89,8 +89,6 @@ class StreamBitTorrent(Stream):
     def __init__(self, poller):
         Stream.__init__(self, poller)
         self.complete = False
-        self.closing = False
-        self.writing = False
         self.got_anything = False
         self.left = 68
         self.buff = []
@@ -143,12 +141,6 @@ class StreamBitTorrent(Stream):
 
     def send_piece(self, index, begin, block):
         if not isinstance(block, basestring):
-
-            # TODO move this functionality into the stream
-            if self.closing:
-                return
-            self.writing = True
-
             length = utils.file_length(block)
             LOG.debug("> PIECE %d %d len=%d" % (index, begin, length))
             preamble = struct.pack("!cII", PIECE, index, begin)
@@ -165,12 +157,6 @@ class StreamBitTorrent(Stream):
           index, begin, block))
 
     def _send_message(self, *msg_a):
-
-        # TODO move this functionality into the stream
-        if self.closing:
-            return
-        self.writing = True
-
         l = 0
         for e in msg_a:
             l += len(e)
@@ -179,11 +165,6 @@ class StreamBitTorrent(Stream):
         s = ''.join(d)
         self.start_send(s)
 
-    def send_complete(self):
-        self.writing = False
-        if self.closing:
-            self.shutdown()
-
     #
     # We use three state variables in this loop: self.left is the
     # size left to read in the next message, self.count is the amount
@@ -191,7 +172,7 @@ class StreamBitTorrent(Stream):
     # of the next message.
     #
     def recv_complete(self, s):
-        while s and not self.closing:
+        while s and not (self.close_pending or self.close_complete):
 
             # If we don't know the length then read it
             if self.left == 0:
@@ -236,7 +217,7 @@ class StreamBitTorrent(Stream):
                 elif self.left < 0:
                     raise RuntimeError("Invalid self.left")
 
-        if not self.closing:
+        if not (self.close_pending or self.close_complete):
             self.start_recv()
 
     def _got_message_start(self, message):
@@ -331,15 +312,7 @@ class StreamBitTorrent(Stream):
             self.parent.got_piece(self, i, a, b)
 
     def close(self):
-        if self.closing:
-            return
-        LOG.debug("* Requested to close connection %s" % self.logname)
-        self.closing = True
-        if self.writing:
-            return
         self.shutdown()
 
     def connection_lost(self, exception):
-        # because we might also be invoked on network error
-        self.closing = True
         del self.buff[:]
