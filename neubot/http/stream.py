@@ -40,17 +40,19 @@ MAXLINE = 1<<15
 STATES = ["IDLE", "BOUNDED", "UNBOUNDED", "CHUNK", "CHUNK_END", "FIRSTLINE",
           "HEADER", "CHUNK_LENGTH", "TRAILER", "ERROR"]
 
+#
 # When messages are not bigger than SMALLMESSAGE we join headers
 # and body in a single buffer and we send that buffer.  If the buffer
 # happens to be very small, it might fit a single L2 packet.
+#
 SMALLMESSAGE = 8000
 
+#
+# Specializes stream in order to handle the Hyper-Text Transfer
+# Protocol (HTTP).  See also the finite state machine documented
+# at `doc/protocol.png`.
+#
 class StreamHTTP(Stream):
-
-    """Specializes stream in order to handle the Hyper-Text Transfer
-       Protocol (HTTP).  See also the finite state machine documented
-       at `doc/protocol.png`."""
-
     def __init__(self, poller):
         Stream.__init__(self, poller)
         self.closing = False
