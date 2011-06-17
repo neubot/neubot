@@ -39,15 +39,18 @@ RENEGOTIATE = "renegotiate"
 STATECHANGE = "statechange"
 TESTDONE = "testdone"
 
-class Notifier:
+class Notifier(object):
     def __init__(self):
         POLLER.sched(INTERVAL, self.periodic)
         self.timestamps = collections.defaultdict(int)
         self.subscribers = collections.defaultdict(list)
+        self.tofire = []
 
-    def subscribe(self, event, func, context):
+    def subscribe(self, event, func, context, periodic=False):
         queue = self.subscribers[event]
         queue.append((func, context))
+        if periodic:
+            self.tofire.append(event)
 
     def publish(self, event, t=None):
         if not t:
@@ -56,20 +59,14 @@ class Notifier:
 
         queue = self.subscribers[event]
         del self.subscribers[event]
-
         self.fireq(event, queue)
 
     def periodic(self, *args, **kwargs):
         POLLER.sched(INTERVAL, self.periodic)
-
-        subscribers = self.subscribers
-        self.subscribers = collections.defaultdict(list)
-
-        for event, queue in subscribers.items():
-            # XXX XXX XXX
-            if event == TESTDONE:
-                self.subscribers[event] = queue
-                continue
+        self.tofire, q = [], self.tofire
+        for event in q:
+            queue = self.subscribers[event]
+            del self.subscribers[event]
             self.fireq(event, queue)
 
     def fireq(self, event, queue):

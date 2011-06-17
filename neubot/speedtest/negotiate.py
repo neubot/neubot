@@ -123,7 +123,7 @@ class ServerSpeedtest(ServerHTTP):
         if not session.active:
             if not nodelay:
                 NOTIFIER.subscribe(RENEGOTIATE, self._do_renegotiate,
-                          (stream, request))
+                          (stream, request), True)
                 return
 
         m1 = compat.SpeedtestNegotiate_Response()

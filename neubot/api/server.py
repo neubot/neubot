@@ -201,7 +201,7 @@ class ServerAPI(ServerHTTP):
             stale = NOTIFIER.needs_publish(STATECHANGE, t)
             if not stale:
                 NOTIFIER.subscribe(STATECHANGE, self.api_state_complete,
-                                   (stream, request, query, t))
+                                   (stream, request, query, t), True)
                 return
 
         self.api_state_complete(STATECHANGE, (stream, request, query, t))
