@@ -32,6 +32,8 @@ def _version_split(s):
         rc = int(rc)
         if rc == sys.maxint:
             raise RuntimeError("-rc number is too big")
+        if rc < 0:
+            raise RuntimeError("negative -rc number")
     else:
         rc = sys.maxint
     s = map(int, s.split("."))
@@ -47,6 +49,8 @@ def versioncmp(left, right):
         [left.append(0) for i in range(len(right) - len(left))]
 
     for i in range(len(left)):
+        if left[i] < 0 or right[i] < 0:
+            raise RuntimeError("negative version number component")
         diff = left[i] - right[i]
         if diff:
             return diff

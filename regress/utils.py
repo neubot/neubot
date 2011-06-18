@@ -42,6 +42,8 @@ class TestVersioncmp(unittest.TestCase):
         self.assertRaises(ValueError, utils.versioncmp, " ", "8.3")
         self.assertRaises(RuntimeError, utils.versioncmp,
          "8.3-rc%d" % sys.maxint, "8.3")
+        self.assertRaises(RuntimeError, utils.versioncmp, "8-rc-1", "8")
+        self.assertRaises(RuntimeError, utils.versioncmp, "8.-1", "8")
 
 if __name__ == "__main__":
     unittest.main()
