@@ -26,9 +26,20 @@ import types
 import time
 import uuid
 
+def _version_split(s):
+    if "-rc" in s:
+        s, rc = s.split("-rc", 1)
+        rc = int(rc)
+        if rc == sys.maxint:
+            raise RuntimeError("-rc number is too big")
+    else:
+        rc = sys.maxint
+    s = map(int, s.split("."))
+    return s, rc
+
 def versioncmp(left, right):
-    left = map(int, left.split("."))
-    right = map(int, right.split("."))
+    left, leftrc = _version_split(left)
+    right, rightrc = _version_split(right)
 
     if len(left) > len(right):
         [right.append(0) for i in range(len(left) - len(right))]
@@ -39,7 +50,8 @@ def versioncmp(left, right):
         diff = left[i] - right[i]
         if diff:
             return diff
-    return 0
+
+    return leftrc - rightrc
 
 #
 # When stdin, stdout, stderr are attached to console, seek(0)
