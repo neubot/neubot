@@ -86,7 +86,7 @@ def main(args):
     sparse = False
 
     for key, value in options:
-        if key == "-f":
+        if key == "-o":
             outfile = value
         elif key == "--sparse":
             sparse = True
