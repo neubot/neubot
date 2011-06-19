@@ -36,14 +36,16 @@ class Histo(object):
         self.done = False
 
         for t in range(int(self.max/self.bucket)):
-               self.vector.append(0)
+           self.vector.append(0)
 
     def add_result(self, t):
-        t = int(self.convert(t)) / self.bucket
-        if t >= len(self.vector):
-            self.overflow += 1
-        else:
+        t = int(self.convert(t) / self.bucket)
+        if t < 0:
+            sys.stderr.write("Warning: passed negative value\n")
+        elif t < len(self.vector):
             self.vector[t] += 1
+        else:
+            self.overflow += 1
 
     def _finished(self):
         if not self.done:
