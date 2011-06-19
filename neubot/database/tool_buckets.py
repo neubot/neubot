@@ -56,10 +56,9 @@ class Histo(object):
         self._finished()
         path = template.replace(".sqlite3", "-%s.txt" % self.name)
         fp = open(path, "wb")
-        fp.write("# bucket: %(bucket)d, max: %(max)d, unit: %(unit)s\n"
-                 % vars(self))
+        fp.write("# unit: %(unit)s\n" % vars(self))
         for idx, value in enumerate(self.vector):
-            fp.write("%d\t%d\n" % (idx, value))
+            fp.write("%d\t%d\n" % (idx * self.bucket, value))
 
 LATENCY = Histo("latency", 20, 100, lambda t: 1000 * t, "ms")
 DOWNLOAD = Histo("download", 1, 20, lambda s: (s * 8)/(1000 * 1000), "Mbit/s")
