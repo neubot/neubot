@@ -30,7 +30,7 @@ def _version_split(s):
     if "-rc" in s:
         s, rc = s.split("-rc", 1)
         rc = int(rc)
-        if rc == sys.maxint:
+        if rc >= sys.maxint:
             raise RuntimeError("-rc number is too big")
         if rc < 0:
             raise RuntimeError("negative -rc number")
