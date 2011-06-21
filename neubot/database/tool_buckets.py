@@ -20,6 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import collections
 import sqlite3
 import sys
 
@@ -65,6 +66,8 @@ LATENCY = Histo("latency", 20, 100, lambda t: 1000 * t, "ms")
 DOWNLOAD = Histo("download", 1, 20, lambda s: (s * 8)/(1000 * 1000), "Mbit/s")
 UPLOAD = Histo("upload", 100, 20000, lambda s: (s * 8)/(1000), "Kbit/s")
 
+UUID = collections.defaultdict(int)
+
 def main(args):
     arguments = args[1:]
 
@@ -86,9 +89,15 @@ def main(args):
         LATENCY.add_result(row['latency'])
         DOWNLOAD.add_result(row['download_speed'])
         UPLOAD.add_result(row['upload_speed'])
+        UUID[row['uuid']] += 1
 
     for v in (LATENCY, DOWNLOAD, UPLOAD):
         v.write(arguments[0])
+
+    users = Histo("users", 10, 1000, lambda n: n, "users")
+    for count in UUID.values():
+        users.add_result(count)
+    users.write(arguments[0])
 
 if __name__ == "__main__":
     main(sys.argv)
