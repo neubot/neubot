@@ -69,10 +69,10 @@ def main(args):
     arguments = args[1:]
 
     if len(arguments) != 1:
-        sys.stderr.write("Usage: tool_users.py file\n")
+        sys.stderr.write("Usage: tool_buckets.py file\n")
         sys.exit(1)
 
-    # Because I'm lazy below
+    # Because I'm lazy below (in v.write())
     if not arguments[0].endswith(".sqlite3"):
         sys.stderr.write("error: Input file name must end with .sqlite3\n")
         sys.exit(1)
