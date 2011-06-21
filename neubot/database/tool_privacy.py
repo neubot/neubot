@@ -92,7 +92,8 @@ def main(args):
          dictionary['privacy_can_share']) = PERMS[dictionary['uuid']]
 
         # NOTE commit=False or it will take an Age!
-        table_speedtest.insert(output, dictionary, commit=False)
+        table_speedtest.insert(output, dictionary, commit=False,
+          override_timestamp=False)
 
     output.execute("VACUUM;")
     output.commit()

@@ -68,7 +68,8 @@ def main(args):
     cursor.execute("""SELECT * FROM speedtest WHERE download_speed < ?
       AND latency < ?;""", (MAX_DOWNLOAD_SPEED, MAX_LATENCY))
     for row in cursor:
-        table_speedtest.insert(output, dict(row), commit=False)
+        table_speedtest.insert(output, dict(row), commit=False,
+          override_timestamp=False)
     sys.stderr.write("done\n")
 
     sys.stderr.write("* Committing changes to: %s\n" % outfile)
