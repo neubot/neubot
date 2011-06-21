@@ -60,7 +60,7 @@ def main(args):
 
         cursor = connection.cursor()
         cursor.execute("""SELECT * FROM speedtest WHERE timestamp >= ?
-          AND timestamp <= ?;""", (since.strftime("%s"), until.strftime("%s")))
+          AND timestamp < ?;""", (since.strftime("%s"), until.strftime("%s")))
 
         for row in cursor:
             table_speedtest.insert(output, dict(row), commit=False,
