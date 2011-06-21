@@ -35,6 +35,7 @@ MODULES = {
     "bittorrent" : "bittorrent",
     "http.client" : "http.client",
     "http.server" : "http.server",
+    "on_gui_login": "on_gui_login",
     "rendezvous.client": "rendezvous.client",
     "rendezvous.server": "rendezvous.server",
     "show_database": "show_database",
