@@ -173,7 +173,7 @@ var speedtest = (function() {
 
         var plot = jQuery.jqplot("chartdiv1", mydata, {
           title: {
-            text: "Your download and upload speed",
+            text: i18n.get("Your download and upload speed"),
             fontSize: "16pt"
           },
           axes: {

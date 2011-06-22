@@ -28,6 +28,8 @@ LANG = {
     'Disable': "Disattiva",
     'Test running': "Test in corso",
 
+    'Your download and upload speed': "Risultati recenti",
+
     'text_direction': "ltr",
     'settings': "Impostazioni",
     'status': "Stato",
@@ -56,5 +58,13 @@ LANG = {
     'footer_text': "Neubot è un progetto di ricerca sulla neutralità della rete realizzato dal<br /><a href='http://nexa.polito.it/'>Centro NEXA su Internet &amp; Società</a> del <a href='http://www.dauin.polito.it/'>Politecnico di Torino</a>.",
     'welcome_text': "Grazie per aver installato Neubot! Ora avrai le idee più chiare sulla tua connessione a Internet e potrai aiutare la comunità a capire cosa accade nella rete. Questa sezione fornisce un prospetto generale dell'agent Neubot. Clicca sui vari tab per visualizzare le informazioni relative ai vari test.",
     'current_status': "Stato di Neubot",
-    'status_text': "Questo è il pannello di controllo dell'Agent di Neubot, in esecuzione con PID <em><span id='pid'>(n/a)</span></em> da <em><span id='since'>(n/a)</span></em>. La tabella sottostante fornisce dettagli aggiuntivi sullo stato dell'Agent. La riga evidenziata rappresenta lo stato corrente."
+    'status_text': "Questo è il pannello di controllo dell'Agent di Neubot, in esecuzione con PID <em><span id='pid'>(n/a)</span></em> da <em><span id='since'>(n/a)</span></em>. La tabella sottostante fornisce dettagli aggiuntivi sullo stato dell'Agent. La riga evidenziata rappresenta lo stato corrente.",
+
+
+    "speedtest_title": "Risultati dello <em>speedtest</em>",
+    "speedtest_explanation_1": "<em>Speedtest</em> &egrave; un test che getta un po' di luce sulla qualit&agrave; della tua connessione a Internet, facendo download e upload di dati casuali a/da un server remoto, e riportando le velocit&agrave; medie. Il test stima anche (per eccesso) il round-trip time tra te e il server remoto.  Per maggiori informazioni, vedi le <a href='http://www.neubot.org/faq#what-does-speedtest-test-measures'>FAQ</a>.",
+    "speedtest_explanation_2": "Per contestualizzare i risultati di questo test rispetto alla velocit&agrave; media disponibile nel tuo paese puoi far riferimento alle statistiche disponibili sul <a href='http://www.oecd.org/sti/ict/broadband'>Portale Banda larga OECD</a>.   In particolare, potrebbe essere interessante leggere <a href='http://www.oecd.org/dataoecd/10/53/39575086.xls'>'Average advertised download speeds, by country'</a> (in formato XLS).",
+    "speedtest_see_last": "Guarda l'ultimo",
+    "speedtest_see_last_days": "giorno",
+    "speedtest_see_last_hours": "ora"
 };

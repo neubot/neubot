@@ -3,11 +3,11 @@
         <script type="text/javascript" src="js/speedtest.js"></script>
 
         <div class="entry-content">
-          <h4>Your recent <em>speedtest</em> results</h4>
+          <h4 class="i18n i18n_speedtest_title">Your recent <em>speedtest</em> results</h4>
 
           <!-- XXX Do NOT move plots here or they will suck alot. -->
 
-          <p>
+          <p class="i18n i18n_speedtest_explanation_1">
            <em>Speedtest</em> is a test that sheds some light on the quality
            of your broadband connection, by downloading/uploading random data
            to/from a remote server, and reporting the average speeds.  The
@@ -16,7 +16,7 @@
 <a href="http://www.neubot.org/faq#what-does-speedtest-test-measures">FAQ</a>.
           </p>
 
-          <p>
+          <p class="i18n i18n_speedtest_explanation_2">
            To put the results of this test in the context of the
            average broadband speed available in your country you
            might want to check the statistics available at the <a
@@ -27,10 +27,10 @@
           </p>
 
           <p class='box-title'>
-           View last <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
+           <span class="i18n i18n_speedtest_see_last">View last</span> <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
             <select id="res_unit" size="1">
-             <option value="d" selected="selected">day</option>
-             <option value="h">hour</option>
+             <option value="d" selected="selected" class="i18n i18n_speedtest_see_last_days">day</option>
+             <option value="h" class="i18n i18n_speedtest_see_last_hours">hour</option>
             </select>
             <input id="res_submit" type="button" value="Go" />
           </p>
