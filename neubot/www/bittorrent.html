@@ -1,0 +1,41 @@
+        <!--#include virtual="header.html"-->
+
+        <script type="text/javascript" src="js/bittorrent.js"></script>
+
+        <div class="entry-content">
+          <h4 class="i18n i18n_bittorrent_title">Your recent <em>bittorrent</em> results</h4>
+
+          <!-- XXX Do NOT move plots here or they will suck alot. -->
+
+          <p class="i18n i18n_bittorrent_explanation">
+           This tests downloads and uploads a given number of bytes from
+           a remote server using the BitTorrent protocol.  It reports the
+           average download and upload speed measured during the test as
+           well as the time required to connect to the remote server,
+           which approximates the round-trip time latency.
+          </p>
+
+          <p class="i18n i18n_bittorrent_explanation_2">
+           Please, note that this test is quite different from the speedtest
+           one, so there are cases where the comparison between the two is not
+           feasible.  We're working to deploy an HTTP tests that mimics the
+           behavior of this one, to allow for easier comparison.
+	  </p>
+
+          <p class='box-title'>
+           <span class="i18n i18n_bittorrent_see_last">View last</span> <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
+            <select id="res_unit" size="1">
+             <option value="d" selected="selected" class="i18n i18n_bittorrent_see_last_days">day</option>
+             <option value="h" class="i18n i18n_bittorrent_see_last_hours">hour</option>
+            </select>
+            <input id="res_submit" type="button" value="Go" />
+          </p>
+
+        </div>
+
+        <div id="chartdiv1"></div>
+        <div id="results">
+          <!-- nothing -->
+        </div>
+
+        <!--#include virtual="footer.html"-->
