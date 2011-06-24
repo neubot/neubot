@@ -55,6 +55,10 @@ def obj_to_dict(obj):
     }
     return dictionary
 
+#
+# TODO Here and below we should use the facilities provided
+# by the new _table_utils.py helper file.
+#
 def create(connection, commit=True):
     connection.execute("""CREATE TABLE IF NOT EXISTS speedtest(
       id INTEGER PRIMARY KEY, timestamp INTEGER, uuid TEXT,
@@ -98,6 +102,10 @@ def walk(connection, func, since=-1, until=-1):
     cursor.execute(select_query(since, until), locals())
     return map(func, cursor)
 
+#
+# TODO Now the tuple t is sqlite3.Row so we can avoid to
+# do the mapping at hand.
+#
 def listify(connection, since=-1, until=-1):
     return walk(connection, lambda t: { "timestamp": t[1], "uuid": t[2],
       "internal_address": t[3], "real_address": t[4], "remote_address": t[5],
