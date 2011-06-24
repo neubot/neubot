@@ -47,6 +47,12 @@ class DatabaseManager(object):
                 self.path = system.check_database_path(self.path)
             LOG.debug("* Database: %s" % self.path)
             self.dbc = sqlite3.connect(self.path)
+            #
+            # To avoid the need to map at hand columns in
+            # a row with the sql schema, which is as error
+            # prone as driving drunk.
+            #
+            self.dbc.row_factory = sqlite3.Row
             table_config.create(self.dbc)
             table_speedtest.create(self.dbc)
             table_geoloc.create(self.dbc)
