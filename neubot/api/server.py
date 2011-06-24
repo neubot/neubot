@@ -197,13 +197,13 @@ class ServerAPI(ServerHTTP):
         since, until = -1, -1
 
         dictionary = cgi.parse_qs(query)
+
         if dictionary.has_key("since"):
             since = int(dictionary["since"][0])
         if dictionary.has_key("until"):
             until = int(dictionary["until"][0])
 
         indent, mimetype, sort_keys = None, "application/json", False
-        dictionary = cgi.parse_qs(query)
         if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
             indent, mimetype, sort_keys = 4, "text/plain", True
 
