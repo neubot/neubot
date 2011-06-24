@@ -31,6 +31,7 @@ from neubot.compat import json
 from neubot.config import ConfigError
 from neubot.config import CONFIG
 from neubot.database import DATABASE
+from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
@@ -52,7 +53,7 @@ class ServerAPI(ServerHTTP):
         self.dispatch = {
             "/api": self.api,
             "/api/": self.api,
-            "/api/bittorrent": self.api_speedtest,              #XXX
+            "/api/bittorrent": self.api_bittorrent,
             "/api/config": self.api_config,
             "/api/configlabels": self.api_configlabels,
             "/api/debug": self.api_debug,
@@ -95,6 +96,28 @@ class ServerAPI(ServerHTTP):
         response = Message()
         response.compose(code="200", reason="Ok", body=StringIO.StringIO(
           json.dumps(sorted(self.dispatch.keys()), indent=4)))
+        stream.send_response(request, response)
+
+    def api_bittorrent(self, stream, request, query):
+        since, until = -1, -1
+
+        dictionary = cgi.parse_qs(query)
+
+        if dictionary.has_key("since"):
+            since = int(dictionary["since"][0])
+        if dictionary.has_key("until"):
+            until = int(dictionary["until"][0])
+
+        indent, mimetype, sort_keys = None, "application/json", False
+        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
+            indent, mimetype, sort_keys = 4, "text/plain", True
+
+        response = Message()
+        lst = table_bittorrent.listify(DATABASE.connection(), since, until)
+        s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
+        stringio = StringIO.StringIO(s)
+        response.compose(code="200", reason="Ok", body=stringio,
+                         mimetype=mimetype)
         stream.send_response(request, response)
 
     def api_config(self, stream, request, query):
