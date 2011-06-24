@@ -96,21 +96,20 @@ class PeerNeubot(StreamHandler):
         self.connector_side = True
         StreamHandler.connect(self, endpoint, count)
 
-    #
-    # Always handle the BitTorrent connection using a
-    # new object, so we can use the same code both for
-    # the connector and the listener.
-    # Note that we use self.__class__() because self
-    # might be a subclass of PeerNeubot.
-    #
     def connection_made(self, sock, rtt=0):
         if rtt:
             LOG.info("BitTorrent: latency: %s" % utils.time_formatter(rtt))
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
-        peer = self.__class__(self.poller)
-        peer.configure(self.conf, self.measurer)
-        peer.connector_side = self.connector_side               #XXX
+        if not self.connector_side:
+            #
+            # Note that we use self.__class__() because self
+            # might be a subclass of PeerNeubot.
+            #
+            peer = self.__class__(self.poller)
+            peer.configure(self.conf, self.measurer)
+        else:
+            peer = self
         stream.attach(peer, sock, peer.conf, peer.measurer)
 
     def got_bitfield(self, b):
@@ -146,7 +145,7 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
         if self.connector_side:
             LOG.info("BitTorrent: test complete")
-            self.complete(self.dload_speed, self.rtt)
+            self.complete(stream, self.dload_speed, self.rtt)
             stream.close()
         else:
             self.state = SENT_INTERESTED
@@ -264,7 +263,7 @@ class PeerNeubot(StreamHandler):
                     stream.send_not_interested()
                     if not self.connector_side:
                         LOG.info("BitTorrent: test complete")
-                        self.complete(self.dload_speed, self.rtt)
+                        self.complete(stream, self.dload_speed, self.rtt)
                 else:
                     self.saved_ticks = 0
                     self.make_sched()
@@ -274,5 +273,5 @@ class PeerNeubot(StreamHandler):
             elif self.inflight < 0:
                 raise RuntimeError("Inflight became negative")
 
-    def complete(self, speed, rtt):
+    def complete(self, stream, speed, rtt):
         pass
