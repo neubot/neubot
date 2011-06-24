@@ -25,6 +25,7 @@ import sqlite3
 from neubot.database import table_config
 from neubot.database import table_geoloc
 from neubot.database import table_speedtest
+from neubot.database import table_bittorrent
 from neubot.database import migrate
 from neubot.log import LOG
 
@@ -56,6 +57,7 @@ class DatabaseManager(object):
             table_config.create(self.dbc)
             table_speedtest.create(self.dbc)
             table_geoloc.create(self.dbc)
+            table_bittorrent.create(self.dbc)
             migrate.migrate(self.dbc)
         return self.dbc
 

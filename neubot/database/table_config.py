@@ -59,7 +59,7 @@ def create(connection, commit=True):
     connection.execute("""CREATE TABLE IF NOT EXISTS config(
       name TEXT PRIMARY KEY, value TEXT);""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
-      'version', '2.1');""")
+      'version', '3.0');""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
       'uuid', ?);""", (get_uuid(),))
     if commit:
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         raise RuntimeError
 
     update(connection, {"uuid": ""}.iteritems())
-    if dictionarize(connection) != {"version": "2.1", "uuid": ""}:
+    if dictionarize(connection) != {"version": "3.0", "uuid": ""}:
         raise RuntimeError
 
     update(connection, {}.iteritems(), clear=True)
