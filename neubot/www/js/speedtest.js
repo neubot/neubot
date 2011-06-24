@@ -157,19 +157,18 @@ var speedtest = (function() {
         };
 
         if (hours <= 48) {
-            xaxis.label = "Hours ago";
             xaxis.tickOptions = {
               formatString:'%b %#d, h %H'
             };
             xaxis.tickInterval = '8 hours';
         }
         else {
-            xaxis.label = "Days ago";
             xaxis.tickOptions = {
               formatString:'%b %#d'
             };
             xaxis.tickInterval = '1 day';
         }
+        xaxis.label = "Time";
 
         var plot = jQuery.jqplot("chartdiv1", mydata, {
           title: {
