@@ -25,10 +25,10 @@ var bittorrent = (function() {
     var self = {};
 
     self.result_fields = ["timestamp", "internalAddress", "realAddress",
-     "remoteAddress", "downloadSpeed", "uploadSpeed"];
+     "remoteAddress", "connectTime", "downloadSpeed", "uploadSpeed"];
 
     self.result_titles = ["Timestamp", "Internal Address", "Real Address",
-     "Remote Address", "Download Speed", "Upload Speed"];
+     "Remote Address", "Connect Time", "Download Speed", "Upload Speed"];
 
     // walk through results
 
@@ -83,6 +83,7 @@ var bittorrent = (function() {
             html += "<td>" + result["internal_address"] + "</td>";
             html += "<td>" + result["real_address"] + "</td>";
             html += "<td>" + result["remote_address"] + "</td>";
+            html += "<td>" + utils.toMs(result["connect_time"]) + "</td>";
             html += "<td>" + utils.toMbitsPerSecond(result["download_speed"]) + "</td>";
             html += "<td>" + utils.toMbitsPerSecond(result["upload_speed"]) + "</td>";
             html += "</tr>";
