@@ -1,3 +1,8 @@
+#
+# TODO This file should be renamed _gen.py because it is private
+# stuff and for simmetry with the bittorrent code.
+#
+
 # neubot/speedtest/gen.py
 
 #
