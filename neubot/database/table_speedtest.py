@@ -94,6 +94,7 @@ def select_query(since, until):
             query.append(" AND ")
         if until >= 0:
             query.append("timestamp < :until")
+    query.append(" ORDER BY timestamp DESC")
     query.append(";")
     return "".join(query)
 
