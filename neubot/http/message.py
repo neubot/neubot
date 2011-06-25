@@ -86,6 +86,7 @@ class Message(object):
         v.append("\r\n")
 
         for key, value in self.headers.items():
+            key = "-".join(map(lambda s: s.capitalize(), key.split("-")))
             v.append(key)
             v.append(": ")
             v.append(value)
@@ -108,7 +109,8 @@ class Message(object):
     # RFC2616 section 4.2 says that "Each header field consists
     # of a name followed by a colon (":") and the field value. Field
     # names are case-insensitive."  So, for simplicity, we use all-
-    # lowercase header names.
+    # lowercase header names but we capitalize header names, as most
+    # applications do, before sending them on the wire.
     #
     def __getitem__(self, key):
         return self.headers[key]
