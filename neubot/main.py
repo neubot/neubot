@@ -84,6 +84,7 @@ def webbrowser_open_patient(address, port):
             response = connection.getresponse()
             if response.status == 200:
                 running = True
+            response.read()
             connection.close()
 
         except (SystemExit, KeyboardInterrupt):
@@ -94,9 +95,9 @@ def webbrowser_open_patient(address, port):
         if running:
             sys.stderr.write("ok\n")
             break
-        if count >= 5:
+        if count >= 15:
             sys.stderr.write("timeout\n")
-            break
+            sys.exit(1)
 
         sys.stderr.write(".")
         time.sleep(1)
@@ -185,6 +186,7 @@ def main(argv):
                 response = connection.getresponse()
                 if response.status == 200:
                     running = True
+                response.read()
                 connection.close()
 
             except (SystemExit, KeyboardInterrupt):

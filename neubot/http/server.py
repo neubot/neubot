@@ -171,8 +171,8 @@ class ServerHTTP(StreamHandler):
             stringio = StringIO.StringIO(REDIRECT)
             response.compose(code="301", reason="Moved Permanently",
               body=stringio, mimetype="text/html; charset=UTF-8")
-            # Yes, here we violate RFC 2616 Sect. 14.30
-            response["location"] = "/index.html"
+            #XXX With IPv6 we need to enclose address in square braces
+            response["location"] = "http://%s:%s/index.html" % stream.myname
             stream.send_response(request, response)
             return
 
