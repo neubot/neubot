@@ -113,7 +113,7 @@ class Message(object):
     # applications do, before sending them on the wire.
     #
     def __getitem__(self, key):
-        return self.headers[key]
+        return self.headers[key.lower()]
 
     def __setitem__(self, key, value):
         key = key.lower()
