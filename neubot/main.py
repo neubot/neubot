@@ -94,7 +94,7 @@ def webbrowser_open_patient(address, port):
         if running:
             sys.stderr.write("ok\n")
             break
-        if count >= 5:
+        if count >= 15:
             sys.stderr.write("timeout\n")
             break
 
