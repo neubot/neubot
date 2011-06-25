@@ -84,6 +84,7 @@ def webbrowser_open_patient(address, port):
             response = connection.getresponse()
             if response.status == 200:
                 running = True
+            response.read()
             connection.close()
 
         except (SystemExit, KeyboardInterrupt):
@@ -185,6 +186,7 @@ def main(argv):
                 response = connection.getresponse()
                 if response.status == 200:
                     running = True
+                response.read()
                 connection.close()
 
             except (SystemExit, KeyboardInterrupt):
