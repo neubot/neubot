@@ -32,6 +32,10 @@ CHECK_TIMEOUT = 10
 
 class Pollable(object):
 
+    def __init__(self):
+        self.created = ticks()
+        self.watchdog = -1
+
     def fileno(self):
         raise NotImplementedError
 
@@ -239,10 +243,20 @@ class Poller(object):
             stale = set()
             for stream in x:
                 if stream.readtimeout(now):
+                    LOG.debug("%s: read timeout" % repr(stream))
+                    stale.add(stream)
+                elif (stream.watchdog > 0 and
+                   now - stream.created > stream.watchdog):
+                    LOG.debug("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
             x = self.writeset.values()
             for stream in x:
                 if stream.writetimeout(now):
+                    LOG.debug("%s: write timeout" % repr(stream))
+                    stale.add(stream)
+                elif (stream.watchdog > 0 and
+                   now - stream.created > stream.watchdog):
+                    LOG.debug("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
             for stream in stale:
                 self.close(stream)

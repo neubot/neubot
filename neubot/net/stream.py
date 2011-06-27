@@ -136,6 +136,7 @@ class SocketWrapper(object):
 #
 class Stream(Pollable):
     def __init__(self, poller):
+        Pollable.__init__(self)
         self.poller = poller
         self.parent = None
         self.conf = None
@@ -452,6 +453,7 @@ class Stream(Pollable):
 
 class Connector(Pollable):
     def __init__(self, poller, parent):
+        Pollable.__init__(self)
         self.poller = poller
         self.parent = parent
         self.sock = None
@@ -541,6 +543,7 @@ class Connector(Pollable):
 
 class Listener(Pollable):
     def __init__(self, poller, parent):
+        Pollable.__init__(self)
         self.poller = poller
         self.parent = parent
         self.lsock = None

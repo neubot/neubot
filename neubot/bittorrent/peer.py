@@ -42,6 +42,15 @@ LO_THRESH = 3
 MAX_REPEAT = 7
 TARGET = 5
 
+#
+# This is the maximum time the test can run.  After that time,
+# no matter what, the underlying stream is closed by the low-level
+# code in <net/poller.py>.
+# Of course, it is a crime for a test to run for so much time but
+# I don't want to be too aggressive here.
+#
+WATCHDOG = 30
+
 # States of the PeerNeubot object
 STATES = [INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
           SENT_NOT_INTERESTED] = range(5)
@@ -111,6 +120,7 @@ class PeerNeubot(StreamHandler):
         else:
             peer = self
         stream.attach(peer, sock, peer.conf, peer.measurer)
+        stream.watchdog = WATCHDOG
 
     def got_bitfield(self, b):
         self.peer_bitfield = Bitfield(self.numpieces, b)
