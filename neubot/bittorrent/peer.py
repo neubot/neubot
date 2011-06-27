@@ -117,6 +117,15 @@ class PeerNeubot(StreamHandler):
         self.infohash = self.conf.get("bittorrent.infohash", random_bytes(20))
         StreamHandler.connect(self, endpoint, count)
 
+    #
+    # Empty but here to remind hackers that the controlling
+    # object must divert this function to its own function in
+    # order to catch the case where we cannot connect to the
+    # remote end.
+    #
+    def connection_failed(self, connector, exception):
+        pass
+
     def connection_made(self, sock, rtt=0):
         if rtt:
             latency = utils.time_formatter(rtt)
