@@ -236,13 +236,16 @@ class Poller(object):
         if self.readset or self.writeset:
             now = ticks()
             x = self.readset.values()
+            stale = set()
             for stream in x:
                 if stream.readtimeout(now):
-                    self.close(stream)
+                    stale.add(stream)
             x = self.writeset.values()
             for stream in x:
                 if stream.writetimeout(now):
-                    self.close(stream)
+                    stale.add(stream)
+            for stream in stale:
+                self.close(stream)
 
     def snap(self, d):
         d['poller'] = {"pending": self.pending, "tasks": self.tasks,
