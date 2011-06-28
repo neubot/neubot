@@ -230,6 +230,10 @@ class ServerHTTP(StreamHandler):
     def connection_made(self, sock, rtt=0):
         stream = ServerStream(self.poller)
         stream.attach(self, sock, self.conf)
+        self.connection_ready(stream)
+
+    def connection_ready(self, stream):
+        pass
 
 def main(args):
 
