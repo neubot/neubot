@@ -170,6 +170,8 @@ class Stream(Pollable):
         self.bytes_recv = 0
         self.bytes_sent = 0
 
+        self.atclosev = []
+
     def __repr__(self):
         return "stream %s" % self.logname
 
@@ -218,6 +220,9 @@ class Stream(Pollable):
     def connection_made(self):
         pass
 
+    def atclose(self, func):
+        self.atclosev.append(func)
+
     # Close path
 
     def connection_lost(self, exception):
@@ -244,6 +249,15 @@ class Stream(Pollable):
 
         self.connection_lost(exception)
         self.parent.connection_lost(self)
+
+        atclosev, self.atclosev = self.atclosev, []
+        for func in atclosev:
+            try:
+                func(self, exception)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                LOG.oops("Error in atclosev")
 
         if self.measurer:
             self.measurer.unregister_stream(self)
