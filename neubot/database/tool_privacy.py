@@ -82,7 +82,6 @@ def main(args):
 
         # Honour permissions
         if PERMS[dictionary['uuid']] != (1, 1, 1):
-            can_share = can_share + 1
             #
             # TODO Here it would be nice to geolocate the
             # client and resolv the provider to populate a
@@ -91,6 +90,8 @@ def main(args):
             #
             dictionary['internal_address'] = "0.0.0.0"
             dictionary['real_address'] = "0.0.0.0"
+        else:
+            can_share = can_share + 1
 
         # Override permissions
         (dictionary['privacy_informed'],
