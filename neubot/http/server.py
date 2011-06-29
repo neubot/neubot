@@ -22,8 +22,8 @@
 
 import StringIO
 import mimetypes
-import sys
 import os.path
+import sys
 import time
 
 if __name__ == "__main__":
@@ -36,11 +36,13 @@ from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.utils import prettyprintbody
 from neubot.http.stream import StreamHTTP
-from neubot.net.stream import StreamHandler
 from neubot.log import LOG
+from neubot.net.stream import StreamHandler
 from neubot.net.poller import POLLER
-from neubot import utils
+
 from neubot import boot
+from neubot import system
+from neubot import utils
 
 #
 # 3-letter abbreviation of month names.
@@ -238,6 +240,7 @@ HTTP_SERVER = ServerHTTP(POLLER)
 CONFIG.register_defaults({
     "http.server.address": "0.0.0.0",
     "http.server.class": "",
+    "http.server.daemonize": True,
     "http.server.mime": True,
     "http.server.ports": "8080,",
     "http.server.rootdir": "",
@@ -248,6 +251,7 @@ def main(args):
     CONFIG.register_descriptions({
         "http.server.address": "Address to listen to",
         "http.server.class": "Use alternate ServerHTTP-like class",
+        "http.server.daemonize": "Run in background as a daemon",
         "http.server.mime": "Enable code that guess mime types",
         "http.server.ports": "List of ports to listen to",
         "http.server.rootdir": "Root directory for static pages",
@@ -271,6 +275,14 @@ def main(args):
     for port in conf["http.server.ports"].split(","):
         if port:
             server.listen((conf["http.server.address"], int(port)))
+
+    if conf["http.server.daemonize"]:
+        system.change_dir()
+        system.go_background()
+        system.write_pidfile()
+        LOG.redirect()
+
+    system.drop_privileges()
 
     POLLER.loop()
 
