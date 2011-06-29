@@ -38,6 +38,7 @@ from neubot.speedtest import compat
 
 from neubot import boot
 from neubot import marshal
+from neubot import privacy
 from neubot import utils
 
 TESTDONE = "testdone"
@@ -162,8 +163,7 @@ class ClientCollect(ClientHTTP):
         s = marshal.marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)
 
-        if (not utils.intify(m1.privacy_informed) or
-            utils.intify(m1.privacy_can_collect)):
+        if privacy.collect_allowed(m1):
             table_speedtest.insertxxx(DATABASE.connection(), m1)
 
         request = Message()

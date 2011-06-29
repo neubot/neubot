@@ -40,6 +40,7 @@ from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
 from neubot import boot
+from neubot import privacy
 from neubot import utils
 
 TESTDONE = "testdone"
@@ -157,8 +158,7 @@ class BitTorrentClient(ClientHTTP):
             # i.e. upload_speed is _our_ upload speed.
             #
             self.my_side["upload_speed"] = m["upload_speed"]
-            if (not utils.intify(self.my_side["privacy_informed"]) or
-              utils.intify(self.my_side["privacy_can_collect"])):
+            if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
 
         stream.close()
