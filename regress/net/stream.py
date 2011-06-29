@@ -235,6 +235,7 @@ class TestStreamError_Multiple(TestStreamClose_Base):
 #
 class TestStreamStartRecv_Barrier1(unittest.TestCase):
     def runTest(self):
+        """Make sure start_recv honours pending and complete flags"""
         s = stream.Stream(None)
         for a,b,c in [(0,0,1),(0,1,0),(0,1,1),(1,0,0),(1,0,1),(1,1,0),(1,1,1)]:
             s.close_complete = a
@@ -253,6 +254,7 @@ class TestStreamStartRecv_Barrier1(unittest.TestCase):
 #
 class TestStreamStartRecv_Barrier2(unittest.TestCase):
     def runTest(self):
+        """Make sure start_recv() honours recv_blocked"""
         s = stream.Stream(None)
         s.recv_blocked = True
         s.start_recv()
@@ -267,6 +269,7 @@ class TestStreamStartRecv_Barrier2(unittest.TestCase):
 #
 class TestStreamStartRecv_WeNoInvokeReadableImmediately(unittest.TestCase):
     def runTest(self):
+        """Make sure start_recv does not invoked readable directly"""
         s = stream.Stream(self)
         self.isreadable = False
         s.start_recv()
@@ -282,6 +285,7 @@ class TestStreamStartRecv_WeNoInvokeReadableImmediately(unittest.TestCase):
 #
 class TestStreamStartRecv_SSLKickOff(unittest.TestCase):
     def runTest(self):
+        """Make sure we kick off SSL on the server side"""
         s = stream.Stream(self)
         s.recv_ssl_needs_kickoff = True
         s.sock = self
@@ -402,6 +406,7 @@ class TestStreamReadable_UnknownStatus(TestStream_Base):
 #
 class TestStreamSend_ReadSendQueue_Empty(unittest.TestCase):
     def runTest(self):
+        """Make sure send queue starts empty and remains empty if we push ''"""
         s = stream.Stream(None)
         self.assertEqual(s.read_send_queue(), "")
         s.start_send("")
@@ -419,6 +424,7 @@ class TestStreamSend_ReadSendQueue_Empty(unittest.TestCase):
 #
 class TestStreamSend_ReandSendQueue_NotEmpty(unittest.TestCase):
     def runTest(self):
+        """Gain confidence that the send queue is not buggy"""
         s = stream.Stream(self)
 
         # Generate messages

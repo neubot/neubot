@@ -20,13 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Minimal test script for speedtest.
-# For sure Roberto D'Auria will mumble here because I'm not
-# using unittest.  I definitely should give it a try.  I promise
-# over my lack of sleep that I will.
-#
-
 import getopt
 import random
 import sys

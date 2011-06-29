@@ -49,6 +49,7 @@ from neubot.bittorrent import stream
 #
 class TestMessageTypes(unittest.TestCase):
     def runTest(self):
+        """Make sure that message types are consistent"""
         for idx, value in enumerate(stream.MESSAGES):
             self.assertEqual(chr(idx), value)
         self.assertEqual(stream.MESSAGESET,
@@ -60,6 +61,7 @@ class TestMessageTypes(unittest.TestCase):
 #
 class TestMessageLengths(unittest.TestCase):
     def runTest(self):
+        """Make sure that invalid-lenght rules are consistent"""
         self.assertTrue(stream.MESSAGESET ==
           set(stream.INVALID_LENGTH.keys()))
 
@@ -82,6 +84,7 @@ class TestMessageLengths(unittest.TestCase):
 #
 class TestSendPIECE(unittest.TestCase):
     def runTest(self):
+        """Make sure the sender works for both buffers and StringIOs"""
         s = stream.StreamBitTorrent(None)
         self.messages = []
         self.v1, self.v2 = [], []
@@ -204,6 +207,7 @@ class TestReassembler_Base(unittest.TestCase):
 # Receive each message independently on the others
 class TestReassembler_Independent(TestReassembler_Base):
     def runTest(self):
+        """Gain confidence that the reader works with separate messages"""
         for m in self.messages:
             self.stream.recv_complete(m)
         self.check_results()
@@ -211,12 +215,14 @@ class TestReassembler_Independent(TestReassembler_Base):
 # Receive all the messages in a single buffer
 class TestReassembler_Buffer(TestReassembler_Base):
     def runTest(self):
+        """Gain confidence that the reader works with a single buffer"""
         self.stream.recv_complete("".join(self.messages))
         self.check_results()
 
 # Receive the messages byte after byte
 class TestReassembler_SingleChar(TestReassembler_Base):
     def runTest(self):
+        """Gain confidence that the reader works with small reads"""
         amt = 17                                        #XXX trade-off
         m = "".join(self.messages)
         while m:
@@ -242,6 +248,7 @@ class TestReassembler_SingleChar(TestReassembler_Base):
 #
 class TestJumboMessageHandlers(unittest.TestCase):
     def runTest(self):
+        """Make sure jumbo message handlers works well"""
         s = stream.StreamBitTorrent(None)
         s.parent = self
 
@@ -277,6 +284,7 @@ class TestJumboMessageHandlers(unittest.TestCase):
 #
 class GotMessageHandshake(unittest.TestCase):
     def runTest(self):
+        """Make sure we behave properly upon receiving an handshake"""
 
         # Test check on length
         for l in set(range(128)) - set([68]):
@@ -313,6 +321,7 @@ class GotMessageHandshake(unittest.TestCase):
 #
 class TestOtherMessagesProcessing(unittest.TestCase):
     def runTest(self):
+        """Make sure we correctly process BT messages"""
         self.numpieces = 1024
         s = stream.StreamBitTorrent(None)
         s.parent = self
