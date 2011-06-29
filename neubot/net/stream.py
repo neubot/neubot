@@ -463,6 +463,9 @@ class Connector(Pollable):
         self.family = 0
         self.measurer = None
 
+    def __repr__(self):
+        return "connector to %s" % str(self.endpoint)
+
     def connect(self, endpoint, conf, measurer=None):
         self.endpoint = endpoint
         self.family = socket.AF_INET
@@ -549,6 +552,9 @@ class Listener(Pollable):
         self.lsock = None
         self.endpoint = None
         self.family = 0
+
+    def __repr__(self):
+        return "listener at %s" % str(self.endpoint)
 
     def listen(self, endpoint, conf):
         self.endpoint = endpoint
