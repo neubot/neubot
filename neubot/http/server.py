@@ -22,9 +22,8 @@
 
 import StringIO
 import mimetypes
-import sys
 import os.path
-import socket
+import sys
 import time
 
 if __name__ == "__main__":
@@ -37,24 +36,26 @@ from neubot.http.ssi import ssi_replace
 from neubot.http.utils import nextstate
 from neubot.http.utils import prettyprintbody
 from neubot.http.stream import StreamHTTP
-from neubot.net.stream import StreamHandler
 from neubot.log import LOG
+from neubot.net.stream import StreamHandler
 from neubot.net.poller import POLLER
-from neubot import utils
-from neubot import boot
 
-# 3-letter abbreviation of month names, note that
-# python tm.tm_mon is in range [1,12]
-# we use our abbreviation because we don't want the
-# month name to depend on the locale
+from neubot import boot
+from neubot import system
+from neubot import utils
+
+#
+# 3-letter abbreviation of month names.
+# We use our abbreviation because we don't want the
+# month name to depend on the locale.
+# Note that Python tm.tm_mon is in range [1,12].
+#
 MONTH = [
     "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
     "Sep", "Oct", "Nov", "Dec",
 ]
 
 class ServerStream(StreamHTTP):
-
-    """Reads HTTP requests and provides ways to send a response."""
 
     def __init__(self, poller):
         StreamHTTP.__init__(self, poller)
@@ -125,8 +126,6 @@ REDIRECT = """
 
 class ServerHTTP(StreamHandler):
 
-    """Manages multiple HTTP ports."""
-
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
         self.childs = {}
@@ -151,7 +150,7 @@ class ServerHTTP(StreamHandler):
 
         if not request.uri.startswith("/"):
             response.compose(code="403", reason="Forbidden",
-                    body=StringIO.StringIO("403 Forbidden"))
+                             body="403 Forbidden")
             stream.send_response(request, response)
             return
 
@@ -163,19 +162,19 @@ class ServerHTTP(StreamHandler):
         rootdir = self.conf.get("http.server.rootdir", "")
         if not rootdir:
             response.compose(code="403", reason="Forbidden",
-                    body=StringIO.StringIO("403 Forbidden"))
+                             body="403 Forbidden")
             stream.send_response(request, response)
             return
 
         if request.uri == "/":
-            stringio = StringIO.StringIO(REDIRECT)
             response.compose(code="301", reason="Moved Permanently",
-              body=stringio, mimetype="text/html; charset=UTF-8")
+              body=REDIRECT, mimetype="text/html; charset=UTF-8")
             #XXX With IPv6 we need to enclose address in square braces
             response["location"] = "http://%s:%s/index.html" % stream.myname
             stream.send_response(request, response)
             return
 
+        # Paranoid mode: ON
         rootdir = utils.asciiify(rootdir)
         uripath = utils.asciiify(request.uri)
         fullpath = os.path.normpath(rootdir + uripath)
@@ -183,7 +182,7 @@ class ServerHTTP(StreamHandler):
 
         if not fullpath.startswith(rootdir):
             response.compose(code="403", reason="Forbidden",
-                    body=StringIO.StringIO("403 Forbidden"))
+                             body="403 Forbidden")
             stream.send_response(request, response)
             return
 
@@ -191,7 +190,7 @@ class ServerHTTP(StreamHandler):
             fp = open(fullpath, "rb")
         except (IOError, OSError):
             response.compose(code="404", reason="Not Found",
-                    body=StringIO.StringIO("404 Not Found"))
+                             body="404 Not Found")
             stream.send_response(request, response)
             return
 
@@ -224,8 +223,9 @@ class ServerHTTP(StreamHandler):
             LOG.exception()
             response = Message()
             response.compose(code="500", reason="Internal Server Error",
-                    body=StringIO.StringIO("500 Internal Server Error"))
+                             body="500 Internal Server Error", keepalive=0)
             stream.send_response(request, response)
+            stream.close()
 
     def connection_made(self, sock, rtt=0):
         stream = ServerStream(self.poller)
@@ -235,19 +235,23 @@ class ServerHTTP(StreamHandler):
     def connection_ready(self, stream):
         pass
 
-def main(args):
+HTTP_SERVER = ServerHTTP(POLLER)
 
-    CONFIG.register_defaults({
-        "http.server.address": "0.0.0.0",
-        "http.server.class": "",
-        "http.server.mime": True,
-        "http.server.ports": "8080,",
-        "http.server.rootdir": "",
-        "http.server.ssi": False,
-    })
+CONFIG.register_defaults({
+    "http.server.address": "0.0.0.0",
+    "http.server.class": "",
+    "http.server.daemonize": True,
+    "http.server.mime": True,
+    "http.server.ports": "8080,",
+    "http.server.rootdir": "",
+    "http.server.ssi": False,
+})
+
+def main(args):
     CONFIG.register_descriptions({
         "http.server.address": "Address to listen to",
         "http.server.class": "Use alternate ServerHTTP-like class",
+        "http.server.daemonize": "Run in background as a daemon",
         "http.server.mime": "Enable code that guess mime types",
         "http.server.ports": "List of ports to listen to",
         "http.server.rootdir": "Root directory for static pages",
@@ -257,11 +261,12 @@ def main(args):
     boot.common("http.server", "Neubot simple HTTP server", args)
     conf = CONFIG.copy()
 
-    make_child = ServerHTTP
     if conf["http.server.class"]:
         make_child = utils.import_class(conf["http.server.class"])
+        server = make_child(POLLER)
+    else:
+        server = HTTP_SERVER
 
-    server = make_child(POLLER)
     server.configure(conf)
 
     if conf["http.server.rootdir"] == ".":
@@ -270,6 +275,14 @@ def main(args):
     for port in conf["http.server.ports"].split(","):
         if port:
             server.listen((conf["http.server.address"], int(port)))
+
+    if conf["http.server.daemonize"]:
+        system.change_dir()
+        system.go_background()
+        system.write_pidfile()
+        LOG.redirect()
+
+    system.drop_privileges()
 
     POLLER.loop()
 
