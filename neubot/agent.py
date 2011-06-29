@@ -27,7 +27,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
-from neubot.http.server import ServerHTTP
+from neubot.http.server import HTTP_SERVER
 from neubot.api.server import ServerAPI
 from neubot.rendezvous.client import ClientRendezvous
 from neubot.net.poller import POLLER
@@ -47,7 +47,7 @@ def main(args):
     uri = "http://%s:9773/rendezvous" % conf["agent.master"]
 
     if conf["agent.api"]:
-        server = ServerHTTP(POLLER)
+        server = HTTP_SERVER
         LOG.debug("* API server root directory: %s" % WWW)
         server.configure({"http.server.rootdir": WWW, "http.server.ssi": True,
           "http.server.bind_or_die": True})

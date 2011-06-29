@@ -233,6 +233,8 @@ class ServerHTTP(StreamHandler):
     def connection_ready(self, stream):
         pass
 
+HTTP_SERVER = ServerHTTP(POLLER)
+
 CONFIG.register_defaults({
     "http.server.address": "0.0.0.0",
     "http.server.class": "",
@@ -255,11 +257,12 @@ def main(args):
     boot.common("http.server", "Neubot simple HTTP server", args)
     conf = CONFIG.copy()
 
-    make_child = ServerHTTP
     if conf["http.server.class"]:
         make_child = utils.import_class(conf["http.server.class"])
+        server = make_child(POLLER)
+    else:
+        server = HTTP_SERVER
 
-    server = make_child(POLLER)
     server.configure(conf)
 
     if conf["http.server.rootdir"] == ".":
