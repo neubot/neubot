@@ -80,7 +80,11 @@ class StreamHTTP(Stream):
         if m.length >= 0 and m.length <= smallmessage:
             vector = []
             vector.append(m.serialize_headers().read())
-            vector.append(m.serialize_body().read())
+            body = m.serialize_body()
+            if not isinstance(body, basestring):
+                vector.append(body.read())
+            else:
+                vector.append(body)
             data = "".join(vector)
             self.start_send(data)
         else:

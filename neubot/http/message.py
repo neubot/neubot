@@ -176,9 +176,12 @@ class Message(object):
 
         if kwargs.get("body", None):
             self.body = kwargs.get("body", None)
-            utils.safe_seek(self.body, 0, os.SEEK_END)
-            self.length = self.body.tell()
-            utils.safe_seek(self.body, 0, os.SEEK_SET)
+            if isinstance(self.body, basestring):
+                self.length = len(self.body)
+            else:
+                utils.safe_seek(self.body, 0, os.SEEK_END)
+                self.length = self.body.tell()
+                utils.safe_seek(self.body, 0, os.SEEK_SET)
             self["content-length"] = str(self.length)
             if kwargs.get("mimetype", ""):
                 self["content-type"] = kwargs.get("mimetype", "")
