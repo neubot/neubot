@@ -100,7 +100,7 @@ class ServerStream(StreamHTTP):
         now = time.gmtime()
         timestring = "%02d/%s/%04d:%02d:%02d:%02d -0000" % (now.tm_mday,
           MONTH[now.tm_mon], now.tm_year, now.tm_hour, now.tm_min, now.tm_sec)
-        requestline = " ".join([request.method, request.uri, request.protocol])
+        requestline = request.requestline
         statuscode = response.code
 
         nbytes = "-"

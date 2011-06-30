@@ -44,6 +44,9 @@ class Message(object):
         self.reason = reason
         self.protocol = protocol
 
+        # For server-side accounting
+        self.requestline = " ".join((method, uri, protocol))
+
         self.headers = collections.defaultdict(str)
         self.body = StringIO.StringIO("")
 
