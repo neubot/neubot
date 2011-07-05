@@ -173,3 +173,14 @@ def prettyprintbody(m, prefix):
     for ln in s.split("\n"):
         LOG.debug("%s %s" % (prefix, ln.rstrip()))
     utils.safe_seek(m.body, 0)
+
+#
+# Content-Length
+#
+
+def content_length(m):
+    s = m["content-length"]
+    ln = int(s)
+    if ln < 0:
+        raise ValueError("Content-Length must be positive")
+    return ln
