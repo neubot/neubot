@@ -61,7 +61,7 @@ class BitTorrentClient(ClientHTTP):
 
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="GET", pathquery="/bittorrent/negotiate",
+        request.compose(method="GET", pathquery="/negotiate/bittorrent",
           host=self.host_header)
         request["authorization"] = self.conf.get("_authorization", "")
         stream.send_request(request)
@@ -109,7 +109,7 @@ class BitTorrentClient(ClientHTTP):
             stringio = StringIO.StringIO(s)
 
             request = Message()
-            request.compose(method="POST", pathquery="/bittorrent/collect",
+            request.compose(method="POST", pathquery="/collect/bittorrent",
               body=stringio, mimetype="application/json", host=self.host_header)
             request["authorization"] = self.conf.get("_authorization", "")
 
@@ -140,7 +140,7 @@ class BitTorrentClient(ClientHTTP):
         stringio = StringIO.StringIO(s)
 
         request = Message()
-        request.compose(method="POST", pathquery="/bittorrent/collect",
+        request.compose(method="POST", pathquery="/collect/bittorrent",
           body=stringio, mimetype="application/json", host=self.host_header)
         request["authorization"] = self.conf.get("_authorization", "")
 
