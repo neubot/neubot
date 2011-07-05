@@ -76,7 +76,7 @@ class ServerAPI(ServerHTTP):
         except ConfigError, error:
             reason = re.sub(r"[\0-\31]", "", str(error))
             reason = re.sub(r"[\x7f-\xff]", "", reason)
-            LOG.exception(LOG.info)
+            LOG.exception(func=LOG.info)
             response = Message()
             response.compose(code="500", reason=reason,
                     body=StringIO.StringIO(reason))

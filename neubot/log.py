@@ -122,9 +122,11 @@ class Logger(object):
 
     # Log functions
 
-    def exception(self, func=None):
+    def exception(self, message="", func=None):
         if not func:
             func = self.error
+        if message:
+            func("EXCEPT: " + message + " (traceback follows)")
         for line in traceback.format_exc().split("\n"):
             func(line)
 
@@ -195,7 +197,7 @@ if __name__ == "__main__":
         raise
     except:
         LOG.exception()
-        LOG.exception(LOG.warning)
+        LOG.exception(func=LOG.warning)
 
     LOG.start("Testing the in-progress feature")
     LOG.progress("...")
