@@ -228,7 +228,7 @@ class Stream(Pollable):
     def connection_lost(self, exception):
         pass
 
-    def shutdown(self):
+    def close(self):
         self.close_pending = True
         if self.send_pending or self.close_complete:
             return
@@ -344,7 +344,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and not octets:
             self.eof = True
-            self.shutdown()
+            self.close()
             return
 
         if status == ERROR:
@@ -433,7 +433,7 @@ class Stream(Pollable):
 
                 self.send_complete()
                 if self.close_pending:
-                    self.shutdown()
+                    self.close()
                 return
 
             if count < len(self.send_octets):
@@ -727,7 +727,7 @@ class GenericProtocolStream(Stream):
         MEASURER.register_stream(self)
         duration = self.conf.get("net.stream.duration", 10)
         if duration >= 0:
-            POLLER.sched(duration, self._do_shutdown)
+            POLLER.sched(duration, self._do_close)
         if self.kind == "discard":
             self.start_recv()
         elif self.kind == "chargen":
@@ -735,10 +735,10 @@ class GenericProtocolStream(Stream):
         elif self.kind == "echo":
             self.start_recv()
         else:
-            self.shutdown()
+            self.close()
 
-    def _do_shutdown(self, *args, **kwargs):
-        self.shutdown()
+    def _do_close(self, *args, **kwargs):
+        self.close()
 
     def recv_complete(self, octets):
         self.start_recv()

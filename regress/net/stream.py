@@ -111,7 +111,7 @@ class TestStreamClose_Base(TestStream_Base):
         self.stream.sock.soclose = lambda: None
 
 #
-# Make sure that shutdown() moves us to close_complete
+# Make sure that close() moves us to close_complete
 # when we're not sending.  While there, make sure it will
 # invoke parent's connection_lost() method.
 #
@@ -119,7 +119,7 @@ class TestStreamClose_Simple(TestStreamClose_Base):
     def runTest(self):
         self.assertFalse(self.stream.send_pending)
         self.lost = False
-        self.stream.shutdown()
+        self.stream.close()
         self.assertTrue(self.stream.close_complete)
         self.assertTrue(self.lost)
 
@@ -127,15 +127,15 @@ class TestStreamClose_Simple(TestStreamClose_Base):
         self.lost = True
 
 #
-# Make sure that multiple closed() or shutdown() after
-# we have shutdown()ed have no effect.
+# Make sure that multiple closed() or close() after
+# we have close()ed have no effect.
 #
 class TestStreamClose_Multiple(TestStreamClose_Base):
     def runTest(self):
         self.count = 0
-        self.stream.shutdown()
+        self.stream.close()
         self.stream.closed()
-        self.stream.shutdown()
+        self.stream.close()
 
     def connection_lost(self, stream):
         self.assertEqual(self.count, 0)
@@ -150,20 +150,20 @@ class TestStreamClose_NoEffect(TestStreamClose_Base):
         for send_pending, close_complete in [(0,1), (1,0), (1,1)]:
             self.stream.send_pending = send_pending
             self.stream.close_complete = close_complete
-            self.stream.shutdown()
+            self.stream.close()
 
     def connection_lost(self, stream):
         raise RuntimeError
 
 #
-# Make sure that shutdown() moves us to close_pending
+# Make sure that close() moves us to close_pending
 # and not close_complete when we're already sending and
 # the user invokes it.
 #
 class TestStreamClose_SendPending(TestStreamClose_Base):
     def runTest(self):
         self.stream.send_pending = True
-        self.stream.shutdown()
+        self.stream.close()
         self.assertFalse(self.stream.close_complete)
         self.assertTrue(self.stream.close_pending)
 
@@ -201,14 +201,14 @@ class TestStreamError_SendPending(TestStreamClose_Base):
         self.lost = True
 
 #
-# Make sure that multiple closed() or shutdown() after
+# Make sure that multiple closed() or close() after
 # we have closed() have no effect.
 #
 class TestStreamError_Multiple(TestStreamClose_Base):
     def runTest(self):
         self.count = 0
         self.stream.closed()
-        self.stream.shutdown()
+        self.stream.close()
         self.stream.closed()
 
     def connection_lost(self, stream):
