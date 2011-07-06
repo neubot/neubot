@@ -142,7 +142,13 @@ class ServerHTTP(StreamHandler):
         if self.childs:
             for prefix, child in self.childs.items():
                 if request.uri.startswith(prefix):
-                    return child.got_request_headers(stream, request)
+                    try:
+                        return child.got_request_headers(stream, request)
+                    except (KeyboardInterrupt, SystemExit):
+                        raise
+                    except:
+                        self._on_internal_error(stream, request)
+                        return False
         return True
 
     def process_request(self, stream, request):
@@ -220,12 +226,15 @@ class ServerHTTP(StreamHandler):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            LOG.exception()
-            response = Message()
-            response.compose(code="500", reason="Internal Server Error",
-                             body="500 Internal Server Error", keepalive=0)
-            stream.send_response(request, response)
-            stream.close()
+            self._on_internal_error(stream, request)
+
+    def _on_internal_error(self, stream, request):
+        LOG.exception()
+        response = Message()
+        response.compose(code="500", reason="Internal Server Error",
+                         body="500 Internal Server Error", keepalive=0)
+        stream.send_response(request, response)
+        stream.close()
 
     def connection_made(self, sock, rtt=0):
         stream = ServerStream(self.poller)
