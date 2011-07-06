@@ -170,7 +170,7 @@ class Stream(Pollable):
         self.bytes_recv = 0
         self.bytes_sent = 0
 
-        self.atclosev = []
+        self.atclosev = set()
 
     def __repr__(self):
         return "stream %s" % self.logname
@@ -221,7 +221,9 @@ class Stream(Pollable):
         pass
 
     def atclose(self, func):
-        self.atclosev.append(func)
+        if func in self.atclosev:
+            LOG.oops("Duplicate atclose(): %s" % func)
+        self.atclosev.add(func)
 
     # Close path
 
@@ -250,7 +252,7 @@ class Stream(Pollable):
         self.connection_lost(exception)
         self.parent.connection_lost(self)
 
-        atclosev, self.atclosev = self.atclosev, []
+        atclosev, self.atclosev = self.atclosev, set()
         for func in atclosev:
             try:
                 func(self, exception)
