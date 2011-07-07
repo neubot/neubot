@@ -22,6 +22,7 @@
 
 import errno
 import select
+import time
 
 from neubot.utils import ticks
 from neubot.utils import timestamp
@@ -169,6 +170,13 @@ class Poller(object):
                 self.close(stream)
 
     #
+    # Has optional arguments because often we need to schedule
+    # this function after a given time.
+    #
+    def break_loop(self, *args, **kwargs):
+        self.again = False
+
+    #
     # Differently from Twisted, we might break out of the loop
     # with registered tasks.  It is probably wiser to behave like
     # Twisted, but this requires to update all the places where
@@ -177,70 +185,106 @@ class Poller(object):
 
     def loop(self):
         while self.again and (self.readset or self.writeset):
-            self.update_tasks()
-            self.dispatch_events()
+            self._loop_once()
 
     #
-    # Has optional arguments because often we need to schedule
-    # this function after a given time.
-    #
-    def break_loop(self, *args, **kwargs):
-        self.again = False
-
-    #
-    # Tests shows that update_tasks() would be slower if we kept tasks
+    # Tests shows that updating tasks would be slower if we kept tasks
     # sorted in reverse order--yes, with this arrangement it would be
     # faster to delete elements (because it would be just a matter of
     # shrinking the list), but the sort would be slower, and our tests
     # suggest that we loose more with the sort than we gain with the
     # delete.
     #
-    def update_tasks(self):
+    def _loop_once(self):
+
         now = ticks()
+
+        # Add pending tasks
         if self.pending:
             for task in self.pending:
+
+                # Unscheduled!
                 if task.time == -1 or task.func == None:
                     continue
+
                 self.tasks.append(task)
             self.pending = []
+
+        # Process expired tasks
         if self.tasks:
+
+            #
+            # Move new tasks to the proper place and move
+            # unscheduled tasks at the beginning (since they
+            # have task.time == -1).
+            #
             self.tasks.sort(key=lambda task: task.time)
+
+            # Run expired tasks
             index = 0
             for task in self.tasks:
-                if task.time > now:
+                if task.time - now > 1:
                     break
                 index = index + 1
+
+                # Unscheduled!
                 if task.time == -1 or task.func == None:
                     continue
+
                 try:
                     task.func(task.args, task.kwargs)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
                     LOG.exception()
+
+            # Get rid of expired tasks
             del self.tasks[:index]
 
-    def dispatch_events(self):
+        #
+        # Calculate select() timeout now that all
+        # the tasks are in a good state, i.e. no pending
+        # and no unscheduled tasks around.
+        #
+        if not self.tasks:
+            timeout = self.select_timeout
+        else:
+            timeout = now - self.tasks[0].time
+            if timeout < 0.1:
+                timeout = 0
+
+        # Monitor streams readability/writability
         if self.readset or self.writeset:
+
+            # Get list of readable/writable streams
             try:
                 res = select.select(self.readset.keys(), self.writeset.keys(),
-                 [], self.select_timeout)
+                 [], timeout)
             except select.error, (code, reason):
                 if code != errno.EINTR:
                     LOG.exception()
                     raise
-            else:
-                for fileno in res[0]:
-                    self._readable(fileno)
-                for fileno in res[1]:
-                    self._writable(fileno)
+
+            # Fire readable and writable events
+            for fileno in res[0]:
+                self._readable(fileno)
+            for fileno in res[1]:
+                self._writable(fileno)
+
+        #
+        # No I/O pending?  So let's just wait for the
+        # next task to be ready to be fired.
+        #
+        elif timeout > 0:
+            time.sleep(timeout)
 
     def check_timeout(self, *args, **kwargs):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
             now = ticks()
-            x = self.readset.values()
             stale = set()
+
+            x = self.readset.values()
             for stream in x:
                 if stream.readtimeout(now):
                     LOG.debug("%s: read timeout" % repr(stream))
@@ -249,6 +293,7 @@ class Poller(object):
                    now - stream.created > stream.watchdog):
                     LOG.debug("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
+
             x = self.writeset.values()
             for stream in x:
                 if stream.writetimeout(now):
@@ -258,6 +303,7 @@ class Poller(object):
                    now - stream.created > stream.watchdog):
                     LOG.debug("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
+
             for stream in stale:
                 self.close(stream)
 
