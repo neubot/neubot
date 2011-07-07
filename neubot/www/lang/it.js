@@ -104,6 +104,24 @@ LANG = {
                            inviate al demone Neubot finché non premi il tasto\
                            Save in fondo alla pagina.",
 
+    // neubot/www/bittorrent.html
+
+    "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\
+        di un certo numero di bytes da un server remoto, utilizzando il\
+        protocollo BitTorrent.  Il test stima la velocità media di download\
+        e upload così come il tempo richiesto per connettersi al server\
+        remoto, che approssima il round-trip time.",
+
+    "i18n_bittorrent_explanation_2": "Nota che questo test è abbastanza\
+        differente dal test <em>Speedtest</em>, quindi ci sono casi in cui\
+        i due non sono comparabili.  Stiamo lavorando a un test HTTP\
+        che sia più simile a quest'ultimo, così che sia sempre possibile\
+        compararli.",
+
+    "i18n_bittorrent_see_last": "Guarda l'ultimo",
+    "i18n_bittorrent_see_last_days": "giorno",
+    "i18n_bittorrent_see_last_hours": "ora",
+
     // neubot/www/speedtest.html
 
     "i18n_speedtest_title": "Risultati dello speedtest",
