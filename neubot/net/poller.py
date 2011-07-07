@@ -169,6 +169,13 @@ class Poller(object):
                 self.close(stream)
 
     #
+    # Has optional arguments because often we need to schedule
+    # this function after a given time.
+    #
+    def break_loop(self, *args, **kwargs):
+        self.again = False
+
+    #
     # Differently from Twisted, we might break out of the loop
     # with registered tasks.  It is probably wiser to behave like
     # Twisted, but this requires to update all the places where
@@ -179,13 +186,6 @@ class Poller(object):
         while self.again and (self.readset or self.writeset):
             self.update_tasks()
             self.dispatch_events()
-
-    #
-    # Has optional arguments because often we need to schedule
-    # this function after a given time.
-    #
-    def break_loop(self, *args, **kwargs):
-        self.again = False
 
     #
     # Tests shows that update_tasks() would be slower if we kept tasks
