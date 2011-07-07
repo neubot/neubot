@@ -184,44 +184,66 @@ class Poller(object):
 
     def loop(self):
         while self.again and (self.readset or self.writeset):
-            self.update_tasks()
-            self.dispatch_events()
+            self._loop_once()
 
     #
-    # Tests shows that update_tasks() would be slower if we kept tasks
+    # Tests shows that updating tasks would be slower if we kept tasks
     # sorted in reverse order--yes, with this arrangement it would be
     # faster to delete elements (because it would be just a matter of
     # shrinking the list), but the sort would be slower, and our tests
     # suggest that we loose more with the sort than we gain with the
     # delete.
     #
-    def update_tasks(self):
+    def _loop_once(self):
+
         now = ticks()
+
+        # Add pending tasks
         if self.pending:
             for task in self.pending:
+
+                # Unscheduled!
                 if task.time == -1 or task.func == None:
                     continue
+
                 self.tasks.append(task)
             self.pending = []
+
+        # Process expired tasks
         if self.tasks:
+
+            #
+            # Move new tasks to the proper place and move
+            # unscheduled tasks at the beginning (since they
+            # have task.time == -1).
+            #
             self.tasks.sort(key=lambda task: task.time)
+
+            # Run expired tasks
             index = 0
             for task in self.tasks:
                 if task.time > now:
                     break
                 index = index + 1
+
+                # Unscheduled!
                 if task.time == -1 or task.func == None:
                     continue
+
                 try:
                     task.func(task.args, task.kwargs)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
                     LOG.exception()
+
+            # Get rid of expired tasks
             del self.tasks[:index]
 
-    def dispatch_events(self):
+        # Monitor streams readability/writability
         if self.readset or self.writeset:
+
+            # Get list of readable/writable streams
             try:
                 res = select.select(self.readset.keys(), self.writeset.keys(),
                  [], self.select_timeout)
@@ -229,7 +251,9 @@ class Poller(object):
                 if code != errno.EINTR:
                     LOG.exception()
                     raise
+
             else:
+                # Fire readable and writable events
                 for fileno in res[0]:
                     self._readable(fileno)
                 for fileno in res[1]:
