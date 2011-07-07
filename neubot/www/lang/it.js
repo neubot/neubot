@@ -2,6 +2,8 @@
 /*-
  * Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
  *  Universita' degli Studi di Milano
+ * Copyright (c) 2011 Claudio Artusio <claudioartusio@gmail.com>,
+ *  NEXA Center for Internet & Society at Politecnico di Torino
  *
  * This file is part of Neubot <http://www.neubot.org/>.
  *
@@ -102,6 +104,24 @@ LANG = {
                            inviate al demone Neubot finché non premi il tasto\
                            Save in fondo alla pagina.",
 
+    // neubot/www/bittorrent.html
+
+    "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\
+        di un certo numero di bytes da un server remoto, utilizzando il\
+        protocollo BitTorrent.  Il test stima la velocità media di download\
+        e upload così come il tempo richiesto per connettersi al server\
+        remoto, che approssima il round-trip time.",
+
+    "i18n_bittorrent_explanation_2": "Nota che questo test è abbastanza\
+        differente dal test <em>Speedtest</em>, quindi ci sono casi in cui\
+        i due non sono comparabili.  Stiamo lavorando a un test HTTP\
+        che sia più simile a quest'ultimo, così che sia sempre possibile\
+        compararli.",
+
+    "i18n_bittorrent_see_last": "Guarda l'ultimo",
+    "i18n_bittorrent_see_last_days": "giorno",
+    "i18n_bittorrent_see_last_hours": "ora",
+
     // neubot/www/speedtest.html
 
     "i18n_speedtest_title": "Risultati dello speedtest",
@@ -112,6 +132,32 @@ LANG = {
 
     "i18n_speedtest_see_last": "Guarda l'ultimo",
     "i18n_speedtest_see_last_days": "giorno",
-    "i18n_speedtest_see_last_hours": "ora"
+    "i18n_speedtest_see_last_hours": "ora",
+
+    // neubot/www/privacy.html
+
+    "i18n_privacy_explanation": "In questa pagina spieghiamo i dettagli della nostra <a href='#policy'>politica sulla privacy</a>, necessaria per essere conformi alla normativa europea in materia. Forniamo inoltre un semplice <a href='#dashboard'>quadro privacy</a> per gestire le autorizzazioni che deciderai di fornirci rispetto al trattamento del tuo indirizzo Internet, che è considerato dato personale nell'Unione Europea.",
+
+    "i18n_privacy_title_1": "Politica sulla privacy",
+
+    "i18n_privacy_policy": "Lo scopo di Neubot è quello di misurare la qualità e la neutralità della connessione a Internet e di condividere i risultati con la comunità di Internet, al fine di riequilibrare l'asimmetria informativa tra normali utenti e i Service Providers.\n\n\
+Neubot non controlla o analizza il traffico Internet. Utilizza appena una piccola frazione della capacità di connessione per eseguire test di trasmissione in background, inviando e/o ricevendo dati casuali. Il risultato contiene misure di prestazioni come la velocità di download, la latenza o il carico percentuale del tuo computer. Inoltre, il risultato contiene il tuo indirizzo Internet. Dopo il test, il risultato viene caricato sui server di Neubot.\n\n\
+Il progetto Neubot ha bisogno di raccogliere il tuo indirizzo Internet, perché ciò permette di inferire il tuo Internet Service Provider e di avere un'idea della tua posizione geografica. Questo è coerente per l'obbiettivo di Neubot di monitorare la qualità e la neutralità di Internet, per provider e area geografica.\n\n\
+Tuttavia, in Europa gli indirizzi Internet sono dati personali. Pertanto, Neubot non può memorizzare, elaborare, o condividere il tuo indirizzo Internet senza il tuo *consenso informato* preventivo, in base alle disposizioni del 'Codice in Materia di Protezione dei Dati personali' `(Decreto 196/03) <http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248>`_. In accordo con quanto previsto dalla legge, titolare del trattamento è il Centro NEXA di Internet &amp; Società, rappresentato dal suo co-direttore Juan Carlos De Martin.\n\n\
+Neubot ti chiede di affermare esplicitamente di avete letto questa politica sulla privacy e di dare il consenso a raccogliere e condividere il tuo indirizzo IP. Se non confermi di aver letto la politica sulla privacy, Neubot raccoglie l'indirizzo Internet secondo speciali previsioni di legge, che permettono ai ricercatori di raccoglierlo `per soli fini statistici <http://www.garanteprivacy.it/garante/doc.jsp?ID=1556635>`_. Gli indirizzi Internet raccolti sotto questo regime saranno marcati in un modo speciale, e non saranno condivisi con nessuno. Essi saranno trattati unicamente dai ricercatori autorizzati dal titolare del trattamento. Questi dati, tuttavia, non saranno di grande valore per la comunità di Internet, perché non possono essere condivisi con ed analizzati da altri ricercatori.\n\n\
+Il progetto ha bisogno almeno del consenso a raccogliere il tuo indirizzo Internet, perché altrimenti non può elaborare i tuoi risultati e pubblicare i dati aggregati. Se non dai a neubot il consenso di condividere, il tuo indirizzo Internet non verrà ovviamente condiviso con gli altri e verrà trattato unicamente dai ricercatori autorizzati dal titolare del trattamento. Ti preghiamo di notare che vi è un grande vantaggio nel condividere il tuo Indirizzo Internet, perché consente ad altri ricercatori di studiare e criticare la metodologia e i set di dati di Neubot. Ciò permetterà alla comunità dei ricercatori di comprendere meglio il funzionamento della rete.\n\n\
+Il titolare del trattamento garantisce i diritti di cui all'articolo 7 del suddetto decreto. In sostanza, tu hai il controllo totale sui tuoi dati personali, puoi, ad esempio, intimare a Neubot di rimuovere il tuo indirizzo Internet dal proprio set di dati. Per esercitare i tuoi diritti, scrivi al Dipartimento di Automatica e Infomatica (DAUIN) - Politecnico di Torino - Corso Duca degli Abruzzi, 24 - 10129 Torino, ITALIA.",
+
+    "i18n_privacy_title_2": "Quadro privacy",
+
+    "i18n_privacy_settings_1": "Questo è lo status corrente delle tue impostazioni sulla privacy:",
+    
+    "i18n_privacy_settings_2_informed":"<b>Informato</b> Affermi di aver letto e compreso la politica sulla privacy di cui sopra",
+
+    "i18n_privacy_settings_2_can_collect": "<b>Può collezionare</b> Consenti a Neubot di collezionare il tuo indirizzo Internet",
+
+    "i18n_privacy_settings_2_can_share": "<b>Può condividere</b> Consenti a Neubot di condividere il tuo indirizzo Internet con la comunità di internet",
+
+    "i18n_privacy_warning": "Se non confermi di essere <em>Informato</em>, il tuo indirizzo Internet verrà trattato unicamente sotto le speciali previsioni di legge per soli fini statistici, come spiegato sopra.  Puoi decidere se Neubot <em>può collezionare</em> e <em>può condividere</em> il tuo indirizzo Internet soltanto se riconosci di essere <em>informato</em>."
 
 };
