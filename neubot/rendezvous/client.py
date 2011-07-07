@@ -27,6 +27,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.bittorrent.client import BitTorrentClient
 from neubot.config import CONFIG
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
@@ -73,6 +74,7 @@ class ClientRendezvous(ClientHTTP):
 
         m = compat.RendezvousRequest()
         m.accept.append("speedtest")
+        m.accept.append("bittorrent")
         m.version = self.conf.get("rendezvous.client.version", boot.VERSION)
 
         request = Message()
@@ -115,7 +117,14 @@ class ClientRendezvous(ClientHTTP):
 
                         self.testing = True
 
+                        tests = []
                         if "speedtest" in m1.available:
+                            tests.append("speedtest")
+                        if "bittorrent" in m1.available:
+                            tests.append("bittorrent")
+                        test = random.choice(tests)
+
+                        if test == "speedtest":
                             conf = self.conf.copy()
                             conf["speedtest.client.uri"] =  m1.available[
                                                               "speedtest"][0]
@@ -131,8 +140,24 @@ class ClientRendezvous(ClientHTTP):
                               self.end_of_test, None)
                             client.connect_uri()
 
+                        elif test == "bittorrent":
+                            conf = self.conf.copy()
+                            conf["bittorrent.uri"] =  m1.available[
+                                                        "bittorrent"][0]
+                            client = BitTorrentClient(POLLER)
+                            client.configure(conf)
+
+                            #
+                            # Subscribe _before_ connecting.  This way we
+                            # immediately see TESTDONE if the connection fails
+                            # and we can schedule the next attempt.
+                            #
+                            NOTIFIER.subscribe(TESTDONE,
+                              self.end_of_test, None)
+                            client.connect_uri()
+
                         else:
-                            self.schedule()
+                            self.end_of_test(TESTDONE, None)
 
     def end_of_test(self, event, context):
         self.testing = False
