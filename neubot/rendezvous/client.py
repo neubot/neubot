@@ -103,8 +103,26 @@ class ClientRendezvous(ClientHTTP):
                     LOG.info("Version %s available at %s" % (ver, uri))
                     STATE.update("update", {"version": ver, "uri": uri})
 
+                #
+                # Choose the test we would like to run even if
+                # we're not going to run it because we're running
+                # in debug mode or tests are disabled.
+                # This allows us to print to the logger the test
+                # we /would/ have choose if we were allowed to run
+                # it.
+                #
+                tests = []
+                if "speedtest" in m1.available:
+                    tests.append("speedtest")
+                if "bittorrent" in m1.available:
+                    tests.append("bittorrent")
+                test = random.choice(tests)
+                LOG.info("* Chosen test: %s" % test)
+
+                # Are we allowed to run a test?
                 if (not CONFIG.get("enabled", True) or
                   self.conf.get("rendezvous.client.debug", False)):
+                    LOG.info("Tests are disabled... not running")
                     self.schedule()
                 else:
 
@@ -116,13 +134,6 @@ class ClientRendezvous(ClientHTTP):
                     else:
 
                         self.testing = True
-
-                        tests = []
-                        if "speedtest" in m1.available:
-                            tests.append("speedtest")
-                        if "bittorrent" in m1.available:
-                            tests.append("bittorrent")
-                        test = random.choice(tests)
 
                         if test == "speedtest":
                             conf = self.conf.copy()
