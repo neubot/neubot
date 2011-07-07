@@ -132,7 +132,7 @@ class ClientRendezvous(ClientHTTP):
                             client.connect_uri()
 
                         else:
-                            self.schedule()
+                            self.end_of_test(TESTDONE, None)
 
     def end_of_test(self, event, context):
         self.testing = False
