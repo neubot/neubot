@@ -76,7 +76,13 @@ def update(connection, iterator, commit=True, clear=False):
 def walk(connection, func):
     cursor = connection.cursor()
     cursor.execute("SELECT name, value FROM CONFIG;")
-    return map(func, cursor)
+    #
+    # XXX Python 2.5 sqlite3.Row does not support iterability
+    # therefore here we need to perform a special dance because
+    # neubot/config.py wants a tuple.
+    #
+    return map(lambda row: func(tuple([row["name"],
+      row["value"]])), cursor)
 
 def dictionarize(connection):
     d = {}
