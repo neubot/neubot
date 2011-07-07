@@ -86,6 +86,22 @@ LANG = {
 
     'i18n_status_text': "Questo è il pannello di controllo dell'Agent di Neubot, in esecuzione con PID <em><span id='pid'>(n/a)</span></em> da <em><span id='since'>(n/a)</span></em>. La tabella sottostante fornisce dettagli aggiuntivi sullo stato dell'Agent. La riga evidenziata rappresenta lo stato corrente.",
 
+    // neubot/www/settings.html
+
+    "i18n_settings_title": "Impostazioni",
+
+    "i18n_settings_par1": "Questa pagina mostra tutte le opzioni di\
+                           configurazione che possono essere modificate,\
+                           inclusi i settaggi più oscuri e pericolosi.\
+                           Perfavore, assicurati di sapere ciò che stai\
+                           facendo prima di fare modifiche.  Non riceverai\
+                           alcun tipo di aiuto se Neubot smette di funzionare\
+                           per colpa di modifiche inopportune.",
+
+    "i18n_settings_par2": "Le modifiche alla configurazione non vengono\
+                           inviate al demone Neubot finché non premi il tasto\
+                           Save in fondo alla pagina.",
+
     // neubot/www/speedtest.html
 
     "i18n_speedtest_title": "Risultati dello speedtest",
