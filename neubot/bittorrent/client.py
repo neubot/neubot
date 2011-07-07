@@ -93,7 +93,7 @@ class BitTorrentClient(ClientHTTP):
             peer.complete = self.peer_test_complete
             peer.connection_lost = self.peer_connection_lost
             peer.configure(self.conf)
-            peer.connect((self.http_stream.peername[0], 9881))      #XXX
+            peer.connect((self.http_stream.peername[0], 6881))      #XXX
 
     def peer_connection_lost(self, stream):
         if not self.success:
