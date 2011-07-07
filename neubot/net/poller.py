@@ -249,7 +249,7 @@ class Poller(object):
         if not self.tasks:
             timeout = self.select_timeout
         else:
-            timeout = now - self.tasks[0].time
+            timeout = self.tasks[0].time - now
             if timeout < 0.1:
                 timeout = 0
 
