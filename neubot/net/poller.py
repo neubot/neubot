@@ -252,12 +252,11 @@ class Poller(object):
                     LOG.exception()
                     raise
 
-            else:
-                # Fire readable and writable events
-                for fileno in res[0]:
-                    self._readable(fileno)
-                for fileno in res[1]:
-                    self._writable(fileno)
+            # Fire readable and writable events
+            for fileno in res[0]:
+                self._readable(fileno)
+            for fileno in res[1]:
+                self._writable(fileno)
 
     def check_timeout(self, *args, **kwargs):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
