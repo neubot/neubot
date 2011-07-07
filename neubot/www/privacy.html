@@ -5,19 +5,19 @@
         <div class="entry-content">
 
 
-        <p>In this page we spell out the details of our <a
+        <p class="i18n i18n_privacy_explanation">In this page we spell out the details of our <a
         href="#policy">privacy policy</a>, in order to comply with
         European law. And we provide a simple <a href="#dashboard">privacy
         dashboard</a> to manage the permissions you give us with
         respect to the treatment of your Internet address, which
         is personal data in EU.</p>
 
-        <h4 id="policy">Privacy policy</h4>
+        <h4 id="policy" class="i18n i18n_privacy_title_1">Privacy policy</h4>
 
         <!-- NOTE this section should be kept in sync with the
              PRIVACY file, possibly using docutils because PRIVACY
              is restructuredtext. -->
-        <p><textarea cols="80" rows="12" readonly="true">
+        <p class="i18n i18n_privacy_policy"><textarea cols="80" rows="12" readonly="true">
     The purpose of Neubot is to measure the quality and neutrality of
     your Internet connection and to share the results with the Internet
     community, in order to rebalance the information asymmetry between
@@ -78,24 +78,25 @@
     10129 Torino, ITALY.
         </textarea></p>
 
-        <h4 id="dashboard">Privacy dashboard</h4>
+        <h4 id="dashboard" class="i18n i18n_privacy_title_2">Privacy dashboard</h4>
 
-        <p>This is the current state of your privacy settings:</p>
+        <p class="i18n i18n_privacy_settings_1">This is the current state of your privacy settings:</p>
 
-        <p>
-          <input id='check_privacy_informed' type="checkbox" value="0" /><label for='check_privacy_informed'><b>Informed</b> You assert that you
+        <p class="i18n i18n_privacy_settings_2">
+          <input id='check_privacy_informed' type="checkbox" value="0" /><label for='check_privacy_informed' class="i18n i18n_privacy_settings_2_informed"><b>Informed</b> You assert that you
            have read and understood the above privacy policy</label>
           <br />
-          <input id='check_privacy_can_collect' type="checkbox" value="0" /><label for='check_privacy_can_collect'><b>Can collect</b> You give Neubot
+          <input id='check_privacy_can_collect' type="checkbox" value="0" /><label for='check_privacy_can_collect' class="i18n i18n_privacy_settings_2_can_collect"><b>Can collect</b> You give Neubot
            the permission to collect your Internet address</label>
           <br />
-          <input id='check_privacy_can_share' type="checkbox" value="0" /><label for='check_privacy_can_share'><b>Can share</b> You give Neubot the
+
+          <input id='check_privacy_can_share' type="checkbox" value="0" /><label for='check_privacy_can_share' class="i18n i18n_privacy_settings_2_can_share"><b>Can share</b> You give Neubot the
            permission to share your Internet address with the Internet
            community</label>
           <br />
         </p>
 
-        <p>If you don't assert that you are <em>Informed</em>, your Internet
+        <p class="i18n i18n_privacy_warning">If you don't assert that you are <em>Informed</em>, your Internet
          address will be treated under the special provisions for statistical
          purposes only, as explained above.  You can decide whether Neubot
          <em>can collect</em> and <em>can share</em> only if you acknowledge
