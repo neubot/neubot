@@ -65,7 +65,7 @@ CONFIG.register_defaults({
     "bittorrent.address": "0.0.0.0",
     "bittorrent.daemonize": True,
     "bittorrent.http_port": 80,
-    "bittorrent.bt_port": 9881,
+    "bittorrent.bt_port": 6881,
 })
 
 def main(args):
