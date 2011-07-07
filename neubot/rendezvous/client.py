@@ -115,7 +115,12 @@ class ClientRendezvous(ClientHTTP):
 
                         self.testing = True
 
+                        tests = []
                         if "speedtest" in m1.available:
+                            tests.append("speedtest")
+                        test = random.choice(tests)
+
+                        if test == "speedtest":
                             conf = self.conf.copy()
                             conf["speedtest.client.uri"] =  m1.available[
                                                               "speedtest"][0]
