@@ -203,14 +203,20 @@ class ServerHTTP(StreamHandler):
         if self.conf.get("http.server.mime", True):
             mimetype, encoding = mimetypes.guess_type(fullpath)
 
-            if mimetype == "text/html":
-                ssi = self.conf.get("http.server.ssi", False)
-                if ssi:
-                    body = ssi_replace(rootdir, fp)
-                    fp = StringIO.StringIO(body)
+            # Do not attempt SSI if the resource is, say, gzipped
+            if not encoding:
+                if mimetype == "text/html":
+                    ssi = self.conf.get("http.server.ssi", False)
+                    if ssi:
+                        body = ssi_replace(rootdir, fp)
+                        fp = StringIO.StringIO(body)
 
-            if encoding:
-                mimetype = "; charset=".join((mimetype, encoding))
+                #XXX Do we need to enforce the charset?
+                if mimetype in ("text/html", "application/x-javascript"):
+                    mimetype += "; charset=UTF-8"
+            else:
+                response["content-encoding"] = encoding
+
         else:
             mimetype = "text/plain"
 
