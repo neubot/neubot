@@ -63,7 +63,7 @@ var i18n = {
                 jQuery(".i18n").each(function(index, element) {
                     var classList = jQuery(element).attr('class').split(/\s+/);
                     jQuery.each(classList, function(i, v) {
-                        var patt = /^i18n_(.*)$/i;
+                        var patt = /^(i18n_.*)$/i;
                         if ((result = patt.exec(v)) && LANG[result[1]]) {
                             switch (element.tagName) {
                             case "textarea":
