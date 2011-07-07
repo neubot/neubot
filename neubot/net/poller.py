@@ -239,8 +239,9 @@ class Poller(object):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
             now = ticks()
-            x = self.readset.values()
             stale = set()
+
+            x = self.readset.values()
             for stream in x:
                 if stream.readtimeout(now):
                     LOG.debug("%s: read timeout" % repr(stream))
@@ -249,6 +250,7 @@ class Poller(object):
                    now - stream.created > stream.watchdog):
                     LOG.debug("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
+
             x = self.writeset.values()
             for stream in x:
                 if stream.writetimeout(now):
@@ -258,6 +260,7 @@ class Poller(object):
                    now - stream.created > stream.watchdog):
                     LOG.debug("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
+
             for stream in stale:
                 self.close(stream)
 
