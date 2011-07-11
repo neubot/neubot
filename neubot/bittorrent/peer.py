@@ -32,7 +32,6 @@ from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
-from neubot.bittorrent.stream import SMALLMESSAGE
 from neubot.net.stream import StreamHandler
 
 from neubot.bittorrent import estimate
@@ -42,22 +41,15 @@ from neubot.state import STATE
 
 from neubot import utils
 
-NUMPIECES = 1<<20
-PIECE_LEN = 1<<17
+# Constants
+from neubot.bittorrent.config import NUMPIECES
+from neubot.bittorrent.config import PIECE_LEN
+from neubot.bittorrent.config import SMALLMESSAGE
+from neubot.bittorrent.config import WATCHDOG
 
 LO_THRESH = 3
 MAX_REPEAT = 7
 TARGET = 5
-
-#
-# This is the maximum time the test can run.  After that time,
-# no matter what, the underlying stream is closed by the low-level
-# code in <net/poller.py>.
-# The typical test should take less than 15 seconds so here we
-# are provisioning for more than 4x the time, which seems to be
-# quite reasonable.
-#
-WATCHDOG = 60
 
 # States of the PeerNeubot object
 STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
