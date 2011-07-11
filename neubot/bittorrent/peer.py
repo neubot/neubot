@@ -79,6 +79,7 @@ class PeerNeubot(StreamHandler):
         self.dload_speed = 0
         self.repeat = MAX_REPEAT
         self.state = INITIAL
+        self.infohash = None
         self.rtt = 0
         self.setup({})
 
@@ -90,7 +91,6 @@ class PeerNeubot(StreamHandler):
         self.numpieces = int(conf.get("bittorrent.numpieces", NUMPIECES))
         self.bitfield = make_bitfield(self.numpieces)
         self.peer_bitfield = make_bitfield(self.numpieces)
-        self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
         self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
                               estimate.DOWNLOAD))
@@ -109,6 +109,12 @@ class PeerNeubot(StreamHandler):
 
     def connect(self, endpoint, count=1):
         self.connector_side = True
+        #
+        # In Neubot the listener does not have an infohash
+        # and handshakes, including connector infohash, after
+        # it receives the connector handshake.
+        #
+        self.infohash = self.conf.get("bittorrent.infohash", random_bytes(20))
         StreamHandler.connect(self, endpoint, count)
 
     def connection_made(self, sock, rtt=0):

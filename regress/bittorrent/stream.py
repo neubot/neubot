@@ -307,6 +307,14 @@ class GotMessageHandshake(unittest.TestCase):
         self.invoked_connection_ready = False
         s = stream.StreamBitTorrent(None)
         s.parent = self
+        #
+        # XXX With this infohash and my_id we play the role of
+        # the connector: the listener instead would send an hand-
+        # shake upon receiving an hanshake and the test would
+        # fail because here poller is None (see above).
+        #
+        self.infohash = chr(0) * 20
+        self.my_id = chr(0) * 20
         m = [chr(19), "BitTorrent protocol", chr(0) * 48]
         s._got_message("".join(m))
         self.assertEqual(self.invoked_connection_ready, True)
