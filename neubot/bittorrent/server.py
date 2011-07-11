@@ -27,6 +27,7 @@ if __name__ == "__main__":
 
 from neubot.bittorrent.negotiate import AUTH_PEERS
 from neubot.bittorrent.peer import PeerNeubot
+from neubot.bittorrent.peer import random_bytes
 from neubot.config import CONFIG
 from neubot.http.server import HTTP_SERVER
 from neubot.log import LOG
@@ -35,6 +36,14 @@ from neubot.net.poller import POLLER
 from neubot import boot
 from neubot import system
 from neubot import utils
+
+#
+# The BitTorrent server must not change its PEER_ID
+# each time a new client connects.  Instead it should
+# keep using the same identifier over and over and
+# over.
+#
+MY_ID = random_bytes(20)
 
 #
 # We check whether a peer is authorized or not just at
@@ -46,6 +55,11 @@ from neubot import utils
 # for the next test.
 #
 class ServerPeer(PeerNeubot):
+
+    def configure(self, conf, measurer=None):
+        conf["bittorrent.my_id"] = MY_ID
+        PeerNeubot.configure(self, conf, measurer)
+
     def connection_ready(self, stream):
         if not stream.id in AUTH_PEERS:
             raise RuntimeError("Unauthorized peer")
