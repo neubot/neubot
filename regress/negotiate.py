@@ -20,6 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import StringIO
 import random
 import sys
 import unittest
@@ -95,7 +96,7 @@ class HTTP_GotRequest(unittest.TestCase):
                                 "reason": "Not Found",
                                 "response_body": "Not Found",
                                 "ident": sha1stream(None),
-                                "request_body": "",
+                                "request_body": {},
                                 "request": message,
                                 "parent": server,
                                 "stream": None,
@@ -119,7 +120,7 @@ class HTTP_GotRequest(unittest.TestCase):
                                 "reason": "Ok",
                                 "response_body": "",
                                 "ident": sha1stream(None),
-                                "request_body": "",
+                                "request_body": {},
                                 "request": message,
                                 "parent": server,
                                 "stream": None,
@@ -152,7 +153,7 @@ class HTTP_GotRequest(unittest.TestCase):
                                 "reason": "Ok",
                                 "response_body": "",
                                 "ident": sha1stream(None),
-                                "request_body": "",
+                                "request_body": {},
                                 "request": message,
                                 "parent": server,
                                 "stream": None,
@@ -166,6 +167,72 @@ class HTTP_GotRequest(unittest.TestCase):
         #
         server.negotiator.collect = func
         server.send_response = func
+
+        server.process_request(None, message)
+
+    def test_body_invalid_mime(self):
+        """Make sure we raise RuntimeError if the MIME type is wrong"""
+
+        server = _ServerNegotiate(None)
+        server.negotiator = _Negotiator()
+
+        message = Message()
+        message.compose(pathquery="/collect/abcdefg",
+                        body=StringIO.StringIO("abc"))
+
+        self.assertRaises(RuntimeError, server.process_request, None, message)
+
+        message = Message()
+        message.compose(pathquery="/collect/abcdefg",
+                        body=StringIO.StringIO("abc"),
+                        mimetype="text/plain")
+
+        self.assertRaises(RuntimeError, server.process_request, None, message)
+
+    def test_body_not_a_dictionary(self):
+        """Make sure we raise ValueError if we cannot parse request body"""
+
+        server = _ServerNegotiate(None)
+        server.negotiator = _Negotiator()
+
+        message = Message()
+        message.compose(pathquery="/collect/abcdefg",
+                        body=StringIO.StringIO("abc"),
+                        mimetype="application/json")
+
+        self.assertRaises(ValueError, server.process_request, None, message)
+
+    def test_body_a_dictionary(self):
+        """Make sure we correctly read incoming dictionaries"""
+
+        server = _ServerNegotiate(None)
+        server.negotiator = _Negotiator()
+
+        d = {"abc": 12, "k": "s", "uuu": 1.74}
+
+        server.send_response = lambda m: self.assertEquals(d,
+          m["request_body"])
+
+        message = Message()
+        message.compose(pathquery="/collect/abcdefg",
+                        body=StringIO.StringIO(json.dumps(d)),
+                        mimetype="application/json")
+
+        server.process_request(None, message)
+
+    def test_body_empty(self):
+        """Make sure we correctly read empty incoming bodies"""
+
+        server = _ServerNegotiate(None)
+        server.negotiator = _Negotiator()
+
+        d = {}
+
+        server.send_response = lambda m: self.assertEquals(d,
+          m["request_body"])
+
+        message = Message()
+        message.compose(pathquery="/collect/abcdefg")
 
         server.process_request(None, message)
 
