@@ -75,11 +75,9 @@ class BitTorrentClient(ClientHTTP):
     def got_response_negotiating(self, stream, request, response):
         m = json.loads(response.body.read())
 
-        PROPERTIES = ("authorization", "real_address", "unchoked")
+        PROPERTIES = ("authorization", "queue_pos", "real_address", "unchoked")
         for k in PROPERTIES:
             self.conf["_%s" % k] = m[k]
-        if "queue_pos" in m:
-            self.conf["_queue_pos"] = m["queue_pos"]
 
         if not self.conf["_unchoked"]:
             self.connection_ready(stream)
