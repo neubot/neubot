@@ -51,7 +51,13 @@ TARGET = 5
 # Of course, it is a crime for a test to run for so much time but
 # I don't want to be too aggressive here.
 #
-WATCHDOG = 30
+# FIXME I'm too tired now to try to understand why -- but the
+# upload part of the test takes too much time and hits many
+# watchdog timeouts so I need to raise the limit :-(
+#
+#
+#WATCHDOG = 30
+WATCHDOG = 300
 
 # States of the PeerNeubot object
 STATES = [INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
@@ -161,6 +167,7 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")
         if not self.connector_side and self.state != INITIAL:
             raise RuntimeError("INTERESTED when state != INITIAL")
+        self.__begin_uploading = utils.ticks()
         self.state = UPLOADING
         stream.send_unchoke()
 
@@ -168,6 +175,8 @@ class PeerNeubot(StreamHandler):
         if self.state != UPLOADING:
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
         if self.connector_side:
+            __timediff = utils.ticks() - self.__begin_uploading()
+            LOG.warning("* Time to upload: %d" % __timediff)
             LOG.info("BitTorrent: test complete")
             self.complete(stream, self.dload_speed, self.rtt,
                           self.target_bytes)
