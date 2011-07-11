@@ -45,6 +45,7 @@ from neubot import marshal
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        self.latest = None
         self.testing = False
         self.task = None
 
@@ -116,7 +117,11 @@ class ClientRendezvous(ClientHTTP):
                     tests.append("speedtest")
                 if "bittorrent" in m1.available:
                     tests.append("bittorrent")
+                #XXX alternate the two tests
+                if self.latest:
+                    tests.remove(self.latest)
                 test = random.choice(tests)
+                self.latest = test
                 LOG.info("* Chosen test: %s" % test)
 
                 # Are we allowed to run a test?
