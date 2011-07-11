@@ -51,7 +51,13 @@ TARGET = 5
 # Of course, it is a crime for a test to run for so much time but
 # I don't want to be too aggressive here.
 #
-WATCHDOG = 30
+# FIXME I'm too tired now to try to understand why -- but the
+# upload part of the test takes too much time and hits many
+# watchdog timeouts so I need to raise the limit :-(
+#
+#
+#WATCHDOG = 30
+WATCHDOG = 300
 
 # States of the PeerNeubot object
 STATES = [INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
