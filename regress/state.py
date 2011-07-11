@@ -35,7 +35,7 @@ class TestState(unittest.TestCase):
         """Make sure we correctly set the empty event"""
         s = state.State(publish=lambda e, t: None)
         s.update("foobar")
-        self.assertEquals(s.events["foobar"], {})
+        self.assertEquals(s._events["foobar"], {})
 
     def test_publish(self):
         """Make sure we publish when requested to do so"""
@@ -77,7 +77,7 @@ class TestState(unittest.TestCase):
         """Make sure we honour current"""
         s = state.State(publish=lambda e, t: None)
         s.update("idle")
-        self.assertEquals(s.current, "idle")
+        self.assertEquals(s._current, "idle")
 
     def test_dictionarize(self):
         """Make sure we dictionarize to the expected format"""

@@ -36,18 +36,18 @@ class State(object):
         self._publish = publish
         self._T = T
 
-        self.current = ""
-        self.events = {}
-        self.t = self._T()
+        self._current = ""
+        self._events = {}
+        self._t = self._T()
 
         self.update("since", utils.timestamp())
         self.update("pid", os.getpid())
 
     def dictionarize(self):
         return {
-                "events": self.events,
-                "current": self.current,
-                "t": self.t,
+                "events": self._events,
+                "current": self._current,
+                "t": self._t,
                }
 
     def update(self, name, event=None, publish=True):
@@ -55,11 +55,11 @@ class State(object):
             event = {}
 
         if name in STATES:
-            self.current = name
-        self.t = self._T()
-        self.events[name] = event
+            self._current = name
+        self._t = self._T()
+        self._events[name] = event
 
         if publish:
-            self._publish(STATECHANGE, self.t)
+            self._publish(STATECHANGE, self._t)
 
 STATE = State()
