@@ -98,10 +98,21 @@ class StreamBitTorrent(Stream):
         self.smallmessage = SMALLMESSAGE
 
     def connection_made(self):
-        LOG.debug("> HANDSHAKE")
+        #
+        # In Neubot the listener does not have an infohash
+        # and handshakes, including connector infohash, after
+        # it receives the connector handshake.
+        #
+        if self.parent.infohash:
+            self._send_handshake()
+        self.start_recv()
+
+    def _send_handshake(self):
+        LOG.debug("> HANDSHAKE infohash=%s id=%s" %
+                  (self.parent.infohash.encode("hex"),
+                   self.parent.my_id.encode("hex")))
         self.start_send("".join((chr(len(PROTOCOL_NAME)), PROTOCOL_NAME,
           FLAGS, self.parent.infohash, self.parent.my_id)))
-        self.start_recv()
 
     def send_interested(self):
         LOG.debug("> INTERESTED")
@@ -246,9 +257,22 @@ class StreamBitTorrent(Stream):
             if (len(message) != 68 or message[0] != chr(19) or
                message[1:20] != PROTOCOL_NAME):
                 raise RuntimeError("Invalid handshake")
-            LOG.debug("< HANDSHAKE")
-            if not self.id:
-                self.id = message[-20:]
+            self.id = message[-20:]
+            infohash = message[-40:-20]
+            LOG.debug("< HANDSHAKE infohash=%s id=%s" %
+              (infohash.encode("hex"), self.id.encode("hex")))
+
+            #
+            # In Neubot the listener does not have an infohash
+            # and handshakes, including connector infohash, after
+            # it receives the connector handshake.
+            #
+            if not self.parent.infohash:
+                self.parent.infohash = infohash
+                self._send_handshake()
+            elif infohash != self.parent.infohash:
+                raise RuntimeError("Invalid infohash")
+
             self.complete = True
             self.parent.connection_ready(self)
             return

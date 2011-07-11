@@ -91,6 +91,7 @@ class BitTorrentClient(ClientHTTP):
             sha1 = hashlib.sha1()
             sha1.update(m["authorization"])
             self.conf["bittorrent.my_id"] = sha1.digest()
+            LOG.debug("* My ID: %s" % sha1.hexdigest())
             self.http_stream = stream
             self.negotiating = False
             peer = PeerNeubot(self.poller)
