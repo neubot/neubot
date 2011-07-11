@@ -237,7 +237,7 @@ class ServerAPI(ServerHTTP):
         if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
             indent, mimetype = 4, "text/plain"
 
-        dictionary = STATE.dictionarize(t=t)
+        dictionary = STATE.dictionarize()
         octets = json.dumps(dictionary, indent=indent)
         stringio = StringIO.StringIO(octets)
         response = Message()

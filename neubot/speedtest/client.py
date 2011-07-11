@@ -298,8 +298,7 @@ class ClientSpeedtest(ClientHTTP):
                 latency = sum(latency) / len(latency)
                 self.conf["speedtest.client.latency"] = latency
                 # Advertise the result
-                STATE.update("speedtest_latency", {"value":
-                  utils.time_formatter(latency)})
+                STATE.update("test_latency", utils.time_formatter(latency))
                 LOG.complete("done, %s\n" % utils.time_formatter(latency))
                 self.state = "download"
             else:
@@ -327,8 +326,8 @@ class ClientSpeedtest(ClientHTTP):
                     ESTIMATE[self.state] *= TARGET/elapsed
                     self.conf["speedtest.client.%s" % self.state] = speed
                     # Advertise
-                    STATE.update("speedtest_%s" % self.state, {"value":
-                      utils.speed_formatter(speed)})
+                    STATE.update("test_%s" % self.state,
+                      utils.speed_formatter(speed))
                     LOG.complete("done, %s\n" % utils.speed_formatter(speed))
                     if self.state == "download":
                         self.state = "upload"
@@ -377,7 +376,11 @@ class ClientSpeedtest(ClientHTTP):
             self.child.configure(self.conf, self.measurer)
             self.child.host_header = self.host_header
             if self.state not in ("negotiate", "collect"):
-                STATE.update("test", "speedtest_%s" % self.state)
+                if ostate == "negotiate" and self.state == "latency":
+                    STATE.update("test_latency", "---", publish=False)
+                    STATE.update("test_download", "---", publish=False)
+                    STATE.update("test_upload", "---", publish=False)
+                    STATE.update("test", "speedtest")
             else:
                 STATE.update(self.state)
             LOG.start("* speedtest: %s" % self.state)

@@ -188,7 +188,7 @@ class Negotiator_Register(unittest.TestCase):
         negotiator.register("abc", mod)
         self.assertEquals(negotiator._mods["abc"], mod)
 
-class Negotiator_NegotiatorEOF(unittest.TestCase):
+class Negotiator_NegotiatorRED(unittest.TestCase):
 
     def test_below_min(self):
         """Verify behavior when len(queue) < MIN"""
@@ -262,9 +262,11 @@ class Negotiator_Negotiate(unittest.TestCase):
 
         negotiator.negotiate(m)
 
+        # Do we keep track of the new stream?
         self.assertTrue(stream in negotiator._queue)
         self.assertTrue(stream in negotiator._known)
 
+        # Is the watchdog correctly initialized?
         self.assertTrue(negotiator._at_close in stream.atclosev)
         self.assertEqual(stream.watchdog, 300)
         self.assertTrue(utils.ticks() - stream.created < 1)             #XXX

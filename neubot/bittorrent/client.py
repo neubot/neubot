@@ -48,6 +48,7 @@ TESTDONE = "testdone"
 class BitTorrentClient(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test_name", "bittorrent")
         self.negotiating = True
         self.http_stream = None
         self.success = False
@@ -60,6 +61,7 @@ class BitTorrentClient(ClientHTTP):
         ClientHTTP.connect_uri(self, uri, 1)
 
     def connection_ready(self, stream):
+        STATE.update("negotiate")
         request = Message()
         request.compose(method="GET", pathquery="/negotiate/bittorrent",
           host=self.host_header)
@@ -75,13 +77,12 @@ class BitTorrentClient(ClientHTTP):
     def got_response_negotiating(self, stream, request, response):
         m = json.loads(response.body.read())
 
-        PROPERTIES = ("authorization", "real_address", "unchoked")
+        PROPERTIES = ("authorization", "queue_pos", "real_address", "unchoked")
         for k in PROPERTIES:
             self.conf["_%s" % k] = m[k]
-        if "queue_pos" in m:
-            self.conf["_queue_pos"] = m["queue_pos"]
 
         if not self.conf["_unchoked"]:
+            STATE.update("negotiate", {"queue_pos": m["queue_pos"]})
             self.connection_ready(stream)
         else:
             sha1 = hashlib.sha1()
@@ -98,22 +99,8 @@ class BitTorrentClient(ClientHTTP):
     def peer_connection_lost(self, stream):
         if not self.success:
             stream = self.http_stream
-
-            #
-            # FIXME The following code is wrong because it will
-            # nonetheless be parsed as a valid JSON.  Let's leave
-            # it like this for this initial testing phase but it
-            # definitely needs to be fixed before 0.4 release.
-            #
-            s = json.dumps({})
-            stringio = StringIO.StringIO(s)
-
-            request = Message()
-            request.compose(method="POST", pathquery="/collect/bittorrent",
-              body=stringio, mimetype="application/json", host=self.host_header)
-            request["authorization"] = self.conf.get("_authorization", "")
-
-            stream.send_request(request)
+            # TODO signal the other end something went wrong?
+            stream.close()
 
     def peer_test_complete(self, stream, download_speed, rtt):
         self.success = True
@@ -136,6 +123,8 @@ class BitTorrentClient(ClientHTTP):
             "download_speed": download_speed,
         }
 
+        STATE.update("collect")
+
         s = json.dumps(self.my_side)
         stringio = StringIO.StringIO(s)
 
@@ -148,7 +137,6 @@ class BitTorrentClient(ClientHTTP):
 
     def got_response_collecting(self, stream, request, response):
         if self.success:
-            m = json.loads(response.body.read())
             #
             # Always measure at the receiver because there is more
             # information at the receiver and also to make my friend
@@ -157,7 +145,12 @@ class BitTorrentClient(ClientHTTP):
             # returns a result using the point of view of the client,
             # i.e. upload_speed is _our_ upload speed.
             #
+            m = json.loads(response.body.read())
             self.my_side["upload_speed"] = m["upload_speed"]
+
+            upload = utils.speed_formatter(m["upload_speed"])
+            STATE.update("test_upload", upload)
+
             if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
 
