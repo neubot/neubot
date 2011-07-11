@@ -52,7 +52,7 @@ class ServerPeer(PeerNeubot):
         #stream.watchdog = 30
         PeerNeubot.connection_ready(self, stream)
 
-    def complete(self, stream, speed, rtt):
+    def complete(self, stream, speed, rtt, target_bytes):
         # Avoid leak: do not add an entry if not needed
         if stream.id in AUTH_PEERS:
             AUTH_PEERS[stream.id] = {

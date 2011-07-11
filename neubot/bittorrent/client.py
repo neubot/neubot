@@ -102,7 +102,7 @@ class BitTorrentClient(ClientHTTP):
             # TODO signal the other end something went wrong?
             stream.close()
 
-    def peer_test_complete(self, stream, download_speed, rtt):
+    def peer_test_complete(self, stream, download_speed, rtt, target_bytes):
         self.success = True
         stream = self.http_stream
 

@@ -163,7 +163,8 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
         if self.connector_side:
             LOG.info("BitTorrent: test complete")
-            self.complete(stream, self.dload_speed, self.rtt)
+            self.complete(stream, self.dload_speed, self.rtt,
+                          self.target_bytes)
             stream.close()
         else:
             self.state = SENT_INTERESTED
@@ -281,7 +282,8 @@ class PeerNeubot(StreamHandler):
                     stream.send_not_interested()
                     if not self.connector_side:
                         LOG.info("BitTorrent: test complete")
-                        self.complete(stream, self.dload_speed, self.rtt)
+                        self.complete(stream, self.dload_speed, self.rtt,
+                                      self.target_bytes)
                     else:
                         download = utils.speed_formatter(self.dload_speed)
                         STATE.update("test_download", download)
@@ -294,5 +296,5 @@ class PeerNeubot(StreamHandler):
             elif self.inflight < 0:
                 raise RuntimeError("Inflight became negative")
 
-    def complete(self, stream, speed, rtt):
+    def complete(self, stream, speed, rtt, target_bytes):
         pass
