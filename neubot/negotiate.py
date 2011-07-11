@@ -118,7 +118,6 @@ class _Negotiator(object):
             self._delay[m["stream"]] = m
 
     def collect(self, m):
-        m["request_body"] = json.loads(m["request_body"])
         mod = self._mods[m["module"]]
         mod.collect(m)
         m["response_body"] = json.dumps(m["response_body"])
@@ -200,6 +199,14 @@ class _ServerNegotiate(ServerHTTP):
             "parent": self,
             "stream": stream,
         }
+
+        # We expect a JSONized dictionary or nothing
+        if m["request_body"]:
+            if request["content-type"] != "application/json":
+                raise RuntimeError("Invalid MIME type")
+            m["request_body"] = dict(json.loads(m["request_body"]))
+        else:
+            m["request_body"] = {}
 
         if request.uri.startswith("/negotiate/"):
             m["module"] = request.uri.replace("/negotiate/", "")

@@ -29,6 +29,7 @@ from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.bittorrent.stream import SMALLMESSAGE
 from neubot.net.stream import StreamHandler
 
+from neubot.bittorrent import estimate
 from neubot.blocks import RandomBody
 from neubot.log import LOG
 from neubot.state import STATE
@@ -38,7 +39,6 @@ from neubot import utils
 NUMPIECES = 1<<20
 PIECE_LEN = SMALLMESSAGE
 PIPELINE = 1<<20
-TARGET_BYTES = 64000
 
 LO_THRESH = 3
 MAX_REPEAT = 7
@@ -93,7 +93,7 @@ class PeerNeubot(StreamHandler):
         self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
         self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
-                              TARGET_BYTES))
+                              estimate.DOWNLOAD))
         self.make_sched()
 
     def make_sched(self):
@@ -163,7 +163,8 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
         if self.connector_side:
             LOG.info("BitTorrent: test complete")
-            self.complete(stream, self.dload_speed, self.rtt)
+            self.complete(stream, self.dload_speed, self.rtt,
+                          self.target_bytes)
             stream.close()
         else:
             self.state = SENT_INTERESTED
@@ -281,7 +282,8 @@ class PeerNeubot(StreamHandler):
                     stream.send_not_interested()
                     if not self.connector_side:
                         LOG.info("BitTorrent: test complete")
-                        self.complete(stream, self.dload_speed, self.rtt)
+                        self.complete(stream, self.dload_speed, self.rtt,
+                                      self.target_bytes)
                     else:
                         download = utils.speed_formatter(self.dload_speed)
                         STATE.update("test_download", download)
@@ -294,5 +296,5 @@ class PeerNeubot(StreamHandler):
             elif self.inflight < 0:
                 raise RuntimeError("Inflight became negative")
 
-    def complete(self, stream, speed, rtt):
+    def complete(self, stream, speed, rtt, target_bytes):
         pass
