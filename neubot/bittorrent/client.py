@@ -132,7 +132,6 @@ class BitTorrentClient(ClientHTTP):
 
     def got_response_collecting(self, stream, request, response):
         if self.success:
-            m = json.loads(response.body.read())
             #
             # Always measure at the receiver because there is more
             # information at the receiver and also to make my friend
@@ -141,6 +140,7 @@ class BitTorrentClient(ClientHTTP):
             # returns a result using the point of view of the client,
             # i.e. upload_speed is _our_ upload speed.
             #
+            m = json.loads(response.body.read())
             self.my_side["upload_speed"] = m["upload_speed"]
             if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
