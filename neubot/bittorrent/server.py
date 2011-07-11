@@ -42,14 +42,25 @@ from neubot import utils
 # mechanism that guarantees that at a point the stream
 # will be closed anyway.
 # We save just our download_speed which is indeed the
-# peer's upload speed and the timestamp.
+# peer's upload speed, the timestamp and the target bytes
+# for the next test.
 #
 class ServerPeer(PeerNeubot):
     def connection_ready(self, stream):
         if not stream.id in AUTH_PEERS:
             raise RuntimeError("Unauthorized peer")
+
         # Not needed: peer.py already does that
         #stream.watchdog = 30
+
+        #
+        # Override the number of bytes using information passed
+        # from the peer and regenerate the schedule so that we
+        # actually transfer that number of bytes.
+        #
+        self.target_bytes = AUTH_PEERS[stream.id]["target_bytes"]
+        self.make_sched()
+
         PeerNeubot.connection_ready(self, stream)
 
     def complete(self, stream, speed, rtt, target_bytes):
@@ -58,6 +69,7 @@ class ServerPeer(PeerNeubot):
             AUTH_PEERS[stream.id] = {
                                      "upload_speed": speed,
                                      "timestamp": utils.timestamp(),
+                                     "target_bytes": target_bytes,
                                     }
 
 #XXX These should all go into the same file

@@ -28,14 +28,16 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.bittorrent.peer import PeerNeubot
+from neubot.http.client import ClientHTTP
+from neubot.http.message import Message
+from neubot.net.poller import POLLER
+
+from neubot.bittorrent import estimate
 from neubot.config import CONFIG
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
-from neubot.http.client import ClientHTTP
-from neubot.http.message import Message
 from neubot.log import LOG
-from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
@@ -63,8 +65,9 @@ class BitTorrentClient(ClientHTTP):
     def connection_ready(self, stream):
         STATE.update("negotiate")
         request = Message()
+        body = json.dumps({"target_bytes": estimate.UPLOAD})
         request.compose(method="GET", pathquery="/negotiate/bittorrent",
-          host=self.host_header)
+          host=self.host_header, body=body, mimetype="application/json")
         request["authorization"] = self.conf.get("_authorization", "")
         stream.send_request(request)
 
@@ -105,6 +108,9 @@ class BitTorrentClient(ClientHTTP):
     def peer_test_complete(self, stream, download_speed, rtt, target_bytes):
         self.success = True
         stream = self.http_stream
+
+        # Update the downstream channel estimate
+        estimate.DOWNLOAD = target_bytes
 
         self.my_side = {
             # The server will override our timestamp
@@ -153,6 +159,11 @@ class BitTorrentClient(ClientHTTP):
 
             if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
+
+            # Update the upstream channel estimate
+            target_bytes = int(m["target_bytes"])
+            if target_bytes > 0:
+                estimate.UPLOAD = target_bytes
 
         stream.close()
 

@@ -22,12 +22,13 @@
 
 import hashlib
 
+from neubot.compat import json
 from neubot.database import table_bittorrent
 from neubot.database import DATABASE
+from neubot.log import LOG
 from neubot.negotiate import NegotiatorModule
 from neubot.negotiate import NegotiatorEOF
 from neubot.negotiate import NEGOTIATOR
-from neubot.log import LOG
 
 from neubot import privacy
 
@@ -49,7 +50,10 @@ class _Module(NegotiatorModule):
         if btid not in AUTH_PEERS:
             self._streams[m["stream"]] = btid
             m["stream"].atclose(self._at_close)
-            AUTH_PEERS[btid] = {}
+            target_bytes = int(m["request_body"]["target_bytes"])
+            if target_bytes < 0:
+                raise RuntimeError("Invalid target_bytes")
+            AUTH_PEERS[btid] = {"target_bytes": target_bytes}
         else:
             LOG.oops("Multiple negotiation requests")
 
@@ -72,6 +76,13 @@ class _Module(NegotiatorModule):
 
         if privacy.collect_allowed(d):
             table_bittorrent.insert(DATABASE.connection(), d)
+
+        #
+        # After we've saved the result into the dictionary we
+        # can add extra information we would like to return to
+        # the client.
+        #
+        d["target_bytes"] = result["target_bytes"]
 
         m["response_body"] = d
 

@@ -29,6 +29,7 @@ from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.bittorrent.stream import SMALLMESSAGE
 from neubot.net.stream import StreamHandler
 
+from neubot.bittorrent import estimate
 from neubot.blocks import RandomBody
 from neubot.log import LOG
 from neubot.state import STATE
@@ -38,7 +39,6 @@ from neubot import utils
 NUMPIECES = 1<<20
 PIECE_LEN = SMALLMESSAGE
 PIPELINE = 1<<20
-TARGET_BYTES = 64000
 
 LO_THRESH = 3
 MAX_REPEAT = 7
@@ -93,7 +93,7 @@ class PeerNeubot(StreamHandler):
         self.infohash = conf.get("bittorrent.infohash", random_bytes(20))
         self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
         self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
-                              TARGET_BYTES))
+                              estimate.DOWNLOAD))
         self.make_sched()
 
     def make_sched(self):
