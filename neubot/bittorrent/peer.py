@@ -167,6 +167,7 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")
         if not self.connector_side and self.state != INITIAL:
             raise RuntimeError("INTERESTED when state != INITIAL")
+        self.__begin_uploading = utils.ticks()
         self.state = UPLOADING
         stream.send_unchoke()
 
@@ -174,6 +175,8 @@ class PeerNeubot(StreamHandler):
         if self.state != UPLOADING:
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
         if self.connector_side:
+            __timediff = utils.ticks() - self.__begin_uploading()
+            LOG.warning("* Time to upload: %d" % __timediff)
             LOG.info("BitTorrent: test complete")
             self.complete(stream, self.dload_speed, self.rtt,
                           self.target_bytes)
