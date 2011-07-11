@@ -69,11 +69,6 @@ var state = (function() {
             }
 
             if (in_array(data.current, state.actions)) {
-                if (data.current == "negotiate") {
-                    jQuery("#latencyResult").text("---");
-                    jQuery("#downloadResult").text("---");
-                    jQuery("#uploadResult").text("---");
-                }
                 if (data.current == "test") {
                     jQuery('#testResultsBox').qtip("show");
                     jQuery('#testResultsBox h4').text(i18n.get("Current test results"));

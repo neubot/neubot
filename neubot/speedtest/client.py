@@ -376,7 +376,11 @@ class ClientSpeedtest(ClientHTTP):
             self.child.configure(self.conf, self.measurer)
             self.child.host_header = self.host_header
             if self.state not in ("negotiate", "collect"):
-                STATE.update("test", "speedtest_%s" % self.state)
+                if ostate == "negotiate" and self.state == "latency":
+                    STATE.update("test_latency", "---", publish=False)
+                    STATE.update("test_download", "---", publish=False)
+                    STATE.update("test_upload", "---", publish=False)
+                    STATE.update("test", "speedtest")
             else:
                 STATE.update(self.state)
             LOG.start("* speedtest: %s" % self.state)
