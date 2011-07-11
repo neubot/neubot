@@ -21,14 +21,13 @@
 #
 
 import sys
-import time
 import os
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.notify import T
 from neubot.notify import NOTIFIER
+from neubot import utils
 
 # states of neubot
 STATES = [ "idle", "rendezvous", "negotiate", "test", "collect" ]
@@ -40,46 +39,22 @@ class State(object):
     def __init__(self):
         self.current = ""
         self.events = {}
-        self.t = T()
+        self.t = utils.T()
 
-        self.update("since", int(time.time()))
+        self.update("since", utils.timestamp())
         self.update("pid", os.getpid())
 
-    def dictionarize(self, t=None):
-        state = vars(self)
-
-        #
-        # If the client passes us via `t` the opaque time of the
-        # latest state change, we can try to reduce the amount of
-        # information we return.
-        # This should reduce the neubot-to-browser traffic when
-        # the neubot agent is idle.
-        #
-        if t:
-            t = int(t)
-            evts = {}
-            state = {}
-
-            for name, value in self.events.items():
-                q, event = value
-                if q > t:
-                    evts[name] = event
-
-            if len(evts) > 0:
-                state["current"] = self.current
-                state["events"] = evts
-                state["t"] = self.t
-
-        return state
+    def dictionarize(self):
+        return vars(self)
 
     def update(self, name, event=None, publish=True):
-        if event == None:
+        if not event:
             event = {}
 
         if name in STATES:
             self.current = name
-        self.t = T()
-        self.events[name] = self.t, event
+        self.t = utils.T()
+        self.events[name] = event
 
         if publish:
             NOTIFIER.publish(STATECHANGE, self.t)
