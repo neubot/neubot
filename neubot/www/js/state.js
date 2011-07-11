@@ -31,10 +31,11 @@ var state = (function() {
         var curtime = 0;
         var next_rendezvous = 0;
 
+        //
         // In case of error keep trying because it might just
         // be that the user is restarting neubot, but also add
         // a significant delay to let the browser breathe
-
+        //
         function get_state_error() {
             setTimeout(get_state, 5000);
         }
@@ -123,9 +124,10 @@ var state = (function() {
             jQuery.ajax(params);
         }
 
+        //
         // Google Chrome tab icon will keep spinning unless we
         // delay the first get_state a bit
-
+        //
         my.start = function() {
             jQuery('#testResultsBox').qtip({
                 content: i18n.get("Test running"),
