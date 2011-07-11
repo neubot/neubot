@@ -96,22 +96,8 @@ class BitTorrentClient(ClientHTTP):
     def peer_connection_lost(self, stream):
         if not self.success:
             stream = self.http_stream
-
-            #
-            # FIXME The following code is wrong because it will
-            # nonetheless be parsed as a valid JSON.  Let's leave
-            # it like this for this initial testing phase but it
-            # definitely needs to be fixed before 0.4 release.
-            #
-            s = json.dumps({})
-            stringio = StringIO.StringIO(s)
-
-            request = Message()
-            request.compose(method="POST", pathquery="/collect/bittorrent",
-              body=stringio, mimetype="application/json", host=self.host_header)
-            request["authorization"] = self.conf.get("_authorization", "")
-
-            stream.send_request(request)
+            # TODO signal the other end something went wrong?
+            stream.close()
 
     def peer_test_complete(self, stream, download_speed, rtt):
         self.success = True
