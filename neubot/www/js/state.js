@@ -22,12 +22,12 @@
  */
 
 var state = (function() {
-    var self = {};
+    var _self = {};
 
-    self.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
+    _self.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
 
-    self.tracker = function(callback) {
-        var my = {};
+    _self.tracker = function(callback) {
+        var me = {};
         var curtime = 0;
         var next_rendezvous = 0;
 
@@ -128,7 +128,7 @@ var state = (function() {
         // Google Chrome tab icon will keep spinning unless we
         // delay the first get_state a bit
         //
-        my.start = function() {
+        me.start = function() {
             jQuery('#testResultsBox').qtip({
                 content: i18n.get("Test running"),
                 position: {
@@ -159,8 +159,8 @@ var state = (function() {
             setTimeout(get_state, 100);
         }
 
-        return my;
+        return me;
     }
 
-    return self;
+    return _self;
 })();
