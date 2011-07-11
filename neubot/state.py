@@ -20,32 +20,35 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys
 import os
-
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
 
 from neubot.notify import NOTIFIER
 from neubot import utils
 
 # states of neubot
-STATES = [ "idle", "rendezvous", "negotiate", "test", "collect" ]
+STATES = ( "idle", "rendezvous", "negotiate", "test", "collect" )
 
 # name of 'state changed' notification
 STATECHANGE = "statechange"
 
 class State(object):
-    def __init__(self):
+    def __init__(self, publish=NOTIFIER.publish, T=utils.T):
+        self._publish = publish
+        self._T = T
+
         self.current = ""
         self.events = {}
-        self.t = utils.T()
+        self.t = self._T()
 
         self.update("since", utils.timestamp())
         self.update("pid", os.getpid())
 
     def dictionarize(self):
-        return vars(self)
+        return {
+                "events": self.events,
+                "current": self.current,
+                "t": self.t,
+               }
 
     def update(self, name, event=None, publish=True):
         if not event:
@@ -53,54 +56,10 @@ class State(object):
 
         if name in STATES:
             self.current = name
-        self.t = utils.T()
+        self.t = self._T()
         self.events[name] = event
 
         if publish:
-            NOTIFIER.publish(STATECHANGE, self.t)
+            self._publish(STATECHANGE, self.t)
 
 STATE = State()
-
-if __name__ == "__main__":
-    import pprint
-
-    STATE.update("update", {"version": "0.4.1",
-      "uri": "http://www.example.com/"})
-    STATE.update("idle")
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("rendezvous")
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("rendezvous", {"status": "failed"})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("idle")
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("rendezvous")
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("negotiate", {"queue_pos": 3, "queue_len": 7})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("negotiate", {"queue_pos": 2, "queue_len": 8})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("negotiate", {"queue_pos": 1, "queue_len": 7})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("speedtest_latency", {"avg": 0.013, "unit": "s"})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("speedtest_download", {"avg": 6.94, "unit": "Mbit/s"})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("speedtest_upload", {"avg": 0.97, "unit": "Mbit/s"})
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("collect")
-    pprint.pprint(STATE.dictionarize())
-
-    STATE.update("idle")
-    pprint.pprint(STATE.dictionarize())
