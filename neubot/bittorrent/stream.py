@@ -98,7 +98,7 @@ class StreamBitTorrent(Stream):
         self.smallmessage = SMALLMESSAGE
 
     def connection_made(self):
-        LOG.debug("> HANDSHAKE")
+        LOG.debug("> HANDSHAKE id=%s" % self.parent.my_id.encode("hex"))
         self.start_send("".join((chr(len(PROTOCOL_NAME)), PROTOCOL_NAME,
           FLAGS, self.parent.infohash, self.parent.my_id)))
         self.start_recv()
@@ -246,9 +246,9 @@ class StreamBitTorrent(Stream):
             if (len(message) != 68 or message[0] != chr(19) or
                message[1:20] != PROTOCOL_NAME):
                 raise RuntimeError("Invalid handshake")
-            LOG.debug("< HANDSHAKE")
             if not self.id:
                 self.id = message[-20:]
+            LOG.debug("< HANDSHAKE id=%s" % self.id.encode("hex"))
             self.complete = True
             self.parent.connection_ready(self)
             return
