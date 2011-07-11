@@ -22,14 +22,16 @@
 
 import random
 
-from neubot.blocks import RandomBody
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.bittorrent.stream import SMALLMESSAGE
-from neubot.log import LOG
 from neubot.net.stream import StreamHandler
+
+from neubot.blocks import RandomBody
+from neubot.log import LOG
+from neubot.state import STATE
 
 from neubot import utils
 
@@ -66,6 +68,7 @@ def random_bytes(n):
 class PeerNeubot(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
+        STATE.update("test", "bittorrent")
         self.connector_side = False
         self.saved_bytes = 0
         self.saved_ticks = 0
@@ -107,7 +110,9 @@ class PeerNeubot(StreamHandler):
 
     def connection_made(self, sock, rtt=0):
         if rtt:
-            LOG.info("BitTorrent: latency: %s" % utils.time_formatter(rtt))
+            latency = utils.time_formatter(rtt)
+            LOG.info("BitTorrent: latency: %s" % latency)
+            STATE.update("test_latency", latency)
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
         if not self.connector_side:
@@ -274,6 +279,9 @@ class PeerNeubot(StreamHandler):
                     if not self.connector_side:
                         LOG.info("BitTorrent: test complete")
                         self.complete(stream, self.dload_speed, self.rtt)
+                    else:
+                        download = utils.speed_formatter(self.dload_speed)
+                        STATE.update("test_download", download)
                 else:
                     self.saved_ticks = 0
                     self.make_sched()

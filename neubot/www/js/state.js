@@ -58,14 +58,14 @@ var state = (function() {
             if (data.events.test_name) {
                 jQuery("#testNameSideBar").text(data.events.test_name);
             }
-            if (data.events.speedtest_latency) {
-                jQuery("#latencyResult").text(data.events.speedtest_latency.value);
+            if (data.events.test_latency) {
+                jQuery("#latencyResult").text(data.events.test_latency);
             }
-            if (data.events.speedtest_download) {
-                jQuery("#downloadResult").text(data.events.speedtest_download.value);
+            if (data.events.test_download) {
+                jQuery("#downloadResult").text(data.events.test_download);
             }
-            if (data.events.speedtest_upload) {
-                jQuery("#uploadResult").text(data.events.speedtest_upload.value);
+            if (data.events.test_upload) {
+                jQuery("#uploadResult").text(data.events.test_upload);
             }
 
             if (in_array(data.current, state.actions)) {

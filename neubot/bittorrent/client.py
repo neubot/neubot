@@ -48,6 +48,7 @@ TESTDONE = "testdone"
 class BitTorrentClient(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test_name", "bittorrent")
         self.negotiating = True
         self.http_stream = None
         self.success = False
@@ -60,6 +61,7 @@ class BitTorrentClient(ClientHTTP):
         ClientHTTP.connect_uri(self, uri, 1)
 
     def connection_ready(self, stream):
+        STATE.update("negotiate")
         request = Message()
         request.compose(method="GET", pathquery="/negotiate/bittorrent",
           host=self.host_header)
@@ -80,6 +82,7 @@ class BitTorrentClient(ClientHTTP):
             self.conf["_%s" % k] = m[k]
 
         if not self.conf["_unchoked"]:
+            STATE.update("negotiate", {"queue_pos": m["queue_pos"]})
             self.connection_ready(stream)
         else:
             sha1 = hashlib.sha1()
@@ -120,6 +123,8 @@ class BitTorrentClient(ClientHTTP):
             "download_speed": download_speed,
         }
 
+        STATE.update("collect")
+
         s = json.dumps(self.my_side)
         stringio = StringIO.StringIO(s)
 
@@ -142,6 +147,10 @@ class BitTorrentClient(ClientHTTP):
             #
             m = json.loads(response.body.read())
             self.my_side["upload_speed"] = m["upload_speed"]
+
+            upload = utils.speed_formatter(m["upload_speed"])
+            STATE.update("test_upload", upload)
+
             if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
 

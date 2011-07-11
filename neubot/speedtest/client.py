@@ -298,8 +298,7 @@ class ClientSpeedtest(ClientHTTP):
                 latency = sum(latency) / len(latency)
                 self.conf["speedtest.client.latency"] = latency
                 # Advertise the result
-                STATE.update("speedtest_latency", {"value":
-                  utils.time_formatter(latency)})
+                STATE.update("test_latency", utils.time_formatter(latency))
                 LOG.complete("done, %s\n" % utils.time_formatter(latency))
                 self.state = "download"
             else:
@@ -327,8 +326,8 @@ class ClientSpeedtest(ClientHTTP):
                     ESTIMATE[self.state] *= TARGET/elapsed
                     self.conf["speedtest.client.%s" % self.state] = speed
                     # Advertise
-                    STATE.update("speedtest_%s" % self.state, {"value":
-                      utils.speed_formatter(speed)})
+                    STATE.update("test_%s" % self.state,
+                      utils.speed_formatter(speed))
                     LOG.complete("done, %s\n" % utils.speed_formatter(speed))
                     if self.state == "download":
                         self.state = "upload"
