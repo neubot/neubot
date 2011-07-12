@@ -130,10 +130,11 @@ class Logger(object):
         for line in traceback.format_exc().split("\n"):
             func(line)
 
-    def oops(self, message, func=None):
+    def oops(self, message="", func=None):
         if not func:
             func = self.error
-        func("OOPS: " + message + " (traceback follows)")
+        if message:
+            func("OOPS: " + message + " (traceback follows)")
         for line in traceback.format_stack()[:-1]:
             func(line)
 
