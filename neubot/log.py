@@ -24,29 +24,26 @@ import collections
 import sys
 import traceback
 
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
-
 from neubot import system
 from neubot import compat
 from neubot import utils
 
 class InteractiveLogger(object):
 
-        """Log messages on the standard error.  This is the simplest
-           logger one can think and is the one we use at startup."""
+    """Log messages on the standard error.  This is the simplest
+       logger one can think and is the one we use at startup."""
 
-        def error(self, message):
-            sys.stderr.write(message + "\n")
+    def error(self, message):
+        sys.stderr.write(message + "\n")
 
-        def warning(self, message):
-            sys.stderr.write(message + "\n")
+    def warning(self, message):
+        sys.stderr.write(message + "\n")
 
-        def info(self, message):
-            sys.stderr.write(message + "\n")
+    def info(self, message):
+        sys.stderr.write(message + "\n")
 
-        def debug(self, message):
-            sys.stderr.write(message + "\n")
+    def debug(self, message):
+        sys.stderr.write(message + "\n")
 
 class Logger(object):
 
@@ -130,10 +127,11 @@ class Logger(object):
         for line in traceback.format_exc().split("\n"):
             func(line)
 
-    def oops(self, message, func=None):
+    def oops(self, message="", func=None):
         if not func:
             func = self.error
-        func("OOPS: " + message + " (traceback follows)")
+        if message:
+            func("OOPS: " + message + " (traceback follows)")
         for line in traceback.format_stack()[:-1]:
             func(line)
 
@@ -173,42 +171,5 @@ class Logger(object):
     def listify(self):
         return map(None, self.queue)
 
-
 MAXQUEUE = 4096
 LOG = Logger(MAXQUEUE)
-
-if __name__ == "__main__":
-    LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
-    LOG.complete("success!")
-
-    LOG.verbose()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
-    print compat.json.dumps(LOG.listify())
-
-    try:
-        raise Exception("Testing LOG.exception")
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        LOG.exception()
-        LOG.exception(func=LOG.warning)
-
-    LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
-    LOG.complete("success!")
-
-    LOG.oops("Testing the new oops feature")
-
-    LOG.redirect()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
