@@ -53,6 +53,8 @@ class Notifier(object):
             t = T()
         self.timestamps[event] = t
 
+        LOG.debug("* publish: %s" % event)
+
         queue = self.subscribers[event]
         del self.subscribers[event]
         self.fireq(event, queue)
@@ -63,6 +65,9 @@ class Notifier(object):
         for event in q:
             queue = self.subscribers[event]
             del self.subscribers[event]
+
+            LOG.debug("* periodic: %s" % event)
+
             self.fireq(event, queue)
 
     def fireq(self, event, queue):
