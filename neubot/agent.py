@@ -34,10 +34,10 @@ from neubot.net.poller import POLLER
 from neubot.rootdir import WWW
 from neubot.log import LOG
 from neubot import system
-from neubot import boot
+from neubot.main import common
 
 def main(args):
-    boot.common("agent", "Run in background, periodically run tests", args)
+    common.main("agent", "Run in background, periodically run tests", args)
 
     conf = CONFIG.copy()
 

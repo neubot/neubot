@@ -26,7 +26,7 @@ import pprint
 import re
 import urlparse
 
-from neubot.boot import VERSION
+from neubot.main.common import VERSION
 from neubot.compat import json
 from neubot.config import ConfigError
 from neubot.config import CONFIG

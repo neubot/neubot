@@ -32,7 +32,7 @@ from neubot.log import LOG
 from neubot.net.poller import POLLER
 
 from neubot import utils
-from neubot import boot
+from neubot.main import common
 from neubot import system
 
 class DeprecatedServerTest(object):
@@ -142,7 +142,7 @@ def main(args):
         "speedtest.server.path": "Read response pieces from this large file",
     })
 
-    boot.common("speedtest.server", "Speedtest Test Server", args)
+    common.main("speedtest.server", "Speedtest Test Server", args)
 
     conf = CONFIG.copy()
 

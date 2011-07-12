@@ -32,7 +32,7 @@ from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 
-from neubot import boot
+from neubot.main import common
 from neubot import system
 
 class ConnectingPeer(PeerNeubot):
@@ -58,7 +58,7 @@ def main(args):
         "bittorrent.port": "Set client or server port",
     })
 
-    boot.common("bittorrent", "BitTorrent test", args)
+    common.main("bittorrent", "BitTorrent test", args)
     conf = CONFIG.copy()
 
     if not conf["bittorrent.address"]:

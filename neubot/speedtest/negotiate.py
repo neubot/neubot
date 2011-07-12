@@ -34,7 +34,7 @@ from neubot.speedtest import compat
 from neubot.speedtest.server import ServerTest
 from neubot.speedtest.session import TRACKER
 
-from neubot import boot
+from neubot.main import common
 from neubot import marshal
 from neubot import privacy
 from neubot import system
@@ -173,7 +173,7 @@ def main(args):
         "speedtest.negotiate.port": "Port to listen to",
     })
 
-    boot.common("speedtest.negotiate", "Speedtest negotiation server", args)
+    common.main("speedtest.negotiate", "Speedtest negotiation server", args)
 
     conf = CONFIG.copy()
 

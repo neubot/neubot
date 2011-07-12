@@ -38,7 +38,7 @@ from neubot.net.poller import POLLER
 from neubot.net.measurer import MEASURER
 from neubot.log import LOG
 from neubot import utils
-from neubot import boot
+from neubot.main import common
 
 class ClientStream(StreamHTTP):
 
@@ -186,7 +186,7 @@ def main(args):
         "http.client.uri": "Specify URI to download from/upload to",
     })
 
-    boot.common("http.client", "Simple Neubot HTTP client", args)
+    common.main("http.client", "Simple Neubot HTTP client", args)
     conf = CONFIG.copy()
 
     if conf["http.client.stats"]:

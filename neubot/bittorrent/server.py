@@ -33,7 +33,7 @@ from neubot.http.server import HTTP_SERVER
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 
-from neubot import boot
+from neubot.main import common
 from neubot import system
 from neubot import utils
 
@@ -102,7 +102,7 @@ def main(args):
         "bittorrent.bt_port": "BitTorrent port to listen to",
     })
 
-    boot.common("bittorrent.server", "BitTorrent test server", args)
+    common.main("bittorrent.server", "BitTorrent test server", args)
     conf = CONFIG.copy()
 
     server = ServerPeer(POLLER)

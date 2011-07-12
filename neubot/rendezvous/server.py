@@ -37,7 +37,7 @@ from neubot.net.poller import POLLER
 from neubot.rendezvous.geoip_wrapper import Geolocator
 from neubot.rendezvous import compat
 
-from neubot import boot
+from neubot.main import common
 from neubot import marshal
 from neubot import system
 from neubot import utils
@@ -56,14 +56,14 @@ class ServerRendezvous(ServerHTTP):
 
         m1 = compat.RendezvousResponse()
 
-        if m.version and utils.versioncmp(boot.VERSION, m.version) > 0:
+        if m.version and utils.versioncmp(common.VERSION, m.version) > 0:
             m1.update["uri"] = self.conf.get(
               "rendezvous.server.update_uri",
               "http://releases.neubot.org/"
             )
             m1.update["version"] = self.conf.get(
               "rendezvous.server.update_version",
-              boot.VERSION
+              common.VERSION
             )
 
         #
@@ -132,7 +132,7 @@ def main(args):
         "rendezvous.server.daemonize": True,
         "rendezvous.server.ports": "9773,8080",
         "rendezvous.server.update_uri": "http://releases.neubot.org/",
-        "rendezvous.server.update_version": boot.VERSION,
+        "rendezvous.server.update_version": common.VERSION,
     })
     CONFIG.register_descriptions({
         "rendezvous.server.address": "Set rendezvous server address",
@@ -142,12 +142,12 @@ def main(args):
         "rendezvous.server.update_version": "Update Neubot version number",
     })
 
-    boot.common("rendezvous.server", "Rendezvous server", args)
+    common.main("rendezvous.server", "Rendezvous server", args)
     conf = CONFIG.copy()
 
     #
     # Open the databases needed to perform geolocation after
-    # boot.common() because the pathnames for the databases
+    # common.main() because the pathnames for the databases
     # are configurable.
     #
     GEOLOCATOR.open_or_die()

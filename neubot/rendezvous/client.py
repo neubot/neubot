@@ -39,7 +39,7 @@ from neubot.rendezvous import compat
 from neubot.speedtest.client import ClientSpeedtest
 from neubot.state import STATE
 
-from neubot import boot
+from neubot.main import common
 from neubot import marshal
 
 class ClientRendezvous(ClientHTTP):
@@ -76,7 +76,7 @@ class ClientRendezvous(ClientHTTP):
         m = compat.RendezvousRequest()
         m.accept.append("speedtest")
         m.accept.append("bittorrent")
-        m.version = self.conf.get("rendezvous.client.version", boot.VERSION)
+        m.version = self.conf.get("rendezvous.client.version", common.VERSION)
 
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",
@@ -197,7 +197,7 @@ def main(args):
         "rendezvous.client.debug": False,
         "rendezvous.client.interval": 0,
         "rendezvous.client.uri": "http://master.neubot.org:9773/",
-        "rendezvous.client.version": boot.VERSION,
+        "rendezvous.client.version": common.VERSION,
     })
     CONFIG.register_descriptions({
         "rendezvous.client.debug": "Do not perform any test",
@@ -206,7 +206,7 @@ def main(args):
         "rendezvous.client.version": "Set rendezvous client version",
     })
 
-    boot.common("rendezvous.client", "Rendezvous client", args)
+    common.main("rendezvous.client", "Rendezvous client", args)
     conf = CONFIG.copy()
 
     if not conf["agent.interval"]:

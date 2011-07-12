@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 from neubot.config import CONFIG
 from neubot.log import LOG
-from neubot import boot
+from neubot.main import common
 
 def main(args):
 
@@ -45,7 +45,7 @@ def main(args):
         "net.CA.privkey": "Set private key file path",
     })
 
-    boot.common("net.CA", "generate test certificates", args)
+    common.main("net.CA", "generate test certificates", args)
     conf = CONFIG.copy()
 
     genrsa = [ "openssl", "genrsa", "-out", conf["net.CA.privkey"],

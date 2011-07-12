@@ -36,7 +36,7 @@ from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.speedtest import compat
 
-from neubot import boot
+from neubot.main import common
 from neubot import marshal
 from neubot import privacy
 from neubot import utils
@@ -406,7 +406,7 @@ def main(args):
         "speedtest.client.latency_tries": "Number of latency measurements",
     })
 
-    boot.common("speedtest.client", "Speedtest client", args)
+    common.main("speedtest.client", "Speedtest client", args)
     conf = CONFIG.copy()
     client = ClientSpeedtest(POLLER)
     client.configure(conf)

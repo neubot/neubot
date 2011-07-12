@@ -40,7 +40,7 @@ from neubot.log import LOG
 from neubot.net.stream import StreamHandler
 from neubot.net.poller import POLLER
 
-from neubot import boot
+from neubot.main import common
 from neubot import system
 from neubot import utils
 
@@ -273,7 +273,7 @@ def main(args):
         "http.server.ssi": "Enable server-side includes",
     })
 
-    boot.common("http.server", "Neubot simple HTTP server", args)
+    common.main("http.server", "Neubot simple HTTP server", args)
     conf = CONFIG.copy()
 
     if conf["http.server.class"]:

@@ -41,7 +41,7 @@ from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
-from neubot import boot
+from neubot.main import common
 from neubot import privacy
 from neubot import utils
 
@@ -180,7 +180,7 @@ def main(args):
         "bittorrent.uri": "Base URI to connect to",
     })
 
-    boot.common("bittorrent.negotiate_client",
+    common.main("bittorrent.negotiate_client",
       "BitTorrent negotiate client", args)
     conf = CONFIG.copy()
     client = BitTorrentClient(POLLER)

@@ -45,7 +45,7 @@ from neubot.net.poller import Pollable
 
 from neubot import system
 from neubot import utils
-from neubot import boot
+from neubot.main import common
 
 # States returned by the socket model
 STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
@@ -792,7 +792,7 @@ def main(args):
         "net.stream.proto": "Set proto (chargen, discard, or echo)",
     })
 
-    boot.common("net.stream", "TCP bulk transfer test", args)
+    common.main("net.stream", "TCP bulk transfer test", args)
 
     conf = CONFIG.copy()
 
@@ -813,7 +813,7 @@ def main(args):
         else:
             conf["net.stream.proto"] = "discard"
     elif conf["net.stream.proto"] not in ("chargen", "discard", "echo"):
-        boot.write_help(sys.stderr, "net.stream", "TCP bulk transfer test")
+        common.write_help(sys.stderr, "net.stream", "TCP bulk transfer test")
         sys.exit(1)
 
     handler = GenericHandler(POLLER)
