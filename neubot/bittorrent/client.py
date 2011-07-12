@@ -171,6 +171,9 @@ class BitTorrentClient(ClientHTTP):
     def connection_lost(self, stream):
         NOTIFIER.publish(TESTDONE)
 
+    def connection_failed(self, connector, exception):
+        NOTIFIER.publish(TESTDONE)
+
 CONFIG.register_defaults({
     "bittorrent.uri": "http://neubot.blupixel.net/",
 })
