@@ -37,6 +37,7 @@ MODULES = {
     "http.server" : "http.server",
     "rendezvous.client": "rendezvous.client",
     "rendezvous.server": "rendezvous.server",
+    "show_database": "show_database",
     "speedtest"  : "speedtest.client",
     "speedtest.client": "speedtest.client",
     "speedtest.negotiate": "speedtest.negotiate",
