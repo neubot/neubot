@@ -265,7 +265,11 @@ class Poller(object):
                     LOG.exception()
                     raise
 
-            # Fire readable and writable events
+                else:
+                    # Take care of EINTR
+                    return
+
+            # No error?  Fire readable and writable events
             for fileno in res[0]:
                 self._readable(fileno)
             for fileno in res[1]:
