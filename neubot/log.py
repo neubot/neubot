@@ -24,9 +24,6 @@ import collections
 import sys
 import traceback
 
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
-
 from neubot import system
 from neubot import compat
 from neubot import utils
@@ -174,42 +171,5 @@ class Logger(object):
     def listify(self):
         return map(None, self.queue)
 
-
 MAXQUEUE = 4096
 LOG = Logger(MAXQUEUE)
-
-if __name__ == "__main__":
-    LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
-    LOG.complete("success!")
-
-    LOG.verbose()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
-    print compat.json.dumps(LOG.listify())
-
-    try:
-        raise Exception("Testing LOG.exception")
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        LOG.exception()
-        LOG.exception(func=LOG.warning)
-
-    LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
-    LOG.complete("success!")
-
-    LOG.oops("Testing the new oops feature")
-
-    LOG.redirect()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
