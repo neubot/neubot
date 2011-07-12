@@ -40,10 +40,10 @@ class Pollable(object):
     def fileno(self):
         raise NotImplementedError
 
-    def readable(self):
+    def handle_readable(self):
         pass
 
-    def writable(self):
+    def handle_writable(self):
         pass
 
     def readtimeout(self, now):
@@ -147,22 +147,22 @@ class Poller(object):
     # does not exist anymore, but its fileno still is in res[1].
     #
 
-    def _readable(self, fileno):
+    def _call_handle_readable(self, fileno):
         if self.readset.has_key(fileno):
             stream = self.readset[fileno]
             try:
-                stream.readable()
+                stream.handle_readable()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
                 LOG.exception()
                 self.close(stream)
 
-    def _writable(self, fileno):
+    def _call_handle_writable(self, fileno):
         if self.writeset.has_key(fileno):
             stream = self.writeset[fileno]
             try:
-                stream.writable()
+                stream.handle_writable()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
@@ -271,9 +271,9 @@ class Poller(object):
 
             # No error?  Fire readable and writable events
             for fileno in res[0]:
-                self._readable(fileno)
+                self._call_handle_readable(fileno)
             for fileno in res[1]:
-                self._writable(fileno)
+                self._call_handle_writable(fileno)
 
         #
         # No I/O pending?  So let's just wait for the

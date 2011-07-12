@@ -307,15 +307,15 @@ class Stream(Pollable):
         #
         if self.recv_ssl_needs_kickoff:
             self.recv_ssl_needs_kickoff = False
-            self.readable()
+            self.handle_readable()
 
-    def readable(self):
+    def handle_readable(self):
         if self.recv_blocked:
             self.poller.set_writable(self)
             if not self.recv_pending:
                 self.poller.unset_readable(self)
             self.recv_blocked = False
-            self.writable()
+            self.handle_writable()
             return
 
         status, octets = self.sock.sorecv(MAXBUF)
@@ -406,13 +406,13 @@ class Stream(Pollable):
 
         self.poller.set_writable(self)
 
-    def writable(self):
+    def handle_writable(self):
         if self.send_blocked:
             self.poller.set_readable(self)
             if not self.send_pending:
                 self.poller.unset_writable(self)
             self.send_blocked = False
-            self.readable()
+            self.handle_readable()
             return
 
         status, count = self.sock.sosend(self.send_octets)
@@ -530,7 +530,7 @@ class Connector(Pollable):
     def fileno(self):
         return self.sock.fileno()
 
-    def writable(self):
+    def handle_writable(self):
         self.poller.unset_writable(self)
 
         # See http://cr.yp.to/docs/connect.html
@@ -624,7 +624,7 @@ class Listener(Pollable):
     # connection_made() MUST NOT cause the server to stop
     # listening for new connections.
     #
-    def readable(self):
+    def handle_readable(self):
         try:
             sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
