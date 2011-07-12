@@ -28,6 +28,7 @@
 # types, i.e. integer, string and float.
 #
 
+import re
 import types
 
 #
@@ -43,10 +44,27 @@ SIMPLE_TYPES = {
     types.FloatType   : "REAL NOT NULL",
 }
 
-def verify_template(template):
-    for items in template:
-        if type(items[1]) not in SIMPLE_TYPES:
-            raise RuntimeError("Invalid template")
+#
+# Paranoid mode on.
+# Make sure that we receive valid field names and values
+# only when building the query.
+#
+def __check(s):
+
+    # A simple type?
+    if type(s) not in SIMPLE_TYPES:
+        raise ValueError("Not a simple type")
+
+    # Not a string?
+    if type(s) not in (types.StringType, types.UnicodeType):
+        return s
+
+    # Check
+    s1 = re.sub(r"[^A-Za-z0-9_]", "", s)
+    if s1 != s:
+        raise ValueError("Invalid string")
+
+    return s
 
 #
 # Given the table name and a dictionary as a template this
@@ -54,12 +72,13 @@ def verify_template(template):
 # name suitable for holdings data from such dictionary.
 #
 def make_create_table(table, template):
-    vector = [ "CREATE TABLE IF NOT EXISTS %s (" % table ]
+    vector = [ "CREATE TABLE IF NOT EXISTS %s (" % __check(table) ]
     vector.append("id INTEGER PRIMARY KEY")
     vector.append(", ")
 
     for key, value in template.items():
-        value = SIMPLE_TYPES[type(value)]
+        key = __check(key)
+        value = SIMPLE_TYPES[type(__check(value))]
         vector.append("%s %s" % (key, value))
         vector.append(", ")
 
@@ -73,12 +92,12 @@ def make_create_table(table, template):
 # the given table.
 #
 def make_insert_into(table, template):
-    vector = [ "INSERT INTO %s VALUES (" % table ]
+    vector = [ "INSERT INTO %s VALUES (" % __check(table) ]
     vector.append("NULL")
     vector.append(", ")
 
     for items in template.items():
-        vector.append(":%s" % items[0])
+        vector.append(":%s" % __check(items[0]))
         vector.append(", ")
 
     vector[-1] = ");"
@@ -89,23 +108,25 @@ def make_insert_into(table, template):
 # Given the table name, a template dictionary and a set
 # of zero or more keyword arguments, this function builds
 # a query to walk the specified table.
-# XXX This function assumes that each table has a field
-# which is named timestamp, with obvious semantic.
 #
 def make_select(table, template, **kwargs):
+
+    if not "timestamp" in template:
+        raise ValueError("Template does not contain 'timestamp'")
+
     vector = [ "SELECT " ]
 
     for items in template.items():
-        vector.append("%s" % items[0])
+        vector.append("%s" % __check(items[0]))
         vector.append(", ")
 
-    vector[-1] = " FROM %s" % table
+    vector[-1] = " FROM %s" % __check(table)
 
     since, until = -1, -1
     if "since" in kwargs:
-        since = int(kwargs["since"])
+        since = int(__check(kwargs["since"]))
     if "until" in kwargs:
-        until = int(kwargs["until"])
+        until = int(__check(kwargs["until"]))
 
     if since >= 0 or until >= 0:
         vector.append(" WHERE ")
