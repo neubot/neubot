@@ -1,7 +1,7 @@
 # neubot/log.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,12 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import collections
 import sys
 import traceback
 
 from neubot import system
-from neubot import compat
 from neubot import utils
 
 class InteractiveLogger(object):
@@ -45,24 +43,40 @@ class InteractiveLogger(object):
     def debug(self, message):
         sys.stderr.write(message + "\n")
 
+#
+# We commit every NOCOMMIT log messages or when we see
+# a WARNING or ERROR message (whichever of the two comes
+# first).
+#
+NOCOMMIT = 32
+
 class Logger(object):
 
     """Logging object.  Usually there should be just one instance
        of this class, accessible with the default logging object
-       LOG.  We keep recent logs in a queue in order to implement
+       LOG.  We keep recent logs in the database in order to implement
        the /api/log API."""
 
-    def __init__(self, maxqueue):
+    def __init__(self):
         self.logger = InteractiveLogger()
-
-        self.queue = collections.deque()
-        self.maxqueue = maxqueue
-
         self.interactive = True
         self.noisy = False
-
         self.message = None
         self.ticks = 0
+
+        self._nocommit = NOCOMMIT
+
+        #
+        # We cannot import the database here because of a
+        # circular dependency.  Instead the database registers
+        # with us when it is ready.
+        #
+        self.database = None
+        self.table_log = None
+
+    def attach(self, database, table_log):
+        self.database = database
+        self.table_log = table_log
 
     def verbose(self):
         self.noisy = True
@@ -93,7 +107,6 @@ class Logger(object):
     #    [here we might have many debug messages]
     #   Download complete.
     #
-
     def start(self, message):
         self.ticks = utils.ticks()
         if self.noisy or not self.interactive:
@@ -161,15 +174,45 @@ class Logger(object):
 
     def _log(self, printlog, severity, message):
         message = message.rstrip()
-        if severity != "ACCESS":
-            compat.deque_append(self.queue, self.maxqueue,
-                            (utils.timestamp(),severity,message))
+
+        if self.database and severity != "ACCESS":
+            record = {
+                      "timestamp": utils.timestamp(),
+                      "severity": severity,
+                      "message": message,
+                     }
+
+            #
+            # We don't need to commit INFO and DEBUG
+            # records: it's OK to see those with some
+            # delay.  While we want to see immediately
+            # WARNING and ERROR records.
+            # TODO We need to commit the database on
+            # sys.exit() and signals etc.  (This is
+            # more a database problem that a problem
+            # of this file.)
+            #
+            if severity in ("INFO", "DEBUG"):
+                commit = False
+
+                # Do we need to commit now?
+                self._nocommit = self._nocommit -1
+                if self._nocommit <= 0:
+                    self._nocommit = NOCOMMIT
+                    commit = True
+
+            else:
+                # Must commit now
+                self._nocommit = NOCOMMIT
+                commit = True
+
+            self.table_log.insert(self.database.connection(), record, commit)
+
         printlog(message)
 
     # Marshal
 
     def listify(self):
-        return map(None, self.queue)
+        return self.table_log.listify(self.database.connection())
 
-MAXQUEUE = 4096
-LOG = Logger(MAXQUEUE)
+LOG = Logger()

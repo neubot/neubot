@@ -29,6 +29,7 @@ if __name__ == "__main__":
 
 from neubot.bittorrent.client import BitTorrentClient
 from neubot.config import CONFIG
+from neubot.database import DATABASE
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 from neubot.log import LOG

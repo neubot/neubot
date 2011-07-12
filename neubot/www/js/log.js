@@ -47,9 +47,9 @@ jQuery(document).ready(function() {
                     case "INFO": bgcolor = '#bbffff'; break;
                 }
                 html += "<tr style='background-color: " + bgcolor + ";'>";
-                html += "<td><small>" + utils.getTimeFromSeconds(result[0], true, true) + "</small></td>";
-                html += "<td>" + result[1] + "</td>";
-                html += "<td><small>" + result[2] + "</small></td>";
+                html += "<td><small>" + utils.getTimeFromSeconds(result["timestamp"], true, true) + "</small></td>";
+                html += "<td>" + result["severity"] + "</td>";
+                html += "<td><small>" + result["message"] + "</small></td>";
                 html += "</tr>";
             }
 

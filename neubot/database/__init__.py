@@ -24,6 +24,7 @@ import sqlite3
 
 from neubot.database import table_config
 from neubot.database import table_geoloc
+from neubot.database import table_log
 from neubot.database import table_speedtest
 from neubot.database import table_bittorrent
 from neubot.database import migrate
@@ -58,7 +59,16 @@ class DatabaseManager(object):
             table_speedtest.create(self.dbc)
             table_geoloc.create(self.dbc)
             table_bittorrent.create(self.dbc)
+            table_log.create(self.dbc)
             migrate.migrate(self.dbc)
+
+            #
+            # Attach to the logger: we cannot do that from
+            # the logger because that will create a circular
+            # dependency.
+            #
+            LOG.attach(self, table_log)
+
         return self.dbc
 
 DATABASE = DatabaseManager()
