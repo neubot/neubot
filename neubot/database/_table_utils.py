@@ -137,7 +137,8 @@ def make_select(table, template, **kwargs):
         if until >= 0:
             vector.append("timestamp < :until")
 
-    vector.append(" ORDER BY timestamp DESC")
+    if "desc" in kwargs and kwargs["desc"]:
+        vector.append(" ORDER BY timestamp DESC")
     vector.append(";")
     query = "".join(vector)
     return query

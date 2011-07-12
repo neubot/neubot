@@ -66,7 +66,7 @@ def insert(connection, dictobj, commit=True, override_timestamp=True):
 def walk(connection, func, since=-1, until=-1):
     cursor = connection.cursor()
     SELECT = _table_utils.make_select("bittorrent", TEMPLATE,
-      since=since, until=until)
+      since=since, until=until, desc=True)
     cursor.execute(SELECT, {"since": since, "until": until})
     return map(func, cursor)
 
