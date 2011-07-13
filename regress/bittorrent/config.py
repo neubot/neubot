@@ -40,6 +40,7 @@ PROPERTIES = (
     'bittorrent.infohash',
     'bittorrent.listen',
     'bittorrent.negotiate',
+    'bittorrent.negotiate.port',
     'bittorrent.my_id',
     'bittorrent.numpieces',
     'bittorrent.piece_len',

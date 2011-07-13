@@ -55,9 +55,6 @@ TARGET = 5
 STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
           SENT_NOT_INTERESTED) = range(5)
 
-def random_bytes(n):
-    return "".join([chr(random.randint(32, 126)) for _ in range(n)])
-
 #
 # This class implements the test finite state
 # machine and message exchange that are documented
@@ -79,25 +76,20 @@ class PeerNeubot(StreamHandler):
         self.state = INITIAL
         self.infohash = None
         self.rtt = 0
-        self.setup({})
 
     def configure(self, conf, measurer=None):
         StreamHandler.configure(self, conf, measurer)
-        self.setup(conf)
-
-    def setup(self, conf):
-        self.numpieces = int(conf.get("bittorrent.numpieces", NUMPIECES))
+        self.numpieces = conf["bittorrent.numpieces"]
         self.bitfield = make_bitfield(self.numpieces)
         self.peer_bitfield = make_bitfield(self.numpieces)
-        self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
-        self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
-                              estimate.DOWNLOAD))
+        self.my_id = conf["bittorrent.my_id"]
+        self.target_bytes = conf["bittorrent.bytes.down"]
         self.make_sched()
 
     def make_sched(self):
         self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
-          self.target_bytes, int(self.conf.get("bittorrent.piece_len",
-          PIECE_LEN)), PIECE_LEN)
+          self.target_bytes, self.conf["bittorrent.piece_len"],
+          self.conf["bittorrent.piece_len"])
 
     def connect(self, endpoint, count=1):
         self.connector_side = True
@@ -106,7 +98,7 @@ class PeerNeubot(StreamHandler):
         # and handshakes, including connector infohash, after
         # it receives the connector handshake.
         #
-        self.infohash = self.conf.get("bittorrent.infohash", random_bytes(20))
+        self.infohash = self.conf["bittorrent.infohash"]
         LOG.start("BitTorrent: connecting to %s" % str(endpoint))
         StreamHandler.connect(self, endpoint, count)
 
@@ -136,7 +128,7 @@ class PeerNeubot(StreamHandler):
         else:
             peer = self
         stream.attach(peer, sock, peer.conf, peer.measurer)
-        stream.watchdog = WATCHDOG
+        stream.watchdog = self.conf["bittorrent.watchdog"]
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))

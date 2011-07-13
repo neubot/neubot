@@ -28,18 +28,12 @@
 
 import StringIO
 import hashlib
-import sys
-
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
 
 from neubot.bittorrent.peer import PeerNeubot
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
-from neubot.net.poller import POLLER
 
 from neubot.bittorrent import estimate
-from neubot.config import CONFIG
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
@@ -47,7 +41,6 @@ from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
-from neubot.main import common
 from neubot import privacy
 from neubot import utils
 
@@ -64,14 +57,15 @@ class BitTorrentClient(ClientHTTP):
 
     def connect_uri(self, uri=None, count=None):
         if not uri:
-            uri = self.conf.get("bittorrent.uri",
-              "http://neubot.blupixel.net/")
+            address = self.conf["bittorrent.address"]
+            port = self.conf["bittorrent.negotiate.port"]
+            uri = "http://%s:%s/" % (address, port)
         ClientHTTP.connect_uri(self, uri, 1)
 
     def connection_ready(self, stream):
         STATE.update("negotiate")
         request = Message()
-        body = json.dumps({"target_bytes": estimate.UPLOAD})
+        body = json.dumps({"target_bytes": self.conf["bittorrent.bytes.up"]})
         request.compose(method="GET", pathquery="/negotiate/bittorrent",
           host=self.host_header, body=body, mimetype="application/json")
         request["authorization"] = self.conf.get("_authorization", "")
@@ -105,7 +99,8 @@ class BitTorrentClient(ClientHTTP):
             peer.connection_lost = self.peer_connection_lost
             peer.connection_failed = self.peer_connection_failed
             peer.configure(self.conf)
-            peer.connect((self.http_stream.peername[0], 6881))      #XXX
+            peer.connect((self.http_stream.peername[0],
+                          self.conf["bittorrent.port"]))
 
     def peer_connection_failed(self, connector, exception):
         stream = self.http_stream
@@ -185,23 +180,3 @@ class BitTorrentClient(ClientHTTP):
 
     def connection_failed(self, connector, exception):
         NOTIFIER.publish(TESTDONE)
-
-CONFIG.register_defaults({
-    "bittorrent.uri": "http://neubot.blupixel.net/",
-})
-
-def main(args):
-    CONFIG.register_descriptions({
-        "bittorrent.uri": "Base URI to connect to",
-    })
-
-    common.main("bittorrent.negotiate_client",
-      "BitTorrent negotiate client", args)
-    conf = CONFIG.copy()
-    client = BitTorrentClient(POLLER)
-    client.configure(conf)
-    client.connect_uri()
-    POLLER.loop()
-
-if __name__ == "__main__":
-    main(sys.argv)

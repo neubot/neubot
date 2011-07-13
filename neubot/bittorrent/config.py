@@ -30,7 +30,10 @@
 # in the common case (internals ought to be internals).
 #
 
+import random
+
 from neubot.config import CONFIG
+from neubot.bittorrent import estimate
 
 NUMPIECES = 1<<20
 PIECE_LEN = 1<<17
@@ -67,10 +70,11 @@ _PROPERTIES = (
     ('bittorrent.infohash', '', 'Set InfoHash ("" = auto)'),
     ('bittorrent.listen', False, 'Run in server mode'),
     ('bittorrent.negotiate', True, 'Enable negotiate client/server'),
+    ('bittorrent.negotiate.port', 80, 'Negotiate port'),
     ('bittorrent.my_id', '', 'Set local PeerId ("" = auto)'),
     ('bittorrent.numpieces', NUMPIECES, 'Num of pieces in bitfield'),
     ('bittorrent.piece_len', PIECE_LEN, 'Length of each piece'),
-    ('bittorrent.port', 0, 'Port to listen/connect to (0 = auto)'),
+    ('bittorrent.port', 6881, 'Port to listen/connect to (0 = auto)'),
     ('bittorrent.watchdog', WATCHDOG, 'Maximum test run-time in seconds'),
 )
 
@@ -80,3 +84,27 @@ CONFIG.register_defaults(dict(zip(map(lambda t: t[0], _PROPERTIES),
 def register_descriptions():
     CONFIG.register_descriptions(dict(zip(map(lambda t: t[0], _PROPERTIES),
                                           map(lambda t: t[2], _PROPERTIES))))
+
+def _random_bytes(n):
+    return "".join([chr(random.randint(32, 126)) for _ in range(n)])
+
+#
+# Assign a value to all the variables that can
+# still be guessed by Neubot.
+#
+def finalize_conf(conf):
+    if not conf["bittorrent.my_id"]:
+        conf["bittorrent.my_id"] = _random_bytes(20)
+    if not conf["bittorrent.infohash"]:
+        conf["bittorrent.infohash"] = _random_bytes(20)
+
+    if not conf["bittorrent.bytes.down"]:
+        conf["bittorrent.bytes.down"] = estimate.DOWNLOAD
+    if not conf["bittorrent.bytes.up"]:
+        conf["bittorrent.bytes.up"] = estimate.UPLOAD
+
+    if not conf["bittorrent.address"]:
+        if not conf["bittorrent.listen"]:
+            conf["bittorrent.address"] = "neubot.blupixel.net"
+        else:
+            conf["bittorrent.address"] = "0.0.0.0"
