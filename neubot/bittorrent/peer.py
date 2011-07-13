@@ -66,8 +66,8 @@ TARGET = 5
 WATCHDOG = 300
 
 # States of the PeerNeubot object
-STATES = [INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
-          SENT_NOT_INTERESTED] = range(5)
+STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
+          SENT_NOT_INTERESTED) = range(5)
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
