@@ -41,7 +41,7 @@ jQuery(document).ready(function() {
             for (i = 0; i < data.length; i++) {
                 var result = data[i];
                 var bgcolor = 'transparent';
-                switch (result[1]) {
+                switch (result["severity"]) {
                     case "ERROR": bgcolor = '#ff9977'; break;
                     case "WARNING": bgcolor = '#ffff55'; break;
                     case "INFO": bgcolor = '#bbffff'; break;

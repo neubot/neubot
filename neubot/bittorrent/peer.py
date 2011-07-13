@@ -43,8 +43,7 @@ from neubot.state import STATE
 from neubot import utils
 
 NUMPIECES = 1<<20
-PIECE_LEN = SMALLMESSAGE
-PIPELINE = 1<<20
+PIECE_LEN = 1<<20
 
 LO_THRESH = 3
 MAX_REPEAT = 7
@@ -54,16 +53,11 @@ TARGET = 5
 # This is the maximum time the test can run.  After that time,
 # no matter what, the underlying stream is closed by the low-level
 # code in <net/poller.py>.
-# Of course, it is a crime for a test to run for so much time but
-# I don't want to be too aggressive here.
+# The typical test should take less than 15 seconds so here we
+# are provisioning for more than 4x the time, which seems to be
+# quite reasonable.
 #
-# FIXME I'm too tired now to try to understand why -- but the
-# upload part of the test takes too much time and hits many
-# watchdog timeouts so I need to raise the limit :-(
-#
-#
-#WATCHDOG = 30
-WATCHDOG = 300
+WATCHDOG = 60
 
 # States of the PeerNeubot object
 STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
@@ -111,7 +105,7 @@ class PeerNeubot(StreamHandler):
     def make_sched(self):
         self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
           self.target_bytes, int(self.conf.get("bittorrent.piece_len",
-          PIECE_LEN)), PIPELINE)
+          PIECE_LEN)), PIECE_LEN)
 
     def connect(self, endpoint, count=1):
         self.connector_side = True
@@ -153,12 +147,14 @@ class PeerNeubot(StreamHandler):
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))
+        LOG.start("BitTorrent: receiving bitfield")
         if self.connector_side:
             self.state = SENT_INTERESTED
             stream.send_interested()
 
     def got_bitfield(self, b):
         self.peer_bitfield = Bitfield(self.numpieces, b)
+        LOG.complete()
 
     # Upload
 
@@ -171,10 +167,15 @@ class PeerNeubot(StreamHandler):
     def got_request(self, stream, index, begin, length):
         if self.state != UPLOADING:
             raise RuntimeError("REQUEST when state != UPLOADING")
+
+        if begin + length > PIECE_LEN:
+            raise RuntimeError("REQUEST too big")
+
         if length <= SMALLMESSAGE:
             block = chr(random.randint(32, 126)) * length
         else:
             block = RandomBody(length)
+
         stream.send_piece(index, begin, block)
 
     def got_interested(self, stream):
@@ -182,17 +183,15 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")
         if not self.connector_side and self.state != INITIAL:
             raise RuntimeError("INTERESTED when state != INITIAL")
-        self.__begin_uploading = utils.ticks()
+        LOG.start("BitTorrent: uploading")
         self.state = UPLOADING
         stream.send_unchoke()
 
     def got_not_interested(self, stream):
         if self.state != UPLOADING:
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
+        LOG.complete()
         if self.connector_side:
-            __timediff = utils.ticks() - self.__begin_uploading
-            LOG.warning("* Time to upload: %d" % __timediff)
-            LOG.info("BitTorrent: test complete")
             self.complete(stream, self.dload_speed, self.rtt,
                           self.target_bytes)
             stream.close()
@@ -218,16 +217,13 @@ class PeerNeubot(StreamHandler):
     # The idea of pipelining is that of filling with many
     # messages the space between us and the peer to do
     # something that approxymates a continuous download.
-    # FIXME Here the problem is that the scheduling is
-    # fixed and huge, so the startup phase might be too
-    # long for slow connections.
     #
     def got_unchoke(self, stream):
         if self.state != SENT_INTERESTED:
             raise RuntimeError("UNCHOKE when state != SENT_INTERESTED")
         else:
             self.state = DOWNLOADING
-            LOG.info("BitTorrent: using %d bytes" % self.target_bytes)
+            LOG.start("BitTorrent: downloading %d bytes" % self.target_bytes)
             burst = next(self.sched_req)
             for index, begin, length in burst:
                 stream.send_request(index, begin, length)
@@ -255,7 +251,12 @@ class PeerNeubot(StreamHandler):
     # that we can do that.  Note that we start measuring
     # after the first PIECE message: at that point we
     # can assume the pipeline to be full (note that this
-    # holds iff bdp < PIPELINE).
+    # holds iff bdp < initial-burst).
+    # Note to self: when the connection is buffer limited
+    # the TCP stack is very likely to miss fast retransmit
+    # and recovery.  We cannot measure throughput in that
+    # condition but the fact that TCP is more sensitive to
+    # losses might be interesting as well.
     #
     def got_piece_end(self, stream, index, begin):
         if self.state != DOWNLOADING:
@@ -278,33 +279,30 @@ class PeerNeubot(StreamHandler):
             stream.send_request(index, begin, length)
 
         else:
+            #
             # No more pieces: Wait for the pipeline to empty
+            #
+            # TODO Check whether it's better to stop the measurement
+            # when the pipeline starts emptying instead of when it
+            # becomes empty (maybe it is reasonable to discard when
+            # it fills and when it empties, isn't it?)
+            #
             self.inflight -= 1
             if self.inflight == 0:
                 xfered = stream.bytes_recv_tot - self.saved_bytes
                 elapsed = utils.ticks() - self.saved_ticks
                 speed = xfered/elapsed
 
-                LOG.info("BitTorrent: download speed: %s" %
-                  utils.speed_formatter(speed))
-                LOG.info("BitTorrent: measurement time: %s" %
-                  utils.time_formatter(elapsed))
+                LOG.complete("%s" % utils.speed_formatter(speed))
 
                 #
                 # Make sure that next test would take about
                 # TARGET secs, under current conditions.
-                # But, multiply by two below a given threshold
-                # because we don't want to overestimate the
-                # achievable bandwidth.
-                # TODO If we're the connector, store somewhere
-                # the target_bytes so we can reuse it later.
                 # TODO Don't start from scratch but use speedtest
-                # estimate, maybe /2.
+                # estimate (maybe we need to divide it by two
+                # but I'm not sure at the moment).
                 #
-                if elapsed > LO_THRESH/3:
-                    self.target_bytes *= TARGET/elapsed
-                else:
-                    self.target_bytes *= 2
+                self.target_bytes = int(self.target_bytes * TARGET/elapsed)
 
                 #
                 # The stopping rule is when the test has run
@@ -316,11 +314,9 @@ class PeerNeubot(StreamHandler):
                 self.repeat -= 1
                 if elapsed > LO_THRESH or self.repeat <= 0:
                     self.dload_speed = speed
-                    LOG.info("BitTorrent: my side complete")
                     self.state = SENT_NOT_INTERESTED
                     stream.send_not_interested()
                     if not self.connector_side:
-                        LOG.info("BitTorrent: test complete")
                         self.complete(stream, self.dload_speed, self.rtt,
                                       self.target_bytes)
                     else:
