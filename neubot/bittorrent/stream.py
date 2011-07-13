@@ -37,11 +37,14 @@ from neubot.log import LOG
 
 from neubot import utils
 
+# Available msgs
 MESSAGES = (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
             REQUEST, PIECE, CANCEL) = map(chr, range(9))
 
+# Set of available msgs
 MESSAGESET = set(MESSAGES)
 
+# Each message type has it's length checker
 INVALID_LENGTH = {
     CHOKE: lambda l: l != 1,
     UNCHOKE: lambda l: l != 1,
@@ -54,8 +57,11 @@ INVALID_LENGTH = {
     CANCEL: lambda l: l != 13,
 }
 
+# Flags used during handshake
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
+
+# Protocol name (for handshake)
 PROTOCOL_NAME = 'BitTorrent protocol'
 
 #
