@@ -226,6 +226,7 @@ class StreamBitTorrent(Stream):
                 else:
                     if self.buff:
                         self._got_message_start("".join(self.buff))
+                        # This means "big message"
                         del self.buff[:]
                     mp = buffer(s, 0, amt)
                     self._got_message_part(mp)
@@ -234,6 +235,7 @@ class StreamBitTorrent(Stream):
                 self.count += amt
 
                 if self.left == 0:
+                    # Small or big message?
                     if self.buff:
                         self._got_message("".join(self.buff))
                     else:
