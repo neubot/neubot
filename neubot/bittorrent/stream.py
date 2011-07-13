@@ -16,7 +16,7 @@
 #
 # Originally written by Bram Cohen, heavily modified by Uoti Urpala
 # Fast extensions added by David Harrison
-# Modified for neubot by Simone Basso <bassosimone@gmail.com>
+# Modified for Neubot by Simone Basso <bassosimone@gmail.com>
 #
 
 #
