@@ -43,7 +43,7 @@ from neubot.state import STATE
 from neubot import utils
 
 NUMPIECES = 1<<20
-PIECE_LEN = 1<<20
+PIECE_LEN = 1<<17
 
 LO_THRESH = 3
 MAX_REPEAT = 7
