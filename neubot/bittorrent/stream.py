@@ -86,9 +86,9 @@ def tobinary(i):
 
 #
 # Keep safe the parameters of PIECE messages
-# for very large piece messages, that are not
-# buffered and passed as a single bag of bytes
-# to the message-reading code.
+# for very large piece messages, which aren't
+# buffered and are instead passed as the bytes
+# arrive to the message-reading code.
 #
 class PieceMessage(object):
     def __init__(self, index, begin):
