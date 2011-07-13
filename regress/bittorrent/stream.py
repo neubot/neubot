@@ -271,11 +271,11 @@ class TestBigMessageHandlers(unittest.TestCase):
         self.assertRaises(RuntimeError, s._got_message_start, "".join(m))
 
     # Interface required by above code
-    def piece_start(self, stream, index, begin, s):
+    def got_piece_start(self, stream, index, begin, s):
         pass
-    def piece_part(self, stream, index, begin, s):
+    def got_piece_part(self, stream, index, begin, s):
         pass
-    def piece_end(self, stream, index, begin):
+    def got_piece_end(self, stream, index, begin):
         pass
 
 #
