@@ -257,6 +257,11 @@ class PeerNeubot(StreamHandler):
     # after the first PIECE message: at that point we
     # can assume the pipeline to be full (note that this
     # holds iff bdp < initial-burst).
+    # Note to self: when the connection is buffer limited
+    # the TCP stack is very likely to miss fast retransmit
+    # and recovery.  We cannot measure throughput in that
+    # condition but the fact that TCP is more sensitive to
+    # losses might be interesting as well.
     #
     def got_piece_end(self, stream, index, begin):
         if self.state != DOWNLOADING:
@@ -279,7 +284,14 @@ class PeerNeubot(StreamHandler):
             stream.send_request(index, begin, length)
 
         else:
+            #
             # No more pieces: Wait for the pipeline to empty
+            #
+            # TODO Check whether it's better to stop the measurement
+            # when the pipeline starts emptying instead of when it
+            # becomes empty (maybe it is reasonable to discard when
+            # it fills and when it empties, isn't it?)
+            #
             self.inflight -= 1
             if self.inflight == 0:
                 xfered = stream.bytes_recv_tot - self.saved_bytes
@@ -292,7 +304,8 @@ class PeerNeubot(StreamHandler):
                 # Make sure that next test would take about
                 # TARGET secs, under current conditions.
                 # TODO Don't start from scratch but use speedtest
-                # estimate, maybe /2.
+                # estimate (maybe we need to divide it by two
+                # but I'm not sure at the moment).
                 #
                 self.target_bytes = int(self.target_bytes * TARGET/elapsed)
 
