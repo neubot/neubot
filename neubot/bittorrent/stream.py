@@ -37,8 +37,8 @@ from neubot.log import LOG
 
 from neubot import utils
 
-MESSAGES = [CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
-            REQUEST, PIECE, CANCEL] = map(chr, range(9))
+MESSAGES = (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
+            REQUEST, PIECE, CANCEL) = map(chr, range(9))
 
 MESSAGESET = set(MESSAGES)
 
