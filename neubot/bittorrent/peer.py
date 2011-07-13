@@ -53,16 +53,11 @@ TARGET = 5
 # This is the maximum time the test can run.  After that time,
 # no matter what, the underlying stream is closed by the low-level
 # code in <net/poller.py>.
-# Of course, it is a crime for a test to run for so much time but
-# I don't want to be too aggressive here.
+# The typical test should take less than 15 seconds so here we
+# are provisioning for more than 4x the time, which seems to be
+# quite reasonable.
 #
-# FIXME I'm too tired now to try to understand why -- but the
-# upload part of the test takes too much time and hits many
-# watchdog timeouts so I need to raise the limit :-(
-#
-#
-#WATCHDOG = 30
-WATCHDOG = 300
+WATCHDOG = 60
 
 # States of the PeerNeubot object
 STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
