@@ -256,13 +256,13 @@ class StreamBitTorrent(Stream):
     def _got_message_start(self, message):
         t = message[0]
         if t != PIECE:
-            raise RuntimeError("unexpected jumbo message")
+            raise RuntimeError("unexpected big message")
         if len(message) <= 9:
             raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xII%ss" % n, message)
         if self.piece:
-            raise RuntimeError("Jumbo message not ended properly")
+            raise RuntimeError("Big message not ended properly")
         self.piece = PieceMessage(i, a)
         self.parent.piece_start(self, i, a, b)
 

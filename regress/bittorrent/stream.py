@@ -159,7 +159,7 @@ class TestReassembler_Base(unittest.TestCase):
         # XXX The handshake makes things much more complex
         self.stream.left = 0
 
-        # We want to test diversion of jumbo messages too
+        # We want to test diversion of big messages too
         self.stream.smallmessage = 2048
         self.stream._got_message_start = self.got_message_start
         self.stream._got_message_part = self.got_message_part
@@ -169,16 +169,16 @@ class TestReassembler_Base(unittest.TestCase):
     def start_send(self, s):
         self.messages.append(s)
 
-    # For jumbo messages
+    # For big messages
     def got_message_start(self, m):
         if self.partial_message:
-            raise RuntimeError("jumbo messages error")
+            raise RuntimeError("big messages error")
         self.partial_message.append(m)                  # should be string
     def got_message_part(self, m):
         self.partial_message.append(str(m))             # should be buffer
     def got_message_end(self):
         if not self.partial_message:
-            raise RuntimeError("jumbo messages error")
+            raise RuntimeError("big messages error")
         self.saved_messages.append("".join(self.partial_message))
         del self.partial_message[:]
 
@@ -242,13 +242,13 @@ class TestReassembler_SingleChar(TestReassembler_Base):
 #
 
 #
-# The jumbo message handler is a good thing BUT duplicates
+# The big message handler is a good thing BUT duplicates
 # code so we must make sure that the behavior is comparable
 # to the one of the ordinary code.
 #
-class TestJumboMessageHandlers(unittest.TestCase):
+class TestBigMessageHandlers(unittest.TestCase):
     def runTest(self):
-        """Make sure jumbo message handlers works well"""
+        """Make sure big message handlers works well"""
         s = stream.StreamBitTorrent(None)
         s.parent = self
 
