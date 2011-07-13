@@ -107,12 +107,6 @@ class PeerNeubot(StreamHandler):
           self.target_bytes, int(self.conf.get("bittorrent.piece_len",
           PIECE_LEN)), PIPELINE)
 
-    def connection_ready(self, stream):
-        stream.send_bitfield(str(self.bitfield))
-        if self.connector_side:
-            self.state = SENT_INTERESTED
-            stream.send_interested()
-
     def connect(self, endpoint, count=1):
         self.connector_side = True
         #
@@ -122,6 +116,15 @@ class PeerNeubot(StreamHandler):
         #
         self.infohash = self.conf.get("bittorrent.infohash", random_bytes(20))
         StreamHandler.connect(self, endpoint, count)
+
+    #
+    # Empty but here to remind hackers that the controlling
+    # object must divert this function to its own function in
+    # order to catch the case where we cannot connect to the
+    # remote end.
+    #
+    def connection_failed(self, connector, exception):
+        pass
 
     def connection_made(self, sock, rtt=0):
         if rtt:
@@ -141,6 +144,12 @@ class PeerNeubot(StreamHandler):
             peer = self
         stream.attach(peer, sock, peer.conf, peer.measurer)
         stream.watchdog = WATCHDOG
+
+    def connection_ready(self, stream):
+        stream.send_bitfield(str(self.bitfield))
+        if self.connector_side:
+            self.state = SENT_INTERESTED
+            stream.send_interested()
 
     def got_bitfield(self, b):
         self.peer_bitfield = Bitfield(self.numpieces, b)
@@ -187,6 +196,11 @@ class PeerNeubot(StreamHandler):
 
     # Download
 
+    #
+    # XXX Not so clean to panic on CHOKE however the test
+    # does not use this message and we cannot simply ignore
+    # it because it would violate the protocol.
+    #
     def got_choke(self, stream):
         raise RuntimeError("Unexpected CHOKE message")
 
@@ -198,6 +212,9 @@ class PeerNeubot(StreamHandler):
     # The idea of pipelining is that of filling with many
     # messages the space between us and the peer to do
     # something that approxymates a continuous download.
+    # FIXME Here the problem is that the scheduling is
+    # fixed and huge, so the startup phase might be too
+    # long for slow connections.
     #
     def got_unchoke(self, stream):
         if self.state != SENT_INTERESTED:
@@ -210,11 +227,12 @@ class PeerNeubot(StreamHandler):
                 stream.send_request(index, begin, length)
                 self.inflight += 1
 
-    # We don't use HAVE messages at the moment
     def got_have(self, index):
         if self.state != UPLOADING:
             raise RuntimeError("HAVE when state != UPLOADING")
         self.peer_bitfield[index] = 1
+        # We don't use HAVE messages at the moment
+        LOG.warning("Ignoring unexpected HAVE message")
 
     def got_piece(self, stream, index, begin, block):
         self.piece_start(stream, index, begin, "")
