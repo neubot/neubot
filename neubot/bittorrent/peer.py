@@ -43,8 +43,7 @@ from neubot.state import STATE
 from neubot import utils
 
 NUMPIECES = 1<<20
-PIECE_LEN = SMALLMESSAGE
-PIPELINE = 1<<20
+PIECE_LEN = 1<<20
 
 LO_THRESH = 3
 MAX_REPEAT = 7
@@ -111,7 +110,7 @@ class PeerNeubot(StreamHandler):
     def make_sched(self):
         self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
           self.target_bytes, int(self.conf.get("bittorrent.piece_len",
-          PIECE_LEN)), PIPELINE)
+          PIECE_LEN)), PIECE_LEN)
 
     def connect(self, endpoint, count=1):
         self.connector_side = True
@@ -171,10 +170,15 @@ class PeerNeubot(StreamHandler):
     def got_request(self, stream, index, begin, length):
         if self.state != UPLOADING:
             raise RuntimeError("REQUEST when state != UPLOADING")
+
+        if begin + length > PIECE_LEN:
+            raise RuntimeError("REQUEST too big")
+
         if length <= SMALLMESSAGE:
             block = chr(random.randint(32, 126)) * length
         else:
             block = RandomBody(length)
+
         stream.send_piece(index, begin, block)
 
     def got_interested(self, stream):
@@ -218,9 +222,6 @@ class PeerNeubot(StreamHandler):
     # The idea of pipelining is that of filling with many
     # messages the space between us and the peer to do
     # something that approxymates a continuous download.
-    # FIXME Here the problem is that the scheduling is
-    # fixed and huge, so the startup phase might be too
-    # long for slow connections.
     #
     def got_unchoke(self, stream):
         if self.state != SENT_INTERESTED:
@@ -255,7 +256,7 @@ class PeerNeubot(StreamHandler):
     # that we can do that.  Note that we start measuring
     # after the first PIECE message: at that point we
     # can assume the pipeline to be full (note that this
-    # holds iff bdp < PIPELINE).
+    # holds iff bdp < initial-burst).
     #
     def got_piece_end(self, stream, index, begin):
         if self.state != DOWNLOADING:
@@ -293,18 +294,10 @@ class PeerNeubot(StreamHandler):
                 #
                 # Make sure that next test would take about
                 # TARGET secs, under current conditions.
-                # But, multiply by two below a given threshold
-                # because we don't want to overestimate the
-                # achievable bandwidth.
-                # TODO If we're the connector, store somewhere
-                # the target_bytes so we can reuse it later.
                 # TODO Don't start from scratch but use speedtest
                 # estimate, maybe /2.
                 #
-                if elapsed > LO_THRESH/3:
-                    self.target_bytes *= TARGET/elapsed
-                else:
-                    self.target_bytes *= 2
+                self.target_bytes = int(self.target_bytes * TARGET/elapsed)
 
                 #
                 # The stopping rule is when the test has run

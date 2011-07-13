@@ -43,22 +43,61 @@ def sched_idx(bitfield, peer_bitfield):
 
 #
 # Given our bitfield, the peer's bitfield, the number of bytes
-# we want to transfer, the length of the piece, and the amount of
-# bytes we want to keep in the pipeline between us and the peer,
-# this generator returns the vector of (index, begin, length) that
-# we should request to our peer at any given time.
+# we want to transfer and the length of the piece, this generator
+# returns the vector of (index, begin, length) that we should
+# request to our peer at any given time.
 # Note that there is an initial burst whose goal is to try to
 # fill the pipeline between us and the peer, in order to emulate
 # a continuous transfer of a huge file.
 #
-def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, pipeline):
+def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, blocklen):
+
+    # Adapt initial burst to the channel
+    burstlen = int(targetbytes/3)
+
+    # Create next-piece-index generator
     idx = sched_idx(bitfield, peer_bitfield)
-    npieces = int(targetbytes / piecelen) + 1
-    npiecespipe = int(pipeline / piecelen) + 1
+
+    # Return initial burst of requests
     burst = []
-    for _ in range(min(npieces, npiecespipe)):
-        burst.append((next(idx), 0, piecelen))
+    for req in _sched_piece(idx, burstlen, piecelen, blocklen):
+        burst.append(req)
     yield burst
-    npieces -= min(npieces, npiecespipe)
-    for _ in range(npieces):
-        yield [(next(idx), 0, piecelen)]
+
+    # Return subsequent requests
+    for req in _sched_piece(idx, targetbytes, piecelen, blocklen):
+        yield [req]
+
+#
+# Generator that returns BitTorrent REQUESTs parameters
+# to request up to `total` bytes.  Each piece has size
+# `piecelen`, each block has size `blocklen` and `idx` is
+# an iterator that returns the index of the next piece
+# we want to download.
+#
+def _sched_piece(idx, total, piecelen, blocklen):
+
+    if blocklen > piecelen:
+        raise RuntimeError("Received invalid parameters")
+
+    # Piece info
+    cur_left, cur_idx, cur_offset = 0, 0, 0
+
+    while total > 0:
+
+        # Piece exhausted?  Pick next one
+        if cur_left == 0:
+            cur_idx = next(idx)
+            cur_left = piecelen
+            cur_offset = 0
+
+        # Request block from piece
+        amt = min(total, cur_left, blocklen)
+
+        # Feed the caller
+        yield (cur_idx, cur_offset, amt)
+
+        # Accounting
+        cur_left -= amt
+        cur_offset += amt
+        total -= amt
