@@ -178,9 +178,10 @@ class ServerAPI(ServerHTTP):
         dictionary = cgi.parse_qs(query)
         if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
             stringio = StringIO.StringIO()
-            for ln in LOG.listify():
-                ln = map(str, ln)
-                stringio.write(" ".join(ln))
+            for row in LOG.listify():
+                ln = "%d [%s]\t%s" % (row["timestamp"], row["severity"],
+                                      row["message"])
+                stringio.write(ln.encode("utf-8"))
                 stringio.write("\r\n")
             stringio.seek(0)
             mimetype = "text/plain"
