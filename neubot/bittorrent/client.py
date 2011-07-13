@@ -97,8 +97,14 @@ class BitTorrentClient(ClientHTTP):
             peer = PeerNeubot(self.poller)
             peer.complete = self.peer_test_complete
             peer.connection_lost = self.peer_connection_lost
+            peer.connection_failed = self.peer_connection_failed
             peer.configure(self.conf)
             peer.connect((self.http_stream.peername[0], 6881))      #XXX
+
+    def peer_connection_failed(self, connector, exception):
+        stream = self.http_stream
+        # TODO signal the other end something went wrong?
+        stream.close()
 
     def peer_connection_lost(self, stream):
         if not self.success:
