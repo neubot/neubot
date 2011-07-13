@@ -19,6 +19,17 @@
 # Modified for neubot by Simone Basso <bassosimone@gmail.com>
 #
 
+#
+# This file contains the BitTorrent stream, i.e. a
+# net/stream.py's Stream specialized for handling the
+# BitTorrent peer-wire protocol.
+# The general idea is that this file deals more with
+# the syntax of the protocol and less with the semantic,
+# which should be done in bittorrent/peer.py.
+#
+# See <http://www.bittorrent.org/beps/bep_0003.html>.
+#
+
 import struct
 
 from neubot.net.stream import Stream
