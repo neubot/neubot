@@ -219,7 +219,7 @@ class StreamBitTorrent(Stream):
                     raise RuntimeError("Invalid self.count")
 
             # Bufferize and pass upstream messages
-            else:
+            elif self.left > 0:
                 amt = min(len(s), self.left)
                 if self.count <= self.smallmessage:
                     self.buff.append(s[:amt])
@@ -243,6 +243,10 @@ class StreamBitTorrent(Stream):
 
                 elif self.left < 0:
                     raise RuntimeError("Invalid self.left")
+
+            # Something's wrong
+            else:
+                raise RuntimeError("Invalid self.left")
 
         if not (self.close_pending or self.close_complete):
             self.start_recv()
