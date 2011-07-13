@@ -96,11 +96,10 @@ class PieceMessage(object):
         self.begin = begin
 
 #
-# Specializes stream in order to handle the BitTorrent peer
-# wire protocol.  See also the finite state machine documented
-# at `doc/protocol.png`.
-# Note that we start with left = 68 because that is the size
-# of the BitTorrent handshake.
+# Specializes stream in order to handle the
+# BitTorrent peer wire protocol.
+# Note that we start with left = 68 because
+# that is the size of the handshake.
 #
 class StreamBitTorrent(Stream):
     def __init__(self, poller):
