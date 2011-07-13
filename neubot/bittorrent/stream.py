@@ -16,7 +16,18 @@
 #
 # Originally written by Bram Cohen, heavily modified by Uoti Urpala
 # Fast extensions added by David Harrison
-# Modified for neubot by Simone Basso <bassosimone@gmail.com>
+# Modified for Neubot by Simone Basso <bassosimone@gmail.com>
+#
+
+#
+# This file contains the BitTorrent stream, i.e. a
+# net/stream.py's Stream specialized for handling the
+# BitTorrent peer-wire protocol.
+# The general idea is that this file deals more with
+# the syntax of the protocol and less with the semantic,
+# which should be done in bittorrent/peer.py.
+#
+# See <http://www.bittorrent.org/beps/bep_0003.html>.
 #
 
 import struct
@@ -26,11 +37,14 @@ from neubot.log import LOG
 
 from neubot import utils
 
-MESSAGES = [CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
-            REQUEST, PIECE, CANCEL] = map(chr, range(9))
+# Available msgs
+MESSAGES = (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
+            REQUEST, PIECE, CANCEL) = map(chr, range(9))
 
+# Set of available msgs
 MESSAGESET = set(MESSAGES)
 
+# Each message type has it's length checker
 INVALID_LENGTH = {
     CHOKE: lambda l: l != 1,
     UNCHOKE: lambda l: l != 1,
@@ -43,8 +57,11 @@ INVALID_LENGTH = {
     CANCEL: lambda l: l != 13,
 }
 
+# Flags used during handshake
 FLAGS = ['\0'] * 8
 FLAGS = ''.join(FLAGS)
+
+# Protocol name (for handshake)
 PROTOCOL_NAME = 'BitTorrent protocol'
 
 #
@@ -69,9 +86,9 @@ def tobinary(i):
 
 #
 # Keep safe the parameters of PIECE messages
-# for very large piece messages, that are not
-# buffered and passed as a single bag of bytes
-# to the message-reading code.
+# for very large piece messages, which aren't
+# buffered and are instead passed as the bytes
+# arrive to the message-reading code.
 #
 class PieceMessage(object):
     def __init__(self, index, begin):
@@ -79,11 +96,10 @@ class PieceMessage(object):
         self.begin = begin
 
 #
-# Specializes stream in order to handle the BitTorrent peer
-# wire protocol.  See also the finite state machine documented
-# at `doc/protocol.png`.
-# Note that we start with left = 68 because that is the size
-# of the BitTorrent handshake.
+# Specializes stream in order to handle the
+# BitTorrent peer wire protocol.
+# Note that we start with left = 68 because
+# that is the size of the handshake.
 #
 class StreamBitTorrent(Stream):
     def __init__(self, poller):
@@ -203,13 +219,14 @@ class StreamBitTorrent(Stream):
                     raise RuntimeError("Invalid self.count")
 
             # Bufferize and pass upstream messages
-            else:
+            elif self.left > 0:
                 amt = min(len(s), self.left)
                 if self.count <= self.smallmessage:
                     self.buff.append(s[:amt])
                 else:
                     if self.buff:
                         self._got_message_start("".join(self.buff))
+                        # This means "big message"
                         del self.buff[:]
                     mp = buffer(s, 0, amt)
                     self._got_message_part(mp)
@@ -218,6 +235,7 @@ class StreamBitTorrent(Stream):
                 self.count += amt
 
                 if self.left == 0:
+                    # Small or big message?
                     if self.buff:
                         self._got_message("".join(self.buff))
                     else:
@@ -228,27 +246,31 @@ class StreamBitTorrent(Stream):
                 elif self.left < 0:
                     raise RuntimeError("Invalid self.left")
 
+            # Something's wrong
+            else:
+                raise RuntimeError("Invalid self.left")
+
         if not (self.close_pending or self.close_complete):
             self.start_recv()
 
     def _got_message_start(self, message):
         t = message[0]
         if t != PIECE:
-            raise RuntimeError("unexpected jumbo message")
+            raise RuntimeError("unexpected big message")
         if len(message) <= 9:
             raise RuntimeError("PIECE: invalid message length")
         n = len(message) - 9
         i, a, b = struct.unpack("!xII%ss" % n, message)
         if self.piece:
-            raise RuntimeError("Jumbo message not ended properly")
+            raise RuntimeError("Big message not ended properly")
         self.piece = PieceMessage(i, a)
-        self.parent.piece_start(self, i, a, b)
+        self.parent.got_piece_start(self, i, a, b)
 
     def _got_message_part(self, s):
-        self.parent.piece_part(self, self.piece.index, self.piece.begin, s)
+        self.parent.got_piece_part(self, self.piece.index, self.piece.begin, s)
 
     def _got_message_end(self):
-        self.parent.piece_end(self, self.piece.index, self.piece.begin)
+        self.parent.got_piece_end(self, self.piece.index, self.piece.begin)
         self.piece = None
 
     def _got_message(self, message):

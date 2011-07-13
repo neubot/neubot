@@ -20,6 +20,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# This file contains the negotiator client of the
+# BitTorrent test, i.e. the code that negotiates with
+# the test server and collects the results.
+#
+
 import StringIO
 import hashlib
 import sys

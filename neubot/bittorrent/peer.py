@@ -20,6 +20,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# This file tries to emulate the behavior of a
+# BitTorrent peer to the extent that is required
+# by Neubot's purpose.
+#
+
 import random
 
 from neubot.bittorrent.bitfield import Bitfield
@@ -60,8 +66,8 @@ TARGET = 5
 WATCHDOG = 300
 
 # States of the PeerNeubot object
-STATES = [INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
-          SENT_NOT_INTERESTED] = range(5)
+STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
+          SENT_NOT_INTERESTED) = range(5)
 
 def random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
@@ -235,13 +241,13 @@ class PeerNeubot(StreamHandler):
         LOG.warning("Ignoring unexpected HAVE message")
 
     def got_piece(self, stream, index, begin, block):
-        self.piece_start(stream, index, begin, "")
-        self.piece_part(stream, index, begin, block)
-        self.piece_end(stream, index, begin)
+        self.got_piece_start(stream, index, begin, "")
+        self.got_piece_part(stream, index, begin, block)
+        self.got_piece_end(stream, index, begin)
 
-    def piece_start(self, stream, index, begin, block):
+    def got_piece_start(self, stream, index, begin, block):
         pass
-    def piece_part(self, stream, index, begin, block):
+    def got_piece_part(self, stream, index, begin, block):
         pass
 
     #
@@ -251,7 +257,7 @@ class PeerNeubot(StreamHandler):
     # can assume the pipeline to be full (note that this
     # holds iff bdp < PIPELINE).
     #
-    def piece_end(self, stream, index, begin):
+    def got_piece_end(self, stream, index, begin):
         if self.state != DOWNLOADING:
             raise RuntimeError("PIECE when state != DOWNLOADING")
 

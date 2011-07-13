@@ -20,6 +20,14 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Negotiate server of the BitTorrent test
+# This is built on top of the generic facilities
+# provided by neubot/negotiate.py (which may
+# become neubot/negotiate/server.py at any point
+# in the future)
+#
+
 import hashlib
 
 from neubot.compat import json
