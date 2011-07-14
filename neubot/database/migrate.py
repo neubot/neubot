@@ -38,6 +38,23 @@ from neubot.marshal import unmarshal_object
 
 #
 # Bump MAJOR version number because now we have also the
+# 'log' table.  Do not create the table here because
+# it is auto-created by the database initialization code
+# that runs BEFORE us.
+#
+def migrate_from__v3_0__to__v4_0(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "3.0":
+        LOG.info("* Migrating database from version 3.0 to 4.0")
+        cursor.execute("""UPDATE config SET value='4.0'
+                        WHERE name='version';""")
+        connection.commit()
+    cursor.close()
+
+#
+# Bump MAJOR version number because now we have also the
 # bittorrent table.  Do not create the table here because
 # it is auto-created by the database initialization code
 # that runs BEFORE us.
@@ -171,6 +188,7 @@ MIGRATORS = [
     migrate_from__v1_1__to__v2_0,
     migrate_from__v2_0__to__v2_1,
     migrate_from__v2_1__to__v3_0,
+    migrate_from__v3_0__to__v4_0,
 ]
 
 def migrate(connection):
