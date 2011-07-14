@@ -20,6 +20,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# This file contains the client that periodically connects
+# to the master server to get next-test and available-updates
+# information.
+#
+
 import random
 import sys
 
