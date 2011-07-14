@@ -761,6 +761,8 @@ CONFIG.register_defaults({
     "net.stream.obfuscate": False,
     "net.stream.secure": False,
     "net.stream.server_side": False,
+    "net.stream.rcvbuf": 262144,
+    "net.stream.sndbuf": 0,
 })
 CONFIG.register_defaults({
     "net.stream.address": "",
@@ -782,6 +784,8 @@ def main(args):
         "net.stream.obfuscate": "Enable scrambling with ARC4",
         "net.stream.secure": "Enable SSL",
         "net.stream.server_side": "Enable SSL server-side mode",
+        "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
+        "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
     })
     CONFIG.register_descriptions({
         "net.stream.address": "Set client or server address",
