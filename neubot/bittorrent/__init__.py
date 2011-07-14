@@ -48,7 +48,7 @@ from neubot import system
 #
 # This function is invoked when Neubot is already
 # running and you want to leverage some functionalities
-# of this modile.
+# of this module.
 #
 def run(poller, conf):
 
