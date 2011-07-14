@@ -51,9 +51,6 @@ class ClientRendezvous(ClientHTTP):
         self.testing = False
         self.task = None
 
-    def _do_connect_uri(self, *args, **kwargs):
-        self.connect_uri()
-
     def connect_uri(self, uri=None, count=None):
         self.task = None
         STATE.update("rendezvous")
@@ -187,7 +184,8 @@ class ClientRendezvous(ClientHTTP):
         else:
             interval = self.conf.get("rendezvous.client.interval", 1500)
             LOG.info("* Next rendezvous in %d seconds" % interval)
-            self.task = POLLER.sched(interval, self._do_connect_uri)
+            fn = lambda *args, **kwargs: self.connect_uri()
+            self.task = POLLER.sched(interval, fn)
             STATE.update("idle", publish=False)
             STATE.update("next_rendezvous", self.task.timestamp)
 
