@@ -63,6 +63,13 @@ def main(args):
 
     system.drop_privileges()
 
+    #
+    # When we run as an agent we also save logs into
+    # the database, to easily access and show them via
+    # the web user interface.
+    #
+    LOG.use_database()
+
     if conf["agent.rendezvous"]:
         client = ClientRendezvous(POLLER)
         conf["rendezvous.client.uri"] = uri

@@ -65,6 +65,7 @@ class Logger(object):
         self.ticks = 0
 
         self._nocommit = NOCOMMIT
+        self._use_database = False
 
         #
         # We cannot import the database here because of a
@@ -77,6 +78,13 @@ class Logger(object):
     def attach(self, database, table_log):
         self.database = database
         self.table_log = table_log
+
+    #
+    # We don't want to log into the database when we run
+    # the server side or when we run from command line.
+    #
+    def use_database(self):
+        self._use_database = True
 
     def verbose(self):
         self.noisy = True
@@ -175,7 +183,7 @@ class Logger(object):
     def _log(self, printlog, severity, message):
         message = message.rstrip()
 
-        if self.database and severity != "ACCESS":
+        if self._use_database and self.database and severity != "ACCESS":
             record = {
                       "timestamp": utils.timestamp(),
                       "severity": severity,
