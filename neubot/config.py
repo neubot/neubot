@@ -110,13 +110,27 @@ class Config(object):
            })
            ...
 
+           #
+           # The web user interface shows only properties that
+           # have a description.  So, please add the description
+           # of relevant properties only.  E.g. the bittorrent
+           # module variables are needed only when you run it
+           # directly so the description is added in main():
+           #
+           def main():
+               ...
+               CONFIG.register_descriptions({
+                 "bittorrent.listen": False,
+                 ...
+               })
+
                #
                # When you create a new instance of a test, get
                # a _copy_ of all the relevant variables and then
                # create the instance using such copy.
-               # Note that the returned copy _is_ a dictionary,
-               # so you SHOULD employ the get() pattern used below
-               # to increment your module robustness.
+               # Note that the returned copy is a dictionary, so
+               # so you might want to employ the get() pattern used
+               # below to increment your module robustness.
                # Of course you can add/remove/change values since
                # you are working on a copy.
                #
@@ -134,8 +148,8 @@ class Config(object):
                # whether you MUST interrupt the test or not -- it makes
                # tremendous sense to check the current configuration
                # instead of using the copy.
-               # For this cases, Config implements a dict-like get()
-               # method and you MUST use it.
+               # In this cases, you can take advantage of Config.get()
+               # that behaves as expected.
                #
                def periodic(self):
                    ...
@@ -161,8 +175,7 @@ class Config(object):
            # coming from the database (if any), environment, and
            # command line (in this order!)
            #
-           if database.dbm:
-               CONFIG.merge_database(database.dbm)
+           CONFIG.merge_database(DATABASE.connection())
            CONFIG.merge_environ()
            CONFIG.merge_properties()
            ...
@@ -172,15 +185,14 @@ class Config(object):
                # is running using the API.  The input is a dictionary
                # containing the changes.  Note that we raise ConfigError
                # when something goes wrong.
-               # Note that if database.dbm is not None the changes
-               # are propagated to the database.
+               # Note that the changes are propagated to the database.
                # The principle is that:
                #
                # 1. the last change rules,
                # 2. only updates from API affect the database.
                #
                def update_from_api(self, kvstore):
-                   CONFIG.merge_api(kvstore, database.dbm)
+                   CONFIG.merge_api(kvstore, DATABASE.connection())
                    ...
 
            #
