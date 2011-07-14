@@ -393,13 +393,14 @@ class ClientSpeedtest(ClientHTTP):
             if justone:
                 break
 
+CONFIG.register_defaults({
+    "speedtest.client.uri": "http://neubot.blupixel.net/",
+    "speedtest.client.nconn": 2,
+    "speedtest.client.latency_tries": 10,
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "speedtest.client.uri": "http://neubot.blupixel.net/",
-        "speedtest.client.nconn": 2,
-        "speedtest.client.latency_tries": 10,
-    })
     CONFIG.register_descriptions({
         "speedtest.client.uri": "Base URI to connect to",
         "speedtest.client.nconn": "Number of concurrent connections to use",

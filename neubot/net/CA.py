@@ -30,14 +30,15 @@ from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
 
+CONFIG.register_defaults({
+    "net.CA.bits": 2048,
+    "net.CA.cacert": "cacert.pem",
+    "net.CA.days": 1095,
+    "net.CA.privkey": "privkey.pem",
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "net.CA.bits": 2048,
-        "net.CA.cacert": "cacert.pem",
-        "net.CA.days": 1095,
-        "net.CA.privkey": "privkey.pem",
-    })
     CONFIG.register_descriptions({
         "net.CA.bits": "Set private key bits number",
         "net.CA.cacert": "Set certificate file path",

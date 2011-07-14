@@ -754,16 +754,27 @@ class GenericProtocolStream(Stream):
             return
         self.start_send(self.buffer)
 
+CONFIG.register_defaults({
+    "net.stream.certfile": "",
+    "net.stream.ipv6": False,
+    "net.stream.key": "",
+    "net.stream.obfuscate": False,
+    "net.stream.secure": False,
+    "net.stream.server_side": False,
+})
+CONFIG.register_defaults({
+    "net.stream.address": "",
+    "net.stream.chunk": 32768,
+    "net.stream.clients": 1,
+    "net.stream.daemonize": False,
+    "net.stream.duration": 10,
+    "net.stream.listen": False,
+    "net.stream.port": 12345,
+    "net.stream.proto": "",
+})
+
 def main(args):
-    # TODO merge the two tables below
-    CONFIG.register_defaults({
-        "net.stream.certfile": "",
-        "net.stream.ipv6": False,
-        "net.stream.key": "",
-        "net.stream.obfuscate": False,
-        "net.stream.secure": False,
-        "net.stream.server_side": False,
-    })
+
     CONFIG.register_descriptions({
         "net.stream.certfile": "Set SSL certfile path",
         "net.stream.ipv6": "Enable IPv6",
@@ -771,16 +782,6 @@ def main(args):
         "net.stream.obfuscate": "Enable scrambling with ARC4",
         "net.stream.secure": "Enable SSL",
         "net.stream.server_side": "Enable SSL server-side mode",
-    })
-    CONFIG.register_defaults({
-        "net.stream.address": "",
-        "net.stream.chunk": 32768,
-        "net.stream.clients": 1,
-        "net.stream.daemonize": False,
-        "net.stream.duration": 10,
-        "net.stream.listen": False,
-        "net.stream.port": 12345,
-        "net.stream.proto": "",
     })
     CONFIG.register_descriptions({
         "net.stream.address": "Set client or server address",
