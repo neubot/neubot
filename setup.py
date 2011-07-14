@@ -46,6 +46,7 @@ CONSOLE = [{
 }]
 
 PACKAGES = [
+	"neubot/main",
     "neubot/api",
     "neubot/bittorrent",
     "neubot/database",
