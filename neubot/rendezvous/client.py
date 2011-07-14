@@ -27,19 +27,19 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.config import CONFIG
-from neubot.database import DATABASE
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
-from neubot.log import LOG
 from neubot.net.poller import POLLER
-from neubot.notify import NOTIFIER
 from neubot.speedtest.client import TESTDONE
-from neubot.rendezvous import compat
 from neubot.speedtest.client import ClientSpeedtest
-from neubot.state import STATE
 
+from neubot.config import CONFIG
+from neubot.database import DATABASE
+from neubot.log import LOG
 from neubot.main import common
+from neubot.notify import NOTIFIER
+from neubot.rendezvous import compat
+from neubot.state import STATE
 
 from neubot import bittorrent
 from neubot import marshal
