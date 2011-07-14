@@ -137,39 +137,29 @@ class ClientRendezvous(ClientHTTP):
                     else:
 
                         self.testing = True
+                        conf = self.conf.copy()
+
+                        #
+                        # Subscribe _before_ connecting.  This way we
+                        # immediately see TESTDONE if the connection fails
+                        # and we can schedule the next attempt.
+                        #
+                        NOTIFIER.subscribe(TESTDONE, self.end_of_test)
 
                         if test == "speedtest":
-                            conf = self.conf.copy()
                             conf["speedtest.client.uri"] =  m1.available[
                                                               "speedtest"][0]
                             client = ClientSpeedtest(POLLER)
                             client.configure(conf)
-
-                            #
-                            # Subscribe _before_ connecting.  This way we
-                            # immediately see TESTDONE if the connection fails
-                            # and we can schedule the next attempt.
-                            #
-                            NOTIFIER.subscribe(TESTDONE,
-                              self.end_of_test, None)
                             client.connect_uri()
 
                         elif test == "bittorrent":
-                            conf = self.conf.copy()
                             conf["bittorrent._uri"] =  m1.available[
                                                         "bittorrent"][0]
-
-                            #
-                            # Subscribe _before_ connecting.  This way we
-                            # immediately see TESTDONE if the connection fails
-                            # and we can schedule the next attempt.
-                            #
-                            NOTIFIER.subscribe(TESTDONE,
-                              self.end_of_test, None)
                             bittorrent.run(POLLER, conf)
 
                         else:
-                            self.end_of_test(TESTDONE, None)
+                            NOTIFIER.publish(TESTDONE)
 
     def end_of_test(self, event, context):
         self.testing = False
