@@ -147,12 +147,13 @@ class APIStateTracker(ClientHTTP):
         sys.stdout.write(octets)
         sys.stdout.write("\n\n")
 
+CONFIG.register_defaults({
+    "api.client.address": "127.0.0.1",
+    "api.client.port": "9774",
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "api.client.address": "127.0.0.1",
-        "api.client.port": "9774",
-    })
     CONFIG.register_descriptions({
         "api.client.address": "Set address to connect to",
         "api.client.port": "Set port to connect to",

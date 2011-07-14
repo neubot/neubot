@@ -125,21 +125,26 @@ class ServerRendezvous(ServerHTTP):
           mimetype=mimetype, body=stringio)
         stream.send_response(request, response)
 
+CONFIG.register_defaults({
+    "rendezvous.server.address": "0.0.0.0",
+    "rendezvous.server.daemonize": True,
+    "rendezvous.server.ports": "9773,8080",
+    "rendezvous.server.update_uri": "http://releases.neubot.org/",
+    "rendezvous.server.update_version": common.VERSION,
+    "rendezvous.geoip_wrapper.country_database": "/usr/local/share/GeoIP/GeoIP.dat",
+    "rendezvous.server.default": "master.neubot.org",
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "rendezvous.server.address": "0.0.0.0",
-        "rendezvous.server.daemonize": True,
-        "rendezvous.server.ports": "9773,8080",
-        "rendezvous.server.update_uri": "http://releases.neubot.org/",
-        "rendezvous.server.update_version": common.VERSION,
-    })
     CONFIG.register_descriptions({
         "rendezvous.server.address": "Set rendezvous server address",
         "rendezvous.server.daemonize": "Enable daemon behavior",
         "rendezvous.server.ports": "List of rendezvous server ports",
         "rendezvous.server.update_uri": "Where to download updates from",
         "rendezvous.server.update_version": "Update Neubot version number",
+        "rendezvous.geoip_wrapper.country_database": "Path of the GeoIP country database",
+        "rendezvous.server.default": "Default test server to use",
     })
 
     common.main("rendezvous.server", "Rendezvous server", args)

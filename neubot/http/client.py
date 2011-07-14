@@ -169,15 +169,16 @@ class TestClient(ClientHTTP):
 
         stream.send_request(request, response)
 
+CONFIG.register_defaults({
+    "http.client.class": "",
+    "http.client.method": "GET",
+    "http.client.stats": True,
+    "http.client.stdout": False,
+    "http.client.uri": "",
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "http.client.class": "",
-        "http.client.method": "GET",
-        "http.client.stats": True,
-        "http.client.stdout": False,
-        "http.client.uri": "",
-    })
     CONFIG.register_descriptions({
         "http.client.class": "Specify alternate ClientHTTP-like class",
         "http.client.method": "Specify alternate HTTP method",

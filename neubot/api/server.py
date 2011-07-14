@@ -132,6 +132,13 @@ class ServerAPI(ServerHTTP):
             s = request.body.read()
             updates = qs_to_dictionary(s)
             privacy.check(updates)
+
+            # Very low barrier to prevent damage from kiddies
+            if "agent.interval" in updates:
+                interval = int(updates["agent.interval"])
+                if interval < 1380 and interval != 0:
+                    raise ConfigError("Bad agent.interval")
+
             CONFIG.merge_api(updates, DATABASE.connection())
             STATE.update("config", updates)
             # Empty JSON b/c '204 No Content' is treated as an error

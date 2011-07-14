@@ -158,14 +158,15 @@ class ServerSpeedtest(ServerHTTP):
         TRACKER.unregister_connection(stream)
         NOTIFIER.publish(RENEGOTIATE)
 
+CONFIG.register_defaults({
+    "speedtest.negotiate.address": "0.0.0.0",
+    "speedtest.negotiate.auth_only": True,
+    "speedtest.negotiate.daemonize": True,
+    "speedtest.negotiate.port": "80",
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "speedtest.negotiate.address": "0.0.0.0",
-        "speedtest.negotiate.auth_only": True,
-        "speedtest.negotiate.daemonize": True,
-        "speedtest.negotiate.port": "80",
-    })
     CONFIG.register_descriptions({
         "speedtest.negotiate.address": "Address to listen to",
         "speedtest.negotiate.auth_only": "Enable doing tests for authorized clients only",
