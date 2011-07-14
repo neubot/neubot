@@ -537,7 +537,8 @@ class Connector(Pollable):
         try:
             self.sock.getpeername()
         except socket.error, exception:
-            if exception[0] == errno.ENOTCONN:
+            # MacOSX getpeername() fails with EINVAL
+            if exception[0] in (errno.ENOTCONN, errno.EINVAL):
                 try:
                     self.sock.recv(MAXBUF)
                 except socket.error, exception2:
