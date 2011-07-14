@@ -28,7 +28,10 @@ from neubot.utils import ticks
 from neubot.utils import timestamp
 from neubot.log import LOG
 
-# Interval between each check for timed-out I/O operations
+#
+# Number of seconds between each check for timed-out
+# I/O operations.
+#
 CHECK_TIMEOUT = 10
 
 class Pollable(object):
@@ -228,7 +231,7 @@ class Poller(object):
                     continue
 
                 try:
-                    task.func(task.args, task.kwargs)
+                    task.func(*task.args, **task.kwargs)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
