@@ -60,10 +60,10 @@ class ClientRendezvous(ClientHTTP):
         if not uri:
             uri = self.conf.get("rendezvous.client.uri",
               "http://master.neubot.org:9773/")
-        if count:
-            LOG.warning("rendezvous: connect_uri(): ignoring count param")
         LOG.start("* Rendezvous with %s" % uri)
-        ClientHTTP.connect_uri(self, uri)
+
+        # We need to make just one connection
+        ClientHTTP.connect_uri(self, uri, 1)
 
     def connection_failed(self, connector, exception):
         STATE.update("rendezvous", {"status": "failed"})
