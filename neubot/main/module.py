@@ -32,7 +32,7 @@ MODULES = {
     "agent"      : "agent",
     "api.client" : "api.client",
     "database"   : "database.main",
-    "bittorrent" : "bittorrent.client",
+    "bittorrent" : "bittorrent",
     "http.client" : "http.client",
     "http.server" : "http.server",
     "rendezvous.client": "rendezvous.client",

@@ -20,21 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys
-
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
-
 from neubot.bittorrent.negotiate import AUTH_PEERS
 from neubot.bittorrent.peer import PeerNeubot
-from neubot.bittorrent.peer import random_bytes
-from neubot.config import CONFIG
-from neubot.http.server import HTTP_SERVER
-from neubot.log import LOG
-from neubot.net.poller import POLLER
+from neubot.bittorrent.config import _random_bytes
 
-from neubot.main import common
-from neubot import system
 from neubot import utils
 
 #
@@ -43,7 +32,7 @@ from neubot import utils
 # keep using the same identifier over and over and
 # over.
 #
-MY_ID = random_bytes(20)
+MY_ID = _random_bytes(20)
 
 #
 # We check whether a peer is authorized or not just at
@@ -85,41 +74,3 @@ class ServerPeer(PeerNeubot):
                                      "timestamp": utils.timestamp(),
                                      "target_bytes": target_bytes,
                                     }
-
-#XXX These should all go into the same file
-CONFIG.register_defaults({
-    "bittorrent.address": "0.0.0.0",
-    "bittorrent.daemonize": True,
-    "bittorrent.http_port": 80,
-    "bittorrent.bt_port": 6881,
-})
-
-def main(args):
-    CONFIG.register_descriptions({
-        "bittorrent.address": "Address to listen to",
-        "bittorrent.daemonize": "Become a daemon",
-        "bittorrent.http_port": "HTTP port to listen to",
-        "bittorrent.bt_port": "BitTorrent port to listen to",
-    })
-
-    common.main("bittorrent.server", "BitTorrent test server", args)
-    conf = CONFIG.copy()
-
-    server = ServerPeer(POLLER)
-    server.configure(conf)
-    server.listen((conf["bittorrent.address"], conf["bittorrent.bt_port"]))
-
-    HTTP_SERVER.configure(conf)
-    HTTP_SERVER.listen((conf["bittorrent.address"],
-                        conf["bittorrent.http_port"]))
-
-    if conf["bittorrent.daemonize"]:
-        system.change_dir()
-        system.go_background()
-        LOG.redirect()
-
-    system.drop_privileges()
-    POLLER.loop()
-
-if __name__ == "__main__":
-    main(sys.argv)

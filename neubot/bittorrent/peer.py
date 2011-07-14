@@ -32,7 +32,6 @@ from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
-from neubot.bittorrent.stream import SMALLMESSAGE
 from neubot.net.stream import StreamHandler
 
 from neubot.bittorrent import estimate
@@ -42,29 +41,19 @@ from neubot.state import STATE
 
 from neubot import utils
 
-NUMPIECES = 1<<20
-PIECE_LEN = 1<<17
+# Constants
+from neubot.bittorrent.config import NUMPIECES
+from neubot.bittorrent.config import PIECE_LEN
+from neubot.bittorrent.config import SMALLMESSAGE
+from neubot.bittorrent.config import WATCHDOG
 
 LO_THRESH = 3
 MAX_REPEAT = 7
 TARGET = 5
 
-#
-# This is the maximum time the test can run.  After that time,
-# no matter what, the underlying stream is closed by the low-level
-# code in <net/poller.py>.
-# The typical test should take less than 15 seconds so here we
-# are provisioning for more than 4x the time, which seems to be
-# quite reasonable.
-#
-WATCHDOG = 60
-
 # States of the PeerNeubot object
 STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
           SENT_NOT_INTERESTED) = range(5)
-
-def random_bytes(n):
-    return "".join([chr(random.randint(32, 126)) for _ in range(n)])
 
 #
 # This class implements the test finite state
@@ -87,25 +76,20 @@ class PeerNeubot(StreamHandler):
         self.state = INITIAL
         self.infohash = None
         self.rtt = 0
-        self.setup({})
 
     def configure(self, conf, measurer=None):
         StreamHandler.configure(self, conf, measurer)
-        self.setup(conf)
-
-    def setup(self, conf):
-        self.numpieces = int(conf.get("bittorrent.numpieces", NUMPIECES))
+        self.numpieces = conf["bittorrent.numpieces"]
         self.bitfield = make_bitfield(self.numpieces)
         self.peer_bitfield = make_bitfield(self.numpieces)
-        self.my_id = conf.get("bittorrent.my_id", random_bytes(20))
-        self.target_bytes = int(self.conf.get("bittorrent.target_bytes",
-                              estimate.DOWNLOAD))
+        self.my_id = conf["bittorrent.my_id"]
+        self.target_bytes = conf["bittorrent.bytes.down"]
         self.make_sched()
 
     def make_sched(self):
         self.sched_req = sched_req(self.bitfield, self.peer_bitfield,
-          self.target_bytes, int(self.conf.get("bittorrent.piece_len",
-          PIECE_LEN)), PIECE_LEN)
+          self.target_bytes, self.conf["bittorrent.piece_len"],
+          self.conf["bittorrent.piece_len"])
 
     def connect(self, endpoint, count=1):
         self.connector_side = True
@@ -114,7 +98,7 @@ class PeerNeubot(StreamHandler):
         # and handshakes, including connector infohash, after
         # it receives the connector handshake.
         #
-        self.infohash = self.conf.get("bittorrent.infohash", random_bytes(20))
+        self.infohash = self.conf["bittorrent.infohash"]
         LOG.start("BitTorrent: connecting to %s" % str(endpoint))
         StreamHandler.connect(self, endpoint, count)
 
@@ -144,7 +128,7 @@ class PeerNeubot(StreamHandler):
         else:
             peer = self
         stream.attach(peer, sock, peer.conf, peer.measurer)
-        stream.watchdog = WATCHDOG
+        stream.watchdog = self.conf["bittorrent.watchdog"]
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))
@@ -299,11 +283,17 @@ class PeerNeubot(StreamHandler):
                 #
                 # Make sure that next test would take about
                 # TARGET secs, under current conditions.
+                # We're a bit conservative when the elapsed
+                # time is small because there is the risk of
+                # overestimating the available bandwith.
                 # TODO Don't start from scratch but use speedtest
                 # estimate (maybe we need to divide it by two
                 # but I'm not sure at the moment).
                 #
-                self.target_bytes = int(self.target_bytes * TARGET/elapsed)
+                if elapsed >= LO_THRESH/3:
+                    self.target_bytes = int(self.target_bytes * TARGET/elapsed)
+                else:
+                    self.target_bytes *= 2
 
                 #
                 # The stopping rule is when the test has run

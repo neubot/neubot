@@ -27,7 +27,6 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.bittorrent.client import BitTorrentClient
 from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.http.client import ClientHTTP
@@ -41,6 +40,8 @@ from neubot.speedtest.client import ClientSpeedtest
 from neubot.state import STATE
 
 from neubot.main import common
+
+from neubot import bittorrent
 from neubot import marshal
 
 class ClientRendezvous(ClientHTTP):
@@ -159,10 +160,8 @@ class ClientRendezvous(ClientHTTP):
 
                         elif test == "bittorrent":
                             conf = self.conf.copy()
-                            conf["bittorrent.uri"] =  m1.available[
+                            conf["bittorrent._uri"] =  m1.available[
                                                         "bittorrent"][0]
-                            client = BitTorrentClient(POLLER)
-                            client.configure(conf)
 
                             #
                             # Subscribe _before_ connecting.  This way we
@@ -171,7 +170,7 @@ class ClientRendezvous(ClientHTTP):
                             #
                             NOTIFIER.subscribe(TESTDONE,
                               self.end_of_test, None)
-                            client.connect_uri()
+                            bittorrent.run(POLLER, conf)
 
                         else:
                             self.end_of_test(TESTDONE, None)

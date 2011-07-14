@@ -54,19 +54,22 @@ def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, blocklen):
 
     # Adapt initial burst to the channel
     burstlen = int(targetbytes/3)
+    total = burstlen + targetbytes
 
     # Create next-piece-index generator
     idx = sched_idx(bitfield, peer_bitfield)
 
-    # Return initial burst of requests
+    # Return first burst, then single requests
+    cnt = 0
     burst = []
-    for req in _sched_piece(idx, burstlen, piecelen, blocklen):
-        burst.append(req)
-    yield burst
-
-    # Return subsequent requests
-    for req in _sched_piece(idx, targetbytes, piecelen, blocklen):
-        yield [req]
+    for req in _sched_piece(idx, total, piecelen, blocklen):
+        if cnt < burstlen:
+            burst.append(req)
+            cnt += req[2]
+            if cnt >= burstlen:
+                yield burst
+        else:
+            yield [req]
 
 #
 # Generator that returns BitTorrent REQUESTs parameters
