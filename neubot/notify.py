@@ -56,14 +56,28 @@ class Notifier(object):
 
         LOG.debug("* publish: %s" % event)
 
+        #
+        # WARNING! Please resist the temptation of merging
+        # the [] and the del into a single pop() because that
+        # will not work: this is a defaultdict and so here
+        # event might not be in _subscribers.
+        #
         queue = self._subscribers[event]
         del self._subscribers[event]
+
         self._fireq(event, queue)
 
     def _periodic(self, *args, **kwargs):
         POLLER.sched(INTERVAL, self._periodic)
         self._tofire, q = [], self._tofire
         for event in q:
+
+            #
+            # WARNING! Please resist the temptation of merging
+            # the [] and the del into a single pop() because that
+            # will not work: this is a defaultdict and so here
+            # event might not be in _subscribers.
+            #
             queue = self._subscribers[event]
             del self._subscribers[event]
 
