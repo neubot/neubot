@@ -55,7 +55,7 @@ LANG = {
     'i18n_privacy': "Privacy",
     'i18n_website': "Sito web di Neubot",
     'i18n_updavailable': "Aggiornamenti disponibili",
-    'i18n_infonav': "(informazione non disponibile)",
+    'i18n_infonav': "N/A",
     'i18n_neubotis': "Neubot è",
     'i18n_resultof': "Risultati di",
     'i18n_latency': "Latenza",
