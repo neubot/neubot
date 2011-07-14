@@ -20,7 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import StringIO
 import random
 import sys
 
@@ -79,8 +78,8 @@ class ClientRendezvous(ClientHTTP):
 
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",
-          mimetype="text/xml", keepalive=False, body=StringIO.StringIO(
-            marshal.marshal_object(m, "text/xml")), host=self.host_header)
+          mimetype="text/xml", keepalive=False, host=self.host_header,
+          body=marshal.marshal_object(m, "text/xml"))
 
         stream.send_request(request)
 
