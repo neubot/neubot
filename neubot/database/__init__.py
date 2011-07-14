@@ -62,13 +62,13 @@ class DatabaseManager(object):
             table_log.create(self.dbc)
             migrate.migrate(self.dbc)
 
-            #
-            # Attach to the logger: we cannot do that from
-            # the logger because that will create a circular
-            # dependency.
-            #
-            LOG.attach(self, table_log)
-
         return self.dbc
 
 DATABASE = DatabaseManager()
+
+#
+# Attach to the logger: we cannot do that from
+# the logger because that will create a circular
+# import.
+#
+LOG.attach_database(DATABASE, table_log)

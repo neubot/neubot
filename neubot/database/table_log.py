@@ -53,9 +53,10 @@ def listify(connection, since=-1, until=-1):
     return walk(connection, lambda t: dict(t), since, until)
 
 # Delete logs older than 30 days.
-def prune(connection, until=None, commit=True):
-    if not until:
-        until = utils.timestamp() - 30 * 24 * 60 * 60
+def prune(connection, days_ago=None, commit=True):
+    if not days_ago:
+        days_ago = 30
+    until = utils.timestamp() - days_ago * 24 * 60 * 60
     connection.execute("DELETE FROM log WHERE timestamp < ?;", (until,))
     if commit:
         connection.commit()
