@@ -23,6 +23,7 @@
 import os
 
 from neubot.notify import NOTIFIER
+from neubot.log import LOG
 from neubot import utils
 
 # states of neubot
@@ -58,6 +59,8 @@ class State(object):
             self._current = name
         self._t = self._T()
         self._events[name] = event
+
+        LOG.debug("state: %s %s" % (name, event))
 
         if publish:
             self._publish(STATECHANGE, self._t)
