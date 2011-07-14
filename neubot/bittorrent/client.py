@@ -60,10 +60,17 @@ class BitTorrentClient(ClientHTTP):
             address = self.conf["bittorrent.address"]
             port = self.conf["bittorrent.negotiate.port"]
             uri = "http://%s:%s/" % (address, port)
+
+        LOG.start("BitTorrent: connecting to %s" % uri)
+
         ClientHTTP.connect_uri(self, uri, 1)
 
     def connection_ready(self, stream):
+        LOG.complete()
+
         STATE.update("negotiate")
+        LOG.start("BitTorrent: negotiating")
+
         request = Message()
         body = json.dumps({"target_bytes": self.conf["bittorrent.bytes.up"]})
         request.compose(method="GET", pathquery="/negotiate/bittorrent",
@@ -85,9 +92,12 @@ class BitTorrentClient(ClientHTTP):
             self.conf["_%s" % k] = m[k]
 
         if not self.conf["_unchoked"]:
+            LOG.complete("done (queue_pos %d)" % m["queue_pos"])
             STATE.update("negotiate", {"queue_pos": m["queue_pos"]})
             self.connection_ready(stream)
         else:
+            LOG.complete("done (unchoked)")
+
             sha1 = hashlib.sha1()
             sha1.update(m["authorization"])
             self.conf["bittorrent.my_id"] = sha1.digest()
@@ -137,6 +147,7 @@ class BitTorrentClient(ClientHTTP):
             "download_speed": download_speed,
         }
 
+        LOG.start("BitTorrent: collecting")
         STATE.update("collect")
 
         s = json.dumps(self.my_side)
@@ -150,6 +161,8 @@ class BitTorrentClient(ClientHTTP):
         stream.send_request(request)
 
     def got_response_collecting(self, stream, request, response):
+        LOG.complete()
+
         if self.success:
             #
             # Always measure at the receiver because there is more
@@ -179,4 +192,5 @@ class BitTorrentClient(ClientHTTP):
         NOTIFIER.publish(TESTDONE)
 
     def connection_failed(self, connector, exception):
+        LOG.complete("failure (error: %s)" % str(exception))
         NOTIFIER.publish(TESTDONE)
