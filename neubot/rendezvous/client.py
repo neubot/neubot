@@ -56,11 +56,13 @@ class ClientRendezvous(ClientHTTP):
 
     def connect_uri(self, uri=None, count=None):
         self._task = None
-        STATE.update("rendezvous")
+
         if not uri:
             uri = self.conf.get("rendezvous.client.uri",
               "http://master.neubot.org:9773/")
+
         LOG.start("* Rendezvous with %s" % uri)
+        STATE.update("rendezvous")
 
         # We need to make just one connection
         ClientHTTP.connect_uri(self, uri, 1)
