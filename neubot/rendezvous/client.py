@@ -51,6 +51,7 @@ from neubot import marshal
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        self._interval = 0
         self._latest = None
         self._task = None
 
@@ -58,8 +59,7 @@ class ClientRendezvous(ClientHTTP):
         self._task = None
 
         if not uri:
-            uri = self.conf.get("rendezvous.client.uri",
-              "http://master.neubot.org:9773/")
+            uri = "http://%s:9773/rendezvous" % CONFIG["agent.master"]
 
         LOG.start("* Rendezvous with %s" % uri)
         STATE.update("rendezvous")
@@ -72,6 +72,12 @@ class ClientRendezvous(ClientHTTP):
         self._schedule()
 
     def connection_lost(self, stream):
+        if NOTIFIER.is_subscribed("testdone"):
+            LOG.debug("RendezVous: don't _schedule(): test in progress")
+            return
+        if self._task:
+            LOG.debug("RendezVous: don't _schedule(): we already have a task")
+            return
         self._schedule()
 
     def connection_ready(self, stream):
@@ -80,7 +86,7 @@ class ClientRendezvous(ClientHTTP):
         m = compat.RendezvousRequest()
         m.accept.append("speedtest")
         m.accept.append("bittorrent")
-        m.version = self.conf.get("rendezvous.client.version", common.VERSION)
+        m.version = CONFIG["rendezvous.client.version"]
 
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",
@@ -129,14 +135,13 @@ class ClientRendezvous(ClientHTTP):
                 LOG.info("* Chosen test: %s" % test)
 
                 # Are we allowed to run a test?
-                if (not CONFIG.get("enabled", True) or
-                  self.conf.get("rendezvous.client.debug", False)):
+                if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
                     LOG.info("Tests are disabled... not running")
                     self._schedule()
                 else:
 
-                    if (CONFIG.get("privacy.informed", 0) and
-                      not CONFIG.get("privacy.can_collect", 0)):
+                    if (CONFIG["privacy.informed"] and
+                      not CONFIG["privacy.can_collect"]):
                         LOG.warning("cannot run test without permission "
                           "to save the results")
                         self._schedule()
@@ -149,7 +154,8 @@ class ClientRendezvous(ClientHTTP):
                         # immediately see "testdone" if the connection fails
                         # and we can _schedule the next attempt.
                         #
-                        NOTIFIER.subscribe("testdone", self._end_of_test)
+                        NOTIFIER.subscribe("testdone", lambda *a, **kw: \
+                                                         self._schedule())
 
                         if test == "speedtest":
                             conf["speedtest.client.uri"] =  m1.available[
@@ -166,42 +172,43 @@ class ClientRendezvous(ClientHTTP):
                         else:
                             NOTIFIER.publish("testdone")
 
-    def _end_of_test(self, event, context):
-        self._schedule()
-
     def _schedule(self):
-        if NOTIFIER.is_subscribed("testdone"):
-            LOG.debug("rendezvous: _schedule() while testing")
-        elif self._task:
-            LOG.debug("rendezvous: There is already a pending task")
-        else:
-            interval = self.conf.get("rendezvous.client.interval", 1500)
-            LOG.info("* Next rendezvous in %d seconds" % interval)
-            fn = lambda *args, **kwargs: self.connect_uri()
-            self._task = POLLER.sched(interval, fn)
-            STATE.update("idle", publish=False)
-            STATE.update("next_rendezvous", self._task.timestamp)
+
+        #
+        # Typically the user does not specify the interval
+        # and we use a random value around 1500 seconds.
+        # The random value is extracted just once and from
+        # that point on we keep using it.
+        #
+        interval = CONFIG["agent.interval"]
+        if not interval:
+            if not self._interval:
+                self._interval = 1380 + random.randrange(0, 240)
+            interval = self._interval
+
+        LOG.info("* Next rendezvous in %d seconds" % interval)
+
+        fn = lambda *args, **kwargs: self.connect_uri()
+        self._task = POLLER.sched(interval, fn)
+
+        STATE.update("idle", publish=False)
+        STATE.update("next_rendezvous", self._task.timestamp)
+
+CONFIG.register_defaults({
+    "rendezvous.client.debug": False,
+    "rendezvous.client.version": common.VERSION,
+})
 
 def main(args):
 
-    CONFIG.register_defaults({
-        "rendezvous.client.debug": False,
-        "rendezvous.client.interval": 0,
-        "rendezvous.client.uri": "http://master.neubot.org:9773/",
-        "rendezvous.client.version": common.VERSION,
-    })
     CONFIG.register_descriptions({
         "rendezvous.client.debug": "Do not perform any test",
-        "rendezvous.client.interval": "Interval between rendezvous (0 = random)",
-        "rendezvous.client.uri": "Set master server URI",
         "rendezvous.client.version": "Set rendezvous client version",
     })
 
     common.main("rendezvous.client", "Rendezvous client", args)
     conf = CONFIG.copy()
 
-    if not conf["agent.interval"]:
-        conf["agent.interval"] = 1380 + random.randrange(0, 240)
     client = ClientRendezvous(POLLER)
     client.configure(conf)
     client.connect_uri()

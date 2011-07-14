@@ -20,7 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import random
 import sys
 
 if __name__ == "__main__":
@@ -40,11 +39,6 @@ def main(args):
     common.main("agent", "Run in background, periodically run tests", args)
 
     conf = CONFIG.copy()
-
-    if not conf["agent.interval"]:
-        conf["agent.interval"] = 1380 + random.randrange(0, 240)
-
-    uri = "http://%s:9773/rendezvous" % conf["agent.master"]
 
     if conf["agent.api"]:
         server = HTTP_SERVER
@@ -72,8 +66,6 @@ def main(args):
 
     if conf["agent.rendezvous"]:
         client = ClientRendezvous(POLLER)
-        conf["rendezvous.client.uri"] = uri
-        conf["rendezvous.client.interval"] = conf["agent.interval"]
         client.configure(conf)
         client.connect_uri()
 
