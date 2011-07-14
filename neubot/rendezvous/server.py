@@ -56,15 +56,10 @@ class ServerRendezvous(ServerHTTP):
 
         m1 = compat.RendezvousResponse()
 
-        if m.version and utils.versioncmp(common.VERSION, m.version) > 0:
-            m1.update["uri"] = self.conf.get(
-              "rendezvous.server.update_uri",
-              "http://releases.neubot.org/"
-            )
-            m1.update["version"] = self.conf.get(
-              "rendezvous.server.update_version",
-              common.VERSION
-            )
+        version = self.conf["rendezvous.server.update_version"]
+        if m.version and utils.versioncmp(version, m.version) > 0:
+            m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
+            m1.update["version"] = version
 
         #
         # Select test server address.
