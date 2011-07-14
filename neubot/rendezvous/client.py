@@ -59,7 +59,7 @@ class ClientRendezvous(ClientHTTP):
         self._task = None
 
         if not uri:
-            uri = CONFIG["rendezvous.client.uri"]
+            uri = "http://%s:9773/rendezvous" % CONFIG["agent.master"]
 
         LOG.start("* Rendezvous with %s" % uri)
         STATE.update("rendezvous")
@@ -180,7 +180,7 @@ class ClientRendezvous(ClientHTTP):
         # The random value is extracted just once and from
         # that point on we keep using it.
         #
-        interval = CONFIG["rendezvous.client.interval"]
+        interval = CONFIG["agent.interval"]
         if not interval:
             if not self._interval:
                 self._interval = 1380 + random.randrange(0, 240)
@@ -194,18 +194,15 @@ class ClientRendezvous(ClientHTTP):
         STATE.update("idle", publish=False)
         STATE.update("next_rendezvous", self._task.timestamp)
 
+CONFIG.register_defaults({
+    "rendezvous.client.debug": False,
+    "rendezvous.client.version": common.VERSION,
+})
+
 def main(args):
 
-    CONFIG.register_defaults({
-        "rendezvous.client.debug": False,
-        "rendezvous.client.interval": 0,
-        "rendezvous.client.uri": "http://master.neubot.org:9773/",
-        "rendezvous.client.version": common.VERSION,
-    })
     CONFIG.register_descriptions({
         "rendezvous.client.debug": "Do not perform any test",
-        "rendezvous.client.interval": "Interval between rendezvous (0 = random)",
-        "rendezvous.client.uri": "Set master server URI",
         "rendezvous.client.version": "Set rendezvous client version",
     })
 

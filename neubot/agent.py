@@ -40,8 +40,6 @@ def main(args):
 
     conf = CONFIG.copy()
 
-    uri = "http://%s:9773/rendezvous" % conf["agent.master"]
-
     if conf["agent.api"]:
         server = HTTP_SERVER
         LOG.debug("* API server root directory: %s" % WWW)
@@ -68,8 +66,6 @@ def main(args):
 
     if conf["agent.rendezvous"]:
         client = ClientRendezvous(POLLER)
-        conf["rendezvous.client.uri"] = uri
-        conf["rendezvous.client.interval"] = conf["agent.interval"]
         client.configure(conf)
         client.connect_uri()
 
