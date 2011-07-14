@@ -169,11 +169,7 @@ class Poller(object):
                 LOG.exception()
                 self.close(stream)
 
-    #
-    # Has optional arguments because often we need to schedule
-    # this function after a given time.
-    #
-    def break_loop(self, *args, **kwargs):
+    def break_loop(self):
         self.again = False
 
     #
