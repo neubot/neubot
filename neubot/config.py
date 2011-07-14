@@ -234,20 +234,25 @@ class Config(object):
         self.properties.append(prop)
 
     def merge_fp(self, fp):
+        LOG.debug("config: reading properties from file")
         map(self.merge_kv, itertools.imap(string_to_kv, fp))
 
     def merge_database(self, database):
+        LOG.debug("config: reading properties from database")
         table_config.walk(database, self.merge_kv)
 
     def merge_environ(self):
+        LOG.debug("config: reading properties from the environment")
         map(self.merge_kv, itertools.imap(string_to_kv,
           shlex.split(os.environ.get("NEUBOT_OPTIONS",""))))
 
     def merge_properties(self):
+        LOG.debug("config: reading properties from command-line")
         map(self.merge_kv, itertools.imap(string_to_kv, self.properties))
 
     def merge_api(self, dictlike, database=None):
         # enforce all-or-nothing
+        LOG.debug("config: reading properties from /api/config")
         map(lambda t: self.merge_kv(t, dry=True), dictlike.iteritems())
         map(self.merge_kv, dictlike.iteritems())
         if database:
