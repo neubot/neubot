@@ -40,6 +40,7 @@ from neubot.net.poller import POLLER
 from neubot.bittorrent import config
 from neubot.config import CONFIG
 from neubot.log import LOG
+from neubot.notify import NOTIFIER
 from neubot.main import common
 
 from neubot import system
@@ -124,6 +125,16 @@ def main(args):
             HTTP_SERVER.configure(conf)
             HTTP_SERVER.listen((conf["bittorrent.address"],
                                conf["bittorrent.negotiate.port"]))
+
+    else:
+        #
+        # When we're connecting to a remote host to perform a test
+        # we want Neubot to quit at the end of the test.  When this
+        # happens the test code publishes the "testdone" event, so
+        # here we prepare to intercept the event and break our main
+        # loop.
+        #
+        NOTIFIER.subscribe("testdone", lambda event, ctx: POLLER.break_loop())
 
     run(POLLER, conf)
 
