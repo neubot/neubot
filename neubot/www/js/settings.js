@@ -108,6 +108,7 @@ jQuery(document).ready(function() {
                     filtered[0] = "agent.api";
                     filtered[1] = "version";
                     filtered[2] = "uuid";
+                    filtered[3] = "agent.daemonize";
 
                     var html = "";
                     html += "<table width='100%' id='table_settings'>";
