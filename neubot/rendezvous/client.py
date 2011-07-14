@@ -72,6 +72,12 @@ class ClientRendezvous(ClientHTTP):
         self._schedule()
 
     def connection_lost(self, stream):
+        if NOTIFIER.is_subscribed("testdone"):
+            LOG.debug("RendezVous: don't _schedule(): test in progress")
+            return
+        if self._task:
+            LOG.debug("RendezVous: don't _schedule(): we already have a task")
+            return
         self._schedule()
 
     def connection_ready(self, stream):
@@ -170,17 +176,14 @@ class ClientRendezvous(ClientHTTP):
         self._schedule()
 
     def _schedule(self):
-        if NOTIFIER.is_subscribed("testdone"):
-            LOG.debug("rendezvous: _schedule() while testing")
-        elif self._task:
-            LOG.debug("rendezvous: There is already a pending task")
-        else:
-            interval = self.conf.get("rendezvous.client.interval", 1500)
-            LOG.info("* Next rendezvous in %d seconds" % interval)
-            fn = lambda *args, **kwargs: self.connect_uri()
-            self._task = POLLER.sched(interval, fn)
-            STATE.update("idle", publish=False)
-            STATE.update("next_rendezvous", self._task.timestamp)
+        interval = self.conf.get("rendezvous.client.interval", 1500)
+        LOG.info("* Next rendezvous in %d seconds" % interval)
+
+        fn = lambda *args, **kwargs: self.connect_uri()
+        self._task = POLLER.sched(interval, fn)
+
+        STATE.update("idle", publish=False)
+        STATE.update("next_rendezvous", self._task.timestamp)
 
 def main(args):
 
