@@ -58,7 +58,6 @@ def kv_to_string(kv):
 
     return "%s=%s\n" % (utils.stringify(kv[0]), utils.stringify(kv[1]))
 
-
 class ConfigDict(dict):
 
     """Modified dictionary.  At the beginning we fill it with default
@@ -88,10 +87,8 @@ class ConfigDict(dict):
         if kwds:
             self.update(kwds.iteritems())
 
-
 class ConfigError(Exception):
     pass
-
 
 class Config(object):
 
@@ -277,7 +274,6 @@ class Config(object):
             value = self.conf[key]
             fp.write("    %-28s: %s [%s]\n" % (key, description, value))
         fp.write("\n")
-
 
 CONFIG = Config()
 
