@@ -63,6 +63,8 @@ class Task(object):
     #
     # We need to add timestamp because ticks() might be just the
     # time since neubot started (as happens with Windows).
+    # In particular timestamp is used to print the timestamp of
+    # the next rendezvous in <rendezvous/client.py>.
     #
     def __init__(self, delta, func, *args, **kwargs):
         self.time = ticks() + delta
