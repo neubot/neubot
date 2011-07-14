@@ -37,40 +37,55 @@ INTERVAL = 10
 
 class Notifier(object):
     def __init__(self):
-        POLLER.sched(INTERVAL, self.periodic)
-        self.timestamps = collections.defaultdict(int)
-        self.subscribers = collections.defaultdict(list)
-        self.tofire = []
+        self._timestamps = collections.defaultdict(int)
+        self._subscribers = collections.defaultdict(list)
+        self._tofire = []
+
+        POLLER.sched(INTERVAL, self._periodic)
 
     def subscribe(self, event, func, context=None, periodic=False):
-        queue = self.subscribers[event]
+        queue = self._subscribers[event]
         queue.append((func, context))
         if periodic:
-            self.tofire.append(event)
+            self._tofire.append(event)
 
     def publish(self, event, t=None):
         if not t:
             t = T()
-        self.timestamps[event] = t
+        self._timestamps[event] = t
 
         LOG.debug("* publish: %s" % event)
 
-        queue = self.subscribers[event]
-        del self.subscribers[event]
-        self.fireq(event, queue)
+        #
+        # WARNING! Please resist the temptation of merging
+        # the [] and the del into a single pop() because that
+        # will not work: this is a defaultdict and so here
+        # event might not be in _subscribers.
+        #
+        queue = self._subscribers[event]
+        del self._subscribers[event]
 
-    def periodic(self, *args, **kwargs):
-        POLLER.sched(INTERVAL, self.periodic)
-        self.tofire, q = [], self.tofire
+        self._fireq(event, queue)
+
+    def _periodic(self, *args, **kwargs):
+        POLLER.sched(INTERVAL, self._periodic)
+        self._tofire, q = [], self._tofire
         for event in q:
-            queue = self.subscribers[event]
-            del self.subscribers[event]
+
+            #
+            # WARNING! Please resist the temptation of merging
+            # the [] and the del into a single pop() because that
+            # will not work: this is a defaultdict and so here
+            # event might not be in _subscribers.
+            #
+            queue = self._subscribers[event]
+            del self._subscribers[event]
 
             LOG.debug("* periodic: %s" % event)
 
-            self.fireq(event, queue)
+            self._fireq(event, queue)
 
-    def fireq(self, event, queue):
+    def _fireq(self, event, queue):
         for func, context in queue:
             try:
                 func(event, context)
@@ -79,17 +94,20 @@ class Notifier(object):
             except:
                 LOG.exception()
 
+    def is_subscribed(self, event):
+        return event in self._subscribers
+
     def get_event_timestamp(self, event):
-        return str(self.timestamps[event])
+        return str(self._timestamps[event])
 
     def needs_publish(self, event, timestamp):
         timestamp = int(timestamp)
         if timestamp < 0:
             raise ValueError("Invalid timestamp")
-        return timestamp == 0 or timestamp < self.timestamps[event]
+        return timestamp == 0 or timestamp < self._timestamps[event]
 
     def snap(self, d):
-        d['notifier'] = {'timestamps': dict(self.timestamps),
-          'subscribers': dict(self.subscribers)}
+        d['notifier'] = {'_timestamps': dict(self._timestamps),
+          '_subscribers': dict(self._subscribers)}
 
 NOTIFIER = Notifier()
