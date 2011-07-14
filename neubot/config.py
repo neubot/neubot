@@ -317,8 +317,6 @@ CONFIG.register_defaults({
     "privacy.informed": False,
     "privacy.can_collect": False,
     "privacy.can_share": False,
-    "rendezvous.geoip_wrapper.country_database": "/usr/local/share/GeoIP/GeoIP.dat",
-    "rendezvous.server.default": "master.neubot.org",
     "uuid": "",
     "version": "",
 })
@@ -334,8 +332,6 @@ CONFIG.register_descriptions({
     "privacy.informed": "You assert that you have read and understood the above privacy policy",
     "privacy.can_collect": "You give Neubot the permission to collect your Internet address",
     "privacy.can_share": "You give Neubot the permission to share your Internet address with the Internet community",
-    "rendezvous.geoip_wrapper.country_database": "Path of the GeoIP country database",
-    "rendezvous.server.default": "Default test server to use",
     "uuid": "Random unique identifier of this Neubot agent",
     "version": "Version number of the Neubot database schema",
 })
