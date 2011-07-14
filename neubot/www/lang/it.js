@@ -100,10 +100,6 @@ LANG = {
                            alcun tipo di aiuto se Neubot smette di funzionare\
                            per colpa di modifiche inopportune.",
 
-    "i18n_settings_par2": "Le modifiche alla configurazione non vengono\
-                           inviate al demone Neubot finché non premi il tasto\
-                           Save in fondo alla pagina.",
-
     // neubot/www/bittorrent.html
 
     "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\

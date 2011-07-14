@@ -51,6 +51,7 @@ from neubot import marshal
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        self._interval = 0
         self._latest = None
         self._task = None
 
@@ -58,8 +59,7 @@ class ClientRendezvous(ClientHTTP):
         self._task = None
 
         if not uri:
-            uri = self.conf.get("rendezvous.client.uri",
-              "http://master.neubot.org:9773/")
+            uri = CONFIG["rendezvous.client.uri"]
 
         LOG.start("* Rendezvous with %s" % uri)
         STATE.update("rendezvous")
@@ -86,7 +86,7 @@ class ClientRendezvous(ClientHTTP):
         m = compat.RendezvousRequest()
         m.accept.append("speedtest")
         m.accept.append("bittorrent")
-        m.version = self.conf.get("rendezvous.client.version", common.VERSION)
+        m.version = CONFIG["rendezvous.client.version"]
 
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",
@@ -135,14 +135,13 @@ class ClientRendezvous(ClientHTTP):
                 LOG.info("* Chosen test: %s" % test)
 
                 # Are we allowed to run a test?
-                if (not CONFIG.get("enabled", True) or
-                  self.conf.get("rendezvous.client.debug", False)):
+                if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
                     LOG.info("Tests are disabled... not running")
                     self._schedule()
                 else:
 
-                    if (CONFIG.get("privacy.informed", 0) and
-                      not CONFIG.get("privacy.can_collect", 0)):
+                    if (CONFIG["privacy.informed"] and
+                      not CONFIG["privacy.can_collect"]):
                         LOG.warning("cannot run test without permission "
                           "to save the results")
                         self._schedule()
@@ -174,7 +173,19 @@ class ClientRendezvous(ClientHTTP):
                             NOTIFIER.publish("testdone")
 
     def _schedule(self):
-        interval = self.conf.get("rendezvous.client.interval", 1500)
+
+        #
+        # Typically the user does not specify the interval
+        # and we use a random value around 1500 seconds.
+        # The random value is extracted just once and from
+        # that point on we keep using it.
+        #
+        interval = CONFIG["rendezvous.client.interval"]
+        if not interval:
+            if not self._interval:
+                self._interval = 1380 + random.randrange(0, 240)
+            interval = self._interval
+
         LOG.info("* Next rendezvous in %d seconds" % interval)
 
         fn = lambda *args, **kwargs: self.connect_uri()
@@ -201,8 +212,6 @@ def main(args):
     common.main("rendezvous.client", "Rendezvous client", args)
     conf = CONFIG.copy()
 
-    if not conf["agent.interval"]:
-        conf["agent.interval"] = 1380 + random.randrange(0, 240)
     client = ClientRendezvous(POLLER)
     client.configure(conf)
     client.connect_uri()
