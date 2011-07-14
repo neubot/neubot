@@ -53,7 +53,6 @@ class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
         self.latest = None
-        self.testing = False
         self.task = None
 
     def connect_uri(self, uri=None, count=None):
@@ -142,7 +141,6 @@ class ClientRendezvous(ClientHTTP):
                         self.schedule()
                     else:
 
-                        self.testing = True
                         conf = self.conf.copy()
 
                         #
@@ -168,11 +166,10 @@ class ClientRendezvous(ClientHTTP):
                             NOTIFIER.publish(TESTDONE)
 
     def end_of_test(self, event, context):
-        self.testing = False
         self.schedule()
 
     def schedule(self):
-        if self.testing:
+        if NOTIFIER.is_subscribed(TESTDONE):
             LOG.debug("rendezvous: schedule() while testing")
         elif self.task:
             LOG.debug("rendezvous: There is already a pending task")
