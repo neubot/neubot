@@ -115,6 +115,7 @@ class PeerNeubot(StreamHandler):
         # it receives the connector handshake.
         #
         self.infohash = self.conf.get("bittorrent.infohash", random_bytes(20))
+        LOG.start("BitTorrent: connecting to %s" % str(endpoint))
         StreamHandler.connect(self, endpoint, count)
 
     #
@@ -129,7 +130,7 @@ class PeerNeubot(StreamHandler):
     def connection_made(self, sock, rtt=0):
         if rtt:
             latency = utils.time_formatter(rtt)
-            LOG.info("BitTorrent: latency: %s" % latency)
+            LOG.complete("done, %s" % latency)
             STATE.update("test_latency", latency)
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
