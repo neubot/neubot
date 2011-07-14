@@ -42,7 +42,7 @@ class Notifier(object):
         self.subscribers = collections.defaultdict(list)
         self.tofire = []
 
-    def subscribe(self, event, func, context, periodic=False):
+    def subscribe(self, event, func, context=None, periodic=False):
         queue = self.subscribers[event]
         queue.append((func, context))
         if periodic:
