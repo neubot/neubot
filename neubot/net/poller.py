@@ -315,3 +315,10 @@ class Poller(object):
           "readset": self.readset, "writeset": self.writeset}
 
 POLLER = Poller(1)
+
+#
+# Attach to the logger: we cannot do that from
+# the logger because that will create a circular
+# import.
+#
+LOG.attach_poller(POLLER)

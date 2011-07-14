@@ -50,6 +50,20 @@ class InteractiveLogger(object):
 #
 NOCOMMIT = 32
 
+#
+# Interval in seconds between each invocation of the
+# function that takes care of the logs saved into the
+# database.
+#
+INTERVAL = 120
+
+#
+# This is the number of days of logs we keep into
+# the database.  Older logs are pruned.
+# TODO Allow to configure this.
+#
+DAYS_AGO = 7
+
 class Logger(object):
 
     """Logging object.  Usually there should be just one instance
@@ -68,16 +82,46 @@ class Logger(object):
         self._use_database = False
 
         #
-        # We cannot import the database here because of a
-        # circular dependency.  Instead the database registers
+        # We cannot import the DATABASE here because of a
+        # circular import.  Instead the DATABASE registers
         # with us when it is ready.
+        # The same holds for NOTIFIER in <notify.py> and
+        # for POLLER in <net/poller.py>.
         #
         self.database = None
         self.table_log = None
+        self.notifier = None
 
-    def attach(self, database, table_log):
+    def attach_database(self, database, table_log):
         self.database = database
         self.table_log = table_log
+
+    def attach_poller(self, poller):
+        poller.sched(INTERVAL, self._maintain_database, poller)
+
+    def attach_notifier(self, notifier):
+        self.notifier = notifier
+
+    #
+    # Better not to touch the database when a test is in
+    # progress, i.e. "testdone" is subscribed.
+    # Maintenance consists mainly of removing old logs and
+    # is mandatory because we don't want the database to grow
+    # without control.
+    #
+    def _maintain_database(self, *args, **kwargs):
+
+        poller = args[0]
+        poller.sched(INTERVAL, self._maintain_database, poller)
+
+        self.info("log: pruning my database table")
+
+        if (self._use_database and self.database and self.table_log and
+          self.notifier and not self.notifier.is_subscribed("testdone")):
+            connection = self.database.connection()
+            self.table_log.prune(connection, DAYS_AGO, commit=False)
+            connection.execute("VACUUM;")
+            connection.commit()
 
     #
     # We don't want to log into the database when we run

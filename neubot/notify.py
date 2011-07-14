@@ -111,3 +111,10 @@ class Notifier(object):
           '_subscribers': dict(self._subscribers)}
 
 NOTIFIER = Notifier()
+
+#
+# Attach to the logger: we cannot do that from
+# the logger because that will create a circular
+# import.
+#
+LOG.attach_notifier(NOTIFIER)
