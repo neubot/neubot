@@ -38,7 +38,7 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.log import LOG
 
-VERSION = "0.3.7\n"
+VERSION = "0.3.7"
 
 def write_help(fp, name, descr):
     fp.write('''\
@@ -85,7 +85,7 @@ def main(name, descr, args):
         elif key == "-l":
             lflag = True
         elif key == "-V":
-            sys.stdout.write(VERSION)
+            sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif key == "-v":
             LOG.verbose()
