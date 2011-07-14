@@ -51,11 +51,11 @@ from neubot import marshal
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
-        self.latest = None
-        self.task = None
+        self._latest = None
+        self._task = None
 
     def connect_uri(self, uri=None, count=None):
-        self.task = None
+        self._task = None
         STATE.update("rendezvous")
         if not uri:
             uri = self.conf.get("rendezvous.client.uri",
@@ -67,10 +67,10 @@ class ClientRendezvous(ClientHTTP):
 
     def connection_failed(self, connector, exception):
         STATE.update("rendezvous", {"status": "failed"})
-        self.schedule()
+        self._schedule()
 
     def connection_lost(self, stream):
-        self.schedule()
+        self._schedule()
 
     def connection_ready(self, stream):
         LOG.progress()
@@ -90,7 +90,7 @@ class ClientRendezvous(ClientHTTP):
     def got_response(self, stream, request, response):
         if response.code != "200":
             LOG.complete("bad response")
-            self.schedule()
+            self._schedule()
         else:
             LOG.complete()
             s = response.body.read()
@@ -99,7 +99,7 @@ class ClientRendezvous(ClientHTTP):
                   compat.RendezvousResponse)
             except ValueError:
                 LOG.exception()
-                self.schedule()
+                self._schedule()
             else:
                 if "version" in m1.update and "uri" in m1.update:
                     ver, uri = m1.update["version"], m1.update["uri"]
@@ -120,24 +120,24 @@ class ClientRendezvous(ClientHTTP):
                 if "bittorrent" in m1.available:
                     tests.append("bittorrent")
                 #XXX alternate the two tests
-                if self.latest:
-                    tests.remove(self.latest)
+                if self._latest:
+                    tests.remove(self._latest)
                 test = random.choice(tests)
-                self.latest = test
+                self._latest = test
                 LOG.info("* Chosen test: %s" % test)
 
                 # Are we allowed to run a test?
                 if (not CONFIG.get("enabled", True) or
                   self.conf.get("rendezvous.client.debug", False)):
                     LOG.info("Tests are disabled... not running")
-                    self.schedule()
+                    self._schedule()
                 else:
 
                     if (CONFIG.get("privacy.informed", 0) and
                       not CONFIG.get("privacy.can_collect", 0)):
                         LOG.warning("cannot run test without permission "
                           "to save the results")
-                        self.schedule()
+                        self._schedule()
                     else:
 
                         conf = self.conf.copy()
@@ -145,9 +145,9 @@ class ClientRendezvous(ClientHTTP):
                         #
                         # Subscribe _before_ connecting.  This way we
                         # immediately see "testdone" if the connection fails
-                        # and we can schedule the next attempt.
+                        # and we can _schedule the next attempt.
                         #
-                        NOTIFIER.subscribe("testdone", self.end_of_test)
+                        NOTIFIER.subscribe("testdone", self._end_of_test)
 
                         if test == "speedtest":
                             conf["speedtest.client.uri"] =  m1.available[
@@ -164,21 +164,21 @@ class ClientRendezvous(ClientHTTP):
                         else:
                             NOTIFIER.publish("testdone")
 
-    def end_of_test(self, event, context):
-        self.schedule()
+    def _end_of_test(self, event, context):
+        self._schedule()
 
-    def schedule(self):
+    def _schedule(self):
         if NOTIFIER.is_subscribed("testdone"):
-            LOG.debug("rendezvous: schedule() while testing")
-        elif self.task:
+            LOG.debug("rendezvous: _schedule() while testing")
+        elif self._task:
             LOG.debug("rendezvous: There is already a pending task")
         else:
             interval = self.conf.get("rendezvous.client.interval", 1500)
             LOG.info("* Next rendezvous in %d seconds" % interval)
             fn = lambda *args, **kwargs: self.connect_uri()
-            self.task = POLLER.sched(interval, fn)
+            self._task = POLLER.sched(interval, fn)
             STATE.update("idle", publish=False)
-            STATE.update("next_rendezvous", self.task.timestamp)
+            STATE.update("next_rendezvous", self._task.timestamp)
 
 def main(args):
 
