@@ -94,6 +94,9 @@ class Notifier(object):
             except:
                 LOG.exception()
 
+    def is_subscribed(self, event):
+        return event in self._subscribers
+
     def get_event_timestamp(self, event):
         return str(self._timestamps[event])
 
