@@ -155,7 +155,8 @@ class ClientRendezvous(ClientHTTP):
                         # immediately see "testdone" if the connection fails
                         # and we can _schedule the next attempt.
                         #
-                        NOTIFIER.subscribe("testdone", self._end_of_test)
+                        NOTIFIER.subscribe("testdone", lambda *a, **kw: \
+                                                         self._schedule())
 
                         if test == "speedtest":
                             conf["speedtest.client.uri"] =  m1.available[
@@ -171,9 +172,6 @@ class ClientRendezvous(ClientHTTP):
 
                         else:
                             NOTIFIER.publish("testdone")
-
-    def _end_of_test(self, event, context):
-        self._schedule()
 
     def _schedule(self):
         interval = self.conf.get("rendezvous.client.interval", 1500)
