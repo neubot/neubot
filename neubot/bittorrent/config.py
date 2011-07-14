@@ -78,12 +78,10 @@ _PROPERTIES = (
     ('bittorrent.watchdog', WATCHDOG, 'Maximum test run-time in seconds'),
 )
 
-CONFIG.register_defaults(dict(zip(map(lambda t: t[0], _PROPERTIES),
-                                  map(lambda t: t[1], _PROPERTIES))))
+CONFIG.register_defaults_helper(_PROPERTIES)
 
 def register_descriptions():
-    CONFIG.register_descriptions(dict(zip(map(lambda t: t[0], _PROPERTIES),
-                                          map(lambda t: t[2], _PROPERTIES))))
+    CONFIG.register_descriptions_helper(_PROPERTIES)
 
 def _random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])

@@ -297,6 +297,14 @@ class Config(object):
 
 CONFIG = Config()
 
+CONFIG.register_defaults_helper = lambda properties: \
+    CONFIG.register_defaults(dict(zip(map(lambda t: t[0], properties),
+                                      map(lambda t: t[1], properties))))
+
+CONFIG.register_descriptions_helper = lambda properties: \
+    CONFIG.register_descriptions(dict(zip(map(lambda t: t[0], properties),
+                                          map(lambda t: t[2], properties))))
+
 CONFIG.register_defaults({
     "agent.api": True,
     "agent.api.address": "127.0.0.1",
