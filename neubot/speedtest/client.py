@@ -41,7 +41,7 @@ from neubot import marshal
 from neubot import privacy
 from neubot import utils
 
-TESTDONE = "testdone"
+TESTDONE = "testdone" #TODO: use directly the string instead
 
 ESTIMATE = {
     "download": 64000,

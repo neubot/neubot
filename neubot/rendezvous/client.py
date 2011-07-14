@@ -35,7 +35,6 @@ if __name__ == "__main__":
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
-from neubot.speedtest.client import TESTDONE
 from neubot.speedtest.client import ClientSpeedtest
 
 from neubot.config import CONFIG
@@ -145,10 +144,10 @@ class ClientRendezvous(ClientHTTP):
 
                         #
                         # Subscribe _before_ connecting.  This way we
-                        # immediately see TESTDONE if the connection fails
+                        # immediately see "testdone" if the connection fails
                         # and we can schedule the next attempt.
                         #
-                        NOTIFIER.subscribe(TESTDONE, self.end_of_test)
+                        NOTIFIER.subscribe("testdone", self.end_of_test)
 
                         if test == "speedtest":
                             conf["speedtest.client.uri"] =  m1.available[
@@ -163,13 +162,13 @@ class ClientRendezvous(ClientHTTP):
                             bittorrent.run(POLLER, conf)
 
                         else:
-                            NOTIFIER.publish(TESTDONE)
+                            NOTIFIER.publish("testdone")
 
     def end_of_test(self, event, context):
         self.schedule()
 
     def schedule(self):
-        if NOTIFIER.is_subscribed(TESTDONE):
+        if NOTIFIER.is_subscribed("testdone"):
             LOG.debug("rendezvous: schedule() while testing")
         elif self.task:
             LOG.debug("rendezvous: There is already a pending task")
