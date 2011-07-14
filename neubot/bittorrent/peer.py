@@ -283,11 +283,17 @@ class PeerNeubot(StreamHandler):
                 #
                 # Make sure that next test would take about
                 # TARGET secs, under current conditions.
+                # We're a bit conservative when the elapsed
+                # time is small because there is the risk of
+                # overestimating the available bandwith.
                 # TODO Don't start from scratch but use speedtest
                 # estimate (maybe we need to divide it by two
                 # but I'm not sure at the moment).
                 #
-                self.target_bytes = int(self.target_bytes * TARGET/elapsed)
+                if elapsed >= LO_THRESH/3:
+                    self.target_bytes = int(self.target_bytes * TARGET/elapsed)
+                else:
+                    self.target_bytes *= 2
 
                 #
                 # The stopping rule is when the test has run
