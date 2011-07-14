@@ -75,6 +75,15 @@ def run(poller, conf):
                            conf["bittorrent.port"]))
 
     else:
+
+        #
+        # Make sure there is someone ready to receive the
+        # "testdone" event.  If there is noone it is a bug
+        # none times out of ten.
+        #
+        if not NOTIFIER.is_subscribed("testdone"):
+            LOG.oops("The 'testdone' event is not subscribed")
+
         if conf["bittorrent.negotiate"]:
             client = BitTorrentClient(poller)
             client.configure(conf)
