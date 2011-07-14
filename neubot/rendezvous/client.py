@@ -113,7 +113,7 @@ class ClientRendezvous(ClientHTTP):
                 # we're not going to run it because we're running
                 # in debug mode or tests are disabled.
                 # This allows us to print to the logger the test
-                # we /would/ have choose if we were allowed to run
+                # we /would/ have choosen if we were allowed to run
                 # it.
                 #
                 tests = []
