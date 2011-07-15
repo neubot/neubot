@@ -69,10 +69,13 @@ class _InfoBox(object):
 
         self.timeo = timeo
 
+        table = gtk.Table(1, 3, True)
+        vbox.pack_start(table)
+
         self._button = gtk.Button(stock=gtk.STOCK_CLOSE)
         self._button.set_label("Close (%d sec)" % self.timeo)
         self._button.connect("clicked", self._cleanup)
-        vbox.pack_start(self._button)
+        table.attach(self._button, 1, 2, 0, 1)
 
         gobject.timeout_add(1000, self._update_timeo)
 
