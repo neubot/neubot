@@ -40,8 +40,8 @@ def _version_split(s):
     return s, rc
 
 def versioncmp(left, right):
-    left, leftrc = _version_split(left)
-    right, rightrc = _version_split(right)
+    left, leftrc = _version_split(left.strip())
+    right, rightrc = _version_split(right.strip())
 
     if len(left) > len(right):
         [right.append(0) for i in range(len(left) - len(right))]
