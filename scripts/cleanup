@@ -25,4 +25,4 @@
 # is not available and you're in a POSIX environment.
 #
 
-find . -type f -name \*.pyc -exec rm -f {} \;  &&  rm -rf -- dist/
+find . -type f -name \*.pyc -exec rm -f {} \;  &&  rm -rf -- dist/ build/ MANIFEST
