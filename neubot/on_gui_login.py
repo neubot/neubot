@@ -38,7 +38,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.compat import json
-from neubot.gui.infobox import infobox
+from neubot.gui.infobox import InfoBox
 from neubot.log import LOG
 
 #
@@ -96,8 +96,8 @@ def _loop_once(args):
         LOG.exception()
 
     # Spam the user
-    if message and infobox:
-        infobox(message)
+    if message and InfoBox:
+        InfoBox(message)
 
 if __name__ == "__main__":
     realmain(sys.argv, lambda: 5)

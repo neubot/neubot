@@ -31,35 +31,41 @@ import gtk
 
 import re
 
-def infobox(message):
-    window = gtk.Window()
-    window.set_title("Neubot 0.3.7")
-    window.connect("delete_event", lambda p1, p2: gtk.main_quit())
-    window.connect("destroy", lambda w: gtk.main_quit())
+class InfoBox(object):
 
-    vbox = gtk.VBox()
+    def _cleanup(self, *args):
+        self._window.destroy()
+        gtk.main_quit()
 
-    for txt in re.split("(<.+?>)", message):
-        if txt and txt[0] == "<":
-            label = gtk.Label()
+    def __init__(self, message):
+        self._window = gtk.Window()
+        self._window.set_title("Neubot 0.3.7")
+        self._window.connect("delete_event", self._cleanup)
+        self._window.connect("destroy", self._cleanup)
 
-            link = txt[1:-1]
-            markup = '<a href="%s">%s</a>' % (link, link)
-            label.set_markup(markup)
+        vbox = gtk.VBox()
 
-            vbox.pack_start(label)
-        elif txt:
-            label = gtk.Label(txt)
-            vbox.pack_start(label)
+        for txt in re.split("(<.+?>)", message):
+            if txt and txt[0] == "<":
+                label = gtk.Label()
 
-    button = gtk.Button(label="Close", stock=gtk.STOCK_CLOSE)
-    button.connect("clicked", lambda w: gtk.main_quit())
-    vbox.pack_start(button)
+                link = txt[1:-1]
+                markup = '<a href="%s">%s</a>' % (link, link)
+                label.set_markup(markup)
 
-    window.add(vbox)
-    window.show_all()
-    gtk.main()
+                vbox.pack_start(label)
+            elif txt:
+                label = gtk.Label(txt)
+                vbox.pack_start(label)
+
+        button = gtk.Button(label="Close", stock=gtk.STOCK_CLOSE)
+        button.connect("clicked", self._cleanup)
+        vbox.pack_start(button)
+
+        self._window.add(vbox)
+        self._window.show_all()
+        gtk.main()
 
 if __name__ == "__main__":
-    infobox("An updated version of Neubot is available "
-                 "at <http://www.neubot.org/download>")
+    InfoBox("An updated version of Neubot is available "
+            "at <http://www.neubot.org/download>")

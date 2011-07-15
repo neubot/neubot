@@ -29,40 +29,46 @@ import Tkinter
 import webbrowser
 import re
 
-def _on_click(event):
-    txt = event.widget["text"]
-    webbrowser.open(txt)
+class InfoBox(object):
 
-def _on_enter(event):
-    widget = event.widget
-    widget.config(cursor="hand2")
+    def _on_click(self, event):
+        txt = event.widget["text"]
+        webbrowser.open(txt)
 
-def _on_leave(event):
-    widget = event.widget
-    widget.config(cursor="")
+    def _on_enter(self, event):
+        widget = event.widget
+        widget.config(cursor="hand2")
 
-def infobox(message):
-    root = Tkinter.Tk()
-    root.title("Neubot 0.3.7")
+    def _on_leave(self, event):
+        widget = event.widget
+        widget.config(cursor="")
 
-    for txt in re.split("(<.+?>)", message):
-        if txt and txt[0] == "<":
-            link = txt[1:-1]
-            label = Tkinter.Label(text=link, foreground="blue")
-            label.bind("<Button-1>", _on_click)
-            label.bind("<Enter>", _on_enter)
-            label.bind("<Leave>", _on_leave)
-            label.pack()
-        elif txt:
-            label = Tkinter.Label(text=txt)
-            label.pack()
+    def _dtor(self, *args):
+        self._root.destroy()
 
-    button = Tkinter.Button(root, text="Close", command=root.quit)
-    button.pack()
+    def __init__(self, message):
+        self._root = Tkinter.Tk()
+        self._root.title("Neubot 0.3.7")
+        self._root.protocol("WM_DELETE_WINDOW", self._dtor)
 
-    root.focus_set()
-    root.mainloop()
+        for txt in re.split("(<.+?>)", message):
+            if txt and txt[0] == "<":
+                link = txt[1:-1]
+                label = Tkinter.Label(text=link, foreground="blue")
+                label.bind("<Button-1>", self._on_click)
+                label.bind("<Enter>", self._on_enter)
+                label.bind("<Leave>", self._on_leave)
+                label.pack()
+            elif txt:
+                label = Tkinter.Label(text=txt)
+                label.pack()
+
+        button = Tkinter.Button(self._root, text="Close", command=self._dtor)
+        button.pack()
+
+        self._root.focus_set()
+        self._root.mainloop()
 
 if __name__ == "__main__":
-    infobox("An updated version of Neubot is available "
-                 "at <http://www.neubot.org/download>")
+    InfoBox("An updated version of Neubot is available "
+            "at <http://www.neubot.org/download>")

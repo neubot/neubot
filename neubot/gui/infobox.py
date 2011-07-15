@@ -25,23 +25,23 @@
 # and hyperlinks using the available toolkit.
 #
 
-infobox = None
+InfoBox = None
 
-if not infobox:
+if not InfoBox:
     try:
-        from neubot.gui.infobox_gtk import infobox
+        from neubot.gui.infobox_gtk import InfoBox
     except ImportError:
         pass
 
 # Disabled!
 #if not infobox:
 #    try:
-#        from neubot.gui.infobox_win32 import infobox
+#        from neubot.gui.infobox_win32 import InfoBox
 #    except ImportError:
 #        pass
 
-if not infobox:
+if not InfoBox:
     try:
-        from neubot.gui.infobox_tk import infobox
+        from neubot.gui.infobox_tk import InfoBox
     except ImportError:
         pass
