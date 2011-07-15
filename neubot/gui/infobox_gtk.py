@@ -29,37 +29,69 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+import gobject
+import os.path
 import re
 
-def infobox(message):
-    window = gtk.Window()
-    window.set_title("Neubot 0.3.7")
-    window.connect("delete_event", lambda p1, p2: gtk.main_quit())
-    window.connect("destroy", lambda w: gtk.main_quit())
+ICON = "@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg"
+if ICON.startswith("@"):
+    ICON = "icons/neubot.svg"
+if not os.path.isfile(ICON):
+    ICON = gtk.STOCK_NETWORK
 
-    vbox = gtk.VBox()
+class _InfoBox(object):
 
-    for txt in re.split("(<.+?>)", message):
-        if txt and txt[0] == "<":
-            label = gtk.Label()
+    def _cleanup(self, *args):
+        self._window.destroy()
+        gtk.main_quit()
 
-            link = txt[1:-1]
-            markup = '<a href="%s">%s</a>' % (link, link)
-            label.set_markup(markup)
+    def _update_timeo(self):
+        self.timeo = self.timeo -1
+        if self.timeo == 0:
+            self._cleanup()
+            return gtk.FALSE
+        self._button.set_label("Close (%d sec)" % self.timeo)
+        return gtk.TRUE
 
-            vbox.pack_start(label)
-        elif txt:
-            label = gtk.Label(txt)
-            vbox.pack_start(label)
+    def __init__(self, message, timeo=30):
+        self._window = gtk.Window()
+        self._window.set_title("Neubot 0.3.7")
+        self._window.set_icon_from_file(ICON)
 
-    button = gtk.Button(label="Close", stock=gtk.STOCK_CLOSE)
-    button.connect("clicked", lambda w: gtk.main_quit())
-    vbox.pack_start(button)
+        self._window.connect("delete_event", self._cleanup)
+        self._window.connect("destroy", self._cleanup)
 
-    window.add(vbox)
-    window.show_all()
-    gtk.main()
+        vbox = gtk.VBox()
+
+        for txt in re.split("(<.+?>)", message):
+            if txt and txt[0] == "<":
+                label = gtk.Label()
+
+                link = txt[1:-1]
+                markup = '<a href="%s">%s</a>' % (link, link)
+                label.set_markup(markup)
+
+                vbox.pack_start(label)
+            elif txt:
+                label = gtk.Label(txt)
+                vbox.pack_start(label)
+
+        self.timeo = timeo
+
+        table = gtk.Table(1, 3, True)
+        vbox.pack_start(table)
+
+        self._button = gtk.Button(stock=gtk.STOCK_CLOSE)
+        self._button.set_label("Close (%d sec)" % self.timeo)
+        self._button.connect("clicked", self._cleanup)
+        table.attach(self._button, 1, 2, 0, 1)
+
+        gobject.timeout_add(1000, self._update_timeo)
+
+        self._window.add(vbox)
+        self._window.show_all()
+        gtk.main()
 
 if __name__ == "__main__":
-    infobox("An updated version of Neubot is available "
-                 "at <http://www.neubot.org/download>")
+    _InfoBox("An updated version of Neubot is available "
+             "at <http://www.neubot.org/download>")

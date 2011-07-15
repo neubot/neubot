@@ -1,4 +1,4 @@
-# neubot/gui/infobox_win32.py
+#!/usr/bin/env python
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -20,18 +20,19 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Display a simple window with informative messages
-# and hyperlinks using Win32 API.
-# This is not enabled by default because under Windows
-# we use Tkinter.
-#
-
-import win32api
-
-def infobox(message):
-    win32api.MessageBox(None, message, "Neubot 0.3.7")
+import sys
 
 if __name__ == "__main__":
-    infobox("An updated version of Neubot is available "
-            "at <http://www.neubot.org/download>")
+    sys.path.insert(0, ".")
+
+from neubot.gui.infobox import ALL_INFOBOXES
+
+def main():
+    for InfoBox in ALL_INFOBOXES:
+        for _ in range(100):
+            InfoBox("annoying", 1)
+
+    raw_input("Hit Enter to exit")
+
+if __name__ == "__main__":
+    main()

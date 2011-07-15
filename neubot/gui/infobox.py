@@ -25,23 +25,33 @@
 # and hyperlinks using the available toolkit.
 #
 
-infobox = None
+import sys
 
-if not infobox:
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
+InfoBox = None
+ALL_INFOBOXES = []
+
+if not InfoBox:
     try:
-        from neubot.gui.infobox_gtk import infobox
+        from neubot.gui.infobox_gtk import _InfoBox
+        ALL_INFOBOXES.append(_InfoBox)
+        InfoBox = _InfoBox
     except ImportError:
         pass
 
-# Disabled!
-#if not infobox:
-#    try:
-#        from neubot.gui.infobox_win32 import infobox
-#    except ImportError:
-#        pass
-
-if not infobox:
+if not InfoBox:
     try:
-        from neubot.gui.infobox_tk import infobox
+        from neubot.gui.infobox_tk import _InfoBox
+        ALL_INFOBOXES.append(_InfoBox)
+        InfoBox = _InfoBox
     except ImportError:
         pass
+
+if not InfoBox:
+    InfoBox = lambda message: None
+
+if __name__ == "__main__":
+    InfoBox("An updated version of Neubot is available "
+            "at <http://www.neubot.org/download>")
