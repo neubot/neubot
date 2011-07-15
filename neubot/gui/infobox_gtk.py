@@ -30,7 +30,14 @@ pygtk.require("2.0")
 import gtk
 
 import gobject
+import os.path
 import re
+
+ICON = "@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg"
+if ICON.startswith("@"):
+    ICON = "icons/neubot.svg"
+if not os.path.isfile(ICON):
+    ICON = gtk.STOCK_NETWORK
 
 class _InfoBox(object):
 
@@ -49,6 +56,8 @@ class _InfoBox(object):
     def __init__(self, message, timeo=30):
         self._window = gtk.Window()
         self._window.set_title("Neubot 0.3.7")
+        self._window.set_icon_from_file(ICON)
+
         self._window.connect("delete_event", self._cleanup)
         self._window.connect("destroy", self._cleanup)
 

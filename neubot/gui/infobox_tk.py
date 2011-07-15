@@ -29,6 +29,11 @@ import Tkinter
 import webbrowser
 import re
 
+#
+# XXX Here I would like to import an icon for the window
+# but I have not found an easy way to do that using a PNG
+# or SVG image.  Does anyone knows the trick?
+#
 class _InfoBox(object):
 
     def _on_click(self, event):
