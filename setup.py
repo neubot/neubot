@@ -37,9 +37,9 @@ import sys
 import glob
 
 try:
-   import py2exe
+    import py2exe
 except ImportError:
-   py2exe = None
+    py2exe = None
 
 CONSOLE = [{
     "icon_resources": [(0, "icons/neubot.ico")],
