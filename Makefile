@@ -42,6 +42,7 @@ PHONIES += _install_man
 PHONIES += _install_bin
 PHONIES += _install_icon
 PHONIES += _install_menu
+PHONIES += _install_autostart
 PHONIES += _install_edit
 PHONIES += _install_compile
 PHONIES += _install
@@ -169,6 +170,11 @@ _install_menu:
 	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F ||exit $$?;\
 	done
 
+_install_autostart:
+	@$(INSTALL) -d $(DESTDIR)/etc/xdg/autostart/
+	@$(INSTALL) unix_root/etc/xdg/autostart/neubot-on-gui-login.desktop \
+	 $(DESTDIR)/etc/xdg/autostart
+
 #
 # After the install we need to edit the following files to
 # tell neubot the path where it's installed.
@@ -181,6 +187,7 @@ NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
+NEEDEDIT += $(DESTDIR)/etc/xdg/autostart/neubot-on-gui-login.desktop
 
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
@@ -198,6 +205,7 @@ INSTALL_RULES += _install_man
 INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_icon
 INSTALL_RULES += _install_menu
+INSTALL_RULES += _install_autostart
 INSTALL_RULES += _install_edit
 INSTALL_RULES += _install_compile
 

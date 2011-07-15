@@ -54,6 +54,8 @@ section
 
     createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
       "$INSTDIR\neubotw.exe" "start"
+    createshortcut "$SMSTARTUP\neubot (login checks).lnk"		\
+      "$INSTDIR\neubotw.exe" "on_gui_login"
 
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
@@ -81,6 +83,7 @@ section "uninstall"
     rmdir /r "$SMPROGRAMS\neubot"
 
     delete "$SMSTARTUP\neubot (autostart).lnk"
+    delete "$SMSTARTUP\neubot (login checks).lnk"
     deleteregkey HKLM                                                   \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
 
