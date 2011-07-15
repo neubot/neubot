@@ -49,20 +49,20 @@ def _get_profile_dir():
     datadir = os.sep.join([appdata, "neubot"])
     return datadir
 
-def _want_rwx_dir(p):
+def _want_rwx_dir(p, perror=None):
     if not os.path.isdir(p):
         os.mkdir(p, 0755)
 
 def go_background():
     pass
 
-def drop_privileges():
+def drop_privileges(perror=None):
     pass
 
 def redirect_to_dev_null():
     pass
 
-def _want_rw_file(path):
+def _want_rw_file(path, perror=None):
     open(path, "ab+").close()
 
 def _get_pidfile_dir():

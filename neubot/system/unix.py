@@ -28,6 +28,7 @@ import pwd
 import os.path
 import signal
 import syslog
+import sys
 
 
 class BackgroundLogger(object):
@@ -74,12 +75,18 @@ def change_dir():
 #
 # Read more at http://www.neubot.org/node/14
 #
-def _want_rwx_dir(datadir):
+def _want_rwx_dir(datadir, perror=None):
     if not os.path.isdir(datadir):
         os.mkdir(datadir, 0755)
 
     if os.getuid() == 0:
-        passwd = pwd.getpwnam("_neubot")
+        try:
+            passwd = pwd.getpwnam("_neubot")
+        except KeyError, e:
+            if perror:
+                perror("Cannot find user '_neubot'. Exiting.")
+            sys.exit(1)
+
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
@@ -93,9 +100,15 @@ def go_background():
     if os.fork() > 0:
         os._exit(0)
 
-def drop_privileges():
+def drop_privileges(perror=None):
     if os.getuid() == 0:
-        passwd = pwd.getpwnam("_neubot")
+        try:
+            passwd = pwd.getpwnam("_neubot")
+        except KeyError, e:
+            if perror:
+                perror("Cannot find user '_neubot'. Exiting.")
+            sys.exit(1)
+
         os.setgid(passwd.pw_gid)
         os.setuid(passwd.pw_uid)
 
@@ -106,10 +119,16 @@ def redirect_to_dev_null():
     os.open("/dev/null", os.O_RDWR)
     os.open("/dev/null", os.O_RDWR)
 
-def _want_rw_file(file):
+def _want_rw_file(file, perror=None):
     open(file, "ab+").close()
     if os.getuid() == 0:
-        passwd = pwd.getpwnam("_neubot")
+        try:
+            passwd = pwd.getpwnam("_neubot")
+        except KeyError, e:
+            if perror:
+                perror("Cannot find user '_neubot'. Exiting.")
+            sys.exit(1)
+
         os.chown(file, passwd.pw_uid, passwd.pw_gid)
     os.chmod(file, 0644)
 

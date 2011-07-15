@@ -55,7 +55,7 @@ def main(args):
         system.write_pidfile()
         LOG.redirect()
 
-    system.drop_privileges()
+    system.drop_privileges(LOG.error)
 
     #
     # When we run as an agent we also save logs into

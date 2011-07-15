@@ -188,5 +188,5 @@ def main(args):
         system.go_background()
         LOG.redirect()
 
-    system.drop_privileges()
+    system.drop_privileges(LOG.error)
     POLLER.loop()

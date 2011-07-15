@@ -166,7 +166,7 @@ def main(args):
     LOG.info("This product includes GeoLite data created by MaxMind, "
              "available from <http://www.maxmind.com/>.")
 
-    system.drop_privileges()
+    system.drop_privileges(LOG.error)
     POLLER.loop()
 
 if __name__ == "__main__":
