@@ -25,6 +25,11 @@
 # and hyperlinks using the available toolkit.
 #
 
+import sys
+
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
 InfoBox = None
 
 if not InfoBox:
@@ -48,3 +53,7 @@ if not InfoBox:
 
 if not InfoBox:
     InfoBox = lambda message: None
+
+if __name__ == "__main__":
+    InfoBox("An updated version of Neubot is available "
+            "at <http://www.neubot.org/download>")
