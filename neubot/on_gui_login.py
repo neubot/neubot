@@ -96,7 +96,7 @@ def _loop_once(args):
         LOG.exception()
 
     # Spam the user
-    if message and InfoBox:
+    if message:
         InfoBox(message)
 
 if __name__ == "__main__":

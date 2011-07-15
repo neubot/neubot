@@ -45,3 +45,6 @@ if not InfoBox:
         from neubot.gui.infobox_tk import InfoBox
     except ImportError:
         pass
+
+if not InfoBox:
+    InfoBox = lambda message: None
