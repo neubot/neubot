@@ -29,6 +29,7 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+import gobject
 import re
 
 class _InfoBox(object):
@@ -37,7 +38,15 @@ class _InfoBox(object):
         self._window.destroy()
         gtk.main_quit()
 
-    def __init__(self, message):
+    def _update_timeo(self):
+        self.timeo = self.timeo -1
+        if self.timeo == 0:
+            self._cleanup()
+            return gtk.FALSE
+        self._button.set_label("Close (%d sec)" % self.timeo)
+        return gtk.TRUE
+
+    def __init__(self, message, timeo=30):
         self._window = gtk.Window()
         self._window.set_title("Neubot 0.3.7")
         self._window.connect("delete_event", self._cleanup)
@@ -58,9 +67,14 @@ class _InfoBox(object):
                 label = gtk.Label(txt)
                 vbox.pack_start(label)
 
-        button = gtk.Button(label="Close", stock=gtk.STOCK_CLOSE)
-        button.connect("clicked", self._cleanup)
-        vbox.pack_start(button)
+        self.timeo = timeo
+
+        self._button = gtk.Button(stock=gtk.STOCK_CLOSE)
+        self._button.set_label("Close (%d sec)" % self.timeo)
+        self._button.connect("clicked", self._cleanup)
+        vbox.pack_start(self._button)
+
+        gobject.timeout_add(1000, self._update_timeo)
 
         self._window.add(vbox)
         self._window.show_all()

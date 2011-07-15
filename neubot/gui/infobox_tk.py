@@ -46,7 +46,15 @@ class _InfoBox(object):
     def _dtor(self, *args):
         self._root.destroy()
 
-    def __init__(self, message):
+    def _update_timeo(self):
+        self._timeo = self._timeo -1
+        if self._timeo == 0:
+            self._dtor()
+            return
+        self._button.config(text="Close (%d sec)" % self._timeo)
+        self._root.after(1000, self._update_timeo)
+
+    def __init__(self, message, timeo=30):
         self._root = Tkinter.Tk()
         self._root.title("Neubot 0.3.7")
         self._root.protocol("WM_DELETE_WINDOW", self._dtor)
@@ -63,8 +71,13 @@ class _InfoBox(object):
                 label = Tkinter.Label(text=txt)
                 label.pack()
 
-        button = Tkinter.Button(self._root, text="Close", command=self._dtor)
-        button.pack()
+        self._timeo = timeo
+
+        self._button = Tkinter.Button(self._root, command=self._dtor)
+        self._button.config(text="Close (%d sec)" % self._timeo)
+        self._button.pack()
+
+        self._root.after(1000, self._update_timeo)
 
         self._root.focus_set()
         self._root.mainloop()
