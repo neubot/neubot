@@ -39,12 +39,10 @@ PHONIES += archive
 PHONIES += _install_skel
 PHONIES += _install_sources
 PHONIES += _install_man
-PHONIES += _install_bin
 PHONIES += _install_icon
 PHONIES += _install_menu
 PHONIES += _install_autostart
 PHONIES += _install_edit
-PHONIES += _install_compile
 PHONIES += _install
 PHONIES += install
 PHONIES += app
@@ -141,10 +139,9 @@ _install_skel:
 	@$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
 
 _install_sources:
-	@for SRC in `find neubot -type f|grep -v \.DS_Store`; do \
-	 $(INSTALL) -d $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
-	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC || exit $$?; \
-	done
+	@python setup.py install --install-purelib $(DESTDIR)$(DATADIR) \
+	                         --install-scripts $(DESTDIR)$(BINDIR)
+	@rm -rf $(DESTDIR)$(DATADIR)/neubot-*.egg-info
 
 #
 # We keep in the sources the manual page so that one that
@@ -154,11 +151,6 @@ _install_sources:
 _install_man:
 	@$(INSTALL) -d $(DESTDIR)$(MANDIR)/man1
 	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
-
-_install_bin:
-	@$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	@$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)
-	@$(INSTALL) bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
 
 _install_icon:
 	@$(INSTALL) -d $(DESTDIR)$(ICONDIR)
@@ -195,20 +187,13 @@ _install_edit:
 	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT || exit $$?; \
 	done
 
-_install_compile:
-	@python -m compileall -q $(DESTDIR)$(DATADIR)/neubot
-	@find $(DESTDIR)$(DATADIR)/neubot -type f -name \*.pyc \
-                                          -exec chmod 644 {} \;
-
 INSTALL_RULES += _install_skel
 INSTALL_RULES += _install_sources
 INSTALL_RULES += _install_man
-INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_icon
 INSTALL_RULES += _install_menu
 INSTALL_RULES += _install_autostart
 INSTALL_RULES += _install_edit
-INSTALL_RULES += _install_compile
 
 _install:
 	@for RULE in $(INSTALL_RULES); do \
