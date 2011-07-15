@@ -47,6 +47,32 @@ MODULES = {
     "stream"              : "net.stream",
 }
 
+#
+# XXX Good morning, this is an hack: py2exe does not
+# load modules that are not referenced and we're very
+# lazy in this file.  As a workaround let's load all
+# modules when we're in windows and we are not frozen
+# so we should reference all modules when py2exe is
+# inspecting us.
+#
+if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
+    import neubot.agent
+    import neubot.api.client
+    import neubot.database.main
+    import neubot.bittorrent
+    import neubot.http.client
+    import neubot.http.server
+    import neubot.on_gui_login
+    import neubot.rendezvous.client
+    import neubot.rendezvous.server
+    import neubot.show_database
+    import neubot.speedtest.client
+    import neubot.speedtest.client
+    import neubot.speedtest.negotiate
+    import neubot.speedtest.server
+    import neubot.statusicon
+    import neubot.net.stream
+
 def run(argv):
 
     # /usr/bin/neubot module ...
