@@ -48,11 +48,11 @@ from neubot.log import LOG
 #
 def main(args):
     LOG.redirect()
-    realmain(args)
+    realmain(args, lambda: random.randrange(300, 1500))
 
-def realmain(args):
+def realmain(args, get_sleep_interval):
     while True:
-        time.sleep(random.randrange(300, 1500))
+        time.sleep(get_sleep_interval())
         _loop_once(args)
 
 def _loop_once(args):
@@ -100,4 +100,4 @@ def _loop_once(args):
         infobox(message)
 
 if __name__ == "__main__":
-    realmain(sys.argv)
+    realmain(sys.argv, lambda: 5)
