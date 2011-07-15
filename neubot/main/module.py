@@ -29,22 +29,22 @@ import textwrap
 # heck of a long time.
 #
 MODULES = {
-    "agent"      : "agent",
-    "api.client" : "api.client",
-    "database"   : "database.main",
-    "bittorrent" : "bittorrent",
-    "http.client" : "http.client",
-    "http.server" : "http.server",
-    "on_gui_login": "on_gui_login",
-    "rendezvous.client": "rendezvous.client",
-    "rendezvous.server": "rendezvous.server",
-    "show_database": "show_database",
-    "speedtest"  : "speedtest.client",
-    "speedtest.client": "speedtest.client",
-    "speedtest.negotiate": "speedtest.negotiate",
-    "speedtest.server": "speedtest.server",
-    "statusicon" : "statusicon",
-    "stream"     : "net.stream",
+    "agent"               : "agent",
+    "api.client"          : "api.client",
+    "database"            : "database.main",
+    "bittorrent"          : "bittorrent",
+    "http.client"         : "http.client",
+    "http.server"         : "http.server",
+    "on_gui_login"        : "on_gui_login",
+    "rendezvous.client"   : "rendezvous.client",
+    "rendezvous.server"   : "rendezvous.server",
+    "show_database"       : "show_database",
+    "speedtest"           : "speedtest.client",
+    "speedtest.client"    : "speedtest.client",
+    "speedtest.negotiate" : "speedtest.negotiate",
+    "speedtest.server"    : "speedtest.server",
+    "statusicon"          : "statusicon",
+    "stream"              : "net.stream",
 }
 
 def run(argv):
