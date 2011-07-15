@@ -41,15 +41,6 @@ if not InfoBox:
     except ImportError:
         pass
 
-# Disabled!
-#if not infobox:
-#    try:
-#        from neubot.gui.infobox_win32 import _InfoBox
-#        ALL_INFOBOXES.append(_InfoBox)
-#        InfoBox = _InfoBox
-#    except ImportError:
-#        pass
-
 if not InfoBox:
     try:
         from neubot.gui.infobox_tk import _InfoBox
