@@ -39,12 +39,11 @@ def infobox(message):
 
     vbox = gtk.VBox()
 
-    for txt in re.split("(<[A-Za-z0-9:/_#.]+>)", message):
+    for txt in re.split("(<.+?>)", message):
         if txt and txt[0] == "<":
             label = gtk.Label()
 
-            match = re.match("<(.*)>", txt)
-            link = match.group(1)
+            link = txt[1:-1]
             markup = '<a href="%s">%s</a>' % (link, link)
             label.set_markup(markup)
 
