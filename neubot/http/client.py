@@ -38,7 +38,7 @@ from neubot.net.poller import POLLER
 from neubot.net.measurer import MEASURER
 from neubot.log import LOG
 from neubot import utils
-from neubot import boot
+from neubot.main import common
 
 class ClientStream(StreamHTTP):
 
@@ -102,6 +102,10 @@ class ClientStream(StreamHTTP):
             self.close()
 
 class ClientHTTP(StreamHandler):
+    def __init__(self, poller):
+        StreamHandler.__init__(self, poller)
+        self.host_header = ""
+        self.rtt = 0
 
     def connect_uri(self, uri, count=1):
         try:
@@ -110,6 +114,7 @@ class ClientHTTP(StreamHandler):
             if m.scheme == "https":
                 self.conf["net.stream.secure"] = True
             endpoint = (m.address, int(m.port))
+            self.host_header = "%s:%s" % (m.address, m.port)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception, e:
@@ -126,7 +131,10 @@ class ClientHTTP(StreamHandler):
     def got_response(self, stream, request, response):
         pass
 
-    def connection_made(self, sock):
+    def connection_made(self, sock, rtt=0):
+        if rtt:
+            LOG.debug("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
+            self.rtt = rtt
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf, self.measurer)
         self.connection_ready(stream)
@@ -168,16 +176,18 @@ CONFIG.register_defaults({
     "http.client.stdout": False,
     "http.client.uri": "",
 })
-CONFIG.register_descriptions({
-    "http.client.class": "Specify alternate ClientHTTP-like class",
-    "http.client.method": "Specify alternate HTTP method",
-    "http.client.stats": "Enable printing download stats on stdout",
-    "http.client.stdout": "Enable writing response to stdout",
-    "http.client.uri": "Specify URI to download from/upload to",
-})
 
 def main(args):
-    boot.common("http.client", "Simple Neubot HTTP client", args)
+
+    CONFIG.register_descriptions({
+        "http.client.class": "Specify alternate ClientHTTP-like class",
+        "http.client.method": "Specify alternate HTTP method",
+        "http.client.stats": "Enable printing download stats on stdout",
+        "http.client.stdout": "Enable writing response to stdout",
+        "http.client.uri": "Specify URI to download from/upload to",
+    })
+
+    common.main("http.client", "Simple Neubot HTTP client", args)
     conf = CONFIG.copy()
 
     if conf["http.client.stats"]:

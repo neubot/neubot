@@ -20,8 +20,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import types
+
 from neubot.config import CONFIG
 from neubot.config import ConfigError
+from neubot.log import LOG
+
 from neubot import utils
 
 PRIVACYKEYS = ("privacy.informed", "privacy.can_collect",
@@ -44,3 +48,14 @@ def check(updates):
             raise ConfigError("You cannot set can_share without also "
                              "setting can_collect (how are we supposed "
                              "to share what we cannot collect)?")
+
+def collect_allowed(m):
+    if type(m) != types.DictType:
+        #
+        # XXX This is a shame therefore put the oops() and hope that
+        # it does its moral suasion job as expected.
+        #
+        LOG.oops("TODO: please pass me a dictionary!", LOG.info)
+        m = m.__dict__
+    return (not utils.intify(m["privacy_informed"])
+            or utils.intify(m["privacy_can_collect"]))

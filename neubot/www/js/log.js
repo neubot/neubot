@@ -41,15 +41,15 @@ jQuery(document).ready(function() {
             for (i = 0; i < data.length; i++) {
                 var result = data[i];
                 var bgcolor = 'transparent';
-                switch (result[1]) {
+                switch (result["severity"]) {
                     case "ERROR": bgcolor = '#ff9977'; break;
                     case "WARNING": bgcolor = '#ffff55'; break;
                     case "INFO": bgcolor = '#bbffff'; break;
                 }
                 html += "<tr style='background-color: " + bgcolor + ";'>";
-                html += "<td><small>" + utils.getTimeFromSeconds(result[0], true, true) + "</small></td>";
-                html += "<td>" + result[1] + "</td>";
-                html += "<td><small>" + result[2] + "</small></td>";
+                html += "<td><small>" + utils.getTimeFromSeconds(result["timestamp"], true, true) + "</small></td>";
+                html += "<td>" + result["severity"] + "</td>";
+                html += "<td><small>" + result["message"] + "</small></td>";
                 html += "</tr>";
             }
 

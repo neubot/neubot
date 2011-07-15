@@ -43,7 +43,7 @@ class SessionTracker(object):
         self.connections = {}
         self.task = None
 
-    def _sample_queue_length(self):
+    def _sample_queue_length(self, *args, **kwargs):
         LOG.info("SessionTracker: queue length: %d\n" % len(self.queue))
         self.task = POLLER.sched(60, self._sample_queue_length)
 

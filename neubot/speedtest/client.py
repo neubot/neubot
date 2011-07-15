@@ -33,13 +33,15 @@ from neubot.log import LOG
 from neubot.net.measurer import HeadlessMeasurer
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.notify import TESTDONE
 from neubot.state import STATE
 from neubot.speedtest import compat
 
-from neubot import boot
+from neubot.main import common
 from neubot import marshal
+from neubot import privacy
 from neubot import utils
+
+TESTDONE = "testdone" #TODO: use directly the string instead
 
 ESTIMATE = {
     "download": 64000,
@@ -55,7 +57,8 @@ class ClientLatency(ClientHTTP):
 
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="HEAD", pathquery="/speedtest/latency")
+        request.compose(method="HEAD", pathquery="/speedtest/latency",
+          host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         self.ticks[stream] = utils.ticks()
@@ -74,7 +77,8 @@ class ClientDownload(ClientHTTP):
 
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="GET", pathquery="/speedtest/download")
+        request.compose(method="GET", pathquery="/speedtest/download",
+          host=self.host_header)
         request["range"] = "bytes=0-%d" % ESTIMATE['download']
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
@@ -98,7 +102,7 @@ class ClientUpload(ClientHTTP):
     def connection_ready(self, stream):
         request = Message()
         request.compose(method="POST", body=RandomBody(ESTIMATE["upload"]),
-          pathquery="/speedtest/upload")
+          pathquery="/speedtest/upload", host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         self.ticks[stream] = utils.ticks()
@@ -113,7 +117,8 @@ class ClientUpload(ClientHTTP):
 class ClientNegotiate(ClientHTTP):
     def connection_ready(self, stream):
         request = Message()
-        request.compose(method="GET", pathquery="/speedtest/negotiate")
+        request.compose(method="GET", pathquery="/speedtest/negotiate",
+          host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         stream.send_request(request)
@@ -158,17 +163,28 @@ class ClientCollect(ClientHTTP):
         s = marshal.marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)
 
-        if (not utils.intify(m1.privacy_informed) or
-            utils.intify(m1.privacy_can_collect)):
+        if privacy.collect_allowed(m1):
             table_speedtest.insertxxx(DATABASE.connection(), m1)
 
         request = Message()
         request.compose(method="POST", pathquery="/speedtest/collect",
-                        body=stringio, mimetype="application/xml")
+                        body=stringio, mimetype="application/xml",
+                        host=self.host_header)
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
 
         stream.send_request(request)
+
+#
+# History of our position in queue, useful to ensure that
+# the server-side queueing algorithm works well.
+# The general idea is to reset the queue at the beginning of
+# a new test and then append the queue position until we're
+# authorized to take the test.
+# We export this history via /api/debug, so it sneaks in when
+# users send us bug reports et similia.
+#
+QUEUE_HISTORY = []
 
 class ClientSpeedtest(ClientHTTP):
     def __init__(self, poller):
@@ -191,6 +207,7 @@ class ClientSpeedtest(ClientHTTP):
               "http://neubot.blupixel.net/")
         if not count:
             count = self.conf.get("speedtest.client.nconn", 2)
+        LOG.info("* speedtest with %s" % uri)
         ClientHTTP.connect_uri(self, uri, count)
 
     def connection_ready(self, stream):
@@ -261,6 +278,7 @@ class ClientSpeedtest(ClientHTTP):
 
         if not self.state:
             self.state = "negotiate"
+            del QUEUE_HISTORY[:]
 
         elif self.state == "negotiate":
             if self.conf.get("speedtest.client.unchoked", False):
@@ -270,6 +288,7 @@ class ClientSpeedtest(ClientHTTP):
                 queuepos = self.conf["speedtest.client.queuepos"]
                 LOG.complete("waiting in queue, pos %s\n" % queuepos)
                 STATE.update("negotiate", {"queue_pos": queuepos})
+                QUEUE_HISTORY.append(queuepos)
 
         elif self.state == "latency":
             tries = self.conf.get("speedtest.client.latency_tries", 10)
@@ -279,8 +298,7 @@ class ClientSpeedtest(ClientHTTP):
                 latency = sum(latency) / len(latency)
                 self.conf["speedtest.client.latency"] = latency
                 # Advertise the result
-                STATE.update("speedtest_latency", {"value":
-                  utils.time_formatter(latency)})
+                STATE.update("test_latency", utils.time_formatter(latency))
                 LOG.complete("done, %s\n" % utils.time_formatter(latency))
                 self.state = "download"
             else:
@@ -297,13 +315,19 @@ class ClientSpeedtest(ClientHTTP):
                 LOG.progress(".[%s,%s]." % (utils.time_formatter(elapsed),
                        utils.speed_formatter(speed)))
 
+                #
                 # O(N) loopless adaptation to the channel w/ memory
+                # TODO bittorrent/peer.py implements an enhanced version
+                # of this algorithm, with a cap to the max number of
+                # subsequent tests.  In addition to that, the bittorrent
+                # code also anticipates the update of target_bytes.
+                #
                 if elapsed > LO_THRESH:
                     ESTIMATE[self.state] *= TARGET/elapsed
                     self.conf["speedtest.client.%s" % self.state] = speed
                     # Advertise
-                    STATE.update("speedtest_%s" % self.state, {"value":
-                      utils.speed_formatter(speed)})
+                    STATE.update("test_%s" % self.state,
+                      utils.speed_formatter(speed))
                     LOG.complete("done, %s\n" % utils.speed_formatter(speed))
                     if self.state == "download":
                         self.state = "upload"
@@ -350,8 +374,13 @@ class ClientSpeedtest(ClientHTTP):
         if ostate != self.state:
             self.child = ctor(self.poller)
             self.child.configure(self.conf, self.measurer)
+            self.child.host_header = self.host_header
             if self.state not in ("negotiate", "collect"):
-                STATE.update("test", "speedtest_%s" % self.state)
+                if ostate == "negotiate" and self.state == "latency":
+                    STATE.update("test_latency", "---", publish=False)
+                    STATE.update("test_download", "---", publish=False)
+                    STATE.update("test_upload", "---", publish=False)
+                    STATE.update("test", "speedtest")
             else:
                 STATE.update(self.state)
             LOG.start("* speedtest: %s" % self.state)
@@ -369,14 +398,16 @@ CONFIG.register_defaults({
     "speedtest.client.nconn": 2,
     "speedtest.client.latency_tries": 10,
 })
-CONFIG.register_descriptions({
-    "speedtest.client.uri": "Base URI to connect to",
-    "speedtest.client.nconn": "Number of concurrent connections to use",
-    "speedtest.client.latency_tries": "Number of latency measurements",
-})
 
 def main(args):
-    boot.common("speedtest.client", "Speedtest client", args)
+
+    CONFIG.register_descriptions({
+        "speedtest.client.uri": "Base URI to connect to",
+        "speedtest.client.nconn": "Number of concurrent connections to use",
+        "speedtest.client.latency_tries": "Number of latency measurements",
+    })
+
+    common.main("speedtest.client", "Speedtest client", args)
     conf = CONFIG.copy()
     client = ClientSpeedtest(POLLER)
     client.configure(conf)

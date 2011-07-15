@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=@PREFIX@/bin/neubot on_gui_login
+Hidden=False
+NoDisplay=False
+X-GNOME-Autostart-enabled=true
+Name=Neubot check for updates

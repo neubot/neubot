@@ -1,4 +1,4 @@
-# neubot/main.py
+# neubot/main/__init__.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -55,55 +55,6 @@ Try `neubot COMMAND --help` for more help on COMMAND.
 '''
 
 VERSION = "0.3.7\n"
-
-#
-# When the migration takes too much time, the agent is stuck
-# in DATABASE.connect() and the web user interface is not ready
-# because we migrate the database and _then_ we bind the local
-# address and port.  This is a wise thing to do because it's
-# dangerous to split the migration in small pieces.
-# The problem is that the user is likely to be scared if the
-# connection fails.  We don't want that, so we ensure that
-# the web user interface is ready before we start the web
-# browser.
-#
-def webbrowser_open_patient(address, port):
-    import httplib
-    import webbrowser
-    import time
-
-    sys.stderr.write("Waiting for the web gui to become ready...")
-
-    count = 0
-    running = False
-    while True:
-        try:
-
-            connection = httplib.HTTPConnection(address, port)
-            connection.request("GET", "/api/version")
-            response = connection.getresponse()
-            if response.status == 200:
-                running = True
-            connection.close()
-
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except:
-            pass
-
-        if running:
-            sys.stderr.write("ok\n")
-            break
-        if count >= 5:
-            sys.stderr.write("timeout\n")
-            break
-
-        sys.stderr.write(".")
-        time.sleep(1)
-        count = count + 1
-
-    sys.stderr.write("Opening Neubot web gui\n")
-    webbrowser.open("http://%s:%s/" % (address, port))
 
 def main(argv):
 
@@ -170,7 +121,8 @@ def main(argv):
     # Slow / quick startup
 
     if slowpath:
-        run_module(argv)
+        from neubot.main import module
+        module.run(argv)
 
     else:
         running = False
@@ -185,6 +137,7 @@ def main(argv):
                 response = connection.getresponse()
                 if response.status == 200:
                     running = True
+                response.read()
                 connection.close()
 
             except (SystemExit, KeyboardInterrupt):
@@ -235,26 +188,18 @@ def main(argv):
                 os.environ["DISPLAY"] = "fake-neubot-display:0.0"
 
             if webgui and "DISPLAY" in os.environ:
-                webbrowser_open_patient(address, port)
+                from neubot.main import browser
+                browser.open_patient(address, port)
 
         elif os.name == "nt":
 
             if webgui:
-                import webbrowser
-
-                func = lambda: \
-		  webbrowser_open_patient(address, port)
+                from neubot.main import browser
 
                 if not running and start:
-                    import threading
-
-                    t = threading.Thread(target=func)
-                    sys.stderr.write("Opening Neubot web gui\n")
-                    t.daemon = True
-                    t.start()
+                    browser.open_patient(address, port, True)
                 else:
-                    sys.stderr.write("Opening Neubot web gui\n")
-                    func()
+                    browser.open_patient(address, port)
 
             if not running and start:
                 from neubot import agent
@@ -264,61 +209,6 @@ def main(argv):
             sys.stderr.write("Your operating system is not supported\n")
             sys.exit(1)
 
-    sys.exit(0)
-
-MODULES = {
-    "agent"      : "agent",
-    "api.client" : "api.client",
-    "database"   : "database.main",
-    "bittorrent" : "bittorrent.main",
-    "http.client" : "http.client",
-    "http.server" : "http.server",
-    "rendezvous.client": "rendezvous.client",
-    "rendezvous.server": "rendezvous.server",
-    "speedtest"  : "speedtest.client",
-    "speedtest.client": "speedtest.client",
-    "speedtest.negotiate": "speedtest.negotiate",
-    "speedtest.server": "speedtest.server",
-    "statusicon" : "statusicon",
-    "stream"     : "net.stream",
-}
-
-def run_module(argv):
-
-    # /usr/bin/neubot module ...
-    del argv[0]
-    module = argv[0]
-
-    if module == "help":
-
-        import textwrap
-
-        sys.stdout.write("Neubot help -- prints available commands\n")
-
-        commands = " ".join(sorted(MODULES.keys()))
-        lines =  textwrap.wrap(commands, 60)
-        sys.stdout.write("Commands: " + lines[0] + "\n")
-        for s in lines[1:]:
-            sys.stdout.write("          " + s + "\n")
-
-        sys.stdout.write("Try `neubot COMMAND --help` for more help on COMMAND.\n")
-        sys.exit(0)
-
-    if not module in MODULES:
-        sys.stderr.write("Invalid module: %s\n" % module)
-        sys.stderr.write("Try `neubot help` to see the available modules\n")
-        sys.exit(1)
-
-    module = MODULES[module]
-    exec("from neubot.%s import main as MAIN" % module)
-
-    argv[0] = "neubot " + argv[0]
-
-#   Not yet
-#   status = MAIN(argv)
-#   sys.exit(status)
-
-    MAIN(argv)
     sys.exit(0)
 
 if __name__ == "__main__":

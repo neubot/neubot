@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 from neubot.config import CONFIG
 from neubot.log import LOG
-from neubot import boot
+from neubot.main import common
 
 CONFIG.register_defaults({
     "net.CA.bits": 2048,
@@ -36,15 +36,17 @@ CONFIG.register_defaults({
     "net.CA.days": 1095,
     "net.CA.privkey": "privkey.pem",
 })
-CONFIG.register_descriptions({
-    "net.CA.bits": "Set private key bits number",
-    "net.CA.cacert": "Set certificate file path",
-    "net.CA.days": "Set days before expire",
-    "net.CA.privkey": "Set private key file path",
-})
 
 def main(args):
-    boot.common("net.CA", "generate test certificates", args)
+
+    CONFIG.register_descriptions({
+        "net.CA.bits": "Set private key bits number",
+        "net.CA.cacert": "Set certificate file path",
+        "net.CA.days": "Set days before expire",
+        "net.CA.privkey": "Set private key file path",
+    })
+
+    common.main("net.CA", "generate test certificates", args)
     conf = CONFIG.copy()
 
     genrsa = [ "openssl", "genrsa", "-out", conf["net.CA.privkey"],

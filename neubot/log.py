@@ -1,7 +1,7 @@
 # neubot/log.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,52 +20,115 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import collections
 import sys
 import traceback
 
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
-
 from neubot import system
-from neubot import compat
 from neubot import utils
 
 class InteractiveLogger(object):
 
-        """Log messages on the standard error.  This is the simplest
-           logger one can think and is the one we use at startup."""
+    """Log messages on the standard error.  This is the simplest
+       logger one can think and is the one we use at startup."""
 
-        def error(self, message):
-            sys.stderr.write(message + "\n")
+    def error(self, message):
+        sys.stderr.write(message + "\n")
 
-        def warning(self, message):
-            sys.stderr.write(message + "\n")
+    def warning(self, message):
+        sys.stderr.write(message + "\n")
 
-        def info(self, message):
-            sys.stderr.write(message + "\n")
+    def info(self, message):
+        sys.stderr.write(message + "\n")
 
-        def debug(self, message):
-            sys.stderr.write(message + "\n")
+    def debug(self, message):
+        sys.stderr.write(message + "\n")
+
+#
+# We commit every NOCOMMIT log messages or when we see
+# a WARNING or ERROR message (whichever of the two comes
+# first).
+#
+NOCOMMIT = 32
+
+#
+# Interval in seconds between each invocation of the
+# function that takes care of the logs saved into the
+# database.
+#
+INTERVAL = 120
+
+#
+# This is the number of days of logs we keep into
+# the database.  Older logs are pruned.
+# TODO Allow to configure this.
+#
+DAYS_AGO = 7
 
 class Logger(object):
 
     """Logging object.  Usually there should be just one instance
        of this class, accessible with the default logging object
-       LOG.  We keep recent logs in a queue in order to implement
+       LOG.  We keep recent logs in the database in order to implement
        the /api/log API."""
 
-    def __init__(self, maxqueue):
+    def __init__(self):
         self.logger = InteractiveLogger()
-
-        self.queue = collections.deque()
-        self.maxqueue = maxqueue
-
         self.interactive = True
         self.noisy = False
-
         self.message = None
         self.ticks = 0
+
+        self._nocommit = NOCOMMIT
+        self._use_database = False
+
+        #
+        # We cannot import the DATABASE here because of a
+        # circular import.  Instead the DATABASE registers
+        # with us when it is ready.
+        # The same holds for NOTIFIER in <notify.py> and
+        # for POLLER in <net/poller.py>.
+        #
+        self.database = None
+        self.table_log = None
+        self.notifier = None
+
+    def attach_database(self, database, table_log):
+        self.database = database
+        self.table_log = table_log
+
+    def attach_poller(self, poller):
+        poller.sched(INTERVAL, self._maintain_database, poller)
+
+    def attach_notifier(self, notifier):
+        self.notifier = notifier
+
+    #
+    # Better not to touch the database when a test is in
+    # progress, i.e. "testdone" is subscribed.
+    # Maintenance consists mainly of removing old logs and
+    # is mandatory because we don't want the database to grow
+    # without control.
+    #
+    def _maintain_database(self, *args, **kwargs):
+
+        poller = args[0]
+        poller.sched(INTERVAL, self._maintain_database, poller)
+
+        self.info("log: pruning my database table")
+
+        if (self._use_database and self.database and self.table_log and
+          self.notifier and not self.notifier.is_subscribed("testdone")):
+            connection = self.database.connection()
+            self.table_log.prune(connection, DAYS_AGO, commit=False)
+            connection.execute("VACUUM;")
+            connection.commit()
+
+    #
+    # We don't want to log into the database when we run
+    # the server side or when we run from command line.
+    #
+    def use_database(self):
+        self._use_database = True
 
     def verbose(self):
         self.noisy = True
@@ -96,7 +159,6 @@ class Logger(object):
     #    [here we might have many debug messages]
     #   Download complete.
     #
-
     def start(self, message):
         self.ticks = utils.ticks()
         if self.noisy or not self.interactive:
@@ -122,16 +184,19 @@ class Logger(object):
 
     # Log functions
 
-    def exception(self, func=None):
+    def exception(self, message="", func=None):
         if not func:
             func = self.error
+        if message:
+            func("EXCEPT: " + message + " (traceback follows)")
         for line in traceback.format_exc().split("\n"):
             func(line)
 
-    def oops(self, message, func=None):
+    def oops(self, message="", func=None):
         if not func:
             func = self.error
-        func("OOPS: " + message + " (traceback follows)")
+        if message:
+            func("OOPS: " + message + " (traceback follows)")
         for line in traceback.format_stack()[:-1]:
             func(line)
 
@@ -161,52 +226,45 @@ class Logger(object):
 
     def _log(self, printlog, severity, message):
         message = message.rstrip()
-        if severity != "ACCESS":
-            compat.deque_append(self.queue, self.maxqueue,
-                            (utils.timestamp(),severity,message))
+
+        if self._use_database and self.database and severity != "ACCESS":
+            record = {
+                      "timestamp": utils.timestamp(),
+                      "severity": severity,
+                      "message": message,
+                     }
+
+            #
+            # We don't need to commit INFO and DEBUG
+            # records: it's OK to see those with some
+            # delay.  While we want to see immediately
+            # WARNING and ERROR records.
+            # TODO We need to commit the database on
+            # sys.exit() and signals etc.  (This is
+            # more a database problem that a problem
+            # of this file.)
+            #
+            if severity in ("INFO", "DEBUG"):
+                commit = False
+
+                # Do we need to commit now?
+                self._nocommit = self._nocommit -1
+                if self._nocommit <= 0:
+                    self._nocommit = NOCOMMIT
+                    commit = True
+
+            else:
+                # Must commit now
+                self._nocommit = NOCOMMIT
+                commit = True
+
+            self.table_log.insert(self.database.connection(), record, commit)
+
         printlog(message)
 
     # Marshal
 
     def listify(self):
-        return map(None, self.queue)
+        return self.table_log.listify(self.database.connection())
 
-
-MAXQUEUE = 4096
-LOG = Logger(MAXQUEUE)
-
-if __name__ == "__main__":
-    LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
-    LOG.complete("success!")
-
-    LOG.verbose()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
-    print compat.json.dumps(LOG.listify())
-
-    try:
-        raise Exception("Testing LOG.exception")
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        LOG.exception()
-        LOG.exception(LOG.warning)
-
-    LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
-    LOG.complete("success!")
-
-    LOG.oops("Testing the new oops feature")
-
-    LOG.redirect()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
+LOG = Logger()

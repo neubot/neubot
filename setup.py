@@ -34,6 +34,7 @@ import distutils.core
 import os.path
 import shutil
 import sys
+import glob
 
 try:
    import py2exe
@@ -46,25 +47,36 @@ CONSOLE = [{
 }]
 
 PACKAGES = [
-    "neubot/api",
-    "neubot/bittorrent",
-    "neubot/database",
-    "neubot/debug",
-    "neubot/http",
-    "neubot/net",
-    "neubot/rendezvous",
-    "neubot/simplejson",
-    "neubot/speedtest",
-    "neubot/system",
     "neubot",
 ]
 
-PACKAGE_DATA = [
-    "neubot/www/css",
-    "neubot/www/img",
-    "neubot/www/js",
-    "neubot/www",
-]
+#
+# Packages are directories below neubot/ but be
+# careful because at least neubot/www is not a
+# package and contains data.  So make sure that
+# there is '__init__.py' before adding a dir.
+#
+for entry in glob.glob("neubot/*"):
+    if os.path.isdir(entry):
+        __init = os.sep.join([entry, "__init__.py"])
+        if os.path.isfile(__init):
+            PACKAGES.append(entry)
+
+PACKAGE_DATA = []
+
+#
+# Fill PACKAGE_DATA with file names (not globs) and
+# make sure we remove the leading 'neubot/' or we are
+# not going to install any package data.
+#
+def fill_package_data(entry):
+    if os.path.isdir(entry):
+        for s in glob.glob(os.sep.join([entry, "*"])):
+            fill_package_data(s)
+    else:
+        PACKAGE_DATA.append(entry.replace("neubot/", ""))
+
+fill_package_data("neubot/www")
 
 SCRIPTS = [
     "bin/start-neubot-daemon",

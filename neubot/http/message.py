@@ -31,13 +31,9 @@ from neubot.http.utils import prettyprintbody
 from neubot.log import LOG
 from neubot import utils
 
-
+# Represents an HTTP message
 class Message(object):
-
-    """Represents an HTTP message."""
-
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
-
         self.method = method
         self.uri = uri
         self.scheme = ""
@@ -47,6 +43,9 @@ class Message(object):
         self.code = code
         self.reason = reason
         self.protocol = protocol
+
+        # For server-side accounting
+        self.requestline = " ".join((method, uri, protocol))
 
         self.headers = collections.defaultdict(str)
         self.body = StringIO.StringIO("")
@@ -64,7 +63,6 @@ class Message(object):
     # precedence to self.pathquery--or we will send requests
     # that some web servers do not accept.
     #
-
     def serialize_headers(self):
         v = []
 
@@ -91,6 +89,7 @@ class Message(object):
         v.append("\r\n")
 
         for key, value in self.headers.items():
+            key = "-".join(map(lambda s: s.capitalize(), key.split("-")))
             v.append(key)
             v.append(": ")
             v.append(value)
@@ -113,11 +112,11 @@ class Message(object):
     # RFC2616 section 4.2 says that "Each header field consists
     # of a name followed by a colon (":") and the field value. Field
     # names are case-insensitive."  So, for simplicity, we use all-
-    # lowercase header names.
+    # lowercase header names but we capitalize header names, as most
+    # applications do, before sending them on the wire.
     #
-
     def __getitem__(self, key):
-        return self.headers[key]
+        return self.headers[key.lower()]
 
     def __setitem__(self, key, value):
         key = key.lower()
@@ -138,7 +137,6 @@ class Message(object):
     # not guess that there is an unbounded response when we send a
     # "200 Ok" response with no attached body.
     #
-
     def compose(self, **kwargs):
         self.method = kwargs.get("method", "")
 
@@ -152,6 +150,17 @@ class Message(object):
             self.address = kwargs.get("address", "")
             self.port = kwargs.get("port", "")
             self.pathquery = kwargs.get("pathquery", "")
+            if self.method:
+                #
+                # "A client MUST include a Host header field in all HTTP/1.1
+                # request messages.  If the requested URI does not include
+                # an Internet host name for the service being requested, then
+                # the Host header field MUST be given with an empty value."
+                #               -- RFC 2616
+                #
+                self["host"] = kwargs.get("host", "")
+                if not self["host"]:
+                    LOG.oops("Missing host header")
 
         self.code = kwargs.get("code", "")
         self.reason = kwargs.get("reason", "")
@@ -170,9 +179,12 @@ class Message(object):
 
         if kwargs.get("body", None):
             self.body = kwargs.get("body", None)
-            utils.safe_seek(self.body, 0, os.SEEK_END)
-            self.length = self.body.tell()
-            utils.safe_seek(self.body, 0, os.SEEK_SET)
+            if isinstance(self.body, basestring):
+                self.length = len(self.body)
+            else:
+                utils.safe_seek(self.body, 0, os.SEEK_END)
+                self.length = self.body.tell()
+                utils.safe_seek(self.body, 0, os.SEEK_SET)
             self["content-length"] = str(self.length)
             if kwargs.get("mimetype", ""):
                 self["content-type"] = kwargs.get("mimetype", "")

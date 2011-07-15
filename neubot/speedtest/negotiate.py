@@ -30,15 +30,17 @@ from neubot.http.server import ServerHTTP
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.notify import RENEGOTIATE
 from neubot.speedtest import compat
 from neubot.speedtest.server import ServerTest
 from neubot.speedtest.session import TRACKER
 
-from neubot import boot
+from neubot.main import common
 from neubot import marshal
+from neubot import privacy
 from neubot import system
 from neubot import utils
+
+RENEGOTIATE = "renegotiate"
 
 #
 # The current implementation wraps the TestServer and this
@@ -95,7 +97,7 @@ class ServerSpeedtest(ServerHTTP):
         stream, request = atuple
         self.do_negotiate(stream, request, True)
 
-    def _speedtest_check_timeout(self):
+    def _speedtest_check_timeout(self, *args, **kwargs):
         POLLER.sched(3, self._speedtest_check_timeout)
         if TRACKER.session_prune():
             NOTIFIER.publish(RENEGOTIATE)
@@ -123,7 +125,7 @@ class ServerSpeedtest(ServerHTTP):
         if not session.active:
             if not nodelay:
                 NOTIFIER.subscribe(RENEGOTIATE, self._do_renegotiate,
-                          (stream, request))
+                          (stream, request), True)
                 return
 
         m1 = compat.SpeedtestNegotiate_Response()
@@ -145,8 +147,7 @@ class ServerSpeedtest(ServerHTTP):
         s = request.body.read()
         m = marshal.unmarshal_object(s, "text/xml", compat.SpeedtestCollect)
 
-        if (not utils.intify(m.privacy_informed) or
-            utils.intify(m.privacy_can_collect)):
+        if privacy.collect_allowed(m):
             table_speedtest.insertxxx(DATABASE.connection(), m)
 
         response = Message()
@@ -163,15 +164,17 @@ CONFIG.register_defaults({
     "speedtest.negotiate.daemonize": True,
     "speedtest.negotiate.port": "80",
 })
-CONFIG.register_descriptions({
-    "speedtest.negotiate.address": "Address to listen to",
-    "speedtest.negotiate.auth_only": "Enable doing tests for authorized clients only",
-    "speedtest.negotiate.daemonize": "Enable going in background",
-    "speedtest.negotiate.port": "Port to listen to",
-})
 
 def main(args):
-    boot.common("speedtest.negotiate", "Speedtest negotiation server", args)
+
+    CONFIG.register_descriptions({
+        "speedtest.negotiate.address": "Address to listen to",
+        "speedtest.negotiate.auth_only": "Enable doing tests for authorized clients only",
+        "speedtest.negotiate.daemonize": "Enable going in background",
+        "speedtest.negotiate.port": "Port to listen to",
+    })
+
+    common.main("speedtest.negotiate", "Speedtest negotiation server", args)
 
     conf = CONFIG.copy()
 
@@ -185,5 +188,5 @@ def main(args):
         system.go_background()
         LOG.redirect()
 
-    system.drop_privileges()
+    system.drop_privileges(LOG.error)
     POLLER.loop()

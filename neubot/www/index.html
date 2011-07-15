@@ -4,8 +4,8 @@
 
         <div class="entry-content">
 
-          <p>
-            Thank you for using neubot! You are gaining some understanding
+          <p class='i18n i18n_welcome_text'>
+            Thank you for using Neubot! You are gaining some understanding
             about your Internet Connection and helping the Internet Community
             to understand what is going on in the network.  This tab provides
             a general overview of the status of the neubot daemon.  Above there
@@ -15,9 +15,9 @@
           </p>
 
           <!-- It seems wrong to me to use H4 here -->
-          <h4>Current Neubot status</h4>
+          <h4 class='i18n i18n_current_status'>Current Neubot status</h4>
 
-          <p>
+          <p class='i18n i18n_status_text'>
             This is the web interface to control the <em>neubot daemon</em>,
             that is running in background with pid <em>
             <span id="pid">(information not available)</span></em> since
@@ -32,15 +32,15 @@
             <thead>
               <tr>
                 <th></th>
-                <th id="stateCol">State</th>
-                <th>Description</th>
+                <th id="stateCol" class='i18n i18n_state'>State</th>
+                <th class='i18n i18n_description'>Description</th>
               </tr>
             </thead>
             <tbody>
               <tr id="idle">
                 <td></td>
                 <td>idle</td>
-                <td>
+                <td class='i18n i18n_idle_status_text'>
                   The daemon is sleeping.  The next rendezvous will
                   start in <em><span id="next_rendezvous">(information
                   not available)</span></em>.
@@ -49,7 +49,7 @@
               <tr id="rendezvous">
                 <td></td>
                 <td>rendezvous</td>
-                <td>
+                <td class='i18n i18n_rendezvous_status_text'>
                   The daemon is connecting to the <em>master server</em>
                   and retrieves test instructions and update information.
                 </td>
@@ -57,7 +57,7 @@
               <tr id="negotiate">
                 <td></td>
                 <td>negotiate</td>
-                <td>
+                <td class='i18n i18n_negotiate_status_text'>
                   The daemon is waiting for its turn to perform a
                   transmission test.  The last known position in queue
                   is <em><span id="queuePos">(no negotiations
@@ -67,7 +67,7 @@
               <tr id="test">
                 <td></td>
                 <td>test</td>
-                <td>
+                <td class='i18n i18n_test_status_text'>
                   The daemon is performing a transmission test.  The
                   name of the test is <em><span id="testName">
                   (no tests yet)</span></em>.
@@ -76,7 +76,7 @@
               <tr id="collect">
                 <td></td>
                 <td>collect</td>
-                <td>
+                <td class='i18n i18n_collect_status_text'>
                   The daemon is uploading the results of the latest
                   transmission test to the neubot project servers.
                 </td>
@@ -87,9 +87,9 @@
           <br />
 
           <!-- It seems wrong to me to use H4 here -->
-          <h4>How do I run a test <em>now</em>?</h4>
+          <h4 class='i18n i18n_testnow'>How do I run a test <em>now</em>?</h4>
 
-          <p>The support for starting a test <em>now</em> is not
+          <p class='i18n i18n_testnow_text'>The support for starting a test <em>now</em> is not
            yet implemented by this web user interface, but that is
            in the TODO list.  At the moment, the only way to run a
            test <em>now</em> is to type the command <b><em>neubot

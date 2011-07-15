@@ -23,7 +23,10 @@
 import sqlite3
 
 from neubot.database import table_config
+from neubot.database import table_geoloc
+from neubot.database import table_log
 from neubot.database import table_speedtest
+from neubot.database import table_bittorrent
 from neubot.database import migrate
 from neubot.log import LOG
 
@@ -43,12 +46,29 @@ class DatabaseManager(object):
     def connection(self):
         if not self.dbc:
             if self.path != ":memory:":
-                self.path = system.check_database_path(self.path)
+                self.path = system.check_database_path(self.path, LOG.error)
             LOG.debug("* Database: %s" % self.path)
             self.dbc = sqlite3.connect(self.path)
+            #
+            # To avoid the need to map at hand columns in
+            # a row with the sql schema, which is as error
+            # prone as driving drunk.
+            #
+            self.dbc.row_factory = sqlite3.Row
             table_config.create(self.dbc)
             table_speedtest.create(self.dbc)
+            table_geoloc.create(self.dbc)
+            table_bittorrent.create(self.dbc)
+            table_log.create(self.dbc)
             migrate.migrate(self.dbc)
+
         return self.dbc
 
 DATABASE = DatabaseManager()
+
+#
+# Attach to the logger: we cannot do that from
+# the logger because that will create a circular
+# import.
+#
+LOG.attach_database(DATABASE, table_log)

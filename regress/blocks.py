@@ -25,14 +25,14 @@ import sys
 sys.path.insert(0, ".")
 
 from neubot.blocks import RANDOMBLOCKS
-from neubot.blocks import RandomFile
+from neubot.blocks import RandomBody
 from neubot import utils
 
 def main():
     assert(len(RANDOMBLOCKS.get_block()) == RANDOMBLOCKS.blocksiz)
     assert(RANDOMBLOCKS.get_block() != RANDOMBLOCKS.get_block())
 
-    fp, total = RandomFile(RANDOMBLOCKS.blocksiz + 789), 0
+    fp, total = RandomBody(RANDOMBLOCKS.blocksiz + 789), 0
     while True:
         block = fp.read(128)
         if not block:
@@ -40,7 +40,7 @@ def main():
         total += len(block)
     assert(total == RANDOMBLOCKS.blocksiz + 789)
 
-    fp = RandomFile(RANDOMBLOCKS.blocksiz + 789)
+    fp = RandomBody(RANDOMBLOCKS.blocksiz + 789)
     assert(len(fp.read()) == RANDOMBLOCKS.blocksiz)
     assert(fp.tell() == 789)
     assert(len(fp.read()) == 789)

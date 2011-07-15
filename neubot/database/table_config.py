@@ -59,7 +59,7 @@ def create(connection, commit=True):
     connection.execute("""CREATE TABLE IF NOT EXISTS config(
       name TEXT PRIMARY KEY, value TEXT);""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
-      'version', '2.0');""")
+      'version', '4.0');""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
       'uuid', ?);""", (get_uuid(),))
     if commit:
@@ -76,7 +76,13 @@ def update(connection, iterator, commit=True, clear=False):
 def walk(connection, func):
     cursor = connection.cursor()
     cursor.execute("SELECT name, value FROM CONFIG;")
-    return map(func, cursor)
+    #
+    # XXX Python 2.5 sqlite3.Row does not support iterability
+    # therefore here we need to perform a special dance because
+    # neubot/config.py wants a tuple.
+    #
+    return map(lambda row: func(tuple([row["name"],
+      row["value"]])), cursor)
 
 def dictionarize(connection):
     d = {}
@@ -99,7 +105,7 @@ if __name__ == "__main__":
         raise RuntimeError
 
     update(connection, {"uuid": ""}.iteritems())
-    if dictionarize(connection) != {"version": "2.0", "uuid": ""}:
+    if dictionarize(connection) != {"version": "4.0", "uuid": ""}:
         raise RuntimeError
 
     update(connection, {}.iteritems(), clear=True)

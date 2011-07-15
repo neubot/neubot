@@ -35,44 +35,57 @@ from neubot.log import LOG
 
 INTERVAL = 10
 
-RENEGOTIATE = "renegotiate"
-STATECHANGE = "statechange"
-TESTDONE = "testdone"
-
-class Notifier:
+class Notifier(object):
     def __init__(self):
-        POLLER.sched(INTERVAL, self.periodic)
-        self.timestamps = collections.defaultdict(int)
-        self.subscribers = collections.defaultdict(list)
+        self._timestamps = collections.defaultdict(int)
+        self._subscribers = collections.defaultdict(list)
+        self._tofire = []
 
-    def subscribe(self, event, func, context):
-        queue = self.subscribers[event]
+        POLLER.sched(INTERVAL, self._periodic)
+
+    def subscribe(self, event, func, context=None, periodic=False):
+        queue = self._subscribers[event]
         queue.append((func, context))
+        if periodic:
+            self._tofire.append(event)
 
     def publish(self, event, t=None):
         if not t:
             t = T()
-        self.timestamps[event] = t
+        self._timestamps[event] = t
 
-        queue = self.subscribers[event]
-        del self.subscribers[event]
+        LOG.debug("* publish: %s" % event)
 
-        self.fireq(event, queue)
+        #
+        # WARNING! Please resist the temptation of merging
+        # the [] and the del into a single pop() because that
+        # will not work: this is a defaultdict and so here
+        # event might not be in _subscribers.
+        #
+        queue = self._subscribers[event]
+        del self._subscribers[event]
 
-    def periodic(self):
-        POLLER.sched(INTERVAL, self.periodic)
+        self._fireq(event, queue)
 
-        subscribers = self.subscribers
-        self.subscribers = collections.defaultdict(list)
+    def _periodic(self, *args, **kwargs):
+        POLLER.sched(INTERVAL, self._periodic)
+        self._tofire, q = [], self._tofire
+        for event in q:
 
-        for event, queue in subscribers.items():
-            # XXX XXX XXX
-            if event == TESTDONE:
-                self.subscribers[event] = queue
-                continue
-            self.fireq(event, queue)
+            #
+            # WARNING! Please resist the temptation of merging
+            # the [] and the del into a single pop() because that
+            # will not work: this is a defaultdict and so here
+            # event might not be in _subscribers.
+            #
+            queue = self._subscribers[event]
+            del self._subscribers[event]
 
-    def fireq(self, event, queue):
+            LOG.debug("* periodic: %s" % event)
+
+            self._fireq(event, queue)
+
+    def _fireq(self, event, queue):
         for func, context in queue:
             try:
                 func(event, context)
@@ -81,17 +94,27 @@ class Notifier:
             except:
                 LOG.exception()
 
+    def is_subscribed(self, event):
+        return event in self._subscribers
+
     def get_event_timestamp(self, event):
-        return str(self.timestamps[event])
+        return str(self._timestamps[event])
 
     def needs_publish(self, event, timestamp):
         timestamp = int(timestamp)
         if timestamp < 0:
             raise ValueError("Invalid timestamp")
-        return timestamp == 0 or timestamp < self.timestamps[event]
+        return timestamp == 0 or timestamp < self._timestamps[event]
 
     def snap(self, d):
-        d['notifier'] = {'timestamps': dict(self.timestamps),
-          'subscribers': dict(self.subscribers)}
+        d['notifier'] = {'_timestamps': dict(self._timestamps),
+          '_subscribers': dict(self._subscribers)}
 
 NOTIFIER = Notifier()
+
+#
+# Attach to the logger: we cannot do that from
+# the logger because that will create a circular
+# import.
+#
+LOG.attach_notifier(NOTIFIER)

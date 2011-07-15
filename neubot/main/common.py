@@ -1,4 +1,4 @@
-# neubot/boot.py
+# neubot/main/common.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -20,6 +20,14 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# This implements a common main() that reads properties
+# from command line, from the environment and from the
+# database file.  Most if not all Neubot commands should
+# use this common main in order to provide an uniform
+# and predictable command line interface.
+#
+
 import getopt
 import sys
 
@@ -30,7 +38,7 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.log import LOG
 
-VERSION = "0.3.7\n"
+VERSION = "0.3.7"
 
 def write_help(fp, name, descr):
     fp.write('''\
@@ -49,7 +57,7 @@ Options:
 
 ''' % locals())
 
-def common(name, descr, args):
+def main(name, descr, args):
     Eflag = False
     lflag = False
 
@@ -77,7 +85,7 @@ def common(name, descr, args):
         elif key == "-l":
             lflag = True
         elif key == "-V":
-            sys.stdout.write(VERSION)
+            sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif key == "-v":
             LOG.verbose()
@@ -94,5 +102,5 @@ def common(name, descr, args):
         sys.exit(0)
 
 if __name__ == "__main__":
-    common("cmdline", "Generic bootstrap code for Neubot commands", sys.argv)
+    main("common.main", "Common main() for all Neubot commands", sys.argv)
     CONFIG.store_fp(sys.stdout)

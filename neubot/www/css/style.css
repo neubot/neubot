@@ -15,6 +15,9 @@ table {
 tbody {
     border-top: 1px solid rgb(204, 204, 204);
 }
+.i18n {
+    visibility: hidden;
+}
 .item-list ul {
     margin: 0pt 0pt 0.75em;
     padding: 0pt;

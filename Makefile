@@ -39,11 +39,10 @@ PHONIES += archive
 PHONIES += _install_skel
 PHONIES += _install_sources
 PHONIES += _install_man
-PHONIES += _install_bin
 PHONIES += _install_icon
 PHONIES += _install_menu
+PHONIES += _install_autostart
 PHONIES += _install_edit
-PHONIES += _install_compile
 PHONIES += _install
 PHONIES += install
 PHONIES += app
@@ -140,10 +139,9 @@ _install_skel:
 	@$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
 
 _install_sources:
-	@for SRC in `find neubot -type f|grep -v \.DS_Store`; do \
-	 $(INSTALL) -d $(DESTDIR)$(DATADIR)/`dirname $$SRC` || exit $$?; \
-	 $(INSTALL) -m644 $$SRC $(DESTDIR)$(DATADIR)/$$SRC || exit $$?; \
-	done
+	@python setup.py install --install-purelib $(DESTDIR)$(DATADIR) \
+	                         --install-scripts $(DESTDIR)$(BINDIR)
+	@rm -rf $(DESTDIR)$(DATADIR)/neubot-*.egg-info
 
 #
 # We keep in the sources the manual page so that one that
@@ -154,11 +152,6 @@ _install_man:
 	@$(INSTALL) -d $(DESTDIR)$(MANDIR)/man1
 	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
 
-_install_bin:
-	@$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	@$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)
-	@$(INSTALL) bin/start-neubot-daemon $(DESTDIR)$(BINDIR)
-
 _install_icon:
 	@$(INSTALL) -d $(DESTDIR)$(ICONDIR)
 	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
@@ -168,6 +161,11 @@ _install_menu:
 	@for F in `cd applications/ && ls`; do \
 	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F ||exit $$?;\
 	done
+
+_install_autostart:
+	@$(INSTALL) -d $(DESTDIR)/etc/xdg/autostart/
+	@$(INSTALL) unix_root/etc/xdg/autostart/neubot-on-gui-login.desktop \
+	 $(DESTDIR)/etc/xdg/autostart
 
 #
 # After the install we need to edit the following files to
@@ -181,25 +179,21 @@ NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
+NEEDEDIT += $(DESTDIR)/etc/xdg/autostart/neubot-on-gui-login.desktop
+NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/gui/infobox_gtk.py
 
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
 	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT || exit $$?; \
 	done
 
-_install_compile:
-	@python -m compileall -q $(DESTDIR)$(DATADIR)/neubot
-	@find $(DESTDIR)$(DATADIR)/neubot -type f -name \*.pyc \
-                                          -exec chmod 644 {} \;
-
 INSTALL_RULES += _install_skel
 INSTALL_RULES += _install_sources
 INSTALL_RULES += _install_man
-INSTALL_RULES += _install_bin
 INSTALL_RULES += _install_icon
 INSTALL_RULES += _install_menu
+INSTALL_RULES += _install_autostart
 INSTALL_RULES += _install_edit
-INSTALL_RULES += _install_compile
 
 _install:
 	@for RULE in $(INSTALL_RULES); do \
@@ -267,6 +261,7 @@ DEB_UPDATE_URI = "testing"
 
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
+	@$(INSTALL) debian/neubot dist/data/usr/bin
 	@cd dist/data && mv usr/man usr/share/man
 	@for DIR in $(DEB_DATA_DIRS); do \
 	 $(INSTALL) -d $$DIR; \
