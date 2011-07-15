@@ -54,7 +54,7 @@ Try `neubot help` to get a list of available subcommands.
 Try `neubot COMMAND --help` for more help on COMMAND.
 '''
 
-VERSION = "0.3.7\n"
+VERSION = "0.3.7"
 
 def main(argv):
 
@@ -97,7 +97,7 @@ def main(argv):
             sys.stdout.write(USAGE)
             sys.exit(0)
         elif command == "-V":
-            sys.stdout.write(VERSION)
+            sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif command == "start":
             start = True
