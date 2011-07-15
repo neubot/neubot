@@ -1,3 +1,444 @@
+Neubot 0.4-rc1 [2011-07-16]
+	* manpage: simplify how-to-dump example
+	* database/main.py: allow to query database path
+	* Release neubot/0.3.7
+	* speedtest/client.py: remeber position-in-queue history
+	* Let /api/debug return position-in-queue history too
+	* Merge branch 'measure-queue' into next
+	* speedtest/client.py: print uri we're connecting to
+	* rendezvous: add geoip_wrapper.py
+	* database: add table_geoloc.py
+	* database: Bump minor version because of geoloc table
+	* rendezvous/server.py: implement geo-aware rendezvous
+	* geo-rendezvous: Update configuration properties
+	* Merge branch 'geo-rendezvous' into next
+	* rendezvous/server.py: transparent geo-aware rendezvous
+	* api/client.py: hide some properties
+	* api/server.py: remove duplicate properties
+	* http/client.py: hide some properties
+	* http/server.py: hide some properties
+	* net/CA.py: hide some properties
+	* net/stream.py: hide most properties
+	* rendezvous/client.py: hide some properties
+	* rendezvous/server.py: hide some properties
+	* speedtest/client.py: hide some properties
+	* speedtest/negotiate.py: hide some properties
+	* speedtest/server.py: hide some properties
+	* move agent.py properties to config.py
+	* Merge branch 'remove-noise-from-config' into next
+	* Makefile: deb: s/install/$(INSTALL)/g
+	* Makefile: debian: fix postinst prerm permissions
+	* Makefile: -m755 is already the default for install
+	* Merge branch 'improve-Makefile-quality' into next
+	* net/stream.py: duplicate http/stream.py outgoing functionality
+	* http/stream.py: properly set/reset self.writing
+	* http/stream.py: note we can use net/stream.py instead of outgoing
+	* bittorrent/stream.py: allow PIECE block to be a file-like
+	* bittorrent/stream.py: simplify code in the recv path
+	* bittorrent/stream.py: stub for handling jumbo messages
+	* Merge branch 'improve-bittorrent-core' into next
+	* bittorrent/stream.py: prefer exceptions to LOG.error()+close()
+	* bittorrent: Add and use new BitTorrent peer model
+	* bittorrent: cache partial PIECE params in stream.py
+	* bittorrent: ConnectingPeer + ListeningPeer = PeerSimple
+	* bittorrent/stream.py: bitfield is optional
+	* Merge branch 'add-bittorrent-peer' into next
+	* bittorrent/peer.py: save peer bitfield
+	* bittorrent: process HAVE messages
+	* stream.py: add LOG.debug() for HAVE and BITFIELD
+	* bittorrent/stream.py: check incoming CANCEL for correctness
+	* bittorrent/stream.py: deploy more checks on the index
+	* bittorrent/stream.py: deploy some more whitespaces
+	* bittorrent/peer.py: allow to override default random infohash
+	* bittorrent/peer.py: do not choke/unchoke automatically
+	* bittorrent/stream.py: pack/unpack unsigned integers
+	* Merge branch 'bittorrent-misc-enhancements' into next
+	* bitfield.py: Add code to get a randomly filled bitfield
+	* bittorrent/peer.py: use randomly filled bitfields
+	* bittorrent/sched.py: simple algorithms for scheduling requests
+	* bittorrent/peer.py: join initialization and configuration
+	* bittorrent/peer.py: extend peer to perform a simple test
+	* Merge branch 'extend-bittorrent-peer' into next
+	* bittorrent/main.py: sync with new bittorrent/peer.py
+	* Link /api/bittorrent to ServerAPI.api_speedtest()
+	* bittorrent/peer.py: start measuring after the first PIECE
+	* bittorrent/sched.py: ensure we always fill the pipeline
+	* bittorrent/sched.py: force npieces npiecespipe to integer
+	* bittorrent/peer.py: get rid of some self.conf gymnastics
+	* Create a new Peer object for each peer that connects
+	* bittorrent/peer.py: invoke complete() at the end of the test
+	* bittorrent/peer.py: print more informative messages
+	* bittorrent/main.py: stop when the test is complete
+	* bittorrent/peer.py: sync channel adaptation with speedtest
+	* Merge branch 'test-bittorrent-at-home' into next
+	* Revert "bittorrent/sched.py: ensure we always fill the pipeline"
+	* bittorrent/peer.py: Wait for the other end to complete the test
+	* bittorrent/main.py: never activate the measurer
+	* bittorrent/main.py: allow to hint with estimated download speed
+	* bittorrent/peer.py: raise if inflight becomes negative
+	* bittorrent/sched.py: do not schedule 0-7 in sequential order
+	* bittorrent/stream.py: LOG.debug on incoming KEEPALIVEs
+	* Pass time-to-connect to connection_made()
+	* net/dns.py: Cache recent DNS lookups
+	* http/client.py: print and save time-to-connect
+	* bittorrent/peer.py: print and save time-to-connect
+	* Merge branch 'better-time-to-connect-measurement' into next
+	* bittorrent: pass also rtt to complete()
+	* bittorrent/peer.py: implement seeder-only peer
+	* bittorrent: handle each connection with a new Peer (sub)class
+	* bittorrent/peer.py: make BitTorrent test a bit longer
+	* bittorrent/bitfield.py cosmetics
+	* Move bittorrent/main.py content to bittorrent/__init__.py
+	* bittorrent/__init__.py: we don't use MEASURER
+	* bittorrent/__init__.py: pull expected duration from peer.py
+	* bittorrent/__init__.py: factor common code
+	* bittorrent/bitfield.py: paranoid division by two
+	* bittorrent/peer.py: clarify comment
+	* bittorrent/peer.py: always update target_bytes
+	* bittorrent/peer.py: refine and document the stopping rule
+	* bittorrent/peer.py: clarify interested/not interested
+	* bittorrent/sched.py: clarify comment
+	* bittorrent/stream.py: remove unused import
+	* bittorrent/stream.py: protocol_name -> PROTOCOL_NAME
+	* bittorrent/stream.py: cosmetic changes
+	* Merge branch 'bittorrent-maint' into next
+	* speedtest/client.py: comment on some to-be-done refinements
+	* Revert "net/dns.py: Cache recent DNS lookups"
+	* debian: Update GPG pubkey expire time
+	* debian: Update GPG pubkey expire time
+	* debian: Bump packaging number
+	* Makefile: deb: s/install/$(INSTALL)/g
+	* Makefile: debian: fix postinst prerm permissions
+	* debian: Bump packaging number
+	* Makefile: -m755 is already the default for install
+	* bittorrent/stream.py: redef message types for testability
+	* bittorrent/stream.py: RuntimeError on jumbo protocol violation
+	* bittorrent/stream.py: space nit
+	* bittorrent: s/tostring/__str__/ for bitfield
+	* bittorrent/stream.py: check handshake for correctness
+	* bittorrent: send bitfield in peer.py not in stream.py
+	* bittorrent/stream.py: simplify type and length checking
+	* bittorrent: create bitfield at the peer level
+	* bittorrent/stream.py: bugfix message reassembler
+	* bittorrent/stream.py: allow to specify small-message threshold
+	* bittorrent/stream.py: sync _send_message and send_piece
+	* Add regress test for bittorrent/stream.py
+	* Merge branch 'bittorrent-regress' into next
+	* net/stream.py: some cosmetic changes
+	* net/stream.py: move self.conf near self.parent self.poller
+	* net/stream.py: {recvb,send}locked -> {recv,send}_blocked
+	* net/stream.py: get rid of _do_close()
+	* net/stream.py: s/isclosed/close_complete/
+	* net/stream.py: put all state variables together
+	* net/stream.py: s/kickoffssl/recv_ssl_needs_kickoff/
+	* net/stream.py: Use True/False for booleans
+	* net/stream.py: implement close-pending
+	* Merge branch 'stream-maint' into next
+	* net/stream.py: parent is not optional anymore
+	* net/stream.py: distinguish between closed() and shutdown()
+	* net/stream.py: protection against multiple closed()
+	* net/stream.py: recv_maxlen was over-engineering
+	* net/stream.py: guard vs. close_complete
+	* net/stream.py: cosmetic change
+	* net/stream.py: simplify and boolize recv_ssl_needs_kickoff
+	* net/stream.py: reorganize and document global variables
+	* net/stream.py: more clear read_send_queue()
+	* regress: add net/stream.py set of tests
+	* Merge branch 'stream-unittest' into next
+	* net/poller.py: allow to pass arguments to sched()
+	* www: Added language support
+	* www: allow to i18n textareas too
+	* www: i18n now use GetText idea
+	* www: make the page visible when i18n is not available
+	* Merge branch 'web-gui-i18n' into next
+	* net/stream.py: print error if connect doesn't fail immediately
+	* Update BitTorrent test to avoid simultaneous downloading
+	* bittorrent: sync peer.py duration with speedtest
+	* doc: add documentation for bittorrent/peer
+	* Merge branch 'bittorrent-peer-enhancements' into next
+	* net/dns.py: Cache recent DNS lookups
+	* http/client.py: convert to debug() an annoying LOG.info()
+	* net/dns.py: Make sure we also consider the port number
+	* Merge branch 'cache-dns' into next
+	* Under debian always use /usr/bin/python
+	* http/stream.py: I don't like docstrings
+	* http/stream.py: let net/stream.py manage outgoing queue
+	* http/stream.py: raise RuntimeError on errors
+	* http/stream.py: send_message(): allow to customize smallmessage
+	* Merge branch 'http-layer-cleanups' into next
+	* bittorrent/stream.py: update to new net/stream.py code
+	* Note we should move close() from protocols to generic stream
+	* http/messages.py: RFC2616-compliant host header support
+	* http/client.py: Save host header value
+	* When needed, pass compose() host header information
+	* Merge branch 'fix-host-header' into next
+	* http/message.py: responses are not supposed to have host header
+	* Distinguish between periodic and nonperiodic notifications
+	* notify.py: Do not declare global event names
+	* Teach versioncmp() about release candidate numbers
+	* Make sure versioncmp() refuses to process negative numbers
+	* database/tool_collate.py: Collate various databases
+	* database/tool_goodset.py: extract goodset from database
+	* database/tool_slice.py: split database in monthly chunks
+	* database/tool_users.py: Count per-month active users
+	* database/tool_buckets.py: make stats out of a database
+	* Merge branch 'database-analysis' into next
+	* database/tool_collate.py: Honour -o command line option
+	* database/tool_buckets.py: robustness vs negative values
+	* database/tool_buckets.py: convert buckets number to real value
+	* database/tool_buckets.py: write percentage not absolute value
+	* utils.py: raise RuntimeError even if rc number is greater than sys.maxint
+	* database/tool_buckets.py: minor fixes
+	* database/tool_privacy.py: enforce privacy settings
+	* database/tool_goodset.py: for god's sake don't commit every row
+	* tool_gooset.py tool_privacy.py: Never override timestamp
+	* database/tool_privacy.py: we can do better when we don't have perms
+	* Merge branch 'database-goodies' into next
+	* speedtest.html: internationalize page
+	* www: added bittorrent support
+	* database/_table_utils.py: helpers to build queries
+	* database: always use sqlite.Row as row factory
+	* bittorrent/_gen.py: generate random bittorrent results
+	* database/table_bittorrent.py: manage table bittorrent
+	* Bump database version number because we've added bittorrent table
+	* api/server.py: Really implement /api/bittorrent
+	* database/table_speedtest.py: remember we should update it
+	* speedtest/gen.py: remember we should rename it
+	* api/server.py: minor cleanup in api_speedtest()
+	* Adapt existing BitTorrent code to test client and server
+	* Prototype of BitTorrent test's client
+	* Prototype of BitTorrent test's server
+	* Merge branch 'bittorrent-negotiation' into next
+	* database: Sort in descending order
+	* www: insert connect time in bittorrent results
+	* bittorrent.js speedtest.js: Better label for X axis
+	* www: Less emphasis on the test name
+	* main.py: Wait for more before timing out
+	* main.py: Die if we cannot reach the GUI
+	* main.py: response.read() before connection.close()
+	* http/server.py: Do not violate RFC 2616 Sect. 14.30
+	* http/message.py: Capitalize HTTP header names
+	* Live up to the promise that header names are case insensitive
+	* Merge branch 'improve-openbrowser' into next
+	* net/poller.py: Safer timeout algorithm
+	* net: Implement watchdog mechanism
+	* http/server.py: add connection_ready()
+	* net/stream.py: add __repr__() to listener and connector
+	* net/stream.py: register and then run hooks at close()
+	* privacy.py: add collect_allowed()
+	* tool_privacy.py: Make can_share count what is supposed to
+	* regress/bittorrent/stream.py: bells and whistles
+	* regress/net/streams.py: bells and whistles
+	* regress/blocks.py: unbreak test
+	* Move regress/speedtest.py to a more convenient place
+	* Merge branch 'regress-love' into next
+	* http/server.py: bells and whistles
+	* http/server.py: export HTTP_SERVER
+	* http/server.py: By default daemonize
+	* Merge branch 'http-server-love' into next
+	* http: allow for outgoing body to be a basestring
+	* http: allow to rewrite request uri at will
+	* streams: globally replace shutdown() with close()
+	* log: allow to attach custom message to exception
+	* doc: temporarily remove outdated documentation
+	* http/utils.py: add content_length() function
+	* net/stream.py: make atclose() robust wrt duplicate entries
+	* http/utils.py: make prettyprintbody string-safe
+	* http/server.py: send 500 if child.got_request_headers() fails
+	* negotiate.py: Add new negotiation code
+	* bittorrent: Use new negotiation code
+	* www/privacy.html: corrected & -> &amp;
+	* www/privacy.html: add i18n classes
+	* http/utils.py: unbreak prettyprintbody()
+	* http/server.py: Better content-type and content-encoding
+	* i18n: retain the i18n_ prefix for HTML classes
+	* settings.html: add italian translation
+	* database/tool_slice.py: make a slice over a true range
+	* database/tool_buckets.py: count the number of tests per user
+	* net/poller.py: check_timeout(): deploy some blank lines
+	* net/poller.py: cosmetic: move break_loop() up
+	* net/poller.py: Merge update_tasks() and dispatch_events()
+	* net/poller.py: _loop_once(): remove redundant else
+	* net/poller.py: Now ready to loop forever
+	* Merge branch 'poller-prepare-to-loop-forever' into next
+	* rendezvous/client.py: fix the unknown-test-type case
+	* rendezvous/client.py: choose a test at random
+	* rendezvous: support for BitTorrent test
+	* Merge branch 'bittorrent-rendezvous' into next
+	* net/poller.py: of course tasks are AHEAD in time
+	* privacy.html: italian translation
+	* lang/it.js: give credit to Claudio
+	* www/bittorrent.html: minor language fix
+	* bittorrent.html: translate to italian
+	* Merge branch 'finalize-i18n' into next
+	* database/table_config.py: Work-around Py 2.5 sqlite.Row
+	* main.py: use bittorrent.client to implement bittorrent
+	* bittorrent/server.py: Fix the port number
+	* bittorrent/client.py: make sure we connect to port 6881
+	* speedtest/client.py: anticipate decision of test to perform
+	* bittorrent/client.py: normalize response's queue_pos parsing
+	* regress/negotiate.py: minor changes
+	* bittorrent/client.py: do not collect if test fails
+	* bittorrent/client.py: cosmetic change
+	* js/state.js: cosmetic changes
+	* js/state.js: avoid name clashes with reserved words
+	* state.py: The dumber, the better
+	* state.py: add unit test, remove ad-hoc test code
+	* state.py: leading underscore before private attributes
+	* Let BitTorrent update() the STATE
+	* Clear results before test in a robust way
+	* Merge branch 'bittorrent-api-state' into next
+	* bittorrent/estimate.py: download and upload speed estimate
+	* negotiate.py: always process request bodies
+	* bittorrent: pass adjusted target_bytes to complete()
+	* bittorrent: adapt target_bytes to channel conditions
+	* Merge branch 'bittorrent-estimate' into next
+	* bittorrent: log PEER_ID during handshake
+	* bittorrent/stream.py: remove redundant conditional
+	* bittorrent/server.py: always use the same PEER_ID
+	* bittorrent: use same infohash for listener and connector
+	* Merge branch 'more-compliant-bt' into next
+	* rendezvous/client.py: alternate speedtest and bittorrent tests
+	* net/poller.py: ongoing work
+	* bittorrent: unsanely raise watchdog timeout
+	* bittorrent: Instrument peer to measure time-to-upload
+	* Merge branch 'bittorrent-upload-takes-too-much-time' into next
+	* bittorrent/peer.py: oops, unbreak previous
+	* Modularize main.py and make boot.py a submodule of main
+	* Add new show_database command
+	* log.py: reindent InteractiveLogger
+	* log.py: Make oops() and exception() more similar
+	* log.py: Move test code into regress
+	* Merge branch 'log-misc' into next
+	* bittorrent/client.py: remember to handle connection_failed
+	* notify: print names of events we publish
+	* net/poller.py: Take care of select() returning EINTR.
+	* net: more readable function names
+	* _table_utils.py: Verify strings more strictly
+	* database: By default select ascending
+	* Store log records into the database
+	* regress: add test for neubot/config.py
+	* bittorrent/peer.py: Cosmetic changes
+	* bittorrent/peer.py: stub for connection_failed
+	* bittorrent/client.py: Deal with BitTorrent connect() failure
+	* Merge branch 'bittorrent-fixes' into next
+	* bittorrent/negotiate.py: add explanatory comment
+	* bittorrent/stream.py: add explanatory comment
+	* bittorrent/stream.py: Use tuple not vector
+	* bittorrent/stream.py: document global objects
+	* bittorrent/stream.py: the project starts with uppercase
+	* bittorrent/stream.py: Tweak comment
+	* bittorrent/stream.py: Sync comment with reality
+	* bittorrent/stream.py: More robustness in the reader
+	* bittorrent/stream.py: document the reader a bit more
+	* bittorrent: consistently use 'big' in place of 'jumbo'
+	* bittorrent: improve function names
+	* bittorrent/peer.py: add explanatory comment
+	* bittorrent/peer.py: Use tuple, not vector, for states
+	* bittorrent/client.py: add explanatory comment
+	* Merge branch 'bittorrent-cosmetics' into next
+	* log.js: Fetch severity properly when deciding color
+	* utils.js: zap newline at end of file
+	* bittorrent: improve scheduling and channel adaptation
+	* bittorrent/peer.py: rewrite logging
+	* bittorrent/peer.py: final comments
+	* bittorrent/peer.py: watchdog timeout after 60 seconds
+	* Merge branch 'more-bittorrent-love' into next
+	* bittorrent/peer.py: committed wrong PIECE_LEN by mistake
+	* bittorrent: log the endpoint we're connecting to
+	* api/server.py: Unbreak /api/log?debug=1
+	* notify.py: default subscribe() context to None
+	* poller: Use lambda to avoid special-case arguments
+	* Error slippage: MacOSX getpeername() fails with EINVAL
+	* notify.py: prefix protected stuff with underscore
+	* notify.py: protect our assumptions with a warning
+	* notify.py: allow to query whether an event is subscribed
+	* Merge branch 'notify-love' into next
+	* config.py: zap multiple blank lines
+	* config.py: update docstring
+	* config.py: print the source we're reading variables from
+	* Merge branch 'config-love' into next
+	* bittorrent: Add unit test for table_bittorrent.py
+	* bittorrent/config.py Prepare to keep configuration
+	* bittorrent: Make __init__.py the real module entry point
+	* bittorrent: quit neubot when the client-side test is finished
+	* bittorrent/client.py: print informative messages
+	* bittorrent: LOG.oops() if "testdone" is not subscribed
+	* bittorrent/sched.py: use a single next-piece scheduler
+	* bittorrent/peer.py: Re-add robustness in channel adaptation
+	* Merge branch 'bittorrent-love' into next
+	* net/poller.py: pass args and kwargs correctly to tasks
+	* log: Use the database only when we're the agent
+	* log: periodically prune logs saved into the database
+	* Merge branch 'log-database' into next
+	* net/poller.py: be more precise wrt Task.timestamp
+	* config.py: allow to __getitem__ from CONFIG
+	* Move configuration helpers from bittorrent/config.py to config.py
+	* bittorrent/__init__.py: grammar
+	* main/common.py: Version must not end with newline
+	* state.py: LOG.debug() on statechange
+	* rendezvous/client.py: sort imports
+	* rendezvous/client.py: Simplify code using lambda
+	* rendezvous/client.py: No need to use StringIO
+	* rendezvous/client.py: Factor out some common code
+	* rendezvous/client.py: add brief file description
+	* rendezvous/client.py: grammar
+	* rendezvous/client.py: Ditch self.testing state variable
+	* rendezvous/client.py: Use "testdone" instead of TESTDONE
+	* rendezvous/client.py: _protected nazism
+	* rendezvous/client.py: silently ignore the count argument
+	* rendezvous/client.py: more cosmetics
+	* Merge branch 'rendezvous-love' into next
+	* database: Bump major version number because of log table
+	* rendezvous/client.py: Move safety checks in connection_lost()
+	* rendezvous/client.py: Use lambda to simplify code
+	* rendezvous/client.py: Always use fresh configuration
+	* agent rendezvous.client: Remove duplicate variables
+	* Merge branch 'rendezvous-love' into next
+	* Make sure CONFIG.register_defaults() scope is always global
+	* settings.js: no point in changing agent.daemonize from web gui
+	* config: Hide socket buffers options
+	* config: Hide rendezvous.server-only variables
+	* api/server.py: Very low barrier to prevent damage from kiddies
+	* Merge branch 'config-love' into next
+	* Fixed setup.py
+	* Merge branch 'next.evfire' into next
+	* it.js: shorter translation
+	* rendezvous/server.py: bugfix need-update? algorithm
+	* utils.py: strip version numbers before comparison
+	* neubot/gui: message boxes using various GUIs
+	* on_gui_login.py: check updates and privacy on gui login
+	* neubot/main.py: add the on_gui_login command
+	* neubot.nsi: run on_gui_login command on user login
+	* unix_root: Add autostart .desktop file for GNOME
+	* Makefile: install .desktop file to run some checks on login
+	* Merge branch 'on-gui-login-initial' into next
+	* Small fixes in infobox_tk and infobox_gtk
+	* Merge branch 'next.evfire' into next
+	* on_gui_login.py: make testing from commandline easier
+	* gui: function infobox -> class InfoBox
+	* gui: fallback to a valid InfoBox(message) stub
+	* gui: add testing code to generic infobox.py too
+	* gui: build a list of all the available infoboxes
+	* gui: autoclose infobox after timeout
+	* gui: add unit test for infobox
+	* infobox_gtk.py: button large 1/3 of the window
+	* infobox_gtk: use neubot icon
+	* Zap infobox_win32: Tk we'll be enough for Windoze users
+	* Merge branch 'improve-infobox' into next
+	* setup.py: autogenerate sources and data
+	* Makefile: use setup.py to install
+	* Merge branch 'makefile-use-setup-py' into next
+	* Added 'build/' and 'MANIFEST' to cleaned files
+	* Handle gracefully failure in privilege dropping
+	* Added a comment about PyPy compatibility.
+	* main/module.py: changed the way neubot dinamically loads a module's main() at runtime
+	* Merge branch 'next.evfire' into next
+	* Merge branch 'next'
+	* main/__init__.py: no newlines in version pls
+	* debian: return package version to -1
+	* Release neubot/0.4-rc1
+
 Neubot 0.3.7 [2011-05-20]
 	* debian prerm: Consistent check and action
 	* http/messages.py: Add response field
