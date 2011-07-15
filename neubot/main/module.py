@@ -70,8 +70,10 @@ def run(argv):
         sys.stderr.write("Try `neubot help` to list the available modules\n")
         sys.exit(1)
 
-    module = MODULES[module]
-    exec("from neubot.%s import main as MAIN" % module)
+    # Dinamically load the selected module's main() at runtime
+    module = "neubot.%s" % MODULES[module]
+    __import__(module)
+    MAIN = sys.modules[module].main
 
     # neubot module ...
     argv[0] = "neubot " + argv[0]

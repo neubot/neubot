@@ -302,7 +302,7 @@ def main(args):
         system.change_dir()
         system.go_background()
         LOG.redirect()
-    system.drop_privileges()
+    system.drop_privileges(LOG.error)
 
     gtk.gdk.threads_init()
     icon = StatusIcon(address, port, blink, nohide)
