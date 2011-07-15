@@ -29,9 +29,9 @@
 
 import win32api
 
-def InfoBox(message):
+def _InfoBox(message):
     win32api.MessageBox(None, message, "Neubot 0.3.7")
 
 if __name__ == "__main__":
-    InfoBox("An updated version of Neubot is available "
-            "at <http://www.neubot.org/download>")
+    _InfoBox("An updated version of Neubot is available "
+             "at <http://www.neubot.org/download>")

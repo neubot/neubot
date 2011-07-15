@@ -31,7 +31,7 @@ import gtk
 
 import re
 
-class InfoBox(object):
+class _InfoBox(object):
 
     def _cleanup(self, *args):
         self._window.destroy()
@@ -67,5 +67,5 @@ class InfoBox(object):
         gtk.main()
 
 if __name__ == "__main__":
-    InfoBox("An updated version of Neubot is available "
-            "at <http://www.neubot.org/download>")
+    _InfoBox("An updated version of Neubot is available "
+             "at <http://www.neubot.org/download>")

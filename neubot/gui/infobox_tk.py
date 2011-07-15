@@ -29,7 +29,7 @@ import Tkinter
 import webbrowser
 import re
 
-class InfoBox(object):
+class _InfoBox(object):
 
     def _on_click(self, event):
         txt = event.widget["text"]
@@ -70,5 +70,5 @@ class InfoBox(object):
         self._root.mainloop()
 
 if __name__ == "__main__":
-    InfoBox("An updated version of Neubot is available "
-            "at <http://www.neubot.org/download>")
+    _InfoBox("An updated version of Neubot is available "
+             "at <http://www.neubot.org/download>")
