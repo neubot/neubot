@@ -31,9 +31,7 @@ import re
 
 def _on_click(event):
     txt = event.widget["text"]
-    match = re.match("<(.*)>", txt)
-    link = match.group(1)
-    webbrowser.open(link)
+    webbrowser.open(txt)
 
 def _on_enter(event):
     widget = event.widget
@@ -47,9 +45,10 @@ def infobox(message):
     root = Tkinter.Tk()
     root.title("Neubot 0.3.7")
 
-    for txt in re.split("(<[A-Za-z0-9:/_#.]+>)", message):
+    for txt in re.split("(<.+?>)", message):
         if txt and txt[0] == "<":
-            label = Tkinter.Label(text=txt, foreground="blue")
+            link = txt[1:-1]
+            label = Tkinter.Label(text=link, foreground="blue")
             label.bind("<Button-1>", _on_click)
             label.bind("<Enter>", _on_enter)
             label.bind("<Leave>", _on_leave)
