@@ -48,6 +48,8 @@ from neubot.log import LOG
 #
 def main(args):
     LOG.redirect()
+    # Give daemon some time to breathe first
+    time.sleep(30)
     realmain(args, lambda: random.randrange(300, 1500))
 
 def realmain(args, get_sleep_interval):
