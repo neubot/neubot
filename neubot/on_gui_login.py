@@ -52,8 +52,8 @@ def main(args):
 
 def realmain(args, get_sleep_interval):
     while True:
-        time.sleep(get_sleep_interval())
         _loop_once(args)
+        time.sleep(get_sleep_interval())
 
 def _loop_once(args):
     message = ""
