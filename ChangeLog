@@ -1,3 +1,18 @@
+Neubot 0.4-rc2 [2011-07-18]
+	* setup.py: fix indent
+	* main/module.py: align
+	* main/module.py: ref all modules so py2exe includes them
+	* on_gui_login.py: spam the user immediately
+	* on_gui_login.py: give daemon time to breathe first
+	* system: add win32 code to kill a process
+	* on_gui_login: add -k switch to kill on_gui_login process
+	* neubot.nsi: kill on_gui_login process on uninstall
+	* neubot.nsi: change on_gui_login start-menu name
+	* neubot.nsi: run also on_gui_login after install
+	* Merge branch 'win32-fix-updates' into next
+	* scripts/release: Initial support for -rc releases
+	* Release neubot/0.4-rc2
+
 Neubot 0.4-rc1 [2011-07-16]
 	* manpage: simplify how-to-dump example
 	* database/main.py: allow to query database path

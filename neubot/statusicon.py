@@ -71,7 +71,7 @@ from neubot.log import LOG
 ADDRESS = "127.0.0.1"
 PORT = "9774"
 
-VERSION = "0.4-rc1"
+VERSION = "0.4-rc2"
 
 class StateTrackerAdapter(APIStateTracker):
 
