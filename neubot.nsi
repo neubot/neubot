@@ -54,7 +54,7 @@ section
 
     createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
       "$INSTDIR\neubotw.exe" "start"
-    createshortcut "$SMSTARTUP\neubot (login checks).lnk"		\
+    createshortcut "$SMSTARTUP\neubot (notifier process).lnk"		\
       "$INSTDIR\neubotw.exe" "on_gui_login"
 
     WriteRegStr HKLM                                                    \
