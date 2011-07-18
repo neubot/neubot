@@ -30,6 +30,7 @@
 #
 
 import httplib
+import getopt
 import random
 import sys
 import time
@@ -41,6 +42,9 @@ from neubot.compat import json
 from neubot.gui.infobox import InfoBox
 from neubot.log import LOG
 
+if sys.platform == "win32":
+    from neubot.system import _proc_win32
+
 #
 # This is invoked when the user logs in the GUI
 # environment, while realmain() is invoked by
@@ -48,6 +52,22 @@ from neubot.log import LOG
 #
 def main(args):
     LOG.redirect()
+
+    #
+    # XXX With Windows we need to kill on_gui_login before
+    # updating because otherwise the various DLLs are locked
+    # and the procedure fails.  This piece of code ASSUMES
+    # that we have already killed the Neubot Agent so we can
+    # safely kill all the remaining neubotw.exe instances
+    # using brute force.
+    #
+    if sys.platform == "win32":
+        options, arguments = getopt.getopt(args[1:], "k")
+        for name, value in options:
+            if name == "-k":
+                _proc_win32._kill_process("neubotw.exe")
+                sys.exit(0)
+
     # Give daemon some time to breathe first
     time.sleep(30)
     realmain(args, lambda: random.randrange(300, 1500))
