@@ -45,6 +45,7 @@ PHONIES += _install_autostart
 PHONIES += _install_edit
 PHONIES += _install
 PHONIES += install
+PHONIES += uninstall
 PHONIES += app
 PHONIES += app.zip
 PHONIES += _deb_data
@@ -134,6 +135,13 @@ DATADIR = $(PREFIX)/share
 MANDIR = $(PREFIX)/man
 ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
 MENUDIR = $(DATADIR)/applications
+
+# TODO There is more stuff we should uninstall
+uninstall:
+	@rm -rf $(DESTDIR)$(DATADIR)/neubot
+	@rm -rf $(DESTDIR)$(BINDIR)/neubot
+	@rm -rf $(DESTDIR)$(BINDIR)/start-neubot-daemon
+	@rm -rf $(DESTDIR)$(BINDIR)/neubotw
 
 _install_skel:
 	@$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
