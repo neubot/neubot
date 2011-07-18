@@ -51,18 +51,18 @@ class ServerAPI(ServerHTTP):
 
     def __init__(self, poller):
         ServerHTTP.__init__(self, poller)
-        self.dispatch = {
-            "/api": self.api,
-            "/api/": self.api,
-            "/api/bittorrent": self.api_bittorrent,
-            "/api/config": self.api_config,
-            "/api/configlabels": self.api_configlabels,
-            "/api/debug": self.api_debug,
-            "/api/exit": self.api_exit,
-            "/api/log": self.api_log,
-            "/api/speedtest": self.api_speedtest,
-            "/api/state": self.api_state,
-            "/api/version": self.api_version,
+        self._dispatch = {
+            "/api": self._api,
+            "/api/": self._api,
+            "/api/bittorrent": self._api_bittorrent,
+            "/api/config": self._api_config,
+            "/api/configlabels": self._api_configlabels,
+            "/api/debug": self._api_debug,
+            "/api/exit": self._api_exit,
+            "/api/log": self._api_log,
+            "/api/speedtest": self._api_speedtest,
+            "/api/state": self._api_state,
+            "/api/version": self._api_version,
         }
 
     #
@@ -73,7 +73,7 @@ class ServerAPI(ServerHTTP):
     #
     def process_request(self, stream, request):
         try:
-            self.serve_request(stream, request)
+            self._serve_request(stream, request)
         except ConfigError, error:
             reason = re.sub(r"[\0-\31]", "", str(error))
             reason = re.sub(r"[\x7f-\xff]", "", reason)
@@ -83,23 +83,23 @@ class ServerAPI(ServerHTTP):
                     body=StringIO.StringIO(reason))
             stream.send_response(request, response)
 
-    def serve_request(self, stream, request):
+    def _serve_request(self, stream, request):
         path, query = urlparse.urlsplit(request.uri)[2:4]
-        if path in self.dispatch:
-            self.dispatch[path](stream, request, query)
+        if path in self._dispatch:
+            self._dispatch[path](stream, request, query)
         else:
             response = Message()
             response.compose(code="404", reason="Not Found",
                     body=StringIO.StringIO("404 Not Found"))
             stream.send_response(request, response)
 
-    def api(self, stream, request, query):
+    def _api(self, stream, request, query):
         response = Message()
         response.compose(code="200", reason="Ok", body=StringIO.StringIO(
-          json.dumps(sorted(self.dispatch.keys()), indent=4)))
+          json.dumps(sorted(self._dispatch.keys()), indent=4)))
         stream.send_response(request, response)
 
-    def api_bittorrent(self, stream, request, query):
+    def _api_bittorrent(self, stream, request, query):
         since, until = -1, -1
 
         dictionary = cgi.parse_qs(query)
@@ -121,7 +121,7 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_config(self, stream, request, query):
+    def _api_config(self, stream, request, query):
         response = Message()
 
         indent, mimetype, sort_keys = None, "application/json", False
@@ -152,7 +152,7 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_configlabels(self, stream, request, query):
+    def _api_configlabels(self, stream, request, query):
 
         indent, mimetype = None, "application/json"
         dictionary = cgi.parse_qs(query)
@@ -166,7 +166,7 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_debug(self, stream, request, query):
+    def _api_debug(self, stream, request, query):
         response = Message()
         debuginfo = {}
         NOTIFIER.snap(debuginfo)
@@ -180,7 +180,7 @@ class ServerAPI(ServerHTTP):
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def api_log(self, stream, request, query):
+    def _api_log(self, stream, request, query):
 
         response = Message()
 
@@ -203,7 +203,7 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_speedtest(self, stream, request, query):
+    def _api_speedtest(self, stream, request, query):
         since, until = -1, -1
 
         dictionary = cgi.parse_qs(query)
@@ -225,7 +225,7 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_state(self, stream, request, query):
+    def _api_state(self, stream, request, query):
         dictionary = cgi.parse_qs(query)
 
         t = None
@@ -233,13 +233,13 @@ class ServerAPI(ServerHTTP):
             t = dictionary["t"][0]
             stale = NOTIFIER.needs_publish(STATECHANGE, t)
             if not stale:
-                NOTIFIER.subscribe(STATECHANGE, self.api_state_complete,
+                NOTIFIER.subscribe(STATECHANGE, self._api_state_complete,
                                    (stream, request, query, t), True)
                 return
 
-        self.api_state_complete(STATECHANGE, (stream, request, query, t))
+        self._api_state_complete(STATECHANGE, (stream, request, query, t))
 
-    def api_state_complete(self, event, context):
+    def _api_state_complete(self, event, context):
         stream, request, query, t = context
 
         indent, mimetype = None, "application/json"
@@ -255,14 +255,14 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def api_version(self, stream, request, query):
+    def _api_version(self, stream, request, query):
         response = Message()
         stringio = StringIO.StringIO(VERSION)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def api_exit(self, stream, request, query):
+    def _api_exit(self, stream, request, query):
         POLLER.sched(0, lambda *args, **kwargs: POLLER.break_loop())
         response = Message()
         stringio = StringIO.StringIO("See you, space cowboy\n")
