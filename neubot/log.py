@@ -80,6 +80,7 @@ class Logger(object):
 
         self._nocommit = NOCOMMIT
         self._use_database = False
+        self._queue = []
 
         #
         # We cannot import the DATABASE here because of a
@@ -118,10 +119,7 @@ class Logger(object):
 
         if (self._use_database and self.database and self.table_log and
           self.notifier and not self.notifier.is_subscribed("testdone")):
-            connection = self.database.connection()
-            self.table_log.prune(connection, DAYS_AGO, commit=False)
-            connection.execute("VACUUM;")
-            connection.commit()
+            self._writeback()
 
     #
     # We don't want to log into the database when we run
@@ -224,6 +222,34 @@ class Logger(object):
         #
         self._log(self.logger.info, "ACCESS", message)
 
+    def __writeback(self):
+        """Really commit pending log records into the database"""
+
+        connection = self.database.connection()
+        self.table_log.prune(connection, DAYS_AGO, commit=False)
+
+        for record in self._queue:
+            self.table_log.insert(self.database.connection(), record, False)
+        self.database.connection().commit()
+
+        connection.execute("VACUUM;")
+        connection.commit()
+
+    def _writeback(self):
+        """Commit pending log records into the database"""
+
+        # At least do not crash
+        try:
+            self.__writeback()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            # TODO write this exception to syslog
+            pass
+
+        # Purge the queue in any case
+        del self._queue[:]
+
     def _log(self, printlog, severity, message):
         message = message.rstrip()
 
@@ -258,13 +284,17 @@ class Logger(object):
                 self._nocommit = NOCOMMIT
                 commit = True
 
-            self.table_log.insert(self.database.connection(), record, commit)
+            self._queue.append(record)
+            if commit:
+                self._writeback()
 
         printlog(message)
 
     # Marshal
 
     def listify(self):
-        return self.table_log.listify(self.database.connection())
+        lst = self.table_log.listify(self.database.connection())
+        lst.extend(self._queue)
+        return lst
 
 LOG = Logger()
