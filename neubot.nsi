@@ -65,8 +65,8 @@ section
       "UninstallString" "$INSTDIR\uninstall.exe"
 
     # This will start Neubot in background
-
     exec '"$INSTDIR\neubotw.exe" start'
+    exec '"$INSTDIR\neubotw.exe" on_gui_login'
 
 sectionend
 
