@@ -39,6 +39,7 @@ from neubot.log import LOG
 from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
+from neubot.rootdir import WWW
 from neubot.state import STATECHANGE
 from neubot.speedtest.client import QUEUE_HISTORY
 from neubot.state import STATE
@@ -171,6 +172,7 @@ class ServerAPI(ServerHTTP):
         NOTIFIER.snap(debuginfo)
         POLLER.snap(debuginfo)
         debuginfo["queue_history"] = QUEUE_HISTORY
+        debuginfo["WWW"] = WWW
         stringio = StringIO.StringIO()
         pprint.pprint(debuginfo, stringio)
         stringio.seek(0)

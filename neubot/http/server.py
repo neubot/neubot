@@ -195,6 +195,7 @@ class ServerHTTP(StreamHandler):
         try:
             fp = open(fullpath, "rb")
         except (IOError, OSError):
+            LOG.error("HTTP: Not Found: %s (WWW: %s)" % (fullpath, rootdir))
             response.compose(code="404", reason="Not Found",
                              body="404 Not Found")
             stream.send_response(request, response)
