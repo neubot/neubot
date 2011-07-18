@@ -1,3 +1,10 @@
+Neubot 0.4-rc3 [2011-07-18]
+	* Make it simpler to debug 404 Not Found events
+	* Makefile: quick-dirty fix to adjust permissions
+	* Makefile: initial support for uninstalling neubot
+	* log.py: don't defer commit for too much time
+	* Release neubot/0.4-rc3
+
 Neubot 0.4-rc2 [2011-07-18]
 	* setup.py: fix indent
 	* main/module.py: align

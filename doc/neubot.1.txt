@@ -27,7 +27,7 @@ The network neutrality bot
 :Manual section: 1
 :Date: @DATE@
 :Manual group: Neubot manual
-:Version: Neubot 0.4-rc2
+:Version: Neubot 0.4-rc3
 
 SYNOPSIS
 ````````
