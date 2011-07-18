@@ -72,11 +72,20 @@ sectionend
 
 section "uninstall"
 
+    execwait '"$INSTDIR\neubotw.exe" stop'
+
+    #
+    # Kill all the remaining instances of neubotw.exe (mainly the
+    # on_gui_login process) so that the DLLs are not locked anymore
+    # and we can safefly proceed with the update.
+    # XXX This is clearly unclean and ah-hoc!
+    #
+    execwait '"$INSTDIR\neubotw.exe" on_gui_login -k'
+
     #
     # To be sure that the system is not locking anymore neubotw.exe
     # so that we can remove it, we sleep for a while.
     #
-    execwait '"$INSTDIR\neubotw.exe" stop'
     sleep 2000
 
     rmdir /r "$INSTDIR"
