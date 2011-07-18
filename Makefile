@@ -138,8 +138,16 @@ MENUDIR = $(DATADIR)/applications
 _install_skel:
 	@$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
 
+#
+# XXX Probably distutils can be configured to enforce certain
+# permissions, however I've not found how to do that just after
+# a quick check.  So, for now, I will just override the umask
+# here to be sure that what is installed has the right perms
+# (I use `umask 077`).
+#
 _install_sources:
-	@python setup.py install --install-purelib $(DESTDIR)$(DATADIR) \
+	@umask 022 && \
+	 python setup.py install --install-purelib $(DESTDIR)$(DATADIR) \
 	                         --install-scripts $(DESTDIR)$(BINDIR)
 	@rm -rf $(DESTDIR)$(DATADIR)/neubot-*.egg-info
 
