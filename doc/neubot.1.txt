@@ -203,7 +203,7 @@ Track the Agent state using the command line:
 Run Neubot in-place from the sources directory:
 
 |
-|    $ ./bin/neubot help
+|    $ ./bin/neubot COMMAND
 
 FILES
 `````
