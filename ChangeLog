@@ -1,3 +1,10 @@
+Neubot 0.4-rc6 [2011-07-20]
+	* doc: add windows instructions to RELEASE
+	* manpage: add BUGS section
+	* manpage: s/help/COMMAND/ in in-place example
+	* manpage: Claudio also contributed patches
+	* Release neubot/0.4-rc6
+
 Neubot 0.4-rc5 [2011-07-19]
 	* neubot.list: No more testing repository
 	* Makefile: adjust debian packaging number
