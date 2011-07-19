@@ -256,7 +256,7 @@ The following people have contributed patches to the project:
 | Roberto D'Auria		<everlastingfire@autistici.org>
 | Marco Scopesi			<marco.scopesi@gmail.com>
 
-The following people have helped to translate the website:
+The following people have helped with internationalization:
 
 |
 | Claudio Artusio               <claudioartusio@gmail.com>
