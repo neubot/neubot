@@ -1,3 +1,9 @@
+Neubot 0.4-rc4 [2011-07-19]
+	* on_gui_login.py: Loop just once to avoid problems with Windows
+	* i18n.js: correct bug, let i18n work on IE
+	* js: delay i18n.translate()
+	* Release neubot/0.4-rc4
+
 Neubot 0.4-rc3 [2011-07-18]
 	* Make it simpler to debug 404 Not Found events
 	* Makefile: quick-dirty fix to adjust permissions

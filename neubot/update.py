@@ -52,7 +52,7 @@ class Download(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.baseuri = "http://releases.neubot.org/"
-        self.version = "0.4-rc3"
+        self.version = "0.4-rc4"
         self.notify = lambda arg: None
         self.log = sys.stderr.write
         self.mysig = None
