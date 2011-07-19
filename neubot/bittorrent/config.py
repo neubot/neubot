@@ -70,7 +70,13 @@ _PROPERTIES = (
     ('bittorrent.infohash', '', 'Set InfoHash ("" = auto)'),
     ('bittorrent.listen', False, 'Run in server mode'),
     ('bittorrent.negotiate', True, 'Enable negotiate client/server'),
-    ('bittorrent.negotiate.port', 80, 'Negotiate port'),
+    #
+    # FIXME We use port 8080 in release 0.4 because there is no
+    # time to integrate the way speedtest does negotiation and the
+    # way bittorrent does it.  This should go in port 80 as soon
+    # as possible.
+    #
+    ('bittorrent.negotiate.port', 8080, 'Negotiate port'),
     ('bittorrent.my_id', '', 'Set local PeerId ("" = auto)'),
     ('bittorrent.numpieces', NUMPIECES, 'Num of pieces in bitfield'),
     ('bittorrent.piece_len', PIECE_LEN, 'Length of each piece'),
