@@ -228,6 +228,18 @@ In addition, if you run neubot as an unprivileged user:
 $HOME/.neubot/database.sqlite3
   User-specific results database.
 
+BUGS
+````
+
+If the default browser is a textual browser and a graphical environment
+is available, Neubot will start the web user interface into the
+textual browser.  Nine times out of ten this results into an unusable
+web user interface because most textual browser do not support
+javascript.
+
+Neubot is reported to be "not running" by *neubot start* also when
+the response is not *200 Ok*.
+
 AUTHOR
 ``````
 
