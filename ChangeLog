@@ -1,3 +1,11 @@
+Neubot 0.4-rc5 [2011-07-19]
+	* neubot.list: No more testing repository
+	* Makefile: adjust debian packaging number
+	* privacy.py: keep the oops but switch to LOG.debug
+	* bittorrent/config.py: use port 8080 not 80
+	* doc: document testing procedure before release
+	* Release neubot/0.4-rc5
+
 Neubot 0.4-rc4 [2011-07-19]
 	* on_gui_login.py: Loop just once to avoid problems with Windows
 	* i18n.js: correct bug, let i18n work on IE
