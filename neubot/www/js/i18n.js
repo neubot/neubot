@@ -23,7 +23,7 @@ var LANG = {};
 
 var i18n = {
     languages: {
-        it: 'Italian',
+        it: 'Italian'
     },
 
     get: function(label) {
