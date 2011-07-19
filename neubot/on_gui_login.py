@@ -75,6 +75,17 @@ def main(args):
 def realmain(args, get_sleep_interval):
     while True:
         _loop_once(args)
+
+        #
+        # FIXME I would like the process to run for a long
+        # time and keep spamming the user.  Unfortunately
+        # under Windows it's not a good idea to exit the Tk
+        # mainloop() because we do not receive events and
+        # so Windows does not shutdown cleanly.  The simplest
+        # fix is as follows: just run once and then exit.
+        #
+        break
+
         time.sleep(get_sleep_interval())
 
 def _loop_once(args):
