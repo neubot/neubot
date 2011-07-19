@@ -76,3 +76,58 @@ line using the following command::
 
 	neubot bittorrent && neubot speedtest
 
+If possible, run a private master server that advertises an upgrade
+to make sure that the upgrade notification mechanism works.
+
+Testing under Windows.  First of all download the zip sources and
+then follow this building/testing procedure (we assume that you have
+already installed an old copy of the software on your system):
+
+0. upgrade the required software
+
+1. build the installer <http://www.neubot.org/install-sources#win32>
+
+2. upgrade neubot
+
+3. make sure it's running
+
+4. uninstall neubot and make sure c:\program files\neubot was wiped
+
+5. reinstall neubot, this time from scratch
+
+6. make sure i'ts running
+
+7. remove privacy permissions
+
+8. reboot
+
+9. make sure neubot is still running
+
+10. wait for the notification to appear
+
+If possible, run a private master server that advertises an upgrade
+to make sure that the upgrade notification mechanism works.
+
+Make sure that bittorrent and speedtest tests work from command
+line using the following command::
+
+	neubot bittorrent
+	neubot speedtest
+
+Check the manpage.  At this point it makes sense to read the manual
+page and ensure it is still relevant and there are no changes that must
+be performed.
+
+Make sure that neubot installer is not mistakenly recognized as a
+virus checking with <http://www.virustotal.com/>.  If everything is
+OK then save the SHA256 of the installer along with the SHAs of
+other packages.
+
+Move the packages in the proper place in <http://releases.neubot.org/>.
+For robustness make a copy of the debian package's files so that we
+can restore them if needed.
+
+Finally install the previous version and make sure that the update via
+apt-get works and that there are no errors.
+
+Save the SHA256s in the proper github project.
