@@ -55,7 +55,7 @@ def collect_allowed(m):
         # XXX This is a shame therefore put the oops() and hope that
         # it does its moral suasion job as expected.
         #
-        LOG.oops("TODO: please pass me a dictionary!", LOG.info)
+        LOG.oops("TODO: please pass me a dictionary!", LOG.debug)
         m = m.__dict__
     return (not utils.intify(m["privacy_informed"])
             or utils.intify(m["privacy_can_collect"]))
