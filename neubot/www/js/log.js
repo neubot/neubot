@@ -19,7 +19,7 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-jQuery(document).ready(function() {
+function log_init() {
     utils.setActiveTab("log");
 
     jQuery.ajax({
@@ -62,4 +62,8 @@ jQuery(document).ready(function() {
 
     tracker = state.tracker();
     tracker.start();
+};
+
+jQuery(document).ready(function() {
+    i18n.translate(log_init)
 });

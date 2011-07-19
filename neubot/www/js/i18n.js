@@ -49,10 +49,11 @@ var i18n = {
         return lang;
     },
 
-    translate: function() {
+    translate: function(init_caller) {
         var lang = this.getLanguageInUse();
         if (!lang || !this.languages[lang]) {
             jQuery(".i18n").css("visibility", "visible");
+            init_caller();
             return;
         }
 
@@ -77,11 +78,8 @@ var i18n = {
                     });
                 });
                 jQuery(".i18n").css("visibility", "visible");
+                init_caller();
             }
         });
     }
 };
-
-jQuery(document).ready(function() {
-    i18n.translate();
-});

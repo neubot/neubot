@@ -61,11 +61,15 @@ function process_state(data) {
 
 }
 
-jQuery(document).ready(function() {
+function index_init() {
     utils.setActiveTab("index");
 
     jQuery.jqplot.config.enablePlugins = true;
 
     tracker = state.tracker(process_state);
     tracker.start();
+};
+
+jQuery(document).ready(function() {
+    i18n.translate(index_init);
 });

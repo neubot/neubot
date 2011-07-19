@@ -209,7 +209,7 @@ var speedtest = (function() {
     return self;
 })();
 
-jQuery(document).ready(function() {
+function speedtest_init() {
     utils.setActiveTab("speedtest");
 
     jQuery.jqplot.config.enablePlugins = true;
@@ -249,4 +249,8 @@ jQuery(document).ready(function() {
 
     tracker = state.tracker();
     tracker.start();
+};
+
+jQuery(document).ready(function() {
+    i18n.translate(speedtest_init);
 });

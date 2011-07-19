@@ -54,11 +54,15 @@ function checkPrivacy(data) {
     return false;
 }
 
-jQuery(document).ready(function() {
+function privacy_init() {
     utils.setActiveTab("privacy");
 
     utils.getConfigVars(checkPrivacy);
 
     tracker = state.tracker();
     tracker.start();
+};
+
+jQuery(document).ready(function() {
+    i18n.translate(privacy_init);
 });

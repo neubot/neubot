@@ -207,7 +207,7 @@ var bittorrent = (function() {
     return self;
 })();
 
-jQuery(document).ready(function() {
+function bittorrent_init() {
     utils.setActiveTab("bittorrent");
 
     jQuery.jqplot.config.enablePlugins = true;
@@ -247,4 +247,8 @@ jQuery(document).ready(function() {
 
     tracker = state.tracker();
     tracker.start();
+};
+
+jQuery(document).ready(function() {
+    i18n.translate(bittorrent_init);
 });

@@ -92,7 +92,7 @@ function process_state(data) {
     return false;
 }
 
-jQuery(document).ready(function() {
+function settings_init() {
     utils.setActiveTab("settings");
 
     jQuery.ajax({
@@ -127,4 +127,8 @@ jQuery(document).ready(function() {
 
     tracker = state.tracker(process_state);
     tracker.start();
+};
+
+jQuery(document).ready(function() {
+    i18n.translate(settings_init);
 });
