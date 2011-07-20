@@ -120,7 +120,7 @@ CONFIG.register_defaults({
     "rendezvous.server.address": "0.0.0.0",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.update_uri": "http://releases.neubot.org/",
+    "rendezvous.server.update_uri": "http://www.neubot.org/download",
     "rendezvous.server.update_version": common.VERSION,
     "rendezvous.geoip_wrapper.country_database": "/usr/local/share/GeoIP/GeoIP.dat",
     "rendezvous.server.default": "master.neubot.org",
