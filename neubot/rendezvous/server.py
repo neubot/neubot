@@ -57,9 +57,11 @@ class ServerRendezvous(ServerHTTP):
         m1 = compat.RendezvousResponse()
 
         version = self.conf["rendezvous.server.update_version"]
-        if m.version and utils.versioncmp(version, m.version) > 0:
-            m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
-            m1.update["version"] = version
+        if (("-rc" in version and "-rc" in m.version) or
+          (not "-rc" in version and not "-rc" in m.version)):
+            if m.version and utils.versioncmp(version, m.version) > 0:
+                m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
+                m1.update["version"] = version
 
         #
         # Select test server address.
