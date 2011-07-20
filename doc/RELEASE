@@ -76,9 +76,6 @@ line using the following command::
 
 	neubot bittorrent && neubot speedtest
 
-If possible, run a private master server that advertises an upgrade
-to make sure that the upgrade notification mechanism works.
-
 Testing under Windows.  First of all download the zip sources and
 then follow this building/testing procedure (we assume that you have
 already installed an old copy of the software on your system):
