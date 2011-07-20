@@ -34,7 +34,7 @@ def main(args):
 
     cursor = connection.cursor()
     cursor.execute("SELECT COUNT(DISTINCT(uuid)) FROM speedtest;")
-    sys.stdout.write("%s: %d\n" % (arguments[0], next(cursor)[0]))
+    sys.stdout.write("%s: %d\n" % (arguments[0], cursor.next()[0]))
 
 if __name__ == "__main__":
     main(sys.argv)

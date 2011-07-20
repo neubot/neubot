@@ -72,7 +72,7 @@ class ResultIterator(object):
         if not myuuid in self.addrs or random.random() < IPCHANGETHR:
             self.addrs[myuuid] = get_addr()
         return {
-            "timestamp": next(self.times),
+            "timestamp": self.times.next(),
             "uuid": myuuid,
             "internal_address": self.addrs[myuuid],
             "real_address": self.addrs[myuuid],

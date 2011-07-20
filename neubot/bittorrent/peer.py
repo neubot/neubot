@@ -209,7 +209,7 @@ class PeerNeubot(StreamHandler):
         else:
             self.state = DOWNLOADING
             LOG.start("BitTorrent: downloading %d bytes" % self.target_bytes)
-            burst = next(self.sched_req)
+            burst = self.sched_req.next()
             for index, begin, length in burst:
                 stream.send_request(index, begin, length)
                 self.inflight += 1
@@ -254,7 +254,7 @@ class PeerNeubot(StreamHandler):
 
         # Get next piece
         try:
-            vector = next(self.sched_req)
+            vector = self.sched_req.next()
         except StopIteration:
             vector = None
 

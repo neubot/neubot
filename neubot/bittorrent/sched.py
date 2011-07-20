@@ -90,7 +90,7 @@ def _sched_piece(idx, total, piecelen, blocklen):
 
         # Piece exhausted?  Pick next one
         if cur_left == 0:
-            cur_idx = next(idx)
+            cur_idx = idx.next()
             cur_left = piecelen
             cur_offset = 0
 

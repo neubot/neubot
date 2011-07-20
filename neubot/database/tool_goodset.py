@@ -61,7 +61,7 @@ def main(args):
     # Get the number of rows in the original database
     cursor = input_dbm.cursor()
     cursor.execute("SELECT COUNT(*) FROM speedtest;")
-    total = next(cursor)[0]
+    total = cursor.next()[0]
 
     # Copy the goodset to the new database
     cursor = input_dbm.cursor()
@@ -78,7 +78,7 @@ def main(args):
     # Get the number of rows in the new database
     cursor = output.cursor()
     cursor.execute("SELECT COUNT(*) FROM speedtest;")
-    goodset = next(cursor)[0]
+    goodset = cursor.next()[0]
 
     if total:
         sys.stdout.write("%d/%d (%.2f%%)\n" % (goodset, total,
