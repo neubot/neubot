@@ -23,6 +23,8 @@
 import sys
 import textwrap
 
+from neubot.log import LOG
+
 #
 # XXX It would be nice to run just main() in MOD.__init__
 # but let's not daydream: this is not going to happen for a
@@ -104,7 +106,13 @@ def run(argv):
     # neubot module ...
     argv[0] = "neubot " + argv[0]
 
-    MAIN(argv)
+    try:
+        MAIN(argv)
+    except KeyboardInterrupt:
+        pass
+    except:
+        LOG.exception()
+        sys.exit(1)
     sys.exit(0)
 
 if __name__ == "__main__":
