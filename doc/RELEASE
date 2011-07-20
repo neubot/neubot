@@ -17,8 +17,8 @@ will work.  To be sure::
 Download and update to the latest package, make sure it is running
 and then open the web user interface::
 
-	wget http://releases.neubot.org/rc/neubot-0.4-rc6-1_all.deb &&
-	sudo dpkg -i neubot-0.4-rc6-1_all.deb &&
+	wget http://releases.neubot.org/rc/neubot-0.4-1_all.deb &&
+	sudo dpkg -i neubot-0.4-1_all.deb &&
 	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot
@@ -55,7 +55,7 @@ make sure they work and then close your private neubot instance::
 Reinstall the package over itself to make sure that future updates are
 going to work (we must test the uninstall script of the new package)::
 
-	sudo dpkg -i neubot-0.4-rc6-1_all.deb &&
+	sudo dpkg -i neubot-0.4-1_all.deb &&
 	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot
@@ -66,7 +66,7 @@ the uninstall script correctly tears down the icon before uninstalling
 Neubot.
 
 	neubot statusicon &&
-	sudo dpkg -i neubot-0.4-rc6-1_all.deb &&
+	sudo dpkg -i neubot-0.4-1_all.deb &&
 	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot

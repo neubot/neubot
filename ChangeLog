@@ -1,3 +1,8 @@
+Neubot 0.4 [2011-07-20]
+	* rendezvous/server.py: stop redirecting bittorrent on a test server
+	* Globally replace next(foo) with foo.next()
+	* Release neubot/0.4
+
 Neubot 0.4-rc6 [2011-07-20]
 	* doc: add windows instructions to RELEASE
 	* manpage: add BUGS section

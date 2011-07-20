@@ -1,5 +1,5 @@
 Package: neubot
-Version: 0.4-rc6-1
+Version: 0.4-1
 Architecture: all
 Maintainer: Simone Basso <bassosimone@gmail.com>
 Installed-Size: @SIZE@
