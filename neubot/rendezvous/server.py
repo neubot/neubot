@@ -90,14 +90,8 @@ class ServerRendezvous(ServerHTTP):
         if "speedtest" in m.accept:
             m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
 
-        #
-        # TODO Initial support for BitTorrent via ad-hoc test
-        # server provided by Mattia just for the purpose of testing
-        # the architecture.  Must update to reference the master
-        # server.
-        #
         if "bittorrent" in m.accept:
-            m1.available["bittorrent"] = [ "http://neubot.blupixel.net:8080/" ]
+            m1.available["bittorrent"] = [ "http://%s:8000/" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while
