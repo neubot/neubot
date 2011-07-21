@@ -37,3 +37,6 @@ fi
 if grep -q _neubot /etc/group; then
 	groupdel _neubot
 fi
+if [ "$1"x = "purge"x ]; then
+	rm -rf /var/neubot
+fi
