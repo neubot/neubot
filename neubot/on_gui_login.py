@@ -130,7 +130,7 @@ def _loop_once(args):
 
     # Spam the user
     if message:
-        InfoBox(message)
+        InfoBox(message, 300)
 
 if __name__ == "__main__":
     realmain(sys.argv, lambda: 5)
