@@ -1,3 +1,15 @@
+Neubot 0.4.1-rc1 [2011-07-21]
+	* Don't offer -rc updates to stable clients
+	* Offer to download from the frontend not the backend
+	* doc/RELEASE: remove redundant sentence
+	* doc/RELEASE: typo
+	* Handle exceptions in calling module's MAIN()
+	* api/server.py: make the dispatch table and his callbacks protected
+	* on_gui_login: raise timeout
+	* debian: zap also /var/neubot on purge
+	* release: unbreak regex for matching version
+	* Release neubot/0.4.1-rc1
+
 Neubot 0.4 [2011-07-20]
 	* rendezvous/server.py: stop redirecting bittorrent on a test server
 	* Globally replace next(foo) with foo.next()
