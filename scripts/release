@@ -65,7 +65,7 @@ mv ChangeLog.in ChangeLog
 # Make sure we don't touch the ChangeLog.
 # We don't assume `sed -i' is valid.
 #
-PATTERN=`echo $CURRENT|sed 's/\./\./g'`
+PATTERN=`./scripts/new_version.py $CURRENT`
 FILES=`grep -Rn $PATTERN *|grep -v ^ChangeLog|awk -F: '{print $1}'|sort -u`
 for FILE in $FILES; do
     ./scripts/sed_inplace s/$PATTERN/$NEW/g $FILE
