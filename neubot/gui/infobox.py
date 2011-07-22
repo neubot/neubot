@@ -54,4 +54,6 @@ if not InfoBox:
 
 if __name__ == "__main__":
     InfoBox("An updated version of Neubot is available "
-            "at <http://www.neubot.org/download>")
+            "at <http://www.neubot.org/download>\n"
+            "Please update your privacy settings "
+            "at <http://127.0.0.1:9774/privacy.html>")
