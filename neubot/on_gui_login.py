@@ -125,6 +125,16 @@ def _loop_once(args):
           dictionary["privacy.informed"]):
             uri = "http://127.0.0.1:9774/privacy.html"
             message += " Please update your privacy settings at <%s>" % uri
+
+        # TODO Does the Law allow to force that at the /api level?
+        if ("privacy.informed" in dictionary and
+          "privacy.can_collect" in dictionary and
+          dictionary["privacy.informed"] and
+          not dictionary["privacy.can_collect"]):
+            uri = "http://127.0.0.1:9774/privacy.html"
+            message += " How is Neubot supposed to work if it cannot\n" \
+                       "save the results of your tests?  Please update\n" \
+                       "your privacy settings at <%s>" % uri
     except:
         LOG.exception()
 
