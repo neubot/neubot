@@ -148,7 +148,6 @@ def main(args):
     run(POLLER, conf)
 
     POLLER.loop()
-    sys.exit(0)
 
 if __name__ == "__main__":
     main(sys.argv)
