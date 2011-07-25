@@ -35,44 +35,6 @@ from neubot import utils
 from neubot.main import common
 from neubot import system
 
-class DeprecatedServerTest(object):
-
-    def do_download(self, stream, request, self_config_path):
-        response = Message()
-
-        try:
-            body = open(self_config_path, "rb")
-        except (IOError, OSError):
-            LOG.exception()
-            response.compose(code="500", reason="Internal Server Error")
-            stream.send_response(request, response)
-            return
-
-        if request["range"]:
-            total = utils.file_length(body)
-
-            try:
-                first, last = http_utils.parse_range(request)
-            except ValueError:
-                LOG.exception()
-                response.compose(code="400", reason="Bad Request")
-                stream.send_response(request, response)
-                return
-
-            # XXX read() assumes there is enough core
-            body.seek(first)
-            partial = body.read(last - first + 1)
-            response["content-range"] = "bytes %d-%d/%d" % (first, last, total)
-            body = StringIO.StringIO(partial)
-            code, reason = "206", "Partial Content"
-
-        else:
-            code, reason = "200", "Ok"
-
-        response.compose(code=code, reason=reason, body=body,
-                mimetype="application/octet-stream")
-        stream.send_response(request, response)
-
 FAKE_NEGOTIATION = '''\
 <SpeedtestNegotiate_Response>
  <unchoked>True</unchoked>
@@ -80,10 +42,6 @@ FAKE_NEGOTIATION = '''\
 '''
 
 class ServerTest(ServerHTTP):
-
-    def __init__(self, poller):
-        ServerHTTP.__init__(self, poller)
-        self.old_server = DeprecatedServerTest()
 
     def configure(self, conf, measurer=None):
         conf["http.server.rootdir"] = ""
@@ -102,17 +60,12 @@ class ServerTest(ServerHTTP):
             stream.send_response(request, response)
 
         elif request.uri == "/speedtest/download":
-            fpath = self.conf.get("speedtest.server.path",
-              "/var/neubot/large_file.bin")
-            if os.path.isfile(fpath):
-                self.old_server.do_download(stream, request, fpath)
-            else:
-                first, last = http_utils.parse_range(request)
-                response = Message()
-                response.compose(code="200", reason="Ok",
-                  body=RandomBody(last - first + 1),
-                  mimetype="application/octet-stream")
-                stream.send_response(request, response)
+            first, last = http_utils.parse_range(request)
+            response = Message()
+            response.compose(code="200", reason="Ok",
+              body=RandomBody(last - first + 1),
+              mimetype="application/octet-stream")
+            stream.send_response(request, response)
 
         # Fake for testing purpose only
         elif request.uri in ("/speedtest/negotiate", "/speedtest/collect"):
@@ -133,15 +86,10 @@ class ServerTest(ServerHTTP):
 CONFIG.register_defaults({
     "speedtest.server.address": "0.0.0.0",
     "speedtest.server.daemonize": True,
-    "speedtest.server.path": "/var/neubot/large_file.bin",
     "speedtest.server.port": "80",
 })
 
 def main(args):
-
-    CONFIG.register_descriptions({
-        "speedtest.server.path": "Read response pieces from this large file",
-    })
 
     common.main("speedtest.server", "Speedtest Test Server", args)
 
