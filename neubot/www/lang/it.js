@@ -136,7 +136,8 @@ LANG = {
 
     "i18n_privacy_title_1": "Politica sulla privacy",
 
-    "i18n_privacy_policy": "Lo scopo di Neubot è quello di misurare la qualità e la neutralità della connessione a Internet e di condividere i risultati con la comunità di Internet, al fine di riequilibrare l'asimmetria informativa tra normali utenti e i Service Providers.\n\n\
+    "i18n_privacy_policy": "$Versione: 1.0$\n\n\
+Lo scopo di Neubot è quello di misurare la qualità e la neutralità della connessione a Internet e di condividere i risultati con la comunità di Internet, al fine di riequilibrare l'asimmetria informativa tra normali utenti e i Service Providers.\n\n\
 Neubot non controlla o analizza il traffico Internet. Utilizza appena una piccola frazione della capacità di connessione per eseguire test di trasmissione in background, inviando e/o ricevendo dati casuali. Il risultato contiene misure di prestazioni come la velocità di download, la latenza o il carico percentuale del tuo computer. Inoltre, il risultato contiene il tuo indirizzo Internet. Dopo il test, il risultato viene caricato sui server di Neubot.\n\n\
 Il progetto Neubot ha bisogno di raccogliere il tuo indirizzo Internet, perché ciò permette di inferire il tuo Internet Service Provider e di avere un'idea della tua posizione geografica. Questo è coerente per l'obbiettivo di Neubot di monitorare la qualità e la neutralità di Internet, per provider e area geografica.\n\n\
 Tuttavia, in Europa gli indirizzi Internet sono dati personali. Pertanto, Neubot non può memorizzare, elaborare, o condividere il tuo indirizzo Internet senza il tuo *consenso informato* preventivo, in base alle disposizioni del 'Codice in Materia di Protezione dei Dati personali' `(Decreto 196/03) <http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248>`_. In accordo con quanto previsto dalla legge, titolare del trattamento è il Centro NEXA di Internet &amp; Società, rappresentato dal suo co-direttore Juan Carlos De Martin.\n\n\
