@@ -20,7 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import StringIO
 import os.path
 
 from neubot.config import CONFIG
@@ -72,15 +71,15 @@ class ServerTest(ServerHTTP):
             response = Message()
             body = None
             if request.uri == "/speedtest/negotiate":
-                body = StringIO.StringIO(FAKE_NEGOTIATION)
+                body = FAKE_NEGOTIATION
             response.compose(code="200", reason="Ok", body=body)
             stream.send_response(request, response)
 
         else:
             response = Message()
-            stringio = StringIO.StringIO("500 Internal Server Error")
+            body = "500 Internal Server Error"
             response.compose(code="500", reason="Internal Server Error",
-                             body=stringio, mimetype="text/plain")
+                             body=body, mimetype="text/plain")
             stream.send_response(request, response)
 
 CONFIG.register_defaults({
