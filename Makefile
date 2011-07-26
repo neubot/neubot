@@ -299,6 +299,7 @@ _deb_control_skel:
 	@$(INSTALL) -m644 debian/control/control dist/control/control
 	@$(INSTALL) debian/control/postinst dist/control/postinst
 	@$(INSTALL) debian/control/prerm dist/control/prerm
+	@$(INSTALL) debian/control/postrm dist/control/postrm
 
 _deb_control_md5sums:
 	@$(INSTALL) -m644 /dev/null dist/control/md5sums
