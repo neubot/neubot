@@ -39,14 +39,8 @@ CURRENT_PATCH=`echo $CURRENT | cut -d. -f3`
 #
 if [ $# -eq 1 ]; then
     NEW=$1
-elif [ $# -eq 0 ]; then
-    if echo "$CURRENT" | grep -- -rc 1>/dev/null 2>/dev/null; then
-        echo "Fatal: don't know how to auto-update -rc release numbers"
-        exit 1
-    fi
-    NEW="$CURRENT_MAJOR.$CURRENT_MINOR.$(($CURRENT_PATCH +1))"
 else
-    printf "Usage: %s [version]\n", $0 1>&2
+    printf "Usage: %s new-version\n" $0 1>&2
     exit 1
 fi
 
