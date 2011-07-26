@@ -30,8 +30,7 @@ if k.group(2):
     sys.stdout.write('\.')
     sys.stdout.write(k.group(2))
 if k.group(3):
-    sys.stdout.write('\.')
-    sys.stdout.write(k.group(3))
+    sys.stdout.write(k.group(3).replace(".", "\\."))
 if k.group(4):
     sys.stdout.write(k.group(4))
 sys.stdout.write("\n")
