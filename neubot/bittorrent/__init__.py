@@ -118,13 +118,6 @@ def main(args):
 
     if conf["bittorrent.listen"]:
 
-        if conf["bittorrent.daemonize"]:
-            system.change_dir()
-            system.go_background()
-            LOG.redirect()
-
-        system.drop_privileges(LOG.error)
-
         #
         # If we need to negotiate and we're runing
         # standalone we also need to bring up the
@@ -134,6 +127,17 @@ def main(args):
             HTTP_SERVER.configure(conf)
             HTTP_SERVER.listen((conf["bittorrent.address"],
                                conf["bittorrent.negotiate.port"]))
+
+        #
+        # Drop privileges after listen() so we can
+        # bind() to privileged ports
+        #
+        if conf["bittorrent.daemonize"]:
+            system.change_dir()
+            system.go_background()
+            LOG.redirect()
+
+        system.drop_privileges(LOG.error)
 
     else:
         #
