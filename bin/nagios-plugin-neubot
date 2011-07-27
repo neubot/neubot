@@ -26,6 +26,7 @@ server, and possibly much more information, via the Server-Side
 API (SAPI) implemented at <neubot/server.py>.
 """
 
+import socket
 import httplib
 import sys
 
@@ -34,6 +35,12 @@ if __name__ == "__main__":
 
 def main():
     """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
+
+    try:
+        socket.setdefaulttimeout(3)
+    except Exception, why:
+        sys.stdout.write("CRITICAL - socket.setdefaultimeout(): %s\n" % str(why))
+        sys.exit(2)
 
     try:
         connection = httplib.HTTPConnection("127.0.0.1", "9775")
