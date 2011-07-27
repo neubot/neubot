@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""
+Simple plugin for Nagios that returns the state of the Neubot
+server, and possibly much more information, via the Server-Side
+API (SAPI) implemented at <neubot/server.py>.
+"""
+
+import httplib
+import sys
+
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
+def main():
+    """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
+
+    try:
+        connection = httplib.HTTPConnection("127.0.0.1", "9775")
+    except Exception, why:
+        sys.stdout.write("CRITICAL - httplib.HTTPConnection(): %s\n" % str(why))
+        sys.exit(1)
+
+    try:
+        connection.request("GET", "/sapi/")
+    except Exception, why:
+        sys.stdout.write("CRITICAL - connection.request(): %s\n" % str(why))
+        sys.exit(1)
+
+    try:
+        response = connection.getresponse()
+    except Exception, why:
+        sys.stdout.write("CRITICAL - connection.getresponse(): %s\n" % str(why))
+        sys.exit(1)
+
+    if response.status != 200:
+        sys.stdout.write("CRITICAL - invalid status: %d\n" % response.code)
+        sys.exit(1)
+
+    try:
+        response.read()
+    except Exception, why:
+        sys.stdout.write("CRITICAL - response.read(): %s\n" % str(why))
+        sys.exit(1)
+
+    sys.stdout.write("OK - Neubot server is UP\n")
+
+if __name__ == "__main__":
+    main()
