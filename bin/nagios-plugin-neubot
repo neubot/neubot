@@ -26,44 +26,110 @@ server, and possibly much more information, via the Server-Side
 API (SAPI) implemented at <neubot/server.py>.
 """
 
+import getopt
+import socket
 import httplib
+import signal
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-def main():
+def _got_alarm(signo, frame):
+    """ Time to commit suicide because we failed """
+    sys.stdout.write("CRITICAL: Watchdog timeout\n")
+    sys.exit(2)
+
+USAGE_SHORT = "Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]\n"
+
+USAGE_LONG = '''
+Version: 0.4.1-rc2
+Purpose: Monitor Neubot server
+Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]
+Options:
+    -?            : Print brief help message
+    -h|--help     : Print detailed help message
+    -v            : No-op for compatibility with Nagios specs
+    -V|--version  : Print version number
+
+'''
+
+def __getopt(args):
+    """ Process command line options """
+
+    try:
+        options, arguments = getopt.getopt(args[1:], "?hvV",
+                               ["version", "help"])
+    except getopt.error:
+        sys.stdout.write(USAGE_SHORT)
+        sys.exit(3)
+
+    for tpl in options:
+        name = tpl[0]
+        if name == "-h" or name == "--help":
+            sys.stdout.write(USAGE_LONG)
+            sys.exit(0)
+        elif name == "-?":
+            sys.stdout.write(USAGE_SHORT)
+            sys.exit(0)
+        elif name == "-V" or name == "--version":
+            sys.stdout.write("Neubot 0.4.1-rc2\n")
+            sys.exit(0)
+        else:
+            pass
+
+    if arguments:
+        sys.stdout.write(USAGE_SHORT)
+        sys.exit(3)
+
+def main(args):
     """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
+
+    __getopt(args)
+
+    try:
+        signal.alarm(10)
+        signal.signal(signal.SIGALRM, _got_alarm)
+    except Exception, why:
+        sys.stdout.write("CRITICAL: cannot arm timer: %s\n" % str(why))
+        sys.exit(2)
+
+    try:
+        socket.setdefaulttimeout(3)
+    except Exception, why:
+        sys.stdout.write("CRITICAL: socket.setdefaultimeout(): %s\n" %
+                         str(why))
+        sys.exit(2)
 
     try:
         connection = httplib.HTTPConnection("127.0.0.1", "9775")
     except Exception, why:
-        sys.stdout.write("CRITICAL - httplib.HTTPConnection(): %s\n" % str(why))
-        sys.exit(1)
+        sys.stdout.write("CRITICAL: httplib.HTTPConnection(): %s\n" % str(why))
+        sys.exit(2)
 
     try:
         connection.request("GET", "/sapi/")
     except Exception, why:
-        sys.stdout.write("CRITICAL - connection.request(): %s\n" % str(why))
-        sys.exit(1)
+        sys.stdout.write("CRITICAL: connection.request(): %s\n" % str(why))
+        sys.exit(2)
 
     try:
         response = connection.getresponse()
     except Exception, why:
-        sys.stdout.write("CRITICAL - connection.getresponse(): %s\n" % str(why))
-        sys.exit(1)
+        sys.stdout.write("CRITICAL: connection.getresponse(): %s\n" % str(why))
+        sys.exit(2)
 
     if response.status != 200:
-        sys.stdout.write("CRITICAL - invalid status: %d\n" % response.code)
-        sys.exit(1)
+        sys.stdout.write("CRITICAL: invalid status: %d\n" % response.status)
+        sys.exit(2)
 
     try:
         response.read()
     except Exception, why:
-        sys.stdout.write("CRITICAL - response.read(): %s\n" % str(why))
-        sys.exit(1)
+        sys.stdout.write("CRITICAL: response.read(): %s\n" % str(why))
+        sys.exit(2)
 
-    sys.stdout.write("OK - Neubot server is UP\n")
+    sys.stdout.write("OK: Neubot server is UP\n")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
