@@ -52,7 +52,8 @@ def main():
     try:
         socket.setdefaulttimeout(3)
     except Exception, why:
-        sys.stdout.write("CRITICAL - socket.setdefaultimeout(): %s\n" % str(why))
+        sys.stdout.write("CRITICAL - socket.setdefaultimeout(): %s\n" %
+                         str(why))
         sys.exit(2)
 
     try:
