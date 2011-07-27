@@ -74,7 +74,7 @@ def main():
         sys.exit(2)
 
     if response.status != 200:
-        sys.stdout.write("CRITICAL - invalid status: %d\n" % response.code)
+        sys.stdout.write("CRITICAL - invalid status: %d\n" % response.status)
         sys.exit(2)
 
     try:
