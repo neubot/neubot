@@ -80,6 +80,7 @@ fill_package_data("neubot/www")
 
 SCRIPTS = [
     "bin/start-neubot-daemon",
+    "bin/nagios-plugin-neubot",
     "bin/neubot",
     "bin/neubotw",
 ]

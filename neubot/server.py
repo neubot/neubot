@@ -31,7 +31,9 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.http.message import Message
 from neubot.http.server import HTTP_SERVER
+from neubot.http.server import ServerHTTP
 from neubot.net.poller import POLLER
 from neubot.speedtest.negotiate import ServerSpeedtest
 
@@ -46,6 +48,24 @@ from neubot import system
 #from neubot import rendezvous          # Not yet
 import neubot.rendezvous.server
 
+class ServerSideAPI(ServerHTTP):
+    """ Implements server-side API for Nagios plugin """
+
+    def process_request(self, stream, request):
+        """ Process HTTP request and return response """
+
+        if request.uri == "/sapi":
+            request.uri = "/sapi/"
+
+        if request.uri == "/sapi/":
+            response = Message()
+            response.compose(code="200", reason="Ok")
+        else:
+            response = Message()
+            response.compose(code="404", reason="Not Found")
+
+        stream.send_response(request, response)
+
 #
 # Register default values in the global scope so that
 # their variable names are always defined and the rules
@@ -56,6 +76,7 @@ CONFIG.register_defaults({
     "server.daemonize": True,
     "server.negotiate": True,
     "server.rendezvous": False,         # Not needed on the random server
+    "server.sapi": True,
     "server.speedtest": True,
 })
 
@@ -72,6 +93,7 @@ def main(args):
         "server.daemonize": "Become a daemon and run in background",
         "server.negotiate": "Turn on negotiation infrastructure",
         "server.rendezvous": "Start up rendezvous server",
+        "server.sapi": "Turn on Server-side API",
         "server.speedtest": "Start up Speedtest test and negotiate server",
     })
 
@@ -126,6 +148,20 @@ def main(args):
     ports = (80, 8080, 9773)
     for port in ports:
         HTTP_SERVER.listen((address, port))
+
+    #
+    # Start server-side API for Nagios plugin
+    # to query the state of the server.
+    # Do not use the global server because we
+    # don't want to have the other services
+    # exposed on port 9775, not because that
+    # would be harmful but to keeps things
+    # tidy.
+    #
+    if conf["server.sapi"]:
+        server = ServerSideAPI(POLLER)
+        server.configure(conf)
+        server.listen(("127.0.0.1", 9775))
 
     #
     # Go background and drop privileges,
