@@ -40,6 +40,7 @@ MODULES = {
     "on_gui_login"        : "on_gui_login",
     "rendezvous.client"   : "rendezvous.client",
     "rendezvous.server"   : "rendezvous.server",
+    "server"              : "server",
     "show_database"       : "show_database",
     "speedtest"           : "speedtest.client",
     "speedtest.client"    : "speedtest.client",

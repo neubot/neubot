@@ -236,6 +236,12 @@ class _ServerNegotiate(ServerHTTP):
         if not m["keepalive"]:
             m["stream"].close()
 
-_SERVER = _ServerNegotiate(None)
-HTTP_SERVER.register_child(_SERVER, "/negotiate/")
-HTTP_SERVER.register_child(_SERVER, "/collect/")
+def run(poller, conf):
+    """ Start the client or server-side of the negotiate module """
+
+    if not "negotiate.listen" in conf:
+        LOG.oops("Thou shall pass 'negotiate.listen' to negotiate")
+
+    _SERVER = _ServerNegotiate(None)
+    HTTP_SERVER.register_child(_SERVER, "/negotiate/")
+    HTTP_SERVER.register_child(_SERVER, "/collect/")
