@@ -111,6 +111,8 @@ def run(argv):
         MAIN(argv)
     except KeyboardInterrupt:
         pass
+    except SystemExit:
+        raise
     except:
         LOG.exception()
         sys.exit(1)
