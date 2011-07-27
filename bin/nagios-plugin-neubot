@@ -26,6 +26,7 @@ server, and possibly much more information, via the Server-Side
 API (SAPI) implemented at <neubot/server.py>.
 """
 
+import getopt
 import socket
 import httplib
 import signal
@@ -39,8 +40,52 @@ def _got_alarm(signo, frame):
     sys.stdout.write("CRITICAL - Watchdog timeout\n")
     sys.exit(2)
 
-def main():
+USAGE_SHORT = "Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]\n"
+
+USAGE_LONG = '''
+Version: 0.4.1-rc2
+Purpose: Monitor Neubot server
+Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]
+Options:
+    -?            : Print brief help message
+    -h|--help     : Print detailed help message
+    -v            : No-op for compatibility with Nagios specs
+    -V|--version  : Print version number
+
+'''
+
+def __getopt(args):
+    """ Process command line options """
+
+    try:
+        options, arguments = getopt.getopt(args[1:], "?hvV",
+                               ["version", "help"])
+    except getopt.error:
+        sys.stdout.write(USAGE_SHORT)
+        sys.exit(-1)
+
+    for tpl in options:
+        name = tpl[0]
+        if name == "-h" or name == "--help":
+            sys.stdout.write(USAGE_LONG)
+            sys.exit(0)
+        elif name == "-?":
+            sys.stdout.write(USAGE_SHORT)
+            sys.exit(0)
+        elif name == "-V" or name == "--version":
+            sys.stdout.write("Neubot 0.4.1-rc2\n")
+            sys.exit(0)
+        else:
+            pass
+
+    if arguments:
+        sys.stdout.write(USAGE_SHORT)
+        sys.exit(-1)
+
+def main(args):
     """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
+
+    __getopt(args)
 
     try:
         signal.alarm(10)
@@ -87,4 +132,4 @@ def main():
     sys.stdout.write("OK - Neubot server is UP\n")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
