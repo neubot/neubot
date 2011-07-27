@@ -28,13 +28,26 @@ API (SAPI) implemented at <neubot/server.py>.
 
 import socket
 import httplib
+import signal
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+def _got_alarm(signo, frame):
+    """ Time to commit suicide because we failed """
+    sys.stdout.write("CRITICAL - Watchdog timeout\n")
+    sys.exit(2)
+
 def main():
     """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
+
+    try:
+        signal.alarm(10)
+        signal.signal(signal.SIGALRM, _got_alarm)
+    except Exception, why:
+        sys.stdout.write("CRITICAL - cannot arm timer: %s\n" % str(why))
+        sys.exit(2)
 
     try:
         socket.setdefaulttimeout(3)
