@@ -26,10 +26,12 @@ server, and possibly much more information, via the Server-Side
 API (SAPI) implemented at <neubot/server.py>.
 """
 
+import pwd
 import getopt
 import socket
 import httplib
 import signal
+import os
 import sys
 
 if __name__ == "__main__":
@@ -82,10 +84,25 @@ def __getopt(args):
         sys.stdout.write(USAGE_SHORT)
         sys.exit(3)
 
+def __drop_root_privileges():
+    """ Drop privileges if running as root.  This is probably not
+        needed and requires the `_neubot` user to be present on the
+        system, which is OK since Neubot too requires it. """
+
+    try:
+        if not os.getuid():
+            rec = pwd.getpwnam("_neubot")
+            os.setgid(rec.pw_gid)
+            os.setuid(rec.pw_uid)
+    except Exception, why:
+        sys.stdout.write("CRITICAL: cannot drop privileges: %s\n" % str(why))
+        sys.exit(2)
+
 def main(args):
     """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
 
     __getopt(args)
+    __drop_root_privileges()
 
     try:
         signal.alarm(10)
