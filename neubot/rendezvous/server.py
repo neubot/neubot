@@ -31,6 +31,7 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_geoloc
 from neubot.http.message import Message
+from neubot.http.server import HTTP_SERVER
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
 from neubot.net.poller import POLLER
@@ -126,6 +127,17 @@ CONFIG.register_defaults({
     "rendezvous.server.default": "master.neubot.org",
 })
 
+def run(poller, conf):
+    """ Load MaxMind database and register our child server """
+
+    GEOLOCATOR.open_or_die()
+    LOG.info("This product includes GeoLite data created by MaxMind, "
+             "available from <http://www.maxmind.com/>.")
+
+    server = ServerRendezvous(None)
+    server.configure(conf)
+    HTTP_SERVER.register_child(server, "/rendezvous")
+
 def main(args):
 
     CONFIG.register_descriptions({
@@ -141,26 +153,17 @@ def main(args):
     common.main("rendezvous.server", "Rendezvous server", args)
     conf = CONFIG.copy()
 
-    #
-    # Open the databases needed to perform geolocation after
-    # common.main() because the pathnames for the databases
-    # are configurable.
-    #
-    GEOLOCATOR.open_or_die()
-
-    server = ServerRendezvous(POLLER)
-    server.configure(conf)
+    HTTP_SERVER.configure(conf)
     for port in conf["rendezvous.server.ports"].split(","):
-        server.listen((conf["rendezvous.server.address"], int(port)))
+        HTTP_SERVER.listen((conf["rendezvous.server.address"], int(port)))
+
+    # Really start this module
+    run(POLLER, conf)
 
     if conf["rendezvous.server.daemonize"]:
         system.change_dir()
         system.go_background()
         LOG.redirect()
-
-    # Honour MaxMind license.
-    LOG.info("This product includes GeoLite data created by MaxMind, "
-             "available from <http://www.maxmind.com/>.")
 
     system.drop_privileges(LOG.error)
     POLLER.loop()
