@@ -43,6 +43,7 @@ from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.main import common
 
+from neubot import negotiate
 from neubot import system
 
 #
@@ -127,6 +128,8 @@ def main(args):
             HTTP_SERVER.configure(conf)
             HTTP_SERVER.listen((conf["bittorrent.address"],
                                conf["bittorrent.negotiate.port"]))
+            conf["negotiate.listen"] = True
+            negotiate.run(POLLER, conf)
 
         #
         # Drop privileges after listen() so we can
