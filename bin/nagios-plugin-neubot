@@ -24,6 +24,29 @@
 Simple plugin for Nagios that returns the state of the Neubot
 server, and possibly much more information, via the Server-Side
 API (SAPI) implemented at <neubot/server.py>.
+
+I've written this Nagios plugin after reading the instructions found
+at <http://www.tylerlesmann.com/2009/sep/03/writing-nagios-plugin-python/>.
+According to this website, the administrator should add something like
+this to the configuration of Nagios::
+
+    define command {
+        command_name        check_neubot
+        command_line        /usr/local/bin/nagios-plugin-neubot
+    }
+
+    define service {
+        use                 generic-service
+        service_description Neubot server
+        check_command       check_neubot
+        host_name           localhost
+    }
+
+This recipe is untested but hopefully it should work to monitor
+a Neubot instance from within the same machine, i.e. using 127.0.0.1
+to access it.  I am reluctant to expose this interface over the
+network so if the plugin should be used from another machine better
+to just connect to the negotiator and see what happens.
 """
 
 import pwd
