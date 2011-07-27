@@ -62,7 +62,7 @@ def __getopt(args):
                                ["version", "help"])
     except getopt.error:
         sys.stdout.write(USAGE_SHORT)
-        sys.exit(-1)
+        sys.exit(3)
 
     for tpl in options:
         name = tpl[0]
@@ -80,7 +80,7 @@ def __getopt(args):
 
     if arguments:
         sys.stdout.write(USAGE_SHORT)
-        sys.exit(-1)
+        sys.exit(3)
 
 def main(args):
     """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
