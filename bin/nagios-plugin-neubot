@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
 def _got_alarm(signo, frame):
     """ Time to commit suicide because we failed """
-    sys.stdout.write("CRITICAL - Watchdog timeout\n")
+    sys.stdout.write("CRITICAL: Watchdog timeout\n")
     sys.exit(2)
 
 USAGE_SHORT = "Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]\n"
@@ -91,45 +91,45 @@ def main(args):
         signal.alarm(10)
         signal.signal(signal.SIGALRM, _got_alarm)
     except Exception, why:
-        sys.stdout.write("CRITICAL - cannot arm timer: %s\n" % str(why))
+        sys.stdout.write("CRITICAL: cannot arm timer: %s\n" % str(why))
         sys.exit(2)
 
     try:
         socket.setdefaulttimeout(3)
     except Exception, why:
-        sys.stdout.write("CRITICAL - socket.setdefaultimeout(): %s\n" %
+        sys.stdout.write("CRITICAL: socket.setdefaultimeout(): %s\n" %
                          str(why))
         sys.exit(2)
 
     try:
         connection = httplib.HTTPConnection("127.0.0.1", "9775")
     except Exception, why:
-        sys.stdout.write("CRITICAL - httplib.HTTPConnection(): %s\n" % str(why))
+        sys.stdout.write("CRITICAL: httplib.HTTPConnection(): %s\n" % str(why))
         sys.exit(2)
 
     try:
         connection.request("GET", "/sapi/")
     except Exception, why:
-        sys.stdout.write("CRITICAL - connection.request(): %s\n" % str(why))
+        sys.stdout.write("CRITICAL: connection.request(): %s\n" % str(why))
         sys.exit(2)
 
     try:
         response = connection.getresponse()
     except Exception, why:
-        sys.stdout.write("CRITICAL - connection.getresponse(): %s\n" % str(why))
+        sys.stdout.write("CRITICAL: connection.getresponse(): %s\n" % str(why))
         sys.exit(2)
 
     if response.status != 200:
-        sys.stdout.write("CRITICAL - invalid status: %d\n" % response.status)
+        sys.stdout.write("CRITICAL: invalid status: %d\n" % response.status)
         sys.exit(2)
 
     try:
         response.read()
     except Exception, why:
-        sys.stdout.write("CRITICAL - response.read(): %s\n" % str(why))
+        sys.stdout.write("CRITICAL: response.read(): %s\n" % str(why))
         sys.exit(2)
 
-    sys.stdout.write("OK - Neubot server is UP\n")
+    sys.stdout.write("OK: Neubot server is UP\n")
 
 if __name__ == "__main__":
     main(sys.argv)
