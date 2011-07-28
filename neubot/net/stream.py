@@ -459,7 +459,12 @@ class Stream(Pollable):
             # Here count is the exception that occurred
             raise count
 
-        if status == SUCCESS and count <= 0:
+        if status == SUCCESS and count == 0:
+            self.eof = True
+            self.close()
+            return
+
+        if status == SUCCESS and count < 0:
             raise RuntimeError("Unexpected count value")
 
         raise RuntimeError("Unexpected status value")

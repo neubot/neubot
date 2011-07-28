@@ -31,6 +31,7 @@ from neubot.log import LOG
 # heck of a long time.
 #
 MODULES = {
+    "CA"                  : "net.CA",
     "agent"               : "agent",
     "api.client"          : "api.client",
     "database"            : "database.main",

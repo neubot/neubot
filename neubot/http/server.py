@@ -128,6 +128,7 @@ class ServerHTTP(StreamHandler):
 
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
+        self._ssl_ports = set()
         self.childs = {}
 
     def bind_failed(self, listener, exception):
@@ -137,6 +138,9 @@ class ServerHTTP(StreamHandler):
     def register_child(self, child, prefix):
         self.childs[prefix] = child
         child.child = self
+
+    def register_ssl_port(self, port):
+        self._ssl_ports.add(port)
 
     def got_request_headers(self, stream, request):
         if self.childs:
@@ -245,11 +249,36 @@ class ServerHTTP(StreamHandler):
 
     def connection_made(self, sock, rtt=0):
         stream = ServerStream(self.poller)
-        stream.attach(self, sock, self.conf)
+        nconf = self.conf.copy()
+
+        #
+        # Setup SSL if needed.
+        # XXX The private key and public certificate file is
+        # hardcoded and must be readable by the user that owns
+        # this process for SSL to work.  We can live with the
+        # former issue but the latter belongs clearly to the
+        # not-so-good dept.  (Even if loading a copy of the
+        # private key at startup and then keeping it in memory
+        # is dangerous as well.  Yes an attacker cannot read
+        # the file but she can read the process memory and
+        # find the private key without too much effort.)
+        # Maybe radical privilege separation is the answer
+        # here, but I'm not sure: I need to study more.
+        #
+        port = sock.getsockname()[1]
+        if port in self._ssl_ports:
+            nconf["net.stream.certfile"] = "/etc/neubot/cert.pem"
+            nconf["net.stream.secure"] = True
+            nconf["net.stream.server_side"] = True
+
+        stream.attach(self, sock, nconf)
         self.connection_ready(stream)
 
     def connection_ready(self, stream):
         pass
+
+    def accept_failed(self, listener, exception):
+        LOG.warning("ServerHTTP: accept() failed: %s" % str(exception))
 
 HTTP_SERVER = ServerHTTP(POLLER)
 
