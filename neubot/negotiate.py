@@ -118,6 +118,15 @@ class _Negotiator(object):
             self._delay[m["stream"]] = m
 
     def collect(self, m):
+        #
+        # WARNING! Here it would be possible to prevent
+        # choked streams to invoke collect() but still it
+        # would not be possible from here to say whether
+        # the test is complete.  So, to avoid creating
+        # a false sense of security, we delegate the whole
+        # decision of whether to accept the result or not
+        # to the upstream module.  Period.
+        #
         mod = self._mods[m["module"]]
         mod.collect(m)
         m["response_body"] = json.dumps(m["response_body"])
