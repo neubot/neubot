@@ -152,16 +152,16 @@ def main(args):
     #
     # Start server-side API for Nagios plugin
     # to query the state of the server.
-    # Do not use the global server because we
-    # don't want to have the other services
-    # exposed on port 9775, not because that
-    # would be harmful but to keeps things
-    # tidy.
+    # Do not use the global server but rather
+    # a completely different server because
+    # we don't want to mix control and testing
+    # functionalities.
     #
     if conf["server.sapi"]:
         server = ServerSideAPI(POLLER)
         server.configure(conf)
-        server.listen(("127.0.0.1", 9775))
+        server.register_ssl_port(9775)
+        server.listen((address, 9775))
 
     #
     # Go background and drop privileges,
