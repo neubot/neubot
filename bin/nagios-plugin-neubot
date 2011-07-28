@@ -117,7 +117,7 @@ def __die_if_running_as_root():
         sys.exit(2)
 
 def main(args):
-    """ Monitor Neubot via http://127.0.0.1:9775/sapi/ """
+    """ Monitor Neubot via https://127.0.0.1:9775/sapi/ """
 
     __die_if_running_as_root()
     __getopt(args)
@@ -137,7 +137,7 @@ def main(args):
         sys.exit(2)
 
     try:
-        connection = httplib.HTTPConnection("127.0.0.1", "9775")
+        connection = httplib.HTTPSConnection("127.0.0.1", "9775")
     except Exception, why:
         sys.stdout.write("CRITICAL: httplib.HTTPConnection(): %s\n" % str(why))
         sys.exit(2)
