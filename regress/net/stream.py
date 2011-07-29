@@ -306,10 +306,10 @@ class TestStreamReadable_RecvBlocked_RecvPending(TestStream_Base):
     def runTest(self):
         self.count = 0
         self.stream.sock.sorecv = lambda k: (45,"")     #XXX
-        self.stream.writable = lambda: None
+        self.stream.handle_writable = lambda: None
         self.stream.recv_blocked = True
         self.stream.recv_pending = True
-        self.stream.readable()
+        self.stream.handle_readable()
         self.assertEqual(self.count, 1)
 
     def set_writable(self, stream):
@@ -319,9 +319,9 @@ class TestStreamReadable_RecvBlocked_NoRecvPending(TestStream_Base):
     def runTest(self):
         self.count = 0
         self.stream.sock.sorecv = lambda k: (45,"")     #XXX
-        self.stream.writable = lambda: None
+        self.stream.handle_writable = lambda: None
         self.stream.recv_blocked = True
-        self.stream.readable()
+        self.stream.handle_readable()
         self.assertEqual(self.count, 2)
 
     def set_writable(self, stream):
@@ -334,9 +334,9 @@ class TestStreamReadable_SuccessBytes(TestStream_Base):
     def runTest(self):
         self.count = 0
         self.stream.sock.sorecv = lambda k: (stream.SUCCESS, "abc")
-        self.stream.writable = lambda: 1/0
+        self.stream.handle_writable = lambda: 1/0
         self.stream.recv_complete = self.recv_complete
-        self.stream.readable()
+        self.stream.handle_readable()
         self.assertEqual(self.count, 2)
         self.assertEqual(self.stream.recv_ticks, 0)
         self.assertFalse(self.stream.recv_pending)
@@ -351,14 +351,14 @@ class TestStreamReadable_SuccessBytes(TestStream_Base):
 class TestStreamReadable_WantRead(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.WANT_READ, "")
-        self.stream.writable = lambda: 1/0
-        self.stream.readable()
+        self.stream.handle_writable = lambda: 1/0
+        self.stream.handle_readable()
 
 class TestStreamReadable_WantWrite(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.WANT_WRITE, "")
-        self.stream.writable = lambda: 1/0
-        self.stream.readable()
+        self.stream.handle_writable = lambda: 1/0
+        self.stream.handle_readable()
 
     def unset_readable(self, stream):
         pass
@@ -369,8 +369,8 @@ class TestStreamReadable_WantWrite(TestStream_Base):
 class TestStreamReadable_EOF(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.SUCCESS, "")
-        self.stream.writable = lambda: 1/0
-        self.stream.readable()
+        self.stream.handle_writable = lambda: 1/0
+        self.stream.handle_readable()
         self.assertTrue(self.stream.eof)
 
     def close(self, stream):
@@ -379,14 +379,14 @@ class TestStreamReadable_EOF(TestStream_Base):
 class TestStreamReadable_Error(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.ERROR, RuntimeError())
-        self.stream.writable = lambda: 1/0
-        self.assertRaises(RuntimeError, self.stream.readable)
+        self.stream.handle_writable = lambda: 1/0
+        self.assertRaises(RuntimeError, self.stream.handle_readable)
 
 class TestStreamReadable_UnknownStatus(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (58, "")
-        self.stream.writable = lambda: 1/0
-        self.assertRaises(RuntimeError, self.stream.readable)
+        self.stream.handle_writable = lambda: 1/0
+        self.assertRaises(RuntimeError, self.stream.handle_readable)
 
 #
 #  ____                    _
