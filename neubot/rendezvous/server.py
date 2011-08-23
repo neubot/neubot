@@ -43,6 +43,8 @@ from neubot import marshal
 from neubot import system
 from neubot import utils
 
+from neubot.libversion import LibVersion
+
 GEOLOCATOR = Geolocator()
 
 class ServerRendezvous(ServerHTTP):
@@ -60,7 +62,7 @@ class ServerRendezvous(ServerHTTP):
         version = self.conf["rendezvous.server.update_version"]
         if (("-rc" in version and "-rc" in m.version) or
           (not "-rc" in version and not "-rc" in m.version)):
-            if m.version and utils.versioncmp(version, m.version) > 0:
+            if m.version and LibVersion.compare(version, m.version) > 0:
                 m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
                 m1.update["version"] = version
 
@@ -101,7 +103,7 @@ class ServerRendezvous(ServerHTTP):
         # newer Neubots want a JSON.  I hope old clients will upgrade
         # pretty soon.
         #
-        if m.version and utils.versioncmp(m.version, "0.3.7") >= 0:
+        if m.version and LibVersion.compare(m.version, "0.3.7") >= 0:
             s = marshal.marshal_object(m1, "application/json")
             mimetype = "application/json"
         else:
