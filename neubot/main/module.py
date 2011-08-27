@@ -39,6 +39,7 @@ MODULES = {
     "http.client"         : "http.client",
     "http.server"         : "http.server",
     "on_gui_login"        : "on_gui_login",
+    "privacy"             : "privacy",
     "rendezvous.client"   : "rendezvous.client",
     "rendezvous.server"   : "rendezvous.server",
     "server"              : "server",
@@ -68,6 +69,7 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     import neubot.http.client
     import neubot.http.server
     import neubot.on_gui_login
+    import neubot.privacy
     import neubot.rendezvous.client
     import neubot.rendezvous.server
     import neubot.server

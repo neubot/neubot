@@ -55,6 +55,9 @@ def main(args):
         system.write_pidfile()
         LOG.redirect()
 
+    if conf["agent.use_syslog"]:
+        LOG.redirect()
+
     system.drop_privileges(LOG.error)
 
     #

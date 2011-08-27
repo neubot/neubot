@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+      "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+	<!-- Label to start/stop via launchctl(1) -->
+	<key>Label</key>
+	<string>org.neubot</string>
+
+	<!--
+	  The referenced script locates the most up-to-date and
+	  successfully installed version of Neubot and then hands
+	  over the control to it.
+	-->
+	<key>ProgramArguments</key>
+	<array>
+	<string>/bin/sh</string>
+	<string>/usr/local/share/neubot/start.sh</string>
+	</array>
+
+	<!-- Make sure we run at startup -->
+	<key>RunAtLoad</key>
+	<true/>
+
+</dict>
+</plist>

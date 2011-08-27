@@ -1,0 +1,34 @@
+#!/bin/sh
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# Use the best tool available on the platform to load Neubot
+# web user interface in the default browser.
+# FIXME As suggested by Vittorio Bertola and Simone Caldana this
+# app does not behave as the user expects because it just opens the
+# browser and then exits.  (Please, note that open -W would not
+# help to fix this issue because the icon will keep jumping in the
+# dashboard and that is even more confusing.)  I think the right
+# fix here is to create a Cocoa application that uses the WebView
+# class to load the proper page.
+#
+open http://127.0.0.1:9774/

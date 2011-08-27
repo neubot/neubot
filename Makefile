@@ -46,8 +46,6 @@ PHONIES += _install_edit
 PHONIES += _install
 PHONIES += install
 PHONIES += uninstall
-PHONIES += app
-PHONIES += app.zip
 PHONIES += _deb_data
 PHONIES += _deb_data.tgz
 PHONIES += _deb_control_skel
@@ -225,31 +223,6 @@ install:
 	@echo "[INSTALL]"
 	@make -f Makefile _install INSTALL='install -o root'
 
-#   __ _ _ __  _ __
-#  / _` | '_ \| '_ \
-# | (_| | |_) | |_) |
-#  \__,_| .__/| .__/
-#       |_|   |_|
-#
-# Application for MacOSX >= Leopard (10.5)
-#
-
-APP_NAME=$(STEM).app
-APP_RESOURCES=$(APP_NAME)/Contents/Resources
-
-app:
-	@echo "[APP]"
-	@make -f Makefile archive
-	@cp -R MacOS/neubot.app dist/$(APP_NAME)
-	@cd dist/$(APP_RESOURCES) && tar -xzf ../../../$(STEM).tar.gz && \
-         ln -s $(STEM) neubot && rm -rf pax_global_header
-
-app.zip:
-	@echo "[APP.ZIP]"
-	@make -f Makefile app
-	@cd dist && zip -q --symlinks -r $(APP_NAME).zip $(APP_NAME)
-	@cd dist && rm -rf $(APP_NAME) $(STEM).tar.gz $(STEM).zip
-
 #      _      _
 #   __| | ___| |__
 #  / _` |/ _ \ '_ \
@@ -353,7 +326,6 @@ deb:
 
 _release:
 	@make clean
-	@make app.zip
 	@make deb
 	@make archive
 	@./scripts/update_apt

@@ -20,18 +20,37 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+'''
+ Initialize and manage privacy settings
+'''
+
 import types
+import sys
+
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
 from neubot.config import ConfigError
 from neubot.log import LOG
 
+from neubot.database import table_config
+from neubot.database import DATABASE
+from neubot.main import common
+
 from neubot import utils
 
-PRIVACYKEYS = ("privacy.informed", "privacy.can_collect",
-               "privacy.can_share")
+PRIVACYKEYS = (
+               "privacy.informed",
+               "privacy.can_collect",
+               "privacy.can_share"
+              )
 
 def check(updates):
+
+    ''' Raises ConfigError if the user is trying to update the
+        privacy settings in a wrong way '''
+
     conf = CONFIG.copy()
     for key in PRIVACYKEYS:
         if key in updates:
@@ -50,6 +69,10 @@ def check(updates):
                              "to share what we cannot collect)?")
 
 def collect_allowed(m):
+
+    ''' Returns True if we are allowed to collect a result into the
+        database, and False otherwise '''
+
     if type(m) != types.DictType:
         #
         # XXX This is a shame therefore put the oops() and hope that
@@ -59,3 +82,37 @@ def collect_allowed(m):
         m = m.__dict__
     return (not utils.intify(m["privacy_informed"])
             or utils.intify(m["privacy_can_collect"]))
+
+CONFIG.register_defaults({
+                          'privacy.init_informed': 0,
+                          'privacy.init_can_collect': 0,
+                          'privacy.init_can_share': 0,
+                          'privacy.overwrite': 0,
+                         })
+
+def main(args):
+
+    ''' Will initialize privacy settings '''
+
+    CONFIG.register_descriptions({
+        'privacy.init_informed': "You've read privacy policy",
+        'privacy.init_can_collect': 'We can collect your IP address',
+        'privacy.init_can_share': 'We can share your IP address',
+        'privacy.overwrite': 'Overwrite old settings',
+                                 })
+
+    common.main('privacy', 'Initialize privacy settings', args)
+    conf = CONFIG.copy()
+
+    if not conf['privacy.informed'] or conf['privacy.overwrite']:
+        dictonary = {
+                     'privacy.informed': conf['privacy.init_informed'],
+                     'privacy.can_collect': conf['privacy.init_can_collect'],
+                     'privacy.can_share': conf['privacy.init_can_share'],
+                    }
+        table_config.update(DATABASE.connection(), dictonary.iteritems())
+
+    DATABASE.connection().commit()
+
+if __name__ == '__main__':
+    main(sys.argv)
