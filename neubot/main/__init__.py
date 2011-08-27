@@ -1,4 +1,4 @@
-# neubot/main/__init__.py
+#!/usr/bin/env python
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -33,11 +33,9 @@ import os.path
 import sys
 
 if __name__ == "__main__":
-    path = os.path.abspath(__file__)
-    me = os.sep.join(["neubot", "main.py"])
-    i = path.find(me)
-    path = path[:i]
-    sys.path.insert(0, path)
+    # Magic!
+    sys.path.insert(0, os.path.dirname (os.path.dirname(os.path.dirname
+                                        (os.path.abspath(__file__)))))
 
 USAGE = '''\
 neubot - The network neutrality bot

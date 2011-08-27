@@ -20,14 +20,24 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' This module tells you where the web pages are '''
+
 import os.path
 
-path = os.path.abspath(__file__)
-me = os.sep.join(["", "rootdir.py"])
-i = path.find(me)
-path = path[:i]
-path = path.replace(r"\library.zip\neubot", "")
-WWW = os.sep.join([path, "www"])
+# Magic!
+CANDIDATE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+#
+# When there is a library.zip web pages are in the same directory,
+# and this happens with py2exe.  Otherwise, web pages are in the dir
+# that also contains Neubot sources.
+#
+#
+if CANDIDATE.endswith('library.zip') and os.path.isfile(CANDIDATE):
+    CANDIDATE = os.path.dirname(CANDIDATE)
+    WWW = os.sep.join([CANDIDATE, 'www'])
+else:
+    WWW = os.sep.join([CANDIDATE, 'neubot/www'])
 
 if __name__ == "__main__":
-    print WWW
+    print(WWW)
