@@ -60,6 +60,7 @@ MODULES = {
 # inspecting us.
 #
 if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
+    import neubot.net.CA
     import neubot.agent
     import neubot.api.client
     import neubot.database.main
@@ -69,6 +70,7 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     import neubot.on_gui_login
     import neubot.rendezvous.client
     import neubot.rendezvous.server
+    import neubot.server
     import neubot.show_database
     import neubot.speedtest.client
     import neubot.speedtest.client
