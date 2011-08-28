@@ -23,6 +23,11 @@
 
 LANG = {
 
+    /* neubot/www/header.html */
+
+    'i18n_header_subtitle': "L'interfaccia web per controllare Neubot",
+    'i18n_header_title': '<a href="index.html">Interfaccia Web di Neubot</a>',
+
     /*
      * i18n for javascripts
      * Map the string on the left to the string on the right via
