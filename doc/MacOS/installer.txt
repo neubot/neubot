@@ -49,6 +49,13 @@ that we can collect.  Also, the output is a file in /tmp that tells
 the value of the can_share setting.
 
 
+Before the installer runs, the preflight script, which you can find
+in MacOS/Neubot-pkg/Contents/Resources/preflight, will make sure that
+the /tmp/neubot-can-share file actually exists.  If not, it aborts
+the install because it means that our privacy panel didn't loaded for
+whatever reason.
+
+
 The installer installs Neubot at /usr/local/share/neubot.  We refer
 to this directory as the BASEDIR.  Assuming that we're installing
 Neubot 0.4.1 (whose numeric representation is 0.004001999, the BASEDIR
