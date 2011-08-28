@@ -60,6 +60,11 @@ class ServerRendezvous(ServerHTTP):
         m1 = compat.RendezvousResponse()
 
         version = self.conf["rendezvous.server.update_version"]
+
+        #
+        # Don't offer a release candidate update if the user is not
+        # running a release candidate as well and viceversa.
+        #
         if (("-rc" in version and "-rc" in m.version) or
           (not "-rc" in version and not "-rc" in m.version)):
             if m.version and LibVersion.compare(version, m.version) > 0:
