@@ -1,6 +1,0 @@
-MacOS X random notes
-''''''''''''''''''''
-
-* Tutorial to generate the icon using Gimp
-  <http://www.giantmike.com/articles/gimp_icon_tutorial.html>
-
