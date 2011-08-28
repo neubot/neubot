@@ -1,6 +1,7 @@
 Testing procedure before release
 ''''''''''''''''''''''''''''''''
 
+
 First of all, build the packages, compute SHA256 sums and upload
 packages to the remote server using the following command::
 
@@ -8,15 +9,23 @@ packages to the remote server using the following command::
 	ssh releases.neubot.org rm -rf rc/* &&
 	scp dist/* releases.neubot.org:rc/
 
-Additionally, to create and publish the package for MacOSX you need
-to be on a real Mac and type the following command(s)::
+
+Testing under MacOSX
+````````````````````
+
+To create and publish the package for MacOSX you need to be on a
+real Mac and type the following command(s)::
 
 	./MacOS/makepkg.py &&
 	scp dist/Neubot-0.4.1-rc3.pkg.tgz releases.neubot.org:rc/
 
-Testing under debian.  We assume that the debian machine has already
-installed a previous version of Neubot, so we can test whether the update
-will work.  To be sure::
+
+Testing under Ubuntu
+````````````````````
+
+We assume that the debian machine has already installed a previous
+version of Neubot, so we can test whether the update will work.  To
+be sure::
 
 	neubot -V
 
@@ -82,9 +91,13 @@ line using the following command::
 
 	neubot bittorrent && neubot speedtest
 
-Testing under Windows.  First of all download the zip sources and
-then follow this building/testing procedure (we assume that you have
-already installed an old copy of the software on your system):
+
+Testing under Windows
+`````````````````````
+
+First of all download the zip sources and then follow this
+building/testing procedure (we assume that you have already
+installed an old copy of the software on your system):
 
 0. upgrade the required software
 
@@ -117,9 +130,12 @@ line using the following command::
 	neubot bittorrent
 	neubot speedtest
 
-Check the manpage.  At this point it makes sense to read the manual
-page and ensure it is still relevant and there are no changes that must
-be performed.
+
+Check the manpage
+`````````````````
+
+At this point it makes sense to read the manual page and ensure it
+is still relevant and there are no changes that must be performed.
 
 Make sure that neubot installer is not mistakenly recognized as a
 virus checking with <http://www.virustotal.com/>.  If everything is
@@ -130,7 +146,15 @@ Move the packages in the proper place in <http://releases.neubot.org/>.
 For robustness make a copy of the debian package's files so that we
 can restore them if needed.
 
+
+Check apt-get
+`````````````
+
 Finally install the previous version and make sure that the update via
 apt-get works and that there are no errors.
+
+
+Save SHA256s
+````````````
 
 Save the SHA256s in the proper github project.
