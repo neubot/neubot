@@ -157,7 +157,9 @@ def main(args):
     # we don't want to mix control and testing
     # functionalities.
     #
-    if conf["server.sapi"]:
+    #if conf["server.sapi"]:
+    # We're not ready to deploy that
+    if False:
         server = ServerSideAPI(POLLER)
         server.configure(conf)
         server.register_ssl_port(9775)
