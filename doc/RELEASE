@@ -127,8 +127,8 @@ to make sure that the upgrade notification mechanism works.
 Make sure that bittorrent and speedtest tests work from command
 line using the following command::
 
-	neubot bittorrent
-	neubot speedtest
+	neubot.exe bittorrent
+	neubot.exe speedtest
 
 
 Check the manpage
