@@ -27,6 +27,8 @@ update:
 	          --export-height=16 neubot.svg
 	@inkscape -e neubot-32x32.png --export-width=32 \
 	          --export-height=32 neubot.svg
+	@inkscape -e neubot-48x48.png --export-width=48 \
+	          --export-height=48 neubot.svg
 	@inkscape -e neubot-64x64.png --export-width=64 \
 	          --export-height=64 neubot.svg
 	@inkscape -e neubot-128x128.png --export-width=128 \
