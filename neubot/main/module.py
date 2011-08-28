@@ -61,7 +61,7 @@ MODULES = {
 # inspecting us.
 #
 if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
-    import neubot.net.CA
+    #import neubot.net.CA               # posix only
     import neubot.agent
     import neubot.api.client
     import neubot.database.main
@@ -71,14 +71,14 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     import neubot.on_gui_login
     import neubot.privacy
     import neubot.rendezvous.client
-    import neubot.rendezvous.server
-    import neubot.server
+    #import neubot.rendezvous.server    # requires PyGeoIP
+    #import neubot.server               # ditto
     import neubot.show_database
     import neubot.speedtest.client
     import neubot.speedtest.client
     import neubot.speedtest.negotiate
     import neubot.speedtest.server
-    import neubot.statusicon
+    #import neubot.statusicon           # requires Gtk
     import neubot.net.stream
 
 def run(argv):
