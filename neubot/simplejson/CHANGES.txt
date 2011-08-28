@@ -1,3 +1,20 @@
+Version 2.1.6 released 2011-05-08
+
+* Prevent segfaults with deeply nested JSON documents
+  https://github.com/simplejson/simplejson/issues/11
+* Fix compatibility with Python 2.5
+  https://github.com/simplejson/simplejson/issues/5
+
+Version 2.1.5 released 2011-04-17
+
+* Built sdist tarball with setuptools_git installed. Argh.
+
+Version 2.1.4 released 2011-04-17
+
+* Does not try to build the extension when using PyPy
+* Trailing whitespace after commas no longer emitted when indent is used
+* Migrated to github http://github.com/simplejson/simplejson
+
 Version 2.1.3 released 2011-01-17
 
 * Support the sort_keys option in C encoding speedups
