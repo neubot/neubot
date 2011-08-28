@@ -8,6 +8,12 @@ packages to the remote server using the following command::
 	ssh releases.neubot.org rm -rf rc/* &&
 	scp dist/* releases.neubot.org:rc/
 
+Additionally, to create and publish the package for MacOSX you need
+to be on a real Mac and type the following command(s)::
+
+	./MacOS/makepkg.py &&
+	scp dist/Neubot-0.4.1-rc3.pkg.tgz releases.neubot.org:rc/
+
 Testing under debian.  We assume that the debian machine has already
 installed a previous version of Neubot, so we can test whether the update
 will work.  To be sure::
