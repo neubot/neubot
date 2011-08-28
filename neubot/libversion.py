@@ -171,3 +171,6 @@ class LibVersion(object):
 
         return (decimal.Decimal(cls.to_numeric(left)) -
                decimal.Decimal(cls.to_numeric(right)))
+
+if __name__ == '__main__':
+    print(LibVersion.to_numeric('0.4.1-rc2'))
