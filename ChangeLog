@@ -1,3 +1,49 @@
+Neubot 0.4.1-rc3 [2011-08-28]
+	* bittorrent: don't need to exit(0)
+	* bittorrent: drop privileges after listen()
+	* rendezvous/server.py: export initialization via run()
+	* negotiate: export run() and propagate changes
+	* neubot: Add server.py to start server-side components
+	* Merge branch 'server-command' into next
+	* main/module.py: re-raise SystemExit
+	* speedtest: server: Remove old test server code
+	* speedtest: server: We don't need StringIO anymore
+	* server.py: Expose simple server-side API on port 9775
+	* bin: Add Nagios plugin for Neubot
+	* Merge branch 'nagios-plugin' into next
+	* nagios-plugin-neubot: critical in nagios is 2 not 1
+	* nagios-plugin-neubot: set default socket timeout of 3 seconds
+	* nagios-plugin-neubot: arm 10-seconds watchdog timeout
+	* nagios-plugin-neubot: avoid NameError in error path
+	* nagios-plugin-neubot: wrap very long line
+	* nagios-plugin-neubot: basic command line options parsing
+	* nagios-plugin-neubot: manual-compliant strings
+	* nagios-plugin-neubot: Unknown is 3 not -1
+	* Merge branch 'nagios-plugin-fixes' into next
+	* nagios-plugin-neubot: drop root privileges automatically
+	* nagios-plugin-neubot: comment about the expected scenario
+	* nagios-plugin-neubot: refuse to run as root
+	* net/stream.py: Treat zero bytes send() as EOF
+	* http/server.py: allow to flag some ports as SSL ports
+	* net/CA.py: Generate self-signed certificate under posix
+	* server.py: Export server-api using SSL
+	* nagios-plugin-neubot: Fetch server state via SSL
+	* Merge branch 'nagios-plugin-ssl-and-paranoia' into next
+	* negotiate.py: clarify upstream modules' duties
+	* regress: net/stream.py: repair after s/foo/handle_foo/
+	* icons: Improved Neubot icon, step 1
+	* New version management strategy
+	* main/module.py: add two missing modules to py2exe list of modules
+	* Locate neubot directory using os.path.dirname and abspath
+	* Create package installer for MacOSX
+	* main/module.py: disable some modules on Win32
+	* main/__init__.py: sys.exit(0) at the end is implied
+	* main/__init__.py: remove fork nonsense
+	* server.py: disable server sapi
+	* rendezvous/server.py: explain recent change
+	* libversion.py: print version number when invoked directly
+	* Release neubot/0.4.1-rc3
+
 Neubot 0.4.1-rc2 [2011-07-26]
 	* infobox.py: better testing code
 	* on_gui_login.py: Annoy the user if we cannot collect

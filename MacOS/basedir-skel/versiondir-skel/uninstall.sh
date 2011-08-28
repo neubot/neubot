@@ -50,7 +50,7 @@ dscl . -delete /Groups/_neubot
 rm -rf /var/neubot/					# database dir
 
 # Tell the system Neubot is no more
-rm -rf /Library/Receipts/Neubot-0.4.1-rc2.pkg/
+rm -rf /Library/Receipts/Neubot-0.4.1-rc3.pkg/
 rm -rf /var/db/receipts/org.neubot.*
 
 # Won't hurt

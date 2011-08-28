@@ -78,7 +78,7 @@ LANG = {
 
     'i18n_collect_status_text': "L'Agent sta esegendo l'upload dei risultati sul server di Neubot.",
 
-    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.1-rc2. Neubot è un programma <a href='http://www.neubot.org/copying'>open-source</a> leggero che viene eseguito in background ed esegue periodicamente test di trasmissione dati per testare la tua connessione a Internet utilizzando diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi le FAQ</a>",
+    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.1-rc3. Neubot è un programma <a href='http://www.neubot.org/copying'>open-source</a> leggero che viene eseguito in background ed esegue periodicamente test di trasmissione dati per testare la tua connessione a Internet utilizzando diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi le FAQ</a>",
 
     'i18n_footer_text': "Neubot è un progetto di ricerca sulla neutralità della rete realizzato dal<br /><a href='http://nexa.polito.it/'>Centro NEXA su Internet &amp; Società</a> del <a href='http://www.dauin.polito.it/'>Politecnico di Torino</a>.",
 

@@ -173,4 +173,4 @@ class LibVersion(object):
                decimal.Decimal(cls.to_numeric(right)))
 
 if __name__ == '__main__':
-    print(LibVersion.to_numeric('0.4.1-rc2'))
+    print(LibVersion.to_numeric('0.4.1-rc3'))
