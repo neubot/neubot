@@ -69,15 +69,15 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         #
         # Match robustly the content of /tmp/neubot-can-share and
         # and setup CAN_SHARE accordingly.
+        # Please note we've already checked that this file exists in
+        # the preflight script and we don't want to consider the case
+        # where someone is able to remove it between it and us.
         #
         CAN_SHARE=no
-
-        if [ -f /tmp/neubot-can-share ]; then
-            if grep -q '^1$' /tmp/neubot-can-share; then
-                    CAN_SHARE=yes
-            fi
-            rm -f /tmp/neubot-can-share
+        if grep -q '^1$' /tmp/neubot-can-share; then
+            CAN_SHARE=yes
         fi
+        rm -f /tmp/neubot-can-share
 
         logger -s -p daemon.info -t $0 "Can share: $CAN_SHARE"
 
