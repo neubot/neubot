@@ -61,6 +61,13 @@ def _init():
      we have a sane umask.
     '''
 
+    #
+    # If we don't run the program as root we produce Archive.bom
+    # with wrong ownership and we don't want that to happen.
+    #
+    if os.getuid() != 0:
+        sys.exit('You must run this program as root')
+
     os.umask(0022)
 
     shutil.rmtree('Neubot-%s.pkg' % VERSION, ignore_errors=True)
@@ -173,8 +180,7 @@ def _fixup_perms():
      See <http://comments.gmane.org/gmane.os.openbsd.misc/187993>
     '''
 
-    if os.getuid() == 0:
-        __call('find Neubot-%s.pkg -exec chown root:wheel {} \;' % VERSION)
+    __call('find Neubot-%s.pkg -exec chown root:wheel {} \;' % VERSION)
 
 def _create_tarball():
     ''' Create the zip file in ../dist ready for distribution '''
