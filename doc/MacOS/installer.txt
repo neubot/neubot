@@ -186,3 +186,46 @@ by the top-level Makefile.  You must run this script as root to ensure
 correct ownership in the result package.  If everything is OK you get
 a compressed tarball containing the pkg file in the TOPLEVEL/dist, ready
 for distribution.
+
+Very briefly the algorithm to create the package is as follows:
+
+1. copy the package skeleton (MacOS/Neubot-pkg) over the directory
+   that will contain the package (MacOS/Neubot-0.4.1-rc3.pkg);
+
+2. populate the BASEDIR at a temporary location (MacOS/neubot)::
+
+     2.1. copy the sources (neubot/) into the VERSIONDIR (which
+          in this example is MacOS/neubot/0.004001003/);
+
+     2.2. compile the sources at MacOS/neubot/0.004001003/ using
+          standard library module compileall;
+
+     2.3. copy the files in MacOS/basedir-skel/ (start.sh and
+          org.neubot.plist) at MacOS/neubot/;
+
+     2.4. copy the files in MacOS/basedir-skel/versiondir-skel (cmdline.sh,
+          start.sh, prerun.sh and ininstall.sh) in MacOS/neubot/0.004001003/;
+
+     2.5. copy the MacOS/Neubot-app tree to
+          MacOS/neubot/0.004001003/Neubot.app;
+
+     2.6. copy the manual page man/man1/neubot.1 into
+          MacOS/neubot/0.004001003/;
+
+     2.7. add .neubot-installed-ok to MacOS/neubot/0.004001003/ so that
+          BASEDIR/start.sh will select this directory;
+
+3. compress MacOS/neubot using pax and producing Archive.pax.gz (the
+   format we use is cpio because the standard format triggers "obsolete
+   package format" warnings in the system logger);
+
+4. create Archive.bom from the content of MacOS/neubot -- the installer
+   will read from the the permissions and ownership (I guess);
+
+5. enter into the directory Privacy, compile the plugin and then move
+   Privacy/build/Release/Privacy.bundle -- which is the plugin pan -- into
+   Neubot-0.4.1-rc3.pkg/MacOS/Contents/Plugins/ and do the same for
+   Privacy/InstallerSections.plist -- the file that tells the installer
+   where to put the new pane -- and finally leave directory Privacy;
+
+6. finally the tarball is created with the content of Neubot-0.4.1-rc3.pkg.
