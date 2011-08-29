@@ -68,7 +68,7 @@ def _got_alarm(signo, frame):
 USAGE_SHORT = "Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]\n"
 
 USAGE_LONG = '''
-Version: 0.4.1-rc3
+Version: 0.4.1-rc4
 Purpose: Monitor Neubot server
 Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]
 Options:
@@ -98,7 +98,7 @@ def __getopt(args):
             sys.stdout.write(USAGE_SHORT)
             sys.exit(0)
         elif name == "-V" or name == "--version":
-            sys.stdout.write("Neubot 0.4.1-rc3\n")
+            sys.stdout.write("Neubot 0.4.1-rc4\n")
             sys.exit(0)
         else:
             pass

@@ -190,7 +190,7 @@ for distribution.
 Very briefly the algorithm to create the package is as follows:
 
 1. copy the package skeleton (MacOS/Neubot-pkg) over the directory
-   that will contain the package (MacOS/Neubot-0.4.1-rc3.pkg);
+   that will contain the package (MacOS/Neubot-0.4.1-rc4.pkg);
 
 2. populate the BASEDIR at a temporary location (MacOS/neubot)::
 
@@ -224,8 +224,8 @@ Very briefly the algorithm to create the package is as follows:
 
 5. enter into the directory Privacy, compile the plugin and then move
    Privacy/build/Release/Privacy.bundle -- which is the plugin pan -- into
-   Neubot-0.4.1-rc3.pkg/MacOS/Contents/Plugins/ and do the same for
+   Neubot-0.4.1-rc4.pkg/MacOS/Contents/Plugins/ and do the same for
    Privacy/InstallerSections.plist -- the file that tells the installer
    where to put the new pane -- and finally leave directory Privacy;
 
-6. finally the tarball is created with the content of Neubot-0.4.1-rc3.pkg.
+6. finally the tarball is created with the content of Neubot-0.4.1-rc4.pkg.

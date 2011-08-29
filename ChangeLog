@@ -1,3 +1,26 @@
+Neubot 0.4.1-rc4 [2011-08-29]
+	* MacOS: move icon-creation tutorial to the proper place
+	* doc/RELEASE: mention the Mac package too
+	* icons: Update neubot.ico
+	* icons/Makefile: forgot to mention neubot-48x48.png
+	* icons: update neubot-48x48.png
+	* www: update header web
+	* www: Translate title and subtitle into italian
+	* Merge branches 'pu.MacOS', 'pu.icons' and 'pu.www' into next
+	* doc/RELEASE: sections
+	* doc/RELEASE: prepend .exe to the command
+	* MacOS: preflight: Make sure /tmp/neubot-can-share exists
+	* Merge branches 'pu.doc' and 'pu.MacOS' into next
+	* neubot: make sure there are no executable files inside
+	* MacOS: makepkg.py must be run by root.  Period.
+	* MacOS: document makepkg.py algorithm
+	* simplejson: Upgrade to 2.1.6
+	* MacOS: makepkg.py: more precise unhandled exceptions handling
+	* MacOS: makepkg.py must not write bytecode
+	* MacOS: makepkg.py: really ensure root:wheel ownership
+	* Merge branches 'pu.MacOS', 'pu.doc', 'pu.icons', 'pu.simplejson' and 'pu.www' into next
+	* Release neubot/0.4.1-rc4
+
 Neubot 0.4.1-rc3 [2011-08-28]
 	* bittorrent: don't need to exit(0)
 	* bittorrent: drop privileges after listen()
