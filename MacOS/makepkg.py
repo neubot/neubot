@@ -208,8 +208,10 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (SystemExit, KeyboardInterrupt):
+    except KeyboardInterrupt:
         pass
+    except SystemExit:
+        raise
     except:
         traceback.print_exc()
         sys.exit(1)
