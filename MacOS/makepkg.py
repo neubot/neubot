@@ -142,6 +142,18 @@ def _make_sharedir():
     filep = open('neubot/%s/.neubot-installed-ok' % NUMERIC_VERSION, 'w')
     filep.close()
 
+def _fixup_perms():
+
+    '''
+     Fix group ownership: we want wheel and not staff.  This happens
+     on MacOS because 'BSD derived systems always have the setgid
+     directory behavior.'
+
+     See <http://comments.gmane.org/gmane.os.openbsd.misc/187993>
+    '''
+
+    __call('find neubot/ -exec chown root:wheel {} \;')
+
 def _make_archive_pax():
     ''' Create an archive containing neubot library '''
     __call('pax -wzf %s -x cpio %s' %
@@ -179,18 +191,6 @@ def _make_privacy_plugin():
                 'Neubot-%s.pkg/Contents/Plugins/' % VERSION,
                )
 
-def _fixup_perms():
-
-    '''
-     Fix group ownership: we want wheel and not staff.  This happens
-     on MacOS because 'BSD derived systems always have the setgid
-     directory behavior.'
-
-     See <http://comments.gmane.org/gmane.os.openbsd.misc/187993>
-    '''
-
-    __call('find Neubot-%s.pkg -exec chown root:wheel {} \;' % VERSION)
-
 def _create_tarball():
     ''' Create the zip file in ../dist ready for distribution '''
 
@@ -208,10 +208,10 @@ def main():
         sys.exit(0)
     _make_package()
     _make_sharedir()
+    _fixup_perms()
     _make_archive_pax()
     _make_archive_bom()
     _make_privacy_plugin()
-    _fixup_perms()
     _create_tarball()
 
 if __name__ == '__main__':
