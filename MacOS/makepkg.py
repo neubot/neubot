@@ -33,6 +33,15 @@ import subprocess
 import shlex
 import sys
 
+#
+# It annoys me to have two .pyc files around for the version
+# handling utilities around after I run this command.  And, thank
+# god, the Python folks have provided a knob to avoid writing
+# the .pyc!
+#
+if hasattr(sys, 'dont_write_bytecode'):
+    sys.dont_write_bytecode = True
+
 TOPDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MACOSDIR = os.sep.join([TOPDIR, 'MacOS'])
