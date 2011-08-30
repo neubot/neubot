@@ -53,6 +53,21 @@ class BackgroundLogger(object):
         self.info = lambda msg: syslog.syslog(syslog.LOG_INFO, msg)
         self.debug = lambda msg: syslog.syslog(syslog.LOG_DEBUG, msg)
 
+def lookup_user_info(uname):
+
+    '''
+     Lookup and return the specified user's uid and gid.
+     This function is not part of the function that changes
+     user context because you may want to chroot() before
+     dropping root privileges.
+    '''
+
+    try:
+        return pwd.getpwnam(uname)
+    except KeyError:
+        syslog.syslog(syslog.LOG_ERR, 'No such "%s" user.  Exiting' % uname)
+        sys.exit(1)
+
 def _get_profile_dir():
     if os.getuid() != 0:
         hd = os.environ["HOME"]
@@ -75,13 +90,7 @@ def _want_rwx_dir(datadir, perror=None):
         os.mkdir(datadir, 0755)
 
     if os.getuid() == 0:
-        try:
-            passwd = pwd.getpwnam("_neubot")
-        except KeyError, e:
-            if perror:
-                perror("Cannot find user '_neubot'. Exiting.")
-            sys.exit(1)
-
+        passwd = lookup_user_info('_neubot')
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
@@ -97,13 +106,7 @@ def go_background():
 
 def drop_privileges(perror=None):
     if os.getuid() == 0:
-        try:
-            passwd = pwd.getpwnam("_neubot")
-        except KeyError, e:
-            if perror:
-                perror("Cannot find user '_neubot'. Exiting.")
-            sys.exit(1)
-
+        passwd = lookup_user_info('_neubot')
         os.setgid(passwd.pw_gid)
         os.setuid(passwd.pw_uid)
 
@@ -120,13 +123,7 @@ def _want_rw_file(file, perror=None):
     filep.close()
 
     if os.getuid() == 0:
-        try:
-            passwd = pwd.getpwnam("_neubot")
-        except KeyError, e:
-            if perror:
-                perror("Cannot find user '_neubot'. Exiting.")
-            sys.exit(1)
-
+        passwd = lookup_user_info('_neubot')
         os.chown(file, passwd.pw_uid, passwd.pw_gid)
     os.chmod(file, 0644)
 
