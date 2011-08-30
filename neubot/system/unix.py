@@ -139,12 +139,13 @@ def redirect_to_dev_null():
 
     ''' Redirect stdin, stdout and stderr to /dev/null '''
 
+    # Close descriptors
     for filedesc in range(3):
         os.close(filedesc)
 
-    os.open("/dev/null", os.O_RDWR)
-    os.open("/dev/null", os.O_RDWR)
-    os.open("/dev/null", os.O_RDWR)
+    # Re-open and point to /dev/null
+    for _ in range(3):
+        os.open("/dev/null", os.O_RDWR)
 
 def _want_rw_file(path, perror=None):
 
