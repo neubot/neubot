@@ -23,7 +23,6 @@
 import os
 
 if os.name == "nt":
-    from neubot.system.win32 import BackgroundLogger
     from neubot.system.win32 import change_dir
     from neubot.system.win32 import go_background
     from neubot.system.win32 import drop_privileges
@@ -32,8 +31,8 @@ if os.name == "nt":
     from neubot.system.win32 import _get_pidfile_dir
     from neubot.system.win32 import _want_rwx_dir
     from neubot.system.win32 import _want_rw_file
+    from neubot.system.win32 import get_background_logger
 elif os.name == "posix":
-    from neubot.system.unix import BackgroundLogger
     from neubot.system.unix import change_dir
     from neubot.system.unix import go_background
     from neubot.system.unix import drop_privileges
@@ -42,6 +41,7 @@ elif os.name == "posix":
     from neubot.system.unix import _get_pidfile_dir
     from neubot.system.unix import _want_rwx_dir
     from neubot.system.unix import _want_rw_file
+    from neubot.system.unix import get_background_logger
 else:
     raise ImportError("Your system is not supported")
 

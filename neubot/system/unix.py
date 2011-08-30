@@ -30,28 +30,29 @@ import signal
 import syslog
 import sys
 
-class BackgroundLogger(object):
+def __logger(severity, message):
 
-    '''
-     We don't use logging.handlers.SysLogHandler because that class
-     does not know the name of the UNIX domain socket in use for the
-     current operating system.  In many Unices the UNIX domain socket
-     name is /dev/log, but this is not true, for example, under the
-     Mac.  A better solution seems to use syslog because this is just
-     a wrapper to the host syslog library.  And who wrote such lib
-     for sure knows the UNIX domain socket location for the current
-     operating system.
-    '''
+    ''' Log @message at the given @severity using syslog '''
 
-    def __init__(self):
-        ''' Initialize Unix background logger '''
+    #
+    # Implemented using syslog becuse SysLogHandler is
+    # difficult to use: you need to know the path to the
+    # system specific ``/dev/log``.
+    #
 
-        syslog.openlog("neubot", syslog.LOG_PID, syslog.LOG_DAEMON)
+    if severity == 'ERROR':
+        syslog.syslog(syslog.LOG_ERR, message)
+    elif severity == 'WARNING':
+        syslog.syslog(syslog.LOG_WARNING, message)
+    elif severity == 'DEBUG':
+        syslog.syslog(syslog.LOG_DEBUG, message)
+    else:
+        syslog.syslog(syslog.LOG_INFO, message)
 
-        self.error = lambda msg: syslog.syslog(syslog.LOG_ERR, msg)
-        self.warning = lambda msg: syslog.syslog(syslog.LOG_WARNING, msg)
-        self.info = lambda msg: syslog.syslog(syslog.LOG_INFO, msg)
-        self.debug = lambda msg: syslog.syslog(syslog.LOG_DEBUG, msg)
+def get_background_logger():
+    ''' Return the background logger '''
+    syslog.openlog("neubot", syslog.LOG_PID, syslog.LOG_DAEMON)
+    return __logger
 
 def lookup_user_info(uname):
 
