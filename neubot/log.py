@@ -293,8 +293,11 @@ class Logger(object):
     # Marshal
 
     def listify(self):
-        lst = self.table_log.listify(self.database.connection())
-        lst.extend(self._queue)
+        if self.table_log:
+            lst = self.table_log.listify(self.database.connection())
+            lst.extend(self._queue)
+        else:
+            lst = []
         return lst
 
 LOG = Logger()
