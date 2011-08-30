@@ -99,7 +99,7 @@ def _want_rwx_dir(datadir, perror=None):
 
     # Does the directory exist?
     if not os.path.isdir(datadir):
-        os.mkdir(datadir, 0755)
+        os.mkdir(datadir, 493)          # 0755 in base 10
 
     # Change directory ownership
     if os.getuid() == 0:
@@ -164,7 +164,7 @@ def _want_rw_file(path, perror=None):
         os.chown(path, passwd.pw_uid, passwd.pw_gid)
 
     # Set permissions
-    os.chmod(path, 0644)
+    os.chmod(path, 420)         # 0644 in base 10
 
 def _get_pidfile_dir():
 
