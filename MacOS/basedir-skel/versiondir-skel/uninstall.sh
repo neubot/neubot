@@ -22,6 +22,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Stop neubot daemon
 launchctl stop org.neubot
 launchctl unload /Library/LaunchDaemons/org.neubot.plist
 
@@ -50,7 +51,7 @@ dscl . -delete /Groups/_neubot
 rm -rf /var/neubot/					# database dir
 
 # Tell the system Neubot is no more
-rm -rf /Library/Receipts/Neubot-0.4.1-rc4.pkg/
+rm -rf /Library/Receipts/Neubot-*.pkg/
 rm -rf /var/db/receipts/org.neubot.*
 
 # Won't hurt
