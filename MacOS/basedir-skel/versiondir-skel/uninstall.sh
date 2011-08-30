@@ -22,6 +22,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Stop neubot daemon
 launchctl stop org.neubot
 launchctl unload /Library/LaunchDaemons/org.neubot.plist
 
