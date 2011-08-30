@@ -20,9 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Code for UNIX
-#
+'''
+ Code for UNIX
+'''
 
 import pwd
 import os.path
@@ -69,65 +69,110 @@ def lookup_user_info(uname):
         sys.exit(1)
 
 def _get_profile_dir():
+
+    '''
+     If we're running as an ordinary user, the profile directory
+     is ``$HOME/.neubot``, otherwise it is ``/var/neubot``.
+    '''
+
     if os.getuid() != 0:
-        hd = os.environ["HOME"]
-        p = os.sep.join([hd, ".neubot"])
+        homedir = os.environ["HOME"]
+        profiledir = os.sep.join([homedir, ".neubot"])
     else:
-        p = "/var/neubot"
-    return p
+        profiledir = "/var/neubot"
+    return profiledir
 
 def change_dir():
+    ''' Switch from current directory to root directory '''
     os.chdir("/")
 
-#
-# We need to be the owner of the profile dir, otherwise
-# sqlite3 fails to lock the database for writing.
-#
-# Read more at http://www.neubot.org/node/14
-#
 def _want_rwx_dir(datadir, perror=None):
+
+    '''
+     This function ensures that the user ``_neubot`` is the
+     owner of the directory that contains Neubot database.
+     Otherwise sqlite3 fails to lock the database for writing
+     (it creates a lockfile for that).
+
+     Read more at http://www.neubot.org/node/14
+    '''
+
+    # Does the directory exist?
     if not os.path.isdir(datadir):
         os.mkdir(datadir, 0755)
 
+    # Change directory ownership
     if os.getuid() == 0:
         passwd = lookup_user_info('_neubot')
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
+    ''' Detach from the shell and run in background '''
+
+    # Ignore SIGINT
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+    # Detach from the current shell
     if os.fork() > 0:
-        os._exit(0)
+        sys.exit(0)
 
+    # Create a new session
     os.setsid()
 
+    # Detach from the new session
     if os.fork() > 0:
-        os._exit(0)
+        sys.exit(0)
 
 def drop_privileges(perror=None):
+
+    '''
+     Drop root privileges and run on behalf of the ``_neubot``
+     unprivileged users.
+    '''
+
     if os.getuid() == 0:
         passwd = lookup_user_info('_neubot')
         os.setgid(passwd.pw_gid)
         os.setuid(passwd.pw_uid)
 
 def redirect_to_dev_null():
-    for fd in range(0,3):
-        os.close(fd)
+
+    ''' Redirect stdin, stdout and stderr to /dev/null '''
+
+    for filedesc in range(3):
+        os.close(filedesc)
+
     os.open("/dev/null", os.O_RDWR)
     os.open("/dev/null", os.O_RDWR)
     os.open("/dev/null", os.O_RDWR)
 
-def _want_rw_file(file, perror=None):
+def _want_rw_file(path, perror=None):
 
-    filep = open(file, "ab+")
+    '''
+     Ensure that the given file is readable and writable
+     by its owner.  If running as root force ownership
+     to be of the unprivileged ``_neubot`` user.
+    '''
+
+    # Create file if non-existent
+    filep = open(path, "ab+")
     filep.close()
 
+    # Enforce file ownership
     if os.getuid() == 0:
         passwd = lookup_user_info('_neubot')
-        os.chown(file, passwd.pw_uid, passwd.pw_gid)
-    os.chmod(file, 0644)
+        os.chown(path, passwd.pw_uid, passwd.pw_gid)
+
+    # Set permissions
+    os.chmod(path, 0644)
 
 def _get_pidfile_dir():
+
+    '''
+     This function returns the directory where the pidfile is to
+     be written or None if the user is not privileged.
+    '''
+
     if os.getuid() == 0:
         return "/var/run"
     else:
