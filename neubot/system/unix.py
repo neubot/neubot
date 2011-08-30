@@ -20,9 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Code for UNIX
-#
+'''
+ Code for UNIX
+'''
 
 import pwd
 import os.path
@@ -30,110 +30,150 @@ import signal
 import syslog
 import sys
 
-
 class BackgroundLogger(object):
 
-    """We don't use logging.handlers.SysLogHandler because that class
-       does not know the name of the UNIX domain socket in use for the
-       current operating system.  In many Unices the UNIX domain socket
-       name is /dev/log, but this is not true, for example, under the
-       Mac.  A better solution seems to use syslog because this is just
-       a wrapper to the host syslog library.  And who wrote such lib
-       for sure knows the UNIX domain socket location for the current
-       operating system."""
+    '''
+     We don't use logging.handlers.SysLogHandler because that class
+     does not know the name of the UNIX domain socket in use for the
+     current operating system.  In many Unices the UNIX domain socket
+     name is /dev/log, but this is not true, for example, under the
+     Mac.  A better solution seems to use syslog because this is just
+     a wrapper to the host syslog library.  And who wrote such lib
+     for sure knows the UNIX domain socket location for the current
+     operating system.
+    '''
 
     def __init__(self):
-        syslog.openlog("neubot", syslog.LOG_PID)
+        ''' Initialize Unix background logger '''
 
-    def error(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_ERR, message)
+        syslog.openlog("neubot", syslog.LOG_PID, syslog.LOG_DAEMON)
 
-    def warning(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_WARNING, message)
+        self.error = lambda msg: syslog.syslog(syslog.LOG_ERR, msg)
+        self.warning = lambda msg: syslog.syslog(syslog.LOG_WARNING, msg)
+        self.info = lambda msg: syslog.syslog(syslog.LOG_INFO, msg)
+        self.debug = lambda msg: syslog.syslog(syslog.LOG_DEBUG, msg)
 
-    def info(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_INFO, message)
+def lookup_user_info(uname):
 
-    def debug(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
+    '''
+     Lookup and return the specified user's uid and gid.
+     This function is not part of the function that changes
+     user context because you may want to chroot() before
+     dropping root privileges.
+    '''
 
+    try:
+        return pwd.getpwnam(uname)
+    except KeyError:
+        syslog.syslog(syslog.LOG_ERR, 'No such "%s" user.  Exiting' % uname)
+        sys.exit(1)
 
 def _get_profile_dir():
+
+    '''
+     If we're running as an ordinary user, the profile directory
+     is ``$HOME/.neubot``, otherwise it is ``/var/neubot``.
+    '''
+
     if os.getuid() != 0:
-        hd = os.environ["HOME"]
-        p = os.sep.join([hd, ".neubot"])
+        homedir = os.environ["HOME"]
+        profiledir = os.sep.join([homedir, ".neubot"])
     else:
-        p = "/var/neubot"
-    return p
+        profiledir = "/var/neubot"
+    return profiledir
 
 def change_dir():
+    ''' Switch from current directory to root directory '''
     os.chdir("/")
 
-#
-# We need to be the owner of the profile dir, otherwise
-# sqlite3 fails to lock the database for writing.
-#
-# Read more at http://www.neubot.org/node/14
-#
 def _want_rwx_dir(datadir, perror=None):
+
+    '''
+     This function ensures that the user ``_neubot`` is the
+     owner of the directory that contains Neubot database.
+     Otherwise sqlite3 fails to lock the database for writing
+     (it creates a lockfile for that).
+
+     Read more at http://www.neubot.org/node/14
+    '''
+
+    # Does the directory exist?
     if not os.path.isdir(datadir):
-        os.mkdir(datadir, 0755)
+        os.mkdir(datadir, 493)          # 0755 in base 10
 
+    # Change directory ownership
     if os.getuid() == 0:
-        try:
-            passwd = pwd.getpwnam("_neubot")
-        except KeyError, e:
-            if perror:
-                perror("Cannot find user '_neubot'. Exiting.")
-            sys.exit(1)
-
+        passwd = lookup_user_info('_neubot')
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
+    ''' Detach from the shell and run in background '''
+
+    # Ignore SIGINT
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+    # Detach from the current shell
     if os.fork() > 0:
-        os._exit(0)
+        sys.exit(0)
 
+    # Create a new session
     os.setsid()
 
+    # Detach from the new session
     if os.fork() > 0:
-        os._exit(0)
+        sys.exit(0)
 
 def drop_privileges(perror=None):
-    if os.getuid() == 0:
-        try:
-            passwd = pwd.getpwnam("_neubot")
-        except KeyError, e:
-            if perror:
-                perror("Cannot find user '_neubot'. Exiting.")
-            sys.exit(1)
 
+    '''
+     Drop root privileges and run on behalf of the ``_neubot``
+     unprivileged users.
+    '''
+
+    if os.getuid() == 0:
+        passwd = lookup_user_info('_neubot')
         os.setgid(passwd.pw_gid)
         os.setuid(passwd.pw_uid)
 
 def redirect_to_dev_null():
-    for fd in range(0,3):
-        os.close(fd)
-    os.open("/dev/null", os.O_RDWR)
-    os.open("/dev/null", os.O_RDWR)
-    os.open("/dev/null", os.O_RDWR)
 
-def _want_rw_file(file, perror=None):
-    # XXX: PyPy doesn't work with this
-    open(file, "ab+").close()
+    ''' Redirect stdin, stdout and stderr to /dev/null '''
+
+    # Close descriptors
+    for filedesc in range(3):
+        os.close(filedesc)
+
+    # Re-open and point to /dev/null
+    for _ in range(3):
+        os.open("/dev/null", os.O_RDWR)
+
+def _want_rw_file(path, perror=None):
+
+    '''
+     Ensure that the given file is readable and writable
+     by its owner.  If running as root force ownership
+     to be of the unprivileged ``_neubot`` user.
+    '''
+
+    # Create file if non-existent
+    filep = open(path, "ab+")
+    filep.close()
+
+    # Enforce file ownership
     if os.getuid() == 0:
-        try:
-            passwd = pwd.getpwnam("_neubot")
-        except KeyError, e:
-            if perror:
-                perror("Cannot find user '_neubot'. Exiting.")
-            sys.exit(1)
+        passwd = lookup_user_info('_neubot')
+        os.chown(path, passwd.pw_uid, passwd.pw_gid)
 
-        os.chown(file, passwd.pw_uid, passwd.pw_gid)
-    os.chmod(file, 0644)
+    # Set permissions
+    os.chmod(path, 420)         # 0644 in base 10
 
 def _get_pidfile_dir():
+
+    '''
+     This function returns the directory where the pidfile is to
+     be written or None if the user is not privileged.
+    '''
+
     if os.getuid() == 0:
         return "/var/run"
     else:
