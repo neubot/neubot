@@ -32,29 +32,26 @@ import sys
 
 class BackgroundLogger(object):
 
-    """We don't use logging.handlers.SysLogHandler because that class
-       does not know the name of the UNIX domain socket in use for the
-       current operating system.  In many Unices the UNIX domain socket
-       name is /dev/log, but this is not true, for example, under the
-       Mac.  A better solution seems to use syslog because this is just
-       a wrapper to the host syslog library.  And who wrote such lib
-       for sure knows the UNIX domain socket location for the current
-       operating system."""
+    '''
+     We don't use logging.handlers.SysLogHandler because that class
+     does not know the name of the UNIX domain socket in use for the
+     current operating system.  In many Unices the UNIX domain socket
+     name is /dev/log, but this is not true, for example, under the
+     Mac.  A better solution seems to use syslog because this is just
+     a wrapper to the host syslog library.  And who wrote such lib
+     for sure knows the UNIX domain socket location for the current
+     operating system.
+    '''
 
     def __init__(self):
+        ''' Initialize Unix background logger '''
+
         syslog.openlog("neubot", syslog.LOG_PID, syslog.LOG_DAEMON)
 
-    def error(self, message):
-        syslog.syslog(syslog.LOG_ERR, message)
-
-    def warning(self, message):
-        syslog.syslog(syslog.LOG_WARNING, message)
-
-    def info(self, message):
-        syslog.syslog(syslog.LOG_INFO, message)
-
-    def debug(self, message):
-        syslog.syslog(syslog.LOG_DEBUG, message)
+        self.error = lambda msg: syslog.syslog(syslog.LOG_ERR, msg)
+        self.warning = lambda msg: syslog.syslog(syslog.LOG_WARNING, msg)
+        self.info = lambda msg: syslog.syslog(syslog.LOG_INFO, msg)
+        self.debug = lambda msg: syslog.syslog(syslog.LOG_DEBUG, msg)
 
 def _get_profile_dir():
     if os.getuid() != 0:
