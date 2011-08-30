@@ -30,7 +30,6 @@ import signal
 import syslog
 import sys
 
-
 class BackgroundLogger(object):
 
     """We don't use logging.handlers.SysLogHandler because that class
@@ -43,20 +42,19 @@ class BackgroundLogger(object):
        operating system."""
 
     def __init__(self):
-        syslog.openlog("neubot", syslog.LOG_PID)
+        syslog.openlog("neubot", syslog.LOG_PID, syslog.LOG_DAEMON)
 
     def error(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_ERR, message)
+        syslog.syslog(syslog.LOG_ERR, message)
 
     def warning(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_WARNING, message)
+        syslog.syslog(syslog.LOG_WARNING, message)
 
     def info(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_INFO, message)
+        syslog.syslog(syslog.LOG_INFO, message)
 
     def debug(self, message):
-        syslog.syslog(syslog.LOG_DAEMON|syslog.LOG_DEBUG, message)
-
+        syslog.syslog(syslog.LOG_DEBUG, message)
 
 def _get_profile_dir():
     if os.getuid() != 0:
