@@ -118,8 +118,10 @@ def redirect_to_dev_null():
     os.open("/dev/null", os.O_RDWR)
 
 def _want_rw_file(file, perror=None):
-    # XXX: PyPy doesn't work with this
-    open(file, "ab+").close()
+
+    filep = open(file, "ab+")
+    filep.close()
+
     if os.getuid() == 0:
         try:
             passwd = pwd.getpwnam("_neubot")
