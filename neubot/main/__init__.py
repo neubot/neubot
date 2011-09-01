@@ -41,9 +41,9 @@ USAGE = '''\
 neubot - The network neutrality bot
 
 Usage: neubot
-       neubot start [[ADDRESS] PORT]
-       neubot status [[ADDRESS] PORT]
-       neubot stop [[ADDRESS] PORT]
+       neubot start
+       neubot status
+       neubot stop
        neubot --help
        neubot -V
        neubot COMMAND [-ElvV] [-D PROPERTY[=VALUE]] [-f FILE]
@@ -56,10 +56,8 @@ VERSION = "0.4.1"
 
 def main(argv):
 
-    address = "127.0.0.1"
     slowpath = False
     webgui = False
-    port = "9774"
     start = False
     status = False
     stop = False
@@ -89,7 +87,7 @@ def main(argv):
         start = True
         webgui = True
 
-    elif len(argv) >= 2 and len(argv) < 5:
+    elif len(argv) == 2:
         command = argv[1]
         if command == "--help":
             sys.stdout.write(USAGE)
@@ -105,13 +103,6 @@ def main(argv):
             stop = True
         else:
             slowpath = True
-
-        if not slowpath and len(argv) >= 3:
-            if len(argv) == 4:
-                address = argv[2]
-                port = argv[3]
-            else:
-                port = argv[2]
 
     else:
         slowpath = True
@@ -130,7 +121,7 @@ def main(argv):
             try:
                 import httplib
 
-                connection = httplib.HTTPConnection(address, port)
+                connection = httplib.HTTPConnection("127.0.0.1", "9774")
                 connection.request("GET", "/api/version")
                 response = connection.getresponse()
                 if response.status == 200:
@@ -159,7 +150,7 @@ def main(argv):
         if running and stop:
             try:
 
-                connection = httplib.HTTPConnection(address, port)
+                connection = httplib.HTTPConnection("127.0.0.1", "9774")
                 connection.request("POST", "/api/exit")
                 response = connection.getresponse()
                 connection.close()
@@ -200,7 +191,7 @@ def main(argv):
             if webgui and "DISPLAY" in os.environ:
                 if os.getuid() != 0:
                     from neubot.main import browser
-                    browser.open_patient(address, port)
+                    browser.open_patient("127.0.0.1", "9774")
 
         elif os.name == "nt":
 
@@ -208,9 +199,9 @@ def main(argv):
                 from neubot.main import browser
 
                 if not running and start:
-                    browser.open_patient(address, port, True)
+                    browser.open_patient("127.0.0.1", "9774", True)
                 else:
-                    browser.open_patient(address, port)
+                    browser.open_patient("127.0.0.1", "9774")
 
             if not running and start:
                 from neubot import agent
