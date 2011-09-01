@@ -188,10 +188,6 @@ def main(argv):
                                  "-Dagent.api.address=%s" % address])
                     sys.exit(0)
 
-            # XXX
-            if sys.platform == "darwin":
-                os.environ["DISPLAY"] = "fake-neubot-display:0.0"
-
             if webgui and "DISPLAY" in os.environ:
                 from neubot.main import browser
                 browser.open_patient(address, port)
