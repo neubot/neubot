@@ -184,8 +184,12 @@ def main(argv):
             if not running and start:
                 if os.fork() == 0:
                     from neubot import agent
-                    agent.main([argv[0], "-Dagent.api.port=%s" % port,
-                                 "-Dagent.api.address=%s" % address])
+                    arguments = [ argv[0] ]
+                    if port != '9774':
+                        arguments.append("-Dagent.api.port=%s" % port)
+                    if address != '127.0.0.1':
+                        arguments.append("-Dagent.api.address=%s" % address)
+                    agent.main(arguments)
                     sys.exit(0)
 
             #
