@@ -57,6 +57,7 @@ def open_patient(address, port, newthread=False):
     if not newthread:
 
         sys.stderr.write("* Waiting for the web gui to become ready...")
+        sys.stderr.flush()
 
         count = 0
         running = False
@@ -87,6 +88,7 @@ def open_patient(address, port, newthread=False):
                 sys.exit(1)
 
             sys.stderr.write(".")
+            sys.stderr.flush()
             time.sleep(1)
             count = count + 1
 
