@@ -175,11 +175,18 @@ def main(argv):
 
         if os.name == "posix":
 
-            if not running and start and os.fork() == 0:
-                from neubot import agent
-                agent.main([argv[0], "-Dagent.api.port=%s" % port,
-                             "-Dagent.api.address=%s" % address])
-                sys.exit(0)
+            #
+            # Fork off a child and use it to start the
+            # Neubot agent.  The parent process will
+            # open the browser, if needed.  Otherwise
+            # it will exit.
+            #
+            if not running and start:
+                if os.fork() == 0:
+                    from neubot import agent
+                    agent.main([argv[0], "-Dagent.api.port=%s" % port,
+                                 "-Dagent.api.address=%s" % address])
+                    sys.exit(0)
 
             # XXX
             if sys.platform == "darwin":
