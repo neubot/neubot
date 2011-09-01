@@ -175,7 +175,7 @@ def main(argv):
 
         if os.name == "posix":
 
-            if not running and start:
+            if not running and start and os.fork() == 0:
                 from neubot import agent
                 agent.main([argv[0], "-Dagent.api.port=%s" % port,
                              "-Dagent.api.address=%s" % address])
