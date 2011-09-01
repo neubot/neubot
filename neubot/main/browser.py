@@ -29,9 +29,13 @@
 
 import threading
 import webbrowser
-import httplib
 import sys
 import time
+
+if sys.version_info[0] == 3:
+    import http.client as lib_http
+else:
+    import httplib as lib_http
 
 def open_patient(address, port, newthread=False):
 
@@ -59,7 +63,7 @@ def open_patient(address, port, newthread=False):
         while True:
             try:
 
-                connection = httplib.HTTPConnection(address, port)
+                connection = lib_http.HTTPConnection(address, port)
                 connection.request("GET", "/api/version")
                 response = connection.getresponse()
                 if response.status == 200:
