@@ -188,9 +188,15 @@ def main(argv):
                                  "-Dagent.api.address=%s" % address])
                     sys.exit(0)
 
+            #
+            # It's not wise at all to open the browser when
+            # we are running as root.  Assume that when we
+            # are root the user wants just to start the agent.
+            #
             if webgui and "DISPLAY" in os.environ:
-                from neubot.main import browser
-                browser.open_patient(address, port)
+                if os.getuid() != 0:
+                    from neubot.main import browser
+                    browser.open_patient(address, port)
 
         elif os.name == "nt":
 
