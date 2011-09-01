@@ -20,12 +20,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# This file contains the code needed to open the web browser
-# and point it to the Neubot web user interface.  The code is
-# patient, meaning that it wait for Neubot to start up and
-# gives up only after a reasonable number of seconds.
-#
+'''
+ This file contains the code needed to open the web browser
+ and point it to the Neubot web user interface.  The code is
+ patient, meaning that it wait for Neubot to start up and
+ gives up only after a reasonable number of seconds.
+'''
 
 import threading
 import webbrowser
@@ -33,21 +33,22 @@ import httplib
 import sys
 import time
 
-#
-# When the migration takes too much time, the agent is stuck
-# in DATABASE.connect() and the web user interface is not ready
-# because we migrate the database and _then_ we bind the local
-# address and port.  This is a wise thing to do because it's
-# dangerous to split the migration in small pieces.
-# The problem is that the user is likely to be scared if the
-# connection fails.  We don't want that, so we ensure that
-# the web user interface is ready before we start the web
-# browser.
-# The capability to open the browser using a daemon thread
-# is needed under windows where the main process is not going
-# to fork.
-#
 def open_patient(address, port, newthread=False):
+
+    '''
+     When the migration takes too much time, the agent is stuck
+     in DATABASE.connect() and the web user interface is not ready
+     because we migrate the database and _then_ we bind the local
+     address and port.  This is a wise thing to do because it's
+     dangerous to split the migration in small pieces.
+     The problem is that the user is likely to be scared if the
+     connection fails.  We don't want that, so we ensure that
+     the web user interface is ready before we start the web
+     browser.
+     The capability to open the browser using a daemon thread
+     is needed under windows where the main process is not going
+     to fork.
+    '''
 
     if not newthread:
 
@@ -91,9 +92,9 @@ def open_patient(address, port, newthread=False):
     else:
         sys.stderr.write("* Starting Neubot web gui daemon thread\n")
         func = lambda: open_patient(address, port)
-        t = threading.Thread(target=func)
-        t.daemon = True
-        t.start()
+        thread = threading.Thread(target=func)
+        thread.daemon = True
+        thread.start()
 
 if __name__ == "__main__":
     open_patient(sys.argv[1], sys.argv[2])
