@@ -21,7 +21,14 @@
 #
 
 import sys
+import logging
 import traceback
+
+from neubot.net.poller import POLLER
+
+from neubot.database import DATABASE
+from neubot.database import table_log
+from neubot.notify import NOTIFIER
 
 from neubot import system
 from neubot import utils
@@ -68,26 +75,7 @@ class Logger(object):
         self._use_database = False
         self._queue = []
 
-        #
-        # We cannot import the DATABASE here because of a
-        # circular import.  Instead the DATABASE registers
-        # with us when it is ready.
-        # The same holds for NOTIFIER in <notify.py> and
-        # for POLLER in <net/poller.py>.
-        #
-        self.database = None
-        self.table_log = None
-        self.notifier = None
-
-    def attach_database(self, database, table_log):
-        self.database = database
-        self.table_log = table_log
-
-    def attach_poller(self, poller):
-        poller.sched(INTERVAL, self._maintain_database, poller)
-
-    def attach_notifier(self, notifier):
-        self.notifier = notifier
+        POLLER.sched(INTERVAL, self._maintain_database)
 
     #
     # Better not to touch the database when a test is in
@@ -98,13 +86,11 @@ class Logger(object):
     #
     def _maintain_database(self, *args, **kwargs):
 
-        poller = args[0]
-        poller.sched(INTERVAL, self._maintain_database, poller)
+        POLLER.sched(INTERVAL, self._maintain_database)
 
         self.info("log: pruning my database table")
 
-        if (self._use_database and self.database and self.table_log and
-          self.notifier and not self.notifier.is_subscribed("testdone")):
+        if (self._use_database and not NOTIFIER.is_subscribed("testdone")):
             self._writeback()
 
     #
@@ -211,12 +197,12 @@ class Logger(object):
     def __writeback(self):
         """Really commit pending log records into the database"""
 
-        connection = self.database.connection()
-        self.table_log.prune(connection, DAYS_AGO, commit=False)
+        connection = DATABASE.connection()
+        table_log.prune(connection, DAYS_AGO, commit=False)
 
         for record in self._queue:
-            self.table_log.insert(self.database.connection(), record, False)
-        self.database.connection().commit()
+            table_log.insert(connection, record, False)
+        connection.commit()
 
         connection.execute("VACUUM;")
         connection.commit()
@@ -239,7 +225,7 @@ class Logger(object):
     def _log(self, severity, message):
         message = message.rstrip()
 
-        if self._use_database and self.database and severity != "ACCESS":
+        if self._use_database and severity != "ACCESS":
             record = {
                       "timestamp": utils.timestamp(),
                       "severity": severity,
@@ -279,11 +265,19 @@ class Logger(object):
     # Marshal
 
     def listify(self):
-        if self.table_log:
-            lst = self.table_log.listify(self.database.connection())
-            lst.extend(self._queue)
-        else:
-            lst = []
+        lst = table_log.listify(DATABASE.connection())
+        lst.extend(self._queue)
         return lst
 
 LOG = Logger()
+
+#
+# In many cases it would be better if modules would import
+# and use logging instead of this module in order to reduce
+# dependencies between modules.  To allow for that, over-
+# ride logging functions with our functions.
+#
+logging.info = LOG.info
+logging.error = LOG.error
+logging.warning = LOG.warning
+logging.debug = LOG.debug
