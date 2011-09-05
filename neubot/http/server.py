@@ -113,17 +113,6 @@ class ServerStream(StreamHTTP):
                                                      requestline, statuscode,
                                                      nbytes))
 
-REDIRECT = """
-<HTML>
- <HEAD>
-  <TITLE>Moved permanently</TITLE>
- </HEAD>
- <BODY>
-  Moved permanently to <A HREF="/index.html">index.html</A>.
- </BODY>
-</HTML>
-"""
-
 class ServerHTTP(StreamHandler):
 
     def __init__(self, poller):
@@ -177,10 +166,7 @@ class ServerHTTP(StreamHandler):
             return
 
         if request.uri == "/":
-            response.compose(code="301", reason="Moved Permanently",
-              body=REDIRECT, mimetype="text/html; charset=UTF-8")
-            #XXX With IPv6 we need to enclose address in square braces
-            response["location"] = "http://%s:%s/index.html" % stream.myname
+            response.compose_redirect(stream, "/api/index")
             stream.send_response(request, response)
             return
 
