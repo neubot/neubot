@@ -24,6 +24,12 @@
  Code for UNIX
 '''
 
+#
+# When we MUST exit better to use os._exit() rather than
+# sys.exit() because the former cannot be catched while
+# the latter can.
+#
+
 import pwd
 import os.path
 import signal
@@ -67,7 +73,7 @@ def lookup_user_info(uname):
         return pwd.getpwnam(uname)
     except KeyError:
         syslog.syslog(syslog.LOG_ERR, 'No such "%s" user.  Exiting' % uname)
-        sys.exit(1)
+        os._exit(1)
 
 def _get_profile_dir():
 
@@ -115,14 +121,14 @@ def go_background():
 
     # Detach from the current shell
     if os.fork() > 0:
-        sys.exit(0)
+        os._exit(0)
 
     # Create a new session
     os.setsid()
 
     # Detach from the new session
     if os.fork() > 0:
-        sys.exit(0)
+        os._exit(0)
 
 def drop_privileges(perror=None):
 
