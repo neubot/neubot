@@ -22,13 +22,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys
-
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
-
 from neubot.database import _table_utils
-from neubot import compat
 from neubot import utils
 
 #
@@ -108,28 +102,3 @@ def prune(connection, until=None, commit=True):
     connection.execute("DELETE FROM speedtest WHERE timestamp < ?;", (until,))
     if commit:
         connection.commit()
-
-if __name__ == "__main__":
-    from neubot.speedtest.gen import ResultIterator
-    import sqlite3, pprint
-
-    connection = sqlite3.connect(":memory:")
-    create(connection)
-    create(connection)
-
-    v = map(None, ResultIterator())
-    for d in v:
-        insert(connection, d, override_timestamp=False)
-
-    v1 = listify(connection)
-    if v != v1:
-        raise RuntimeError
-
-    since = utils.timestamp() - 7 * 24 * 60 * 60
-    until = utils.timestamp() - 3 * 24 * 60 * 60
-    v2 = listify(connection, since=since, until=until)
-    if len(v2) >= len(v):
-        raise RuntimeError
-
-    prune(connection, until)
-    pprint.pprint(listify(connection))
