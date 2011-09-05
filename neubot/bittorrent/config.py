@@ -56,11 +56,8 @@ SMALLMESSAGE = 1<<17
 # This is the maximum time the test can run.  After that time,
 # no matter what, the underlying stream is closed by the low-level
 # code in <net/poller.py>.
-# The typical test should take less than 15 seconds so here we
-# are provisioning for more than 4x the time, which seems to be
-# quite reasonable.
 #
-WATCHDOG = 60
+WATCHDOG = 300
 
 _PROPERTIES = (
     ('bittorrent.address', "", 'Address to listen/connect to ("" = auto)'),
