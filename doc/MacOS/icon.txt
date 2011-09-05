@@ -1,10 +1,7 @@
 MacOS icon
 ''''''''''
 
-The following tutorial explains how to create a MacOSX icon file
-starting from a standard image, e.g. png or svg.  We need to repeat
-this procedure each time we update the Neubot icon, hence this
-file.
+To convert a .png or .svg icon to MacOSX .icns use the following
+web service::
 
-http://www.giantmike.com/articles/gimp_icon_tutorial.html
-
+	http://www.img2icnsapp.com/
