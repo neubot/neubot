@@ -38,9 +38,9 @@ logger -s -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
 
 #
 # Invoke the prerun.sh script which will make sure that Neubot
-# will run (for example it will check that the required user and
-# group exist and so on and so forth).
-# We invoke unconditionally and it's up to the script to see
+# will run (for example it will check that the required users and
+# groups exist and so on and so forth).
+# We invoke it unconditionally and it's up to the script to see
 # whether it needs to do something or not.
 #
 $VERSIONDIR/prerun.sh
@@ -48,8 +48,9 @@ $VERSIONDIR/prerun.sh
 #
 # Start the current version of Neubot.  Note that we don't
 # go in the background because launchd(8) will be confused by
-# that.  Still we need to force logging to syslog(8) or the
-# user will not be able to see our beatiful stacktraces.
+# that.
+# We don't invoke updater/unix.py via main/__init__.py
+# because unix.py is python3-safe and the updater must be
+# robust to unexpected upgrades of the system python.
 #
-exec /usr/bin/python $VERSIONDIR/neubot/main/__init__.py agent          \
-            -D agent.daemonize=no -D agent.use_syslog=yes
+exec /usr/bin/python $VERSIONDIR/neubot/updater/unix.py -D
