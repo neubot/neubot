@@ -44,7 +44,7 @@ SIMPLE_TYPES = {
     types.FloatType   : "REAL NOT NULL",
 }
 
-def __check(s):
+def __check(value):
 
     '''
      Make sure that we receive valid field names and values
@@ -52,19 +52,19 @@ def __check(s):
     '''
 
     # A simple type?
-    if type(s) not in SIMPLE_TYPES:
+    if type(value) not in SIMPLE_TYPES:
         raise ValueError("Not a simple type")
 
     # Not a string?
-    if type(s) not in (types.StringType, types.UnicodeType):
-        return s
+    if type(value) not in (types.StringType, types.UnicodeType):
+        return value
 
-    # Check
-    s1 = re.sub(r"[^A-Za-z0-9_]", "", s)
-    if s1 != s:
+    # Is the string valid?
+    stripped = re.sub(r"[^A-Za-z0-9_]", "", value)
+    if stripped != value:
         raise ValueError("Invalid string")
 
-    return s
+    return value
 
 def make_create_table(table, template):
 
