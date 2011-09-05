@@ -1,10 +1,4 @@
-#
-# TODO This file should be renamed _gen.py because it is private
-# stuff and for simmetry with the bittorrent code it should be moved
-# into regress/.
-#
-
-# neubot/speedtest/gen.py
+# regress/speedtest/_gen.py
 
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,

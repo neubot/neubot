@@ -27,11 +27,12 @@
 # time, using T().
 #
 
+import asyncore
 import collections
+import logging
 
 from neubot.net.poller import POLLER
 from neubot.utils import T
-from neubot.log import LOG
 
 INTERVAL = 10
 
@@ -54,7 +55,7 @@ class Notifier(object):
             t = T()
         self._timestamps[event] = t
 
-        LOG.debug("* publish: %s" % event)
+        logging.debug("* publish: %s" % event)
 
         #
         # WARNING! Please resist the temptation of merging
@@ -81,7 +82,7 @@ class Notifier(object):
             queue = self._subscribers[event]
             del self._subscribers[event]
 
-            LOG.debug("* periodic: %s" % event)
+            logging.debug("* periodic: %s" % event)
 
             self._fireq(event, queue)
 
@@ -92,7 +93,7 @@ class Notifier(object):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.exception()
+                logging.error(asyncore.compact_traceback())
 
     def is_subscribed(self, event):
         return event in self._subscribers
@@ -111,10 +112,3 @@ class Notifier(object):
           '_subscribers': dict(self._subscribers)}
 
 NOTIFIER = Notifier()
-
-#
-# Attach to the logger: we cannot do that from
-# the logger because that will create a circular
-# import.
-#
-LOG.attach_notifier(NOTIFIER)

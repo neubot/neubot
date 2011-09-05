@@ -58,6 +58,7 @@ class ServerAPI(ServerHTTP):
             "/api/config": self._api_config,
             "/api/configlabels": self._api_configlabels,
             "/api/debug": self._api_debug,
+            "/api/index": self._api_index,
             "/api/exit": self._api_exit,
             "/api/log": self._api_log,
             "/api/speedtest": self._api_speedtest,
@@ -178,6 +179,19 @@ class ServerAPI(ServerHTTP):
         stringio.seek(0)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype="text/plain")
+        stream.send_response(request, response)
+
+    def _api_index(self, stream, request, query):
+        '''
+         Redirect either to /index.html or /privacy.html depending on
+         whether the user has already set privacy permissions or not
+        '''
+        response = Message()
+        if (not utils.intify(CONFIG['privacy.informed']) or
+          not utils.intify(CONFIG['privacy.can_collect'])):
+            response.compose_redirect(stream, '/privacy.html')
+        else:
+            response.compose_redirect(stream, '/index.html')
         stream.send_response(request, response)
 
     def _api_log(self, stream, request, query):

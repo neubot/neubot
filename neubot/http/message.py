@@ -31,6 +31,17 @@ from neubot.http.utils import prettyprintbody
 from neubot.log import LOG
 from neubot import utils
 
+REDIRECT = '''\
+<HTML>
+ <HEAD>
+  <TITLE>Found</TITLE>
+ </HEAD>
+ <BODY>
+  You should go to <A HREF="%s">%s</A>.
+ </BODY>
+</HTML>
+'''
+
 # Represents an HTTP message
 class Message(object):
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
@@ -200,3 +211,14 @@ class Message(object):
             self["content-length"] = "0"
 
         self.family = kwargs.get("family", socket.AF_INET)
+
+    def compose_redirect(self, stream, target):
+        if not target.startswith("/"):
+            target = "/" + target
+        #XXX With IPv6 we need to enclose address in square braces
+        location = "http://%s:%s%s" % (stream.myname[0],
+                      stream.myname[1], target)
+        body = REDIRECT % (target, target)
+        self.compose(code="302", reason="Found", body=body,
+                     mimetype="text/html; charset=UTF-8")
+        self["location"] = location

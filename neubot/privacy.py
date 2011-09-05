@@ -51,22 +51,47 @@ def check(updates):
     ''' Raises ConfigError if the user is trying to update the
         privacy settings in a wrong way '''
 
+    # Merge a copy of config with privacy settings
     conf = CONFIG.copy()
     for key in PRIVACYKEYS:
         if key in updates:
             conf[key] = utils.intify(updates[key])
-    informed = conf.get("privacy.informed", 0)
-    can_collect = conf.get("privacy.can_collect", 0)
-    can_share = conf.get("privacy.can_share", 0)
+
+    # Extract privacy settings from such copy
+    informed = utils.intify(conf.get("privacy.informed", 0))
+    can_collect = utils.intify(conf.get("privacy.can_collect", 0))
+    can_share = utils.intify(conf.get("privacy.can_share", 0))
+
     if not informed:
+
+        # When you're not informed you cannot raise the other settings
         if can_collect or can_share:
             raise ConfigError("You cannot set can_collect or can_share "
                              "without asserting that you are informed")
+
     else:
+
+        # It's not possible to share if you don't agree to collect
         if can_share and not can_collect:
             raise ConfigError("You cannot set can_share without also "
                              "setting can_collect (how are we supposed "
                              "to share what we cannot collect)?")
+
+        # You must give the can_collect bit
+        if not can_collect:
+            raise ConfigError("You must agree to collect or Neubot "
+                              "cannot work.  You should uninstall Neubot "
+                              "if you don't want it to collect")
+
+    # You cannot remove the informed bit
+    if utils.intify(CONFIG['privacy.informed']) and not informed:
+        raise ConfigError("Once you're informed you cannot step back")
+
+    # You cannot remove the can_collect bit
+    if utils.intify(CONFIG['privacy.can_collect']) and not can_collect:
+        raise ConfigError("You can't remove the can_collect bit because "
+                          "Neubot cannot work.  You should uninstall Neubot "
+                          "if you don't want it to collect")
 
 def collect_allowed(m):
 

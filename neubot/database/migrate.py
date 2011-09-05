@@ -32,9 +32,35 @@
 # code to migrate from one version to another
 #
 
+import logging
 import uuid
-from neubot.log import LOG
+
 from neubot.marshal import unmarshal_object
+
+#
+# Bump MINOR version number because we've added two
+# fields to speedtest and bittorrent tables.  One
+# is ``neubot_version`` that contains current Neubot
+# version in numeric representation.  The other is
+# ``os_name`` that contains the current OS name.
+#
+def migrate_from__v4_0__to__v4_1(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "4.0":
+        LOG.info("* Migrating database from version 4.0 to 4.1")
+        cursor.execute("""UPDATE config SET value='4.1'
+                        WHERE name='version';""")
+
+        cursor.execute("ALTER TABLE speedtest ADD os_name TEXT;")
+        cursor.execute("ALTER TABLE speedtest ADD neubot_version TEXT;")
+
+        cursor.execute("ALTER TABLE bittorrent ADD os_name TEXT;")
+        cursor.execute("ALTER TABLE bittorrent ADD neubot_version TEXT;")
+
+        connection.commit()
+    cursor.close()
 
 #
 # Bump MAJOR version number because now we have also the
@@ -47,7 +73,7 @@ def migrate_from__v3_0__to__v4_0(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "3.0":
-        LOG.info("* Migrating database from version 3.0 to 4.0")
+        logging.info("* Migrating database from version 3.0 to 4.0")
         cursor.execute("""UPDATE config SET value='4.0'
                         WHERE name='version';""")
         connection.commit()
@@ -64,7 +90,7 @@ def migrate_from__v2_1__to__v3_0(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "2.1":
-        LOG.info("* Migrating database from version 2.1 to 3.0")
+        logging.info("* Migrating database from version 2.1 to 3.0")
         cursor.execute("""UPDATE config SET value='3.0'
                         WHERE name='version';""")
         connection.commit()
@@ -83,7 +109,7 @@ def migrate_from__v2_0__to__v2_1(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "2.0":
-        LOG.info("* Migrating database from version 2.0 to 2.1")
+        logging.info("* Migrating database from version 2.0 to 2.1")
         cursor.execute("""UPDATE config SET value='2.1'
                         WHERE name='version';""")
         connection.commit()
@@ -121,7 +147,7 @@ def migrate_from__v1_1__to__v2_0(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "1.1":
-        LOG.info("* Migrating database from version 1.1 to 2.0")
+        logging.info("* Migrating database from version 1.1 to 2.0")
         connection.execute("""CREATE TABLE IF NOT EXISTS speedtest(
                 id INTEGER PRIMARY KEY,
                 timestamp INTEGER,
@@ -174,7 +200,7 @@ def migrate_from__v1_0__to__v1_1(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "1.0":
-        LOG.info("* Migrating database from version 1.0 to 1.1")
+        logging.info("* Migrating database from version 1.0 to 1.1")
         cursor.execute("ALTER TABLE results ADD uuid TEXT;")
         cursor.execute("INSERT INTO config VALUES('uuid', :ident);",
                        {"ident": str(uuid.uuid4())})
@@ -189,6 +215,7 @@ MIGRATORS = [
     migrate_from__v2_0__to__v2_1,
     migrate_from__v2_1__to__v3_0,
     migrate_from__v3_0__to__v4_0,
+    migrate_from__v4_0__to__v4_1,
 ]
 
 def migrate(connection):

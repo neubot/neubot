@@ -20,13 +20,13 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Set of functions that you can use to build queries
-# for your tables given a template passed as input.
-# The template is the python dict() representation of
-# a table row and must only contain scalar primitive
-# types, i.e. integer, string and float.
-#
+'''
+ Set of functions that you can use to build queries
+ for your tables given a template passed as input.
+ The template is the python dict() representation of
+ a table row and must only contain scalar primitive
+ types, i.e. integer, string and float.
+'''
 
 import re
 import types
@@ -44,34 +44,36 @@ SIMPLE_TYPES = {
     types.FloatType   : "REAL NOT NULL",
 }
 
-#
-# Paranoid mode on.
-# Make sure that we receive valid field names and values
-# only when building the query.
-#
-def __check(s):
+def __check(value):
+
+    '''
+     Make sure that we receive valid field names and values
+     only when building the query.
+    '''
 
     # A simple type?
-    if type(s) not in SIMPLE_TYPES:
+    if type(value) not in SIMPLE_TYPES:
         raise ValueError("Not a simple type")
 
     # Not a string?
-    if type(s) not in (types.StringType, types.UnicodeType):
-        return s
+    if type(value) not in (types.StringType, types.UnicodeType):
+        return value
 
-    # Check
-    s1 = re.sub(r"[^A-Za-z0-9_]", "", s)
-    if s1 != s:
+    # Is the string valid?
+    stripped = re.sub(r"[^A-Za-z0-9_]", "", value)
+    if stripped != value:
         raise ValueError("Invalid string")
 
-    return s
+    return value
 
-#
-# Given the table name and a dictionary as a template this
-# function returns the query to create a table with the given
-# name suitable for holdings data from such dictionary.
-#
 def make_create_table(table, template):
+
+    '''
+     Given the table name and a dictionary as a template this
+     function returns the query to create a table with the given
+     name suitable for holdings data from such dictionary.
+    '''
+
     vector = [ "CREATE TABLE IF NOT EXISTS %s (" % __check(table) ]
     vector.append("id INTEGER PRIMARY KEY")
     vector.append(", ")
@@ -86,14 +88,31 @@ def make_create_table(table, template):
     query = "".join(vector)
     return query
 
-#
-# Given the table name and a template dictionary this function
-# returns the query to insert something like that dictionary into
-# the given table.
-#
 def make_insert_into(table, template):
-    vector = [ "INSERT INTO %s VALUES (" % __check(table) ]
-    vector.append("NULL")
+
+    '''
+     Given the table name and a template dictionary this function
+     returns the query to insert something like that dictionary into
+     the given table.
+    '''
+
+    vector = [ "INSERT INTO %s (" % __check(table) ]
+    vector.append("id")
+    vector.append(", ")
+
+    #
+    # We MUST prepare this way the query because some tables
+    # have been created at hand in the past and we cannot
+    # guarantee that the order in which items are returned
+    # by items() is the same that was used at hand.
+    #
+    for items in template.items():
+        vector.append("%s" % __check(items[0]))
+        vector.append(", ")
+
+    vector[-1] = ") "
+
+    vector.append("VALUES (NULL")
     vector.append(", ")
 
     for items in template.items():
@@ -104,12 +123,13 @@ def make_insert_into(table, template):
     query = "".join(vector)
     return query
 
-#
-# Given the table name, a template dictionary and a set
-# of zero or more keyword arguments, this function builds
-# a query to walk the specified table.
-#
 def make_select(table, template, **kwargs):
+
+    '''
+     Given the table name, a template dictionary and a set
+     of zero or more keyword arguments, this function builds
+     a query to walk the specified table.
+    '''
 
     if not "timestamp" in template:
         raise ValueError("Template does not contain 'timestamp'")

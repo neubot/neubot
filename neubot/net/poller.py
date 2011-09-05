@@ -20,13 +20,14 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import asyncore
+import logging
 import errno
 import select
 import time
 
 from neubot.utils import ticks
 from neubot.utils import timestamp
-from neubot.log import LOG
 
 #
 # Number of seconds between each check for timed-out
@@ -138,7 +139,7 @@ class Poller(object):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            LOG.exception()
+            logging.error(asyncore.compact_traceback())
 
     #
     # We are very careful when accessing readset and writeset because
@@ -160,7 +161,7 @@ class Poller(object):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.exception()
+                logging.error(asyncore.compact_traceback())
                 self.close(stream)
 
     def _call_handle_writable(self, fileno):
@@ -171,7 +172,7 @@ class Poller(object):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.exception()
+                logging.error(asyncore.compact_traceback())
                 self.close(stream)
 
     def break_loop(self):
@@ -237,7 +238,7 @@ class Poller(object):
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
-                    LOG.exception()
+                    logging.error(asyncore.compact_traceback())
 
             # Get rid of expired tasks
             del self.tasks[:index]
@@ -263,7 +264,7 @@ class Poller(object):
                  [], timeout)
             except select.error, (code, reason):
                 if code != errno.EINTR:
-                    LOG.exception()
+                    logging.error(asyncore.compact_traceback())
                     raise
 
                 else:
@@ -292,21 +293,21 @@ class Poller(object):
             x = self.readset.values()
             for stream in x:
                 if stream.readtimeout(now):
-                    LOG.warning("%s: read timeout" % repr(stream))
+                    logging.warning("%s: read timeout" % repr(stream))
                     stale.add(stream)
                 elif (stream.watchdog > 0 and
                    now - stream.created > stream.watchdog):
-                    LOG.warning("%s: watchdog timeout" % repr(stream))
+                    logging.warning("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
 
             x = self.writeset.values()
             for stream in x:
                 if stream.writetimeout(now):
-                    LOG.warning("%s: write timeout" % repr(stream))
+                    logging.warning("%s: write timeout" % repr(stream))
                     stale.add(stream)
                 elif (stream.watchdog > 0 and
                    now - stream.created > stream.watchdog):
-                    LOG.warning("%s: watchdog timeout" % repr(stream))
+                    logging.warning("%s: watchdog timeout" % repr(stream))
                     stale.add(stream)
 
             for stream in stale:
@@ -317,10 +318,3 @@ class Poller(object):
           "readset": self.readset, "writeset": self.writeset}
 
 POLLER = Poller(1)
-
-#
-# Attach to the logger: we cannot do that from
-# the logger because that will create a circular
-# import.
-#
-LOG.attach_poller(POLLER)
