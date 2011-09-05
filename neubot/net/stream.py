@@ -493,7 +493,7 @@ class Connector(Pollable):
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
         self.measurer = measurer
-        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        rcvbuf = conf.get("net.stream.rcvbuf", 0)
         sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
@@ -583,7 +583,7 @@ class Listener(Pollable):
         self.family = socket.AF_INET
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
-        rcvbuf = conf.get("net.stream.rcvbuf", 262144)
+        rcvbuf = conf.get("net.stream.rcvbuf", 0)
         sndbuf = conf.get("net.stream.sndbuf", 0)
 
         try:
@@ -766,7 +766,7 @@ CONFIG.register_defaults({
     "net.stream.obfuscate": False,
     "net.stream.secure": False,
     "net.stream.server_side": False,
-    "net.stream.rcvbuf": 262144,
+    "net.stream.rcvbuf": 0,
     "net.stream.sndbuf": 0,
 })
 CONFIG.register_defaults({
