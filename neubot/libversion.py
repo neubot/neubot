@@ -48,6 +48,7 @@
 """
 
 import decimal
+import sys
 import re
 
 # Canonical representation
@@ -173,4 +174,7 @@ class LibVersion(object):
                decimal.Decimal(cls.to_numeric(right)))
 
 if __name__ == '__main__':
-    print(LibVersion.to_numeric('0.4.1'))
+    if len(sys.argv) >= 2:
+        print(LibVersion.to_numeric(sys.argv[1]))
+    else:
+        print(LibVersion.to_numeric('0.4.1'))
