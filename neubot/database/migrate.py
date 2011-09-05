@@ -49,7 +49,7 @@ def migrate_from__v4_0__to__v4_1(connection):
     cursor.execute("SELECT value FROM config WHERE name='version';")
     ver = cursor.fetchone()[0]
     if ver == "4.0":
-        LOG.info("* Migrating database from version 4.0 to 4.1")
+        logging.info("* Migrating database from version 4.0 to 4.1")
         cursor.execute("""UPDATE config SET value='4.1'
                         WHERE name='version';""")
 
