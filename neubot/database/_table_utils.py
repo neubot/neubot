@@ -92,8 +92,23 @@ def make_create_table(table, template):
 # the given table.
 #
 def make_insert_into(table, template):
-    vector = [ "INSERT INTO %s VALUES (" % __check(table) ]
-    vector.append("NULL")
+    vector = [ "INSERT INTO %s (" % __check(table) ]
+    vector.append("id")
+    vector.append(", ")
+
+    #
+    # We MUST prepare this way the query because some tables
+    # have been created at hand in the past and we cannot
+    # guarantee that the order in which items are returned
+    # by items() is the same that was used at hand.
+    #
+    for items in template.items():
+        vector.append("%s" % __check(items[0]))
+        vector.append(", ")
+
+    vector[-1] = ") "
+
+    vector.append("VALUES (NULL")
     vector.append(", ")
 
     for items in template.items():
