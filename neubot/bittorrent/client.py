@@ -28,7 +28,7 @@
 
 import StringIO
 import hashlib
-import os
+import sys
 
 from neubot.bittorrent.peer import PeerNeubot
 from neubot.http.client import ClientHTTP
@@ -150,7 +150,7 @@ class BitTorrentClient(ClientHTTP):
 
             # OS and version info
             "neubot_version": LibVersion.to_numeric("0.4.1"),
-            "os_name": os.name,
+            "platform": sys.platform,
         }
 
         LOG.start("BitTorrent: collecting")

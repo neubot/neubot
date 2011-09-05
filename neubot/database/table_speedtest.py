@@ -47,7 +47,7 @@ def obj_to_dict(obj):
         "privacy_informed": obj.privacy_informed,
         "privacy_can_collect": obj.privacy_can_collect,
         "privacy_can_share": obj.privacy_can_share,
-        "os_name": obj.os_name,
+        "platform": obj.platform,
         "neubot_version": obj.neubot_version,
     }
     return dictionary
@@ -68,7 +68,7 @@ TEMPLATE = {
     "upload_speed": 0.0,
     "latency": 0.0,
 
-    "os_name": "",
+    "platform": "",
     "neubot_version": "",
 }
 

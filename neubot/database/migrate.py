@@ -42,7 +42,7 @@ from neubot.marshal import unmarshal_object
 # fields to speedtest and bittorrent tables.  One
 # is ``neubot_version`` that contains current Neubot
 # version in numeric representation.  The other is
-# ``os_name`` that contains the current OS name.
+# ``platform`` that contains the current OS name.
 #
 def migrate_from__v4_0__to__v4_1(connection):
     cursor = connection.cursor()
@@ -53,10 +53,10 @@ def migrate_from__v4_0__to__v4_1(connection):
         cursor.execute("""UPDATE config SET value='4.1'
                         WHERE name='version';""")
 
-        cursor.execute("ALTER TABLE speedtest ADD os_name TEXT;")
+        cursor.execute("ALTER TABLE speedtest ADD platform TEXT;")
         cursor.execute("ALTER TABLE speedtest ADD neubot_version TEXT;")
 
-        cursor.execute("ALTER TABLE bittorrent ADD os_name TEXT;")
+        cursor.execute("ALTER TABLE bittorrent ADD platform TEXT;")
         cursor.execute("ALTER TABLE bittorrent ADD neubot_version TEXT;")
 
         connection.commit()

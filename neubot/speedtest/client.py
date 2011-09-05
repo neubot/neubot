@@ -22,7 +22,7 @@
 
 import StringIO
 import collections
-import os
+import sys
 
 from neubot.blocks import RandomBody
 from neubot.config import CONFIG
@@ -152,7 +152,7 @@ class ClientCollect(ClientHTTP):
         m1.privacy_can_share = self.conf.get("privacy.can_share", 0)
 
         m1.neubot_version = LibVersion.to_numeric("0.4.1")
-        m1.os_name = os.name
+        m1.platform = sys.platform
 
         if self.measurer:
             m1.connectTime = self.measurer.measure_rtt()[0]
