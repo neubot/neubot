@@ -20,10 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if __name__ == "__main__":
-    import sys
-    sys.path.insert(0, ".")
-
 from neubot.utils import get_uuid
 from neubot import compat
 
@@ -91,26 +87,3 @@ def dictionarize(connection):
 
 def jsonize(connection):
     return compat.json.dumps(dictionarize(connection))
-
-if __name__ == "__main__":
-    import sqlite3
-    connection = sqlite3.connect(":memory:")
-
-    v, v2 = [], []
-    create(connection)
-    walk(connection, v.append)
-    create(connection)
-    walk(connection, v2.append)
-    if v != v2:
-        raise RuntimeError
-
-    update(connection, {"uuid": ""}.iteritems())
-    if dictionarize(connection) != {"version": "4.0", "uuid": ""}:
-        raise RuntimeError
-
-    update(connection, {}.iteritems(), clear=True)
-    if dictionarize(connection) != {}:
-        raise RuntimeError
-
-    create(connection)
-    print jsonize(connection)
