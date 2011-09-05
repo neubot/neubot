@@ -6,10 +6,6 @@
 	<string>org.neubot</string>
 	<key>CFBundleShortVersionString</key>
 	<string>0.4.1</string>
-	<key>IFMajorVersion</key>
-	<integer>0</integer>
-	<key>IFMinorVersion</key>
-	<integer>4</integer>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
