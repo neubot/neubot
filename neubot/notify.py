@@ -93,7 +93,7 @@ class Notifier(object):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                logging.error(asyncore.compact_traceback())
+                logging.error(str(asyncore.compact_traceback()))
 
     def is_subscribed(self, event):
         return event in self._subscribers

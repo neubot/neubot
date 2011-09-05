@@ -139,7 +139,7 @@ class Poller(object):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            logging.error(asyncore.compact_traceback())
+            logging.error(str(asyncore.compact_traceback()))
 
     #
     # We are very careful when accessing readset and writeset because
@@ -161,7 +161,7 @@ class Poller(object):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                logging.error(asyncore.compact_traceback())
+                logging.error(str(asyncore.compact_traceback()))
                 self.close(stream)
 
     def _call_handle_writable(self, fileno):
@@ -172,7 +172,7 @@ class Poller(object):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                logging.error(asyncore.compact_traceback())
+                logging.error(str(asyncore.compact_traceback()))
                 self.close(stream)
 
     def break_loop(self):
@@ -238,7 +238,7 @@ class Poller(object):
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
-                    logging.error(asyncore.compact_traceback())
+                    logging.error(str(asyncore.compact_traceback()))
 
             # Get rid of expired tasks
             del self.tasks[:index]
@@ -264,7 +264,7 @@ class Poller(object):
                  [], timeout)
             except select.error, (code, reason):
                 if code != errno.EINTR:
-                    logging.error(asyncore.compact_traceback())
+                    logging.error(str(asyncore.compact_traceback()))
                     raise
 
                 else:
