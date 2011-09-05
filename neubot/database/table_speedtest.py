@@ -27,6 +27,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.database import _table_utils
 from neubot import compat
 from neubot import utils
 
@@ -55,17 +56,28 @@ def obj_to_dict(obj):
     }
     return dictionary
 
-#
-# TODO Here and below we should use the facilities provided
-# by the new _table_utils.py helper file.
-#
+TEMPLATE = {
+    "timestamp": 0,
+    "uuid": "",
+    "internal_address": "",
+    "real_address": "",
+    "remote_address": "",
+
+    "privacy_informed": 0,
+    "privacy_can_collect": 0,
+    "privacy_can_share": 0,
+
+    "connect_time": 0.0,
+    "download_speed": 0.0,
+    "upload_speed": 0.0,
+    "latency": 0.0,
+}
+
+CREATE_TABLE = _table_utils.make_create_table("speedtest", TEMPLATE)
+INSERT_INTO = _table_utils.make_insert_into("speedtest", TEMPLATE)
+
 def create(connection, commit=True):
-    connection.execute("""CREATE TABLE IF NOT EXISTS speedtest(
-      id INTEGER PRIMARY KEY, timestamp INTEGER, uuid TEXT,
-      internal_address TEXT, real_address TEXT, remote_address TEXT,
-      connect_time NUMERIC, latency NUMERIC, download_speed NUMERIC,
-      upload_speed NUMERIC, privacy_informed NUMERIC,
-      privacy_can_collect NUMERIC, privacy_can_share NUMERIC);""")
+    connection.execute(CREATE_TABLE)
     if commit:
         connection.commit()
 
@@ -73,47 +85,22 @@ def create(connection, commit=True):
 def insert(connection, dictobj, commit=True, override_timestamp=True):
     if override_timestamp:
         dictobj['timestamp'] = utils.timestamp()
-    connection.execute("""INSERT INTO speedtest VALUES (
-      null, :timestamp, :uuid, :internal_address, :real_address,
-      :remote_address, :connect_time, :latency, :download_speed,
-      :upload_speed, :privacy_informed, :privacy_can_collect,
-      :privacy_can_share);""", dictobj)
+    connection.execute(INSERT_INTO, dictobj)
     if commit:
         connection.commit()
 
 def insertxxx(connection, obj, commit=True, override_timestamp=True):
     insert(connection, obj_to_dict(obj), commit, override_timestamp)
 
-def select_query(since, until):
-    query = ["SELECT * FROM speedtest"]
-    if since >= 0 or until >= 0:
-        query.append(" WHERE ")
-        if since >= 0:
-            query.append("timestamp >= :since")
-        if since >= 0 and until >= 0:
-            query.append(" AND ")
-        if until >= 0:
-            query.append("timestamp < :until")
-    query.append(" ORDER BY timestamp DESC")
-    query.append(";")
-    return "".join(query)
-
 def walk(connection, func, since=-1, until=-1):
     cursor = connection.cursor()
-    cursor.execute(select_query(since, until), locals())
+    SELECT = _table_utils.make_select("speedtest", TEMPLATE,
+      since=since, until=until, desc=True)
+    cursor.execute(SELECT, {"since": since, "until": until})
     return map(func, cursor)
 
-#
-# TODO Now the tuple t is sqlite3.Row so we can avoid to
-# do the mapping at hand.
-#
 def listify(connection, since=-1, until=-1):
-    return walk(connection, lambda t: { "timestamp": t[1], "uuid": t[2],
-      "internal_address": t[3], "real_address": t[4], "remote_address": t[5],
-      "connect_time": t[6], "latency": t[7], "download_speed": t[8],
-      "upload_speed": t[9], "privacy_informed": t[10],
-      "privacy_can_collect": t[11], "privacy_can_share": t[12], },
-      since, until)
+    return walk(connection, lambda t: dict(t), since, until)
 
 def prune(connection, until=None, commit=True):
     if not until:
