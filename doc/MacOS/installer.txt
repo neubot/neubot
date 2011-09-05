@@ -5,9 +5,9 @@ MacOSX installer
 :Authors: Simone Basso
 
 This document explains briefly how is organized the Neubot installer
-under MacOSX.  A paraller document should explain how the automatic
-updates are supposed to work on top of what the package installs into
-the system.
+under MacOSX.  A paraller document, doc/updater/unix.txt, explains
+how the automatic updates are supposed to work on top of what the package
+installs into the system.
 
 
 The bottom line is that we deploy Neubot-$VERSION.pkg along with a
@@ -169,12 +169,16 @@ prerun.sh:
 
 5. makes sure that the user _neubot exists or creates it;
 
-6. creates VERSIONDIR/.skip-checks;
+6. makes sure that the group _neubot_update exists or creates it;
 
-7. invokes sync(8) to flush file system buffers.	/* paranoia */
+7. makes sure that the user _neubot_update exists or creates it;
+
+8. creates VERSIONDIR/.skip-checks;
+
+9. invokes sync(8) to flush file system buffers.	/* paranoia */
 
 When prerun.sh returns, VERSIONDIR/start.sh actually starts the
-neubot agent.
+neubot updater for Unix.  That is documented at doc/updater/unix.txt.
 
 
 Note that VERSIONDIR also contains uninstall.sh that should

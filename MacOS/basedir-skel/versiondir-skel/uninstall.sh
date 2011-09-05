@@ -46,6 +46,8 @@ rmdir /usr/local/share/man/man1
 rmdir /usr/local/share/man
 dscl . -delete /Users/_neubot
 dscl . -delete /Groups/_neubot
+dscl . -delete /Users/_neubot_update
+dscl . -delete /Groups/_neubot_update
 
 # Neubot itself
 rm -rf /var/neubot/					# database dir

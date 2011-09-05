@@ -127,6 +127,67 @@ else
         dscl . -create /Users/_neubot PrimaryGroupID $MYGID
     fi
 
+    #
+    # Group `_neubot_update`
+    #
+
+    MYGID=$(dscl . -list /Groups gid|awk '/^_neubot_update[ \t]/ {print $2}')
+
+    if [ "$MYGID"x = ""x ]; then
+        logger -s -p daemon.info -t $0 'Installing group _neubot_update'
+
+        MINGID=1000
+        MAXGID=65535
+
+        while [ $MINGID -le $MAXGID ]; do
+            if dscl . -list /Groups gid|grep -q "${MINGID}$"; then
+                MINGID=$(($MINGID + 1))
+            else
+                MYGID=$MINGID
+                break
+            fi
+        done
+
+        if [ "$MYGID"x = ""x ]; then
+            logger -s -p daemon.error -t $0 'Cannot install group _neubot_update'
+            exit 1
+        fi
+
+        dscl . -create /Groups/_neubot_update gid $MYGID
+    fi
+
+    #
+    # User `_neubot_update`
+    #
+
+    MYUID=$(dscl . -list /Users UniqueID|awk '/^_neubot_update[ \t]/ {print $2}')
+
+    if [ "$MYUID"x = ""x ]; then
+        logger -s -p daemon.info -t $0 'Installing user _neubot_update'
+
+        MINUID=1000
+        MAXUID=65535
+
+        while [ $MINUID -le $MAXUID ]; do
+            if dscl . -list /Users UniqueID|grep -q "${MINUID}$"; then
+                MINUID=$(($MINUID + 1))
+            else
+                MYUID=$MINUID
+                break
+            fi
+        done
+
+        if [ "$MYUID"x = ""x ]; then
+            logger -s -p daemon.error -t $0 'Cannot install user _neubot_update'
+            exit 1
+        fi
+
+        dscl . -create /Users/_neubot_update UserShell /sbin/nologin
+        dscl . -create /Users/_neubot_update RealName "Neubot"
+        dscl . -create /Users/_neubot_update UniqueID $MYUID
+        dscl . -create /Users/_neubot_update PrimaryGroupID $MYGID
+    fi
+
     logger -s -p daemon.info -t $0 'Creating .skip-checks hint file'
     touch $VERSIONDIR/.skip-checks
 
