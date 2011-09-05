@@ -44,7 +44,7 @@
 # Before trusting a given VERSIONDIR we need to make sure
 # that it is *valid*.  In other words that all the content
 # that should have been written into it has actually been
-# written.  A VERSIONDIR si valid if it contains the so-called
+# written.  A VERSIONDIR is valid if it contains the so-called
 # OKFILE (`.neubot-installed-ok`).  The rationale is: when
 # we'll have automatic updates and we start an update it is
 # possible for an update to be in progress while the user
