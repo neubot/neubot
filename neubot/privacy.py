@@ -55,9 +55,9 @@ def check(updates):
     for key in PRIVACYKEYS:
         if key in updates:
             conf[key] = utils.intify(updates[key])
-    informed = conf.get("privacy.informed", 0)
-    can_collect = conf.get("privacy.can_collect", 0)
-    can_share = conf.get("privacy.can_share", 0)
+    informed = utils.intify(conf.get("privacy.informed", 0))
+    can_collect = utils.intify(conf.get("privacy.can_collect", 0))
+    can_share = utils.intify(conf.get("privacy.can_share", 0))
     if not informed:
         if can_collect or can_share:
             raise ConfigError("You cannot set can_collect or can_share "
