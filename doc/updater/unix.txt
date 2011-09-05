@@ -63,7 +63,7 @@ VERSIONDIR
   that a stable release has release candidate number 999.
   For example:
 
-    0.4.1   =>    0.      004     001     999
+    0.4.0   =>    0.      004     000     999
                   ^        ^       ^       ^
                 major    minor   patch   rcnum
 
