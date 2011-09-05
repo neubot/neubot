@@ -37,6 +37,31 @@ from neubot.log import LOG
 from neubot.marshal import unmarshal_object
 
 #
+# Bump MINOR version number because we've added two
+# fields to speedtest and bittorrent tables.  One
+# is ``neubot_version`` that contains current Neubot
+# version in numeric representation.  The other is
+# ``os_name`` that contains the current OS name.
+#
+def migrate_from__v4_0__to__v4_1(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "4.0":
+        LOG.info("* Migrating database from version 4.0 to 4.1")
+        cursor.execute("""UPDATE config SET value='4.1'
+                        WHERE name='version';""")
+
+        cursor.execute("ALTER TABLE speedtest ADD os_name TEXT;")
+        cursor.execute("ALTER TABLE speedtest ADD neubot_version TEXT;")
+
+        cursor.execute("ALTER TABLE bittorrent ADD os_name TEXT;")
+        cursor.execute("ALTER TABLE bittorrent ADD neubot_version TEXT;")
+
+        connection.commit()
+    cursor.close()
+
+#
 # Bump MAJOR version number because now we have also the
 # 'log' table.  Do not create the table here because
 # it is auto-created by the database initialization code
@@ -189,6 +214,7 @@ MIGRATORS = [
     migrate_from__v2_0__to__v2_1,
     migrate_from__v2_1__to__v3_0,
     migrate_from__v3_0__to__v4_0,
+    migrate_from__v4_0__to__v4_1,
 ]
 
 def migrate(connection):

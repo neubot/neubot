@@ -43,6 +43,8 @@ class SpeedtestCollect(object):
         self.privacy_informed = 0
         self.privacy_can_collect = 0
         self.privacy_can_share = 0
+        self.os_name = ""
+        self.neubot_version = ""
 
 class SpeedtestNegotiate_Response(object):
     def __init__(self):

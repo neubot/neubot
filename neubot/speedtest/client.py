@@ -22,6 +22,7 @@
 
 import StringIO
 import collections
+import os
 
 from neubot.blocks import RandomBody
 from neubot.config import CONFIG
@@ -35,6 +36,7 @@ from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.speedtest import compat
+from neubot.libversion import LibVersion
 
 from neubot.main import common
 from neubot import marshal
@@ -148,6 +150,9 @@ class ClientCollect(ClientHTTP):
         m1.privacy_informed = self.conf.get("privacy.informed", 0)
         m1.privacy_can_collect = self.conf.get("privacy.can_collect", 0)
         m1.privacy_can_share = self.conf.get("privacy.can_share", 0)
+
+        m1.neubot_version = LibVersion.to_numeric("0.4.1"),
+        m1.os_name = os.name,
 
         if self.measurer:
             m1.connectTime = self.measurer.measure_rtt()[0]

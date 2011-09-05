@@ -28,6 +28,7 @@
 
 import StringIO
 import hashlib
+import os
 
 from neubot.bittorrent.peer import PeerNeubot
 from neubot.http.client import ClientHTTP
@@ -37,6 +38,7 @@ from neubot.bittorrent import estimate
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
+from neubot.libversion import LibVersion
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
@@ -145,6 +147,10 @@ class BitTorrentClient(ClientHTTP):
             # Upload speed measured at the server
             "connect_time": rtt,
             "download_speed": download_speed,
+
+            # OS and version info
+            "neubot_version": LibVersion.to_numeric("0.4.1"),
+            "os_name": os.name,
         }
 
         LOG.start("BitTorrent: collecting")

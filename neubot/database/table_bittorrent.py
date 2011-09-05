@@ -46,6 +46,9 @@ TEMPLATE = {
     "connect_time": 0.0,
     "download_speed": 0.0,
     "upload_speed": 0.0,
+
+    "neubot_version": "",
+    "os_name": "",
 }
 
 CREATE_TABLE = _table_utils.make_create_table("bittorrent", TEMPLATE)
