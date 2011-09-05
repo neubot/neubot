@@ -1,0 +1,820 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+'''
+ This is the privilege separated Neubot updater daemon.  It is
+ started as a system daemon, runs as root, spawns and monitors an
+ unprivileged child Neubot process and periodically checks for
+ updates.  The check is not not performed by the privileged daemon
+ itself but by a child process that runs on behalf of the
+ unprivileged user ``_neubot_update``.
+'''
+
+#
+# Like neubot/main/__init__.py this file is a Neubot entry point
+# and so we must keep its name constant over time.
+# I'm sorry that this file is so huge, but there is a valid reason
+# to do that: It must be Python3 safe.  So that we're safe if the
+# system migrates to Python3 because the updater can still download
+# an updated version -- which hopefully is Python3 ready.
+#
+
+import collections
+import getopt
+import compileall
+import errno
+import syslog
+import signal
+import hashlib
+import pwd
+import re
+import os.path
+import sys
+import time
+import fcntl
+import tarfile
+import stat
+import decimal
+
+# For portability to Python 3
+if sys.version_info[0] == 3:
+    import http.client as __lib_http
+else:
+    import httplib as __lib_http
+
+# Note: BASEDIR/VERSIONDIR/neubot/updater/unix.py
+VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
+                                 os.path.abspath(__file__))))
+BASEDIR = os.path.dirname(VERSIONDIR)
+
+# Version number in numeric representation
+VERSION = "0.004001999"
+
+#
+# Common
+#
+
+def __waitpid(pid, timeo=-1):
+    ''' Wait up to @timeo seconds for @pid to exit() '''
+
+    # Are we allowed to sleep 'forever'?
+    if timeo >= 0:
+        options = os.WNOHANG
+    else:
+        options = 0
+
+    while True:
+        try:
+
+            # Wait for process to complete
+            npid, status = os.waitpid(pid, options)
+
+            if timeo >= 0 and npid == 0 and status == 0:
+                timeo = timeo - 1
+                if timeo < 0:
+                    break
+                time.sleep(1)
+                continue
+
+            # Make sure the process actually exited
+            if os.WIFEXITED(status) or os.WIFSIGNALED(status):
+                return npid, status
+
+        except OSError:
+
+            # For portability to Python3
+            why = sys.exc_info()[1]
+
+            # Make sure it's not a transient error
+            if why[0] != errno.EINTR:
+                raise
+
+    return 0, 0
+
+def __lookup_user_info(uname):
+
+    '''
+     Lookup and return the specified user's uid and gid.
+     This function is not part of __change_user() because
+     you may want to __chroot() once you have user info
+     and before you drop root privileges.
+    '''
+
+    try:
+        return pwd.getpwnam(uname)
+    except KeyError:
+        raise RuntimeError('No such user: %s' % uname)
+
+def __change_user(passwd):
+
+    '''
+     Change user, group to @passwd.pw_uid, @passwd.pw_gid and
+     setup a bare environement for the new user.  This function
+     is typically used to drop root privileges but can also be
+     used to sanitize the privileged daemon environment.
+
+     More in detail, this function will:
+
+     1. set the umask to 022;
+
+     2. change group ID to @passwd.pw_gid;
+
+     3. clear supplementary groups;
+
+     4. change user ID to @passwd.pw_uid;
+
+     5. purify environment.
+
+     Optionally, you might want to invoke __chroot() before
+     invoking this function.
+    '''
+
+    #
+    # This function loosely follows the sequence of steps
+    # implemented by OpenBSD setusercontext(3) function and
+    # by launchd(8) job_postfork_become_user().  It does
+    # not invoke setlogin(2) because that should be called
+    # when becoming a daemon.  Not here.
+    # We assume that the underlying Unix implements the
+    # following system calls: setegid(2), setgroups(2),
+    # seteuid(2).
+    #
+
+    # Set default umask (18 == 0022)
+    os.umask(18)
+
+    # Change group ID.
+    os.setegid(passwd.pw_gid)
+    os.setgid(passwd.pw_gid)
+
+    # Clear supplementary groups.
+    os.setgroups([])
+
+    # Change user ID.
+    os.seteuid(passwd.pw_uid)
+    os.setuid(passwd.pw_uid)
+
+    # Purify environment
+    for name in list(os.environ.keys()):
+        del os.environ[name]
+    os.environ = {
+                  "HOME": "/",
+                  "LOGNAME": passwd.pw_name,
+                  "PATH": "/usr/local/bin:/usr/bin:/bin",
+                  "TMPDIR": "/tmp",
+                  "USER": passwd.pw_name,
+                 }
+
+def __chroot(directory):
+
+    '''
+     Make sure that it's safe to chroot to @directory -- i.e.
+     that all path components are owned by root and that permissions
+     are safe -- then chroot to @directory.
+    '''
+
+    #
+    # In changing the root directory we perform checks
+    # loosely inspired to the checks OpenSSH performs
+    # in session.c:safely_chroot().
+    #
+
+    syslog.syslog(syslog.LOG_INFO, 'Checking "%s" for safety' % directory)
+
+    components = collections.deque(os.path.split(directory))
+
+    curdir = '/'
+    while components:
+
+        # stat(2) curdir
+        statbuf = os.stat(curdir)
+
+        # Is it a directory?
+        if (not stat.S_ISDIR(statbuf.st_mode)):
+            raise RuntimeError('Not a directory: "%s"' % curdir)
+
+        # Are permissions safe? (18 == 0022)
+        if (stat.S_IMODE(statbuf.st_mode) & 18) != 0:
+            raise RuntimeError('Unsafe permissions: "%s"' % curdir)
+
+        # Is the owner root?
+        if statbuf.st_uid != 0:
+            raise RuntimeError('Not owned by root: "%s"' % curdir)
+
+        # Add next component
+        if curdir != '/':
+            curdir = '/'.join(curdir, components.popleft())
+        else:
+            curdir = ''.join(curdir, components.popleft())
+
+    # Switch rootdir
+    os.chroot(directory)
+    os.chdir("/")
+
+def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
+
+    '''
+     Perform the typical steps to run in background as a
+     well-behaved Unix daemon.
+
+     In detail:
+
+     1. detach from the current shell;
+
+     2. become a session leader;
+
+     3. detach from the current session;
+
+     4. chdir to rootdir;
+
+     5. redirect stdin, stdout, stderr to /dev/null;
+
+     6. ignore SIGINT, SIGPIPE;
+
+     7. write pidfile;
+
+     8. install SIGTERM, SIGHUP handler;
+
+    '''
+
+    #
+    # The first chunk of this function matches
+    # loosely the behavior of the daemon(3) function
+    # available under BSD.
+    # What is missing here is setlogin(2) which
+    # is not in python library.
+    #
+
+    # detach from the shell
+    if os.fork() > 0:
+        os._exit(0)
+
+    # create new session
+    os.setsid()
+
+    # detach from the session
+    if os.fork() > 0:
+        os._exit(0)
+
+    # redirect stdio to /dev/null
+    for fdesc in range(3):
+        os.close(fdesc)
+    for _ in range(3):
+        os.open('/dev/null', os.O_RDWR)
+
+    # chdir to rootdir
+    os.chdir('/')
+
+    # ignore SIGINT, SIGPIPE
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+
+    # write pidfile
+    if pidfile:
+        filep = open(pidfile, 'w')
+        filep.write('%d\n' % os.getpid())
+        filep.close()
+
+    # install SIGTERM, SIGHUP handler
+    if sigterm_handler:
+        signal.signal(signal.SIGTERM, sigterm_handler)
+    if sighup_handler:
+        signal.signal(signal.SIGHUP, sighup_handler)
+
+def __printable_only(string):
+    ''' Remove non-printable characters from string '''
+    string = re.sub(r"[\0-\31]", "", string)
+    return re.sub(r"[\x7f-\xff]", "", string)
+
+#
+# Download
+#
+
+def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
+
+    '''
+     Fork an unprivileged child that will connect to @address and
+     download from @rpath, using https: if @https is True and http:
+     otherwise.  If @tofile is False the output is limited to 8192
+     bytes and returned as a string.  Otherwise, if @tofile is True,
+     the return value is the path to the file that contains the
+     response body.
+    '''
+
+    syslog.syslog(syslog.LOG_INFO,
+                  '__download: address=%s rpath=%s tofile=%d '
+                  'https=%d maxbytes=%d' % (address, rpath,
+                  tofile, https, maxbytes))
+
+    # Create communication pipe
+    fdin, fdout = os.pipe()
+    flags = fcntl.fcntl(fdin, fcntl.F_GETFL)
+    flags |= os.O_NONBLOCK
+    fcntl.fcntl(fdin, fcntl.F_SETFL, flags)
+
+    if not tofile:
+        lfdesc, lpath = -1, None
+    else:
+
+        # Build output file name
+        basename = os.path.basename(rpath)
+        lpath = os.sep.join([BASEDIR, basename])
+
+        #
+        # If the output file exists and is a regular file
+        # unlink it because it might be an old possibly failed
+        # download attempt.
+        #
+        if os.path.exists(lpath):
+            if not os.path.isfile(lpath):
+                raise RuntimeError('%s: not a file' % lpath)
+            os.unlink(lpath)
+
+        # Open the output file (384 == 0600)
+        lfdesc = os.open(lpath, os.O_RDWR|os.O_CREAT, 384)
+
+    # Fork off a new process
+    pid = os.fork()
+
+    if pid > 0:
+
+        # Close unneeded descriptors
+        if lfdesc >= 0:
+            os.close(lfdesc)
+        os.close(fdout)
+
+        # Wait for child process to complete
+        status = __waitpid(pid)[1]
+
+        # Read child process response
+        try:
+            response = os.read(fdin, 8192)
+        except OSError:
+            response = ''
+
+        # Close communication pipe
+        os.close(fdin)
+
+        # Terminated by signal?
+        if os.WIFSIGNALED(status):
+            syslog.syslog(syslog.LOG_ERR,
+                          'Child terminated by signal %d' %
+                          os.WTERMSIG(status))
+            return None
+
+        # For robustness
+        if not os.WIFEXITED(status):
+            raise RuntimeError('Internal error in __waitpid()')
+
+        # Failure?
+        if os.WEXITSTATUS(status) != 0:
+            error = __printable_only(response.replace('ERROR ', '', 1))
+            syslog.syslog(syslog.LOG_ERR, 'Child error: %s' % error)
+            return None
+
+        # Is output a file?
+        if tofile:
+            syslog.syslog(syslog.LOG_ERR, 'Response saved to: %s' % lpath)
+            return lpath
+
+        #
+        # Output inline
+        # NOTE The caller is expected to validate the result
+        # using regular expression.  Here we use __printable_only
+        # for safety.
+        #
+        result = response.replace('OK ', '', 1)
+        syslog.syslog(syslog.LOG_ERR, 'Response is: %s' %
+                             __printable_only(result))
+        return result
+
+    else:
+
+        #
+        # The child code is surrounded by this giant try..except
+        # because what is interesting for us is the child process
+        # exit status (plus eventually the reason).
+        #
+        try:
+
+            # Lookup unprivileged user info
+            passwd = __lookup_user_info('_neubot_update')
+
+            # Change root directory
+            __chroot('/var/empty')
+
+            # Become unprivileged as soon as possible
+            __change_user(passwd)
+
+            # Send HTTP request
+            if https:
+                connection = __lib_http.HTTPSConnection(address)
+            else:
+                connection = __lib_http.HTTPConnection(address)
+            connection.request("GET", rpath)
+
+            # Recv HTTP response
+            response = connection.getresponse()
+            if response.status != 200:
+                raise RuntimeError('HTTP response: %d' % response.status)
+
+            # Need to write response body to file?
+            if tofile:
+
+                assert(lfdesc >= 0)
+
+                total = 0
+                while True:
+
+                    # Read a piece of response body
+                    data = response.read(262144)
+                    if not data:
+                        break
+
+                    # Enforce maximum response size
+                    total += len(data)
+                    if total > maxbytes:
+                        raise RuntimeError('Response is too big')
+
+                    # Copy to output descriptor
+                    os.write(lfdesc, data)
+
+                # Close I/O channels
+                os.close(lfdesc)
+                connection.close()
+
+                # Notify parent
+                os.write(fdout, 'OK\n')
+
+            else:
+                vector = []
+                total = 0
+                while True:
+                    data = response.read(262144)
+                    if not data:
+                        break
+                    vector.append(data)
+                    total += len(data)
+                    if total > 8192:
+                        raise RuntimeError('Response is too big')
+                connection.close()
+                os.write(fdout, 'OK %s\n' % ''.join(vector))
+
+        except:
+            why = sys.exc_info()[1]
+            try:
+                os.write(fdout, 'ERROR %s\n' % str(why))
+            except:
+                pass
+            os._exit(1)
+        else:
+            os._exit(0)
+
+def __download_version_info(address):
+    '''
+     Download the latest version number.  The version number here
+     is in numeric representation, i.e. a floating point number with
+     exactly nine digits after the radix point.
+    '''
+    version = __download(address, "/updates/latest")
+    if not version:
+        raise RuntimeError('Download failed')
+    version = __printable_only(version)
+    match = re.match('^([0-9]+)\.([0-9]{9})$', version)
+    if not match:
+        raise RuntimeError('Invalid version string: %s' % version)
+    else:
+        return version
+
+def __download_sha256sum(version, address):
+    '''
+     Download the SHA256 sum of a tarball.  Note that the tarball
+     name again is a version number in numeric representation.  Note
+     that the sha256 file contains just one SHA256 entry.
+    '''
+    sha256 = __download(address, '/updates/%s.tar.gz.sha256' % version)
+    if not sha256:
+        raise RuntimeError('Download failed')
+    line = __printable_only(sha256.read())
+    match = re.match('^([a-fA-F0-9]+)  %s.tar.gz$' % version, line)
+    if not match:
+        raise RuntimeError('Invalid version sha256: %s' % version)
+    else:
+        return match.group(1)
+
+def __download_and_verify_update(server):
+
+    '''
+     If an update is available, download the updated tarball
+     and verify its sha256sum.  Return the name of the downloaded
+     file.
+    '''
+
+    syslog.syslog(syslog.LOG_INFO,
+                  'Checking for updates (current version: %s)' %
+                  VERSION)
+
+    # Get latest version
+    nversion = __download_version_info(server)
+    if decimal.Decimal(nversion) <= decimal.Decimal(VERSION):
+        syslog.syslog(syslog.LOG_INFO, 'No updates available')
+        return None
+
+    syslog.syslog(syslog.LOG_INFO,
+                  'Update available: %s -> %s' %
+                  (VERSION, nversion))
+
+    # Get checksum
+    sha256 = __download_sha256sum(nversion, server)
+    syslog.syslog(syslog.LOG_INFO, 'Expected sha256sum: %s' % sha256)
+
+    tarball = __download(
+                         server,
+                         '/updates/%s.tar.gz' % nversion,
+                         tofile=True
+                        )
+    if not tarball:
+        raise RuntimeError('Download failed')
+
+    # Calculate tarball signature
+    filep = open(tarball, 'rb')
+    hashp = hashlib.new('sha256')
+    content = filep.read()
+    hashp.update(content)
+    digest = hashp.hexdigest()
+    filep.close()
+
+    syslog.syslog(syslog.LOG_INFO, 'Tarball sha256sum: %s' % digest)
+
+    # Verify signature
+    if digest != sha256:
+        raise RuntimeError('SHA256 mismatch')
+
+    syslog.syslog(syslog.LOG_INFO, 'Tarball OK')
+
+    return nversion
+
+def _download_and_verify_update(server='releases.neubot.org'):
+    '''
+     Wrapper around __download_and_verify_update() that catches
+     and handles exceptions.
+    '''
+    try:
+        return __download_and_verify_update(server)
+    except:
+        why = sys.exc_info()[1]
+        syslog.syslog(syslog.LOG_ERR,
+                      '_download_and_verify_update: %s' %
+                      str(why))
+        return None
+
+#
+# Install new version
+#
+
+def __install_new_version(version):
+    ''' Install a new version of Neubot '''
+
+    # Make file names
+    targz = '%s.tar.gz' % version
+    srcdir = '%s' % version
+
+    # Extract from the tarball
+    archive = tarfile.open(targz, mode='r:gz')
+    archive.extractall()
+    archive.close()
+
+    # Compile all modules
+    compileall.compile_dir(srcdir, quiet=1)
+
+    # Write .neubot-installed-ok file
+    filep = open('%s/.neubot-installed-ok' % srcdir, 'wb')
+    filep.close()
+
+    # Call sync
+    os.system('sync')
+
+def __switch_to_new_version():
+    ''' Switch to the a new version of Neubot '''
+    os.execl('/bin/sh', '%s/start.sh' % BASEDIR)
+
+#
+# Start/stop neubot
+#
+
+def __start_neubot_agent():
+    ''' Fork a new process and run neubot agent '''
+
+    # Fork a new process
+    pid = os.fork()
+    if pid > 0:
+        syslog.syslog(syslog.LOG_INFO, 'Neubot agent PID: %d' % pid)
+        return pid
+
+    #
+    # The child code is surrounded by this giant try..except
+    # because we don't want the child process to eventually
+    # return to the caller.
+    #
+    try:
+        syslog.openlog('neubot', syslog.LOG_PID, syslog.LOG_DAEMON)
+
+        # Add neubot directory to python search path
+        if not os.access(VERSIONDIR, os.R_OK|os.X_OK):
+            raise RuntimeError('Cannot access: %s' % VERSIONDIR)
+
+        syslog.syslog(syslog.LOG_ERR,
+                      'Prepending "%s" to Python search path' %
+                      VERSIONDIR)
+
+        sys.path.insert(0, VERSIONDIR)
+
+        # Import the required modules
+        from neubot.log import LOG
+        from neubot.net.poller import POLLER
+        from neubot import agent
+
+        # Because we're already in background
+        LOG.redirect()
+
+        # Handle SIGTERM gracefully
+        sigterm_handler = lambda signo, frame: POLLER.break_loop()
+        signal.signal(signal.SIGTERM, sigterm_handler)
+
+        #
+        # Here we're running as root but this is OK because
+        # neubot/agent.py is going to drop the privileges to
+        # the unprivileged user `_neubot`.
+        #
+        agent.main(['neubot/agent.py',
+                    '-D agent.daemonize=OFF',
+                    '-D agent.use_syslog=ON'])
+
+    #
+    # We must employ os._exit() instead of sys.exit() because
+    # the latter is catched below by our catch-all clauses and
+    # the child process will start running the parent code.
+    # OTOH os._exit() exits immediately.
+    #
+    except:
+        why = sys.exc_info()[1]
+        try:
+            syslog.syslog(syslog.LOG_ERR,
+                          'Unhandled exception in the Neubot agent: %s' %
+                          str(why))
+        except:
+            pass
+        os._exit(1)
+    else:
+        os._exit(0)
+
+def __stop_neubot_agent(pid):
+    ''' Stop a running Neubot agent '''
+
+    # Please, terminate gracefully!
+    syslog.syslog(syslog.LOG_INFO, 'Sending SIGTERM to %d' % pid)
+
+    os.kill(pid, signal.SIGTERM)
+
+    # Wait for the process to terminate
+    syslog.syslog(syslog.LOG_INFO, 'Waiting for process to terminate')
+
+    _pid, status = __waitpid(pid, 5)
+
+    if _pid == 0 and status == 0:
+
+        # Die die die!
+        syslog.syslog(syslog.LOG_WARNING, 'Need to send SIGKILL to %d' % pid)
+
+        os.kill(pid, signal.SIGKILL)
+
+        # Wait for process to die
+        __waitpid(pid)
+
+        syslog.syslog(syslog.LOG_INFO, 'Process terminated abruptly')
+
+    else:
+        syslog.syslog(syslog.LOG_INFO, 'Process terminated gracefully')
+
+#
+# Main
+#
+
+def __main():
+    ''' Neubot auto-updater process '''
+
+    # Process command line options
+    logopt = syslog.LOG_PID
+    daemonize = True
+
+    try:
+        options, arguments = getopt.getopt(sys.argv[1:], 'Dd')
+    except getopt.error:
+        sys.exit('Usage: neubot/updater/unix.py [-Dd]')
+
+    if arguments:
+        sys.exit('Usage: neubot/updater/unix.py [-Dd]')
+
+    for name, value in options:
+        if name == '-D':
+            daemonize = False
+        elif name == '-d':
+            logopt |= syslog.LOG_PERROR
+
+    # We must be run as root
+    if os.getuid() != 0 and os.geteuid() != 0:
+        sys.exit('You must be root.')
+
+    # Open the system logger
+    syslog.openlog('neubot [updater/unix.py]', logopt, syslog.LOG_DAEMON)
+
+    # Clear root user environment
+    __change_user(__lookup_user_info('root'))
+
+    # Daemonize
+    if daemonize:
+        __go_background('/var/run/neubot.pid')
+
+    lastcheck = time.time()
+    pid = -1
+
+    #
+    # Loop forever, catch and just log all exceptions.
+    # Spend many time sleeping and wake up just once every
+    # five seconds to make sure everything is fine.
+    #
+    while True:
+        time.sleep(15)
+
+        try:
+
+            # If needed start the agent
+            if pid == -1:
+                pid = __start_neubot_agent()
+
+            # Check for updates
+            now = time.time()
+            if lastcheck - now > 3600:
+                lastcheck = now
+                nversion = _download_and_verify_update()
+                if nversion:
+                    if pid > 0:
+                        __stop_neubot_agent(pid)
+                        pid = -1
+                    __install_new_version(nversion)
+                    __switch_to_new_version()
+                    raise RuntimeError('Internal error')
+
+            # Monitor the agent
+            rpid, status = __waitpid(pid, 0)
+
+            if rpid == pid:
+                pid = -1
+
+                # Signaled?
+                if os.WIFSIGNALED(status):
+                    raise RuntimeError('Agent terminated by signal')
+
+                # For robustness
+                if not os.WIFEXITED(status):
+                    raise RuntimeError('Internal error in __waitpid()')
+
+                syslog.syslog(syslog.LOG_WARNING,
+                  'Child exited with status %d' % os.WEXITSTATUS(status))
+
+        except:
+            why = sys.exc_info()[1]
+            syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
+
+def main():
+    ''' Wrapper around the real __main() '''
+    try:
+        __main()
+    except SystemExit:
+        raise
+    except:
+        why = sys.exc_info()[1]
+        syslog.syslog(syslog.LOG_ERR, 'Unhandled exception: %s' % str(why))
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()

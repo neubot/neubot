@@ -22,25 +22,6 @@
 
 import os.path
 
-#
-# Just a stub.  Under Windows we go immediately in background
-# because indeed we're not attached to a console.  The logs are
-# entirely managed by log.py.  We tried to use NT Event Logger
-# but it's not as friendly as syslog.
-#
-class BackgroundLogger(object):
-    def error(self, message):
-        pass
-
-    def warning(self, message):
-        pass
-
-    def info(self, message):
-        pass
-
-    def debug(self, message):
-        pass
-
 def change_dir():
     pass
 
@@ -68,3 +49,14 @@ def _want_rw_file(path, perror=None):
 
 def _get_pidfile_dir():
     return None
+
+#
+# We tried NT Event Logger but it is not as friendly as
+# syslog under Unix.  So we decided to write logs on the
+# database only for Windows.
+#
+def __logger(severity, message):
+    pass
+
+def get_background_logger():
+    return __logger

@@ -175,19 +175,32 @@ def main(argv):
 
         if os.name == "posix":
 
+            #
+            # Fork off a child and use it to start the
+            # Neubot agent.  The parent process will
+            # open the browser, if needed.  Otherwise
+            # it will exit.
+            #
             if not running and start:
-                from neubot import agent
-                agent.main([argv[0], "-Dagent.api.port=%s" % port,
-                             "-Dagent.api.address=%s" % address])
-                sys.exit(0)
+                if os.fork() == 0:
+                    from neubot import agent
+                    arguments = [ argv[0] ]
+                    if port != '9774':
+                        arguments.append("-Dagent.api.port=%s" % port)
+                    if address != '127.0.0.1':
+                        arguments.append("-Dagent.api.address=%s" % address)
+                    agent.main(arguments)
+                    sys.exit(0)
 
-            # XXX
-            if sys.platform == "darwin":
-                os.environ["DISPLAY"] = "fake-neubot-display:0.0"
-
+            #
+            # It's not wise at all to open the browser when
+            # we are running as root.  Assume that when we
+            # are root the user wants just to start the agent.
+            #
             if webgui and "DISPLAY" in os.environ:
-                from neubot.main import browser
-                browser.open_patient(address, port)
+                if os.getuid() != 0:
+                    from neubot.main import browser
+                    browser.open_patient(address, port)
 
         elif os.name == "nt":
 

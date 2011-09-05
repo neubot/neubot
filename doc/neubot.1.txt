@@ -219,6 +219,9 @@ we assume that it has been installed below **/usr/local**:
 /usr/local/share/neubot/*
   Location where neubot python modules are installed.
 
+/usr/local/share/neubot/main/__init__.py
+  Well-known location of the real main() of Neubot.
+
 /var/neubot/database.sqlite3
   System-wide results database, created when the neubot daemon starts
   for the first time.

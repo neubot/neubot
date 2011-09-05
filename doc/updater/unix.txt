@@ -1,0 +1,188 @@
+Unix updater
+''''''''''''
+
+:Version: 1.1 of 2011/09/01
+:Authors: Simone Basso
+:Documents: neubot/updater/unix.py
+
+This document explains briefly how the updater process works
+under Unix.
+
+The general idea is that this process runs as root in the
+background (usually started at boot time).  It spawns a Neubot
+agent child, which eventually will drop root privileges and
+perform, as usual, periodic transmission tests.   Also, the
+updater daemon periodically checks for updates and, if needed,
+automatically updates Neubot, silently and in the background.
+All the network-facing operations aren't performed by the
+updater daemon, though.  They're carried out by an unprivileged
+child.
+
+
+Python 3 compatibility
+``````````````````````
+
+The first issue to discuss is Python 3 compatibility.  The code
+that comprises the updater should run without modifications under
+Python 2.6 as well as Python 3.  The reason is simple: if the
+operating system upgrades the system Python, for sure the updater
+will be able to cope with that.  Maybe the core Neubot functionality,
+measuring quality and neutrality, will not be available, because
+of 2to3 issues.  Still, a subsequent version may be able to do
+that, and the updater will be able to fetch it.
+
+This design decision has one drawback: some code is going to be
+duplicated between neubot/updater/unix.py and neubot/system/unix.py.
+I prefer to keep all the updater code in the same file, to ease
+the task of making sure that it keeps working with Python 3.
+
+
+Definitions
+```````````
+
+The updater process shares the definitions of BASEDIR and
+VERSIONDIR with doc/MacOS/installer.txt.  The reason is simple:
+this updater has been written mainly to provide automatic
+updates under MacOS.
+
+BASEDIR
+  This is the base directory where Neubot is installed, usually
+  under the MacOS it is /usr/local/share/neubot.
+
+VERSIONDIR
+  The BASEDIR contains one or more VERSIONDIRs.  Each contains
+  the sources of a version of Neubot.
+
+  The VERSIONDIR is named after the version of Neubot it
+  contains, expressed in numeric representation.  This is an
+  alternative representation of the version number as a floating
+  point.  The integer part is the major version number.  After
+  the radix point the first three digits represent the minor
+  number, digits 4-6 represent the patch number, and digits 7-9
+  the release candidate number.  Also, there is the convention
+  that a stable release has release candidate number 999.
+  For example:
+
+    0.4.1   =>    0.      004     001     999
+                  ^        ^       ^       ^
+                major    minor   patch   rcnum
+
+  This notation is very convenient because it allows to treat
+  the version number as a floating point -- or, better, as a
+  decimal.Decimal under Python.
+
+
+Assumptions
+```````````
+
+Again, many assumptions depend on the fact that the updater is
+being written for MacOSX.
+
+The updater assumes that its normalized absolute path is
+``BASEDIR/VERSIONDIR/neubot/updater/unix.py``.  It is very
+important not to change the location of this file without
+updating the code, because the updater relies on this
+information to locate and import the rest of Neubot.
+
+This assumption on the filesystem layout is also relevant
+because the updater will install VERSIONDIR+1 at the following
+location: ``BASEDIR/VERSIONDIR+1``.
+
+(The fact that the one of the updater is a well-know entry point
+to Neubot should also be mentioned in the FILES section of the
+manual page.)
+
+The updater assumes that ``BASEDIR/start.sh`` is a Bourne shell
+script that is able to start the newest version of Neubot,
+provided that it was correctly installed.  Also, the updater
+assumes that start.sh decides that a Neubot version was
+correctly installed if the file ``.neubot-installed-ok`` exists
+in VERSIONDIR.
+
+The updater keeps the current version number in numeric
+representation.  Here the assumption is that Neubot release
+scripts will take care not only of updating the canonical
+representation, e.g. 0.4.1, but also the numeric one.
+
+The updater assumes that ``http://releases.neubot.org/``
+contains the folder ``/updates/``.  And that, in turn, such
+folder contains three files for each available version:
+the sources tarball, the SHA256 sum and the digital
+signature.  The files must be named after the numeric
+representation of their version number alone, e.g.::
+
+    /updates/
+        0.004002999.tar.gz
+        0.004002999.tar.gz.sha256
+        0.004002999.tar.gz.sig
+        0.004003999.tar.gz
+        0.004003999.tar.gz.sha256
+        0.004003999.tar.gz.sig
+
+The updater assumes that OpenSSL command line tools are
+installed and available in the PATH.  It needs them to
+verify the digital signature of an updated.
+
+The updater assumes that the user ``_neubot_update`` is
+available on the system, bound to a primary group with the same
+name and not associated with any real user account.  When
+downloading updates the updater child will drop permanently
+privileges and become that user.
+
+
+High level algorithm
+````````````````````
+
+The updater processes command line options.  There are two
+command line options: -D and -d.  The former forces the daemon
+to run in foreground and the latter to print logs also on the
+standard error.  Under MacOSX the updater is always invoked with
+-D because launchd(8) does not like it if a child process
+fork()s.
+
+The updater can only be run by the root user because it needs to
+impersonate at least two users: ``_neubot`` (the user of the
+Neubot agent) and ``_neubot_update`` (the one used to download
+updates).  Also, the updater must read and write on the file
+system in order to upgrade Neubot.
+
+The updater cleans up its own environment, while remaining
+``root``.  It removes unneeded supplementary groups, purify
+environment variables and set a default umask.
+
+If needed, it detaches from the current shell and forks in
+background, running as a daemon.  It will write a pidfile
+at ``/var/run/neubot.pid``, in this case.  Unfortunately for
+now it does not install any signal handler, but the plan
+is to install a SIGTERM handler that kills the child Neubot
+agent process, if any.
+
+The main loop has two control variables: pid (the process ID of
+the child Neubot agent process) and lastcheck (the last time the
+updater checked for a new release).  The main loop contains a
+call to sleep at the beginning to avoid consuming too many
+resources.
+
+So, periodically the updater wakes up an makes sure that the
+Neubot agent is already running.  If not, it forks a child to
+run the agent algorithm and remembers its PID to be able to
+control it.
+
+Then, it checks for updates, once per hour.  If a new update
+is available, the updater stops the child Neubot agent process,
+if needed, installs the new version and, finally, switches
+over to it.  To do that it tries to exec() BASEDIR/start.sh,
+which should pick up the new version instead of the running
+one.  Note that the exec() does not change the process ID.
+For launchd(8) nothing will change.
+
+The last step is to monitor the running child for a while,
+using waitpid(2) together with WNOHANG.  If the child process
+exited, it logs the event and arrange things so that it
+will be started again at the beginning of next loop.
+
+
+Starting Neubot agent
+`````````````````````
+
+TODO

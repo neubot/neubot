@@ -26,22 +26,8 @@ import traceback
 from neubot import system
 from neubot import utils
 
-class InteractiveLogger(object):
-
-    """Log messages on the standard error.  This is the simplest
-       logger one can think and is the one we use at startup."""
-
-    def error(self, message):
-        sys.stderr.write(message + "\n")
-
-    def warning(self, message):
-        sys.stderr.write(message + "\n")
-
-    def info(self, message):
-        sys.stderr.write(message + "\n")
-
-    def debug(self, message):
-        sys.stderr.write(message + "\n")
+def stderr_logger(severity, message):
+    sys.stderr.write('<%s> %s\n' % (severity, message))
 
 #
 # We commit every NOCOMMIT log messages or when we see
@@ -72,7 +58,7 @@ class Logger(object):
        the /api/log API."""
 
     def __init__(self):
-        self.logger = InteractiveLogger()
+        self.logger = stderr_logger
         self.interactive = True
         self.noisy = False
         self.message = None
@@ -135,7 +121,7 @@ class Logger(object):
         self.noisy = False
 
     def redirect(self):
-        self.logger = system.BackgroundLogger()
+        self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
         self.interactive = False
 
@@ -199,17 +185,17 @@ class Logger(object):
             func(line)
 
     def error(self, message):
-        self._log(self.logger.error, "ERROR", message)
+        self._log("ERROR", message)
 
     def warning(self, message):
-        self._log(self.logger.warning, "WARNING", message)
+        self._log("WARNING", message)
 
     def info(self, message):
-        self._log(self.logger.info, "INFO", message)
+        self._log("INFO", message)
 
     def debug(self, message):
         if self.noisy:
-            self._log(self.logger.debug, "DEBUG", message)
+            self._log("DEBUG", message)
 
     def log_access(self, message):
         #
@@ -220,7 +206,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self._log(self.logger.info, "ACCESS", message)
+        self._log("ACCESS", message)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
@@ -250,7 +236,7 @@ class Logger(object):
         # Purge the queue in any case
         del self._queue[:]
 
-    def _log(self, printlog, severity, message):
+    def _log(self, severity, message):
         message = message.rstrip()
 
         if self._use_database and self.database and severity != "ACCESS":
@@ -288,7 +274,7 @@ class Logger(object):
             if commit:
                 self._writeback()
 
-        printlog(message)
+        self.logger(severity, message)
 
     # Marshal
 
