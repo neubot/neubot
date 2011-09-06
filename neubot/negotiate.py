@@ -64,6 +64,14 @@ class _Negotiator(object):
         self._known = set()
         self._delay = {}
 
+    #
+    # XXX For the queue length to be correct we need
+    # to migrate the speedtest server to use this queue
+    # otherwise the result does not account for that
+    #
+    def __len__(self):
+        return len(self._queue)
+
     def register(self, name, mod):
         self._mods[name] = mod
 
