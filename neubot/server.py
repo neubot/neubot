@@ -166,15 +166,12 @@ def main(args):
     #
     # Start server-side API for Nagios plugin
     # to query the state of the server.
-    # Do not use the global server but rather
-    # a completely different server because
-    # we don't want to mix control and testing
     # functionalities.
     #
     if conf["server.sapi"]:
         server = ServerSideAPI(POLLER)
         server.configure(conf)
-        server.listen((address, 9775))
+        HTTP_SERVER.register_child(server, "/sapi")
 
     #
     # Go background and drop privileges,
