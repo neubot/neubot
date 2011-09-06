@@ -1,67 +1,98 @@
+Human readable summary
+``````````````````````
 
-$Version: 1.0$
+Neubot characterizes your connections via active tests that send and receive
+random data only. To process and save the results Neubot needs your
+permission because they contain your Internet address. And that is personal
+data under European and Italian Privacy laws (Decree 196/03). Please, note
+that without the permission to save the results Neubot cannot work at all.
 
-The purpose of Neubot is to measure the quality and neutrality of
-your Internet connection and to share the results with the Internet
-community, in order to rebalance the information asymmetry between
-ordinary Internet users and Service Providers.
+Neubot would also like to publish the raw results, to allow other individuals
+and institutions to reuse them for research purposes. Again, that cannot be
+done without your consent. While Neubot can work also without the permission
+to publish, please consider providing it: there is a great value in allowing
+other researchers and netizens to study the results.
 
+Full privacy policy
+```````````````````
+
+$Privacy-Policy: 2.0$
+
+Neubot is a research project that aims to study the quality and
+neutrality of ordinary users' Internet connections, to rebalance
+the information asymmetry between them and Service Providers.
+In particular, Neubot (i) *measures* the quality and neutrality of your
+Internet connection and (ii) *collects* the results to study it and
+publish _aggregate_ data. Neubot would also like to (iii) *publish*
+the _raw_ results, to allow other individuals and institutions to
+reuse them for research purposes.
+
+To *measure* the quality and neutrality of your Internet connection,
 Neubot does not monitor or analyze your Internet traffic. It just
-uses a tiny fraction of your connection capacity to perform background
-transmission tests, sending and/or receiving random data.  The
-result contains the measured performance metrics, such as the
-download speed, or the latency, as well as your computer load, as
-a percentage.  Also, the result contains your Internet address.
-After the test, the result is uploaded to Neubot servers.
+uses a fraction of your connection capacity to perform background
+transmission tests, sending and/or receiving random data. The result
+contains the measured performance metrics, such as the download speed,
+or the latency, as well as your computer load, as a percentage, and
+*your Internet address*. After the test, the result is uploaded to
+Neubot servers.
 
-The Neubot project needs to collect your Internet address because
-that allows to infer your Internet Service Provider and to have a
-rough idea of your location.  This is paramount for Neubot's
-goal of monitoring the quality and neutrality of the Internet, by
-provider and geographical area.
+The Neubot project needs to *collect* your Internet address because that
+allows to infer your Internet Service Provider and to have a rough idea
+of your location. Without this information, Neubot cannot accomplish
+its goal of studying the quality and neutrality of ordinary users'
+Internet connections.
 
-However, in Europe Internet addresses are personal data. So, Neubot
-cannot store, process, or share your Internet address without your
-prior *informed consent*, under the provisions of the "Codice in
-materia di protezione dei dati personali" `(Decree 196/03)
-<http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248>`_.  In
-accordance with the law, data controller is the NEXA Center for
-Internet & Society, represented by its co-director Juan Carlos
+The Neubot project would also like to *publish* your Internet address
+because there is a great value in allowing other researchers to study
+and criticize Neubot methodology and data set. This will empower the
+Internet community, eventually leading to a better understanding of the
+'Net.
+
+Please note that in Europe Internet addresses are personal data. This
+means that Neubot cannot store, process or publish your address
+without your prior *informed consent*, under the provisions of the
+"Codice in materia di protezione dei dati personali" (Decree 196/03)
+[1]. In accordance with the law, data controller is the NEXA Center
+for Internet & Society, represented by its co-director Juan Carlos
 De Martin.
 
-Neubot asks you to explicitly assert that you have read this privacy
-policy and to give it the permission to collect and share your IP
-address.  If you don't confirm that you have read the privacy policy,
-Neubot collects your Internet address under a special provision,
-that allows researchers to do that `for statistical purposes only
-<http://www.garanteprivacy.it/garante/doc.jsp?ID=1556635>`_.  Internet
-addresses collected under this regime will be flagged in a special
-way, and will not be shared with anyone.  They will be treated by
-the researchers authorized by the data controller only.  This data,
-however, will not be of great value for the Internet community,
-because they cannot be shared with and analyzed by other researchers.
+Neubot asks you (a) to explicitly assert that you are *informed*,
+i.e. that you have read the privacy policy, and (b) to give it the
+permission to *collect* and (c) *publish* your raw IP address. You must
+assert that you are informed and give the permission to collect,
+otherwise Neubot cannot work, as explained above. The permission to
+publish is optional. If you give it, please note that the published
+data *can be reused only* for research (or compatible) purposes.
+If you don't give it, your Internet address will not be published
+on the web as raw data and it will be processed by the researchers
+authorized by the data controller only.
 
-The project needs at least the permission to collect your Internet
-address, because otherwise it cannot process your results and publish
-aggregate data.  If you don't give Neubot the permission to share,
-of course your Internet address will not be shared with others, and
-will be processed by the researchers authorized by the data controller
-only.  Please note that there is a great benefit in sharing your
-Internet address, because that allows other researchers to study
-and criticize Neubot methodology and data set.  This will empower
-the Internet community, eventually leading to a better understanding
-of the Net.
+Recent versions of Neubot will prompt you to read the privacy policy
+and set the permissions when installing the software. In old versions
+of the software, however, the installer does not show you the policy
+and does not prompt you to set permissions. You are just kindly
+asked to go to the privacy page [2] of the web user interface, read
+the policy and set permissions. If you refuse to do that, Neubot
+collects your Internet address under special provisions that allows
+to collect personal data for "statistical and research purposes only"
+(Codice di deontologia e di buona condotta per i trattamenti di dati
+personali per scopi statistici e scientifici [3]). Internet addresses
+collected under this regime will be flagged in a special way and will
+not be shared with anyone. They will be treated by the researchers
+authorized by the data controller only.
 
-The data controller guarantees you the rights as per Section 7 of
-the above mentioned decree.  Basically, you have total control over
-you personal data, and you can, for example, inquire Neubot to
-remove your Internet address from its data sets.  To exercise your
-rights, please write to Dipartimento di Automatica e Infomatica
+The data controller guarantees you the rights as per Art. 7 of the
+above mentioned Decree 196/03. Basically, you have total control over
+you personal data, and you can, for example, inquire Neubot to remove
+your Internet address from its data sets. To exercise your rights,
+please write to  or to "Centro NEXA
+su Internet & Societa' c/o Dipartimento di Automatica e Infomatica
 (DAUIN) - Politecnico di Torino - Corso Duca degli Abruzzi, 24 -
-10129 Torino, ITALY.
+10129 Torino, ITALY."
 
-You can change the permissions you want to give Neubot anytime you
-want, using the privacy dashboard: Open the web user interface and switch
-to the 'Privacy' tab, or go straight to the `privacy page
-<http://127.0.0.1:9774/privacy.html>`_ of the web user interface.
+[1] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248
+[2] http://127.0.0.1:9774/privacy.html
+[3] http://www.garanteprivacy.it/garante/doc.jsp?ID=1556635
 
+To get older versions of this document, review the history of it online
+at https://github.com/neubot/neubot/blob/master/PRIVACY.
