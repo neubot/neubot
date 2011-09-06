@@ -32,7 +32,7 @@ this to the configuration of Nagios::
 
     define command {
         command_name        check_neubot
-        command_line        /usr/local/bin/nagios-plugin-neubot
+        command_line        /usr/local/bin/nagios-plugin-neubot -H $HOSTADDRESS
     }
 
     define service {
@@ -43,10 +43,7 @@ this to the configuration of Nagios::
     }
 
 This recipe is untested but hopefully it should work to monitor
-a Neubot instance from within the same machine, i.e. using 127.0.0.1
-to access it.  I am reluctant to expose this interface over the
-network so if the plugin should be used from another machine better
-to just connect to the negotiator and see what happens.
+a Neubot instance running at $HOSTADDRESS.
 """
 
 import pwd
