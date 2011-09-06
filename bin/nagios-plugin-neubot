@@ -32,7 +32,7 @@ this to the configuration of Nagios::
 
     define command {
         command_name        check_neubot
-        command_line        /usr/local/bin/nagios-plugin-neubot
+        command_line        /usr/local/bin/nagios-plugin-neubot -H $HOSTADDRESS
     }
 
     define service {
@@ -43,10 +43,7 @@ this to the configuration of Nagios::
     }
 
 This recipe is untested but hopefully it should work to monitor
-a Neubot instance from within the same machine, i.e. using 127.0.0.1
-to access it.  I am reluctant to expose this interface over the
-network so if the plugin should be used from another machine better
-to just connect to the negotiator and see what happens.
+a Neubot instance running at $HOSTADDRESS.
 """
 
 import pwd
@@ -55,6 +52,7 @@ import socket
 import httplib
 import signal
 import os
+import json
 import sys
 
 if __name__ == "__main__":
@@ -65,26 +63,33 @@ def _got_alarm(signo, frame):
     sys.stdout.write("CRITICAL: Watchdog timeout\n")
     sys.exit(2)
 
-USAGE_SHORT = "Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]\n"
+USAGE_SHORT = '''\
+Usage: nagios-plugin-neubot [-?hvV] [-h|--hostname hostname]
+                            [--version] [--help]
+'''
 
 USAGE_LONG = '''
 Version: 0.4.1
 Purpose: Monitor Neubot server
-Usage: nagios-plugin-neubot [-?hvV] [--version] [--help]
+Usage: nagios-plugin-neubot [-?hvV] [-h|--hostname hostname]
+                            [--version] [--help]
 Options:
-    -?            : Print brief help message
-    -h|--help     : Print detailed help message
-    -v            : No-op for compatibility with Nagios specs
-    -V|--version  : Print version number
+    -?                     : Print brief help message
+    -h|--help              : Print detailed help message
+    -h|--hostname hostname : Hostname to connect to [127.0.0.1]
+    -v                     : No-op for compatibility with Nagios specs
+    -V|--version           : Print version number
 
 '''
 
 def __getopt(args):
     """ Process command line options """
 
+    hostname = "127.0.0.1"
+
     try:
-        options, arguments = getopt.getopt(args[1:], "?hvV",
-                               ["version", "help"])
+        options, arguments = getopt.getopt(args[1:], "?hH:vV",
+                               ["version", "help", "hostname="])
     except getopt.error:
         sys.stdout.write(USAGE_SHORT)
         sys.exit(3)
@@ -100,12 +105,14 @@ def __getopt(args):
         elif name == "-V" or name == "--version":
             sys.stdout.write("Neubot 0.4.1\n")
             sys.exit(0)
-        else:
-            pass
+        elif name == "-H" or name == "--hostname":
+            hostname = tpl[1]
 
     if arguments:
         sys.stdout.write(USAGE_SHORT)
         sys.exit(3)
+
+    return hostname
 
 def __die_if_running_as_root():
     """ We should not be running as root, because Nagios should
@@ -117,10 +124,11 @@ def __die_if_running_as_root():
         sys.exit(2)
 
 def main(args):
-    """ Monitor Neubot via https://127.0.0.1:9775/sapi/ """
+    """ Monitor Neubot via http://address/sapi/state """
 
     __die_if_running_as_root()
-    __getopt(args)
+
+    hostname = __getopt(args)
 
     try:
         signal.alarm(10)
@@ -137,13 +145,13 @@ def main(args):
         sys.exit(2)
 
     try:
-        connection = httplib.HTTPSConnection("127.0.0.1", "9775")
+        connection = httplib.HTTPConnection(hostname, "80")
     except Exception, why:
         sys.stdout.write("CRITICAL: httplib.HTTPConnection(): %s\n" % str(why))
         sys.exit(2)
 
     try:
-        connection.request("GET", "/sapi/")
+        connection.request("GET", "/sapi/state")
     except Exception, why:
         sys.stdout.write("CRITICAL: connection.request(): %s\n" % str(why))
         sys.exit(2)
@@ -159,10 +167,22 @@ def main(args):
         sys.exit(2)
 
     try:
-        response.read()
+        body = response.read()
     except Exception, why:
         sys.stdout.write("CRITICAL: response.read(): %s\n" % str(why))
         sys.exit(2)
+
+    try:
+        message = json.loads(body)
+        assert("queue_len_cur" in message)
+        length = float(message['queue_len_cur'])
+    except Exception, why:
+        sys.stdout.write("CRITICAL: invalid response: %s\n" % str(why))
+        sys.exit(2)
+
+    if length > 64:
+        sys.stdout.write("WARNING: queue too long: %f\n" % length)
+        sys.exit(1)
 
     sys.stdout.write("OK: Neubot server is UP\n")
 
