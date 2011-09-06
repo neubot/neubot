@@ -211,13 +211,13 @@ class ClientSpeedtest(ClientHTTP):
             uri = self.conf.get("speedtest.client.uri",
               "http://neubot.blupixel.net/")
         if not count:
-            count = self.conf.get("speedtest.client.nconn", 2)
+            count = self.conf.get("speedtest.client.nconn", 1)
         LOG.info("* speedtest with %s" % uri)
         ClientHTTP.connect_uri(self, uri, count)
 
     def connection_ready(self, stream):
         self.streams.append(stream)
-        if len(self.streams) == self.conf.get("speedtest.client.nconn", 2):
+        if len(self.streams) == self.conf.get("speedtest.client.nconn", 1):
             self.update()
 
     #
@@ -310,7 +310,7 @@ class ClientSpeedtest(ClientHTTP):
                 self.conf["speedtest.client.latency_tries"] = tries - 1
 
         elif self.state in ("download", "upload"):
-            if len(self.streams) == self.conf.get("speedtest.client.nconn", 2):
+            if len(self.streams) == self.conf.get("speedtest.client.nconn", 1):
 
                 # Calculate average speed
                 speed = self.conf["speedtest.client.%s" % self.state]
@@ -400,7 +400,7 @@ class ClientSpeedtest(ClientHTTP):
 
 CONFIG.register_defaults({
     "speedtest.client.uri": "http://neubot.blupixel.net/",
-    "speedtest.client.nconn": 2,
+    "speedtest.client.nconn": 1,
     "speedtest.client.latency_tries": 10,
 })
 
