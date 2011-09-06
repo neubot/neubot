@@ -75,8 +75,6 @@ class Logger(object):
         self._use_database = False
         self._queue = []
 
-        POLLER.sched(INTERVAL, self._maintain_database)
-
     #
     # Better not to touch the database when a test is in
     # progress, i.e. "testdone" is subscribed.
@@ -96,6 +94,7 @@ class Logger(object):
     # the server side or when we run from command line.
     #
     def use_database(self):
+        POLLER.sched(INTERVAL, self._maintain_database)
         self._use_database = True
 
     def verbose(self):
