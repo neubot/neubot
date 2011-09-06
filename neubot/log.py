@@ -88,8 +88,6 @@ class Logger(object):
 
         POLLER.sched(INTERVAL, self._maintain_database)
 
-        self.info("log: pruning my database table")
-
         if (self._use_database and not NOTIFIER.is_subscribed("testdone")):
             self._writeback()
 
