@@ -37,6 +37,9 @@ from neubot.http.server import ServerHTTP
 from neubot.net.poller import POLLER
 from neubot.speedtest.negotiate import ServerSpeedtest
 
+from neubot.speedtest.session import TRACKER
+from neubot.negotiate import NEGOTIATOR
+
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
@@ -57,11 +60,22 @@ class ServerSideAPI(ServerHTTP):
         if request.uri == "/sapi":
             request.uri = "/sapi/"
 
+        response = Message()
+
         if request.uri == "/sapi/":
-            response = Message()
-            response.compose(code="200", reason="Ok")
+            body = '["/sapi/", "/sapi/state"]'
+            response.compose(code="200", reason="Ok", body=body,
+                             mimetype="application/json")
+        elif request.uri == "/sapi/state":
+            #
+            # XXX It would be nice one day to use NEGOTIATOR
+            # also for the speedtest test.
+            #
+            average = (len(TRACKER) + len(NEGOTIATOR))/2
+            body = '{"queue_len_cur": %f}' % average
+            response.compose(code="200", reason="Ok", body=body,
+                             mimetype="application/json")
         else:
-            response = Message()
             response.compose(code="404", reason="Not Found")
 
         stream.send_response(request, response)
