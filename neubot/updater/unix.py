@@ -53,6 +53,7 @@ import time
 import fcntl
 import tarfile
 import stat
+import subprocess
 import decimal
 
 # For portability to Python 3
@@ -521,6 +522,21 @@ def __download_sha256sum(version, address):
     else:
         return match.group(1)
 
+def __verify_sig(signature, tarball):
+
+    '''
+     Call OpenSSL to verify the signature.  The public key
+     is ``VERSIONDIR/pubkey.pem``.  We assume the signature
+     algorithm is SHA256.
+    '''
+
+    retval = subprocess.call(['/usr/bin/openssl', 'dgst', '-sha256',
+                              '-verify', '%s/pubkey.pem' % VERSIONDIR,
+                              '-signature', signature, tarball])
+
+    if retval != 0:
+        raise RuntimeError('Signature does not match')
+
 def __download_and_verify_update(server):
 
     '''
@@ -547,6 +563,7 @@ def __download_and_verify_update(server):
     sha256 = __download_sha256sum(nversion, server)
     syslog.syslog(syslog.LOG_INFO, 'Expected sha256sum: %s' % sha256)
 
+    # Get tarball
     tarball = __download(
                          server,
                          '/updates/%s.tar.gz' % nversion,
@@ -555,7 +572,7 @@ def __download_and_verify_update(server):
     if not tarball:
         raise RuntimeError('Download failed')
 
-    # Calculate tarball signature
+    # Calculate tarball checksum
     filep = open(tarball, 'rb')
     hashp = hashlib.new('sha256')
     content = filep.read()
@@ -565,9 +582,21 @@ def __download_and_verify_update(server):
 
     syslog.syslog(syslog.LOG_INFO, 'Tarball sha256sum: %s' % digest)
 
-    # Verify signature
+    # Verify checksum
     if digest != sha256:
         raise RuntimeError('SHA256 mismatch')
+
+    # Download signature
+    signature = __download(
+                           server,
+                           '/updates/%s.tar.gz.sig' % nversion,
+                           tofile=True
+                          )
+    if not signature:
+        raise RuntimeError('Download failed')
+
+    # Verify signature
+    __verify_sig(signature, tarball)
 
     syslog.syslog(syslog.LOG_INFO, 'Tarball OK')
 
