@@ -64,9 +64,8 @@ def migrate_from__v4_0__to__v4_1(connection):
 
 #
 # Bump MAJOR version number because now we have also the
-# 'log' table.  Do not create the table here because
-# it is auto-created by the database initialization code
-# that runs BEFORE us.
+# 'log' table.  Create the table here so the migration
+# runs smoothly from the current version number onwards.
 #
 def migrate_from__v3_0__to__v4_0(connection):
     cursor = connection.cursor()
@@ -76,14 +75,15 @@ def migrate_from__v3_0__to__v4_0(connection):
         logging.info("* Migrating database from version 3.0 to 4.0")
         cursor.execute("""UPDATE config SET value='4.0'
                         WHERE name='version';""")
+        cursor.execute("""CREATE TABLE log(id INTEGER PRIMARY KEY,
+          timestamp INTEGER, message TEXT, severity TEXT);""")
         connection.commit()
     cursor.close()
 
 #
 # Bump MAJOR version number because now we have also the
-# bittorrent table.  Do not create the table here because
-# it is auto-created by the database initialization code
-# that runs BEFORE us.
+# bittorrent table.  Create the table here so the migration
+# runs smoothly from the current version number onwards.
 #
 def migrate_from__v2_1__to__v3_0(connection):
     cursor = connection.cursor()
@@ -93,13 +93,20 @@ def migrate_from__v2_1__to__v3_0(connection):
         logging.info("* Migrating database from version 2.1 to 3.0")
         cursor.execute("""UPDATE config SET value='3.0'
                         WHERE name='version';""")
+        cursor.execute("""CREATE TABLE bittorrent(id INTEGER PRIMARY KEY,
+                          internal_address TEXT, timestamp INTEGER,
+                          connect_time REAL, remote_address TEXT,
+                          privacy_can_share INTEGER, upload_speed REAL,
+                          download_speed REAL, real_address TEXT,
+                          privacy_informed INTEGER, uuid TEXT,
+                          privacy_can_collect INTEGER);""")
         connection.commit()
     cursor.close()
 
 #
 # Bump version number because now we have also the geolocation
-# table.  Do not create the table here because it is auto-created
-# by the database initialization code, that runs before us.
+# table.  Create the table here so the migration runs smoothly
+# from the current version number onwards.
 # XXX Probably here it was a mistake 2.0 -> 2.1 and the correct
 # version number should have been 3.0, because we've ADDED something
 # to the database.  However now we cannot undo.
@@ -112,6 +119,8 @@ def migrate_from__v2_0__to__v2_1(connection):
         logging.info("* Migrating database from version 2.0 to 2.1")
         cursor.execute("""UPDATE config SET value='2.1'
                         WHERE name='version';""")
+        cursor.execute("""CREATE TABLE geoloc(id INTEGER PRIMARY KEY,
+                          country TEXT, address TEXT);""")
         connection.commit()
     cursor.close()
 

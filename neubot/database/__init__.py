@@ -49,18 +49,31 @@ class DatabaseManager(object):
                 self.path = system.check_database_path(self.path, logging.error)
             logging.debug("* Database: %s" % self.path)
             self.dbc = sqlite3.connect(self.path)
+
             #
             # To avoid the need to map at hand columns in
             # a row with the sql schema, which is as error
             # prone as driving drunk.
             #
             self.dbc.row_factory = sqlite3.Row
+
+            #
+            # Migrate MUST be before table creation.  This
+            # is safe because table creation always uses
+            # the IF NOT EXISTS clause.  And this is needed
+            # because otherwise we cannot migrate archived
+            # databases (whose version number is old).
+            # The exception is the config table which must
+            # be present because migrate() looks at it.
+            #
             table_config.create(self.dbc)
+
+            migrate.migrate(self.dbc)
+
             table_speedtest.create(self.dbc)
             table_geoloc.create(self.dbc)
             table_bittorrent.create(self.dbc)
             table_log.create(self.dbc)
-            migrate.migrate(self.dbc)
 
         return self.dbc
 
