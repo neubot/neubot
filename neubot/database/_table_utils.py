@@ -40,10 +40,10 @@ from neubot import utils
 # table name and a template dictionary.
 #
 SIMPLE_TYPES = {
-    types.StringType  : "TEXT NOT NULL",
-    types.UnicodeType : "TEXT NOT NULL",
-    types.IntType     : "INTEGER NOT NULL",
-    types.FloatType   : "REAL NOT NULL",
+    types.StringType  : "TEXT",
+    types.UnicodeType : "TEXT",
+    types.IntType     : "INTEGER",
+    types.FloatType   : "REAL",
 }
 
 def __check(value):
