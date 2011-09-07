@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Neubot
+Comment=Open Neubot graphical user interface
+Type=Application
+Exec=@PREFIX@/bin/neubot_webkit
+Terminal=False
+Categories=GNOME;Network;
+StartupNotify=True
+Icon=@PREFIX@/share/icons/hicolor/scalable/apps/neubot.svg
