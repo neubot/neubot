@@ -176,10 +176,6 @@ def main(argv):
                 if os.fork() == 0:
                     from neubot import agent
                     arguments = [ argv[0] ]
-                    if port != '9774':
-                        arguments.append("-Dagent.api.port=%s" % port)
-                    if address != '127.0.0.1':
-                        arguments.append("-Dagent.api.address=%s" % address)
                     agent.main(arguments)
                     sys.exit(0)
 
