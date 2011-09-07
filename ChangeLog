@@ -1,3 +1,94 @@
+Neubot 0.4.2-rc1 [2011-09-07]
+	* log.py: table_log may be None
+	* system/unix.py: fix openlog() and syslog() flags
+	* system/unix.py: remove possible incompatibility with pypy
+	* system/unix.py: rewrite BackgroundLogger to improve pylint score
+	* system/unix.py: factor lookup_user_info
+	* system/unix.py: improve pylint score
+	* system/unix.py: python3 compatible
+	* system/unix.py: prettify redirection to /dev/null
+	* Merge branch 'pu.system' into next
+	* libversion: print numeric representation for arbitrary versions
+	* scripts/release: also update numeric representation
+	* del neubot/updater.py
+	* doc/neubot.1.txt: document neubot/main/__init__.py
+	* man/man1/neubot.1: regen
+	* Revert "main/__init__.py: remove fork nonsense"
+	* main/__init__.py: make the code more readable
+	* main/__init__.py: X11.app avail by default on 10.5+
+	* main/__init__.py: don't open browser when running as root
+	* main/__init__.py: don't blindly override address and port
+	* MacOS: Neubot-app: update neubot.icns icons
+	* MacOS: basedir-skel/start.sh: spelling
+	* MacOS: versiondir-skel/start.sh: start updater/unix.py
+	* MacOS: versiondir-skel/prerun.sh: add _neubot_update user
+	* MacOS/icon.txt: update procedure to create icon
+	* doc/MacOS/installer.txt: use 0.4.0 as example version
+	* MacOS: Neubot-pkg: Info.plist: omit major and minor
+	* debian: prerm: attempt to kill 'neubot on_gui_login'
+	* system: clean-up log backend a bit
+	* system/unix.py: sys.exit -> os._exit for robustness
+	* updater/unix.py: Updater daemon for Unix
+	* doc/updater/unix.txt: Updater documentation
+	* Merge branches 'pu.MacOS', 'pu.debian', 'pu.doc', 'pu.main', 'pu.system' and 'pu.updater' into next
+	* bittorrent/config.py: Raise watchdog timeout
+	* database/_table_utils.py: more robust INSERT INTO autogen
+	* database/_table_utils.py: deploy docstrings
+	* database/_table_utils.py: longer variable names
+	* database/table_speedtest.py: use _table_utils
+	* regress: Add speedtest/__init__.py
+	* Move neubot/speedtest/gen.py -> regress/speedtest/_gen.py
+	* database/table_speedtest.py: move unit-test to regress
+	* database/table_config.py: move unit test to regress
+	* database/table_config.py: add docstrings
+	* database: add os_name and neubot_version columns
+	* log.py: Break circular dependencies
+	* net/stream.py: undo 262144 recvbuf optimization
+	* privacy: redirect to /privacy.html if no privacy settings
+	* privacy.py: explicitly utils.intify() privacy settings
+	* privacy.py: more checks
+	* Merge branches 'pu.bittorrent', 'pu.database', 'pu.log', 'pu.stream' and 'pu.privacy' into next
+	* database/migrate.py: use logging.info not LOG.info
+	* poller.py notify.py: We MUST stringify compact_traceback()
+	* speedtest/client.py: it was not intended to create tuples
+	* database: Use sys.platform not os.name
+	* doc/updater/unix.txt: use previous version to avoid autobump
+	* main/__init__.py: ditch creeping featurism
+	* main/browser.py: bump pylint score to 10.0
+	* main/browser.py: python3 ready
+	* main/browser.py: deploy a couple of flush()
+	* doc: update neubot.1.txt
+	* man: regen
+	* Merge branches 'pu.main' and 'pu.doc' into next
+	* server.py: enable sapi w/o SSL
+	* negotiate.py: export the queue length
+	* speedtest/session.py: export the queue length
+	* server.py: export queue length via sapi
+	* server.py: Put sapi into global http server
+	* nagios-plugin-neubot: adapt to work with /sapi/state
+	* nagios-plugin-neubot: add --hostname flag
+	* nagios-plugin-neubot: sync docstring with reality
+	* Merge branch 'pu.nagios' into next
+	* speedtest/client.py: use just one connection
+	* patches: rm not needed fix-manpage.patch
+	* updater/unix.py: add code to verify signature
+	* doc: MacOS/installer.txt: document public key
+	* MacOS: versiondir-skel: add public key
+	* log.py: ditch debugging leftover
+	* log.py: sched maintenance when we use database only
+	* Merge branches 'pu.updater' and 'pu.log' into next
+	* Merge branch 'pu.speedtest' into next
+	* MacOS/makepkg.py: generate autoupdate, checksum and signature
+	* doc: MacOS/installer.txt: sync with autoupdates
+	* debian: add neubot_webkit command
+	* debian: control/prerm: tear down neubot_webkit
+	* Makefile: add neubot_webkit to debian package
+	* applications: add neubot.desktop
+	* Makefile: add neubot.desktop to NEEDEDIT list
+	* main/__init__.py: settle after merge
+	* Merge branches 'pu.debian' and 'pu.updater' into next
+	* Release neubot/0.4.2-rc1
+
 Neubot 0.4.1 [2011-08-30]
 	* MacOS: uninstall.sh: remove all Neubot receipts
 	* MacOS: uninstall.sh: add comment

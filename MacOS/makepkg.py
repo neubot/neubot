@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 from neubot.libversion import LibVersion
 
-VERSION = '0.4.1'
+VERSION = '0.4.2-rc1'
 NUMERIC_VERSION = LibVersion.to_numeric(VERSION)
 
 IGNORER = shutil.ignore_patterns('.DS_Store')
