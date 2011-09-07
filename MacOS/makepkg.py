@@ -113,9 +113,6 @@ def _make_sharedir():
                     ignore=IGNORER
                    )
 
-    # Compile sources
-    compileall.compile_dir('neubot/%s' % NUMERIC_VERSION)
-
     #
     # Copy scripts.  Note that start.sh and the plist file
     # must be in /usr/local/share/neubot while the rest goes
@@ -168,13 +165,6 @@ def _make_auto_update():
     if not os.path.exists('../dist'):
         os.mkdir('../dist')
 
-    def __filterfunc(tarinfo):
-        ''' Get rid of .pyc files for smaller tarball '''
-        if not tarinfo.name.endswith('.pyc'):
-            return tarinfo
-        else:
-            return None
-
     tarball = '../dist/%s.tar.gz' % NUMERIC_VERSION
     sha256sum = '../dist/%s.tar.gz.sha256' % NUMERIC_VERSION
     sig = '../dist/%s.tar.gz.sig' % NUMERIC_VERSION
@@ -182,7 +172,7 @@ def _make_auto_update():
     # Create tarball
     arch = tarfile.open(tarball, 'w:gz')
     os.chdir('neubot')
-    arch.add('%s' % NUMERIC_VERSION, filter=__filterfunc)
+    arch.add('%s' % NUMERIC_VERSION)
     arch.close()
     os.chdir(MACOSDIR)
 
@@ -205,6 +195,16 @@ def _make_auto_update():
     __call('openssl dgst -sha256 -sign %s -out %s %s' %
        (privkey, os.path.basename(sig), os.path.basename(tarball)))
     os.chdir(MACOSDIR)
+
+def _compile():
+
+    '''
+     Compile sources at VERSIONDIR.  This is a separate function
+     because we need to compile sources after we've created the
+     update tarball for automatic updates.
+    '''
+
+    compileall.compile_dir('neubot/%s' % NUMERIC_VERSION)
 
 def _make_archive_pax():
     ''' Create an archive containing neubot library '''
@@ -259,9 +259,19 @@ def main():
     if len(sys.argv) == 2 and sys.argv[1] == '--clean':
         sys.exit(0)
     _make_package()
+
+    #
+    # We make auto update before compiling because we're not
+    # interested in shipping .pyc files in the auto-update.
+    # The second _fixup_perms() is to fixup the permissions of
+    # the .pyc compiled by compile.
+    #
     _make_sharedir()
     _fixup_perms()
     _make_auto_update()
+    _compile()
+    _fixup_perms()
+
     _make_archive_pax()
     _make_archive_bom()
     _make_privacy_plugin()
