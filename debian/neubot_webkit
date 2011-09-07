@@ -1,0 +1,109 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
+#  Politecnico di Torino
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+'''
+ Embed WebKit into a simple Gtk window to provide users with
+ a real Neubot application.  This script is designed to enhance
+ user experience under Ubuntu.  But in principle you can use
+ it wherever gtk and webkit bindings are installed.
+'''
+
+import gtk 
+import webkit 
+import os.path
+import getopt
+import sqlite3
+import sys
+
+ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
+if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
+    ICON = None
+
+class Viewer(gtk.Window):
+
+    ''' Embed webkit.WebView into gtk.Window '''
+
+    def __init__(self, width, height, uri):
+
+        ''' Initialize the window '''
+
+        gtk.Window.__init__(self)
+
+        scrolledwindow = gtk.ScrolledWindow() 
+        self._webview = webkit.WebView() 
+        scrolledwindow.add(self._webview)
+        self.add(scrolledwindow)
+
+        if ICON:
+            self.set_icon_from_file(ICON)
+
+        self.set_title('Neubot 0.4.1')
+        self.connect('destroy', gtk.main_quit)
+        self.set_size_request(width, height)
+        self._open_web_page(uri)
+
+        self.show_all()
+
+    def _open_web_page(self, uri):
+        ''' Open the specified web page '''
+        self._webview.open(uri)
+
+def main(args):
+
+    ''' Entry point for simple gtk+webkit GUI '''
+
+    database = '/var/neubot/database.sqlite3'
+    address, port = '127.0.0.1', '9774'
+
+    # Get command line options
+    try:
+        options, arguments = getopt.getopt(args[1:], 'f:')
+    except getopt.error:
+        sys.exit('Usage: neubot-webkit-gui [-f database]\n')
+    if arguments:
+        sys.exit('Usage: neubot-webkit-gui [-f database]\n')
+
+    # Read command line options
+    for name, value in options:
+        if name == '-f':
+            database = value
+
+    # Read system-wide neubot settings
+    connection = sqlite3.connect(database)
+    cursor = connection.cursor()
+    cursor.execute('select * from config;')
+    for name, value in cursor:
+        if name == 'agent.api.address':
+            address = value
+        elif name == 'agent.api.port':
+            port = value
+    connection.close()
+
+    # Start the GUI
+    uri = 'http://%s:%s/' % (address, port)
+    Viewer(800, 600, uri)
+    gtk.main()
+
+if __name__ == '__main__':
+    main(sys.argv)

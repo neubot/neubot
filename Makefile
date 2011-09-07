@@ -193,6 +193,7 @@ NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
+NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot.desktop
 NEEDEDIT += $(DESTDIR)/etc/xdg/autostart/neubot-on-gui-login.desktop
 NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/gui/infobox_gtk.py
 
@@ -251,6 +252,7 @@ DEB_UPDATE_URI = "testing"
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@$(INSTALL) debian/neubot dist/data/usr/bin
+	@$(INSTALL) debian/neubot_webkit dist/data/usr/bin
 	@cd dist/data && mv usr/man usr/share/man
 	@for DIR in $(DEB_DATA_DIRS); do \
 	 $(INSTALL) -d $$DIR; \

@@ -21,7 +21,8 @@
 #
 
 '''
- Creates Neubot-VERSION.pkg for MacOSX.
+ Creates Neubot-VERSION.pkg for MacOSX and, while there, also
+ generates the update tarball for autoupdating clients.
 '''
 
 import traceback
@@ -30,6 +31,7 @@ import compileall
 import shutil
 import os.path
 import subprocess
+import hashlib
 import shlex
 import sys
 
@@ -44,6 +46,9 @@ if hasattr(sys, 'dont_write_bytecode'):
 
 TOPDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+#
+# This simplifies things a lot.
+#
 MACOSDIR = os.sep.join([TOPDIR, 'MacOS'])
 os.chdir(MACOSDIR)
 
@@ -127,6 +132,8 @@ def _make_sharedir():
                 'neubot/%s' % NUMERIC_VERSION)
     shutil.copy('basedir-skel/versiondir-skel/uninstall.sh',
                 'neubot/%s' % NUMERIC_VERSION)
+    shutil.copy('basedir-skel/versiondir-skel/pubkey.pem',
+                'neubot/%s' % NUMERIC_VERSION)
 
     # Build and copy Neubot.app too
     shutil.copytree(
@@ -153,6 +160,51 @@ def _fixup_perms():
     '''
 
     __call('find neubot/ -exec chown root:wheel {} \;')
+
+def _make_auto_update():
+
+    ''' Create, checksum and sign the update for autoupdating clients '''
+
+    if not os.path.exists('../dist'):
+        os.mkdir('../dist')
+
+    def __filterfunc(tarinfo):
+        ''' Get rid of .pyc files for smaller tarball '''
+        if not tarinfo.name.endswith('.pyc'):
+            return tarinfo
+        else:
+            return None
+
+    tarball = '../dist/%s.tar.gz' % NUMERIC_VERSION
+    sha256sum = '../dist/%s.tar.gz.sha256' % NUMERIC_VERSION
+    sig = '../dist/%s.tar.gz.sig' % NUMERIC_VERSION
+
+    # Create tarball
+    arch = tarfile.open(tarball, 'w:gz')
+    os.chdir('neubot')
+    arch.add('%s' % NUMERIC_VERSION, filter=__filterfunc)
+    arch.close()
+    os.chdir(MACOSDIR)
+
+    # Calculate sha256sum
+    filep = open(tarball, 'rb')
+    hashp = hashlib.new('sha256')
+    content = filep.read()
+    hashp.update(content)
+    digest = hashp.hexdigest()
+    filep.close()
+
+    # Write sha256sum
+    filep = open(sha256sum, 'wb')
+    filep.write('%s  %s\n' % (digest, os.path.basename(tarball)))
+    filep.close()
+
+    # Make digital signature
+    privkey = raw_input('Enter privkey location: ')
+    os.chdir('../dist')
+    __call('openssl dgst -sha256 -sign %s -out %s %s' %
+       (privkey, os.path.basename(sig), os.path.basename(tarball)))
+    os.chdir(MACOSDIR)
 
 def _make_archive_pax():
     ''' Create an archive containing neubot library '''
@@ -209,6 +261,7 @@ def main():
     _make_package()
     _make_sharedir()
     _fixup_perms()
+    _make_auto_update()
     _make_archive_pax()
     _make_archive_bom()
     _make_privacy_plugin()
