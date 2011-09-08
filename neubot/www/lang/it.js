@@ -105,6 +105,11 @@ LANG = {
                            alcun tipo di aiuto se Neubot smette di funzionare\
                            per colpa di modifiche inopportune.",
 
+    'i18n_settings_par2':
+ 'Alcune impostazioni, come ad esempio <code>agent.api.address</code>\
+  e <code>agent.api.port</code>, hanno effetto solo al successivo\
+  restart di Neubot.',
+
     // neubot/www/bittorrent.html
 
     "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\
