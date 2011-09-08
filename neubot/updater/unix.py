@@ -802,7 +802,7 @@ def __main():
 
             # Check for updates
             now = time.time()
-            if lastcheck - now > 3600:
+            if now - lastcheck > 3600:
                 lastcheck = now
                 nversion = _download_and_verify_update()
                 if nversion:
