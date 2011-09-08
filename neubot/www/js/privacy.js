@@ -30,10 +30,18 @@ function setPrivacyError(jqXHR, textStatus, errorThrown) {
 }
 
 function setPrivacy() {
+    //
+    // Set explicitly values to '1' or '0' because it is confusing
+    // for the user to see boolean values represented both as numbers
+    // and as 'true' or 'false' in ``settings.hmtl``.
+    //
     utils.setConfigVars({
-        'privacy.informed': jQuery("#check_privacy_informed").attr("checked"),
-        'privacy.can_collect': jQuery("#check_privacy_can_collect").attr("checked"),
-        'privacy.can_share': jQuery("#check_privacy_can_share").attr("checked")
+        'privacy.informed':
+          jQuery("#check_privacy_informed").attr("checked") ? "1" : "0",
+        'privacy.can_collect':
+          jQuery("#check_privacy_can_collect").attr("checked") ? "1" : "0",
+        'privacy.can_share':
+          jQuery("#check_privacy_can_share").attr("checked") ? "1" : "0"
       },
       setPrivacySuccess,
       setPrivacyError
