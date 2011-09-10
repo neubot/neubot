@@ -102,7 +102,7 @@ in VERSIONDIR.
 The updater keeps the current version number in numeric
 representation.  Here the assumption is that Neubot release
 scripts will take care not only of updating the canonical
-representation, e.g. 0.4.2-rc2, but also the numeric one.
+representation, e.g. 0.4.0, but also the numeric one.
 
 The updater assumes that ``http://releases.neubot.org/``
 contains the folder ``/updates/``.  And that, in turn, such
