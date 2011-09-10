@@ -859,10 +859,10 @@ def __main():
     if arguments:
         sys.exit('Usage: neubot/updater/unix.py [-Dd]')
 
-    for name, value in options:
-        if name == '-D':
+    for tpl in options:
+        if tpl[0] == '-D':
             daemonize = False
-        elif name == '-d':
+        elif tpl[0] == '-d':
             logopt |= syslog.LOG_PERROR
 
     # We must be run as root
