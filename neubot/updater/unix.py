@@ -610,7 +610,7 @@ def __download_sha256sum(version, address):
     sha256 = __download(address, '/updates/%s.tar.gz.sha256' % version)
     if not sha256:
         raise RuntimeError('Download failed')
-    line = __printable_only(sha256.read())
+    line = __printable_only(sha256)
     match = re.match('^([a-fA-F0-9]+)  %s.tar.gz$' % version, line)
     if not match:
         raise RuntimeError('Invalid version sha256: %s' % version)
