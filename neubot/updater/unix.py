@@ -739,7 +739,7 @@ def __install_new_version(version):
 
 def __switch_to_new_version():
     ''' Switch to the a new version of Neubot '''
-    os.execl('/bin/sh', '%s/start.sh' % BASEDIR)
+    os.execv('/bin/sh', ['/bin/sh', '%s/start.sh' % BASEDIR])
 
 #
 # Start/stop neubot
