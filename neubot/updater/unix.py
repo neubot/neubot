@@ -76,6 +76,7 @@
 # an updated version -- which hopefully is Python3 ready.
 #
 
+import asyncore
 import collections
 import getopt
 import compileall
@@ -576,8 +577,8 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 os.write(fdout, 'OK %s\n' % ''.join(vector))
 
         except:
-            why = sys.exc_info()[1]
             try:
+                why = asyncore.compact_traceback()
                 os.write(fdout, 'ERROR %s\n' % str(why))
             except:
                 pass
@@ -705,7 +706,7 @@ def _download_and_verify_update(server='releases.neubot.org'):
     try:
         return __download_and_verify_update(server)
     except:
-        why = sys.exc_info()[1]
+        why = asyncore.compact_traceback()
         syslog.syslog(syslog.LOG_ERR,
                       '_download_and_verify_update: %s' %
                       str(why))
@@ -800,8 +801,8 @@ def __start_neubot_agent():
     # OTOH os._exit() exits immediately.
     #
     except:
-        why = sys.exc_info()[1]
         try:
+            why = asyncore.compact_traceback()
             syslog.syslog(syslog.LOG_ERR,
                           'Unhandled exception in the Neubot agent: %s' %
                           str(why))
@@ -926,7 +927,7 @@ def __main():
                   'Child exited with status %d' % os.WEXITSTATUS(status))
 
         except:
-            why = sys.exc_info()[1]
+            why = asyncore.compact_traceback()
             syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
 
 def main():
@@ -936,8 +937,11 @@ def main():
     except SystemExit:
         raise
     except:
-        why = sys.exc_info()[1]
-        syslog.syslog(syslog.LOG_ERR, 'Unhandled exception: %s' % str(why))
+        try:
+            why = asyncore.compact_traceback()
+            syslog.syslog(syslog.LOG_ERR, 'Unhandled exception: %s' % str(why))
+        except:
+            pass
         sys.exit(1)
 
 if __name__ == '__main__':
