@@ -19,6 +19,44 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
+# ==============================================================
+# The implementation of chroot in this file is loosely inspired
+# to the one of OpenSSH session.c, revision 1.258, which is avail
+# under the following license:
+#
+# Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
+#                    All rights reserved
+#
+# As far as I am concerned, the code I have written for this software
+# can be used freely for any purpose.  Any derived versions of this
+# software must be clearly marked as such, and if the derived work is
+# incompatible with the protocol description in the RFC file, it must be
+# called by a name other than "ssh" or "Secure Shell".
+#
+# SSH2 support by Markus Friedl.
+# Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# ==============================================================
+#
 
 '''
  This is the privilege separated Neubot updater daemon.  It is
@@ -38,6 +76,7 @@
 # an updated version -- which hopefully is Python3 ready.
 #
 
+import asyncore
 import collections
 import getopt
 import compileall
@@ -150,29 +189,44 @@ def __change_user(passwd):
     '''
 
     #
-    # This function loosely follows the sequence of steps
-    # implemented by OpenBSD setusercontext(3) function and
-    # by launchd(8) job_postfork_become_user().  It does
-    # not invoke setlogin(2) because that should be called
-    # when becoming a daemon.  Not here.
-    # We assume that the underlying Unix implements the
-    # following system calls: setegid(2), setgroups(2),
-    # seteuid(2).
+    # I've checked that this function does more or less
+    # the same steps of OpenBSD setusercontext(3) and of
+    # launchd(8) to drop privileges.
+    # Note that this function does not invoke setlogin(2)
+    # because that should be called when becoming a daemon,
+    # AFAIK, not here.
+    # For dropping privileges we try to follow the guidelines
+    # established by Chen, et al. in "Setuid Demystified":
+    #
+    #   Since setresuid has a clear semantics and is able
+    #   to set each user ID individually, it should always
+    #   be used if available.  Otherwise, to set only the
+    #   effective uid, seteuid(new euid) should be used; to
+    #   set all three user IDs, setreuid(new uid, new uid)
+    #   should be used.
     #
 
     # Set default umask (18 == 0022)
     os.umask(18)
 
     # Change group ID.
-    os.setegid(passwd.pw_gid)
-    os.setgid(passwd.pw_gid)
+    if hasattr(os, 'setresgid'):
+        os.setresgid(passwd.pw_gid, passwd.pw_gid, passwd.pw_gid)
+    elif hasattr(os, 'setregid'):
+        os.setregid(passwd.pw_gid, passwd.pw_gid)
+    else:
+        raise RuntimeError('Cannot drop group privileges')
 
     # Clear supplementary groups.
     os.setgroups([])
 
     # Change user ID.
-    os.seteuid(passwd.pw_uid)
-    os.setuid(passwd.pw_uid)
+    if hasattr(os, 'setresuid'):
+        os.setresuid(passwd.pw_uid, passwd.pw_uid, passwd.pw_uid)
+    elif hasattr(os, 'setreuid'):
+        os.setreuid(passwd.pw_uid, passwd.pw_uid)
+    else:
+        raise RuntimeError('Cannot drop user privileges')
 
     # Purify environment
     for name in list(os.environ.keys()):
@@ -194,10 +248,13 @@ def __chroot(directory):
     '''
 
     #
-    # In changing the root directory we perform checks
-    # loosely inspired to the checks OpenSSH performs
-    # in session.c:safely_chroot().
+    # This function is an attempt to translate into
+    # Python the checks OpenSSH performs in safely_chroot()
+    # of session.c.
     #
+
+    if not directory.startswith('/'):
+        raise RuntimeError('chroot directory must start with /')
 
     syslog.syslog(syslog.LOG_INFO, 'Checking "%s" for safety' % directory)
 
@@ -228,6 +285,45 @@ def __chroot(directory):
             curdir = ''.join(curdir, components.popleft())
 
     # Switch rootdir
+    os.chdir(directory)
+    os.chroot(directory)
+    os.chdir("/")
+
+def __chroot_naive(directory):
+
+    '''
+     Change the current working directory and the root to
+     @directory and then change the current directory to
+     the root directory.
+    '''
+
+    #
+    # XXX Under MacOSX the ownership of / is unsafe per the
+    # algorithm used by __chroot().  So here's this function
+    # that performs the chroot dance and performs just a
+    # simplified check.
+    #
+
+    if not directory.startswith('/'):
+        raise RuntimeError('chroot directory must start with /')
+
+    # stat(2) curdir
+    statbuf = os.stat(directory)
+
+    # Is it a directory?
+    if (not stat.S_ISDIR(statbuf.st_mode)):
+        raise RuntimeError('Not a directory: "%s"' % directory)
+
+    # Are permissions safe? (18 == 0022)
+    if (stat.S_IMODE(statbuf.st_mode) & 18) != 0:
+        raise RuntimeError('Unsafe permissions: "%s"' % directory)
+
+    # Is the owner root?
+    if statbuf.st_uid != 0:
+        raise RuntimeError('Not owned by root: "%s"' % directory)
+
+    # Switch rootdir
+    os.chdir(directory)
     os.chroot(directory)
     os.chdir("/")
 
@@ -258,11 +354,11 @@ def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
     '''
 
     #
-    # The first chunk of this function matches
-    # loosely the behavior of the daemon(3) function
+    # I've verified that the first chunk of this function
+    # matches loosely the behavior of the daemon(3) function
     # available under BSD.
-    # What is missing here is setlogin(2) which
-    # is not in python library.
+    # What is missing here is setlogin(2) which is not part
+    # of python library.  Doh.
     #
 
     # detach from the shell
@@ -420,8 +516,13 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
             # Lookup unprivileged user info
             passwd = __lookup_user_info('_neubot_update')
 
-            # Change root directory
-            __chroot('/var/empty')
+            #
+            # Disable chroot for 0.4.2 because it breaks a lot
+            # of things such as encodings and DNS lookups and it
+            # requires some effort to understand all and take
+            # the proper decisions.
+            #
+            #__chroot_naive('/var/empty')
 
             # Become unprivileged as soon as possible
             __change_user(passwd)
@@ -481,8 +582,8 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 os.write(fdout, 'OK %s\n' % ''.join(vector))
 
         except:
-            why = sys.exc_info()[1]
             try:
+                why = asyncore.compact_traceback()
                 os.write(fdout, 'ERROR %s\n' % str(why))
             except:
                 pass
@@ -515,7 +616,7 @@ def __download_sha256sum(version, address):
     sha256 = __download(address, '/updates/%s.tar.gz.sha256' % version)
     if not sha256:
         raise RuntimeError('Download failed')
-    line = __printable_only(sha256.read())
+    line = __printable_only(sha256)
     match = re.match('^([a-fA-F0-9]+)  %s.tar.gz$' % version, line)
     if not match:
         raise RuntimeError('Invalid version sha256: %s' % version)
@@ -610,7 +711,7 @@ def _download_and_verify_update(server='releases.neubot.org'):
     try:
         return __download_and_verify_update(server)
     except:
-        why = sys.exc_info()[1]
+        why = asyncore.compact_traceback()
         syslog.syslog(syslog.LOG_ERR,
                       '_download_and_verify_update: %s' %
                       str(why))
@@ -644,7 +745,7 @@ def __install_new_version(version):
 
 def __switch_to_new_version():
     ''' Switch to the a new version of Neubot '''
-    os.execl('/bin/sh', '%s/start.sh' % BASEDIR)
+    os.execv('/bin/sh', ['/bin/sh', '%s/start.sh' % BASEDIR])
 
 #
 # Start/stop neubot
@@ -705,8 +806,8 @@ def __start_neubot_agent():
     # OTOH os._exit() exits immediately.
     #
     except:
-        why = sys.exc_info()[1]
         try:
+            why = asyncore.compact_traceback()
             syslog.syslog(syslog.LOG_ERR,
                           'Unhandled exception in the Neubot agent: %s' %
                           str(why))
@@ -763,10 +864,10 @@ def __main():
     if arguments:
         sys.exit('Usage: neubot/updater/unix.py [-Dd]')
 
-    for name, value in options:
-        if name == '-D':
+    for tpl in options:
+        if tpl[0] == '-D':
             daemonize = False
-        elif name == '-d':
+        elif tpl[0] == '-d':
             logopt |= syslog.LOG_PERROR
 
     # We must be run as root
@@ -831,7 +932,7 @@ def __main():
                   'Child exited with status %d' % os.WEXITSTATUS(status))
 
         except:
-            why = sys.exc_info()[1]
+            why = asyncore.compact_traceback()
             syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
 
 def main():
@@ -841,8 +942,11 @@ def main():
     except SystemExit:
         raise
     except:
-        why = sys.exc_info()[1]
-        syslog.syslog(syslog.LOG_ERR, 'Unhandled exception: %s' % str(why))
+        try:
+            why = asyncore.compact_traceback()
+            syslog.syslog(syslog.LOG_ERR, 'Unhandled exception: %s' % str(why))
+        except:
+            pass
         sys.exit(1)
 
 if __name__ == '__main__':
