@@ -246,6 +246,41 @@ def __chroot(directory):
     os.chroot(directory)
     os.chdir("/")
 
+def __chroot_naive(directory):
+
+    '''
+     Change the current working directory and the root to
+     @directory and then change the current directory to
+     the root directory.
+    '''
+
+    #
+    # XXX Under MacOSX the ownership of / is unsafe per the
+    # algorithm used by __chroot().  So here's this function
+    # that performs the chroot dance and performs just a
+    # simplified check.
+    #
+
+    # stat(2) curdir
+    statbuf = os.stat(directory)
+
+    # Is it a directory?
+    if (not stat.S_ISDIR(statbuf.st_mode)):
+        raise RuntimeError('Not a directory: "%s"' % directory)
+
+    # Are permissions safe? (18 == 0022)
+    if (stat.S_IMODE(statbuf.st_mode) & 18) != 0:
+        raise RuntimeError('Unsafe permissions: "%s"' % directory)
+
+    # Is the owner root?
+    if statbuf.st_uid != 0:
+        raise RuntimeError('Not owned by root: "%s"' % directory)
+
+    # Switch rootdir
+    os.chdir(directory)
+    os.chroot(directory)
+    os.chdir("/")
+
 def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
 
     '''
@@ -436,7 +471,7 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
             passwd = __lookup_user_info('_neubot_update')
 
             # Change root directory
-            __chroot('/var/empty')
+            __chroot_naive('/var/empty')
 
             # Become unprivileged as soon as possible
             __change_user(passwd)
