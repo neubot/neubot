@@ -228,6 +228,7 @@ def __chroot(directory):
             curdir = ''.join(curdir, components.popleft())
 
     # Switch rootdir
+    os.chdir(directory)
     os.chroot(directory)
     os.chdir("/")
 
