@@ -213,6 +213,9 @@ def __chroot(directory):
     # in session.c:safely_chroot().
     #
 
+    if not directory.startswith('/'):
+        raise RuntimeError('chroot directory must start with /')
+
     syslog.syslog(syslog.LOG_INFO, 'Checking "%s" for safety' % directory)
 
     components = collections.deque(os.path.split(directory))
@@ -260,6 +263,9 @@ def __chroot_naive(directory):
     # that performs the chroot dance and performs just a
     # simplified check.
     #
+
+    if not directory.startswith('/'):
+        raise RuntimeError('chroot directory must start with /')
 
     # stat(2) curdir
     statbuf = os.stat(directory)
