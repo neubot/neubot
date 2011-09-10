@@ -1,3 +1,23 @@
+Neubot 0.4.2-rc2 [2011-09-10]
+	* MacOS/makepkg.py: be python2.6-compatible
+	* www: privacy.js: don't mix 1/0 and true/false in settings.html
+	* www: settings.html: clarify that some settings require restart
+	* doc: MacOS/installer.txt: update
+	* Merge branches 'pu.MacOS' and 'pu.www' into next
+	* updater/unix.py: reverse time comparison to give updates a chance
+	* updater/unix.py: must chdir before chroot
+	* updater/unix.py: follow 'setuid demystified' guidelines
+	* updater/unix.py: naive chroot for MacOSX
+	* updater/unix.py: make sure chroot directory starts with /
+	* updater/unix.py: be more precise with respect to copyright
+	* updater/unix.py: unbreak downloading sha256 sum
+	* updater/unix.py: unbreak switching to new version
+	* updater/unix.py: more readable error messages
+	* updater/unix.py: improve pylint score
+	* updater/unix.py: disable chroot for 0.4.2
+	* Merge branch 'pu.updater' into next
+	* Release neubot/0.4.2-rc2
+
 Neubot 0.4.2-rc1 [2011-09-07]
 	* log.py: table_log may be None
 	* system/unix.py: fix openlog() and syslog() flags

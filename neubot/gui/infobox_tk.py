@@ -61,7 +61,7 @@ class _InfoBox(object):
 
     def __init__(self, message, timeo=30):
         self._root = Tkinter.Tk()
-        self._root.title("Neubot 0.4.2-rc1")
+        self._root.title("Neubot 0.4.2-rc2")
         self._root.protocol("WM_DELETE_WINDOW", self._dtor)
 
         for txt in re.split("(<.+?>)", message):
