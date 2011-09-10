@@ -155,24 +155,38 @@ def __change_user(passwd):
     # by launchd(8) job_postfork_become_user().  It does
     # not invoke setlogin(2) because that should be called
     # when becoming a daemon.  Not here.
-    # We assume that the underlying Unix implements the
-    # following system calls: setegid(2), setgroups(2),
-    # seteuid(2).
+    # For dropping privileges we try to follow the guidelines
+    # established by Chen, et al. in "Setuid Demystified":
+    #
+    #   Since setresuid has a clear semantics and is able
+    #   to set each user ID individually, it should always
+    #   be used if available.  Otherwise, to set only the
+    #   effective uid, seteuid(new euid) should be used; to
+    #   set all three user IDs, setreuid(new uid, new uid)
+    #   should be used.
     #
 
     # Set default umask (18 == 0022)
     os.umask(18)
 
     # Change group ID.
-    os.setegid(passwd.pw_gid)
-    os.setgid(passwd.pw_gid)
+    if hasattr(os, 'setresgid'):
+        os.setresgid(passwd.pw_gid, passwd.pw_gid, passwd.pw_gid)
+    elif hasattr(os, 'setregid'):
+        os.setregid(passwd.pw_gid, passwd.pw_gid)
+    else:
+        raise RuntimeError('Cannot drop group privileges')
 
     # Clear supplementary groups.
     os.setgroups([])
 
     # Change user ID.
-    os.seteuid(passwd.pw_uid)
-    os.setuid(passwd.pw_uid)
+    if hasattr(os, 'setresuid'):
+        os.setresuid(passwd.pw_uid, passwd.pw_uid, passwd.pw_uid)
+    elif hasattr(os, 'setreuid'):
+        os.setreuid(passwd.pw_uid, passwd.pw_uid)
+    else:
+        raise RuntimeError('Cannot drop user privileges')
 
     # Purify environment
     for name in list(os.environ.keys()):
