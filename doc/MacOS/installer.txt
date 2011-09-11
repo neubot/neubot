@@ -1,7 +1,7 @@
 MacOSX installer
 ''''''''''''''''
 
-:Version: 1.4 of 2011/09/08
+:Version: 1.5 of 2011/09/11
 :Authors: Simone Basso
 
 This document explains briefly how is organized the Neubot installer
@@ -194,8 +194,9 @@ by the top-level Makefile.  This script refuses to run as a nonprivileged
 user to ensure correct ownership in the result package.  If everything
 went OK you get a compressed tarball containing the pkg file in the
 TOPLEVEL/dist, ready for distribution.  Additionally, this script will
-also create the autoupdate tarball, together with its checksum and
-digital signature.
+also create the autoupdate tarball, together with its checksum, digital
+signature and ``latest`` file -- which contains the latest version
+number.
 
 Very briefly the algorithm to create the package is as follows:
 
@@ -222,10 +223,10 @@ Very briefly the algorithm to create the package is as follows:
      2.6. add .neubot-installed-ok to MacOS/neubot/0.004000999/ so that
           BASEDIR/start.sh will select this directory;
 
-3. create the autoupdate tarball together with the checksum and the
-   digital signature (the script will prompt the user for the location
-   of the private key, and, in turn, openssl will ask the passphrase
-   to unlock and use the key);
+3. create the autoupdate tarball together with the checksum, the digital
+   signature and the ``latest`` file (the script will prompt the user for
+   the location of the private key, and, in turn, openssl will ask the
+   passphrase to unlock and use the key);
 
 4. compile the sources at MacOS/neubot/0.004000999/ using standard library
    module compileall.  This is done after the creation of the autoupdate
