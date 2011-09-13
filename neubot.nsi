@@ -64,9 +64,15 @@ section
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
 
+    #
     # This will start Neubot in background
-    exec '"$INSTDIR\neubotw.exe" start'
-    exec '"$INSTDIR\neubotw.exe" on_gui_login'
+    # FIXME This will also start Neubot with "root" privileges
+    # which is a security issue.  This will stay disabled until
+    # I found a way to deal with this issue.  Sorry.
+    #
+    #exec '"$INSTDIR\neubotw.exe" start'
+    #exec '"$INSTDIR\neubotw.exe" on_gui_login'
+    #
 
 sectionend
 
