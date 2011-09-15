@@ -911,7 +911,7 @@ def __main():
 
             # Check for updates
             now = time.time()
-            if now - lastcheck > 3600:
+            if now - lastcheck > 60:
                 syslog.syslog(syslog.LOG_INFO, 'Checking for updates')
                 lastcheck = now
                 nversion = _download_and_verify_update()
