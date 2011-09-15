@@ -12,9 +12,9 @@ updates, however, is scattered through this file, because the process
 of creating the package is related with that.
 
 
-The bottom line is that we deploy Neubot-$VERSION.pkg along with a
+The bottom line is that we deploy neubot-$VERSION.pkg along with a
 plugin that asks the user to give the privacy permissions.  The package
-skeleton is MacOS/Neubot-pkg.  (The name contains a dash instead of a
+skeleton is MacOS/neubot-pkg.  (The name contains a dash instead of a
 dot so that you can browse into it more easily.)
 
 
@@ -52,7 +52,7 @@ the value of the can_share setting.
 
 
 Before the installer runs, the preflight script, which you can find
-in MacOS/Neubot-pkg/Contents/Resources/preflight, it will make sure that
+in MacOS/neubot-pkg/Contents/Resources/preflight, it will make sure that
 the /tmp/neubot-can-share file actually exists.  If not, it aborts
 the install because it means that our privacy panel didn't loaded for
 whatever reason.
@@ -91,7 +91,7 @@ signature of updated packages.
 
 We will return later on VERSIONDIR content: let's now discuss what
 happens in the postflight script.  The script source can be found
-at `MacOS/Neubot-pkg/Contents/Resources/postflight`.  Its logic is
+at `MacOS/neubot-pkg/Contents/Resources/postflight`.  Its logic is
 as follows:
 
 1. sorts VERSIONDIRs in numeric descending order and seeks for the
@@ -200,8 +200,8 @@ number.
 
 Very briefly the algorithm to create the package is as follows:
 
-1. copy the package skeleton (MacOS/Neubot-pkg) over the directory
-   that will contain the package (MacOS/Neubot-0.4.0.pkg);
+1. copy the package skeleton (MacOS/neubot-pkg) over the directory
+   that will contain the package (MacOS/neubot-0.4.0.pkg);
 
 2. populate the BASEDIR at a temporary location (MacOS/neubot)::
 
@@ -241,8 +241,8 @@ Very briefly the algorithm to create the package is as follows:
 
 7. enter into the directory Privacy, compile the plugin and then move
    Privacy/build/Release/Privacy.bundle -- which is the plugin pan -- into
-   Neubot-0.4.0.pkg/MacOS/Contents/Plugins/ and do the same for
+   neubot-0.4.0.pkg/MacOS/Contents/Plugins/ and do the same for
    Privacy/InstallerSections.plist -- the file that tells the installer
    where to put the new pane -- and finally leave directory Privacy;
 
-8. finally the tarball is created with the content of Neubot-0.4.0.pkg.
+8. finally the tarball is created with the content of neubot-0.4.0.pkg.

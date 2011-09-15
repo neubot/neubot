@@ -17,7 +17,7 @@ To create and publish the package for MacOSX you need to be on a
 real Mac and type the following command(s)::
 
 	./MacOS/makepkg.py &&
-	scp dist/Neubot-0.4.2-rc3.pkg.tgz releases.neubot.org:rc/
+	scp dist/neubot-0.4.2-rc3.pkg.tgz releases.neubot.org:rc/
 
 
 Testing under Ubuntu
