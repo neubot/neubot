@@ -869,14 +869,14 @@ def __main():
         if tpl[0] == '-D':
             daemonize = False
         elif tpl[0] == '-d':
-            logopt |= syslog.LOG_PERROR
+            logopt |= syslog.LOG_PERROR|syslog.LOG_NDELAY
 
     # We must be run as root
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('You must be root.')
 
     # Open the system logger
-    syslog.openlog('neubot [updater/unix.py]', logopt, syslog.LOG_DAEMON)
+    syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
 
     # Clear root user environment
     __change_user(__lookup_user_info('root'))
@@ -906,11 +906,13 @@ def __main():
 
             # If needed start the agent
             if pid == -1:
+                syslog.syslog(syslog.LOG_INFO, 'Starting the agent')
                 pid = __start_neubot_agent()
 
             # Check for updates
             now = time.time()
             if now - lastcheck > 3600:
+                syslog.syslog(syslog.LOG_INFO, 'Checking for updates')
                 lastcheck = now
                 nversion = _download_and_verify_update()
                 if nversion:
@@ -922,6 +924,7 @@ def __main():
                     raise RuntimeError('Internal error')
 
             # Monitor the agent
+            syslog.syslog(syslog.LOG_INFO, 'Monitoring the agent')
             rpid, status = __waitpid(pid, 0)
 
             if rpid == pid:
