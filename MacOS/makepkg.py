@@ -21,7 +21,7 @@
 #
 
 '''
- Creates Neubot-VERSION.pkg for MacOSX and, while there, also
+ Creates neubot-VERSION.pkg for MacOSX and, while there, also
  generates the update tarball for autoupdating clients.
 '''
 
@@ -84,7 +84,7 @@ def _init():
 
     os.umask(0022)
 
-    shutil.rmtree('Neubot-%s.pkg' % VERSION, ignore_errors=True)
+    shutil.rmtree('neubot-%s.pkg' % VERSION, ignore_errors=True)
     shutil.rmtree('neubot', ignore_errors=True)
 
     shutil.rmtree('Privacy/build', ignore_errors=True)
@@ -92,8 +92,8 @@ def _init():
 def _make_package():
     ''' Creates package copying from package skeleton '''
     shutil.copytree(
-                    'Neubot-pkg',
-                    'Neubot-%s.pkg' % VERSION,
+                    'neubot-pkg',
+                    'neubot-%s.pkg' % VERSION,
                     ignore=IGNORER
                    )
 
@@ -215,7 +215,7 @@ def _make_archive_pax():
     ''' Create an archive containing neubot library '''
     __call('pax -wzf %s -x cpio %s' %
        (
-        'Neubot-%s.pkg/Contents/Archive.pax.gz' % VERSION,
+        'neubot-%s.pkg/Contents/Archive.pax.gz' % VERSION,
         'neubot'
        ))
 
@@ -224,7 +224,7 @@ def _make_archive_bom():
     __call('mkbom %s %s' %
        (
         'neubot',
-        'Neubot-%s.pkg/Contents/Archive.bom' % VERSION,
+        'neubot-%s.pkg/Contents/Archive.bom' % VERSION,
        ))
 
 def _make_privacy_plugin():
@@ -241,11 +241,11 @@ def _make_privacy_plugin():
 
     shutil.copytree(
                     'Privacy/build/Release/Privacy.bundle',
-                    'Neubot-%s.pkg/Contents/Plugins/Privacy.bundle' % VERSION,
+                    'neubot-%s.pkg/Contents/Plugins/Privacy.bundle' % VERSION,
                    )
     shutil.copy(
                 'Privacy/InstallerSections.plist',
-                'Neubot-%s.pkg/Contents/Plugins/' % VERSION,
+                'neubot-%s.pkg/Contents/Plugins/' % VERSION,
                )
 
 def _create_tarball():
@@ -254,8 +254,8 @@ def _create_tarball():
     if not os.path.exists('../dist'):
         os.mkdir('../dist')
 
-    arch = tarfile.open('../dist/Neubot-%s.pkg.tgz' % VERSION, 'w:gz')
-    arch.add('Neubot-%s.pkg' % VERSION)
+    arch = tarfile.open('../dist/neubot-%s.pkg.tgz' % VERSION, 'w:gz')
+    arch.add('neubot-%s.pkg' % VERSION)
     arch.close()
 
 def main():
