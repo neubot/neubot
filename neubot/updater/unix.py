@@ -932,8 +932,11 @@ def __main():
                   'Child exited with status %d' % os.WEXITSTATUS(status))
 
         except:
-            why = asyncore.compact_traceback()
-            syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
+            try:
+                why = asyncore.compact_traceback()
+                syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
+            except:
+                pass
 
 def main():
     ''' Wrapper around the real __main() '''
