@@ -783,6 +783,7 @@ def __start_neubot_agent():
         from neubot.net.poller import POLLER
         from neubot import agent
 
+        # XXX Redundant?
         # Because we're already in background
         LOG.redirect()
 
