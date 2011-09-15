@@ -1,3 +1,13 @@
+Neubot 0.4.2-rc3 [2011-09-15]
+	* doc: updater/unix.py: no need to use current version number
+	* doc: MacOS/installer.txt: mention the ``latest`` file
+	* MacOS: makepkg.py: also create the ``latest`` file
+	* Merge branches 'pu.MacOS' and 'pu.doc' into next
+	* scripts/fixperms: fix permissions
+	* neubot.nsi: do not autostart neubot
+	* Makefile: force UID=0 and GID=0 when installing
+	* Release neubot/0.4.2-rc3
+
 Neubot 0.4.2-rc2 [2011-09-10]
 	* MacOS/makepkg.py: be python2.6-compatible
 	* www: privacy.js: don't mix 1/0 and true/false in settings.html
