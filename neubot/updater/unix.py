@@ -884,6 +884,12 @@ def __main():
     if daemonize:
         __go_background('/var/run/neubot.pid')
 
+    #
+    # TODO We should install a signal handler that kills
+    # properly the child process when requested to exit
+    # gracefully.
+    #
+
     lastcheck = time.time()
     pid = -1
 
