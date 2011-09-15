@@ -631,9 +631,13 @@ def __verify_sig(signature, tarball):
      algorithm is SHA256.
     '''
 
-    retval = subprocess.call(['/usr/bin/openssl', 'dgst', '-sha256',
-                              '-verify', '%s/pubkey.pem' % VERSIONDIR,
-                              '-signature', signature, tarball])
+    cmdline = ['/usr/bin/openssl', 'dgst', '-sha256',
+               '-verify', '%s/pubkey.pem' % VERSIONDIR,
+               '-signature', signature, tarball]
+
+    syslog.syslog(syslog.LOG_INFO, 'Cmdline: %s' % str(cmdline))
+
+    retval = subprocess.call(cmdline)
 
     if retval != 0:
         raise RuntimeError('Signature does not match')
