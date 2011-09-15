@@ -104,7 +104,7 @@ archive:
 #
 
 #
-# We need to override INSTALL with 'install -o root' when
+# We need to override INSTALL with 'install -o 0 -g 0' when
 # we install from sources because in this case we want to
 # enforce root's ownership.
 #
@@ -222,7 +222,7 @@ _install:
 #
 install:
 	@echo "[INSTALL]"
-	@make -f Makefile _install INSTALL='install -o root'
+	@make -f Makefile _install INSTALL='install -o 0 -g 0'
 
 #      _      _
 #   __| | ___| |__
@@ -315,7 +315,7 @@ _deb:
 
 deb:
 	@echo "[DEB]"
-	@make -f Makefile _deb INSTALL='install -o root'
+	@make -f Makefile _deb INSTALL='install -o 0 -g 0'
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
