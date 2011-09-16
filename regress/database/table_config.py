@@ -46,8 +46,13 @@ class TestConfig(unittest.TestCase):
         self.assertEquals(v, v2)
 
         table_config.update(connection, {"uuid": ""}.iteritems())
-        self.assertEquals(table_config.dictionarize(connection),
-                          {"version": "4.0", "uuid": ""})
+        result = table_config.dictionarize(connection)
+        #
+        # The version number changes as time passes and we don't
+        # want to keep the test uptodate.
+        #
+        del result['version']
+        self.assertEquals(result, {"uuid": ""})
 
         table_config.update(connection, {}.iteritems(), clear=True)
         self.assertEquals(table_config.dictionarize(connection), {})
