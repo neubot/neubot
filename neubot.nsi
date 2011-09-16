@@ -24,6 +24,7 @@ name "neubot 0.4.2-rc3"
 outfile "neubot-0.4.2-rc3-setup.exe"
 installdir "$PROGRAMFILES\neubot"
 setcompressor lzma
+requestexecutionlevel admin
 
 section
 
