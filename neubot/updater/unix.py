@@ -631,9 +631,13 @@ def __verify_sig(signature, tarball):
      algorithm is SHA256.
     '''
 
-    retval = subprocess.call(['/usr/bin/openssl', 'dgst', '-sha256',
-                              '-verify', '%s/pubkey.pem' % VERSIONDIR,
-                              '-signature', signature, tarball])
+    cmdline = ['/usr/bin/openssl', 'dgst', '-sha256',
+               '-verify', '%s/pubkey.pem' % VERSIONDIR,
+               '-signature', signature, tarball]
+
+    syslog.syslog(syslog.LOG_INFO, 'Cmdline: %s' % str(cmdline))
+
+    retval = subprocess.call(cmdline)
 
     if retval != 0:
         raise RuntimeError('Signature does not match')
@@ -783,6 +787,7 @@ def __start_neubot_agent():
         from neubot.net.poller import POLLER
         from neubot import agent
 
+        # XXX Redundant?
         # Because we're already in background
         LOG.redirect()
 
@@ -868,14 +873,14 @@ def __main():
         if tpl[0] == '-D':
             daemonize = False
         elif tpl[0] == '-d':
-            logopt |= syslog.LOG_PERROR
+            logopt |= syslog.LOG_PERROR|syslog.LOG_NDELAY
 
     # We must be run as root
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('You must be root.')
 
     # Open the system logger
-    syslog.openlog('neubot [updater/unix.py]', logopt, syslog.LOG_DAEMON)
+    syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
 
     # Clear root user environment
     __change_user(__lookup_user_info('root'))
@@ -883,6 +888,12 @@ def __main():
     # Daemonize
     if daemonize:
         __go_background('/var/run/neubot.pid')
+
+    #
+    # TODO We should install a signal handler that kills
+    # properly the child process when requested to exit
+    # gracefully.
+    #
 
     lastcheck = time.time()
     pid = -1
@@ -899,11 +910,13 @@ def __main():
 
             # If needed start the agent
             if pid == -1:
+                syslog.syslog(syslog.LOG_INFO, 'Starting the agent')
                 pid = __start_neubot_agent()
 
             # Check for updates
             now = time.time()
-            if now - lastcheck > 3600:
+            if now - lastcheck > 60:
+                syslog.syslog(syslog.LOG_INFO, 'Checking for updates')
                 lastcheck = now
                 nversion = _download_and_verify_update()
                 if nversion:
@@ -915,6 +928,7 @@ def __main():
                     raise RuntimeError('Internal error')
 
             # Monitor the agent
+            syslog.syslog(syslog.LOG_INFO, 'Monitoring the agent')
             rpid, status = __waitpid(pid, 0)
 
             if rpid == pid:
@@ -932,8 +946,11 @@ def __main():
                   'Child exited with status %d' % os.WEXITSTATUS(status))
 
         except:
-            why = asyncore.compact_traceback()
-            syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
+            try:
+                why = asyncore.compact_traceback()
+                syslog.syslog(syslog.LOG_ERR, 'In main loop: %s' % str(why))
+            except:
+                pass
 
 def main():
     ''' Wrapper around the real __main() '''
