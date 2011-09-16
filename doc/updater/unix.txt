@@ -1,7 +1,7 @@
 Unix updater
 ''''''''''''
 
-:Version: 1.1 of 2011/09/01
+:Version: 1.2 of 2011/09/15
 :Authors: Simone Basso
 :Documents: neubot/updater/unix.py
 
@@ -46,8 +46,8 @@ this updater has been written mainly to provide automatic
 updates under MacOS.
 
 BASEDIR
-  This is the base directory where Neubot is installed, usually
-  under the MacOS it is /usr/local/share/neubot.
+  This is the base directory where Neubot is installed.
+  Under MacOS this is ``/usr/local/share/neubot``.
 
 VERSIONDIR
   The BASEDIR contains one or more VERSIONDIRs.  Each contains
@@ -67,7 +67,7 @@ VERSIONDIR
                   ^        ^       ^       ^
                 major    minor   patch   rcnum
 
-  This notation is very convenient because it allows to treat
+  This notation is very handy because it allows to treat
   the version number as a floating point -- or, better, as a
   decimal.Decimal under Python.
 
@@ -87,10 +87,6 @@ information to locate and import the rest of Neubot.
 This assumption on the filesystem layout is also relevant
 because the updater will install VERSIONDIR+1 at the following
 location: ``BASEDIR/VERSIONDIR+1``.
-
-(The fact that the one of the updater is a well-know entry point
-to Neubot should also be mentioned in the FILES section of the
-manual page.)
 
 The updater assumes that ``BASEDIR/start.sh`` is a Bourne shell
 script that is able to start the newest version of Neubot,
@@ -121,7 +117,7 @@ representation of their version number alone, e.g.::
 
 The updater assumes that OpenSSL command line tools are
 installed and available in the PATH.  It needs them to
-verify the digital signature of an updated.
+verify the digital signature of an update tarball.
 
 The updater assumes that the user ``_neubot_update`` is
 available on the system, bound to a primary group with the same
@@ -147,23 +143,24 @@ updates).  Also, the updater must read and write on the file
 system in order to upgrade Neubot.
 
 The updater cleans up its own environment, while remaining
-``root``.  It removes unneeded supplementary groups, purify
-environment variables and set a default umask.
+``root``.  This removes unneeded supplementary groups, purifies
+environment variables and sets the default umask to 0022.
 
 If needed, it detaches from the current shell and forks in
-background, running as a daemon.  It will write a pidfile
-at ``/var/run/neubot.pid``, in this case.  Unfortunately for
-now it does not install any signal handler, but the plan
-is to install a SIGTERM handler that kills the child Neubot
-agent process, if any.
+background, running as a daemon.  If so, it will write a pidfile
+at ``/var/run/neubot.pid``.
+
+Unfortunately, as of now, the updater does not install any signal
+handler, but the plan is to install a SIGTERM handler that kills
+the child Neubot agent process, if any.
 
 The main loop has two control variables: pid (the process ID of
 the child Neubot agent process) and lastcheck (the last time the
 updater checked for a new release).  The main loop contains a
-call to sleep at the beginning to avoid consuming too many
-resources.
+call to sleep at the beginning, because the main task of the updater
+is to sleep in the background.
 
-So, periodically the updater wakes up an makes sure that the
+Periodically the updater wakes up an makes sure that the
 Neubot agent is already running.  If not, it forks a child to
 run the agent algorithm and remembers its PID to be able to
 control it.
@@ -173,16 +170,49 @@ is available, the updater stops the child Neubot agent process,
 if needed, installs the new version and, finally, switches
 over to it.  To do that it tries to exec() BASEDIR/start.sh,
 which should pick up the new version instead of the running
-one.  Note that the exec() does not change the process ID.
-For launchd(8) nothing will change.
+one.  Note that the exec() does not change the process ID:
+nothing will change for launchd(8).
 
-The last step is to monitor the running child for a while,
-using waitpid(2) together with WNOHANG.  If the child process
-exited, it logs the event and arrange things so that it
-will be started again at the beginning of next loop.
+The last step is to monitor the running child, using waitpid(2)
+together with WNOHANG.  If the child process exited, the updater
+logs the event and arrange things so that it will be started
+again at the beginning of next loop.
 
 
-Starting Neubot agent
-`````````````````````
+Starting and stopping the Neubot agent
+``````````````````````````````````````
 
-TODO
+To start the agent, the updater forks a new child and then returns
+its PID, so that it's possible to control it.
+
+The child process is wrapper by a giant try..catch block, which
+always terminates with os._exit().  We use os._exit() and not
+sys.exit() because the latter can be catched by try..catch clauses
+and the former cannot.  So, we're sure that the child WILL always
+exit.
+
+Then the child process will add VERSIONDIR to Python search
+path, because it needs to import some pieces of Neubot in order
+to start the agent.  The code installs a signal handler that
+breaks out of the POLLER loop as soon as the TERM signal is
+received.
+
+Finally, the agent is started in foreground but it is forced
+to use syslog because it is actually running in the context of
+launchd(8).
+
+Note that the code does not explicitly drop root privileges and
+leaves that task to the agent.  When running as root the agent
+will always drop privileges to the ``_neubot`` user.
+
+To stop the agent, the updater employs the PID.  Initially it
+sends the SIGTERM, for which the code had installed a signal
+handler when starting the agent.  It waits for the child to
+exit for five seconds.  If it doesn't exit, the code send the
+SIGKILL signal and then waits forever for the child to die.
+
+A possible improvement here may be to wait for a smaller amount
+of time than forever, and declare the child lost if it's not
+possible to kill it.  However, it's not clear whether this would
+be better or not: what happens if the child resumes later on?
+Are the pending TERM and KILL signals actually delivered?
