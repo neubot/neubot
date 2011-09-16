@@ -97,17 +97,17 @@ def insertxxx(connection, obj, commit=True, override_timestamp=True):
         converting it into a dictionary. '''
     insert(connection, obj_to_dict(obj), commit, override_timestamp)
 
-def walk(connection, func, since=-1, until=-1):
-    ''' Walk the speedtest table and invoke func() on each tuple '''
-    cursor = connection.cursor()
-    SELECT = _table_utils.make_select("speedtest", TEMPLATE,
-      since=since, until=until, desc=True)
-    cursor.execute(SELECT, {"since": since, "until": until})
-    return map(func, cursor)
-
 def listify(connection, since=-1, until=-1):
     ''' Converts the content of speedtest table into a list '''
-    return walk(connection, lambda t: dict(t), since, until)
+    vector = []
+    cursor = connection.cursor()
+    query = _table_utils.make_select("speedtest", TEMPLATE,
+                                     since=since, until=until,
+                                     desc=True)
+    cursor.execute(query, {"since": since, "until": until})
+    for row in cursor:
+        vector.append(dict(row))
+    return vector
 
 def prune(connection, until=None, commit=True):
     ''' Removes old results from the table '''

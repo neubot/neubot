@@ -63,17 +63,17 @@ def insert(connection, dictobj, commit=True, override_timestamp=True):
     _table_utils.do_insert_into(connection, INSERT_INTO, dictobj, TEMPLATE,
                                 commit, override_timestamp)
 
-def walk(connection, func, since=-1, until=-1):
-    ''' Walk the list of results of bittorrent table '''
-    cursor = connection.cursor()
-    SELECT = _table_utils.make_select("bittorrent", TEMPLATE,
-      since=since, until=until, desc=True)
-    cursor.execute(SELECT, {"since": since, "until": until})
-    return map(func, cursor)
-
 def listify(connection, since=-1, until=-1):
     ''' Converts to list the content of bittorrent table '''
-    return walk(connection, lambda t: dict(t), since, until)
+    vector = []
+    cursor = connection.cursor()
+    query = _table_utils.make_select("bittorrent", TEMPLATE,
+                                     since=since, until=until,
+                                     desc=True)
+    cursor.execute(query, {"since": since, "until": until})
+    for row in cursor:
+        vector.append(dict(row))
+    return vector
 
 def prune(connection, until=None, commit=True):
     ''' Removes old results from bittorrent table '''
