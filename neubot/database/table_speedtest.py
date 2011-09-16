@@ -22,6 +22,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+'''
+ Manage the speedtest table.
+'''
+
 from neubot.database import _table_utils
 from neubot import utils
 
@@ -34,6 +38,8 @@ from neubot import utils
 #    neubot clients have this bug;
 #
 def obj_to_dict(obj):
+    ''' Hack to convert speedtest result object into a
+        dictionary. '''
     dictionary = {
         "uuid": obj.client,
         "timestamp": int(float(obj.timestamp)),         #XXX
@@ -76,19 +82,23 @@ CREATE_TABLE = _table_utils.make_create_table("speedtest", TEMPLATE)
 INSERT_INTO = _table_utils.make_insert_into("speedtest", TEMPLATE)
 
 def create(connection, commit=True):
+    ''' Create a new speedtest table '''
     connection.execute(CREATE_TABLE)
     if commit:
         connection.commit()
 
-# Override timestamp on server-side to guarantee consistency
 def insert(connection, dictobj, commit=True, override_timestamp=True):
+    ''' Insert a result dictionary into speedtest table '''
     _table_utils.do_insert_into(connection, INSERT_INTO, dictobj, TEMPLATE,
                                 commit, override_timestamp)
 
 def insertxxx(connection, obj, commit=True, override_timestamp=True):
+    ''' Hack to insert a result object into speedtest table,
+        converting it into a dictionary. '''
     insert(connection, obj_to_dict(obj), commit, override_timestamp)
 
 def walk(connection, func, since=-1, until=-1):
+    ''' Walk the speedtest table and invoke func() on each tuple '''
     cursor = connection.cursor()
     SELECT = _table_utils.make_select("speedtest", TEMPLATE,
       since=since, until=until, desc=True)
@@ -96,9 +106,11 @@ def walk(connection, func, since=-1, until=-1):
     return map(func, cursor)
 
 def listify(connection, since=-1, until=-1):
+    ''' Converts the content of speedtest table into a list '''
     return walk(connection, lambda t: dict(t), since, until)
 
 def prune(connection, until=None, commit=True):
+    ''' Removes old results from the table '''
     if not until:
         until = utils.timestamp() - 365 * 24 * 60 * 60
     connection.execute("DELETE FROM speedtest WHERE timestamp < ?;", (until,))

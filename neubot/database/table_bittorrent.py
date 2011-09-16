@@ -22,14 +22,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Algorithms to create and manage the SQL table required
-# by the BitTorrent test.
-#
+'''
+ Algorithms to create and manage the SQL table required
+ by the BitTorrent test.
+'''
 
 from neubot.database import _table_utils
-
-from neubot import compat
 from neubot import utils
 
 TEMPLATE = {
@@ -55,16 +53,18 @@ CREATE_TABLE = _table_utils.make_create_table("bittorrent", TEMPLATE)
 INSERT_INTO = _table_utils.make_insert_into("bittorrent", TEMPLATE)
 
 def create(connection, commit=True):
+    ''' Create the bittorrent table '''
     connection.execute(CREATE_TABLE)
     if commit:
         connection.commit()
 
-# Override timestamp on server-side to guarantee consistency
 def insert(connection, dictobj, commit=True, override_timestamp=True):
+    ''' Insert a result into bittorrent table '''
     _table_utils.do_insert_into(connection, INSERT_INTO, dictobj, TEMPLATE,
                                 commit, override_timestamp)
 
 def walk(connection, func, since=-1, until=-1):
+    ''' Walk the list of results of bittorrent table '''
     cursor = connection.cursor()
     SELECT = _table_utils.make_select("bittorrent", TEMPLATE,
       since=since, until=until, desc=True)
@@ -72,9 +72,11 @@ def walk(connection, func, since=-1, until=-1):
     return map(func, cursor)
 
 def listify(connection, since=-1, until=-1):
+    ''' Converts to list the content of bittorrent table '''
     return walk(connection, lambda t: dict(t), since, until)
 
 def prune(connection, until=None, commit=True):
+    ''' Removes old results from bittorrent table '''
     if not until:
         until = utils.timestamp() - 365 * 24 * 60 * 60
     connection.execute("DELETE FROM bittorrent WHERE timestamp < ?;", (until,))
