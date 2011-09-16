@@ -61,11 +61,8 @@ def create(connection, commit=True):
 
 # Override timestamp on server-side to guarantee consistency
 def insert(connection, dictobj, commit=True, override_timestamp=True):
-    if override_timestamp:
-        dictobj['timestamp'] = utils.timestamp()
-    connection.execute(INSERT_INTO, dictobj)
-    if commit:
-        connection.commit()
+    _table_utils.do_insert_into(connection, INSERT_INTO, dictobj, TEMPLATE,
+                                commit, override_timestamp)
 
 def walk(connection, func, since=-1, until=-1):
     cursor = connection.cursor()

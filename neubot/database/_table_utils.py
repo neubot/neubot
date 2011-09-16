@@ -31,6 +31,8 @@
 import re
 import types
 
+from neubot import utils
+
 #
 # This is the generic mechanism that allows the plugin
 # programmer to skip the step of writing down queries at
@@ -122,6 +124,31 @@ def make_insert_into(table, template):
     vector[-1] = ");"
     query = "".join(vector)
     return query
+
+def do_insert_into(connection, query, dictobj, template,
+      commit=True, override_timestamp=True):
+
+    '''
+     Wrapper for INSERT INTO that makes sure that @dictobj
+     has the same fields of @template, to avoid a programming
+     error in sqlite3.  If @override timestamp is True, the
+     function will also override @dictobj timestamp.  If
+     @commit is True, the function will also commit to
+     @database.
+    '''
+
+    for key in template.keys():
+        if not key in dictobj:
+            dictobj[key] = None
+
+    # Override timestamp on server-side to guarantee consistency
+    if override_timestamp:
+        dictobj['timestamp'] = utils.timestamp()
+
+    connection.execute(query, dictobj)
+
+    if commit:
+        connection.commit()
 
 def make_select(table, template, **kwargs):
 
