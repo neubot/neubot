@@ -38,9 +38,11 @@ class TestConfig(unittest.TestCase):
 
         v, v2 = [], []
         table_config.create(connection)
-        table_config.walk(connection, v.append)
+        for name, value in table_config.dictionarize(connection).items():
+            v.append((name, value))
         table_config.create(connection)
-        table_config.walk(connection, v2.append)
+        for name, value in table_config.dictionarize(connection).items():
+            v2.append((name, value))
         self.assertEquals(v, v2)
 
         table_config.update(connection, {"uuid": ""}.iteritems())

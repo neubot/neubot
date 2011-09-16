@@ -71,22 +71,13 @@ def update(connection, iterator, commit=True, clear=False):
     if commit:
         connection.commit()
 
-def walk(connection, func):
-    ''' Walks over table_config in functional style '''
-    cursor = connection.cursor()
-    cursor.execute("SELECT name, value FROM CONFIG;")
-    #
-    # XXX Python 2.5 sqlite3.Row does not support iterability
-    # therefore here we need to perform a special dance because
-    # neubot/config.py wants a tuple.
-    #
-    return map(lambda row: func(tuple([row["name"],
-      row["value"]])), cursor)
-
 def dictionarize(connection):
     ''' Dictionarize table_config '''
     dictionary = {}
-    walk(connection, lambda t: dictionary.update([t]))
+    cursor = connection.cursor()
+    cursor.execute('SELECT name, value FROM config;')
+    for name, value in cursor:
+        dictionary[name] = value
     return dictionary
 
 def jsonize(connection):

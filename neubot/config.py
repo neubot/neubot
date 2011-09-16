@@ -242,7 +242,9 @@ class Config(object):
 
     def merge_database(self, database):
         LOG.debug("config: reading properties from database")
-        table_config.walk(database, self.merge_kv)
+        dictionary = table_config.dictionarize(database)
+        for key, value in dictionary.items():
+            self.merge_kv((key, value))
 
     def merge_environ(self):
         LOG.debug("config: reading properties from the environment")
