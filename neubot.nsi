@@ -98,7 +98,7 @@ section "uninstall"
     rmdir /r "$SMPROGRAMS\neubot"
 
     delete "$SMSTARTUP\neubot (autostart).lnk"
-    delete "$SMSTARTUP\neubot (login checks).lnk"
+    delete "$SMSTARTUP\neubot (notifier process).lnk"
     deleteregkey HKLM                                                   \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
 
