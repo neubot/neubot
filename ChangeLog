@@ -1,3 +1,17 @@
+Neubot 0.4.2-rc4 [2011-09-16]
+	* MacOS: Remove Neubot-pkg
+	* MacOS: add neubot-pkg
+	* MacOS doc: s/Neubot-VERSION.pkg/neubot-VERSION.pkg/
+	* Merge branch 'pu.MacOS' into next
+	* database: fix regression with old clients
+	* database/_table_utils.py: allow null entries
+	* table_bittorrent.py table_speedtest.py: pylintify
+	* neubot.nsi: make sure we delete all from autostart
+	* neubot.nsi: Typo
+	* neubot.nsi: Want to run as admin
+	* Merge branch 'pu.win32-installer' into next
+	* Release neubot/0.4.2-rc4
+
 Neubot 0.4.2-rc3 [2011-09-15]
 	* doc: updater/unix.py: no need to use current version number
 	* doc: MacOS/installer.txt: mention the ``latest`` file

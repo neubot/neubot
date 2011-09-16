@@ -55,7 +55,7 @@ class _InfoBox(object):
 
     def __init__(self, message, timeo=30):
         self._window = gtk.Window()
-        self._window.set_title("Neubot 0.4.2-rc3")
+        self._window.set_title("Neubot 0.4.2-rc4")
         self._window.set_icon_from_file(ICON)
 
         self._window.connect("delete_event", self._cleanup)
