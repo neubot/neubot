@@ -1,3 +1,14 @@
+Neubot 0.4.2-rc5 [2011-09-16]
+	* updater/unix.py: more robustness in the main loop
+	* updater/unix.py: note we should install a signal handler
+	* updater/unix.py: mark a possibly-redundant piece of code
+	* updater/unix.py: debug-friendlier syslog output
+	* updater/unix.py: more frequent check for updates
+	* updater/unix.py: syslog cmdline to verify signature
+	* doc/updater/unix.txt: more documentation
+	* Merge branch 'pu.updater' into next
+	* Release neubot/0.4.2-rc5
+
 Neubot 0.4.2-rc4 [2011-09-16]
 	* MacOS: Remove Neubot-pkg
 	* MacOS: add neubot-pkg
