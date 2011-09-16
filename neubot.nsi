@@ -24,6 +24,7 @@ name "neubot 0.4.2-rc3"
 outfile "neubot-0.4.2-rc3-setup.exe"
 installdir "$PROGRAMFILES\neubot"
 setcompressor lzma
+requestexecutionlevel admin
 
 section
 
@@ -83,7 +84,7 @@ section "uninstall"
     #
     # Kill all the remaining instances of neubotw.exe (mainly the
     # on_gui_login process) so that the DLLs are not locked anymore
-    # and we can safefly proceed with the update.
+    # and we can safely proceed with the update.
     # XXX This is clearly unclean and ah-hoc!
     #
     execwait '"$INSTDIR\neubotw.exe" on_gui_login -k'
@@ -98,7 +99,7 @@ section "uninstall"
     rmdir /r "$SMPROGRAMS\neubot"
 
     delete "$SMSTARTUP\neubot (autostart).lnk"
-    delete "$SMSTARTUP\neubot (login checks).lnk"
+    delete "$SMSTARTUP\neubot (notifier process).lnk"
     deleteregkey HKLM                                                   \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
 
