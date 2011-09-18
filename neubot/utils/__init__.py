@@ -1,4 +1,4 @@
-# neubot/utils.py
+# neubot/utils/__init__.py
 
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
