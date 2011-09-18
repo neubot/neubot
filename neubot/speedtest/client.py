@@ -24,7 +24,7 @@ import StringIO
 import collections
 import sys
 
-from neubot.blocks import RandomBody
+from neubot.utils.blocks import RandomBody
 from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_speedtest

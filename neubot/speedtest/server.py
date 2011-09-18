@@ -23,7 +23,7 @@
 import os.path
 
 from neubot.config import CONFIG
-from neubot.blocks import RandomBody
+from neubot.utils.blocks import RandomBody
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG

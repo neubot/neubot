@@ -20,40 +20,48 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Unit test for neubot/utils/blocks.py '''
+
 import sys
 
-sys.path.insert(0, ".")
+sys.path.insert(0, '.')
 
-from neubot.blocks import RANDOMBLOCKS
-from neubot.blocks import RandomBody
 from neubot import utils
 
+BEFORE = utils.ticks()
+from neubot.utils.blocks import RANDOMBLOCKS
+from neubot.utils.blocks import RandomBody
+ELAPSED = utils.ticks() - BEFORE
+print('Time to import: %s' % (utils.time_formatter(ELAPSED)))
+
 def main():
+
+    ''' Unit test for neubot/utils/blocks.py '''
+
     assert(len(RANDOMBLOCKS.get_block()) == RANDOMBLOCKS.blocksiz)
     assert(RANDOMBLOCKS.get_block() != RANDOMBLOCKS.get_block())
 
-    fp, total = RandomBody(RANDOMBLOCKS.blocksiz + 789), 0
+    filep, total = RandomBody(RANDOMBLOCKS.blocksiz + 789), 0
     while True:
-        block = fp.read(128)
+        block = filep.read(128)
         if not block:
             break
         total += len(block)
     assert(total == RANDOMBLOCKS.blocksiz + 789)
 
-    fp = RandomBody(RANDOMBLOCKS.blocksiz + 789)
-    assert(len(fp.read()) == RANDOMBLOCKS.blocksiz)
-    assert(fp.tell() == 789)
-    assert(len(fp.read()) == 789)
-    fp.seek(7)
+    filep = RandomBody(RANDOMBLOCKS.blocksiz + 789)
+    assert(len(filep.read()) == RANDOMBLOCKS.blocksiz)
+    assert(filep.tell() == 789)
+    assert(len(filep.read()) == 789)
+    filep.seek(7)
 
     begin, total = utils.ticks(), 0
-    try:
-        while True:
-            total += len(RANDOMBLOCKS.get_block())
-    except KeyboardInterrupt:
-        print "Interrupt"
+    while total < 1073741824:
+        total += len(RANDOMBLOCKS.get_block())
+    elapsed = utils.ticks() - begin
 
-    print "Speed:", utils.speed_formatter(total/(utils.ticks() - begin))
+    print('Elapsed: %s' % utils.time_formatter(elapsed))
+    print('Speed: %s' % utils.speed_formatter(total/elapsed))
 
 if __name__ == "__main__":
     main()
