@@ -104,17 +104,3 @@ def nextstate(request, response=None):
                 return UNBOUNDED, 8000
             else:
                 return FIRSTLINE, 0
-
-#
-# Parse 'range:' header
-# Here we don't care of Exceptions as long as these exceptions
-# are ValueErrors, because the caller expects this function to
-# succed OR to raise ValueError.
-#
-
-def parse_range(message):
-    vector = message["range"].replace("bytes=", "").strip().split("-")
-    first, last = map(int, vector)
-    if first < 0 or last < 0 or last < first:
-        raise ValueError("Cannot parse range header")
-    return first, last

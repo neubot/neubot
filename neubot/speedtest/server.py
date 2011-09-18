@@ -26,7 +26,6 @@ from neubot.config import CONFIG
 from neubot.blocks import RandomBody
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
-from neubot.http import utils as http_utils
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 
@@ -39,6 +38,20 @@ FAKE_NEGOTIATION = '''\
  <unchoked>True</unchoked>
 </SpeedtestNegotiate_Response>
 '''
+
+#
+# Parse 'range:' header
+# Here we don't care of Exceptions as long as these exceptions
+# are ValueErrors, because the caller expects this function to
+# succed OR to raise ValueError.
+#
+
+def parse_range(message):
+    vector = message["range"].replace("bytes=", "").strip().split("-")
+    first, last = map(int, vector)
+    if first < 0 or last < 0 or last < first:
+        raise ValueError("Cannot parse range header")
+    return first, last
 
 class ServerTest(ServerHTTP):
 
@@ -59,7 +72,7 @@ class ServerTest(ServerHTTP):
             stream.send_response(request, response)
 
         elif request.uri == "/speedtest/download":
-            first, last = http_utils.parse_range(request)
+            first, last = parse_range(request)
             response = Message()
             response.compose(code="200", reason="Ok",
               body=RandomBody(last - first + 1),
