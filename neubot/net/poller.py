@@ -51,10 +51,10 @@ class Pollable(object):
     def fileno(self):
         raise NotImplementedError
 
-    def handle_readable(self):
+    def handle_read(self):
         pass
 
-    def handle_writable(self):
+    def handle_write(self):
         pass
 
     def closed(self, exception=None):
@@ -134,22 +134,22 @@ class Poller(object):
     # does not exist anymore, but its fileno still is in res[1].
     #
 
-    def _call_handle_readable(self, fileno):
+    def _call_handle_read(self, fileno):
         if self.readset.has_key(fileno):
             stream = self.readset[fileno]
             try:
-                stream.handle_readable()
+                stream.handle_read()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
                 logging.error(str(asyncore.compact_traceback()))
                 self.close(stream)
 
-    def _call_handle_writable(self, fileno):
+    def _call_handle_write(self, fileno):
         if self.writeset.has_key(fileno):
             stream = self.writeset[fileno]
             try:
-                stream.handle_writable()
+                stream.handle_write()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
@@ -240,9 +240,9 @@ class Poller(object):
 
             # No error?  Fire readable and writable events
             for fileno in res[0]:
-                self._call_handle_readable(fileno)
+                self._call_handle_read(fileno)
             for fileno in res[1]:
-                self._call_handle_writable(fileno)
+                self._call_handle_write(fileno)
 
         #
         # No I/O pending?  So let's just wait for the
