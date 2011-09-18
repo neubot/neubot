@@ -27,7 +27,6 @@ import random
 from neubot.http.message import Message
 from neubot.http.server import HTTP_SERVER
 from neubot.http.server import ServerHTTP
-from neubot.http.utils import content_length
 
 from neubot.log import LOG
 from neubot.compat import json
@@ -201,7 +200,7 @@ class _ServerNegotiate(ServerHTTP):
     # Incoming body MUST BE bounded
     def got_request_headers(self, stream, request):
         return (request["transfer-encoding"] == "" and
-          content_length(request) <= 1048576)
+          request.content_length() <= 1048576)
 
     def process_request(self, stream, request):
         m = {

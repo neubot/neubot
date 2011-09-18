@@ -118,14 +118,3 @@ def parse_range(message):
     if first < 0 or last < 0 or last < first:
         raise ValueError("Cannot parse range header")
     return first, last
-
-#
-# Content-Length
-#
-
-def content_length(m):
-    s = m["content-length"]
-    ln = int(s)
-    if ln < 0:
-        raise ValueError("Content-Length must be positive")
-    return ln

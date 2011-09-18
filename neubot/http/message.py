@@ -249,3 +249,10 @@ class Message(object):
         # Seek to the beginning if needed
         if not isinstance(self.body, basestring):
             utils.safe_seek(self.body, 0)
+
+    def content_length(self):
+        s = self["content-length"]
+        ln = int(s)
+        if ln < 0:
+            raise ValueError("Content-Length must be positive")
+        return ln
