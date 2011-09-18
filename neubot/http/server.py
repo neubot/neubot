@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' HTTP server '''
+
 import StringIO
 import mimetypes
 import os.path
@@ -56,20 +58,27 @@ MONTH = [
 
 class ServerStream(StreamHTTP):
 
+    ''' Specializes StreamHTTP to implement the server-side
+        of an HTTP channel '''
+
     def __init__(self, poller):
+        ''' Initialize '''
         StreamHTTP.__init__(self, poller)
         self.request = None
 
     def got_request_line(self, method, uri, protocol):
+        ''' Invoked when we get a request line '''
         self.request = Message(method=method, uri=uri, protocol=protocol)
 
     def got_header(self, key, value):
+        ''' Invoked when we get an header '''
         if self.request:
             self.request[key] = value
         else:
             self.close()
 
     def got_end_of_headers(self):
+        ''' Invoked at the end of headers '''
         if self.request:
             if not self.parent.got_request_headers(self, self.request):
                 return ERROR, 0
@@ -78,12 +87,14 @@ class ServerStream(StreamHTTP):
             return ERROR, 0
 
     def got_piece(self, piece):
+        ''' Invoked when we read a piece of the body '''
         if self.request:
             self.request.body.write(piece)
         else:
             self.close()
 
     def got_end_of_body(self):
+        ''' Invoked at the end of the body '''
         if self.request:
             utils.safe_seek(self.request.body, 0)
             self.request.prettyprintbody("<")
@@ -93,6 +104,7 @@ class ServerStream(StreamHTTP):
             self.close()
 
     def send_response(self, request, response):
+        ''' Send a response to the client '''
         self.send_message(response)
 
         address = self.peername[0]
@@ -114,23 +126,30 @@ class ServerStream(StreamHTTP):
 
 class ServerHTTP(StreamHandler):
 
+    ''' Manages many HTTP connections '''
+
     def __init__(self, poller):
+        ''' Initialize the HTTP server '''
         StreamHandler.__init__(self, poller)
         self._ssl_ports = set()
         self.childs = {}
 
     def bind_failed(self, listener, exception):
+        ''' Invoked when we cannot bind a socket '''
         if self.conf.get("http.server.bind_or_die", False):
             sys.exit(1)
 
     def register_child(self, child, prefix):
+        ''' Register a child server object '''
         self.childs[prefix] = child
         child.child = self
 
     def register_ssl_port(self, port):
+        ''' Register a port where we should speak SSL '''
         self._ssl_ports.add(port)
 
     def got_request_headers(self, stream, request):
+        ''' Invoked when we got request headers '''
         if self.childs:
             for prefix, child in self.childs.items():
                 if request.uri.startswith(prefix):
@@ -144,6 +163,7 @@ class ServerHTTP(StreamHandler):
         return True
 
     def process_request(self, stream, request):
+        ''' Process a request and generate the response '''
         response = Message()
 
         if not request.uri.startswith("/"):
@@ -182,7 +202,7 @@ class ServerHTTP(StreamHandler):
             return
 
         try:
-            fp = open(fullpath, "rb")
+            filep = open(fullpath, "rb")
         except (IOError, OSError):
             LOG.error("HTTP: Not Found: %s (WWW: %s)" % (fullpath, rootdir))
             response.compose(code="404", reason="Not Found",
@@ -198,8 +218,8 @@ class ServerHTTP(StreamHandler):
                 if mimetype == "text/html":
                     ssi = self.conf.get("http.server.ssi", False)
                     if ssi:
-                        body = ssi_replace(rootdir, fp)
-                        fp = StringIO.StringIO(body)
+                        body = ssi_replace(rootdir, filep)
+                        filep = StringIO.StringIO(body)
 
                 #XXX Do we need to enforce the charset?
                 if mimetype in ("text/html", "application/x-javascript"):
@@ -210,13 +230,14 @@ class ServerHTTP(StreamHandler):
         else:
             mimetype = "text/plain"
 
-        response.compose(code="200", reason="Ok", body=fp,
+        response.compose(code="200", reason="Ok", body=filep,
                          mimetype=mimetype)
         if request.method == "HEAD":
-            utils.safe_seek(fp, 0, os.SEEK_END)
+            utils.safe_seek(filep, 0, os.SEEK_END)
         stream.send_response(request, response)
 
     def got_request(self, stream, request):
+        ''' Invoked when we got a request '''
         try:
             self.process_request(stream, request)
         except (KeyboardInterrupt, SystemExit):
@@ -225,6 +246,7 @@ class ServerHTTP(StreamHandler):
             self._on_internal_error(stream, request)
 
     def _on_internal_error(self, stream, request):
+        ''' Generate 500 Internal Server Error page '''
         LOG.exception()
         response = Message()
         response.compose(code="500", reason="Internal Server Error",
@@ -233,6 +255,7 @@ class ServerHTTP(StreamHandler):
         stream.close()
 
     def connection_made(self, sock, rtt=0):
+        ''' Invoked when the connection is made '''
         stream = ServerStream(self.poller)
         nconf = self.conf.copy()
 
@@ -260,9 +283,10 @@ class ServerHTTP(StreamHandler):
         self.connection_ready(stream)
 
     def connection_ready(self, stream):
-        pass
+        ''' Invoked when the connection is ready '''
 
     def accept_failed(self, listener, exception):
+        ''' Print a warning if accept() fails (often due to SSL) '''
         LOG.warning("ServerHTTP: accept() failed: %s" % str(exception))
 
 HTTP_SERVER = ServerHTTP(POLLER)
@@ -278,6 +302,9 @@ CONFIG.register_defaults({
 })
 
 def main(args):
+
+    ''' main() function of this module '''
+
     CONFIG.register_descriptions({
         "http.server.address": "Address to listen to",
         "http.server.class": "Use alternate ServerHTTP-like class",

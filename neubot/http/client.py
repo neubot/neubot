@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' HTTP client '''
+
 import collections
 import os.path
 import sys
@@ -41,14 +43,16 @@ from neubot.main import common
 
 class ClientStream(StreamHTTP):
 
-    """Specializes StreamHTTP and implements the client
-       side of an HTTP channel."""
+    ''' Specializes StreamHTTP and implements the client
+        side of an HTTP channel '''
 
     def __init__(self, poller):
+        ''' Initialize client stream '''
         StreamHTTP.__init__(self, poller)
         self.requests = collections.deque()
 
     def send_request(self, request, response=None):
+        ''' Sends a request '''
         self.requests.append(request)
         if not response:
             response = Message()
@@ -56,6 +60,7 @@ class ClientStream(StreamHTTP):
         self.send_message(request)
 
     def got_response_line(self, protocol, code, reason):
+        ''' Invoked when we receive the response line '''
         if self.requests:
             response = self.requests[0].response
             response.protocol = protocol
@@ -65,6 +70,7 @@ class ClientStream(StreamHTTP):
             self.close()
 
     def got_header(self, key, value):
+        ''' Invoked when we receive an header '''
         if self.requests:
             response = self.requests[0].response
             response[key] = value
@@ -72,6 +78,7 @@ class ClientStream(StreamHTTP):
             self.close()
 
     def got_end_of_headers(self):
+        ''' Invoked at the end of headers '''
         if self.requests:
             request = self.requests[0]
             if not self.parent.got_response_headers(self, request,
@@ -82,6 +89,7 @@ class ClientStream(StreamHTTP):
             return ERROR, 0
 
     def got_piece(self, piece):
+        ''' Invoked when we receive a body piece '''
         if self.requests:
             response = self.requests[0].response
             response.body.write(piece)
@@ -89,6 +97,7 @@ class ClientStream(StreamHTTP):
             self.close()
 
     def got_end_of_body(self):
+        ''' Invoked at the end of the body '''
         if self.requests:
             request = self.requests.popleft()
             utils.safe_seek(request.response.body, 0)
@@ -101,36 +110,43 @@ class ClientStream(StreamHTTP):
             self.close()
 
 class ClientHTTP(StreamHandler):
+
+    ''' Manages one or more HTTP streams '''
+
     def __init__(self, poller):
+        ''' Initialize the HTTP client '''
         StreamHandler.__init__(self, poller)
         self.host_header = ""
         self.rtt = 0
 
     def connect_uri(self, uri, count=1):
+        ''' Connects to the given URI '''
         try:
-            m = Message()
-            m.compose(method="GET", uri=uri)
-            if m.scheme == "https":
+            message = Message()
+            message.compose(method="GET", uri=uri)
+            if message.scheme == "https":
                 self.conf["net.stream.secure"] = True
-            endpoint = (m.address, int(m.port))
-            self.host_header = "%s:%s" % (m.address, m.port)
+            endpoint = (message.address, int(message.port))
+            self.host_header = "%s:%s" % (message.address, message.port)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception, e:
-            self.connection_failed(None, e)
+        except Exception, why:
+            self.connection_failed(None, why)
         else:
             self.connect(endpoint, count)
 
     def connection_ready(self, stream):
-        pass
+        ''' Invoked when the connection is ready '''
 
     def got_response_headers(self, stream, request, response):
+        ''' Invoked when we receive response headers '''
         return True
 
     def got_response(self, stream, request, response):
-        pass
+        ''' Invoked when we receive the response '''
 
     def connection_made(self, sock, rtt=0):
+        ''' Invoked when the connection is created '''
         if rtt:
             LOG.debug("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
             self.rtt = rtt
@@ -140,7 +156,10 @@ class ClientHTTP(StreamHandler):
 
 class TestClient(ClientHTTP):
 
+    ''' Test client for this module '''
+
     def connection_ready(self, stream):
+        ''' Invoked when the connection is ready '''
         method = self.conf["http.client.method"]
         stdout = self.conf["http.client.stdout"]
         uri = self.conf["http.client.uri"]
@@ -177,6 +196,8 @@ CONFIG.register_defaults({
 })
 
 def main(args):
+
+    ''' main() of this module '''
 
     CONFIG.register_descriptions({
         "http.client.class": "Specify alternate ClientHTTP-like class",

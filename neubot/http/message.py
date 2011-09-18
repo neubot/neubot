@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' An HTTP message '''
+
 import StringIO
 import email.utils
 import collections
@@ -44,6 +46,7 @@ REDIRECT = '''\
 '''
 
 def urlsplit(uri):
+    ''' Wrapper for urlparse.urlsplit() '''
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
     if scheme != "http" and scheme != "https":
         raise ValueError("Unknown scheme")
@@ -60,9 +63,12 @@ def urlsplit(uri):
         pathquery = pathquery + "?" + query
     return scheme, address, port, pathquery
 
-# Represents an HTTP message
 class Message(object):
+
+    ''' Represents an HTTP message '''
+
     def __init__(self, method="", uri="", code="", reason="", protocol=""):
+        ''' Initialize the HTTP message '''
         self.method = method
         self.uri = uri
         self.scheme = ""
@@ -93,47 +99,49 @@ class Message(object):
     # that some web servers do not accept.
     #
     def serialize_headers(self):
-        v = []
+        ''' Serialize message headers '''
+        vector = []
 
         if self.method:
-            v.append(self.method)
-            v.append(" ")
+            vector.append(self.method)
+            vector.append(" ")
             if self.pathquery:
-                v.append(self.pathquery)
+                vector.append(self.pathquery)
             elif self.uri:
-                v.append(self.uri)
+                vector.append(self.uri)
             else:
-                v.append("/")
-            v.append(" ")
-            v.append(self.protocol)
+                vector.append("/")
+            vector.append(" ")
+            vector.append(self.protocol)
 
         else:
-            v.append(self.protocol)
-            v.append(" ")
-            v.append(self.code)
-            v.append(" ")
-            v.append(self.reason)
+            vector.append(self.protocol)
+            vector.append(" ")
+            vector.append(self.code)
+            vector.append(" ")
+            vector.append(self.reason)
 
-        LOG.debug("> %s" % ("".join(v)))
-        v.append("\r\n")
+        LOG.debug("> %s" % ("".join(vector)))
+        vector.append("\r\n")
 
         for key, value in self.headers.items():
             key = "-".join(map(lambda s: s.capitalize(), key.split("-")))
-            v.append(key)
-            v.append(": ")
-            v.append(value)
+            vector.append(key)
+            vector.append(": ")
+            vector.append(value)
 
             LOG.debug("> %s: %s" % (key, value))
-            v.append("\r\n")
+            vector.append("\r\n")
 
         LOG.debug(">")
-        v.append("\r\n")
+        vector.append("\r\n")
 
-        s = "".join(v)
-        s = utils.stringify(s)
-        return StringIO.StringIO(s)
+        string = "".join(vector)
+        string = utils.stringify(string)
+        return StringIO.StringIO(string)
 
     def serialize_body(self):
+        ''' Serialize message body '''
         self.prettyprintbody(">")
         return self.body
 
@@ -145,15 +153,18 @@ class Message(object):
     # applications do, before sending them on the wire.
     #
     def __getitem__(self, key):
+        ''' Return an header '''
         return self.headers[key.lower()]
 
     def __setitem__(self, key, value):
+        ''' Save an header '''
         key = key.lower()
         if self.headers.has_key(key):
             value = self.headers[key] + ", " + value
         self.headers[key] = value
 
     def __delitem__(self, key):
+        ''' Delete an header '''
         key = key.lower()
         if self.headers.has_key(key):
             del self.headers[key]
@@ -167,6 +178,7 @@ class Message(object):
     # "200 Ok" response with no attached body.
     #
     def compose(self, **kwargs):
+        ''' Prepare a request on the client side '''
         self.method = kwargs.get("method", "")
 
         if kwargs.get("uri", ""):
@@ -231,6 +243,7 @@ class Message(object):
         self.family = kwargs.get("family", socket.AF_INET)
 
     def compose_redirect(self, stream, target):
+        ''' Prepare a redirect response '''
         if not target.startswith("/"):
             target = "/" + target
         #XXX With IPv6 we need to enclose address in square braces
@@ -242,6 +255,7 @@ class Message(object):
         self["location"] = location
 
     def prettyprintbody(self, prefix):
+        ''' Pretty print body '''
         if self["content-type"] not in ("application/json", "text/xml",
                                         "application/xml"):
             return
@@ -254,22 +268,23 @@ class Message(object):
 
         # Decode the body
         if self["content-type"] == "application/json":
-            s = compat.json.dumps(compat.json.loads(body),
+            string = compat.json.dumps(compat.json.loads(body),
               indent=4, sort_keys=True)
         elif self["content-type"] in ("text/xml", "application/xml"):
-            s = body
+            string = body
 
         # Prettyprint
-        for ln in s.split("\n"):
-            LOG.debug("%s %s" % (prefix, ln.rstrip()))
+        for line in string.split("\n"):
+            LOG.debug("%s %s" % (prefix, line.rstrip()))
 
         # Seek to the beginning if needed
         if not isinstance(self.body, basestring):
             utils.safe_seek(self.body, 0)
 
     def content_length(self):
-        s = self["content-length"]
-        ln = int(s)
-        if ln < 0:
+        ''' Get content length '''
+        string = self["content-length"]
+        length = int(string)
+        if length < 0:
             raise ValueError("Content-Length must be positive")
-        return ln
+        return length

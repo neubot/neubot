@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import collections
+''' HTTP stream '''
 
 from neubot.net.stream import MAXBUF
 from neubot.net.stream import Stream
@@ -30,7 +30,7 @@ from neubot.log import LOG
 PROTOCOLS = [ "HTTP/1.0", "HTTP/1.1" ]
 
 # Maximum allowed line length
-MAXLINE = 1<<15
+MAXLINE = 1 << 15
 
 # Possible states of the receiver
 (IDLE, BOUNDED, UNBOUNDED, CHUNK, CHUNK_END, FIRSTLINE,
@@ -47,24 +47,29 @@ STATES = ["IDLE", "BOUNDED", "UNBOUNDED", "CHUNK", "CHUNK_END", "FIRSTLINE",
 #
 SMALLMESSAGE = 8000
 
-#
-# Specializes stream in order to handle the Hyper-Text Transfer
-# Protocol (HTTP).  See also the finite state machine documented
-# at `doc/protocol.png`.
-#
 class StreamHTTP(Stream):
+
+    '''
+     Specializes stream in order to handle the Hyper-Text Transfer
+     Protocol (HTTP).  See also the finite state machine documented
+     at `doc/protocol.png`.
+    '''
+
     def __init__(self, poller):
+        ''' Initialize the stream '''
         Stream.__init__(self, poller)
         self.incoming = []
         self.state = FIRSTLINE
         self.left = 0
 
     def connection_made(self):
+        ''' Called when the connection is created '''
         self.start_recv()
 
     # Close
 
     def connection_lost(self, exception):
+        ''' Called when the connection is lost '''
         # it's possible for body to be `up to end of file`
         if self.eof and self.state == UNBOUNDED:
             self.got_end_of_body()
@@ -72,11 +77,12 @@ class StreamHTTP(Stream):
 
     # Send
 
-    def send_message(self, m, smallmessage=SMALLMESSAGE):
-        if m.length >= 0 and m.length <= smallmessage:
+    def send_message(self, message, smallmessage=SMALLMESSAGE):
+        ''' Send a message '''
+        if message.length >= 0 and message.length <= smallmessage:
             vector = []
-            vector.append(m.serialize_headers().read())
-            body = m.serialize_body()
+            vector.append(message.serialize_headers().read())
+            body = message.serialize_body()
             if not isinstance(body, basestring):
                 vector.append(body.read())
             else:
@@ -84,12 +90,13 @@ class StreamHTTP(Stream):
             data = "".join(vector)
             self.start_send(data)
         else:
-            self.start_send(m.serialize_headers())
-            self.start_send(m.serialize_body())
+            self.start_send(message.serialize_headers())
+            self.start_send(message.serialize_body())
 
     # Recv
 
     def recv_complete(self, data):
+        ''' We've received successfully some data '''
         if self.close_complete or self.close_pending:
             return
 
@@ -152,6 +159,7 @@ class StreamHTTP(Stream):
         self.start_recv()
 
     def _got_line(self, line):
+        ''' We've got a line... what do we do? '''
         if self.state == FIRSTLINE:
             line = line.strip()
             LOG.debug("< %s" % line)
@@ -219,6 +227,7 @@ class StreamHTTP(Stream):
             raise RuntimeError("Not expecting a line")
 
     def _got_piece(self, piece):
+        ''' We've got a piece... what do we do? '''
         if self.state == BOUNDED:
             self.got_piece(piece)
             if self.left == 0:
@@ -237,25 +246,27 @@ class StreamHTTP(Stream):
     # Events for upstream
 
     def got_request_line(self, method, uri, protocol):
+        ''' Got the request line '''
         raise RuntimeError("Not expecting a request-line")
 
     def got_response_line(self, protocol, code, reason):
+        ''' Got the response line '''
         raise RuntimeError("Not expecting a reponse-line")
 
     def got_header(self, key, value):
-        pass
+        ''' Got an header '''
 
     def got_end_of_headers(self):
-        pass
+        ''' Got the end of headers '''
 
     def got_piece(self, piece):
-        pass
+        ''' Got a piece of the body '''
 
     def got_end_of_body(self):
-        pass
+        ''' Got the end of the body '''
 
     def message_sent(self):
-        pass
+        ''' The message was sent '''
 
 #
 # Quoting from RFC2616, sect. 4.3:
@@ -276,6 +287,7 @@ class StreamHTTP(Stream):
 #
 
 def _parselength(message):
+    ''' Return next state depending on content-length '''
     value = message["content-length"]
     try:
         length = int(value)
@@ -290,6 +302,7 @@ def _parselength(message):
             return BOUNDED, length
 
 def nextstate(request, response=None):
+    ''' Return nextstate depending on request and response '''
     if response == None:
         if request["transfer-encoding"] == "chunked":
             return CHUNK_LENGTH, 0

@@ -20,13 +20,13 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Minimal Server Side Includes (SSI) implementation to help
-# the development of the Web User Interface (WUI).
-# The code below has been written with an healthy amound
-# of prejudice^H^H^H paranoia against Unicode and attempts to
-# enforce an ASCII-only policy on all the path names.
-#
+'''
+ Minimal Server Side Includes (SSI) implementation to help
+ the development of the Web User Interface (WUI).
+ The code below has been written with an healthy amound
+ of prejudice^H^H^H paranoia against Unicode and attempts to
+ enforce an ASCII-only policy on all the path names.
+'''
 
 from neubot.utils import asciiify
 
@@ -38,6 +38,7 @@ MAXDEPTH = 8
 REGEX = '<!--#include virtual="([A-Za-z0-9./_-]+)"-->'
 
 def ssi_open(rootdir, path, mode):
+    ''' Wrapper for open() that makes security checks '''
     rootdir = asciiify(rootdir)
     path = asciiify(path)
     path = os.sep.join([rootdir, path])
@@ -48,24 +49,26 @@ def ssi_open(rootdir, path, mode):
     return open(path, mode)
 
 def ssi_split(rootdir, document, page, count):
+    ''' Split the page and perform inclusion '''
     if count > MAXDEPTH:
         raise ValueError("ssi: Too many nested includes")
     include = False
     for chunk in re.split(REGEX, document):
         if include:
             include = False
-            fp = ssi_open(rootdir, chunk, "rb")
-            ssi_split(rootdir, fp.read(), page, count + 1)
-            fp.close()
+            filep = ssi_open(rootdir, chunk, "rb")
+            ssi_split(rootdir, filep.read(), page, count + 1)
+            filep.close()
         else:
             include = True
             page.append(chunk)
 
-def ssi_replace(rootdir, fp):
+def ssi_replace(rootdir, filep):
+    ''' Replace with SSI the content of @filep '''
     page = []
-    ssi_split(rootdir, fp.read(), page, 0)
+    ssi_split(rootdir, filep.read(), page, 0)
     return "".join(page)
 
 if __name__ == "__main__":
-    fp = open(sys.argv[1], "rb")
-    print ssi_replace(os.path.abspath("."), fp)
+    FILEP = open(sys.argv[1], "rb")
+    print ssi_replace(os.path.abspath("."), FILEP)
