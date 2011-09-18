@@ -21,7 +21,7 @@
 #
 
 """
- Unit test for neubot/libversion.py
+ Unit test for neubot.utils.version.py
 """
 
 import unittest
@@ -30,7 +30,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.libversion import LibVersion
+from neubot.utils.version import LibVersion
 
 class TestLibVersion(unittest.TestCase):
 
