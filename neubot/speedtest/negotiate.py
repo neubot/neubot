@@ -55,9 +55,9 @@ class ServerSpeedtest(ServerHTTP):
         POLLER.sched(3, self._speedtest_check_timeout)
         self.test_server = ServerTest(poller)
 
-    def configure(self, conf, measurer=None):
+    def configure(self, conf):
         conf["http.server.rootdir"] = ""
-        ServerHTTP.configure(self, conf, measurer)
+        ServerHTTP.configure(self, conf)
 
     def got_request_headers(self, stream, request):
         ret = True

@@ -36,7 +36,6 @@ from neubot.http.stream import ERROR
 from neubot.http.stream import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
-from neubot.net.measurer import MEASURER
 from neubot.log import LOG
 from neubot import utils
 from neubot.main import common
@@ -151,7 +150,7 @@ class ClientHTTP(StreamHandler):
             LOG.debug("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
             self.rtt = rtt
         stream = ClientStream(self.poller)
-        stream.attach(self, sock, self.conf, self.measurer)
+        stream.attach(self, sock, self.conf)
         self.connection_ready(stream)
 
 class TestClient(ClientHTTP):
@@ -190,7 +189,6 @@ class TestClient(ClientHTTP):
 CONFIG.register_defaults({
     "http.client.class": "",
     "http.client.method": "GET",
-    "http.client.stats": True,
     "http.client.stdout": False,
     "http.client.uri": "",
 })
@@ -202,16 +200,12 @@ def main(args):
     CONFIG.register_descriptions({
         "http.client.class": "Specify alternate ClientHTTP-like class",
         "http.client.method": "Specify alternate HTTP method",
-        "http.client.stats": "Enable printing download stats on stdout",
         "http.client.stdout": "Enable writing response to stdout",
         "http.client.uri": "Specify URI to download from/upload to",
     })
 
     common.main("http.client", "Simple Neubot HTTP client", args)
     conf = CONFIG.copy()
-
-    if conf["http.client.stats"]:
-        POLLER.sched(0.5, MEASURER.start)
 
     make_client = TestClient
     if conf["http.client.class"]:
@@ -222,7 +216,7 @@ def main(args):
         sys.exit(0)
 
     client = make_client(POLLER)
-    client.configure(conf, MEASURER)
+    client.configure(conf)
     client.connect_uri(conf["http.client.uri"])
 
     POLLER.loop()

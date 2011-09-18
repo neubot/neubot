@@ -39,7 +39,6 @@ from neubot.arcfour import arcfour_new
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.net.dns import getaddrinfo
-from neubot.net.measurer import MEASURER
 from neubot.net.poller import POLLER
 from neubot.net.poller import Pollable
 
@@ -164,7 +163,6 @@ class Stream(Pollable):
         self.send_ticks = 0
         self.send_pending = False
 
-        self.measurer = None
         self.bytes_recv_tot = 0
         self.bytes_sent_tot = 0
         self.bytes_recv = 0
@@ -178,7 +176,7 @@ class Stream(Pollable):
     def fileno(self):
         return self.filenum
 
-    def attach(self, parent, sock, conf, measurer=None):
+    def attach(self, parent, sock, conf):
 
         self.parent = parent
         self.conf = conf
@@ -187,10 +185,6 @@ class Stream(Pollable):
         self.myname = sock.getsockname()
         self.peername = sock.getpeername()
         self.logname = str((self.myname, self.peername))
-
-        self.measurer = measurer
-        if self.measurer:
-            self.measurer.register_stream(self)
 
         LOG.debug("* Connection made %s" % str(self.logname))
 
@@ -260,9 +254,6 @@ class Stream(Pollable):
                 raise
             except:
                 LOG.oops("Error in atclosev")
-
-        if self.measurer:
-            self.measurer.unregister_stream(self)
 
         self.send_octets = None
         self.send_ticks = 0
@@ -482,17 +473,15 @@ class Connector(Pollable):
         self.timestamp = 0
         self.endpoint = None
         self.family = 0
-        self.measurer = None
 
     def __repr__(self):
         return "connector to %s" % str(self.endpoint)
 
-    def connect(self, endpoint, conf, measurer=None):
+    def connect(self, endpoint, conf):
         self.endpoint = endpoint
         self.family = socket.AF_INET
         if conf.get("net.stream.ipv6", False):
             self.family = socket.AF_INET6
-        self.measurer = measurer
         rcvbuf = conf.get("net.stream.rcvbuf", 0)
         sndbuf = conf.get("net.stream.sndbuf", 0)
 
@@ -554,9 +543,6 @@ class Connector(Pollable):
             return
 
         rtt = utils.ticks() - self.timestamp
-        if self.measurer:
-            self.measurer.rtts.append(rtt)
-
         self.parent._connection_made(self.sock, rtt)
 
     def writetimeout(self, now):
@@ -652,11 +638,10 @@ class StreamHandler(object):
         self.epnts = collections.deque()
         self.bad = collections.deque()
         self.good = collections.deque()
-        self.measurer = None
+        self.rtts = []
 
-    def configure(self, conf, measurer=None):
+    def configure(self, conf):
         self.conf = conf
-        self.measurer = measurer
 
     def listen(self, endpoint):
         listener = Listener(self.poller, self)
@@ -680,7 +665,7 @@ class StreamHandler(object):
     def _next_connect(self):
         if self.epnts:
             connector = Connector(self.poller, self)
-            connector.connect(self.epnts.popleft(), self.conf, self.measurer)
+            connector.connect(self.epnts.popleft(), self.conf)
         else:
             if self.bad:
                 while self.bad:
@@ -705,6 +690,7 @@ class StreamHandler(object):
         pass
 
     def _connection_made(self, sock, rtt):
+        self.rtts.append(rtt)
         self.good.append((sock, rtt))
         self._next_connect()
 
@@ -732,7 +718,6 @@ class GenericProtocolStream(Stream):
 
     def connection_made(self):
         self.buffer = "A" * self.conf.get("net.stream.chunk", 32768)
-        MEASURER.register_stream(self)
         duration = self.conf.get("net.stream.duration", 10)
         if duration >= 0:
             POLLER.sched(duration, self._do_close)
@@ -813,9 +798,6 @@ def main(args):
         else:
             conf["net.stream.address"] = "0.0.0.0"
 
-    if not (conf["net.stream.listen"] and conf["net.stream.daemonize"]):
-        MEASURER.start()
-
     endpoint = (conf["net.stream.address"], conf["net.stream.port"])
 
     if not conf["net.stream.proto"]:
@@ -828,7 +810,7 @@ def main(args):
         sys.exit(1)
 
     handler = GenericHandler(POLLER)
-    handler.configure(conf, MEASURER)
+    handler.configure(conf)
 
     if conf["net.stream.listen"]:
         if conf["net.stream.daemonize"]:

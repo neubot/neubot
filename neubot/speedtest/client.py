@@ -31,7 +31,6 @@ from neubot.database import table_speedtest
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 from neubot.log import LOG
-from neubot.net.measurer import HeadlessMeasurer
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
@@ -154,16 +153,7 @@ class ClientCollect(ClientHTTP):
         m1.neubot_version = LibVersion.to_numeric("0.4.2")
         m1.platform = sys.platform
 
-        if self.measurer:
-            m1.connectTime = self.measurer.measure_rtt()[0]
-
-#           import pprint
-#           if hasattr(self.measurer, "recv_hist"):
-#               download = self.measurer.recv_hist.get("download", [])
-#               pprint.pprint(download)
-#           if hasattr(self.measurer, "send_hist"):
-#               upload = self.measurer.send_hist.get("upload", [])
-#               pprint.pprint(upload)
+        m1.connectTime = sum(self.rtts) / len(self.rtts)
 
         s = marshal.marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)
@@ -195,16 +185,13 @@ class ClientSpeedtest(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
         STATE.update("test_name", "speedtest")
-        self.measurer = HeadlessMeasurer(self.poller)
         self.child = None
         self.streams = collections.deque()
         self.finished = False
         self.state = None
 
-    def configure(self, conf, measurer=None):
-        if measurer:
-            LOG.info("* speedtest: ignoring upstream measurer")
-        ClientHTTP.configure(self, conf, self.measurer)
+    def configure(self, conf):
+        ClientHTTP.configure(self, conf)
 
     def connect_uri(self, uri=None, count=None):
         if not uri:
@@ -243,8 +230,6 @@ class ClientSpeedtest(ClientHTTP):
                 LOG.error("* speedtest: %s" % message)
             while self.streams:
                 self.streams.popleft().close()
-            self.measurer.stop()
-            self.measurer = None
             self.child = None
             NOTIFIER.publish(TESTDONE)
 
@@ -378,7 +363,7 @@ class ClientSpeedtest(ClientHTTP):
 
         if ostate != self.state:
             self.child = ctor(self.poller)
-            self.child.configure(self.conf, self.measurer)
+            self.child.configure(self.conf)
             self.child.host_header = self.host_header
             if self.state not in ("negotiate", "collect"):
                 if ostate == "negotiate" and self.state == "latency":
@@ -392,7 +377,6 @@ class ClientSpeedtest(ClientHTTP):
         elif self.state == "negotiate":
             LOG.start("* speedtest: %s" % self.state)
 
-        self.measurer.start(self.state)
         while self.streams:
             self.child.connection_ready(self.streams.popleft())
             if justone:

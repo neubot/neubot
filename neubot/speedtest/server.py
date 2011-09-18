@@ -55,9 +55,9 @@ def parse_range(message):
 
 class ServerTest(ServerHTTP):
 
-    def configure(self, conf, measurer=None):
+    def configure(self, conf):
         conf["http.server.rootdir"] = ""
-        ServerHTTP.configure(self, conf, measurer)
+        ServerHTTP.configure(self, conf)
 
     def got_request_headers(self, stream, request):
         if request.uri == "/speedtest/upload":
