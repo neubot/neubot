@@ -20,16 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import urlparse
-
 from neubot.http.stream import BOUNDED
 from neubot.http.stream import CHUNK_LENGTH
 from neubot.http.stream import ERROR
 from neubot.http.stream import FIRSTLINE
 from neubot.http.stream import UNBOUNDED
-from neubot.log import LOG
-from neubot import utils
-from neubot import compat
 
 #
 # Quoting from RFC2616, sect. 4.3:
