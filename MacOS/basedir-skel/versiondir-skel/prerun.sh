@@ -45,14 +45,14 @@ set -e
 #
 VERSIONDIR=$(dirname $0)
 
-logger -s -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
+logger -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
 
 if [ -f $VERSIONDIR/.skip-checks ]; then
-    logger -s -p daemon.info -t $0 'Nothing to do'
+    logger -p daemon.info -t $0 'Nothing to do'
 else
 
     # Application
-    logger -s -p daemon.info -t $0 'Installing Application'
+    logger -p daemon.info -t $0 'Installing Application'
     rm -rf /Applications/Neubot.app /Applications/neubot.app
     ln -s $VERSIONDIR/Neubot.app /Applications
 
@@ -73,7 +73,7 @@ else
     MYGID=$(dscl . -list /Groups gid|awk '/^_neubot[ \t]/ {print $2}')
 
     if [ "$MYGID"x = ""x ]; then
-        logger -s -p daemon.info -t $0 'Installing group _neubot'
+        logger -p daemon.info -t $0 'Installing group _neubot'
 
         MINGID=1000
         MAXGID=65535
@@ -88,7 +88,7 @@ else
         done
 
         if [ "$MYGID"x = ""x ]; then
-            logger -s -p daemon.error -t $0 'Cannot install group _neubot'
+            logger -p daemon.error -t $0 'Cannot install group _neubot'
             exit 1
         fi
 
@@ -102,7 +102,7 @@ else
     MYUID=$(dscl . -list /Users UniqueID|awk '/^_neubot[ \t]/ {print $2}')
 
     if [ "$MYUID"x = ""x ]; then
-        logger -s -p daemon.info -t $0 'Installing user _neubot'
+        logger -p daemon.info -t $0 'Installing user _neubot'
 
         MINUID=1000
         MAXUID=65535
@@ -117,7 +117,7 @@ else
         done
 
         if [ "$MYUID"x = ""x ]; then
-            logger -s -p daemon.error -t $0 'Cannot install user _neubot'
+            logger -p daemon.error -t $0 'Cannot install user _neubot'
             exit 1
         fi
 
@@ -134,7 +134,7 @@ else
     MYGID=$(dscl . -list /Groups gid|awk '/^_neubot_update[ \t]/ {print $2}')
 
     if [ "$MYGID"x = ""x ]; then
-        logger -s -p daemon.info -t $0 'Installing group _neubot_update'
+        logger -p daemon.info -t $0 'Installing group _neubot_update'
 
         MINGID=1000
         MAXGID=65535
@@ -149,7 +149,7 @@ else
         done
 
         if [ "$MYGID"x = ""x ]; then
-            logger -s -p daemon.error -t $0 'Cannot install group _neubot_update'
+            logger -p daemon.error -t $0 'Cannot install group _neubot_update'
             exit 1
         fi
 
@@ -163,7 +163,7 @@ else
     MYUID=$(dscl . -list /Users UniqueID|awk '/^_neubot_update[ \t]/ {print $2}')
 
     if [ "$MYUID"x = ""x ]; then
-        logger -s -p daemon.info -t $0 'Installing user _neubot_update'
+        logger -p daemon.info -t $0 'Installing user _neubot_update'
 
         MINUID=1000
         MAXUID=65535
@@ -178,7 +178,7 @@ else
         done
 
         if [ "$MYUID"x = ""x ]; then
-            logger -s -p daemon.error -t $0 'Cannot install user _neubot_update'
+            logger -p daemon.error -t $0 'Cannot install user _neubot_update'
             exit 1
         fi
 
@@ -188,9 +188,9 @@ else
         dscl . -create /Users/_neubot_update PrimaryGroupID $MYGID
     fi
 
-    logger -s -p daemon.info -t $0 'Creating .skip-checks hint file'
+    logger -p daemon.info -t $0 'Creating .skip-checks hint file'
     touch $VERSIONDIR/.skip-checks
 
-    logger -s -p daemon.info -t $0 'Running sync(8)'
+    logger -p daemon.info -t $0 'Running sync(8)'
     sync
 fi

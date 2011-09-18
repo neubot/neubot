@@ -95,5 +95,5 @@ for CANDIDATE in $(ls|sort -rn); do
 done
 
 # Should not happen
-logger -s -p daemon.error -t $0 'No candidate Neubot'
+logger -p daemon.error -t $0 'No candidate Neubot'
 exit 1

@@ -30,6 +30,6 @@
 set -e
 
 if ! [ -f /tmp/neubot-can-share ]; then
-	logger -s -p daemon.info -t $0 "Missing /tmp/neubot-can-share"
+	logger -p daemon.info -t $0 "Missing /tmp/neubot-can-share"
 	exit 1
 fi

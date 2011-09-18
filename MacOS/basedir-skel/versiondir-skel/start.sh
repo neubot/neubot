@@ -34,7 +34,7 @@ set -e
 #
 VERSIONDIR=$(dirname $0)
 
-logger -s -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
+logger -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
 
 #
 # Invoke the prerun.sh script which will make sure that Neubot

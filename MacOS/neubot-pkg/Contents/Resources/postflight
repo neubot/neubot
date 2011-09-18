@@ -30,7 +30,7 @@ set -e
 
 BASEDIR=/usr/local/share/neubot
 
-logger -s -p daemon.info -t $0 "Neubot basedir: $BASEDIR"
+logger -p daemon.info -t $0 "Neubot basedir: $BASEDIR"
 
 #
 # Lookup a valid installed copy of Neubot in the BASEDIR and
@@ -45,7 +45,7 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         VERSIONDIR=$CANDIDATE
 
-        logger -s -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
+        logger -p daemon.info -t $0 "Neubot versiondir: $VERSIONDIR"
 
         #
         # If there is another instance of Neubot already installed
@@ -79,14 +79,14 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         fi
         rm -f /tmp/neubot-can-share
 
-        logger -s -p daemon.info -t $0 "Can share: $CAN_SHARE"
+        logger -p daemon.info -t $0 "Can share: $CAN_SHARE"
 
         #
         # We don't need to setup any PYTHONPATH because the
         # main.py script should be able to guess its location
         # and adjust its sys.path accordingly.
         #
-        logger -s -p daemon.info -t $0 "Initializing privacy settings"
+        logger -p daemon.info -t $0 "Initializing privacy settings"
 
         /usr/bin/python $VERSIONDIR/neubot/main/__init__.py privacy     \
                     -D privacy.init_can_share=$CAN_SHARE                \
@@ -98,7 +98,7 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         # Install the property list once and forever; it will invoke
         # BASEDIR/start.sh once at startup.
         #
-        logger -s -p daemon.info -t $0 'Installing property list'
+        logger -p daemon.info -t $0 'Installing property list'
         install -m 644 -o root -g wheel $BASEDIR/org.neubot.plist       \
                                          /Library/LaunchDaemons
 
@@ -112,7 +112,7 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         # into the same place, and that cannot be this file
         # because it is run only on the first install.
         #
-        logger -s -p daemon.info -t $0 "Loading neubot via launchctl(1)"
+        logger -p daemon.info -t $0 "Loading neubot via launchctl(1)"
 
         launchctl load /Library/LaunchDaemons/org.neubot.plist
         launchctl start org.neubot
@@ -124,5 +124,5 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 done
 
 # Should not happen!
-logger -s -p daemon.error -t $0 'No candidate Neubot'
+logger -p daemon.error -t $0 'No candidate Neubot'
 exit 1
