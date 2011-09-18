@@ -27,8 +27,9 @@ import os
 
 from neubot.http.utils import urlsplit
 from neubot.http.utils import date
-from neubot.http.utils import prettyprintbody
 from neubot.log import LOG
+
+from neubot import compat
 from neubot import utils
 
 REDIRECT = '''\
@@ -116,7 +117,7 @@ class Message(object):
         return StringIO.StringIO(s)
 
     def serialize_body(self):
-        prettyprintbody(self, ">")
+        self.prettyprintbody(">")
         return self.body
 
     #
@@ -222,3 +223,29 @@ class Message(object):
         self.compose(code="302", reason="Found", body=body,
                      mimetype="text/html; charset=UTF-8")
         self["location"] = location
+
+    def prettyprintbody(self, prefix):
+        if self["content-type"] not in ("application/json", "text/xml",
+                                        "application/xml"):
+            return
+
+        # Grab the whole body
+        if not isinstance(self.body, basestring):
+            body = self.body.read()
+        else:
+            body = self.body
+
+        # Decode the body
+        if self["content-type"] == "application/json":
+            s = compat.json.dumps(compat.json.loads(body),
+              indent=4, sort_keys=True)
+        elif self["content-type"] in ("text/xml", "application/xml"):
+            s = body
+
+        # Prettyprint
+        for ln in s.split("\n"):
+            LOG.debug("%s %s" % (prefix, ln.rstrip()))
+
+        # Seek to the beginning if needed
+        if not isinstance(self.body, basestring):
+            utils.safe_seek(self.body, 0)

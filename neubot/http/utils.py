@@ -124,36 +124,6 @@ def parse_range(message):
     return first, last
 
 #
-# pretty print body
-#
-
-def prettyprintbody(m, prefix):
-    if m["content-type"] not in ("application/json", "text/xml",
-                                 "application/xml"):
-        return
-
-    # Grab the whole body
-    if not isinstance(m.body, basestring):
-        body = m.body.read()
-    else:
-        body = m.body
-
-    # Decode the body
-    if m["content-type"] == "application/json":
-        s = compat.json.dumps(compat.json.loads(body),
-          indent=4, sort_keys=True)
-    elif m["content-type"] in ("text/xml", "application/xml"):
-        s = body
-
-    # Prettyprint
-    for ln in s.split("\n"):
-        LOG.debug("%s %s" % (prefix, ln.rstrip()))
-
-    # Seek to the beginning if needed
-    if not isinstance(m.body, basestring):
-        utils.safe_seek(m.body, 0)
-
-#
 # Content-Length
 #
 
