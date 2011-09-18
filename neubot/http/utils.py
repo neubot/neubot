@@ -52,41 +52,6 @@ def urlsplit(uri):
 def date():
     return email.utils.formatdate(usegmt=True)
 
-# MIME type negotiation
-
-def _parse_accept(accept):
-    if accept == "":
-        return [(1.0, "*/*")]
-    result = []
-    pass1 = accept.split(",")
-    for entry in pass1:
-        pass2 = entry.split(";")
-        if len(pass2) == 2:
-            mimetype = pass2[0]
-            quality = float(pass2[1].replace("q=", ""))
-        elif len(pass2) == 1:
-            mimetype = pass2[0]
-            quality = 1.0
-        else:
-            continue
-        result.append((quality, mimetype))
-    return sorted(result, reverse=True)
-
-def _select_mime(accept, available):
-    ret = None
-    for quality, mimetype in accept:
-        if mimetype in available:
-            ret = mimetype
-            break
-    return ret
-
-def negotiate_mime(m, available, default):
-    accept = _parse_accept(m["accept"])
-    mimetype = _select_mime(accept, available)
-    if mimetype == None:
-        mimetype = default
-    return mimetype
-
 #
 # Quoting from RFC2616, sect. 4.3:
 #
