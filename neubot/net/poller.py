@@ -57,7 +57,7 @@ class Pollable(object):
     def handle_write(self):
         pass
 
-    def closed(self, exception=None):
+    def handle_close(self):
         pass
 
     def handle_periodic(self, timenow):
@@ -116,7 +116,7 @@ class Poller(object):
         self.unset_readable(stream)
         self.unset_writable(stream)
         try:
-            stream.closed()
+            stream.handle_close()
         except (KeyboardInterrupt, SystemExit):
             raise
         except:

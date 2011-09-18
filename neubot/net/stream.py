@@ -224,11 +224,12 @@ class Stream(Pollable):
             return
         self.poller.close(self)
 
-    def closed(self, exception=None):
+    def handle_close(self):
         if self.close_complete:
             return
 
         self.close_complete = True
+        exception = str(sys.exc_info()[:2])
 
         if exception:
             LOG.error("* Connection %s: %s" % (self.logname, exception))
@@ -522,7 +523,8 @@ class Connector(Pollable):
         rtt = utils.ticks() - self.timestamp
         self.parent._connection_made(self.sock, rtt)
 
-    def closed(self, exception=None):
+    def handle_close(self):
+        exception = str(sys.exc_info()[:2])
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
         self.parent._connection_failed(self, exception)
 
@@ -604,7 +606,8 @@ class Listener(Pollable):
             self.parent.accept_failed(self, exception)
             return
 
-    def closed(self, exception=None):
+    def handle_close(self):
+        exception = str(sys.exc_info()[:2])
         LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
         self.parent.bind_failed(self, exception)     # XXX
 

@@ -447,7 +447,7 @@ class Object(object):
 # We need a fake poller for when we close the stream
 class FakePoller(object):
     def close(self, stream):
-        stream.closed()
+        stream.handle_close()
 
 # We need to emulate one or more negotiator modules
 class FakeNegotiatorModule(NegotiatorModule):
