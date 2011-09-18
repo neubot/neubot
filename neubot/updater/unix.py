@@ -915,7 +915,7 @@ def __main():
 
             # Check for updates
             now = time.time()
-            if now - lastcheck > 60:
+            if now - lastcheck > 1800:
                 lastcheck = now
                 nversion = _download_and_verify_update()
                 if nversion:
