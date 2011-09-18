@@ -71,34 +71,11 @@ class Task(object):
     # In particular timestamp is used to print the timestamp of
     # the next rendezvous in <rendezvous/client.py>.
     #
-    def __init__(self, delta, func, *args, **kwargs):
+    def __init__(self, delta, func):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
         self.func = func
-        self.args = args
-        self.kwargs = kwargs
 
-    #
-    # Set time to -1 so that sort() move the task at the beginning
-    # of the list.  And clear func to allow garbage collection of
-    # the referenced object.
-    #
-    def unsched(self):
-        self.time = -1
-        self.timestamp = -1
-        self.func = None
-        self.args = None
-        self.kwargs = None
-
-    def resched(self, delta, *args, **kwargs):
-        self.time = ticks() + delta
-        self.timestamp = timestamp() + int(delta)
-        if args:
-            self.args = args
-        if kwargs:
-            self.kwargs = kwargs
-
-    # TODO We should represent args and kwargs as well
     def __repr__(self):
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
@@ -114,8 +91,8 @@ class Poller(object):
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
 
-    def sched(self, delta, func, *args, **kwargs):
-        task = Task(delta, func, *args, **kwargs)
+    def sched(self, delta, func):
+        task = Task(delta, func)
         self.pending.append(task)
         return task
 
@@ -208,22 +185,12 @@ class Poller(object):
         # Add pending tasks
         if self.pending:
             for task in self.pending:
-
-                # Unscheduled!
-                if task.time == -1 or task.func == None:
-                    continue
-
                 self.tasks.append(task)
             self.pending = []
 
         # Process expired tasks
         if self.tasks:
 
-            #
-            # Move new tasks to the proper place and move
-            # unscheduled tasks at the beginning (since they
-            # have task.time == -1).
-            #
             self.tasks.sort(key=lambda task: task.time)
 
             # Run expired tasks
@@ -232,10 +199,6 @@ class Poller(object):
                 if task.time - now > 1:
                     break
                 index = index + 1
-
-                # Unscheduled!
-                if task.time == -1 or task.func == None:
-                    continue
 
                 try:
                     task.func(*task.args, **task.kwargs)
@@ -288,7 +251,7 @@ class Poller(object):
         elif timeout > 0:
             time.sleep(timeout)
 
-    def check_timeout(self, *args, **kwargs):
+    def check_timeout(self):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
 
