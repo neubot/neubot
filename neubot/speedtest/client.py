@@ -378,6 +378,12 @@ class ClientSpeedtest(ClientHTTP):
             LOG.start("* speedtest: %s" % self.state)
 
         while self.streams:
+            #
+            # Override child Time-To-Connect (TTC) with our TTC
+            # so for the child it's like it really performed the
+            # connect(), not us.
+            #
+            self.child.rtts = self.rtts
             self.child.connection_ready(self.streams.popleft())
             if justone:
                 break
