@@ -1,3 +1,11 @@
+Neubot 0.4.2-rc6 [2011-09-18]
+	* scripts/sed_inplace: clarify help message
+	* scripts/sed_inplace: quote the pattern
+	* updater/unix.py: remove duplicate informational message
+	* updater/unix.py: saner interval between two updates checks
+	* MacOS: don't log on stderr in SH scripts
+	* Release neubot/0.4.2-rc6
+
 Neubot 0.4.2-rc5 [2011-09-16]
 	* updater/unix.py: more robustness in the main loop
 	* updater/unix.py: note we should install a signal handler
