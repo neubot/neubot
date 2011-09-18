@@ -20,7 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import email.utils
 import urlparse
 
 from neubot.http.stream import BOUNDED
@@ -48,9 +47,6 @@ def urlsplit(uri):
     if query:
         pathquery = pathquery + "?" + query
     return scheme, address, port, pathquery
-
-def date():
-    return email.utils.formatdate(usegmt=True)
 
 #
 # Quoting from RFC2616, sect. 4.3:

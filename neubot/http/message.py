@@ -21,12 +21,12 @@
 #
 
 import StringIO
+import email.utils
 import collections
 import socket
 import os
 
 from neubot.http.utils import urlsplit
-from neubot.http.utils import date
 from neubot.log import LOG
 
 from neubot import compat
@@ -184,7 +184,7 @@ class Message(object):
             self["cache-control"] = "no-cache"
 
         if kwargs.get("date", True):
-            self["date"] = date()
+            self["date"] = email.utils.formatdate(usegmt=True)
 
         if not kwargs.get("keepalive", True):
             self["connection"] = "close"
