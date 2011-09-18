@@ -35,11 +35,18 @@ from neubot.utils import timestamp
 #
 CHECK_TIMEOUT = 10
 
+#
+# The default watchdog timeout is positive and large
+# because we don't want by mistake that something runs
+# forever.  Who needs to do that should override it.
+#
+WATCHDOG = 300
+
 class Pollable(object):
 
     def __init__(self):
         self.created = ticks()
-        self.watchdog = -1
+        self.watchdog = WATCHDOG
 
     def fileno(self):
         raise NotImplementedError
@@ -50,14 +57,11 @@ class Pollable(object):
     def handle_writable(self):
         pass
 
-    def readtimeout(self, now):
-        return False
-
-    def writetimeout(self, now):
-        return False
-
     def closed(self, exception=None):
         pass
+
+    def handle_periodic(self, timenow):
+        return self.watchdog >= 0 and timenow - self.created > self.watchdog
 
 class Task(object):
 
@@ -287,31 +291,18 @@ class Poller(object):
     def check_timeout(self, *args, **kwargs):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
-            now = ticks()
-            stale = set()
 
-            x = self.readset.values()
-            for stream in x:
-                if stream.readtimeout(now):
-                    logging.warning("%s: read timeout" % repr(stream))
-                    stale.add(stream)
-                elif (stream.watchdog > 0 and
-                   now - stream.created > stream.watchdog):
-                    logging.warning("%s: watchdog timeout" % repr(stream))
-                    stale.add(stream)
+            streams = set()
+            for stream in self.readset.values():
+                streams.add(stream)
+            for stream in self.writeset.values():
+                streams.add(stream)
 
-            x = self.writeset.values()
-            for stream in x:
-                if stream.writetimeout(now):
-                    logging.warning("%s: write timeout" % repr(stream))
-                    stale.add(stream)
-                elif (stream.watchdog > 0 and
-                   now - stream.created > stream.watchdog):
-                    logging.warning("%s: watchdog timeout" % repr(stream))
-                    stale.add(stream)
-
-            for stream in stale:
-                self.close(stream)
+            timenow = ticks()
+            for stream in streams:
+                if stream.handle_periodic(timenow):
+                    logging.warning('Watchdog timeout: %s' % str(stream))
+                    self.close(stream)
 
     def snap(self, d):
         d['poller'] = {"pending": self.pending, "tasks": self.tasks,

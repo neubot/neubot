@@ -110,7 +110,6 @@ class _Negotiator(object):
 
                 # Make sure it will terminate and we'll notice that
                 m["stream"].atclose(self._at_close)
-                m["stream"].watchdog = 300
                 m["stream"].created = utils.ticks()                     #XXX
 
                 self._finalize_response(m, len(self._queue))

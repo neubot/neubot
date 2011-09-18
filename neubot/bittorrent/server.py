@@ -53,9 +53,6 @@ class ServerPeer(PeerNeubot):
         if not stream.id in AUTH_PEERS:
             raise RuntimeError("Unauthorized peer")
 
-        # Not needed: peer.py already does that
-        #stream.watchdog = 30
-
         #
         # Override the number of bytes using information passed
         # from the peer and regenerate the schedule so that we

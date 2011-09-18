@@ -49,9 +49,6 @@ from neubot.main import common
 # States returned by the socket model
 STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
 
-# Default timeout (in seconds)
-TIMEOUT = 300
-
 # Maximum amount of bytes we read from a socket
 MAXBUF = 1<<18
 
@@ -146,7 +143,6 @@ class Stream(Pollable):
         self.peername = None
         self.logname = None
 
-        self.timeout = TIMEOUT
         self.encrypt = None
         self.decrypt = None
         self.eof = False
@@ -156,11 +152,9 @@ class Stream(Pollable):
         self.recv_blocked = False
         self.recv_pending = False
         self.recv_ssl_needs_kickoff = False
-        self.recv_ticks = 0
         self.send_blocked = False
         self.send_octets = None
         self.send_queue = collections.deque()
-        self.send_ticks = 0
         self.send_pending = False
 
         self.bytes_recv_tot = 0
@@ -256,17 +250,7 @@ class Stream(Pollable):
                 LOG.oops("Error in atclosev")
 
         self.send_octets = None
-        self.send_ticks = 0
-        self.recv_ticks = 0
         self.sock.soclose()
-
-    # Timeouts
-
-    def readtimeout(self, now):
-        return (self.recv_pending and (now - self.recv_ticks) > self.timeout)
-
-    def writetimeout(self, now):
-        return (self.send_pending and (now - self.send_ticks) > self.timeout)
 
     # Recv path
 
@@ -275,7 +259,6 @@ class Stream(Pollable):
           or self.recv_pending):
             return
 
-        self.recv_ticks = utils.ticks()
         self.recv_pending = True
 
         if self.recv_blocked:
@@ -316,7 +299,6 @@ class Stream(Pollable):
             self.bytes_recv_tot += len(octets)
             self.bytes_recv += len(octets)
 
-            self.recv_ticks = 0
             self.recv_pending = False
             self.poller.unset_readable(self)
 
@@ -389,7 +371,6 @@ class Stream(Pollable):
         if not self.send_octets:
             return
 
-        self.send_ticks = utils.ticks()
         self.send_pending = True
 
         if self.send_blocked:
@@ -417,10 +398,8 @@ class Stream(Pollable):
 
                 self.send_octets = self.read_send_queue()
                 if self.send_octets:
-                    self.send_ticks = utils.ticks()
                     return
 
-                self.send_ticks = 0
                 self.send_pending = False
                 self.poller.unset_writable(self)
 
@@ -431,7 +410,6 @@ class Stream(Pollable):
 
             if count < len(self.send_octets):
                 self.send_octets = buffer(self.send_octets, count)
-                self.send_ticks = utils.ticks()
                 self.poller.set_writable(self)
                 return
 
@@ -469,7 +447,6 @@ class Connector(Pollable):
         self.poller = poller
         self.parent = parent
         self.sock = None
-        self.timeout = 15
         self.timestamp = 0
         self.endpoint = None
         self.family = 0
@@ -545,9 +522,6 @@ class Connector(Pollable):
         rtt = utils.ticks() - self.timestamp
         self.parent._connection_made(self.sock, rtt)
 
-    def writetimeout(self, now):
-        return now - self.timestamp >= self.timeout
-
     def closed(self, exception=None):
         LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
         self.parent._connection_failed(self, exception)
@@ -560,6 +534,9 @@ class Listener(Pollable):
         self.lsock = None
         self.endpoint = None
         self.family = 0
+
+        # Want to listen "forever"
+        self.watchdog = -1
 
     def __repr__(self):
         return "listener at %s" % str(self.endpoint)

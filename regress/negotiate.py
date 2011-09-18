@@ -335,7 +335,6 @@ class Negotiator_Negotiate(unittest.TestCase):
 
         # Is the watchdog correctly initialized?
         self.assertTrue(negotiator._at_close in stream.atclosev)
-        self.assertEqual(stream.watchdog, 300)
         self.assertTrue(utils.ticks() - stream.created < 1)             #XXX
 
     def test_negotiate_delay(self):
