@@ -23,10 +23,10 @@
 import StringIO
 import email.utils
 import collections
+import urlparse
 import socket
 import os
 
-from neubot.http.utils import urlsplit
 from neubot.log import LOG
 
 from neubot import compat
@@ -42,6 +42,23 @@ REDIRECT = '''\
  </BODY>
 </HTML>
 '''
+
+def urlsplit(uri):
+    scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
+    if scheme != "http" and scheme != "https":
+        raise ValueError("Unknown scheme")
+    if ":" in netloc:
+        address, port = netloc.split(":", 1)
+    elif scheme == "https":
+        address, port = netloc, "443"
+    else:
+        address, port = netloc, "80"
+    if not path:
+        path = "/"
+    pathquery = path
+    if query:
+        pathquery = pathquery + "?" + query
+    return scheme, address, port, pathquery
 
 # Represents an HTTP message
 class Message(object):

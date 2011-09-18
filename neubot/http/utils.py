@@ -31,23 +31,6 @@ from neubot.log import LOG
 from neubot import utils
 from neubot import compat
 
-def urlsplit(uri):
-    scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
-    if scheme != "http" and scheme != "https":
-        raise ValueError("Unknown scheme")
-    if ":" in netloc:
-        address, port = netloc.split(":", 1)
-    elif scheme == "https":
-        address, port = netloc, "443"
-    else:
-        address, port = netloc, "80"
-    if not path:
-        path = "/"
-    pathquery = path
-    if query:
-        pathquery = pathquery + "?" + query
-    return scheme, address, port, pathquery
-
 #
 # Quoting from RFC2616, sect. 4.3:
 #
