@@ -31,7 +31,7 @@ from neubot.config import CONFIG
 from neubot.http.stream import StreamHTTP
 from neubot.net.stream import StreamHandler
 from neubot.http.stream import ERROR
-from neubot.http.utils import nextstate
+from neubot.http.stream import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
 from neubot.net.measurer import MEASURER

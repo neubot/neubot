@@ -33,7 +33,7 @@ from neubot.config import CONFIG
 from neubot.http.stream import ERROR
 from neubot.http.message import Message
 from neubot.http.ssi import ssi_replace
-from neubot.http.utils import nextstate
+from neubot.http.stream import nextstate
 from neubot.http.stream import StreamHTTP
 from neubot.log import LOG
 from neubot.net.stream import StreamHandler
