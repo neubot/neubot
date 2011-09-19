@@ -331,7 +331,6 @@ _release:
 	@make deb
 	@make archive
 	@./scripts/update_apt
-	@cd dist && ../scripts/cksum.py -a sha256 neubot-* >> SHA256.inc
 	@cd dist && chmod 644 *
 	@chmod 777 dist
 
