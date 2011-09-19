@@ -1,3 +1,6 @@
+Neubot 0.4.2 [2011-09-19]
+	* Release neubot/0.4.2
+
 Neubot 0.4.2-rc6 [2011-09-18]
 	* scripts/sed_inplace: clarify help message
 	* scripts/sed_inplace: quote the pattern
