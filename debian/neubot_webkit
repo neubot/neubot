@@ -60,7 +60,7 @@ class Viewer(gtk.Window):
 
         self.set_title('Neubot 0.4.2')
         self.connect('destroy', gtk.main_quit)
-        self.set_size_request(width, height)
+        self.maximize()
         self._open_web_page(uri)
 
         self.show_all()
