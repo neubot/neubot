@@ -44,10 +44,10 @@ else:
 STATIC_PAGE = '''\
 <HTML>
  <HEAD>
-  <TITLE>Neubot 0.4.2 -- Neubot is not running</TITLE>
+  <TITLE>Neubot is not running</TITLE>
  <HEAD>
  <BODY>
-  <H1>Neubot 0.4.2 -- Neubot is not running</H1>
+  <H1>Neubot is not running</H1>
   <P>
    If you see this page it means that the Neubot daemon is not
    running on your system.  This is likely a bug and you should
