@@ -52,7 +52,7 @@ STATIC_PAGE = '''\
    If you see this page it means that the Neubot daemon is not
    running on your system.  This is likely a bug and you should
    inform Neubot authors about that, using Neubot
-   <A href="http://www.neubot.org/mailing-lists">mailing list</A>.
+   <A href='http://www.neubot.org/mailing-lists'>mailing list</A>.
   </P>
  </BODY>
 </HTML>
@@ -87,12 +87,18 @@ class Viewer(gtk.Window):
 
         self.show_all()
 
-    def _open_web_page(self, uri):
+    def _open_web_page(self, target):
         ''' Open the specified web page '''
-        if uri.startswith('http://'):
-            self._webview.open(uri)
+
+        #
+        # Target is a URI when we know that Neubot is running
+        # and a static page otherwise.
+        #
+
+        if target.startswith('http://'):
+            self._webview.open(target)
         else:
-            self._webview.load_string(uri, "text/html", "utf-8", '')
+            self._webview.load_string(target, 'text/html', 'utf-8', '')
 
 def main(args):
 
@@ -129,7 +135,7 @@ def main(args):
     uri = STATIC_PAGE
     try:
         connection = lib_http.HTTPConnection(address, port)
-        connection.request("GET", "/api/version")
+        connection.request('GET', '/api/version')
         response = connection.getresponse()
         if response.status == 200:
             uri = 'http://%s:%s/' % (address, port)
