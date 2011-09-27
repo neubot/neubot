@@ -137,6 +137,11 @@ def main(args):
         connection = lib_http.HTTPConnection(address, port)
         connection.request('GET', '/api/version')
         response = connection.getresponse()
+        #
+        # XXX Here we should make sure that we're actually
+        # talking to Neubot checking that the response is
+        # something like 'Neubot x.y.z'.
+        #
         if response.status == 200:
             uri = 'http://%s:%s/' % (address, port)
         response.read()
