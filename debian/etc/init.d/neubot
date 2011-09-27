@@ -38,12 +38,12 @@ case $1 in
         echo "Stopping neubot: /usr/bin/neubot stop"
         /usr/bin/neubot stop
         ;;
-    "restart")
+    "restart"|"force-reload")
         /etc/init.d/neubot stop
         sleep 1
         /etc/init.d/neubot start
         ;;
     *)
-        echo "Usage: $0 start|stop|restart"
+        echo "Usage: $0 start|stop|restart|force-reload"
         ;;
 esac
