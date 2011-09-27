@@ -7,7 +7,7 @@ Depends: python (>= 2.5)
 Section: net
 Homepage: http://www.neubot.org/
 Priority: optional
-Description: Neubot, the network neutrality bot
+Description: Network neutrality bot
  Neubot is a research project on network neutrality of the NEXA
  Center for Internet & Society at Politecnico di Torino. The project
  is based on a lightweight open-source program that interested users
@@ -17,4 +17,5 @@ Description: Neubot, the network neutrality bot
  transmission tests probe the Internet using various application
  level protocols. The program saves tests results locally and uploads
  them on the project servers. The collected dataset contains samples
- from various Providers and allows to monitor network neutrality.
+ from various Providers and allows the Neubot project to monitor
+ network neutrality.
