@@ -272,6 +272,7 @@ _deb_data.tgz: _deb_data
 _deb_control_skel:
 	@$(INSTALL) -d dist/control
 	@$(INSTALL) -m644 debian/control/control dist/control/control
+	@$(INSTALL) -m644 debian/control/conffiles dist/control/conffiles
 	@$(INSTALL) debian/control/preinst dist/control/preinst
 	@$(INSTALL) debian/control/postinst dist/control/postinst
 	@$(INSTALL) debian/control/prerm dist/control/prerm
