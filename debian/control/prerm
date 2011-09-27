@@ -26,9 +26,8 @@ pkill -KILL -f 'neubot statusicon' || true
 pkill -KILL -f 'neubot on_gui_login' || true
 pkill -KILL -f 'neubot_webkit' || true
 
-if [ -f /etc/init.d/neubot ]; then
-	/etc/init.d/neubot stop
-fi
+invoke-rc.d neubot stop
+
 if [ -d /usr/share/neubot ]; then
 	find /usr/share/neubot -type f -name \*.pyc -exec rm -rf {} \;
 fi
