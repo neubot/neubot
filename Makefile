@@ -266,6 +266,10 @@ _deb_data:
 	done
 	@./scripts/sed_inplace s/@TESTING@/$(DEB_UPDATE_URI)/g \
          dist/data/etc/apt/sources.list.d/neubot.list
+	@$(INSTALL) -d dist/data/usr/share/doc/neubot
+	@$(INSTALL) -m644 debian/copyright dist/data/usr/share/doc/neubot/
+	@$(INSTALL) -m644 debian/changelog dist/data/usr/share/doc/neubot/changelog.Debian
+	@cd dist/data/usr/share/doc/neubot && gzip -9 changelog.Debian
 
 _deb_data.tgz: _deb_data
 	@cd dist/data && tar czf ../data.tar.gz ./*
