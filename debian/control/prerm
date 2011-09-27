@@ -28,7 +28,6 @@ if [ -x /usr/bin/pkill ]; then
 fi
 if [ -f /etc/init.d/neubot ]; then
 	/etc/init.d/neubot stop
-	update-rc.d -f neubot remove
 fi
 if [ -d /usr/share/neubot ]; then
 	find /usr/share/neubot -type f -name \*.pyc -exec rm -rf {} \;
