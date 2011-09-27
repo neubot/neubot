@@ -251,6 +251,8 @@ DEB_UPDATE_URI = "testing"
 
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
+	@rm -rf dist/data/usr/bin/*
+	@find dist/data/usr/share/neubot -type f -name \*.pyc -exec rm {} \;
 	@$(INSTALL) debian/neubot dist/data/usr/bin
 	@$(INSTALL) debian/neubot_webkit dist/data/usr/bin
 	@cd dist/data && mv usr/man usr/share/man
