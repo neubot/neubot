@@ -178,8 +178,7 @@ _install_menu:
 
 _install_autostart:
 	@$(INSTALL) -d $(DESTDIR)/etc/xdg/autostart/
-	@$(INSTALL) unix_root/etc/xdg/autostart/neubot-on-gui-login.desktop \
-	 $(DESTDIR)/etc/xdg/autostart
+	@$(INSTALL) -m644 unix_root/etc/xdg/autostart/neubot-on-gui-login.desktop $(DESTDIR)/etc/xdg/autostart
 
 #
 # After the install we need to edit the following files to
