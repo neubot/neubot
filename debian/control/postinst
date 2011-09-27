@@ -21,7 +21,6 @@
 #
 # ===========================================================
 # Portions of this file are a derivative work of portions of:
-# ===========================================================
 #
 # /etc/cron.daily/google-chrome
 #
@@ -56,6 +55,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# ===========================================================
 #
 
 install_key() {
@@ -97,5 +97,5 @@ python -m compileall -q /usr/share/neubot
 groupadd _neubot
 useradd -d/ -g_neubot -s/bin/false _neubot
 update-rc.d neubot defaults 99
-/etc/init.d/neubot start
+invoke-rc.d neubot start
 install_key
