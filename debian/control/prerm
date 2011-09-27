@@ -21,11 +21,11 @@
 #
 
 set -e
-if [ -x /usr/bin/pkill ]; then
-	/usr/bin/pkill -KILL -f 'neubot statusicon' || true
-	/usr/bin/pkill -KILL -f 'neubot on_gui_login' || true
-	/usr/bin/pkill -KILL -f 'neubot_webkit' || true
-fi
+
+pkill -KILL -f 'neubot statusicon' || true
+pkill -KILL -f 'neubot on_gui_login' || true
+pkill -KILL -f 'neubot_webkit' || true
+
 if [ -f /etc/init.d/neubot ]; then
 	/etc/init.d/neubot stop
 fi
