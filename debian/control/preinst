@@ -35,27 +35,14 @@
 # the preinst script seems to me the right place to do this thing.
 #
 
-#
-# Under debian python depends on libcurses so we can trust
-# that ``import curses`` will work.  The dependence on gtk2
-# and webkit bindings is satisfied under Ubuntu.  We can
-# safely fallback to curses for others.
-# It is not possible to use this file under Win32 because
-# both curses and syslog are not available.
-# In theory this script should work under MacOS, but only
-# in textual mode.
-#
+import StringIO
 import asyncore
-import curses
 import getopt
 import os
 import sqlite3
+import subprocess
 import sys
 import syslog
-
-syslog.openlog('neubot/preinst',
-               syslog.LOG_PID|syslog.LOG_NDELAY|syslog.LOG_PERROR,
-               syslog.LOG_USER)
 
 #
 # We use gtk and webkit if they are available and
@@ -64,7 +51,7 @@ syslog.openlog('neubot/preinst',
 # We do not import Gtk unless we know we're into
 # an X11 session to avoid a warning.
 #
-USECURSES = True
+USETEXT = True
 if 'DISPLAY' in os.environ:
     try:
         import gtk, webkit
@@ -72,9 +59,7 @@ if 'DISPLAY' in os.environ:
         ERROR = str(asyncore.compact_traceback())
         syslog.syslog(syslog.LOG_INFO, 'Import error: %s' % ERROR)
     else:
-        USECURSES = False
-
-syslog.syslog(syslog.LOG_INFO, 'USECURSES: %d' % USECURSES)
+        USETEXT = False
 
 #
 # ===================
@@ -182,17 +167,6 @@ su Internet & Societa' c/o Dipartimento di Automatica e Infomatica
 To get older versions of this document, review the history of it online
 at https://github.com/neubot/neubot/blob/master/PRIVACY.'''
 
-TEXT_POLICY = '''\
-Neubot privacy policy
-
-%s
-
-Type "ic" to assert you have read the policy and give the permission to
-collect, "icp" to assert you have read the policy and give the permission
-to collect and publish.  Type "q" to abort installation.
-
-Your choice: ''' % BASE_POLICY
-
 HTML_POLICY = '''\
 <HTML>
  <HEAD>
@@ -293,37 +267,52 @@ def __show_gtk_dialog():
         }
 
 #
-# =============
-# Curses dialog
-# =============
+# ==============
+# Textual dialog
+# ==============
 #
 
-def __show_curses_dialog():
+TEXT_PROMPT = '''
+We need to show you the privacy policy and ask the permission to collect
+and publish your Internet address.  Type 'r' to read the privacy policy
+text using less(1).  Type 'icp' to assert you have read the policy and
+to give the permission to collect and publish.  Type 'ic' if you want
+to give only the permission to share.  If you don't want to give any
+permission, type 'q' to quit and abort installation (of course no file
+will be written on your disk in this case).
 
-    ''' Uses curses libraries to ask for privacy permissions '''
+You can also read the policy at <http://www.neubot.org/privacy>.
 
-    # Gather user preferences
-    error, result = '', ''
-    try:
-        screen = curses.initscr()
-        while True:
-            curses.echo()
-            screen.addstr(TEXT_POLICY)
-            result = screen.getstr()
-            if result in ('ic', 'icp', 'q'):
-                break
-            screen.clear()
-    except:
-        error = str(asyncore.compact_traceback())
+Type your choice (r, icp, ic or q), then hit Enter: '''
 
-    # Always cleanup terminal
-    curses.echo()
-    curses.endwin()
+def __show_text_dialog():
+
+    ''' Ask for privacy permissions using simple text I/O '''
+
+    result = ''
+
+    while True:
+       result = raw_input(TEXT_PROMPT)
+       if result == 'ic' or result == 'icp' or result == 'q':
+           break
+       elif result == 'r':
+           #
+           # Should work because the debian package declares less
+           # as a pre-dependency.  And I bet that most debians around
+           # already have installed less.
+           #
+           try:
+               process = subprocess.Popen(['less'], stdin=subprocess.PIPE)
+               process.communicate(input=BASE_POLICY)
+               process.wait()
+           except:
+               error = str(asyncore.compact_traceback())
+               sys.stderr.write("<error> can't invoke 'less': %s\n" % error)
+       else:
+           sys.stderr.write('<error> Invalid command: %s\n' % result)
 
     # Process results
-    if error:
-        raise RuntimeError('Curses failed: %s' % error)
-    elif result == 'icp':
+    if result == 'icp':
         return { 'informed': 1, 'can_collect': 1, 'can_publish': 1, }
     elif result == 'ic':
         return { 'informed': 1, 'can_collect': 1, 'can_publish': 0, }
@@ -362,10 +351,27 @@ def __main():
      prompt for setting privacy permissions.
     '''
 
+    openlog_flags = syslog.LOG_PID
+
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'Cnf:')
+        options, arguments = getopt.getopt(sys.argv[1:], 'nf:Tv')
     except getopt.error:
-        sys.exit('Usage: preinst [-Cn] [-f database] [arguments]')
+        sys.exit('Usage: preinst [-nTv] [-f database] [arguments]')
+
+    forcetext = False
+    database = '/var/neubot/database.sqlite3'
+    for name, value in options:
+        if name == '-f':
+            database = value
+        elif name == '-n':
+            database = ':memory:'
+        elif name == '-T':
+            forcetext = True
+        elif name == '-v':
+            openlog_flags |= syslog.LOG_PERROR|syslog.LOG_NDELAY
+
+    syslog.openlog('neubot/preinst', openlog_flags, syslog.LOG_USER)
+    syslog.syslog(syslog.LOG_INFO, 'USETEXT: %d' % USETEXT)
 
     #
     # We MUST allow arguments because the debian installer
@@ -374,16 +380,6 @@ def __main():
     #
     if arguments:
         syslog.syslog(syslog.LOG_INFO, 'Arguments: %s' % str(arguments))
-
-    forcecurses = False
-    database = '/var/neubot/database.sqlite3'
-    for name, value in options:
-        if name == '-C':
-            forcecurses = True
-        elif name == '-f':
-            database = value
-        elif name == '-n':
-            database = ':memory:'
 
     # Initial privacy settings.
     settings = {
@@ -431,8 +427,8 @@ def __main():
         sys.exit(0)
 
     # Gather user preferences
-    if USECURSES or forcecurses:
-        settings = __show_curses_dialog()
+    if USETEXT or forcetext:
+        settings = __show_text_dialog()
     else:
         settings = __show_gtk_dialog()
     
