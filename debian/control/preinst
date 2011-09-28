@@ -167,6 +167,16 @@ su Internet & Societa' c/o Dipartimento di Automatica e Infomatica
 To get older versions of this document, review the history of it online
 at https://github.com/neubot/neubot/blob/master/PRIVACY.'''
 
+TEXT_POLICY = '''\
+%s
+
+
+
+
+(Hint: If you're stuck here, type 'q' to exit from less.)
+
+''' % BASE_POLICY
+
 HTML_POLICY = '''\
 <HTML>
  <HEAD>
@@ -303,7 +313,7 @@ def __show_text_dialog():
            #
            try:
                process = subprocess.Popen(['less'], stdin=subprocess.PIPE)
-               process.communicate(input=BASE_POLICY)
+               process.communicate(input=TEXT_POLICY)
                process.wait()
            except:
                error = str(asyncore.compact_traceback())
