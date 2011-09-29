@@ -201,7 +201,7 @@ class Poller(object):
                 index = index + 1
 
                 try:
-                    task.func(*task.args, **task.kwargs)
+                    task.func()
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
