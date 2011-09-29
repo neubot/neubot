@@ -77,8 +77,8 @@ class PeerNeubot(StreamHandler):
         self.infohash = None
         self.rtt = 0
 
-    def configure(self, conf, measurer=None):
-        StreamHandler.configure(self, conf, measurer)
+    def configure(self, conf):
+        StreamHandler.configure(self, conf)
         self.numpieces = conf["bittorrent.numpieces"]
         self.bitfield = make_bitfield(self.numpieces)
         self.peer_bitfield = make_bitfield(self.numpieces)
@@ -124,10 +124,10 @@ class PeerNeubot(StreamHandler):
             # might be a subclass of PeerNeubot.
             #
             peer = self.__class__(self.poller)
-            peer.configure(self.conf, self.measurer)
+            peer.configure(self.conf)
         else:
             peer = self
-        stream.attach(peer, sock, peer.conf, peer.measurer)
+        stream.attach(peer, sock, peer.conf)
         stream.watchdog = self.conf["bittorrent.watchdog"]
 
     def connection_ready(self, stream):

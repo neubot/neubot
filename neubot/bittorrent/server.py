@@ -45,16 +45,13 @@ MY_ID = _random_bytes(20)
 #
 class ServerPeer(PeerNeubot):
 
-    def configure(self, conf, measurer=None):
+    def configure(self, conf):
         conf["bittorrent.my_id"] = MY_ID
-        PeerNeubot.configure(self, conf, measurer)
+        PeerNeubot.configure(self, conf)
 
     def connection_ready(self, stream):
         if not stream.id in AUTH_PEERS:
             raise RuntimeError("Unauthorized peer")
-
-        # Not needed: peer.py already does that
-        #stream.watchdog = 30
 
         #
         # Override the number of bytes using information passed

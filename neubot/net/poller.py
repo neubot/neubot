@@ -35,29 +35,33 @@ from neubot.utils import timestamp
 #
 CHECK_TIMEOUT = 10
 
+#
+# The default watchdog timeout is positive and large
+# because we don't want by mistake that something runs
+# forever.  Who needs to do that should override it.
+#
+WATCHDOG = 300
+
 class Pollable(object):
 
     def __init__(self):
         self.created = ticks()
-        self.watchdog = -1
+        self.watchdog = WATCHDOG
 
     def fileno(self):
         raise NotImplementedError
 
-    def handle_readable(self):
+    def handle_read(self):
         pass
 
-    def handle_writable(self):
+    def handle_write(self):
         pass
 
-    def readtimeout(self, now):
-        return False
-
-    def writetimeout(self, now):
-        return False
-
-    def closed(self, exception=None):
+    def handle_close(self):
         pass
+
+    def handle_periodic(self, timenow):
+        return self.watchdog >= 0 and timenow - self.created > self.watchdog
 
 class Task(object):
 
@@ -67,34 +71,11 @@ class Task(object):
     # In particular timestamp is used to print the timestamp of
     # the next rendezvous in <rendezvous/client.py>.
     #
-    def __init__(self, delta, func, *args, **kwargs):
+    def __init__(self, delta, func):
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
         self.func = func
-        self.args = args
-        self.kwargs = kwargs
 
-    #
-    # Set time to -1 so that sort() move the task at the beginning
-    # of the list.  And clear func to allow garbage collection of
-    # the referenced object.
-    #
-    def unsched(self):
-        self.time = -1
-        self.timestamp = -1
-        self.func = None
-        self.args = None
-        self.kwargs = None
-
-    def resched(self, delta, *args, **kwargs):
-        self.time = ticks() + delta
-        self.timestamp = timestamp() + int(delta)
-        if args:
-            self.args = args
-        if kwargs:
-            self.kwargs = kwargs
-
-    # TODO We should represent args and kwargs as well
     def __repr__(self):
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
@@ -110,8 +91,8 @@ class Poller(object):
         self.tasks = []
         self.sched(CHECK_TIMEOUT, self.check_timeout)
 
-    def sched(self, delta, func, *args, **kwargs):
-        task = Task(delta, func, *args, **kwargs)
+    def sched(self, delta, func):
+        task = Task(delta, func)
         self.pending.append(task)
         return task
 
@@ -135,7 +116,7 @@ class Poller(object):
         self.unset_readable(stream)
         self.unset_writable(stream)
         try:
-            stream.closed()
+            stream.handle_close()
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -153,22 +134,22 @@ class Poller(object):
     # does not exist anymore, but its fileno still is in res[1].
     #
 
-    def _call_handle_readable(self, fileno):
+    def _call_handle_read(self, fileno):
         if self.readset.has_key(fileno):
             stream = self.readset[fileno]
             try:
-                stream.handle_readable()
+                stream.handle_read()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
                 logging.error(str(asyncore.compact_traceback()))
                 self.close(stream)
 
-    def _call_handle_writable(self, fileno):
+    def _call_handle_write(self, fileno):
         if self.writeset.has_key(fileno):
             stream = self.writeset[fileno]
             try:
-                stream.handle_writable()
+                stream.handle_write()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
@@ -204,22 +185,12 @@ class Poller(object):
         # Add pending tasks
         if self.pending:
             for task in self.pending:
-
-                # Unscheduled!
-                if task.time == -1 or task.func == None:
-                    continue
-
                 self.tasks.append(task)
             self.pending = []
 
         # Process expired tasks
         if self.tasks:
 
-            #
-            # Move new tasks to the proper place and move
-            # unscheduled tasks at the beginning (since they
-            # have task.time == -1).
-            #
             self.tasks.sort(key=lambda task: task.time)
 
             # Run expired tasks
@@ -228,10 +199,6 @@ class Poller(object):
                 if task.time - now > 1:
                     break
                 index = index + 1
-
-                # Unscheduled!
-                if task.time == -1 or task.func == None:
-                    continue
 
                 try:
                     task.func(*task.args, **task.kwargs)
@@ -273,9 +240,9 @@ class Poller(object):
 
             # No error?  Fire readable and writable events
             for fileno in res[0]:
-                self._call_handle_readable(fileno)
+                self._call_handle_read(fileno)
             for fileno in res[1]:
-                self._call_handle_writable(fileno)
+                self._call_handle_write(fileno)
 
         #
         # No I/O pending?  So let's just wait for the
@@ -284,34 +251,21 @@ class Poller(object):
         elif timeout > 0:
             time.sleep(timeout)
 
-    def check_timeout(self, *args, **kwargs):
+    def check_timeout(self):
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
-            now = ticks()
-            stale = set()
 
-            x = self.readset.values()
-            for stream in x:
-                if stream.readtimeout(now):
-                    logging.warning("%s: read timeout" % repr(stream))
-                    stale.add(stream)
-                elif (stream.watchdog > 0 and
-                   now - stream.created > stream.watchdog):
-                    logging.warning("%s: watchdog timeout" % repr(stream))
-                    stale.add(stream)
+            streams = set()
+            for stream in self.readset.values():
+                streams.add(stream)
+            for stream in self.writeset.values():
+                streams.add(stream)
 
-            x = self.writeset.values()
-            for stream in x:
-                if stream.writetimeout(now):
-                    logging.warning("%s: write timeout" % repr(stream))
-                    stale.add(stream)
-                elif (stream.watchdog > 0 and
-                   now - stream.created > stream.watchdog):
-                    logging.warning("%s: watchdog timeout" % repr(stream))
-                    stale.add(stream)
-
-            for stream in stale:
-                self.close(stream)
+            timenow = ticks()
+            for stream in streams:
+                if stream.handle_periodic(timenow):
+                    logging.warning('Watchdog timeout: %s' % str(stream))
+                    self.close(stream)
 
     def snap(self, d):
         d['poller'] = {"pending": self.pending, "tasks": self.tasks,

@@ -103,7 +103,7 @@ class TestStream_Base(unittest.TestCase):
 #
 class TestStreamClose_Base(TestStream_Base):
     def close(self, stream):
-        stream.closed(None)
+        stream.handle_close()
     def connection_lost(self, stream):
         pass
     def setUp(self):
@@ -127,14 +127,14 @@ class TestStreamClose_Simple(TestStreamClose_Base):
         self.lost = True
 
 #
-# Make sure that multiple closed() or close() after
+# Make sure that multiple handle_close() or close() after
 # we have close()ed have no effect.
 #
 class TestStreamClose_Multiple(TestStreamClose_Base):
     def runTest(self):
         self.count = 0
         self.stream.close()
-        self.stream.closed()
+        self.stream.handle_close()
         self.stream.close()
 
     def connection_lost(self, stream):
@@ -178,7 +178,7 @@ class TestStreamError_Simple(TestStreamClose_Base):
     def runTest(self):
         self.assertFalse(self.stream.send_pending)
         self.lost = False
-        self.stream.closed()
+        self.stream.handle_close()
         self.assertTrue(self.stream.close_complete)
         self.assertTrue(self.lost)
 
@@ -193,7 +193,7 @@ class TestStreamError_SendPending(TestStreamClose_Base):
     def runTest(self):
         self.lost = False
         self.stream.send_pending = True
-        self.stream.closed()
+        self.stream.handle_close()
         self.assertTrue(self.stream.close_complete)
         self.assertTrue(self.lost)
 
@@ -201,15 +201,15 @@ class TestStreamError_SendPending(TestStreamClose_Base):
         self.lost = True
 
 #
-# Make sure that multiple closed() or close() after
-# we have closed() have no effect.
+# Make sure that multiple handle_close() or close() after
+# we have handle_close() have no effect.
 #
 class TestStreamError_Multiple(TestStreamClose_Base):
     def runTest(self):
         self.count = 0
-        self.stream.closed()
+        self.stream.handle_close()
         self.stream.close()
-        self.stream.closed()
+        self.stream.handle_close()
 
     def connection_lost(self, stream):
         self.assertEqual(self.count, 0)
@@ -306,10 +306,10 @@ class TestStreamReadable_RecvBlocked_RecvPending(TestStream_Base):
     def runTest(self):
         self.count = 0
         self.stream.sock.sorecv = lambda k: (45,"")     #XXX
-        self.stream.handle_writable = lambda: None
+        self.stream.handle_write = lambda: None
         self.stream.recv_blocked = True
         self.stream.recv_pending = True
-        self.stream.handle_readable()
+        self.stream.handle_read()
         self.assertEqual(self.count, 1)
 
     def set_writable(self, stream):
@@ -319,9 +319,9 @@ class TestStreamReadable_RecvBlocked_NoRecvPending(TestStream_Base):
     def runTest(self):
         self.count = 0
         self.stream.sock.sorecv = lambda k: (45,"")     #XXX
-        self.stream.handle_writable = lambda: None
+        self.stream.handle_write = lambda: None
         self.stream.recv_blocked = True
-        self.stream.handle_readable()
+        self.stream.handle_read()
         self.assertEqual(self.count, 2)
 
     def set_writable(self, stream):
@@ -334,9 +334,9 @@ class TestStreamReadable_SuccessBytes(TestStream_Base):
     def runTest(self):
         self.count = 0
         self.stream.sock.sorecv = lambda k: (stream.SUCCESS, "abc")
-        self.stream.handle_writable = lambda: 1/0
+        self.stream.handle_write = lambda: 1/0
         self.stream.recv_complete = self.recv_complete
-        self.stream.handle_readable()
+        self.stream.handle_read()
         self.assertEqual(self.count, 2)
         self.assertEqual(self.stream.recv_ticks, 0)
         self.assertFalse(self.stream.recv_pending)
@@ -351,14 +351,14 @@ class TestStreamReadable_SuccessBytes(TestStream_Base):
 class TestStreamReadable_WantRead(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.WANT_READ, "")
-        self.stream.handle_writable = lambda: 1/0
-        self.stream.handle_readable()
+        self.stream.handle_write = lambda: 1/0
+        self.stream.handle_read()
 
 class TestStreamReadable_WantWrite(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.WANT_WRITE, "")
-        self.stream.handle_writable = lambda: 1/0
-        self.stream.handle_readable()
+        self.stream.handle_write = lambda: 1/0
+        self.stream.handle_read()
 
     def unset_readable(self, stream):
         pass
@@ -369,8 +369,8 @@ class TestStreamReadable_WantWrite(TestStream_Base):
 class TestStreamReadable_EOF(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.SUCCESS, "")
-        self.stream.handle_writable = lambda: 1/0
-        self.stream.handle_readable()
+        self.stream.handle_write = lambda: 1/0
+        self.stream.handle_read()
         self.assertTrue(self.stream.eof)
 
     def close(self, stream):
@@ -379,14 +379,14 @@ class TestStreamReadable_EOF(TestStream_Base):
 class TestStreamReadable_Error(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (stream.ERROR, RuntimeError())
-        self.stream.handle_writable = lambda: 1/0
-        self.assertRaises(RuntimeError, self.stream.handle_readable)
+        self.stream.handle_write = lambda: 1/0
+        self.assertRaises(RuntimeError, self.stream.handle_read)
 
 class TestStreamReadable_UnknownStatus(TestStream_Base):
     def runTest(self):
         self.stream.sock.sorecv = lambda k: (58, "")
-        self.stream.handle_writable = lambda: 1/0
-        self.assertRaises(RuntimeError, self.stream.handle_readable)
+        self.stream.handle_write = lambda: 1/0
+        self.assertRaises(RuntimeError, self.stream.handle_read)
 
 #
 #  ____                    _

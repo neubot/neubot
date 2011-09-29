@@ -32,6 +32,8 @@
 
 import random
 
+from neubot.net.poller import WATCHDOG
+
 from neubot.config import CONFIG
 from neubot.bittorrent import estimate
 
@@ -51,13 +53,6 @@ PIECE_LEN = 1<<17
 # "big" messages only.
 #
 SMALLMESSAGE = 1<<17
-
-#
-# This is the maximum time the test can run.  After that time,
-# no matter what, the underlying stream is closed by the low-level
-# code in <net/poller.py>.
-#
-WATCHDOG = 300
 
 _PROPERTIES = (
     ('bittorrent.address', "", 'Address to listen/connect to ("" = auto)'),

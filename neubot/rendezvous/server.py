@@ -49,9 +49,9 @@ GEOLOCATOR = Geolocator()
 
 class ServerRendezvous(ServerHTTP):
 
-    def configure(self, conf, measurer=None):
+    def configure(self, conf):
         conf["http.server.rootdir"] = ""
-        ServerHTTP.configure(self, conf, measurer)
+        ServerHTTP.configure(self, conf)
 
     def process_request(self, stream, request):
         m = marshal.unmarshal_object(request.body.read(),
