@@ -22,8 +22,8 @@
 
 ### BEGIN INIT INFO
 # Provides: neubot
-# Required-Start: $syslog
-# Required-Stop: $syslog
+# Required-Start: $syslog $remote_fs
+# Required-Stop: $syslog $remote_fs
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
 # Short-Description: Network neutrality bot (neubot)
@@ -38,12 +38,12 @@ case $1 in
         echo "Stopping neubot: /usr/bin/neubot stop"
         /usr/bin/neubot stop
         ;;
-    "restart")
+    "restart"|"force-reload")
         /etc/init.d/neubot stop
         sleep 1
         /etc/init.d/neubot start
         ;;
     *)
-        echo "Usage: $0 start|stop|restart"
+        echo "Usage: $0 start|stop|restart|force-reload"
         ;;
 esac

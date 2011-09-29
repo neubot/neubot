@@ -178,8 +178,7 @@ _install_menu:
 
 _install_autostart:
 	@$(INSTALL) -d $(DESTDIR)/etc/xdg/autostart/
-	@$(INSTALL) unix_root/etc/xdg/autostart/neubot-on-gui-login.desktop \
-	 $(DESTDIR)/etc/xdg/autostart
+	@$(INSTALL) -m644 unix_root/etc/xdg/autostart/neubot-on-gui-login.desktop $(DESTDIR)/etc/xdg/autostart
 
 #
 # After the install we need to edit the following files to
@@ -251,9 +250,12 @@ DEB_UPDATE_URI = "testing"
 
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
+	@rm -rf dist/data/usr/bin/*
+	@find dist/data/usr/share/neubot -type f -name \*.pyc -exec rm {} \;
 	@$(INSTALL) debian/neubot dist/data/usr/bin
 	@$(INSTALL) debian/neubot_webkit dist/data/usr/bin
 	@cd dist/data && mv usr/man usr/share/man
+	@cd dist/data/usr/share/man/man1/ && gzip -9 *
 	@for DIR in $(DEB_DATA_DIRS); do \
 	 $(INSTALL) -d $$DIR; \
 	done
@@ -265,6 +267,10 @@ _deb_data:
 	done
 	@./scripts/sed_inplace s/@TESTING@/$(DEB_UPDATE_URI)/g \
          dist/data/etc/apt/sources.list.d/neubot.list
+	@$(INSTALL) -d dist/data/usr/share/doc/neubot
+	@$(INSTALL) -m644 debian/copyright dist/data/usr/share/doc/neubot/
+	@$(INSTALL) -m644 debian/changelog dist/data/usr/share/doc/neubot/changelog.Debian
+	@cd dist/data/usr/share/doc/neubot && gzip -9 changelog.Debian
 
 _deb_data.tgz: _deb_data
 	@cd dist/data && tar czf ../data.tar.gz ./*
@@ -272,6 +278,8 @@ _deb_data.tgz: _deb_data
 _deb_control_skel:
 	@$(INSTALL) -d dist/control
 	@$(INSTALL) -m644 debian/control/control dist/control/control
+	@$(INSTALL) -m644 debian/control/conffiles dist/control/conffiles
+	@$(INSTALL) debian/control/preinst dist/control/preinst
 	@$(INSTALL) debian/control/postinst dist/control/postinst
 	@$(INSTALL) debian/control/prerm dist/control/prerm
 	@$(INSTALL) debian/control/postrm dist/control/postrm

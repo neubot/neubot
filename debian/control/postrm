@@ -21,6 +21,9 @@
 #
 
 set -e
+
+update-rc.d -f neubot remove
+
 if [ "$1"x = "purge"x ]; then
 	rm -rf /var/neubot
 fi

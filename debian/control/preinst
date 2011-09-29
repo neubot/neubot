@@ -1,0 +1,487 @@
+#!/usr/bin/python
+
+#
+# Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+'''
+ Pre installation script for the debian environment that makes
+ sure that the user has read the privacy policy and that she has
+ provided the permissions we need.
+'''
+
+#
+# I know that it's not common to author a preinst script using
+# the Python language.  But the problem here is that we need to
+# ask for privacy permissions before installing Neubot.  And
+# the preinst script seems to me the right place to do this thing.
+#
+
+import asyncore
+import getopt
+import os
+import sqlite3
+import subprocess
+import sys
+import syslog
+
+#
+# We use gtk and webkit if they are available and
+# the DISPLAY variable is set, meaning that the user
+# is installing/upgrading from a X11 session.
+# We do not import Gtk unless we know we're into
+# an X11 session to avoid a warning.
+#
+USETEXT = True
+if 'DISPLAY' in os.environ:
+    try:
+        import gtk, webkit
+    except ImportError:
+        ERROR = str(asyncore.compact_traceback())
+        syslog.syslog(syslog.LOG_INFO, 'Import error: %s' % ERROR)
+    else:
+        USETEXT = False
+
+#
+# ===================
+# Privacy policy text
+# ===================
+#
+
+BASE_POLICY = '''\
+Human readable summary
+``````````````````````
+
+Neubot characterizes your connections via active tests that send and receive
+random data only. To process and save the results Neubot needs your
+permission because they contain your Internet address. And that is personal
+data under European and Italian Privacy laws (Decree 196/03). Please, note
+that without the permission to save the results Neubot cannot work at all.
+
+Neubot would also like to publish the raw results, to allow other individuals
+and institutions to reuse them for research purposes. Again, that cannot be
+done without your consent. While Neubot can work also without the permission
+to publish, please consider providing it: there is a great value in allowing
+other researchers and netizens to study the results.
+
+Full privacy policy
+```````````````````
+
+$Privacy-Policy: 2.0$
+
+Neubot is a research project that aims to study the quality and
+neutrality of ordinary users' Internet connections, to rebalance
+the information asymmetry between them and Service Providers.
+In particular, Neubot (i) *measures* the quality and neutrality of your
+Internet connection and (ii) *collects* the results to study it and
+publish _aggregate_ data. Neubot would also like to (iii) *publish*
+the _raw_ results, to allow other individuals and institutions to
+reuse them for research purposes.
+
+To *measure* the quality and neutrality of your Internet connection,
+Neubot does not monitor or analyze your Internet traffic. It just
+uses a fraction of your connection capacity to perform background
+transmission tests, sending and/or receiving random data. The result
+contains the measured performance metrics, such as the download speed,
+or the latency, as well as your computer load, as a percentage, and
+*your Internet address*. After the test, the result is uploaded to
+Neubot servers.
+
+The Neubot project needs to *collect* your Internet address because that
+allows to infer your Internet Service Provider and to have a rough idea
+of your location. Without this information, Neubot cannot accomplish
+its goal of studying the quality and neutrality of ordinary users'
+Internet connections.
+
+The Neubot project would also like to *publish* your Internet address
+because there is a great value in allowing other researchers to study
+and criticize Neubot methodology and data set. This will empower the
+Internet community, eventually leading to a better understanding of the
+'Net.
+
+Please note that in Europe Internet addresses are personal data. This
+means that Neubot cannot store, process or publish your address
+without your prior *informed consent*, under the provisions of the
+"Codice in materia di protezione dei dati personali" (Decree 196/03)
+[1]. In accordance with the law, data controller is the NEXA Center
+for Internet & Society, represented by its co-director Juan Carlos
+De Martin.
+
+Neubot asks you (a) to explicitly assert that you are *informed*,
+i.e. that you have read the privacy policy, and (b) to give it the
+permission to *collect* and (c) *publish* your raw IP address. You must
+assert that you are informed and give the permission to collect,
+otherwise Neubot cannot work, as explained above. The permission to
+publish is optional. If you give it, please note that the published
+data *can be reused only* for research (or compatible) purposes.
+If you don't give it, your Internet address will not be published
+on the web as raw data and it will be processed by the researchers
+authorized by the data controller only.
+
+Recent versions of Neubot will prompt you to read the privacy policy
+and set the permissions when installing the software. In old versions
+of the software, however, the installer does not show you the policy
+and does not prompt you to set permissions. You are just kindly
+asked to go to the privacy page [2] of the web user interface, read
+the policy and set permissions. If you refuse to do that, Neubot
+collects your Internet address under special provisions that allows
+to collect personal data for "statistical and research purposes only"
+(Codice di deontologia e di buona condotta per i trattamenti di dati
+personali per scopi statistici e scientifici [3]). Internet addresses
+collected under this regime will be flagged in a special way and will
+not be shared with anyone. They will be treated by the researchers
+authorized by the data controller only.
+
+The data controller guarantees you the rights as per Art. 7 of the
+above mentioned Decree 196/03. Basically, you have total control over
+you personal data, and you can, for example, inquire Neubot to remove
+your Internet address from its data sets. To exercise your rights,
+please write to <juancarlos.demartin@polito.it> or to "Centro NEXA
+su Internet & Societa' c/o Dipartimento di Automatica e Infomatica
+(DAUIN) - Politecnico di Torino - Corso Duca degli Abruzzi, 24 -
+10129 Torino, ITALY."
+
+[1] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248
+[2] http://127.0.0.1:9774/privacy.html
+[3] http://www.garanteprivacy.it/garante/doc.jsp?ID=1556635
+
+To get older versions of this document, review the history of it online
+at https://github.com/neubot/neubot/blob/master/PRIVACY.'''
+
+TEXT_POLICY = '''\
+%s
+
+
+
+
+(Hint: If you're stuck here, type 'q' to exit from less.)
+
+''' % BASE_POLICY
+
+HTML_POLICY = '''\
+<HTML>
+ <HEAD>
+  <TITLE>Neubot privacy policy</TITLE>
+ <HEAD>
+ <BODY>
+  <H1>Neubot privacy policy</H1>
+  <PRE>
+%s
+  </PRE>
+ </BODY>
+</HTML>''' % BASE_POLICY
+
+#
+# =====================
+# Gtk and WebKit dialog
+# =====================
+#
+
+def __update_buttons(widget, informed_button, collect_button,
+                   publish_button, ok_button):
+
+    '''
+     Called when the user clicks on 'informed' or 'collect'
+     check buttons
+    '''
+
+    if informed_button.get_active() and collect_button.get_active():
+        publish_button.set_sensitive(True)
+        ok_button.set_sensitive(True)
+    else:
+        publish_button.set_sensitive(False)
+        publish_button.set_active(False)
+        ok_button.set_sensitive(False)
+
+def __show_gtk_dialog():
+
+    ''' Uses Gtk libraries to ask for privacy permissions '''
+
+    #
+    # WARNING This script is running as root so we MUST NOT
+    # provide clickable links for obvious reasons.
+    # I put this warning here because an early beta version of
+    # this file allowed the user to click, redirecting the click
+    # on the default browser.
+    #                           -- Simone (2011/09/27)
+    #
+
+    dialog = gtk.Dialog('Neubot privacy policy', None,
+        gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+        (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+        gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+    dialog.set_size_request(700, 480)
+
+    scrolled = gtk.ScrolledWindow()
+    frame = gtk.Frame()
+    frame.add(scrolled)
+    dialog.vbox.pack_start(frame)
+
+    browser = webkit.WebView()
+    scrolled.add(browser)
+    browser.load_string(HTML_POLICY, 'text/html', 'utf-8', '')
+
+    ok_button = dialog.action_area.children()[0]
+    ok_button.set_sensitive(False)
+    informed_button = gtk.CheckButton('I have read the privacy policy')
+    publish_button = gtk.CheckButton('I give Neubot the permission to ' \
+                                        'publish my Internet address')
+    publish_button.set_sensitive(False)
+    collect_button = gtk.CheckButton('I give Neubot the permission to ' \
+                                       'collect my Internet address')
+
+    #
+    # We MUST react when ANY of the two fundamental permissions
+    # that we need is clicked.
+    #
+    informed_button.connect('clicked', __update_buttons, informed_button,
+                     collect_button, publish_button, ok_button)
+    collect_button.connect('clicked', __update_buttons, informed_button,
+                     collect_button, publish_button, ok_button)
+
+    vbox_small = gtk.VBox(True)
+    vbox_small.pack_start(informed_button)
+    vbox_small.pack_start(collect_button)
+    vbox_small.pack_start(publish_button)
+    dialog.vbox.pack_start(vbox_small, False)
+
+    dialog.show_all()
+    response = dialog.run()
+    dialog.destroy()
+
+    if response != gtk.RESPONSE_ACCEPT:
+        raise RuntimeError('User aborted installation')
+    else:
+        # We MUST return integers, not strings
+        return {
+            'informed': int(informed_button.get_active()),
+            'can_collect': int(collect_button.get_active()),
+            'can_publish': int(publish_button.get_active()),
+        }
+
+#
+# ==============
+# Textual dialog
+# ==============
+#
+
+TEXT_PROMPT = '''
+We need to show you the privacy policy and ask the permission to collect
+and publish your Internet address.  Type 'r' to read the privacy policy
+text using less(1).  Type 'icp' to assert you have read the policy and
+to give the permission to collect and publish.  Type 'ic' if you want
+to give only the permission to share.  If you don't want to give any
+permission, type 'q' to quit and abort installation (of course no file
+will be written on your disk in this case).
+
+You can also read the policy at <http://www.neubot.org/privacy>.
+
+Type your choice (r, icp, ic or q), then hit Enter: '''
+
+def __show_text_dialog():
+
+    ''' Ask for privacy permissions using simple text I/O '''
+
+    result = ''
+
+    while True:
+        result = raw_input(TEXT_PROMPT)
+        if result == 'ic' or result == 'icp' or result == 'q':
+            break
+        elif result == 'r':
+            #
+            # Should work because the debian package declares less
+            # as a pre-dependency.  And I bet that most debians around
+            # already have installed less.
+            #
+            try:
+                process = subprocess.Popen(['less'], stdin=subprocess.PIPE)
+                process.communicate(input=TEXT_POLICY)
+                process.wait()
+            except:
+                error = str(asyncore.compact_traceback())
+                sys.stderr.write("<error> can't invoke 'less': %s\n" % error)
+        else:
+            sys.stderr.write('<error> Invalid command: %s\n' % result)
+
+    # Process results
+    if result == 'icp':
+        return { 'informed': 1, 'can_collect': 1, 'can_publish': 1, }
+    elif result == 'ic':
+        return { 'informed': 1, 'can_collect': 1, 'can_publish': 0, }
+    elif result == 'q':
+        raise RuntimeError('User aborted installation')
+    else:
+        raise RuntimeError('Unexpected error')
+
+#
+# =============
+# Main function
+# =============
+#
+
+def __to_int(value):
+
+    ''' Robust conversion from boolean to integer '''
+
+    #
+    # This is needed because some versions of Neubot before
+    # 0.4.2 used to store booleans as strings instead of using
+    # simple integers.
+    #
+
+    if value.lower() in ('true', 'on', 'yes'):
+        return 1
+    elif value.lower() in ('false', 'off', 'no'):
+        return 0
+    else:
+        return int(value)
+
+def __main():
+
+    '''
+     If needed show the privacy policy to the user and
+     prompt for setting privacy permissions.
+    '''
+
+    openlog_flags = syslog.LOG_PID
+
+    try:
+        options, arguments = getopt.getopt(sys.argv[1:], 'nf:Tv')
+    except getopt.error:
+        sys.exit('Usage: preinst [-nTv] [-f database] [arguments]')
+
+    forcetext = False
+    database = '/var/neubot/database.sqlite3'
+    for name, value in options:
+        if name == '-f':
+            database = value
+        elif name == '-n':
+            database = ':memory:'
+        elif name == '-T':
+            forcetext = True
+        elif name == '-v':
+            openlog_flags |= syslog.LOG_PERROR|syslog.LOG_NDELAY
+
+    syslog.openlog('neubot/preinst', openlog_flags, syslog.LOG_USER)
+    syslog.syslog(syslog.LOG_INFO, 'USETEXT: %d' % USETEXT)
+
+    #
+    # We MUST allow arguments because the debian installer
+    # passes as the first argument the action that it is
+    # performing.
+    #
+    if arguments:
+        syslog.syslog(syslog.LOG_INFO, 'Arguments: %s' % str(arguments))
+
+    # Initial privacy settings.
+    settings = {
+        'informed': 0,
+        'can_collect': 0,
+        'can_publish': 0,
+    }
+
+    #
+    # Read settings from database
+    # Note that here we MUST NOT fail because the database
+    # might not even exist at this point.
+    # Backward compatibility: the name of the setting was
+    # can_share before the privacy policy was clarified in
+    # neubot 0.4.3.
+    #
+    try:
+        syslog.syslog(syslog.LOG_INFO, 'Database: %s' % database)
+        connection = sqlite3.connect(database)
+        cursor = connection.execute('SELECT * FROM config;')
+        for name, value in cursor:
+            if name == 'privacy.informed':
+                settings['informed'] = __to_int(value)
+            elif name == 'privacy.can_collect':
+                settings['can_collect'] = __to_int(value)
+            elif name == 'privacy.can_publish':
+                settings['can_publish'] = __to_int(value)
+            elif name == 'privacy.can_share':
+                settings['can_publish'] = __to_int(value)
+    except:
+        error = str(asyncore.compact_traceback())
+        syslog.syslog(syslog.LOG_INFO, 'Reading from database: %s' %
+                                             error)
+    else:
+        syslog.syslog(syslog.LOG_INFO, 'Settings after database: %s' %
+                                         str(settings))
+
+    #
+    # Succeed if permissions are OK.
+    # We don't want to bother the user if she already
+    # has given us permissions.
+    #
+    if settings['informed'] and settings['can_collect']:
+        syslog.syslog(syslog.LOG_INFO, 'Settings are already OK')
+        sys.exit(0)
+
+    # Gather user preferences
+    if USETEXT or forcetext:
+        settings = __show_text_dialog()
+    else:
+        settings = __show_gtk_dialog()
+    
+    # Fail if settings are not OK
+    if not(settings['informed'] and settings['can_collect']):
+        syslog.syslog(syslog.LOG_ERR, 'Bad settings: %s' % str(settings))
+        sys.exit(1)
+
+    #
+    # Write back settings.
+    # We do the bare minimum, i.e. we create the table if it
+    # does not exist and we insert or replace the values.
+    # For robustness and backward compatibility the code always
+    # creates the privacy.can_share variable.
+    #
+    connection = sqlite3.connect(database)
+    connection.execute(''' CREATE TABLE IF NOT EXISTS config(
+        name TEXT PRIMARY KEY, value TEXT); ''')
+    connection.execute(''' INSERT OR REPLACE INTO config(name, value)
+        VALUES('privacy.informed', ?); ''', (settings['informed'],))
+    connection.execute(''' INSERT OR REPLACE INTO config(name, value)
+        VALUES('privacy.can_collect', ?); ''', (settings['can_collect'],))
+    connection.execute(''' INSERT OR REPLACE INTO config(name, value)
+        VALUES('privacy.can_publish', ?); ''', (settings['can_publish'],))
+    connection.execute(''' INSERT OR REPLACE INTO config(name, value)
+        VALUES('privacy.can_share', ?); ''', (settings['can_publish'],))
+    connection.commit()
+
+    syslog.syslog(syslog.LOG_INFO, 'Written to database: %s' % str(settings))
+
+def main():
+
+    ''' Catch-all wrapper for the real main '''
+
+    try:
+        __main()
+    except SystemExit:
+        raise
+    except:
+        error = str(asyncore.compact_traceback())
+        syslog.syslog(syslog.LOG_ERR, 'Unhandled exception: %s' % error)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()

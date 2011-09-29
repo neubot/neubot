@@ -36,6 +36,28 @@ import getopt
 import sqlite3
 import sys
 
+if sys.version_info[0] == 3:
+    import http.client as lib_http
+else:
+    import httplib as lib_http
+
+STATIC_PAGE = '''\
+<HTML>
+ <HEAD>
+  <TITLE>Neubot is not running</TITLE>
+ <HEAD>
+ <BODY>
+  <H1>Neubot is not running</H1>
+  <P>
+   If you see this page it means that the Neubot daemon is not
+   running on your system.  This is likely a bug and you should
+   inform Neubot authors about that, using Neubot
+   <A href='http://www.neubot.org/mailing-lists'>mailing list</A>.
+  </P>
+ </BODY>
+</HTML>
+'''
+
 ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
     ICON = None
@@ -44,7 +66,7 @@ class Viewer(gtk.Window):
 
     ''' Embed webkit.WebView into gtk.Window '''
 
-    def __init__(self, width, height, uri):
+    def __init__(self, uri):
 
         ''' Initialize the window '''
 
@@ -60,14 +82,23 @@ class Viewer(gtk.Window):
 
         self.set_title('Neubot 0.4.2')
         self.connect('destroy', gtk.main_quit)
-        self.set_size_request(width, height)
+        self.maximize()
         self._open_web_page(uri)
 
         self.show_all()
 
-    def _open_web_page(self, uri):
+    def _open_web_page(self, target):
         ''' Open the specified web page '''
-        self._webview.open(uri)
+
+        #
+        # Target is a URI when we know that Neubot is running
+        # and a static page otherwise.
+        #
+
+        if target.startswith('http://'):
+            self._webview.open(target)
+        else:
+            self._webview.load_string(target, 'text/html', 'utf-8', '')
 
 def main(args):
 
@@ -92,7 +123,7 @@ def main(args):
     # Read system-wide neubot settings
     connection = sqlite3.connect(database)
     cursor = connection.cursor()
-    cursor.execute('select * from config;')
+    cursor.execute('SELECT * FROM config;')
     for name, value in cursor:
         if name == 'agent.api.address':
             address = value
@@ -100,9 +131,26 @@ def main(args):
             port = value
     connection.close()
 
-    # Start the GUI
-    uri = 'http://%s:%s/' % (address, port)
-    Viewer(800, 600, uri)
+    # Test if neubot deamon is running
+    uri = STATIC_PAGE
+    try:
+        connection = lib_http.HTTPConnection(address, port)
+        connection.request('GET', '/api/version')
+        response = connection.getresponse()
+        #
+        # XXX Here we should make sure that we're actually
+        # talking to Neubot checking that the response is
+        # something like 'Neubot x.y.z'.
+        #
+        if response.status == 200:
+            uri = 'http://%s:%s/' % (address, port)
+        response.read()
+        connection.close()
+    except:
+        pass
+
+    # Start the GUI      
+    Viewer(uri)
     gtk.main()
 
 if __name__ == '__main__':
