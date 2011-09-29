@@ -55,7 +55,7 @@ os.chdir(MACOSDIR)
 if __name__ == '__main__':
     sys.path.insert(0, TOPDIR)
 
-from neubot.libversion import LibVersion
+from neubot.utils.version import LibVersion
 
 VERSION = '0.4.2'
 NUMERIC_VERSION = LibVersion.to_numeric(VERSION)

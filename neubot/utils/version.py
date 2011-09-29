@@ -1,4 +1,4 @@
-# neubot/libversion.py
+# neubot/utils/version.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,

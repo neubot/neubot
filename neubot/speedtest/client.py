@@ -36,7 +36,7 @@ from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.speedtest import compat
-from neubot.libversion import LibVersion
+from neubot.utils.version import LibVersion
 
 from neubot.main import common
 from neubot import marshal
