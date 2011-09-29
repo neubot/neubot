@@ -35,7 +35,6 @@
 # the preinst script seems to me the right place to do this thing.
 #
 
-import StringIO
 import asyncore
 import getopt
 import os
@@ -243,9 +242,11 @@ def __show_gtk_dialog():
     ok_button = dialog.action_area.children()[0]
     ok_button.set_sensitive(False)
     informed_button = gtk.CheckButton('I have read the privacy policy')
-    publish_button = gtk.CheckButton('I give Neubot the permission to publish my Internet address')
+    publish_button = gtk.CheckButton('I give Neubot the permission to ' \
+                                        'publish my Internet address')
     publish_button.set_sensitive(False)
-    collect_button = gtk.CheckButton('I give Neubot the permission to collect my Internet address')
+    collect_button = gtk.CheckButton('I give Neubot the permission to ' \
+                                       'collect my Internet address')
 
     #
     # We MUST react when ANY of the two fundamental permissions
@@ -302,24 +303,24 @@ def __show_text_dialog():
     result = ''
 
     while True:
-       result = raw_input(TEXT_PROMPT)
-       if result == 'ic' or result == 'icp' or result == 'q':
-           break
-       elif result == 'r':
-           #
-           # Should work because the debian package declares less
-           # as a pre-dependency.  And I bet that most debians around
-           # already have installed less.
-           #
-           try:
-               process = subprocess.Popen(['less'], stdin=subprocess.PIPE)
-               process.communicate(input=TEXT_POLICY)
-               process.wait()
-           except:
-               error = str(asyncore.compact_traceback())
-               sys.stderr.write("<error> can't invoke 'less': %s\n" % error)
-       else:
-           sys.stderr.write('<error> Invalid command: %s\n' % result)
+        result = raw_input(TEXT_PROMPT)
+        if result == 'ic' or result == 'icp' or result == 'q':
+            break
+        elif result == 'r':
+            #
+            # Should work because the debian package declares less
+            # as a pre-dependency.  And I bet that most debians around
+            # already have installed less.
+            #
+            try:
+                process = subprocess.Popen(['less'], stdin=subprocess.PIPE)
+                process.communicate(input=TEXT_POLICY)
+                process.wait()
+            except:
+                error = str(asyncore.compact_traceback())
+                sys.stderr.write("<error> can't invoke 'less': %s\n" % error)
+        else:
+            sys.stderr.write('<error> Invalid command: %s\n' % result)
 
     # Process results
     if result == 'icp':
