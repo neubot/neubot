@@ -229,16 +229,8 @@ class Stream(Pollable):
             return
 
         self.close_complete = True
-        exception = str(sys.exc_info()[:2])
 
-        if exception:
-            LOG.error("* Connection %s: %s" % (self.logname, exception))
-        elif self.eof:
-            LOG.debug("* Connection %s: EOF" % (self.logname))
-        else:
-            LOG.debug("* Closed connection %s" % (self.logname))
-
-        self.connection_lost(exception)
+        self.connection_lost(None)
         self.parent.connection_lost(self)
 
         atclosev, self.atclosev = self.atclosev, set()
@@ -524,9 +516,7 @@ class Connector(Pollable):
         self.parent._connection_made(self.sock, rtt)
 
     def handle_close(self):
-        exception = str(sys.exc_info()[:2])
-        LOG.error("* Connection to %s failed: %s" % (self.endpoint, exception))
-        self.parent._connection_failed(self, exception)
+        self.parent._connection_failed(self, None)
 
 class Listener(Pollable):
     def __init__(self, poller, parent):
@@ -607,9 +597,7 @@ class Listener(Pollable):
             return
 
     def handle_close(self):
-        exception = str(sys.exc_info()[:2])
-        LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
-        self.parent.bind_failed(self, exception)     # XXX
+        self.parent.bind_failed(self, None)     # XXX
 
 class StreamHandler(object):
     def __init__(self, poller):
