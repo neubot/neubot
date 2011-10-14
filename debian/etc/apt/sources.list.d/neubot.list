@@ -1,1 +1,8 @@
+#
+# WARNING! IF YOU WANT TO DISABLE NEUBOT REPOSITORY
+# PLEASE DO NOT APPEND COMMENTS TO IT.
+#
+# See <http://www.neubot.org/disable-repository>
+# for an explanation.
+#
 deb http://releases.neubot.org/ /

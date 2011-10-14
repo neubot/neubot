@@ -42,6 +42,10 @@
 # I'm sure it does not address all the corner cases but I don't
 # understand why people should customize their debian setup that
 # much.
+# The original chrome code was looking for an english comment
+# at the end of the script.  However I just found that the Italian
+# Ubuntu appends a comment in italian.  To write robust code I
+# have no choice but to look for a line followed by ANY comment.
 #
 
 SOURCELIST='/etc/apt/sources.list.d/neubot.list'
@@ -51,13 +55,20 @@ logger -t $0 -p user.debug \
 'Checking whether Neubot repository needs to be enabled'
 
 grep -qE \
-"^[[:space:]]*#[[:space:]]*$REPOCONFIG[[:space:]]*# disabled on upgrade .*" \
+"^[[:space:]]*#[[:space:]]*$REPOCONFIG[[:space:]]*#.*" \
 "$SOURCELIST"
 
 if [ $? -eq 0 ]; then
     logger -t $0 -p user.notice 'Reenabling Neubot repository after upgrade'
     cp $SOURCELIST $SOURCELIST.save
-    echo $REPOCONFIG > $SOURCELIST
+    echo '#' > $SOURCELIST
+    echo '# WARNING! IF YOU WANT TO DISABLE NEUBOT REPOSITORY' >> $SOURCELIST
+    echo '# PLEASE DO NOT APPEND COMMENTS TO THE REPOS LINE.' >> $SOURCELIST
+    echo '#' >> $SOURCELIST
+    echo '# See <http://www.neubot.org/disable-repository>' >> $SOURCELIST
+    echo '# for an explanation.' >> $SOURCELIST
+    echo '#' >> $SOURCELIST
+    echo $REPOCONFIG >> $SOURCELIST
 else
     logger -t $0 -p user.debug 'No need to reenable Neubot repository'
 fi
