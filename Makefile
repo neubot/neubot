@@ -311,9 +311,10 @@ _deb_binary:
 # Note that we must make _deb_data before _deb_control
 # because the latter must calculate the md5sums and the
 # total size.
-# The public command enforces root privileges because we
-# don't want to ship a deb with ordinary user ownership by
-# mistake.
+# Fakeroot will guarantee that we don't ship a debian
+# package with ordinary user ownership.
+# For now we do not fail if lintian fails because there
+# is the nonstandard /var/neubot issue pending.
 #
 _deb:
 	@make -f Makefile _deb_data.tgz
@@ -326,7 +327,8 @@ _deb:
 
 deb:
 	@echo "[DEB]"
-	@make -f Makefile _deb INSTALL='install -o 0 -g 0'
+	@fakeroot make -f Makefile _deb
+	@lintian $(DEB_PACKAGE) || true
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
