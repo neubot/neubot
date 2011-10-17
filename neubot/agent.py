@@ -25,20 +25,25 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.config import CONFIG
 from neubot.http.server import HTTP_SERVER
 from neubot.api.server import ServerAPI
 from neubot.rendezvous.client import ClientRendezvous
 from neubot.net.poller import POLLER
-from neubot.rootdir import WWW
+
+from neubot.config import CONFIG
 from neubot.log import LOG
-from neubot import system
 from neubot.main import common
+from neubot.rootdir import WWW
+
+from neubot import privacy
+from neubot import system
 
 def main(args):
     common.main("agent", "Run in background, periodically run tests", args)
 
     conf = CONFIG.copy()
+
+    privacy.complain_if_needed()
 
     if conf["agent.api"]:
         server = HTTP_SERVER

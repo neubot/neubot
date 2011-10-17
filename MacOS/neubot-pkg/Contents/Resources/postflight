@@ -89,10 +89,8 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         logger -p daemon.info -t $0 "Initializing privacy settings"
 
         /usr/bin/python $VERSIONDIR/neubot/main/__init__.py privacy     \
-                    -D privacy.init_can_share=$CAN_SHARE                \
-                    -D privacy.init_informed=yes                        \
-                    -D privacy.init_can_collect=yes                     \
-                    -D privacy.overwrite=no
+          -D privacy.informed=1 -D privacy.can_collect=1                \
+          -D privacy.can_share=$CAN_SHARE
 
         #
         # Install the property list once and forever; it will invoke

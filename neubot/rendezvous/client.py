@@ -47,6 +47,7 @@ from neubot.state import STATE
 
 from neubot import bittorrent
 from neubot import marshal
+from neubot import privacy
 
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
@@ -57,6 +58,11 @@ class ClientRendezvous(ClientHTTP):
 
     def connect_uri(self, uri=None, count=None):
         self._task = None
+
+        if not privacy.allowed_to_run():
+            privacy.complain()
+            self._schedule()
+            return
 
         if not uri:
             uri = "http://%s:9773/rendezvous" % CONFIG["agent.master"]

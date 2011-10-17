@@ -1,5 +1,5 @@
 
-$Version: 1.0$
+$Version: 1.5$
 
 The purpose of Neubot is to measure the quality and neutrality of
 your Internet connection and to share the results with the Internet
@@ -30,17 +30,9 @@ Internet & Society, represented by its co-director Juan Carlos
 De Martin.
 
 Neubot asks you to explicitly assert that you have read this privacy
-policy and to give it the permission to collect and share your IP
-address.  If you don't confirm that you have read the privacy policy,
-Neubot collects your Internet address under a special provision,
-that allows researchers to do that `for statistical purposes only
-<http://www.garanteprivacy.it/garante/doc.jsp?ID=1556635>`_.  Internet
-addresses collected under this regime will be flagged in a special
-way, and will not be shared with anyone.  They will be treated by
-the researchers authorized by the data controller only.  This data,
-however, will not be of great value for the Internet community,
-because they cannot be shared with and analyzed by other researchers.
-
+policy and to give it the permission to collect and share your IP address.
+And refuses to run tests until you assert you have read this privacy
+policy and you have provided the permission to collect your IP address.
 The project needs at least the permission to collect your Internet
 address, because otherwise it cannot process your results and publish
 aggregate data.  If you don't give Neubot the permission to share,
