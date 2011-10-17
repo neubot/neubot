@@ -1,0 +1,137 @@
+#!/usr/bin/python
+
+#
+# Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
+#  Politecnico di Torino
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+'''
+ This script is started when the user logs in into Gnome and
+ periodically checks the status of the Neubot daemon, printing
+ notifications if needed.
+'''
+
+#
+# We distribute this script with the debian package but the
+# real target is Ubuntu.  For this reason this script dependencies
+# are not listed into the debian package.  The proper solution
+# is to split the debian package into a -core and -gnome flavors.
+# Where the -gnome one depends on core.
+#
+
+import asyncore
+import getopt
+import json
+import os.path
+import pynotify
+import sqlite3
+import sys
+import syslog
+import time
+
+if sys.version_info[0] == 3:
+    import http.client as lib_http
+else:
+    import httplib as lib_http
+
+NEUBOT_ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
+if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
+    NEUBOT_ICON = None
+
+PRIVACY_TITLE = 'Neubot | No privacy settings'
+PRIVACY_EXPLANATION = \
+'Neubot is disabled because you did not provided the permission to save ' \
+'your Internet address.  To provide it, use Neubot GUI (Applications -> ' \
+'Internet -> Neubot).'
+PRIVACY_INTERVAL = 30
+
+def __check_privacy_settings(database_path):
+
+    ''' Connect to the daemon, get privacy settings and warn the
+        user if privacy settings are not OK. '''
+
+    try:
+
+        address, port = '127.0.0.1', '9774'
+
+        connection = sqlite3.connect(database_path)
+        cursor = connection.cursor()
+        cursor.execute('SELECT * FROM config;')
+        for name, value in cursor:
+            if name == 'agent.api.address':
+                address = value
+            elif name == 'agent.api.port':
+                port = value
+        connection.close()
+
+        connection = lib_http.HTTPConnection(address, port)
+        connection.request('GET', '/api/config')
+
+        response = connection.getresponse()
+        if response.status != 200:
+            raise RuntimeError('Invalid response code: %d' % response.status)
+
+        body = response.read()
+        connection.close()
+
+        dictionary = json.loads(body)
+        if dictionary['privacy.informed'] == 1 and \
+                 dictionary['privacy.can_collect'] == 1:
+            return
+
+        notification = pynotify.Notification(
+                                             PRIVACY_TITLE,
+                                             PRIVACY_EXPLANATION,
+                                             NEUBOT_ICON
+                                            )
+
+        notification.set_urgency(pynotify.URGENCY_CRITICAL)
+        notification.set_timeout(15)
+        notification.show()
+
+    except:
+        syslog.syslog(syslog.LOG_ERR, '%s' %
+          str(asyncore.compact_traceback()))
+
+def main(args):
+
+    ''' Notify the user '''
+
+    try:
+        options, arguments = getopt.getopt(args[1:], 'f:')
+    except getopt.error:
+        sys.exit('Usage: neubot_notify [-f database]\n')
+    if arguments:
+        sys.exit('Usage: neubot_notify [-f database]\n')
+
+    database = '/var/neubot/database.sqlite3'
+    for name, value in options:
+        if name == '-f':
+            database = value
+
+    syslog.openlog('neubot_notify', syslog.LOG_PID, syslog.LOG_USER)
+
+    pynotify.init('Neubot 0.4.3')
+    while True:
+        __check_privacy_settings(database)
+        time.sleep(PRIVACY_INTERVAL)
+
+if __name__ == '__main__':
+    main(sys.argv)

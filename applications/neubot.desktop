@@ -1,9 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Neubot
-Comment=Open Neubot graphical user interface
+Comment=Open Neubot GUI
 Type=Application
-Exec=@PREFIX@/bin/neubot_webkit
+Exec=@PREFIX@/bin/neubot_gui
 Terminal=False
 Categories=GNOME;Network;
 StartupNotify=True

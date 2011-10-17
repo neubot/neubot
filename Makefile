@@ -256,7 +256,8 @@ _deb_data:
 	@rm -rf dist/data/usr/bin/*
 	@find dist/data/usr/share/neubot -type f -name \*.pyc -exec rm {} \;
 	@$(INSTALL) debian/neubot dist/data/usr/bin
-	@$(INSTALL) debian/neubot_webkit dist/data/usr/bin
+	@$(INSTALL) debian/neubot_gui dist/data/usr/bin
+	@$(INSTALL) debian/neubot_notify dist/data/usr/bin
 	@cd dist/data && mv usr/man usr/share/man
 	@cd dist/data/usr/share/man/man1/ && gzip -9 *
 	@for DIR in $(DEB_DATA_DIRS); do \

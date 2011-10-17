@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Exec=@PREFIX@/bin/neubot on_gui_login
+Exec=@PREFIX@/bin/neubot_notify
 Hidden=False
 NoDisplay=False
 X-GNOME-Autostart-enabled=true
-Name=Neubot check for updates
+Name=Neubot notifications
