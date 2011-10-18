@@ -42,7 +42,6 @@ MODULES = {
     "rendezvous.client"   : "rendezvous.client",
     "rendezvous.server"   : "rendezvous.server",
     "server"              : "server",
-    "show_database"       : "show_database",
     "speedtest"           : "speedtest.client",
     "speedtest.client"    : "speedtest.client",
     "speedtest.negotiate" : "speedtest.negotiate",
@@ -71,7 +70,6 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     import neubot.rendezvous.client
     #import neubot.rendezvous.server    # requires PyGeoIP
     #import neubot.server               # ditto
-    import neubot.show_database
     import neubot.speedtest.client
     import neubot.speedtest.client
     import neubot.speedtest.negotiate
