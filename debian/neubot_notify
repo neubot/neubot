@@ -40,16 +40,22 @@ import asyncore
 import getopt
 import json
 import os.path
-import pynotify
 import sqlite3
 import sys
 import syslog
 import time
+import webbrowser
 
 if sys.version_info[0] == 3:
     import http.client as lib_http
 else:
     import httplib as lib_http
+
+HAVE_PYNOTIFY = True
+try:
+    import pynotify
+except ImportError:
+    HAVE_PYNOTIFY = False
 
 NEUBOT_ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
@@ -60,7 +66,11 @@ PRIVACY_EXPLANATION = \
 'Neubot is disabled because you did not provided the permission to save ' \
 'your Internet address.  To provide it, use Neubot GUI (Applications -> ' \
 'Internet -> Neubot).'
-PRIVACY_INTERVAL = 30
+
+if HAVE_PYNOTIFY:
+    PRIVACY_INTERVAL = 30
+else:
+    PRIVACY_INTERVAL = 1800
 
 def __check_privacy_settings(database_path):
 
@@ -96,15 +106,20 @@ def __check_privacy_settings(database_path):
                  dictionary['privacy.can_collect'] == 1:
             return
 
-        notification = pynotify.Notification(
-                                             PRIVACY_TITLE,
-                                             PRIVACY_EXPLANATION,
-                                             NEUBOT_ICON
-                                            )
+        if HAVE_PYNOTIFY:
+            notification = pynotify.Notification(
+                                                 PRIVACY_TITLE,
+                                                 PRIVACY_EXPLANATION,
+                                                 NEUBOT_ICON
+                                                )
 
-        notification.set_urgency(pynotify.URGENCY_CRITICAL)
-        notification.set_timeout(15)
-        notification.show()
+            notification.set_urgency(pynotify.URGENCY_CRITICAL)
+            notification.set_timeout(15)
+            notification.show()
+        else:
+
+            uri = 'http://%s:%s/privacy.html' % (address, port)
+            webbrowser.open(uri)
 
     except:
         syslog.syslog(syslog.LOG_ERR, '%s' %
