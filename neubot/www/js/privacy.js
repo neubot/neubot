@@ -50,7 +50,7 @@ function setPrivacy() {
 }
 
 function checkPrivacy(data) {
-    hidden = true;
+    var hidden = true;
 
     if (data['privacy.informed']) {
         jQuery("#check_privacy_informed").attr("checked", "checked");
