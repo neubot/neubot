@@ -471,3 +471,10 @@ a#x_link_to_status {
 #table_settings tr.less-coloured {
     background-color: #fff;
 }
+
+#privacy_not_ok {
+    font-size: 2em;
+    color: red;
+    font-weight: bold;
+    display: none;
+}

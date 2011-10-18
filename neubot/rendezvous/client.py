@@ -26,8 +26,10 @@
 # information.
 #
 
+import os
 import random
 import sys
+import webbrowser
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -38,7 +40,6 @@ from neubot.net.poller import POLLER
 from neubot.speedtest.client import ClientSpeedtest
 
 from neubot.config import CONFIG
-from neubot.database import DATABASE
 from neubot.log import LOG
 from neubot.main import common
 from neubot.notify import NOTIFIER
@@ -60,6 +61,17 @@ class ClientRendezvous(ClientHTTP):
         self._task = None
 
         if not privacy.allowed_to_run():
+
+            # Under NT we can open directly the browser
+            if os.name == 'nt':
+                try:
+                    uri = 'http://%s:%s/privacy.html' % (
+                             CONFIG['agent.api.address'],
+                             CONFIG['agent.api.port'])
+                    webbrowser.open(uri)
+                except:
+                    pass
+
             privacy.complain()
             self._schedule()
             return

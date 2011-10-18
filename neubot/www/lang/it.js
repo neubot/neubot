@@ -142,6 +142,10 @@ LANG = {
 
     // neubot/www/privacy.html
 
+    'i18n_privacy_not_ok':
+'Neubot è DISABILITATO perché non hai ancora impostato i\
+ permessi relativi alla privacy. Puoi settarli qua sotto.',
+
     "i18n_privacy_explanation": "In questa pagina spieghiamo i dettagli della nostra <a href='#policy'>politica sulla privacy</a>, necessaria per essere conformi alla normativa europea in materia. Forniamo inoltre un semplice <a href='#dashboard'>quadro privacy</a> per gestire le autorizzazioni che deciderai di fornirci rispetto al trattamento del tuo indirizzo Internet, che è considerato dato personale nell'Unione Europea.",
 
     "i18n_privacy_title_1": "Politica sulla privacy",

@@ -50,15 +50,29 @@ function setPrivacy() {
 }
 
 function checkPrivacy(data) {
+    hidden = true;
+
     if (data['privacy.informed']) {
         jQuery("#check_privacy_informed").attr("checked", "checked");
+    }
+    else {
+        hidden = false;
     }
     if (data['privacy.can_collect']) {
         jQuery("#check_privacy_can_collect").attr("checked", "checked");
     }
+    else {
+        hidden = false;
+    }
     if (data['privacy.can_share']) {
         jQuery("#check_privacy_can_share").attr("checked", "checked");
     }
+
+    // Unhide text that prompts users to provide privacy permissions
+    if (!hidden) {
+        jQuery('#privacy_not_ok').css('display', 'block');
+    }
+
     return false;
 }
 
