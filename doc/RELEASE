@@ -51,21 +51,8 @@ using the command line::
 	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
 	wget -O- http://127.0.0.1:9774/api/debug
 
-Stop neubot, run a private copy of Neubot without privacy permissions
-and claiming to be an old version and make sure that after some seconds
-a popup will inform you of that::
-
-	neubot stop &&
-	neubot agent -D agent.master=neubot.unipv.it \
-	             -D rendezvous.client=0.1 \
-	             -D privacy.informed=NO -D privacy.can_collect=NO \
-	             -D privacy.can_share=NO &&
-	neubot on_gui_login
-
-The popup should appear in less then one minute.  Click on the links to
-make sure they work and then close your private neubot instance::
-
-	neubot stop
+Wipe the database, rerun Neubot and make sure that you get a notification
+that you must set privacy permissions.
 
 Reinstall the package over itself to make sure that future updates are
 going to work (we must test the uninstall script of the new package)::
@@ -75,7 +62,6 @@ going to work (we must test the uninstall script of the new package)::
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot
 
-.. TODO Update check for on_gui_login when it will run forever
 Open the status icon and then reinstall the package to make sure that
 the uninstall script correctly tears down the icon before uninstalling
 Neubot.
