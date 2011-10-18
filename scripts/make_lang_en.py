@@ -171,7 +171,7 @@ def __process_dom(dictionary, root, fperr=sys.stderr):
                 if node.nodeName != "textarea":
                     text = re.sub("[ \t]{1,}", " ", text).strip()
                 else:
-                    text = text.replace("\n", "\\n\n")
+                    text = text.replace("\n", "\\r\\n\n")
 
                 __set_dictionary(dictionary, cls, text)
 
