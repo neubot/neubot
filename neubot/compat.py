@@ -32,18 +32,3 @@ try:
     import json
 except ImportError:
     from neubot import simplejson as json
-
-#
-# We want to be compatible with Python2.5, where it's not
-# possible to pass deque() the maximum deque length.
-#
-
-def deque_append(queue, maxlen, element):
-    if len(queue) > maxlen:
-        queue.popleft()
-    queue.append(element)
-
-def deque_appendleft(queue, maxlen, element):
-    if len(queue) > maxlen:
-        queue.pop()
-    queue.appendleft(element)
