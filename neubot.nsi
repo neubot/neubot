@@ -1,7 +1,7 @@
 # neubot.nsi
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -22,11 +22,16 @@
 
 name "neubot 0.4.2"
 outfile "neubot-0.4.2-setup.exe"
-installdir "$PROGRAMFILES\neubot"
+installdir "$PROFILE\Neubot"
 setcompressor lzma
-requestexecutionlevel admin
+requestexecutionlevel user
 
 section
+
+    # Cannot uninstall Neubot <= 0.4.2
+    iffileexists "$PROGRAMFILES\neubot\uninstall.exe" 0 +3
+        messagebox MB_OK 'Detected an old version of Neubot.  Please uninstall it manually.$\nThis installer runs with user privileges and cannot uninstall it automatically.'
+        quit
 
     #
     # If a previous version is already installed uninstall it. We need
@@ -43,37 +48,17 @@ section
     file /r "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
 
-    createdirectory "$SMPROGRAMS\neubot"
-    createshortcut "$SMPROGRAMS\neubot\neubot (gui).lnk"		\
-      "$INSTDIR\neubotw.exe"
-    createshortcut "$SMPROGRAMS\neubot\neubot (start).lnk"		\
-      "$INSTDIR\neubotw.exe" "start"
-    createshortcut "$SMPROGRAMS\neubot\neubot (stop).lnk"		\
-      "$INSTDIR\neubotw.exe" "stop"
-    createshortcut "$SMPROGRAMS\neubot\uninstall.lnk"			\
-      "$INSTDIR\uninstall.exe"
-
-    createshortcut "$SMSTARTUP\neubot (autostart).lnk"			\
-      "$INSTDIR\neubotw.exe" "start"
-    createshortcut "$SMSTARTUP\neubot (notifier process).lnk"		\
-      "$INSTDIR\neubotw.exe" "on_gui_login"
+    createshortcut "$SMPROGRAMS\Neubot.lnk" "$INSTDIR\neubotw.exe"
+    createshortcut "$SMSTARTUP\Neubot.lnk" "$INSTDIR\neubotw.exe" "start"
 
     WriteRegStr HKLM                                                    \
-      "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
-      "DisplayName" "neubot 0.4.2"
+      "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
+      "DisplayName" "Neubot 0.4.2"
     WriteRegStr HKLM                                                    \
-      "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"      \
+      "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
 
-    #
-    # This will start Neubot in background
-    # FIXME This will also start Neubot with "root" privileges
-    # which is a security issue.  This will stay disabled until
-    # I found a way to deal with this issue.  Sorry.
-    #
-    #exec '"$INSTDIR\neubotw.exe" start'
-    #exec '"$INSTDIR\neubotw.exe" on_gui_login'
-    #
+    exec '"$INSTDIR\neubotw.exe" start'
 
 sectionend
 
@@ -82,25 +67,16 @@ section "uninstall"
     execwait '"$INSTDIR\neubotw.exe" stop'
 
     #
-    # Kill all the remaining instances of neubotw.exe (mainly the
-    # on_gui_login process) so that the DLLs are not locked anymore
-    # and we can safely proceed with the update.
-    # XXX This is clearly unclean and ah-hoc!
-    #
-    execwait '"$INSTDIR\neubotw.exe" on_gui_login -k'
-
-    #
     # To be sure that the system is not locking anymore neubotw.exe
     # so that we can remove it, we sleep for a while.
     #
     sleep 2000
 
     rmdir /r "$INSTDIR"
-    rmdir /r "$SMPROGRAMS\neubot"
+    delete "$SMPROGRAMS\Neubot.lnk"
+    delete "$SMSTARTUP\Neubot.lnk"
 
-    delete "$SMSTARTUP\neubot (autostart).lnk"
-    delete "$SMSTARTUP\neubot (notifier process).lnk"
     deleteregkey HKLM                                                   \
-      "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
+      "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"
 
 sectionend
