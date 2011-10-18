@@ -62,16 +62,6 @@ going to work (we must test the uninstall script of the new package)::
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot
 
-Open the status icon and then reinstall the package to make sure that
-the uninstall script correctly tears down the icon before uninstalling
-Neubot.
-
-	neubot statusicon &&
-	sudo dpkg -i neubot-0.4.2-1_all.deb &&
-	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
-	wget -O- http://127.0.0.1:9774/api/debug &&
-	neubot -V && neubot
-
 Make sure that bittorrent and speedtest tests work from command
 line using the following command::
 

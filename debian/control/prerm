@@ -22,7 +22,6 @@
 
 set -e
 
-pkill -KILL -f 'neubot statusicon' || true
 pkill -KILL -f 'neubot_gui' || true
 pkill -KILL -f 'neubot_notify' || true
 

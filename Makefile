@@ -189,8 +189,6 @@ _install_autostart:
 #
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
-NEEDEDIT += $(DESTDIR)$(DATADIR)/neubot/statusicon.py
-NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-status-icon.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot-web-ui.desktop
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot.desktop
 NEEDEDIT += $(DESTDIR)/etc/xdg/autostart/neubot-on-gui-login.desktop

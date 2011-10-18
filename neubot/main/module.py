@@ -46,7 +46,6 @@ MODULES = {
     "speedtest.client"    : "speedtest.client",
     "speedtest.negotiate" : "speedtest.negotiate",
     "speedtest.server"    : "speedtest.server",
-    "statusicon"          : "statusicon",
     "stream"              : "net.stream",
 }
 
@@ -74,7 +73,6 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     import neubot.speedtest.client
     import neubot.speedtest.negotiate
     import neubot.speedtest.server
-    #import neubot.statusicon           # requires Gtk
     import neubot.net.stream
 
 def run(argv):
