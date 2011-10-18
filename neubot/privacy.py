@@ -38,6 +38,7 @@ from neubot.config import ConfigError
 from neubot.log import LOG
 from neubot.database import table_config
 from neubot import rootdir
+from neubot import system
 from neubot import utils
 
 def check(updates):
@@ -134,7 +135,7 @@ def __main(args):
         sys.exit(USAGE)
 
     settings = {}
-    database_path = '/var/neubot/database.sqlite3'
+    database_path = system.get_default_database_path()
     pflag = False
     for name, value in options:
         if name == '-D':
