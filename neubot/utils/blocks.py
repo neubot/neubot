@@ -31,8 +31,12 @@ import collections
 import os.path
 import random
 
-# Note: NEUBOTDIR/utils/blocks.py
-NEUBOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#
+# Must use WWW because Python modules are not
+# reachable with Windows.  They are stored into
+# library.zip.
+#
+from neubot.rootdir import WWW
 
 # Maximum depth
 MAXDEPTH = 16
@@ -62,7 +66,7 @@ def create_base_block(length):
     base_block = collections.deque()
 
     files = []
-    listdir(NEUBOTDIR, files, 0)
+    listdir(WWW, files, 0)
     random.shuffle(files)
 
     for fpath in files:
