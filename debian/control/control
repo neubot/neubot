@@ -3,7 +3,7 @@ Version: 0.4.3-rc2-1
 Architecture: all
 Maintainer: Simone Basso <bassosimone@gmail.com>
 Installed-Size: @SIZE@
-Pre-Depends: python (>= 2.5), less (>= 418)
+Pre-Depends: python (>= 2.5), less (>= 418), sqlite3 (>= 3.5.9-6)
 Depends: procps (>= 1:3.2.7), cron (>= 3.0pl1-105), bsdutils (>= 1:2.13.1.1-1)
 Section: net
 Homepage: http://www.neubot.org/
