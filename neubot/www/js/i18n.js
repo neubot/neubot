@@ -66,7 +66,7 @@ var i18n = {
                     jQuery.each(classList, function(i, v) {
                         var patt = /^(i18n_.*)$/i;
                         if ((result = patt.exec(v)) && LANG[result[1]]) {
-                            switch (element.tagName) {
+                            switch (element.tagName.toLowerCase()) {
                             case "textarea":
                                 jQuery(element).text(LANG[result[1]]);
                                 break;
