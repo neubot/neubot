@@ -314,6 +314,7 @@ _deb:
 	 dist/control.tar.gz dist/data.tar.gz
 	@cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
          control/ data/
+	@chmod 644 $(DEB_PACKAGE)
 
 deb:
 	@echo "[DEB]"
