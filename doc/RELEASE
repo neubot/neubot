@@ -5,9 +5,9 @@ Testing procedure before release
 First of all, build the packages, compute SHA256 sums and upload
 packages to the remote server using the following command::
 
-	sudo make release &&
-	ssh releases.neubot.org rm -rf rc/* &&
-	scp dist/* releases.neubot.org:rc/
+	make release &&
+	ssh releases.neubot.org rm -rf releases/rc/* &&
+	scp dist/* releases.neubot.org:releases/rc/
 
 
 Testing under MacOSX
@@ -16,8 +16,12 @@ Testing under MacOSX
 To create and publish the package for MacOSX you need to be on a
 real Mac and type the following command(s)::
 
-	./MacOS/makepkg.py &&
+	sudo ./MacOS/makepkg.py &&
 	scp dist/neubot-0.4.3-rc1.pkg.tgz releases.neubot.org:rc/
+
+(Unfortunately you need to be root to run this script.  It may
+be possible to use something like fakeroot(1) but I've not investigated
+that.)
 
 
 Testing under Ubuntu
@@ -101,7 +105,7 @@ If possible, run a private master server that advertises an upgrade
 to make sure that the upgrade notification mechanism works.
 
 Make sure that bittorrent and speedtest tests work from command
-line using the following command::
+line using the following commands::
 
 	neubot.exe bittorrent
 	neubot.exe speedtest
@@ -121,6 +125,14 @@ other packages.
 Move the packages in the proper place in <http://releases.neubot.org/>.
 For robustness make a copy of the debian package's files so that we
 can restore them if needed.
+
+
+Upgrade the server
+``````````````````
+
+Upgrade the server and make sure that the server is running (or believes
+to be) a nonrc version.  Otherwise it will not serve update notifications
+to clients.
 
 
 Check apt-get
