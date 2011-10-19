@@ -50,6 +50,28 @@ from neubot import bittorrent
 from neubot import marshal
 from neubot import privacy
 
+def _open_browser_on_windows(page):
+
+    ''' Open a browser in the user session to notify something '''
+
+    #
+    # This is possible only on Windows, where we run in the same
+    # context of the user.  I contend that opening the browser is
+    # a bit brute force, but it works.  If you have patches that
+    # allow to deploy lowoverhead notifications email me.
+    #
+
+    if os.name == 'nt':
+        try:
+            uri = 'http://%s:%s/%s' % (
+                                       CONFIG['agent.api.address'],
+                                       CONFIG['agent.api.port'],
+                                       page
+                                      )
+            webbrowser.open(uri)
+        except:
+            pass
+
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
@@ -61,17 +83,7 @@ class ClientRendezvous(ClientHTTP):
         self._task = None
 
         if not privacy.allowed_to_run():
-
-            # Under NT we can open directly the browser
-            if os.name == 'nt':
-                try:
-                    uri = 'http://%s:%s/privacy.html' % (
-                             CONFIG['agent.api.address'],
-                             CONFIG['agent.api.port'])
-                    webbrowser.open(uri)
-                except:
-                    pass
-
+            _open_browser_on_windows('privacy.html')
             privacy.complain()
             self._schedule()
             return
@@ -131,6 +143,7 @@ class ClientRendezvous(ClientHTTP):
                     ver, uri = m1.update["version"], m1.update["uri"]
                     LOG.info("Version %s available at %s" % (ver, uri))
                     STATE.update("update", {"version": ver, "uri": uri})
+                    _open_browser_on_windows('update.html')
 
                 #
                 # Choose the test we would like to run even if
