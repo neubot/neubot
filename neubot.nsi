@@ -28,7 +28,7 @@ requestexecutionlevel user
 
 section
 
-    # Cannot uninstall Neubot <= 0.4.3-rc1
+    # Cannot uninstall Neubot <= 0.4.2
     iffileexists "$PROGRAMFILES\neubot\uninstall.exe" 0 +3
         messagebox MB_OK 'Detected an old version of Neubot.  Please uninstall it manually.$\nThis installer runs with user privileges and cannot uninstall it automatically.'
         quit

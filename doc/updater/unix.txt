@@ -108,12 +108,12 @@ signature.  The files must be named after the numeric
 representation of their version number alone, e.g.::
 
     /updates/
-        0.004003001.tar.gz
-        0.004003001.tar.gz.sha256
-        0.004003001.tar.gz.sig
-        0.004003999.tar.gz
-        0.004003999.tar.gz.sha256
-        0.004003999.tar.gz.sig
+        0.004002001.tar.gz
+        0.004002001.tar.gz.sha256
+        0.004002001.tar.gz.sig
+        0.004002999.tar.gz
+        0.004002999.tar.gz.sha256
+        0.004002999.tar.gz.sig
 
 The updater assumes that OpenSSL command line tools are
 installed and available in the PATH.  It needs them to
