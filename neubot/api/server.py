@@ -67,12 +67,16 @@ class ServerAPI(ServerHTTP):
         }
 
     #
+    # Update the stream timestamp each time we receive a new
+    # request.  Which means that the watchdog timeout will
+    # reclaim inactive streams only.
     # For local API services it make sense to disclose some
     # more information regarding the error that occurred while
     # in general it is not advisable to print the offending
     # exception.
     #
     def process_request(self, stream, request):
+        stream.created = utils.ticks()
         try:
             self._serve_request(stream, request)
         except ConfigError, error:
