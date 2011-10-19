@@ -35,7 +35,6 @@ except ImportError:
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.arcfour import arcfour_new
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.net.dns import getaddrinfo
@@ -197,11 +196,6 @@ class Stream(Pollable):
 
         else:
             self.sock = SocketWrapper(sock)
-
-        if conf.get("net.stream.obfuscate", False):
-            key = conf.get("net.stream.key", None)
-            self.encrypt = arcfour_new(key).encrypt
-            self.decrypt = arcfour_new(key).decrypt
 
         self.connection_made()
 
@@ -716,7 +710,6 @@ CONFIG.register_defaults({
     "net.stream.certfile": "",
     "net.stream.ipv6": False,
     "net.stream.key": "",
-    "net.stream.obfuscate": False,
     "net.stream.secure": False,
     "net.stream.server_side": False,
     "net.stream.rcvbuf": 0,
@@ -739,7 +732,6 @@ def main(args):
         "net.stream.certfile": "Set SSL certfile path",
         "net.stream.ipv6": "Enable IPv6",
         "net.stream.key": "Set key for ARC4",
-        "net.stream.obfuscate": "Enable scrambling with ARC4",
         "net.stream.secure": "Enable SSL",
         "net.stream.server_side": "Enable SSL server-side mode",
         "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
