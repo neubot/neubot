@@ -1,3 +1,17 @@
+Neubot 0.4.3-rc2 [2011-10-19]
+	* post-release: Undo some unwanted strings changes
+	* Makefile: GC release_stable _release DEB_UPDATE_URI
+	* rendezvous: "just works" update notification for Windows
+	* doc/RELEASE: misc updates
+	* api/server.py: close stream on /api/close
+	* utils/blocks.py: repair win32 bug using WWW
+	* http/server.py: honour the connection header
+	* api/server.py: escape watchdog for active streams
+	* privacy.py: skip checks if no privacy settings involved
+	* js/i18n.js: correct privacy policy display with IE
+	* api/server.py: add reachable objects info to /api/debug
+	* Release neubot/0.4.3-rc2
+
 Neubot 0.4.3-rc1 [2011-10-19]
 	* Makefile: I don't need SHA256.inc anymore
 	* privacy.html: fixed size text area
