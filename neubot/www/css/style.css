@@ -473,8 +473,9 @@ a#x_link_to_status {
 }
 
 #privacy_not_ok {
-    font-size: 2em;
-    color: red;
-    font-weight: bold;
-    display: none;
+     font-size: 1.2em;
+     display: none;
+     border: 1px solid #800;
+     background-color: #FDD;
+     padding: 10px;
 }

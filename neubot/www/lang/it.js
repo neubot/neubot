@@ -181,7 +181,7 @@ advertised download speeds, by country'</a> (in formato XLS).",
 
     'i18n_privacy_not_ok':
 'Neubot è DISABILITATO perché non hai ancora impostato i\
- permessi relativi alla privacy. Puoi settarli qua sotto.',
+ permessi relativi alla privacy.<br/>Puoi settarli qua sotto.',
 
     "i18n_privacy_explanation": "In questa pagina spieghiamo i dettagli \
 della nostra <a href='#policy'>politica sulla privacy</a>, necessaria \
