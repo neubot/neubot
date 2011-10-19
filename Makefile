@@ -231,16 +231,16 @@ DEB_PACKAGE = dist/$(STEM)-1_all.deb
 # Directories to create.
 DEB_DATA_DIRS += dist/data/etc/init.d/
 DEB_DATA_DIRS += dist/data/etc/apt/sources.list.d/
-DEB_DATA_DIRS += dist/data/etc/cron.hourly
+DEB_DATA_DIRS += dist/data/etc/cron.daily
 
 # Files to copy.
 DEB_DATA_FILES += etc/init.d/neubot
 DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
-DEB_DATA_FILES += etc/cron.hourly/neubot
+DEB_DATA_FILES += etc/cron.daily/neubot
 
 # Files to `chmod +x`.
 DEB_DATA_EXEC += dist/data/etc/init.d/neubot
-DEB_DATA_EXEC += dist/data/etc/cron.hourly/neubot
+DEB_DATA_EXEC += dist/data/etc/cron.daily/neubot
 
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
