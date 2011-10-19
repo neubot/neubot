@@ -1,6 +1,6 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Neubot
+Name=Neubot Network Neutrality Bot
 Comment=Open Neubot GUI
 Type=Application
 Exec=@PREFIX@/bin/neubot_gui

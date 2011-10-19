@@ -65,7 +65,7 @@ PRIVACY_TITLE = 'Neubot | No privacy settings'
 PRIVACY_EXPLANATION = \
 'Neubot is disabled because you did not provided the permission to save ' \
 'your Internet address.  To provide it, use Neubot GUI (Applications -> ' \
-'Internet -> Neubot).'
+'Internet -> Neubot Network Neutrality Bot).'
 
 if HAVE_PYNOTIFY:
     PRIVACY_INTERVAL = 30
