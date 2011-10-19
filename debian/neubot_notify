@@ -44,18 +44,13 @@ import sqlite3
 import sys
 import syslog
 import time
-import webbrowser
 
 if sys.version_info[0] == 3:
     import http.client as lib_http
 else:
     import httplib as lib_http
 
-HAVE_PYNOTIFY = True
-try:
-    import pynotify
-except ImportError:
-    HAVE_PYNOTIFY = False
+import pynotify
 
 NEUBOT_ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
@@ -67,15 +62,12 @@ PRIVACY_EXPLANATION = \
 'your Internet address.  To provide it, use Neubot GUI (Applications -> ' \
 'Internet -> Neubot Network Neutrality Bot).'
 
-if HAVE_PYNOTIFY:
-    PRIVACY_INTERVAL = 30
-else:
-    PRIVACY_INTERVAL = 1800
+PRIVACY_INTERVAL = 30
 
-def __check_privacy_settings(database_path):
+def __should_adjust_privacy(database_path):
 
-    ''' Connect to the daemon, get privacy settings and warn the
-        user if privacy settings are not OK. '''
+    ''' Connect to the daemon, get privacy settings and return
+        true if the user should adjust privacy settings '''
 
     try:
 
@@ -102,28 +94,52 @@ def __check_privacy_settings(database_path):
         connection.close()
 
         dictionary = json.loads(body)
-        if dictionary['privacy.informed'] == 1 and \
-                 dictionary['privacy.can_collect'] == 1:
-            return
+        informed = dictionary['privacy.informed']
+        can_collect = dictionary['privacy.can_collect']
 
-        if HAVE_PYNOTIFY:
-            notification = pynotify.Notification(
-                                                 PRIVACY_TITLE,
-                                                 PRIVACY_EXPLANATION,
-                                                 NEUBOT_ICON
-                                                )
+        # Backward compat
+        if informed in ('off', 'no', 'false'):
+            informed = 0
+        if informed in ('on', 'yes', 'true'):
+            informed = 1
+        if can_collect in ('off', 'no', 'false'):
+            can_collect = 0
+        if can_collect in ('on', 'yes', 'true'):
+            can_collect = 1
 
-            notification.set_urgency(pynotify.URGENCY_CRITICAL)
-            notification.set_timeout(15)
-            notification.show()
-        else:
-
-            uri = 'http://%s:%s/privacy.html' % (address, port)
-            webbrowser.open(uri)
+        if int(informed) == 0 or int(can_collect) == 0:
+            # Should adjust settings
+            return True
 
     except:
         syslog.syslog(syslog.LOG_ERR, '%s' %
           str(asyncore.compact_traceback()))
+
+    # No need to adjust settings
+    return False
+
+def __notify_adjust_privacy():
+
+    ''' Notify the user she should adjust privacy settings
+        via the web user interface '''
+
+    #
+    # This is not wrapped in try..catch because each login spawns
+    # a new instance of this script.  But old instances fail because
+    # pynotify cannot connect to the session dbus.  So, not catching
+    # the exception here is a cheap way to ensure no more than one
+    # instance will run at a time.
+    #
+
+    notification = pynotify.Notification(
+                                         PRIVACY_TITLE,
+                                         PRIVACY_EXPLANATION,
+                                         NEUBOT_ICON
+                                        )
+
+    notification.set_urgency(pynotify.URGENCY_CRITICAL)
+    notification.set_timeout(15)
+    notification.show()
 
 def main(args):
 
@@ -145,7 +161,14 @@ def main(args):
 
     pynotify.init('Neubot 0.4.3')
     while True:
-        __check_privacy_settings(database)
+        if __should_adjust_privacy(database):
+            #
+            # This usually fails when the dbus session is closed
+            # and the user logged out of the graphical environment.
+            # So let the error propagate.
+            #
+            __notify_adjust_privacy()
+
         time.sleep(PRIVACY_INTERVAL)
 
 if __name__ == '__main__':
