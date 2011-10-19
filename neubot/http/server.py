@@ -105,7 +105,14 @@ class ServerStream(StreamHTTP):
 
     def send_response(self, request, response):
         ''' Send a response to the client '''
+
+        if request['connection'] == 'close' or request.protocol == 'HTTP/1.0':
+            response['connection'] = 'close'
+
         self.send_message(response)
+
+        if response['connection'] == 'close':
+            self.close()
 
         address = self.peername[0]
         now = time.gmtime()
