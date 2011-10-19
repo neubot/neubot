@@ -107,7 +107,7 @@ VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
 BASEDIR = os.path.dirname(VERSIONDIR)
 
 # Version number in numeric representation
-VERSION = "0.004002999"
+VERSION = "0.004003001"
 
 #
 # Common
@@ -517,7 +517,7 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
             passwd = __lookup_user_info('_neubot_update')
 
             #
-            # Disable chroot for 0.4.2 because it breaks a lot
+            # Disable chroot for 0.4.3-rc1 because it breaks a lot
             # of things such as encodings and DNS lookups and it
             # requires some effort to understand all and take
             # the proper decisions.

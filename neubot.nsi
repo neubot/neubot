@@ -20,15 +20,15 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-name "neubot 0.4.2"
-outfile "neubot-0.4.2-setup.exe"
+name "neubot 0.4.3-rc1"
+outfile "neubot-0.4.3-rc1-setup.exe"
 installdir "$PROFILE\Neubot"
 setcompressor lzma
 requestexecutionlevel user
 
 section
 
-    # Cannot uninstall Neubot <= 0.4.2
+    # Cannot uninstall Neubot <= 0.4.3-rc1
     iffileexists "$PROGRAMFILES\neubot\uninstall.exe" 0 +3
         messagebox MB_OK 'Detected an old version of Neubot.  Please uninstall it manually.$\nThis installer runs with user privileges and cannot uninstall it automatically.'
         quit
@@ -53,7 +53,7 @@ section
 
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
-      "DisplayName" "Neubot 0.4.2"
+      "DisplayName" "Neubot 0.4.3-rc1"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"

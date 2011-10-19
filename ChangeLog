@@ -1,3 +1,92 @@
+Neubot 0.4.3-rc1 [2011-10-19]
+	* Makefile: I don't need SHA256.inc anymore
+	* privacy.html: fixed size text area
+	* neubot_webkit: Maximize at startup.
+	* neubot_webkit: Shows a static page if neubot is not running.
+	* neubot_webkit: Tweak previous
+	* neubot_webkit: zap unused arguments
+	* neubot_webkit: no need to repeat window title
+	* neubot_webkit: note we need to be more precise
+	* database: unbreak migrate
+	* database: Zap tool_*
+	* table_bittorrent.py table_speedtest.py: pylintify
+	* table_config.py: byebye functional style
+	* regress: unbreak table_config.py regression
+	* debian: preinst: ask for privacy settings if needed
+	* Makefile: add preinst to debian package
+	* debian: control: Less lintian warnings
+	* debian: move 'update-rc.d remove' from prerm to postrm
+	* debian: mention config files
+	* Makefile: compress manpages
+	* debian: add changelog and copyright
+	* Makefile: do not install *.pyc and useless scripts
+	* Makefile: install neubot-on-gui-login.desktop w/o +x bit
+	* debian: /etc/init.d/neubot: mention $remote_fs
+	* debian: /etc/init.d/neubot: add fake force-reload
+	* debian: control/postinst: use invoke-rc.d
+	* debian: prerm: do not use /usr/bin/pkill
+	* debian: prerm: use invoke-rc.d
+	* debian: control: list python as pre-depend
+	* debian: preinst: show full privacy policy in webkit
+	* debian: preinst: do not use curses to show license text
+	* debian: preinst: help users stuck in less(1)
+	* debian: preinst: avoid some pylint warnings
+	* Merge branches 'pu.database', 'pu.debian' and 'pu.debian-webkit' into next
+	* Move utils.py -> utils/__init__.py
+	* Move libersion.py to utils/version.py
+	* http/utils.py: remove unused negotiate_mime()
+	* http: make prettyprintbody a method of Message
+	* http: move date() to Message
+	* http: make content_length a method of Message
+	* http: move parse_range to speedtest/server.py
+	* http: move urlsplit to http/message.py
+	* http/utils.py: remove unused imports
+	* http: move nextstate() to stream.py and justice utils.py
+	* http: improve pylint score
+	* Merge branches 'pu.http' and 'pu.utils' into next
+	* net: Remove measurer
+	* speedtest/client.py: fallback of measurer removal
+	* net: simpler and more robust timeout model
+	* net: Simplify task scheduling
+	* net: start using same names as asyncore
+	* net: more asyncore affinity
+	* Merge branch 'pu.net' into next
+	* poller.py: fallout after scheduler simplification
+	* stream.py: stop passing exceptions upstream
+	* scripts/make_lang_en.py: fallout of http rationalization
+	* privacy: policy v2.0
+	* lang/it.js: zap old privacy policy translation
+	* www/privacy.html: make it wellformed XML
+	* www/lang/en.js: regen
+	* Merge branch 'pu.privacy-policy' into next
+	* Merge branch 'next' of github.com:neubot/neubot into next
+	* privacy: Revert privacy policy to version 1.0
+	* debian: control/postinst: Most moral license choice
+	* debian: add etc/cron.daily/neubot
+	* debian: nuke python-based preinst
+	* Makefile: do not require superuser privs to make deb package
+	* debian: robust and least surprising reenable-repository algorithm
+	* debian: use cron.hourly for debugging purpose
+	* debian: Privacy strategy that works (TM)
+	* privacy: Bye bye special provisions
+	* win32: open browser if privacy not OK
+	* www: use \r\n in privacy policy to please IE
+	* privacy.py: use system default database path
+	* neubot_notify: fallback to browser
+	* neubot.nsi: install with user privilege level
+	* Repair favicon
+	* Garbage collect on_gui_login and infobox
+	* js/privacy.js: explicit var declaration
+	* MacOS: update privacy policy
+	* Garbage collect unused show_database command
+	* Ditch statusicon
+	* compat.py: garbage collect unused code
+	* Forgot to rename utils/version.py unit test
+	* Garbage collect unused arcfour
+	* utils/blocks.py: new data generator
+	* Unbreak release script
+	* Release neubot/0.4.3-rc1
+
 Neubot 0.4.2 [2011-09-19]
 	* Release neubot/0.4.2
 
