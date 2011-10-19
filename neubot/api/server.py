@@ -281,5 +281,6 @@ class ServerAPI(ServerHTTP):
         response = Message()
         stringio = StringIO.StringIO("See you, space cowboy\n")
         response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="text/plain")
+                         mimetype="text/plain", keepalive=False)
         stream.send_response(request, response)
+        stream.close()
