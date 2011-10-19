@@ -1,7 +1,7 @@
 # Makefile
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -56,9 +56,7 @@ PHONIES += _deb_control.tgz
 PHONIES += _deb_binary
 PHONIES += _deb
 PHONIES += deb
-PHONIES += _release
 PHONIES += release
-PHONIES += release_stable
 
 .PHONY: $(PHONIES)
 
@@ -212,7 +210,7 @@ _install:
 	done
 
 #
-# install should be invoked as root and will actually
+# Install should be invoked as root and will actually
 # copy neubot on the filesystem, making sure that root
 # owns the installed files.
 #
@@ -245,9 +243,6 @@ DEB_DATA_FILES += etc/cron.hourly/neubot
 DEB_DATA_EXEC += dist/data/etc/init.d/neubot
 DEB_DATA_EXEC += dist/data/etc/cron.hourly/neubot
 
-# Update URI
-DEB_UPDATE_URI = "testing"
-
 _deb_data:
 	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
 	@rm -rf dist/data/usr/bin/*
@@ -266,8 +261,6 @@ _deb_data:
 	@for FILE in $(DEB_DATA_EXEC); do \
 	 chmod 755 $$FILE; \
 	done
-	@./scripts/sed_inplace s/@TESTING@/$(DEB_UPDATE_URI)/g \
-         dist/data/etc/apt/sources.list.d/neubot.list
 	@$(INSTALL) -d dist/data/usr/share/doc/neubot
 	@$(INSTALL) -m644 debian/copyright dist/data/usr/share/doc/neubot/
 	@$(INSTALL) -m644 debian/changelog dist/data/usr/share/doc/neubot/changelog.Debian
@@ -334,21 +327,11 @@ deb:
 # | | |  __/ |  __/ (_| \__ \  __/
 # |_|  \___|_|\___|\__,_|___/\___|
 #
-# Bless a new neubot release (sources, Debian, and MacOSX).
+# Bless a new neubot release (sources and Debian).
 #
-
-_release:
+release:
 	@make clean
 	@make deb
 	@make archive
 	@./scripts/update_apt
 	@cd dist && chmod 644 *
-	@chmod 777 dist
-
-release:
-	@echo "[RELEASE]"
-	@make -f Makefile _release
-
-release_stable:
-	@echo "[RELEASE_STABLE]"
-	@make -f Makefile _release DEB_UPDATE_URI=""
