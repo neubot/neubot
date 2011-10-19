@@ -46,8 +46,11 @@ def check(updates):
     ''' Raises ConfigError if the user is trying to update the
         privacy settings in a wrong way '''
 
-    conf = CONFIG.copy()
+    if (not 'privacy.informed' in updates or
+      not 'privacy.can_collect' in updates):
+        return
 
+    conf = CONFIG.copy()
     conf.update(updates)
 
     informed = utils.intify(conf['privacy.informed'])
