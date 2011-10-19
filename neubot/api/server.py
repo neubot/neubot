@@ -22,6 +22,7 @@
 
 import StringIO
 import cgi
+import gc
 import pprint
 import re
 import urlparse
@@ -33,6 +34,7 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
+from neubot.debug import objgraph
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.log import LOG
@@ -178,6 +180,8 @@ class ServerAPI(ServerHTTP):
         POLLER.snap(debuginfo)
         debuginfo["queue_history"] = QUEUE_HISTORY
         debuginfo["WWW"] = WWW
+        gc.collect()
+        debuginfo['typestats'] = objgraph.typestats()
         stringio = StringIO.StringIO()
         pprint.pprint(debuginfo, stringio)
         stringio.seek(0)
