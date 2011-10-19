@@ -141,9 +141,6 @@ class Stream(Pollable):
         self.myname = None
         self.peername = None
         self.logname = None
-
-        self.encrypt = None
-        self.decrypt = None
         self.eof = False
 
         self.close_complete = False
@@ -289,9 +286,6 @@ class Stream(Pollable):
             self.recv_pending = False
             self.poller.unset_readable(self)
 
-            if self.decrypt:
-                octets = self.decrypt(octets)
-
             self.recv_complete(octets)
             return
 
@@ -341,8 +335,6 @@ class Stream(Pollable):
             if type(octets) == types.UnicodeType:
                 LOG.oops("Received unicode input")
                 octets = octets.encode("utf-8")
-            if self.encrypt:
-                octets = self.encrypt(octets)
 
         return octets
 
