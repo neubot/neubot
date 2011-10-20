@@ -75,10 +75,10 @@ KEYDATA
 set -e
 python -m compileall -q /usr/share/neubot
 if ! grep -q _neubot /etc/group; then
-    groupadd _neubot
+    groupadd -r _neubot
 fi
 if ! grep -q _neubot /etc/passwd; then
-    useradd -d/ -g_neubot -s/usr/sbin/nologin _neubot
+    useradd -r -d/ -g_neubot -s/usr/sbin/nologin _neubot
 fi
 update-rc.d neubot defaults 99
 invoke-rc.d neubot start
