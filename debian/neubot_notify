@@ -62,7 +62,8 @@ PRIVACY_EXPLANATION = \
 'your Internet address.  To provide it, use Neubot GUI (Applications -> ' \
 'Internet -> Neubot Network Neutrality Bot).'
 
-PRIVACY_INTERVAL = 30
+SHORT_PRIVACY_INTERVAL = 30
+LONG_PRIVACY_INTERVAL = 3600
 
 def __should_adjust_privacy(database_path):
 
@@ -123,23 +124,27 @@ def __notify_adjust_privacy():
     ''' Notify the user she should adjust privacy settings
         via the web user interface '''
 
-    #
-    # This is not wrapped in try..catch because each login spawns
-    # a new instance of this script.  But old instances fail because
-    # pynotify cannot connect to the session dbus.  So, not catching
-    # the exception here is a cheap way to ensure no more than one
-    # instance will run at a time.
-    #
+    try:
+        notification = pynotify.Notification(
+                                             PRIVACY_TITLE,
+                                             PRIVACY_EXPLANATION,
+                                             NEUBOT_ICON
+                                            )
 
-    notification = pynotify.Notification(
-                                         PRIVACY_TITLE,
-                                         PRIVACY_EXPLANATION,
-                                         NEUBOT_ICON
-                                        )
+        notification.set_urgency(pynotify.URGENCY_CRITICAL)
+        notification.set_timeout(15)
+        notification.show()
+    except:
+        syslog.syslog(syslog.LOG_ERR, '%s' %
+          str(asyncore.compact_traceback()))
 
-    notification.set_urgency(pynotify.URGENCY_CRITICAL)
-    notification.set_timeout(15)
-    notification.show()
+        #
+        # Reraise the exception because each login spawns a new instance
+        # of this script.  Old instances will fail because pynotify cannot
+        # connect to the session dbus.  So, reraising the exception here
+        # is a cheap and dirty way to enforce the singleton pattern.
+        #
+        raise
 
 def main(args):
 
@@ -162,14 +167,12 @@ def main(args):
     pynotify.init('Neubot 0.4.3')
     while True:
         if __should_adjust_privacy(database):
-            #
-            # This usually fails when the dbus session is closed
-            # and the user logged out of the graphical environment.
-            # So let the error propagate.
-            #
             __notify_adjust_privacy()
+            privacy_interval = SHORT_PRIVACY_INTERVAL
+        else:
+            privacy_interval = LONG_PRIVACY_INTERVAL
 
-        time.sleep(PRIVACY_INTERVAL)
+        time.sleep(privacy_interval)
 
 if __name__ == '__main__':
     main(sys.argv)
