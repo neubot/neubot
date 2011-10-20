@@ -111,8 +111,8 @@ line using the following commands::
 	neubot.exe speedtest
 
 
-Check the manpage
-`````````````````
+Publish new packages
+````````````````````
 
 At this point it makes sense to read the manual page and ensure it
 is still relevant and there are no changes that must be performed.
@@ -126,23 +126,13 @@ Move the packages in the proper place in <http://releases.neubot.org/>.
 For robustness make a copy of the debian package's files so that we
 can restore them if needed.
 
-
-Upgrade the server
-``````````````````
-
 Upgrade the server and make sure that the server is running (or believes
 to be) a nonrc version.  Otherwise it will not serve update notifications
 to clients.
 
-
-Check apt-get
-`````````````
-
 Finally install the previous version and make sure that the update via
 apt-get works and that there are no errors.
 
-
-Save SHA256s
-````````````
-
 Save the SHA256s in the proper github project.
+
+Announce the availability of a new version.
