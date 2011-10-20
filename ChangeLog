@@ -1,3 +1,17 @@
+Neubot 0.4.3-rc3 [2011-10-20]
+	* debian: add sqlite3 to predepends
+	* debian: bye bye neubot-web-ui.desktop
+	* debian: rename neubot-on-gui-login.desktop neubot.desktop
+	* net/stream.py: garbage collect encrypt and decrypt
+	* Makefile: adjust debian package permissions
+	* debian: Better name for menu entry
+	* debian/neubot_notify: die when graphic session is over
+	* www: pleasant no-privacy informative message
+	* Revert "debian: use cron.hourly for debugging purpose"
+	* neubot_notify: tune sleep interval and log exceptions
+	* doc/RELEASE: tweak final part of the file
+	* Release neubot/0.4.3-rc3
+
 Neubot 0.4.3-rc2 [2011-10-19]
 	* post-release: Undo some unwanted strings changes
 	* Makefile: GC release_stable _release DEB_UPDATE_URI

@@ -149,7 +149,7 @@ class BitTorrentClient(ClientHTTP):
             "download_speed": download_speed,
 
             # OS and version info
-            "neubot_version": LibVersion.to_numeric("0.4.3-rc2"),
+            "neubot_version": LibVersion.to_numeric("0.4.3-rc3"),
             "platform": sys.platform,
         }
 

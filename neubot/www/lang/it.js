@@ -92,7 +92,7 @@ test di trasmissione. L'ultima posizione nota in coda è \
     'i18n_collect_status_text': "L'Agent sta esegendo l'upload dei \
 risultati sul server di Neubot.",
 
-    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.3-rc2. \
+    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.3-rc3. \
 Neubot è un programma <a href='http://www.neubot.org/copying'>open-source</a> \
 leggero che viene eseguito in background ed esegue periodicamente test \
 di trasmissione dati per testare la tua connessione a Internet utilizzando \
