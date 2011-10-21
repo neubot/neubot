@@ -5,7 +5,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>org.neubot</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.4.3-rc3</string>
+	<string>0.4.3-rc4</string>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>

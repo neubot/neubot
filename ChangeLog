@@ -1,3 +1,8 @@
+Neubot 0.4.3-rc4 [2011-10-21]
+	* debian: create system user and group
+	* debian: postinst: avoid races between neubot and sqlite3
+	* Release neubot/0.4.3-rc4
+
 Neubot 0.4.3-rc3 [2011-10-20]
 	* debian: add sqlite3 to predepends
 	* debian: bye bye neubot-web-ui.desktop
