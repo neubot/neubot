@@ -103,6 +103,11 @@ if [ -f /var/neubot/database.sqlite3 ]; then
     fi
 
     if [ "$INFORMED" = "1" -a "$CAN_COLLECT" = "1" ]; then
+        #
+        # XXX Quick and dirty fix because release is
+        # pending (see below)
+        #
+        invoke-rc.d neubot start
         exit 0
     fi
 fi
