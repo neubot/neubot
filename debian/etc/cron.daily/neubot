@@ -37,7 +37,7 @@
 #
 # Stripped-down version of /etc/cron.daily/google-chrome, which
 # reenables the repository if it was disabled during and upgrade,
-# but does not touches it if the user disabled it manually.
+# but does not touch it if the user disabled it manually.
 # The user knows, the user rules.
 # I'm sure it does not address all the corner cases but I don't
 # understand why people should customize their debian setup that
