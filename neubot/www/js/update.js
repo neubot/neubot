@@ -28,8 +28,6 @@
  */
 
 function update_init() {
-    /* utils.setActiveTab("index"); */
-
     tracker = state.tracker(process_state);
     tracker.start();
 };
