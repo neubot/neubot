@@ -124,6 +124,7 @@ INSTALL	= install
 # [2] http://bit.ly/ayYyAR (debian.org)
 #
 DESTDIR =
+SYSCONFDIR = /etc
 LOCALSTATEDIR = /var/neubot
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
@@ -175,8 +176,8 @@ _install_menu:
 	done
 
 _install_autostart:
-	@$(INSTALL) -d $(DESTDIR)/etc/xdg/autostart/
-	@$(INSTALL) -m644 unix_root/etc/xdg/autostart/neubot.desktop $(DESTDIR)/etc/xdg/autostart
+	@$(INSTALL) -d $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/
+	@$(INSTALL) -m644 unix_root/etc/xdg/autostart/neubot.desktop $(DESTDIR)$(SYSCONFDIR)/xdg/autostart
 
 #
 # After the install we need to edit the following files to
@@ -188,7 +189,7 @@ _install_autostart:
 NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
 NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
 NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot.desktop
-NEEDEDIT += $(DESTDIR)/etc/xdg/autostart/neubot.desktop
+NEEDEDIT += $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop
 
 _install_edit:
 	@for EDIT in $(NEEDEDIT); do \
