@@ -227,11 +227,11 @@ class Stream(Pollable):
         atclosev, self.atclosev = self.atclosev, set()
         for func in atclosev:
             try:
-                func(self, exception)
+                func(self, None)
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.oops("Error in atclosev")
+                LOG.exception("Error in atclosev")
 
         self.send_octets = None
         self.sock.soclose()
