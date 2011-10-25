@@ -1,3 +1,11 @@
+Neubot 0.4.4 [2011-10-25]
+	* nagios-plugin-neubot: fix usage string
+	* bin/nagios-plugin-neubot: print current queue length
+	* table_config.py: Python 2.5 sqlite3.Row cannot iterate
+	* net/stream.py: avoid exception in atclose()
+	* rendezvous/server.py: no more separate bittorrent negotiation
+	* Release neubot/0.4.4
+
 Neubot 0.4.3 [2011-10-25]
 	* scripts/diffstat: helpers for release announcement
 	* debian: control/postinst: restart neubot if privacy is OK

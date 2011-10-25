@@ -24,7 +24,7 @@
 # The scripts/release script will automatically update the
 # version number each time we tag with a new release.
 #
-VERSION	= 0.4.3
+VERSION	= 0.4.4
 
 #
 # The list of .PHONY targets.  This is also used to build the
@@ -157,7 +157,7 @@ _install_sources:
 	@rm -rf $(DESTDIR)$(DATADIR)/neubot-*.egg-info
 	#
 	# XXX Bleah bleah bleah!  I will move the two files in
-	# the proper place just after 0.4.3.
+	# the proper place just after 0.4.4.
 	#
 	@$(INSTALL) debian/neubot_gui $(DESTDIR)$(BINDIR)
 	@$(INSTALL) debian/neubot_notify $(DESTDIR)$(BINDIR)

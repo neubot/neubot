@@ -22,7 +22,7 @@
 /*
  * I would like to implement automatic updates under Windows as
  * soon as possible.  However this is not feasible for the upcoming
- * 0.4.3 release.  So here's a webpage that tells users that an
+ * 0.4.4 release.  So here's a webpage that tells users that an
  * updated version is available.  This will hopefully go away before
  * Neubot 0.5.0 (last famous words...).
  */
