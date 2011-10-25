@@ -184,7 +184,7 @@ def main(args):
         sys.stdout.write("WARNING: queue too long: %f\n" % length)
         sys.exit(1)
 
-    sys.stdout.write("OK: Neubot server is UP\n")
+    sys.stdout.write("OK: Neubot server is UP (queue: %f)\n" % length)
 
 if __name__ == "__main__":
     main(sys.argv)
