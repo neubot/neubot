@@ -101,7 +101,7 @@ class ServerRendezvous(ServerHTTP):
             m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
 
         if "bittorrent" in m.accept:
-            m1.available["bittorrent"] = [ "http://%s:8000/" % server ]
+            m1.available["bittorrent"] = [ "http://%s/" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while
