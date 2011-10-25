@@ -155,6 +155,12 @@ _install_sources:
 	 python setup.py install --install-purelib $(DESTDIR)$(DATADIR) \
 	                         --install-scripts $(DESTDIR)$(BINDIR)
 	@rm -rf $(DESTDIR)$(DATADIR)/neubot-*.egg-info
+	#
+	# XXX Bleah bleah bleah!  I will move the two files in
+	# the proper place just after 0.4.3.
+	#
+	@$(INSTALL) debian/neubot_gui $(DESTDIR)$(BINDIR)
+	@$(INSTALL) debian/neubot_notify $(DESTDIR)$(BINDIR)
 
 #
 # We keep in the sources the manual page so that one that

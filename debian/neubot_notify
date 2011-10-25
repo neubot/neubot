@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #
 # Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
@@ -44,13 +44,18 @@ import sqlite3
 import sys
 import syslog
 import time
+import webbrowser
 
 if sys.version_info[0] == 3:
     import http.client as lib_http
 else:
     import httplib as lib_http
 
-import pynotify
+HAVE_PYNOTIFY = True
+try:
+    import pynotify
+except ImportError:
+    HAVE_PYNOTIFY = False
 
 NEUBOT_ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
@@ -110,8 +115,20 @@ def __should_adjust_privacy(database_path):
 
         if int(informed) == 0 or int(can_collect) == 0:
             # Should adjust settings
+
+            #
+            # XXX Handle the case where pynotify is not
+            # installed opening the browser just once and
+            # then exiting.
+            #
+            if not HAVE_PYNOTIFY:
+                webbrowser.open('http://%s:%s/privacy.html' % (address, port))
+                sys.exit(0)
+
             return True
 
+    except SystemExit:
+        raise
     except:
         syslog.syslog(syslog.LOG_ERR, '%s' %
           str(asyncore.compact_traceback()))
@@ -125,6 +142,7 @@ def __notify_adjust_privacy():
         via the web user interface '''
 
     try:
+        pynotify.init('Neubot 0.4.3')
         notification = pynotify.Notification(
                                              PRIVACY_TITLE,
                                              PRIVACY_EXPLANATION,
@@ -164,7 +182,6 @@ def main(args):
 
     syslog.openlog('neubot_notify', syslog.LOG_PID, syslog.LOG_USER)
 
-    pynotify.init('Neubot 0.4.3')
     while True:
         if __should_adjust_privacy(database):
             __notify_adjust_privacy()
