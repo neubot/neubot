@@ -64,19 +64,19 @@ def _got_alarm(signo, frame):
     sys.exit(2)
 
 USAGE_SHORT = '''\
-Usage: nagios-plugin-neubot [-?hvV] [-h|--hostname hostname]
+Usage: nagios-plugin-neubot [-?vV] [-H|--hostname hostname]
                             [--version] [--help]
 '''
 
 USAGE_LONG = '''
 Version: 0.4.3
 Purpose: Monitor Neubot server
-Usage: nagios-plugin-neubot [-?hvV] [-h|--hostname hostname]
+Usage: nagios-plugin-neubot [-?hvV] [-H|--hostname hostname]
                             [--version] [--help]
 Options:
     -?                     : Print brief help message
     -h|--help              : Print detailed help message
-    -h|--hostname hostname : Hostname to connect to [127.0.0.1]
+    -H|--hostname hostname : Hostname to connect to [127.0.0.1]
     -v                     : No-op for compatibility with Nagios specs
     -V|--version           : Print version number
 
