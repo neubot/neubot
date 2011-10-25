@@ -1,3 +1,12 @@
+Neubot 0.4.3 [2011-10-25]
+	* scripts/diffstat: helpers for release announcement
+	* debian: control/postinst: restart neubot if privacy is OK
+	* debian: cron.daily/neubot: honour grammar
+	* js/update.js: don't live commentedout code around
+	* Makefile: use SYSCONFDIR not /etc
+	* UNIX: always install neubot_notify and neubot_gui
+	* Release neubot/0.4.3
+
 Neubot 0.4.3-rc4 [2011-10-21]
 	* debian: create system user and group
 	* debian: postinst: avoid races between neubot and sqlite3

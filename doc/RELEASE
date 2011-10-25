@@ -17,7 +17,7 @@ To create and publish the package for MacOSX you need to be on a
 real Mac and type the following command(s)::
 
 	sudo ./MacOS/makepkg.py &&
-	scp dist/neubot-0.4.3-rc4.pkg.tgz releases.neubot.org:rc/
+	scp dist/neubot-0.4.3.pkg.tgz releases.neubot.org:rc/
 
 (Unfortunately you need to be root to run this script.  It may
 be possible to use something like fakeroot(1) but I've not investigated
@@ -36,8 +36,8 @@ be sure::
 Download and update to the latest package, make sure it is running
 and then open the web user interface::
 
-	wget http://releases.neubot.org/rc/neubot-0.4.3-rc4-1_all.deb &&
-	sudo dpkg -i neubot-0.4.3-rc4-1_all.deb &&
+	wget http://releases.neubot.org/rc/neubot-0.4.3-1_all.deb &&
+	sudo dpkg -i neubot-0.4.3-1_all.deb &&
 	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot
@@ -61,7 +61,7 @@ that you must set privacy permissions.
 Reinstall the package over itself to make sure that future updates are
 going to work (we must test the uninstall script of the new package)::
 
-	sudo dpkg -i neubot-0.4.3-rc4-1_all.deb &&
+	sudo dpkg -i neubot-0.4.3-1_all.deb &&
 	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
 	wget -O- http://127.0.0.1:9774/api/debug &&
 	neubot -V && neubot
