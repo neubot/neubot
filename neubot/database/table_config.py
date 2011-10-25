@@ -76,8 +76,8 @@ def dictionarize(connection):
     dictionary = {}
     cursor = connection.cursor()
     cursor.execute('SELECT name, value FROM config;')
-    for name, value in cursor:
-        dictionary[name] = value
+    for tpl in cursor:
+        dictionary[tpl[0]] = tpl[1]
     return dictionary
 
 def jsonize(connection):
