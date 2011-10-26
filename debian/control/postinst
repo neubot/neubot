@@ -132,4 +132,4 @@ fi
 # with the sqlite3 command above.
 #
 
-invoke-rc.d neubot start
+invoke-rc.d neubot start 2>/dev/null
