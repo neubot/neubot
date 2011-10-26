@@ -130,6 +130,8 @@ fi
 #
 # Startup neubot at the end to avoid races
 # with the sqlite3 command above.
+# XXX Redirect standard error to /dev/null or
+# neubot does not actually start.
 #
 
 invoke-rc.d neubot start 2>/dev/null
