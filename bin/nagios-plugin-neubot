@@ -145,7 +145,7 @@ def main(args):
         sys.exit(2)
 
     try:
-        connection = httplib.HTTPConnection(hostname, "80")
+        connection = httplib.HTTPConnection(hostname)
     except Exception, why:
         sys.stdout.write("CRITICAL: httplib.HTTPConnection(): %s\n" % str(why))
         sys.exit(2)
