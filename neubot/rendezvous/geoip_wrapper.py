@@ -35,10 +35,7 @@ from neubot import utils
 try:
     import GeoIP
 except ImportError:
-    LOG.error("Missing dependency: GeoIP")
-    LOG.info("Please install GeoIP python wrappers, e.g.")
-    LOG.info("    sudo apt-get install python-geoip")
-    sys.exit(1)
+    GeoIP = None
 
 COUNTRY_DATABASE = "/usr/local/share/GeoIP/GeoIP.dat"
 
@@ -47,6 +44,13 @@ class Geolocator(object):
         self.countries = None
 
     def open_or_die(self):
+
+        if not GeoIP:
+            LOG.error("Missing dependency: GeoIP")
+            LOG.info("Please install GeoIP python wrappers, e.g.")
+            LOG.info("    sudo apt-get install python-geoip")
+            sys.exit(1)
+
         path = CONFIG.get("rendezvous.geoip_wrapper.country_database",
                           COUNTRY_DATABASE)
 
