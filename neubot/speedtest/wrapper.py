@@ -126,9 +126,14 @@ class SpeedtestWrapper(ServerHTTP):
             del response['content-length']
             response.body = ''
 
-        # For robustness
+        #
+        # We MUST NOT be too strict here because old clients
+        # use the same stream for both negotiation and testing
+        # and the stream already has the rewriter installed
+        # due to that.
+        #
         else:
-            raise RuntimeError('Unexpected URI')
+            pass
 
     #
     # Set the response rewriter so that we can spit out XML
