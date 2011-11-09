@@ -26,6 +26,7 @@ components, including the rendezvous server and, for each test,
 the negotiate server and the test server.
 """
 
+import gc
 import sys
 
 if __name__ == "__main__":
@@ -38,6 +39,8 @@ from neubot.net.poller import POLLER
 
 from neubot.negotiate.server import NEGOTIATE_SERVER
 
+from neubot.compat import json
+from neubot.debug import objgraph
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
@@ -51,6 +54,32 @@ import neubot.rendezvous.server
 
 #from neubot import speedtest           # Not yet
 import neubot.speedtest.wrapper
+
+class DebugAPI(ServerHTTP):
+    ''' Implements the debugging API '''
+
+    def process_request(self, stream, request):
+        ''' Process HTTP request and return response '''
+
+        response = Message()
+        if request.uri == '/debug':
+            gc.collect()
+            stats = objgraph.typestats()
+            body = json.dumps(stats, indent=4)
+            response.compose(code="200", reason="Ok", body=body,
+                             mimetype="application/json")
+        elif request.uri.startswith('/debug/'):
+            typename = request.uri.replace('/debug/', '')
+            gc.collect()
+            objects = objgraph.by_type(typename)
+            result = [str(obj) for obj in objects]
+            body = json.dumps(result, indent=4)
+            response.compose(code="200", reason="Ok", body=body,
+                             mimetype="application/json")
+        else:
+            response.compose(code="404", reason="Not Found")
+
+        stream.send_response(request, response)
 
 class ServerSideAPI(ServerHTTP):
     """ Implements server-side API for Nagios plugin """
@@ -84,6 +113,7 @@ class ServerSideAPI(ServerHTTP):
 CONFIG.register_defaults({
     "server.bittorrent": True,
     "server.daemonize": True,
+    'server.debug': False,
     "server.negotiate": True,
     "server.rendezvous": False,         # Not needed on the random server
     "server.sapi": True,
@@ -101,6 +131,7 @@ def main(args):
     CONFIG.register_descriptions({
         "server.bittorrent": "Start up BitTorrent test and negotiate server",
         "server.daemonize": "Become a daemon and run in background",
+        'server.debug': 'Run the localhost-only debug server',
         "server.negotiate": "Turn on negotiation infrastructure",
         "server.rendezvous": "Start up rendezvous server",
         "server.sapi": "Turn on Server-side API",
@@ -161,6 +192,15 @@ def main(args):
         server = ServerSideAPI(POLLER)
         server.configure(conf)
         HTTP_SERVER.register_child(server, "/sapi")
+
+    #
+    # Create localhost-only debug server
+    #
+    if CONFIG['server.debug']:
+        LOG.info('server: Starting debug server at 127.0.0.1:9774')
+        server = DebugAPI(POLLER)
+        server.configure(conf)
+        server.listen(('127.0.0.1', 9774))
 
     #
     # Go background and drop privileges,

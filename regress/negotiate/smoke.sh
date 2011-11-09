@@ -25,7 +25,7 @@
 #
 
 if [ "$1" = "--server" ]; then
-    ./bin/neubot server -D server.daemonize=0
+    ./bin/neubot server -D server.daemonize=0 -D server.debug=1
 elif [ "$1" = "--speedtest" ]; then
     ./bin/neubot speedtest -Dspeedtest.client.uri=http://127.0.0.1:9773/
 elif [ "$1" = "--bittorrent" ]; then
