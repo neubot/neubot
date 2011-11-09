@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from neubot.bittorrent.negotiate import AUTH_PEERS
+from neubot.negotiate.server_bittorrent import NEGOTIATE_SERVER_BITTORRENT
 from neubot.bittorrent.peer import PeerNeubot
 from neubot.bittorrent.config import _random_bytes
 
@@ -50,7 +50,7 @@ class ServerPeer(PeerNeubot):
         PeerNeubot.configure(self, conf)
 
     def connection_ready(self, stream):
-        if not stream.id in AUTH_PEERS:
+        if not stream.id in NEGOTIATE_SERVER_BITTORRENT.peers:
             raise RuntimeError("Unauthorized peer")
 
         #
@@ -58,15 +58,16 @@ class ServerPeer(PeerNeubot):
         # from the peer and regenerate the schedule so that we
         # actually transfer that number of bytes.
         #
-        self.target_bytes = AUTH_PEERS[stream.id]["target_bytes"]
+        self.target_bytes = NEGOTIATE_SERVER_BITTORRENT.peers[stream.id][
+                                                   "target_bytes"]
         self.make_sched()
 
         PeerNeubot.connection_ready(self, stream)
 
     def complete(self, stream, speed, rtt, target_bytes):
         # Avoid leak: do not add an entry if not needed
-        if stream.id in AUTH_PEERS:
-            AUTH_PEERS[stream.id] = {
+        if stream.id in NEGOTIATE_SERVER_BITTORRENT.peers:
+            NEGOTIATE_SERVER_BITTORRENT.peers[stream.id] = {
                                      "upload_speed": speed,
                                      "timestamp": utils.timestamp(),
                                      "target_bytes": target_bytes,

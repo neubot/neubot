@@ -64,6 +64,7 @@ class ServerStream(StreamHTTP):
     def __init__(self, poller):
         ''' Initialize '''
         StreamHTTP.__init__(self, poller)
+        self.response_rewriter = None
         self.request = None
 
     def got_request_line(self, method, uri, protocol):
@@ -105,6 +106,9 @@ class ServerStream(StreamHTTP):
 
     def send_response(self, request, response):
         ''' Send a response to the client '''
+
+        if self.response_rewriter:
+            self.response_rewriter(request, response)
 
         if request['connection'] == 'close' or request.protocol == 'HTTP/1.0':
             response['connection'] = 'close'

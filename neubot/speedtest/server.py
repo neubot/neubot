@@ -20,102 +20,50 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os.path
+''' Speedtest server '''
 
-from neubot.config import CONFIG
 from neubot.utils.blocks import RandomBody
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
-from neubot.log import LOG
-from neubot.net.poller import POLLER
 
-from neubot import utils
-from neubot.main import common
-from neubot import system
+class SpeedtestServer(ServerHTTP):
 
-FAKE_NEGOTIATION = '''\
-<SpeedtestNegotiate_Response>
- <unchoked>True</unchoked>
-</SpeedtestNegotiate_Response>
-'''
+    ''' Server-side of the speedtest test '''
 
-#
-# Parse 'range:' header
-# Here we don't care of Exceptions as long as these exceptions
-# are ValueErrors, because the caller expects this function to
-# succed OR to raise ValueError.
-#
-
-def parse_range(message):
-    vector = message["range"].replace("bytes=", "").strip().split("-")
-    first, last = map(int, vector)
-    if first < 0 or last < 0 or last < first:
-        raise ValueError("Cannot parse range header")
-    return first, last
-
-class ServerTest(ServerHTTP):
-
-    def configure(self, conf):
-        conf["http.server.rootdir"] = ""
-        ServerHTTP.configure(self, conf)
-
+    # Adapted from neubot/negotiate/server.py
     def got_request_headers(self, stream, request):
-        if request.uri == "/speedtest/upload":
-            request.body.write = lambda octets: None
-        return True
+        ''' Filter incoming HTTP requests '''
+        isgood = (request.uri == '/speedtest/latency' or
+                  request.uri == '/speedtest/download' or
+                  request.uri == '/speedtest/upload')
+        return isgood
+
+    @staticmethod
+    def _parse_range(message):
+        ''' Parse incoming range header '''
+        first, last = message['range'].replace('bytes=', '').strip().split('-')
+        first, last = int(first), int(last)
+        if first < 0 or last < 0 or last < first:
+            raise ValueError('Invalid range header')
+        return first, last
 
     def process_request(self, stream, request):
+        ''' Process incoming HTTP request '''
 
-        if request.uri in ("/speedtest/latency", "/speedtest/upload"):
+        if request.uri in ('/speedtest/latency', '/speedtest/upload'):
             response = Message()
-            response.compose(code="200", reason="Ok")
+            response.compose(code='200', reason='Ok')
             stream.send_response(request, response)
 
-        elif request.uri == "/speedtest/download":
-            first, last = parse_range(request)
+        elif request.uri == '/speedtest/download':
+            first, last = self._parse_range(request)
             response = Message()
-            response.compose(code="200", reason="Ok",
+            response.compose(code='200', reason='Ok',
               body=RandomBody(last - first + 1),
-              mimetype="application/octet-stream")
-            stream.send_response(request, response)
-
-        # Fake for testing purpose only
-        elif request.uri in ("/speedtest/negotiate", "/speedtest/collect"):
-            response = Message()
-            body = None
-            if request.uri == "/speedtest/negotiate":
-                body = FAKE_NEGOTIATION
-            response.compose(code="200", reason="Ok", body=body)
+              mimetype='application/octet-stream')
             stream.send_response(request, response)
 
         else:
-            response = Message()
-            body = "500 Internal Server Error"
-            response.compose(code="500", reason="Internal Server Error",
-                             body=body, mimetype="text/plain")
-            stream.send_response(request, response)
+            raise RuntimeError('Unexpected URI')
 
-CONFIG.register_defaults({
-    "speedtest.server.address": "0.0.0.0",
-    "speedtest.server.daemonize": True,
-    "speedtest.server.port": "80",
-})
-
-def main(args):
-
-    common.main("speedtest.server", "Speedtest Test Server", args)
-
-    conf = CONFIG.copy()
-
-    server = ServerTest(POLLER)
-    server.configure(conf)
-    server.listen((conf["speedtest.server.address"],
-                  conf["speedtest.server.port"]))
-
-    if conf["speedtest.server.daemonize"]:
-        system.change_dir()
-        system.go_background()
-        LOG.redirect()
-
-    system.drop_privileges(LOG.error)
-    POLLER.loop()
+SPEEDTEST_SERVER = SpeedtestServer(None)

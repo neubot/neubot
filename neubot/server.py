@@ -35,10 +35,8 @@ from neubot.http.message import Message
 from neubot.http.server import HTTP_SERVER
 from neubot.http.server import ServerHTTP
 from neubot.net.poller import POLLER
-from neubot.speedtest.negotiate import ServerSpeedtest
 
-from neubot.speedtest.session import TRACKER
-from neubot.negotiate import NEGOTIATOR
+from neubot.negotiate.server import NEGOTIATE_SERVER
 
 from neubot.config import CONFIG
 from neubot.log import LOG
@@ -50,6 +48,9 @@ from neubot import system
 
 #from neubot import rendezvous          # Not yet
 import neubot.rendezvous.server
+
+#from neubot import speedtest           # Not yet
+import neubot.speedtest.wrapper
 
 class ServerSideAPI(ServerHTTP):
     """ Implements server-side API for Nagios plugin """
@@ -67,12 +68,7 @@ class ServerSideAPI(ServerHTTP):
             response.compose(code="200", reason="Ok", body=body,
                              mimetype="application/json")
         elif request.uri == "/sapi/state":
-            #
-            # XXX It would be nice one day to use NEGOTIATOR
-            # also for the speedtest test.
-            #
-            average = (len(TRACKER) + len(NEGOTIATOR))/2
-            body = '{"queue_len_cur": %f}' % average
+            body = '{"queue_len_cur": %d}' % len(NEGOTIATE_SERVER.queue)
             response.compose(code="200", reason="Ok", body=body,
                              mimetype="application/json")
         else:
@@ -128,7 +124,6 @@ def main(args):
     # their run() method in order to kick them off.
     #
     if conf["server.negotiate"]:
-        conf["negotiate.listen"] = True
         negotiate.run(POLLER, conf)
 
     if conf["server.bittorrent"]:
@@ -136,21 +131,15 @@ def main(args):
         conf["bittorrent.negotiate"] = True
         bittorrent.run(POLLER, conf)
 
+    if conf['server.speedtest']:
+        #conf['speedtest.listen'] = 1           # Not yet
+        #conf['speedtest.negotiate'] = 1        # Not yet
+        neubot.speedtest.wrapper.run(POLLER, conf)
+
     # Migrating from old style to new style
     if conf["server.rendezvous"]:
         #conf["rendezvous.listen"] = True       # Not yet
         neubot.rendezvous.server.run(POLLER, conf)
-
-    #
-    # Old-style modules are less engineered and so
-    # they're a bit more painful to start up.  This
-    # August maybe I will have time to migrate 'em
-    # to run() interface.
-    #
-    if conf["server.speedtest"]:
-        server = ServerSpeedtest(None)
-        server.configure(conf)
-        HTTP_SERVER.register_child(server, "/speedtest")
 
     #
     # Historically Neubot runs on port 9773 and

@@ -34,7 +34,8 @@ from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
-from neubot.speedtest import compat
+from neubot.speedtest.wrapper import SpeedtestCollect
+from neubot.speedtest.wrapper import SpeedtestNegotiate_Response
 from neubot.utils.version import LibVersion
 
 from neubot.main import common
@@ -126,7 +127,7 @@ class ClientNegotiate(ClientHTTP):
 
     def got_response(self, stream, request, response):
         m = marshal.unmarshal_object(response.body.read(), "text/xml",
-                                     compat.SpeedtestNegotiate_Response)
+                                     SpeedtestNegotiate_Response)
         self.conf["speedtest.client.authorization"] = m.authorization
         self.conf["speedtest.client.public_address"] = m.publicAddress
         self.conf["speedtest.client.unchoked"] = utils.intify(m.unchoked)
@@ -135,7 +136,7 @@ class ClientNegotiate(ClientHTTP):
 
 class ClientCollect(ClientHTTP):
     def connection_ready(self, stream):
-        m1 = compat.SpeedtestCollect()
+        m1 = SpeedtestCollect()
         m1.client = self.conf.get("uuid", "")
         m1.timestamp = utils.timestamp()
         m1.internalAddress = stream.myname[0]

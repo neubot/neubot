@@ -158,6 +158,7 @@ class Stream(Pollable):
         self.bytes_recv = 0
         self.bytes_sent = 0
 
+        self.opaque = None
         self.atclosev = set()
 
     def __repr__(self):
@@ -203,6 +204,10 @@ class Stream(Pollable):
         if func in self.atclosev:
             LOG.oops("Duplicate atclose(): %s" % func)
         self.atclosev.add(func)
+
+    def unregister_atclose(self, func):
+        if func in self.atclosev:
+            self.atclosev.remove(func)
 
     # Close path
 

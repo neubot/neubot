@@ -1,0 +1,211 @@
+Negotiate server
+''''''''''''''''
+
+:Version: 1.2 of 2011/11/09
+:Authors: Simone Basso
+:Documents: neubot/negotiate/server.py
+
+This document explains briefly how the negotiate (and collect)
+server works and documents the negotiate API.
+
+The negotiate server is the component of Neubot server that manages
+the `negotiate` and `collect` phases of a test between a Neubot
+client and a Neubot server.  Negotiate is the phase just before the
+actual transmission test.  During this phase, the client registers
+with the server, waits for its turn to perform the test and negotiates
+test parameters.  Collect is the phase just after the actual
+transmission test.  During this phase, the client and the server
+exchange what they measured, so that there is complete information.
+
+Negotiation and collect are implemented in terms of HTTP messages
+and the negotiate server runs as a child of the global HTTP_SERVER
+defined in ``neubot/http/server.py``.  This document assumes that
+the global HTTP server is properly configured and does not discuss
+this issue further.  Refer to ``neubot/server.py`` for more info.
+
+
+Backward and forward compatibility
+``````````````````````````````````
+
+The code that implements the negotiate server is ready for Python
+3 and is backwards compatible with Python 2.5.  Forward compatibility
+is there to minimize the effort when all major distributions will move
+to Python 3.  Backward compatibility is needed because M-Lab servers
+run Fedora 8, which ships with Python 2.5.
+
+
+Negotiation
+```````````
+
+During negotiation, the client registers with the server, waits
+for its turn to perform a test and negotiates test parameters.
+The server keeps a FIFO queue of all the negotiating clients and
+allows only the first N clients to perform a test.  Most of the
+work is performed by a common layer of code and the per-test code
+is invoked only when a new client should be unchoked.
+
+The client establishes a TCP connection with the server and uses
+this connection to negotiate and collect.  The connection shouldn't
+be closed after each request-response exchange and the client should
+employ the HTTP/1.1 protocol.  The server uses the connection to
+identify the client and, indeed, the FIFO queue is actually a list
+of TCP connections.
+
+The negotiate request is an HTTP request and always includes a
+JSON body::
+
+	GET /negotiate/MODULE HTTP/1.1
+	Content-Length: 123...
+	Content-Type: application/json
+
+	{...}
+
+MODULE must be the name of an existing module and, of course,
+123... is the actual length of the JSON body.  The client must
+always send a body and should send an empty dictionary when
+there is nothing meaningful to send.
+
+Note that the server will close the connection if the request
+is bigger than one Megabyte or the transfer-encoding is chunked,
+to prevent sending arbitrarily long request bodies.
+
+Note that the request above uses version 1.1 of the protocol
+and does not contain a ``connection: close`` header, thereby
+enforcing the keepalive semantic.  Of course a client is free
+to close the connection, but that means it will loose its queue
+position.
+
+Upon receiving a negotiate request, the server checks whether
+it comes from a known connection.  If not, the server checks
+whether there is enough space in queue.  If the queue is full,
+the connection is closed; otherwise, the server enqueues the
+connection and immediately sends a response.  Conversely, when
+the connection is known (i.e. is already in queue) the server
+delays the response until the position in queue changes.
+
+The negotiate response is an HTTP response and always includes
+a JSON body::
+
+	HTTP/1.1 200 Ok
+	Content-Length: 123...
+	Content-Type: application/json
+
+	{
+		'authorization': <string>,
+		'queue_pos': <integer>,
+		'real_address': <string>,
+		'unchoked': <integer>,
+		...
+	}
+
+Of course, 123... is the length of the JSON body and the body
+is properly serialized.  (Here the body is prettyprinted to
+aid the reader.)
+
+The four fields in this example are mandatory, but the per-test
+code may add more fields to negotiate test-specific parameters
+with the client.  Here follows a description of the mandatory
+fields:
+
+authorization
+  This field is empty unless ``unchoked`` is nonzero and is the
+  information that the test client should use to authenticate
+  with the test server to be able to perform the test.  The way
+  the authorization is used depends on the protocol: for example,
+  BitTorrent uses the value of authorization to construct the
+  SHA1 identifier of the torrent.
+
+queue_pos
+  This field is the current position in queue and should be
+  displayed to the user.
+
+real_address
+  This field is the Internet address of the connecting client,
+  as seen by the negotiate server.  This allows a client behind a
+  NAT to know its real network address and communicate it to the
+  server in the collect phase.
+
+unchoked
+  This field is nonzero when the client can perform a test now
+  and is zero otherwise.
+
+Whenever a connection is lost, either because it was closed or
+because of some timeout, the server will (a) remove that connection
+from the FIFO queue and (b) notify all the connections that (i)
+have changed position in queue and (ii) had sent an HTTP request
+and were waiting for a response.  (In other words, it honours the
+Comet pattern and does not send a response when there is not a
+pending HTTP response.)
+
+Each test defines test-specific code.  As far as negotiate is
+concerned, the ``unchoke`` method of test-specific code is invoked
+whenever a client is unchoked.  The minimal ``unchoke`` method
+should return the unique identifier of the stream, as follows::
+
+	def unchoke(self, stream, request_body):
+	    return {'authorization': str(hash(stream))}
+
+The method used to generate a unique identifier from the stream
+does not really matter.  In the above example the code uses
+hash(), which is unique for each Python object, but one can use
+other methods as long as each stream is mapped to a distinct
+identifier.  The authorization field is opaque and the client
+will use it in a protocol-specific way to identify itself with
+the test server.
+
+If the ``unchoke()`` method needs to return more fiels to the
+client, it just have to add them to the returned dict.  But
+note that the code does not allow you to override `queue_pos`,
+`real_address` and `unchoked`.  While an exception is raised
+if `authorization` is not present in the returned dict.
+
+
+Collect
+```````
+
+During collect, the client sends the server its measurements and
+the server sends the clients its measurements, so that there is
+complete information.  This time, most of the work must be performed
+by the per-test code and the common layer of code just takes care
+of serializing and unserializing the documentation.
+
+The collect phase happens on the same connection that was used
+to perform the negotiate.  The collect request is an HTTP request
+and always includes a JSON body::
+
+	GET /collect/MODULE HTTP/1.1
+	Content-Length: 123...
+	Content-Type: application/json
+
+	{...}
+
+MODULE must be the name of an existing module and, of course,
+123... is the actual length of the JSON body.  The client must
+always send a body and should send an empty dictionary when
+there is nothing meaningful to send.
+
+Note that the server will close the connection if the request
+is bigger than one Megabyte or the transfer-encoding is chunked,
+to prevent sending arbitrarily long request bodies.
+
+In this case, it's not necessary for the client to enforce a
+keepalive semantic because the server will close the connection
+in any case.
+
+The collect response is an HTTP response and always includes
+a JSON body::
+
+	HTTP/1.1 200 Ok
+	Content-Length: 123...
+	Content-Type: application/json
+
+	{
+		...
+	}
+
+Of course, 123... is the length of the JSON body and the body
+is properly serialized.  (Here the body is prettyprinted to
+aid the reader.)
+
+No fields here are mandatory but still a body must (and will)
+be sent.
