@@ -21,6 +21,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Wrapper for MaxMind's GeoIP '''
+
 import os.path
 import sys
 
@@ -33,20 +35,30 @@ from neubot.log import LOG
 from neubot import utils
 
 try:
-    import GeoIP
+    import GeoIP as GEOIP
 except ImportError:
-    LOG.error("Missing dependency: GeoIP")
-    LOG.info("Please install GeoIP python wrappers, e.g.")
-    LOG.info("    sudo apt-get install python-geoip")
-    sys.exit(1)
+    GEOIP = None
 
 COUNTRY_DATABASE = "/usr/local/share/GeoIP/GeoIP.dat"
 
 class Geolocator(object):
+
+    ''' Geolocator object '''
+
     def __init__(self):
+        ''' Initialize geolocator object '''
         self.countries = None
 
     def open_or_die(self):
+
+        ''' Open the database or die '''
+
+        if not GEOIP:
+            LOG.error("Missing dependency: GeoIP")
+            LOG.info("Please install GeoIP python wrappers, e.g.")
+            LOG.info("    sudo apt-get install python-geoip")
+            sys.exit(1)
+
         path = CONFIG.get("rendezvous.geoip_wrapper.country_database",
                           COUNTRY_DATABASE)
 
@@ -61,9 +73,10 @@ class Geolocator(object):
                      "<http://www.maxmind.com/app/geolitecountry>.")
             sys.exit(1)
 
-        self.countries = GeoIP.open(path, GeoIP.GEOIP_STANDARD)
+        self.countries = GEOIP.open(path, GEOIP.GEOIP_STANDARD)
 
     def lookup_country(self, address):
+        ''' Lookup for country entry '''
         country = self.countries.country_code_by_addr(address)
         if not country:
             LOG.error("Geolocator: %s: not found" % address)
@@ -71,6 +84,6 @@ class Geolocator(object):
         return utils.stringify(country)
 
 if __name__ == "__main__":
-    geoloc = Geolocator()
-    geoloc.open_or_die()
-    print geoloc.lookup_country("130.192.91.211")
+    GEOLOC = Geolocator()
+    GEOLOC.open_or_die()
+    print GEOLOC.lookup_country("130.192.91.211")
