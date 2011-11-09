@@ -118,6 +118,14 @@ class RandomBlocks(object):
 
 RANDOMBLOCKS = RandomBlocks()
 
+#
+# XXX Create and discard the first block at the very
+# beginning, so we are sure that we can fetch all the
+# needed files in the common case, i.e. when we
+# startup as root.
+#
+RANDOMBLOCKS.get_block()
+
 class RandomBody(object):
 
     '''
