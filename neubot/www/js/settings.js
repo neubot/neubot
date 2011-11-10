@@ -31,8 +31,9 @@ function configError(jqXHR, textStatus, errorThrown) {
     alert(jqXHR.statusText + "\nNo setting saved");
 }
 
-function configSuccess() {
+function configSuccess(changed) {
     alert("Settings successfully updated");
+    window.location.reload();
 }
 
 function submitConfig() {
@@ -49,7 +50,7 @@ function submitConfig() {
         }
     });
     if (numchanged) {
-        utils.setConfigVars(changed, configSuccess, configError);
+        utils.setConfigVars(changed, function(changed) {configSuccess(changed);}, configError);
     }
     else {
         alert("Nothing changed, so no need to save anything");
