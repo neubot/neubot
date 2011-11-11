@@ -322,6 +322,7 @@ CONFIG.register_defaults({
     "privacy.can_share": False,
     "uuid": "",
     "version": "",
+    "www.lang": "",
 })
 CONFIG.register_descriptions({
     "agent.api": "Enable API server",
@@ -338,4 +339,5 @@ CONFIG.register_descriptions({
     "privacy.can_share": "You give Neubot the permission to share your Internet address with the Internet community",
     "uuid": "Random unique identifier of this Neubot agent",
     "version": "Version number of the Neubot database schema",
+    "www.lang": "Default Web GUI language (empty: use browser default)",
 })

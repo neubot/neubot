@@ -36,15 +36,24 @@ var i18n = {
     },
 
     getLanguageInUse: function() {
-        var lang;
-        if (navigator.userLanguage) {
-            lang = navigator.userLanguage.toLowerCase();
-        }
-        else if (navigator.language) {
-            lang = navigator.language.toLowerCase();
-        }
-        else {
-            lang = undefined;
+        var lang = undefined;
+        jQuery.ajax({
+            url: '/api/config',
+            data: {},
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                lang = data['www.lang'];
+            },
+            async: false
+        });
+        if (!lang) {
+            if (navigator.userLanguage) {
+                lang = navigator.userLanguage.toLowerCase();
+            }
+            else if (navigator.language) {
+                lang = navigator.language.toLowerCase();
+            }
         }
         return lang;
     },

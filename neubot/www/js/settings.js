@@ -33,6 +33,7 @@ function configError(jqXHR, textStatus, errorThrown) {
 
 function configSuccess() {
     alert("Settings successfully updated");
+    window.location.reload();
 }
 
 function submitConfig() {
