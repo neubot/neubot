@@ -233,7 +233,7 @@ install:
 # Make package for debian/ubuntu
 #
 
-DEB_PACKAGE = dist/$(STEM)-3_all.deb
+DEB_PACKAGE = dist/$(STEM)-1_all.deb
 
 # Directories to create.
 DEB_DATA_DIRS += dist/data/etc/init.d/
