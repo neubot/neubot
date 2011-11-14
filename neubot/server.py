@@ -68,8 +68,12 @@ class DebugAPI(ServerHTTP):
             body = json.dumps(stats, indent=4)
             response.compose(code="200", reason="Ok", body=body,
                              mimetype="application/json")
-        elif request.uri.startswith('/debug/'):
-            typename = request.uri.replace('/debug/', '')
+        elif request.uri == '/debug/count':
+            body = json.dumps(len(gc.get_objects()), indent=4)
+            response.compose(code="200", reason="Ok", body=body,
+                             mimetype="application/json")
+        elif request.uri.startswith('/debug/types/'):
+            typename = request.uri.replace('/debug/types/', '')
             gc.collect()
             objects = objgraph.by_type(typename)
             result = [str(obj) for obj in objects]
