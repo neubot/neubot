@@ -33,16 +33,16 @@ from neubot.compat import json
 def main():
 
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'a')
+        options, arguments = getopt.getopt(sys.argv[1:], 'r')
     except getopt.error:
-        sys.exit('Usage: debugmem [-a]')
+        sys.exit('Usage: debugmem [-r]')
     if arguments:
-        sys.exit('Usage: debugmem [-a]')
+        sys.exit('Usage: debugmem [-r]')
 
-    aflag = False
+    rflag = False
     for tpl in options:
-        if tpl[0] == '-a':
-            aflag = True
+        if tpl[0] == '-r':
+            rflag = True
 
     odictionary = {}
 
@@ -75,7 +75,7 @@ def main():
             json.dump(result, sys.stdout, indent=4)
             sys.stdout.write('\n======\n')
 
-            if not aflag or not odictionary:
+            if rflag or not odictionary:
                 odictionary = dictionary
 
         except:
