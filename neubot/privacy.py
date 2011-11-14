@@ -62,20 +62,20 @@ def check(updates):
 'cannot work if it cannot collect your Internet address.  If that is a '
 'problem for you, either disable Neubot or uninstall it.')
 
-def collect_allowed(m):
+def collect_allowed(message):
 
     ''' Returns True if we are allowed to collect a result into the
         database, and False otherwise '''
 
-    if type(m) != types.DictType:
+    if type(message) != types.DictType:
         #
         # XXX This is a shame therefore put the oops() and hope that
         # it does its moral suasion job as expected.
         #
         LOG.oops("TODO: please pass me a dictionary!", LOG.debug)
-        m = m.__dict__
-    return (not utils.intify(m["privacy_informed"])
-            or utils.intify(m["privacy_can_collect"]))
+        message = message.__dict__
+    return (not utils.intify(message["privacy_informed"])
+            or utils.intify(message["privacy_can_collect"]))
 
 def allowed_to_run():
     ''' Returns True if the user is informed and has
