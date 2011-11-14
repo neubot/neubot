@@ -25,7 +25,6 @@
 import asyncore
 import getopt
 import os
-import sqlite3
 import sys
 import types
 import xml.dom.minidom
@@ -37,6 +36,7 @@ from neubot.config import CONFIG
 from neubot.config import ConfigError
 from neubot.log import LOG
 from neubot.database import table_config
+from neubot.database import DATABASE
 from neubot import rootdir
 from neubot import system
 from neubot import utils
@@ -168,10 +168,9 @@ def __main(args):
         sys.exit(1)
     else:
 
-        connection = sqlite3.connect(database_path)
+        DATABASE.set_path(database_path)
+        connection = DATABASE.connection()
         if settings:
-            # Just in case...
-            table_config.create(connection)
             for name, value in settings.items():
                 if name not in ('privacy.informed', 'privacy.can_collect',
                             'privacy.can_share'):
