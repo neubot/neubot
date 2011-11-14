@@ -39,7 +39,6 @@ SYNOPSIS
 |   neubot --help
 |   neubot -V
 |   neubot *COMMAND* [-ElvV] [-D *PROPERTY[=VALUE*]] [-f *FILE*]
-|   start-neubot-daemon
 
 DESCRIPTION
 ```````````
@@ -134,12 +133,6 @@ stream
   This module performs an on-demand TCP bulk transfer transmission Test
   with an alternative Test Server reserved for this purpose.
 
-The *eight form* (start-neubot-daemon) of the command is a convenience shell
-script that attempts to start the Agent in a very robust way.
-E.g., if the Python interpreter is not in the **PATH**, the script will try to
-locate it.
-If you install Neubot from sources, please use this command to start
-Neubot from your */etc/rc.local* script.
 
 OPTIONS
 ```````

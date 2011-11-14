@@ -38,6 +38,7 @@ MODULES = {
     "bittorrent"          : "bittorrent",
     "http.client"         : "http.client",
     "http.server"         : "http.server",
+    'notifier'            : 'notifier',
     "privacy"             : "privacy",
     "rendezvous.client"   : "rendezvous.client",
     "rendezvous.server"   : "rendezvous.server",
@@ -47,6 +48,7 @@ MODULES = {
     "speedtest.negotiate" : "speedtest.negotiate",
     "speedtest.server"    : "speedtest.server",
     "stream"              : "net.stream",
+    'viewer'              : 'viewer',
 }
 
 #

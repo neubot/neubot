@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# neubot/viewer/unix.py
 
 #
 # Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
@@ -29,27 +29,25 @@ import os.path
 import sqlite3
 import sys
 import time
-import webbrowser
 
 if sys.version_info[0] == 3:
     import http.client as lib_http
 else:
     import httplib as lib_http
 
-HAVE_WEBKIT = True
 try:
     import gtk
     import webkit
 except ImportError:
-    HAVE_WEBKIT = False
+    sys.exit('Viewer support not available.')
 
-ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
+ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
     ICON = None
 
-STATIC_PAGE = '/usr/share/neubot/www/not_running.html'
+STATIC_PAGE = '@DATADIR@/neubot/www/not_running.html'
 
-if HAVE_WEBKIT:
+if True:
     class WebkitGUI(gtk.Window):
 
         ''' Webkit- and Gtk-based GUI '''
@@ -122,9 +120,9 @@ def main(args):
     try:
         options, arguments = getopt.getopt(args[1:], 'f:')
     except getopt.error:
-        sys.exit('Usage: neubot_gui [-f database]')
+        sys.exit('Usage: neubot viewer [-f database]')
     if arguments:
-        sys.exit('Usage: neubot_gui [-f database]')
+        sys.exit('Usage: neubot viewer [-f database]')
 
     database = '/var/neubot/database.sqlite3'
     for name, value in options:
@@ -148,11 +146,9 @@ def main(args):
 
     if not 'DISPLAY' in os.environ:
         sys.exit('No DISPLAY available')
-    elif HAVE_WEBKIT:
+    else:
         WebkitGUI(uri)
         gtk.main()
-    else:
-        webbrowser.open_new(uri)
 
 if __name__ == '__main__':
     main(sys.argv)

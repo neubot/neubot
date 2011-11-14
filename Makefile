@@ -36,13 +36,6 @@ VERSION	= 0.4.4
 PHONIES += help
 PHONIES += clean
 PHONIES += archive
-PHONIES += _install_skel
-PHONIES += _install_sources
-PHONIES += _install_man
-PHONIES += _install_icon
-PHONIES += _install_menu
-PHONIES += _install_autostart
-PHONIES += _install_edit
 PHONIES += _install
 PHONIES += install
 PHONIES += uninstall
@@ -116,9 +109,7 @@ INSTALL	= install
 # 3.1.1 of Debian Python Policy which covers the shipping
 # of private modules [2].
 # We follow BSD hier(7) and we install manual pages in
-# /usr/local/man by default.  We override it when we make
-# a debian package but you might want to pass MANDIR to
-# make when installing from sources.
+# /usr/local/man by default.
 #
 # [1] http://bit.ly/aLduJz (gnu.org)
 # [2] http://bit.ly/ayYyAR (debian.org)
@@ -130,8 +121,57 @@ PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 MANDIR = $(PREFIX)/man
-ICONDIR = $(DATADIR)/icons/hicolor/scalable/apps
-MENUDIR = $(DATADIR)/applications
+
+_install:
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)/neubot
+	$(INSTALL) -d $(DESTDIR)$(DATADIR)
+	for DIR in `cd UNIX/share && find . -type d -mindepth 1`; do \
+	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/$$DIR; \
+	    test $$? || exit 1; \
+	done
+	for FILE in `cd UNIX/share && find . -type f`; do \
+	    $(INSTALL) -m644 UNIX/share/$$FILE $(DESTDIR)$(DATADIR)/$$FILE; \
+	    test $$? || exit 1; \
+	done
+	$(INSTALL) -d $(DESTDIR)$(MANDIR)
+	for DIR in `cd UNIX/man && find . -type d -mindepth 1`; do \
+	    $(INSTALL) -d $(DESTDIR)$(MANDIR)/$$DIR; \
+	    test $$? || exit 1; \
+	done
+	for FILE in `cd UNIX/man && find . -type f`; do \
+	    gzip -9c UNIX/man/$$FILE > UNIX/man/$$FILE.gz; \
+	    test $$? || exit 1; \
+	    $(INSTALL) -m644 UNIX/man/$$FILE.gz $(DESTDIR)$(MANDIR)/$$FILE.gz; \
+	    test $$? || exit 1; \
+	done
+	$(INSTALL) -d $(DESTDIR)$(SYSCONFDIR)
+	for DIR in `cd UNIX/etc && find . -type d -mindepth 1`; do \
+	    $(INSTALL) -d $(DESTDIR)$(SYSCONFDIR)/$$DIR; \
+	    test $$? || exit 1; \
+	done
+	for FILE in `cd UNIX/etc && find . -type f`; do \
+	    $(INSTALL) -m644 UNIX/etc/$$FILE $(DESTDIR)$(SYSCONFDIR)/$$FILE; \
+	    test $$? || exit 1; \
+	done
+	$(INSTALL) -d $(DESTDIR)$(DATADIR)/neubot
+	for DIR in `find neubot -type d`; do \
+	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/$$DIR; \
+	    test $$? || exit 1; \
+	done
+	for FILE in `find neubot -type f`; do \
+	    $(INSTALL) -m644 $$FILE $(DESTDIR)$(DATADIR)/$$FILE; \
+	    test $$? || exit 1; \
+	done
+	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g'; do \
+	    ./scripts/sed_inplace $$PATTERN \
+	        $(DESTDIR)$(BINDIR)/neubot \
+	        $(DESTDIR)$(DATADIR)/applications/neubot.desktop \
+	        $(DESTDIR)$(DATADIR)/neubot/notifier/unix.py \
+	        $(DESTDIR)$(DATADIR)/neubot/viewer/unix.py \
+	        $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop; \
+	    test $$? || exit 1; \
+	done
 
 # TODO There is more stuff we should uninstall
 uninstall:
@@ -139,81 +179,6 @@ uninstall:
 	@rm -rf $(DESTDIR)$(BINDIR)/neubot
 	@rm -rf $(DESTDIR)$(BINDIR)/start-neubot-daemon
 	@rm -rf $(DESTDIR)$(BINDIR)/neubotw
-
-_install_skel:
-	@$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
-
-#
-# XXX Probably distutils can be configured to enforce certain
-# permissions, however I've not found how to do that just after
-# a quick check.  So, for now, I will just override the umask
-# here to be sure that what is installed has the right perms
-# (I use `umask 077`).
-#
-_install_sources:
-	@umask 022 && \
-	 python setup.py install --install-purelib $(DESTDIR)$(DATADIR) \
-	                         --install-scripts $(DESTDIR)$(BINDIR)
-	@rm -rf $(DESTDIR)$(DATADIR)/neubot-*.egg-info
-	#
-	# XXX Bleah bleah bleah!  I will move the two files in
-	# the proper place just after 0.4.4.
-	#
-	@$(INSTALL) debian/neubot_gui $(DESTDIR)$(BINDIR)
-	@$(INSTALL) debian/neubot_notify $(DESTDIR)$(BINDIR)
-
-#
-# We keep in the sources the manual page so that one that
-# does not have rst2man installed is still able to install
-# neubot.
-#
-_install_man:
-	@$(INSTALL) -d $(DESTDIR)$(MANDIR)/man1
-	@$(INSTALL) -m644 man/man1/neubot.1 $(DESTDIR)$(MANDIR)/man1
-
-_install_icon:
-	@$(INSTALL) -d $(DESTDIR)$(ICONDIR)
-	@$(INSTALL) -m644 icons/neubot.svg $(DESTDIR)$(ICONDIR)/neubot.svg
-
-_install_menu:
-	@$(INSTALL) -d $(DESTDIR)$(MENUDIR)
-	@for F in `cd applications/ && ls`; do \
-	 $(INSTALL) -m644 applications/$$F $(DESTDIR)$(MENUDIR)/$$F ||exit $$?;\
-	done
-
-_install_autostart:
-	@$(INSTALL) -d $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/
-	@$(INSTALL) -m644 unix_root/etc/xdg/autostart/neubot.desktop $(DESTDIR)$(SYSCONFDIR)/xdg/autostart
-
-#
-# After the install we need to edit the following files to
-# tell neubot the path where it's installed.
-# The original sources contain the @PREFIX@ placeholder and
-# will use a sane default if they find the placeholder instead
-# of a valid path.
-#
-NEEDEDIT += $(DESTDIR)$(BINDIR)/neubot
-NEEDEDIT += $(DESTDIR)$(BINDIR)/start-neubot-daemon
-NEEDEDIT += $(DESTDIR)$(MENUDIR)/neubot.desktop
-NEEDEDIT += $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop
-
-_install_edit:
-	@for EDIT in $(NEEDEDIT); do \
-	 ./scripts/sed_inplace 's|@PREFIX@|$(PREFIX)|g' $$EDIT || exit $$?; \
-	done
-
-INSTALL_RULES += _install_skel
-INSTALL_RULES += _install_sources
-INSTALL_RULES += _install_man
-INSTALL_RULES += _install_icon
-INSTALL_RULES += _install_menu
-INSTALL_RULES += _install_autostart
-INSTALL_RULES += _install_edit
-
-_install:
-	@for RULE in $(INSTALL_RULES); do \
-	 make -f Makefile $$RULE || exit $$?; \
-	done
 
 #
 # Install should be invoked as root and will actually
@@ -250,14 +215,8 @@ DEB_DATA_EXEC += dist/data/etc/init.d/neubot
 DEB_DATA_EXEC += dist/data/etc/cron.daily/neubot
 
 _deb_data:
-	@make -f Makefile _install DESTDIR=dist/data PREFIX=/usr
-	@rm -rf dist/data/usr/bin/*
-	@find dist/data/usr/share/neubot -type f -name \*.pyc -exec rm {} \;
-	@$(INSTALL) debian/neubot dist/data/usr/bin
-	@$(INSTALL) debian/neubot_gui dist/data/usr/bin
-	@$(INSTALL) debian/neubot_notify dist/data/usr/bin
-	@cd dist/data && mv usr/man usr/share/man
-	@cd dist/data/usr/share/man/man1/ && gzip -9 *
+	make -f Makefile _install DESTDIR=dist/data \
+	    PREFIX=/usr MANDIR=/usr/share/man
 	@for DIR in $(DEB_DATA_DIRS); do \
 	 $(INSTALL) -d $$DIR; \
 	done

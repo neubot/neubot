@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# neubot/notifier/unix.py
 
 #
 # Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
@@ -44,20 +44,18 @@ import sqlite3
 import sys
 import syslog
 import time
-import webbrowser
 
 if sys.version_info[0] == 3:
     import http.client as lib_http
 else:
     import httplib as lib_http
 
-HAVE_PYNOTIFY = True
 try:
     import pynotify
 except ImportError:
-    HAVE_PYNOTIFY = False
+    sys.exit('Notifier support not available')
 
-NEUBOT_ICON = '/usr/share/icons/hicolor/scalable/apps/neubot.svg'
+NEUBOT_ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
     NEUBOT_ICON = None
 
@@ -115,16 +113,6 @@ def __should_adjust_privacy(database_path):
 
         if int(informed) == 0 or int(can_collect) == 0:
             # Should adjust settings
-
-            #
-            # XXX Handle the case where pynotify is not
-            # installed opening the browser just once and
-            # then exiting.
-            #
-            if not HAVE_PYNOTIFY:
-                webbrowser.open('http://%s:%s/privacy.html' % (address, port))
-                sys.exit(0)
-
             return True
 
     except SystemExit:
@@ -171,9 +159,9 @@ def main(args):
     try:
         options, arguments = getopt.getopt(args[1:], 'f:')
     except getopt.error:
-        sys.exit('Usage: neubot_notify [-f database]\n')
+        sys.exit('Usage: neubot notifier [-f database]\n')
     if arguments:
-        sys.exit('Usage: neubot_notify [-f database]\n')
+        sys.exit('Usage: neubot notifier [-f database]\n')
 
     database = '/var/neubot/database.sqlite3'
     for name, value in options:

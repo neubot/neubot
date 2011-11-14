@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+# neubot/notifier/__init__.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,16 +20,16 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys
+''' The notifier is the component of Neubot that is run when the
+    user logs in and that periodically notifies the user depending
+    on Neubot configuration. '''
+
 import os
+import sys
 
-NEUBOT_HOME = "@DATADIR@"
-if NEUBOT_HOME.startswith("@"):
-    NEUBOT_HOME = "."
-
-if os.environ.has_key("NEUBOT_HOME"):
-    NEUBOT_HOME = os.environ["NEUBOT_HOME"]
-sys.path.insert(0, NEUBOT_HOME)
-
-from neubot.main import main
-main(sys.argv)
+if os.name == 'posix' and sys.platform != 'darwin':
+    from neubot.notifier.unix import main
+else:
+    def main(args):
+        ''' main stub '''
+        sys.exit('Notifier not implemented on this platform.')
