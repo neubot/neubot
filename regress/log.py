@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Unit test for neubot/log.py '''
+
 #
 # This is the old testing code for the logger...
 # the code below screams for deletion and an unit
@@ -27,7 +29,6 @@
 #
 
 import sys
-import traceback
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
