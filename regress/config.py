@@ -21,9 +21,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Regression tests for neubot/config.py
-#
+''' Regression tests for neubot/config.py '''
 
 import unittest
 import sys
@@ -31,11 +29,17 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.log import LOG
 from neubot import config
 
+#
+# pylint: disable=R0904
+#
+
 class TestStringToKv(unittest.TestCase):
-    def runTest(self):
+
+    ''' Test string_to_kv behavior '''
+
+    def test_string_to_kv(self):
         """Check string_to_kv behavior"""
         self.assertEquals(config.string_to_kv("    "), ())
         self.assertEquals(config.string_to_kv("# a"), ())
@@ -44,40 +48,50 @@ class TestStringToKv(unittest.TestCase):
         self.assertEquals(config.string_to_kv("foo=bar"), ("foo", "bar"))
 
 class TestKvToString(unittest.TestCase):
-    def runTest(self):
+
+    ''' Test kv_to_string behavior '''
+
+    def test_kv_to_string(self):
         """Check kv_to_string behavior"""
         self.assertEquals(config.kv_to_string(("a", "b")), "a=b\n")
         self.assertEquals(config.kv_to_string((3, 7)), "3=7\n")
-        self.assertEquals(config.kv_to_string(("èèè", "a")), "èèè=a\n")
+        self.assertEquals(config.kv_to_string(("èèè",
+                             "a")), "èèè=a\n")
         self.assertEquals(config.kv_to_string((3, 7.333)), "3=7.333\n")
 
 class TestConfigDict(unittest.TestCase):
-    def testBasics(self):
-        """Test some basic properties of ConfigDict"""
-        d = config.ConfigDict()
-        self.assertTrue(isinstance(d, dict))
-        self.assertTrue(hasattr(d, "__setitem__"))
-        self.assertTrue(hasattr(d, "update"))
 
-    def testAssignment(self):
+    ''' Tests ConfigDict behavior '''
+
+    def test_basics(self):
+        """Test some basic properties of ConfigDict"""
+        dictionary = config.ConfigDict()
+        self.assertTrue(isinstance(dictionary, dict))
+        self.assertTrue(hasattr(dictionary, "__setitem__"))
+        self.assertTrue(hasattr(dictionary, "update"))
+
+    def test_assignment(self):
         """Make sure all ways to assign to ConfigDict are equivalent"""
 
-        d1 = config.ConfigDict()
-        for key,value in [("a", 1), ("b", 2), ("c", 3)]:
-            d1[key] = value
+        dict1 = config.ConfigDict()
+        for key, value in [("a", 1), ("b", 2), ("c", 3)]:
+            dict1[key] = value
 
-        d2 = config.ConfigDict({"a": 1, "b": 2, "c": 3})
+        dict2 = config.ConfigDict({"a": 1, "b": 2, "c": 3})
 
-        d3 = config.ConfigDict()
-        d3.update([("a", 1), ("b", 2), ("c", 3)])
+        dict3 = config.ConfigDict()
+        dict3.update([("a", 1), ("b", 2), ("c", 3)])
 
-        d4 = config.ConfigDict()
-        d4.update(a=1, b=2, c=3)
+        dict4 = config.ConfigDict()
+        dict4.update(a=1, b=2, c=3)
 
-        self.assertTrue(d1 == d2 == d3 == d4)
+        self.assertTrue(dict1 == dict2 == dict3 == dict4)
 
 class TestCONFIG(unittest.TestCase):
-    def runTest(self):
+
+    ''' Test the behavior of the CONFIG global object '''
+
+    def test_config_global_object(self):
         """Check CONFIG global object behavior"""
         config.CONFIG.register_defaults({
             "default_value": "default",
