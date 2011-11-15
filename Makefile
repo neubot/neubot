@@ -220,14 +220,14 @@ _deb_data:
 	 $(INSTALL) -d $$DIR; \
 	done
 	@for FILE in $(DEB_DATA_FILES); do \
-	 $(INSTALL) -m644 debian/$$FILE dist/data/$$FILE; \
+	 $(INSTALL) -m644 Debian/$$FILE dist/data/$$FILE; \
 	done
 	@for FILE in $(DEB_DATA_EXEC); do \
 	 chmod 755 $$FILE; \
 	done
 	@$(INSTALL) -d dist/data/usr/share/doc/neubot
-	@$(INSTALL) -m644 debian/copyright dist/data/usr/share/doc/neubot/
-	@$(INSTALL) -m644 debian/changelog dist/data/usr/share/doc/neubot/changelog.Debian
+	@$(INSTALL) -m644 Debian/copyright dist/data/usr/share/doc/neubot/
+	@$(INSTALL) -m644 Debian/changelog dist/data/usr/share/doc/neubot/changelog.Debian
 	@cd dist/data/usr/share/doc/neubot && gzip -9 changelog.Debian
 
 _deb_data.tgz: _deb_data
@@ -235,12 +235,12 @@ _deb_data.tgz: _deb_data
 
 _deb_control_skel:
 	@$(INSTALL) -d dist/control
-	@$(INSTALL) -m644 debian/control/control dist/control/control
-	@$(INSTALL) -m644 debian/control/conffiles dist/control/conffiles
-	@$(INSTALL) debian/control/preinst dist/control/preinst
-	@$(INSTALL) debian/control/postinst dist/control/postinst
-	@$(INSTALL) debian/control/prerm dist/control/prerm
-	@$(INSTALL) debian/control/postrm dist/control/postrm
+	@$(INSTALL) -m644 Debian/control/control dist/control/control
+	@$(INSTALL) -m644 Debian/control/conffiles dist/control/conffiles
+	@$(INSTALL) Debian/control/preinst dist/control/preinst
+	@$(INSTALL) Debian/control/postinst dist/control/postinst
+	@$(INSTALL) Debian/control/prerm dist/control/prerm
+	@$(INSTALL) Debian/control/postrm dist/control/postrm
 
 _deb_control_md5sums:
 	@$(INSTALL) -m644 /dev/null dist/control/md5sums
