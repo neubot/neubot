@@ -33,7 +33,7 @@ if __name__ == "__main__":
 from neubot.database import table_bittorrent
 from neubot import utils
 
-from regress.bittorrent._gen import ResultIterator
+from regress.database.table_bittorrent_gen import ResultIterator
 
 class TestDatabase(unittest.TestCase):
 

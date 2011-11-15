@@ -33,7 +33,7 @@ if __name__ == "__main__":
 from neubot.database import table_speedtest
 from neubot import utils
 
-from regress.speedtest._gen import ResultIterator
+from regress.database.table_speedtest_gen import ResultIterator
 
 class TestDatabase(unittest.TestCase):
 
