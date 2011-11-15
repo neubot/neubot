@@ -40,13 +40,7 @@ PHONIES += _install
 PHONIES += install
 PHONIES += uninstall
 PHONIES += _deb_data
-PHONIES += _deb_data.tgz
-PHONIES += _deb_control_skel
-PHONIES += _deb_control_md5sums
-PHONIES += _deb_control_size
 PHONIES += _deb_control
-PHONIES += _deb_control.tgz
-PHONIES += _deb_binary
 PHONIES += _deb
 PHONIES += deb
 PHONIES += release
@@ -194,73 +188,41 @@ install:
 # | (_| |  __/ |_) |
 #  \__,_|\___|_.__/
 #
-# Make package for debian/ubuntu
+# Make package for Debian/Ubuntu/Mint
 #
 
 DEB_PACKAGE = dist/$(STEM)-1_all.deb
 
-# Directories to create.
-DEB_DATA_DIRS += dist/data/etc/init.d/
-DEB_DATA_DIRS += dist/data/etc/apt/sources.list.d/
-DEB_DATA_DIRS += dist/data/etc/cron.daily
-
-# Files to copy.
-DEB_DATA_FILES += etc/init.d/neubot
-DEB_DATA_FILES += etc/apt/sources.list.d/neubot.list
-DEB_DATA_FILES += etc/cron.daily/neubot
-
-# Files to `chmod +x`.
-DEB_DATA_EXEC += dist/data/etc/init.d/neubot
-DEB_DATA_EXEC += dist/data/etc/cron.daily/neubot
-
 _deb_data:
 	make -f Makefile _install DESTDIR=dist/data \
 	    PREFIX=/usr MANDIR=/usr/share/man
-	@for DIR in $(DEB_DATA_DIRS); do \
-	 $(INSTALL) -d $$DIR; \
-	done
-	@for FILE in $(DEB_DATA_FILES); do \
-	 $(INSTALL) -m644 Debian/$$FILE dist/data/$$FILE; \
-	done
-	@for FILE in $(DEB_DATA_EXEC); do \
-	 chmod 755 $$FILE; \
-	done
-	@$(INSTALL) -d dist/data/usr/share/doc/neubot
-	@$(INSTALL) -m644 Debian/copyright dist/data/usr/share/doc/neubot/
-	@$(INSTALL) -m644 Debian/changelog dist/data/usr/share/doc/neubot/changelog.Debian
-	@cd dist/data/usr/share/doc/neubot && gzip -9 changelog.Debian
-
-_deb_data.tgz: _deb_data
-	@cd dist/data && tar czf ../data.tar.gz ./*
-
-_deb_control_skel:
-	@$(INSTALL) -d dist/control
-	@$(INSTALL) -m644 Debian/control/control dist/control/control
-	@$(INSTALL) -m644 Debian/control/conffiles dist/control/conffiles
-	@$(INSTALL) Debian/control/preinst dist/control/preinst
-	@$(INSTALL) Debian/control/postinst dist/control/postinst
-	@$(INSTALL) Debian/control/prerm dist/control/prerm
-	@$(INSTALL) Debian/control/postrm dist/control/postrm
-
-_deb_control_md5sums:
-	@$(INSTALL) -m644 /dev/null dist/control/md5sums
-	@./scripts/cksum.py -a md5 `find dist/data -type f` > dist/control/md5sums
-	@./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
-
-_deb_control_size:
-	@SIZE=`du -k -s dist/data/|cut -f1` && \
-	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
+	$(INSTALL) -d dist/data/etc/apt/sources.list.d
+	$(INSTALL) -m644 Debian/neubot.list dist/data/etc/apt/sources.list.d/
+	$(INSTALL) -d dist/data/etc/cron.daily
+	$(INSTALL) Debian/cron-neubot dist/data/etc/cron.daily/neubot
+	$(INSTALL) -d dist/data/etc/init.d
+	$(INSTALL) Debian/init-neubot dist/data/etc/init.d/neubot
+	$(INSTALL) -d dist/data/usr/share/doc/neubot
+	$(INSTALL) -m644 Debian/copyright dist/data/usr/share/doc/neubot/
+	$(INSTALL) -m644 Debian/changelog.Debian.gz \
+	    dist/data/usr/share/doc/neubot
 
 _deb_control:
-	@make -f Makefile _deb_control_skel
-	@make -f Makefile _deb_control_md5sums
-	@make -f Makefile _deb_control_size
 
-_deb_control.tgz: _deb_control
-	@cd dist/control && tar czf ../control.tar.gz ./*
+	$(INSTALL) -d dist/control
+	$(INSTALL) -m644 Debian/control/control dist/control/control
+	$(INSTALL) -m644 Debian/control/conffiles dist/control/conffiles
+	$(INSTALL) Debian/control/preinst dist/control/preinst
+	$(INSTALL) Debian/control/postinst dist/control/postinst
+	$(INSTALL) Debian/control/prerm dist/control/prerm
+	$(INSTALL) Debian/control/postrm dist/control/postrm
 
-_deb_binary:
-	@echo '2.0' > dist/debian-binary
+	$(INSTALL) -m644 /dev/null dist/control/md5sums
+	./scripts/cksum.py -a md5 `find dist/data -type f` >dist/control/md5sums
+	./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
+
+	SIZE=`du -k -s dist/data/|cut -f1` && \
+	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
 
 #
 # Note that we must make _deb_data before _deb_control
@@ -272,9 +234,11 @@ _deb_binary:
 # is the nonstandard /var/neubot issue pending.
 #
 _deb:
-	@make -f Makefile _deb_data.tgz
-	@make -f Makefile _deb_control.tgz
-	@make -f Makefile _deb_binary
+	make -f Makefile _deb_data
+	cd dist/data && tar czf ../data.tar.gz ./*
+	make -f Makefile _deb_control
+	cd dist/control && tar czf ../control.tar.gz ./*
+	echo '2.0' > dist/debian-binary
 	@ar r $(DEB_PACKAGE) dist/debian-binary \
 	 dist/control.tar.gz dist/data.tar.gz
 	@cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
