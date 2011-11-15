@@ -36,7 +36,6 @@ from neubot.bittorrent.config import SMALLMESSAGE
 
 from neubot.net.stream import Stream
 from neubot.log import LOG
-from neubot import utils
 
 # Available msgs
 MESSAGES = (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
