@@ -80,7 +80,6 @@ def fill_package_data(entry):
 fill_package_data("neubot/www")
 
 SCRIPTS = [
-    "bin/start-neubot-daemon",
     "bin/neubot",
     "bin/neubotw",
 ]

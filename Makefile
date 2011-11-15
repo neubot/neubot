@@ -177,7 +177,6 @@ _install:
 uninstall:
 	@rm -rf $(DESTDIR)$(DATADIR)/neubot
 	@rm -rf $(DESTDIR)$(BINDIR)/neubot
-	@rm -rf $(DESTDIR)$(BINDIR)/start-neubot-daemon
 	@rm -rf $(DESTDIR)$(BINDIR)/neubotw
 
 #
