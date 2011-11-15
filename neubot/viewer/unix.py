@@ -66,7 +66,7 @@ if True:
             if ICON:
                 self.set_icon_from_file(ICON)
 
-            self.set_title('Neubot 0.4.4')
+            self.set_title('Neubot 0.4.5-rc1')
             self.connect('destroy', gtk.main_quit)
             self.maximize()
             self._open_web_page(uri)

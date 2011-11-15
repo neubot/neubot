@@ -1,3 +1,52 @@
+Neubot 0.4.5-rc1 [2011-11-15]
+	* debian: make sure neubot is restarted
+	* debian: document previous patch
+	* nagios-plugin-neubot: allow to specify alternative port
+	* negotiate: complete rewrite
+	* speedtest: repair /speedtest/latency
+	* server: memleak debugging infrastructure
+	* geoip_wrapper.py: die in open_or_die() only
+	* geoip_wrapper.py: Improve pylint score
+	* utils/blocks.py: kickstart by fetching the first block
+	* Merge branch 'pu.mlab' into next
+	* config: define www.lang setting
+	* i18n in Settings
+	* js/settings.js: Revert some unneeded bits in previous patch
+	* Merge branch 'pu.wwwlang' into next
+	* privacy.py: do not assume database directory exists
+	* privacy.py: improve pylint score
+	* debugmem: make absolute view the default
+	* setup.py: chmod +x
+	* setup.py: do not install nagios-plugin-neubot
+	* debian: reset packager version number
+	* UNIX: simplify the task of creating a package
+	* server.py: add /debug/count to debug API
+	* Win32: consolidate win32-only files
+	* icons: remove the folder and its content
+	* Win32/setup.py: pylintify
+	* Remove all references to start-neubot-daemon
+	* debian -> Debian
+	* Debian: simplify packaging
+	* Debian: What's the point of an empty preinst?
+	* BUGS: it may be confusing to mention the ML address like this
+	* README: sync with Debian/control/control
+	* simplejson: Upgrade to simplejson 2.2.1
+	* regress/bittorrent/config.py: maintenance
+	* bittorrent/config.py: maintenance
+	* regress/bittorrent/sched.py: maintenance
+	* bittorrent/sched.py: maintenance
+	* bittorrent: remove support for sending big messages
+	* bittorrent: remove support for receiving big messages
+	* bittorrent/stream.py: remove unused PieceMessage class
+	* bittorrent/stream.py: remove unused import
+	* bittorrent/stream.py: reduce the number of pylint warnings
+	* regress/database: reorganize
+	* regress/net/stream.py: maintenance
+	* regress/config.py: maintenance
+	* regress/log.py: maintenance
+	* regress/state.py: maintenance
+	* Release neubot/0.4.5-rc1
+
 Neubot 0.4.4 [2011-10-25]
 	* nagios-plugin-neubot: fix usage string
 	* bin/nagios-plugin-neubot: print current queue length
