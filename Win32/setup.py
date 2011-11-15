@@ -20,10 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# This is a standard setup.py script with py2exe hooks in order
-# to generate an installer for Windows.
-#
+'''
+ Standard setup.py script with py2exe hooks, in order
+ to generate an installer for Windows.
+'''
 
 import subprocess
 import distutils.core
@@ -35,7 +35,7 @@ import glob
 try:
     import py2exe
 except ImportError:
-    py2exe = None
+    sys.exit('Please install py2exe.')
 
 
 # To toplevel dir ($TOP/Win32/setup.py -> $TOP)
@@ -56,11 +56,11 @@ PACKAGES = [
 # package and contains data.  So make sure that
 # there is '__init__.py' before adding a dir.
 #
-for entry in glob.glob("neubot/*"):
-    if os.path.isdir(entry):
-        __init = os.sep.join([entry, "__init__.py"])
+for ENTRY in glob.glob("neubot/*"):
+    if os.path.isdir(ENTRY):
+        __init = os.sep.join([ENTRY, "__init__.py"])
         if os.path.isfile(__init):
-            PACKAGES.append(entry)
+            PACKAGES.append(ENTRY)
 
 PACKAGE_DATA = []
 
@@ -70,9 +70,10 @@ PACKAGE_DATA = []
 # not going to install any package data.
 #
 def fill_package_data(entry):
+    ''' Fill PACKAGE_DATA list with file names '''
     if os.path.isdir(entry):
-        for s in glob.glob(os.sep.join([entry, "*"])):
-            fill_package_data(s)
+        for string in glob.glob(os.sep.join([entry, "*"])):
+            fill_package_data(string)
     else:
         PACKAGE_DATA.append(entry.replace("neubot/", ""))
 
@@ -118,6 +119,6 @@ if RUN_PY2EXE:
             # of performing a chdir(2) in the directory where its
             # script is located.
             #
-            filep = open('Win32/neubot.nsi')
-            subprocess.call([MAKENSIS, '-'], stdin=filep)
-            filep.close()
+            FILEP = open('Win32/neubot.nsi')
+            subprocess.call([MAKENSIS, '-'], stdin=FILEP)
+            FILEP.close()
