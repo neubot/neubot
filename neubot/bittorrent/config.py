@@ -20,9 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' The module properties that you can configure '''
+
 #
-# This module lists all the bittorrent module properties
-# that you can configure.
 # All the other submodules of bittorrent should fetch the
 # definition of CONFIG from this one.
 # We don't register descriptions unless we are running the
@@ -37,8 +37,8 @@ from neubot.net.poller import WATCHDOG
 from neubot.config import CONFIG
 from neubot.bittorrent import estimate
 
-NUMPIECES = 1<<20
-PIECE_LEN = 1<<17
+NUMPIECES = 1 << 20
+PIECE_LEN = 1 << 17
 
 #
 # When messages are bigger than SMALLMESSAGE we stop
@@ -52,23 +52,17 @@ PIECE_LEN = 1<<17
 # in the expected range, and we avoid buffering for
 # "big" messages only.
 #
-SMALLMESSAGE = 1<<17
+SMALLMESSAGE = 1 << 17
 
 PROPERTIES = (
-    ('bittorrent.address', "", 'Address to listen/connect to ("" = auto)'),
+    ('bittorrent.address', '', 'Address to listen/connect to ("" = auto)'),
     ('bittorrent.bytes.down', 0, 'Num of bytes to download (0 = auto)'),
     ('bittorrent.bytes.up', 0, 'Num of bytes to upload (0 = auto)'),
     ('bittorrent.daemonize', False, 'Become a daemon and run in background'),
     ('bittorrent.infohash', '', 'Set InfoHash ("" = auto)'),
     ('bittorrent.listen', False, 'Run in server mode'),
     ('bittorrent.negotiate', True, 'Enable negotiate client/server'),
-    #
-    # FIXME We use port 8080 in release 0.4 because there is no
-    # time to integrate the way speedtest does negotiation and the
-    # way bittorrent does it.  This should go in port 80 as soon
-    # as possible.
-    #
-    ('bittorrent.negotiate.port', 8080, 'Negotiate port'),
+    ('bittorrent.negotiate.port', 80, 'Negotiate port'),
     ('bittorrent.my_id', '', 'Set local PeerId ("" = auto)'),
     ('bittorrent.numpieces', NUMPIECES, 'Num of pieces in bitfield'),
     ('bittorrent.piece_len', PIECE_LEN, 'Length of each piece'),
@@ -79,28 +73,30 @@ PROPERTIES = (
 CONFIG.register_defaults_helper(PROPERTIES)
 
 def register_descriptions():
+    ''' Registers the description of bittorrent variables '''
     CONFIG.register_descriptions_helper(PROPERTIES)
 
-def _random_bytes(n):
-    return "".join([chr(random.randint(32, 126)) for _ in range(n)])
+def _random_bytes(num):
+    ''' Generates a random string of @num bytes '''
+    return ''.join([chr(random.randint(32, 126)) for _ in range(num)])
 
-#
-# Assign a value to all the variables that can
-# still be guessed by Neubot.
-#
 def finalize_conf(conf):
-    if not conf["bittorrent.my_id"]:
-        conf["bittorrent.my_id"] = _random_bytes(20)
-    if not conf["bittorrent.infohash"]:
-        conf["bittorrent.infohash"] = _random_bytes(20)
 
-    if not conf["bittorrent.bytes.down"]:
-        conf["bittorrent.bytes.down"] = estimate.DOWNLOAD
-    if not conf["bittorrent.bytes.up"]:
-        conf["bittorrent.bytes.up"] = estimate.UPLOAD
+    ''' Finalize configuration and guess the proper value of all
+        the undefined variables '''
 
-    if not conf["bittorrent.address"]:
-        if not conf["bittorrent.listen"]:
-            conf["bittorrent.address"] = "neubot.blupixel.net"
+    if not conf['bittorrent.my_id']:
+        conf['bittorrent.my_id'] = _random_bytes(20)
+    if not conf['bittorrent.infohash']:
+        conf['bittorrent.infohash'] = _random_bytes(20)
+
+    if not conf['bittorrent.bytes.down']:
+        conf['bittorrent.bytes.down'] = estimate.DOWNLOAD
+    if not conf['bittorrent.bytes.up']:
+        conf['bittorrent.bytes.up'] = estimate.UPLOAD
+
+    if not conf['bittorrent.address']:
+        if not conf['bittorrent.listen']:
+            conf['bittorrent.address'] = 'neubot.blupixel.net'
         else:
-            conf["bittorrent.address"] = "0.0.0.0"
+            conf['bittorrent.address'] = '0.0.0.0'
