@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Unit test for neubot/state.py '''
+
 import unittest
 import os
 import sys
@@ -31,36 +33,39 @@ from neubot import state
 
 class TestState(unittest.TestCase):
 
+    ''' Unit test for state.State '''
+
     def test_update_event(self):
         """Make sure we correctly set the empty event"""
-        s = state.State(publish=lambda e, t: None)
-        s.update("foobar")
-        self.assertEquals(s._events["foobar"], {})
+        thestate = state.State(publish=lambda e, t: None)
+        thestate.update("foobar")
+        self.assertEquals(thestate._events["foobar"], {})
 
     def test_publish(self):
         """Make sure we publish when requested to do so"""
         count = [-1]
 
-        def do_publish(e, t):
+        def do_publish(event, timestamp):
+            ''' convenience function '''
             count[0] = count[0] + 1
 
-        s = state.State(publish=do_publish)
-        s.update("foobar")
+        thestate = state.State(publish=do_publish)
+        thestate.update("foobar")
 
-        #XXX because the ctor performs two internal update()s
+        # Because the ctor performs two internal update()s
         self.assertEquals(count[0], 2)
 
     def test_dont_publish(self):
         """Make sure we DON'T publish when not requested to do so"""
         count = [-1]
 
-        def do_publish(e, t):
+        def do_publish(event, timestamp):
+            ''' convenience function '''
             count[0] = count[0] + 1
 
-        s = state.State(publish=do_publish)
-        s.update("foobar", publish=False)
+        thestate = state.State(publish=do_publish)
+        thestate.update("foobar", publish=False)
 
-        #XXX because the ctor performs two internal update()s
         self.assertEquals(count[0], 1)
 
     def test_constants(self):
@@ -75,21 +80,22 @@ class TestState(unittest.TestCase):
 
     def test_current(self):
         """Make sure we honour current"""
-        s = state.State(publish=lambda e, t: None)
-        s.update("idle")
-        self.assertEquals(s._current, "idle")
+        thestate = state.State(publish=lambda e, t: None)
+        thestate.update("idle")
+        self.assertEquals(thestate._current, "idle")
 
     def test_dictionarize(self):
         """Make sure we dictionarize to the expected format"""
 
-        s = state.State(publish=lambda e, t: None, T=lambda: 42)
-        s.update("foobar", {"a": True, "b": 1.7, "c": 13})
-        s.update("since", 1234567890)
-        s.update("xo")
+        thestate = state.State(publish=lambda e, t: None, T=lambda: 42)
+        thestate.update("foobar", {"a": True, "b": 1.7, "c": 13})
+        thestate.update("since", 1234567890)
+        thestate.update("xo")
 
-        s.update("idle")
+        thestate.update("idle")
 
-        self.assertEquals(s.dictionarize(), {
+        self.assertEquals(thestate.dictionarize(),
+                                            {
                                              "current": "idle",
                                              "events": {
                                                         "since": 1234567890,
