@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' BitTorrent requests scheduler '''
+
 import random
 
 #
@@ -30,15 +32,18 @@ import random
 # of requested pieces is not monotonic.
 #
 def sched_idx(bitfield, peer_bitfield):
+
+    ''' Schedules the next index '''
+
     assert(len(bitfield.bits) == len(peer_bitfield.bits))
     vector = range(len(bitfield.bits))
     random.shuffle(vector)
     for index in vector:
         if not bitfield.bits[index] and peer_bitfield.bits[index]:
             idx = index << 3
-            kv = range(8)
-            random.shuffle(kv)
-            for k in kv:
+            kvec = range(8)
+            random.shuffle(kvec)
+            for k in kvec:
                 yield idx + k
 
 #
@@ -51,6 +56,8 @@ def sched_idx(bitfield, peer_bitfield):
 # a continuous transfer of a huge file.
 #
 def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, blocklen):
+
+    ''' Schedules the next list of pieces we must request '''
 
     # Adapt initial burst to the channel
     burstlen = int(targetbytes/3)
@@ -80,8 +87,10 @@ def sched_req(bitfield, peer_bitfield, targetbytes, piecelen, blocklen):
 #
 def _sched_piece(idx, total, piecelen, blocklen):
 
+    ''' Schedules the next piece we should request '''
+
     if blocklen > piecelen:
-        raise RuntimeError("Received invalid parameters")
+        raise RuntimeError('Received invalid parameters')
 
     # Piece info
     cur_left, cur_idx, cur_offset = 0, 0, 0
