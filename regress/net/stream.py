@@ -242,8 +242,6 @@ class TestStreamStartRecv_Barrier1(unittest.TestCase):
             s.close_pending = b
             s.recv_pending = c
             s.start_recv()
-            # Check recv_ticks b/c recv_pending is part of the experiment
-            self.assertEqual(s.recv_ticks, 0)
 
 #
 # The second barrier is that we don't become readable
@@ -338,7 +336,6 @@ class TestStreamReadable_SuccessBytes(TestStream_Base):
         self.stream.recv_complete = self.recv_complete
         self.stream.handle_read()
         self.assertEqual(self.count, 2)
-        self.assertEqual(self.stream.recv_ticks, 0)
         self.assertFalse(self.stream.recv_pending)
 
     def unset_readable(self, stream):
