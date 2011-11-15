@@ -20,15 +20,13 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Regression tests for neubot/bittorrent/config.py
-#
+''' Regression tests for neubot/bittorrent/config.py '''
 
 import unittest
 import sys
 
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
 
 from neubot.bittorrent import config
 
@@ -48,11 +46,17 @@ PROPERTIES = (
     'bittorrent.watchdog',
 )
 
+# pylint: disable=R0904
 class TestPROPERTIES(unittest.TestCase):
-    def runTest(self):
-        """Make sure we support all and only the expected properties"""
-        p = tuple(map(lambda t: t[0], config._PROPERTIES))
-        self.assertEquals(p, PROPERTIES)
 
-if __name__ == "__main__":
+    ''' Make sure we support all and only the expected properties '''
+
+    def test_properties(self):
+
+        ''' Make sure we support all and only the expected properties '''
+
+        properties = tuple([ item[0] for item in config.PROPERTIES ])
+        self.assertEquals(properties, PROPERTIES)
+
+if __name__ == '__main__':
     unittest.main()

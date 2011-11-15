@@ -54,7 +54,7 @@ PIECE_LEN = 1<<17
 #
 SMALLMESSAGE = 1<<17
 
-_PROPERTIES = (
+PROPERTIES = (
     ('bittorrent.address', "", 'Address to listen/connect to ("" = auto)'),
     ('bittorrent.bytes.down', 0, 'Num of bytes to download (0 = auto)'),
     ('bittorrent.bytes.up', 0, 'Num of bytes to upload (0 = auto)'),
@@ -76,10 +76,10 @@ _PROPERTIES = (
     ('bittorrent.watchdog', WATCHDOG, 'Maximum test run-time in seconds'),
 )
 
-CONFIG.register_defaults_helper(_PROPERTIES)
+CONFIG.register_defaults_helper(PROPERTIES)
 
 def register_descriptions():
-    CONFIG.register_descriptions_helper(_PROPERTIES)
+    CONFIG.register_descriptions_helper(PROPERTIES)
 
 def _random_bytes(n):
     return "".join([chr(random.randint(32, 126)) for _ in range(n)])
