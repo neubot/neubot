@@ -20,24 +20,29 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Regression test for neubot/bittorrent/sched.py '''
+
 import unittest
 import sys
 
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
 
 from neubot.bittorrent.sched import _sched_piece
 
+# pylint: disable=R0904
 class TestSchedPiece(unittest.TestCase):
 
+    ''' Tests BitTorrent pieces scheduler '''
+
     def test_checks_parameters(self):
-        """Make sure it raises RuntimeError if passed invalid parameters"""
+        ''' Make sure it raises RuntimeError if passed invalid parameters '''
         idx = (i for i in xrange(64))
         sched = _sched_piece(idx, 19, 16, 81)
         self.assertRaises(RuntimeError, next, sched)
 
     def test_works_well(self):
-        """Make sure that _sched_piece() works well"""
+        ''' Make sure that _sched_piece() works well '''
 
         idx = (i for i in xrange(64))
         sched = _sched_piece(idx, 19, 16, 8)
@@ -46,5 +51,5 @@ class TestSchedPiece(unittest.TestCase):
         self.assertEquals(next(sched), (0, 8, 8))
         self.assertEquals(next(sched), (1, 0, 3))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
