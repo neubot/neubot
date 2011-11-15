@@ -22,11 +22,7 @@
 
 #
 # This is a standard setup.py script with py2exe hooks in order
-# to generate an installer for Windows.  Please note that the code
-# in this file, for now, is effective on Windows only, and that
-# some more work is required in order to use this file for Linux
-# and other Unixes.  However, the goal is to use this file and
-# to reduce the amount of code in Makefile.
+# to generate an installer for Windows.
 #
 
 import subprocess
@@ -41,8 +37,12 @@ try:
 except ImportError:
     py2exe = None
 
+
+# To toplevel dir ($TOP/Win32/setup.py -> $TOP)
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 CONSOLE = [{
-    "icon_resources": [(0, "icons/neubot.ico")],
+    "icon_resources": [(0, "neubot/www/favicon.ico")],
     "script": "bin/neubot",
 }]
 
@@ -85,7 +85,7 @@ SCRIPTS = [
 ]
 
 WINDOWS = [{
-    "icon_resources": [(0, "icons/neubot.ico")],
+    "icon_resources": [(0, "neubot/www/favicon.ico")],
     "script": "bin/neubotw",
 }]
 
@@ -113,4 +113,11 @@ if RUN_PY2EXE:
     if "PROGRAMFILES" in os.environ:
         MAKENSIS = os.environ["PROGRAMFILES"] + "\\NSIS\\makensis.exe"
         if os.path.exists(MAKENSIS):
-            subprocess.call([MAKENSIS, "neubot.nsi"])
+            #
+            # Use standard input because NSIS has the bad habit
+            # of performing a chdir(2) in the directory where its
+            # script is located.
+            #
+            filep = open('Win32/neubot.nsi')
+            subprocess.call([MAKENSIS, '-'], stdin=filep)
+            filep.close()
