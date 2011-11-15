@@ -98,7 +98,6 @@ class StreamBitTorrent(Stream):
         self.count = 0
         self.id = None
         self.piece = None
-        self.smallmessage = SMALLMESSAGE
 
     def connection_made(self):
         #
@@ -196,25 +195,16 @@ class StreamBitTorrent(Stream):
             # Bufferize and pass upstream messages
             elif self.left > 0:
                 amt = min(len(s), self.left)
-                if self.count <= self.smallmessage:
+                if self.count <= SMALLMESSAGE:
                     self.buff.append(s[:amt])
                 else:
-                    if self.buff:
-                        self._got_message_start("".join(self.buff))
-                        # This means "big message"
-                        del self.buff[:]
-                    mp = buffer(s, 0, amt)
-                    self._got_message_part(mp)
+                    raise RuntimeError('Message too big')
                 s = buffer(s, amt)
                 self.left -= amt
                 self.count += amt
 
                 if self.left == 0:
-                    # Small or big message?
-                    if self.buff:
-                        self._got_message("".join(self.buff))
-                    else:
-                        self._got_message_end()
+                    self._got_message("".join(self.buff))
                     del self.buff[:]
                     self.count = 0
 
@@ -227,26 +217,6 @@ class StreamBitTorrent(Stream):
 
         if not (self.close_pending or self.close_complete):
             self.start_recv()
-
-    def _got_message_start(self, message):
-        t = message[0]
-        if t != PIECE:
-            raise RuntimeError("unexpected big message")
-        if len(message) <= 9:
-            raise RuntimeError("PIECE: invalid message length")
-        n = len(message) - 9
-        i, a, b = struct.unpack("!xII%ss" % n, message)
-        if self.piece:
-            raise RuntimeError("Big message not ended properly")
-        self.piece = PieceMessage(i, a)
-        self.parent.got_piece_start(self, i, a, b)
-
-    def _got_message_part(self, s):
-        self.parent.got_piece_part(self, self.piece.index, self.piece.begin, s)
-
-    def _got_message_end(self):
-        self.parent.got_piece_end(self, self.piece.index, self.piece.begin)
-        self.piece = None
 
     def _got_message(self, message):
 

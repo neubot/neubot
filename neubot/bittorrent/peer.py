@@ -224,16 +224,6 @@ class PeerNeubot(StreamHandler):
         # We don't use HAVE messages at the moment
         LOG.warning("Ignoring unexpected HAVE message")
 
-    def got_piece(self, stream, index, begin, block):
-        self.got_piece_start(stream, index, begin, "")
-        self.got_piece_part(stream, index, begin, block)
-        self.got_piece_end(stream, index, begin)
-
-    def got_piece_start(self, stream, index, begin, block):
-        pass
-    def got_piece_part(self, stream, index, begin, block):
-        pass
-
     #
     # Time to put another piece on the wire, assuming
     # that we can do that.  Note that we start measuring
@@ -246,7 +236,7 @@ class PeerNeubot(StreamHandler):
     # condition but the fact that TCP is more sensitive to
     # losses might be interesting as well.
     #
-    def got_piece_end(self, stream, index, begin):
+    def got_piece(self, stream, index, begin, block):
         if self.state != DOWNLOADING:
             raise RuntimeError("PIECE when state != DOWNLOADING")
 

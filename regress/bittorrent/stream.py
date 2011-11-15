@@ -191,43 +191,6 @@ class TestReassembler_SingleChar(TestReassembler_Base):
 #
 
 #
-# The big message handler is a good thing BUT duplicates
-# code so we must make sure that the behavior is comparable
-# to the one of the ordinary code.
-#
-class TestBigMessageHandlers(unittest.TestCase):
-    def runTest(self):
-        """Make sure big message handlers works well"""
-        s = stream.StreamBitTorrent(None)
-        s.parent = self
-
-        # Only PIECEs, baby
-        for t in stream.MESSAGESET - set(stream.PIECE):
-            self.assertRaises(RuntimeError, s._got_message_start, t)
-
-        # First part first, then the remainder
-        self.assertRaises(AttributeError, s._got_message_part, "")
-        self.assertRaises(AttributeError, s._got_message_end)
-
-        # Reject PIECEs shorter than 10 bytes
-        for l in range(9):
-            m = [stream.PIECE, chr(0) * l]
-            self.assertRaises(RuntimeError, s._got_message_start, "".join(m))
-        m = [stream.PIECE, chr(0) * 10]
-        s._got_message_start("".join(m))
-
-        # We need "end" before "start" again
-        self.assertRaises(RuntimeError, s._got_message_start, "".join(m))
-
-    # Interface required by above code
-    def got_piece_start(self, stream, index, begin, s):
-        pass
-    def got_piece_part(self, stream, index, begin, s):
-        pass
-    def got_piece_end(self, stream, index, begin):
-        pass
-
-#
 # Make sure that we behave properly when we receive
 # a new incoming handshake.
 #
