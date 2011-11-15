@@ -35,7 +35,6 @@ from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.net.stream import StreamHandler
 
 from neubot.bittorrent import estimate
-from neubot.utils.blocks import RandomBody
 from neubot.log import LOG
 from neubot.state import STATE
 
@@ -155,18 +154,16 @@ class PeerNeubot(StreamHandler):
 
         if begin + length > PIECE_LEN:
             raise RuntimeError("REQUEST too big")
+        if length > SMALLMESSAGE:
+            raise RuntimeError("REQUEST too big")
 
-        if length <= SMALLMESSAGE:
-            #
-            # TODO Here we should use the random block
-            # generator but before we do that we should
-            # also make sure it does not slow down the
-            # bittorrent test.
-            #
-            block = chr(random.randint(32, 126)) * length
-        else:
-            block = RandomBody(length)
-
+        #
+        # TODO Here we should use the random block
+        # generator but before we do that we should
+        # also make sure it does not slow down the
+        # bittorrent test.
+        #
+        block = chr(random.randint(32, 126)) * length
         stream.send_piece(index, begin, block)
 
     def got_interested(self, stream):

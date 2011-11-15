@@ -66,57 +66,6 @@ class TestMessageLengths(unittest.TestCase):
           set(stream.INVALID_LENGTH.keys()))
 
 #
-#  ____                    _
-# / ___|   ___  _ __    __| |  ___  _ __
-# \___ \  / _ \| '_ \  / _` | / _ \| '__|
-#  ___) ||  __/| | | || (_| ||  __/| |
-# |____/  \___||_| |_| \__,_| \___||_|
-#
-# This section contains code that checks the sender of
-# BitTorrent messages.
-#
-
-#
-# Make sure that it is the same to send buffer messages
-# and StringIO(buffer) messages.  This is relevant because
-# it is implemented by two different code paths that must
-# have the same behavior.
-#
-class TestSendPIECE(unittest.TestCase):
-    def runTest(self):
-        """Make sure the sender works for both buffers and StringIOs"""
-        s = stream.StreamBitTorrent(None)
-        self.messages = []
-        self.v1, self.v2 = [], []
-
-        for _ in range(4096):
-            m = random.randrange(0, 4096) * "A"
-            self.messages.append(m)
-        # Keepalives might appear here and there
-        for _ in range(512):
-            self.messages.append(m)
-        random.shuffle(self.messages)
-
-        s.start_send = self.start_send_v1
-        for m in self.messages:
-            s.send_piece(0, 0, m)
-
-        s.start_send = self.start_send_v2
-        for m in self.messages:
-            s.send_piece(0, 0, StringIO.StringIO(m))
-
-        self.assertEqual("".join(self.v1), "".join(self.v2))
-
-    def start_send_v1(self, s):
-        self.v1.append(s)
-
-    def start_send_v2(self, s):
-        if not isinstance(s, basestring):
-            self.v2.append(s.read())
-        else:
-            self.v2.append(s)
-
-#
 #  ____                                           _      _
 # |  _ \   ___   __ _  ___  ___   ___  _ __ ___  | |__  | |  ___  _ __
 # | |_) | / _ \ / _` |/ __|/ __| / _ \| '_ ` _ \ | '_ \ | | / _ \| '__|
