@@ -19,16 +19,7 @@
 # Modified for Neubot by Simone Basso <bassosimone@gmail.com>
 #
 
-#
-# This file contains the BitTorrent stream, i.e. a
-# net/stream.py's Stream specialized for handling the
-# BitTorrent peer-wire protocol.
-# The general idea is that this file deals more with
-# the syntax of the protocol and less with the semantic,
-# which should be done in bittorrent/peer.py.
-#
-# See <http://www.bittorrent.org/beps/bep_0003.html>.
-#
+''' BitTorrent peer wire protocol implementation '''
 
 import struct
 
@@ -39,7 +30,7 @@ from neubot.log import LOG
 
 # Available msgs
 MESSAGES = (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
-            REQUEST, PIECE, CANCEL) = map(chr, range(9))
+            REQUEST, PIECE, CANCEL) = [chr(num) for num in range(9)]
 
 # Set of available msgs
 MESSAGESET = set(MESSAGES)
@@ -64,23 +55,24 @@ FLAGS = ''.join(FLAGS)
 # Protocol name (for handshake)
 PROTOCOL_NAME = 'BitTorrent protocol'
 
-def toint(s):
-    return struct.unpack("!I", s)[0]
+def toint(data):
+    ''' Converts binary data to integer '''
+    return struct.unpack("!I", data)[0]
 
-def tobinary(i):
-    return struct.pack("!I", i)
+def tobinary(integer):
+    ''' Converts integer to binary data '''
+    return struct.pack("!I", integer)
 
-#
-# Specializes stream in order to handle the
-# BitTorrent peer wire protocol.
-# Note that we start with left = 68 because
-# that is the size of the handshake.
-#
 class StreamBitTorrent(Stream):
+
+    ''' BitTorrent stream '''
+
     def __init__(self, poller):
+        ''' Initialize BitTorrent stream '''
         Stream.__init__(self, poller)
         self.complete = False
         self.got_anything = False
+        # This is the size of the handshake
         self.left = 68
         self.buff = []
         self.count = 0
@@ -88,6 +80,7 @@ class StreamBitTorrent(Stream):
         self.piece = None
 
     def connection_made(self):
+        ''' Invoked when the connection is established '''
         #
         # In Neubot the listener does not have an infohash
         # and handshakes, including connector infohash, after
@@ -98,6 +91,7 @@ class StreamBitTorrent(Stream):
         self.start_recv()
 
     def _send_handshake(self):
+        ''' Convenience function to send handshake '''
         LOG.debug("> HANDSHAKE infohash=%s id=%s" %
                   (self.parent.infohash.encode("hex"),
                    self.parent.my_id.encode("hex")))
@@ -105,47 +99,58 @@ class StreamBitTorrent(Stream):
           FLAGS, self.parent.infohash, self.parent.my_id)))
 
     def send_interested(self):
+        ''' Send the INTERESTED message '''
         LOG.debug("> INTERESTED")
         self._send_message(INTERESTED)
 
     def send_not_interested(self):
+        ''' Send the NOT_INTERESTED message '''
         LOG.debug("> NOT_INTERESTED")
         self._send_message(NOT_INTERESTED)
 
     def send_choke(self):
+        ''' Send the CHOKE message '''
         LOG.debug("> CHOKE")
         self._send_message(CHOKE)
 
     def send_unchoke(self):
+        ''' Send the UNCHOKE message '''
         LOG.debug("> UNCHOKE")
         self._send_message(UNCHOKE)
 
     def send_request(self, index, begin, length):
+        ''' Send the REQUEST message '''
         LOG.debug("> REQUEST %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!cIII", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
+        ''' Send the CANCEL message '''
         LOG.debug("> CANCEL %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!cIII", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
+        ''' Send the BITFIELD message '''
         LOG.debug("> BITFIELD {bitfield}")
         self._send_message(BITFIELD, bitfield)
 
     def send_have(self, index):
+        ''' Send the HAVE message '''
         LOG.debug("> HAVE %d" % index)
         self._send_message(struct.pack("!cI", HAVE, index))
 
     def send_keepalive(self):
+        ''' Send the KEEPALIVE message '''
         LOG.debug("> KEEPALIVE")
         self._send_message('')
 
     def send_piece(self, index, begin, block):
+        ''' Send the PIECE message '''
         LOG.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
         self._send_message(struct.pack("!cII%ss" % len(block), PIECE,
           index, begin, block))
 
     def _send_message(self, *msg_a):
+        ''' Convenience function to send a message '''
         l = 0
         for e in msg_a:
             l += len(e)
@@ -161,6 +166,9 @@ class StreamBitTorrent(Stream):
     # of the next message.
     #
     def recv_complete(self, s):
+
+        ''' Invoked when recv() completes '''
+
         while s and not (self.close_pending or self.close_complete):
 
             # If we don't know the length then read it
@@ -207,6 +215,8 @@ class StreamBitTorrent(Stream):
             self.start_recv()
 
     def _got_message(self, message):
+
+        ''' Invoked when we receive a complete message '''
 
         if not self.complete:
             if (len(message) != 68 or message[0] != chr(19) or
@@ -291,4 +301,5 @@ class StreamBitTorrent(Stream):
             self.parent.got_piece(self, i, a, b)
 
     def connection_lost(self, exception):
+        ''' Invoked when the connection is lost '''
         del self.buff[:]
