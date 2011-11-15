@@ -72,17 +72,6 @@ def tobinary(i):
     return struct.pack("!I", i)
 
 #
-# Keep safe the parameters of PIECE messages
-# for very large piece messages, which aren't
-# buffered and are instead passed as the bytes
-# arrive to the message-reading code.
-#
-class PieceMessage(object):
-    def __init__(self, index, begin):
-        self.index = index
-        self.begin = begin
-
-#
 # Specializes stream in order to handle the
 # BitTorrent peer wire protocol.
 # Note that we start with left = 68 because
