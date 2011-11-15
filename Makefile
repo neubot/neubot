@@ -212,7 +212,6 @@ _deb_control:
 	$(INSTALL) -d dist/control
 	$(INSTALL) -m644 Debian/control/control dist/control/control
 	$(INSTALL) -m644 Debian/control/conffiles dist/control/conffiles
-	$(INSTALL) Debian/control/preinst dist/control/preinst
 	$(INSTALL) Debian/control/postinst dist/control/postinst
 	$(INSTALL) Debian/control/prerm dist/control/prerm
 	$(INSTALL) Debian/control/postrm dist/control/postrm
