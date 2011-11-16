@@ -140,7 +140,7 @@ def _make_sharedir():
                    )
 
     # Add manual page(s)
-    shutil.copy('../man/man1/neubot.1', 'neubot/%s' % NUMERIC_VERSION)
+    shutil.copy('../UNIX/man/man1/neubot.1', 'neubot/%s' % NUMERIC_VERSION)
 
     # Tell start.sh we've been installed OK
     filep = open('neubot/%s/.neubot-installed-ok' % NUMERIC_VERSION, 'w')
