@@ -157,7 +157,9 @@ _install:
 	    $(INSTALL) -m644 $$FILE $(DESTDIR)$(DATADIR)/$$FILE; \
 	    test $$? || exit 1; \
 	done
-	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g'; do \
+	$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
+	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g' \
+	        's|@LOCALSTATEDIR@|$(LOCALSTATEDIR)|g'; do \
 	    ./scripts/sed_inplace $$PATTERN \
 	        $(DESTDIR)$(BINDIR)/neubot \
 	        $(DESTDIR)$(DATADIR)/applications/neubot.desktop \
