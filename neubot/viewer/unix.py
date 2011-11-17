@@ -47,35 +47,34 @@ if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
 
 STATIC_PAGE = '@DATADIR@/neubot/www/not_running.html'
 
-if True:
-    class WebkitGUI(gtk.Window):
+class WebkitGUI(gtk.Window):
 
-        ''' Webkit- and Gtk-based GUI '''
+    ''' Webkit- and Gtk-based GUI '''
 
-        def __init__(self, uri):
+    def __init__(self, uri):
 
-            ''' Initialize the window '''
+        ''' Initialize the window '''
 
-            gtk.Window.__init__(self)
+        gtk.Window.__init__(self)
 
-            scrolledwindow = gtk.ScrolledWindow()
-            self._webview = webkit.WebView()
-            scrolledwindow.add(self._webview)
-            self.add(scrolledwindow)
+        scrolledwindow = gtk.ScrolledWindow()
+        self._webview = webkit.WebView()
+        scrolledwindow.add(self._webview)
+        self.add(scrolledwindow)
 
-            if ICON:
-                self.set_icon_from_file(ICON)
+        if ICON:
+            self.set_icon_from_file(ICON)
 
-            self.set_title('Neubot 0.4.5-rc1')
-            self.connect('destroy', gtk.main_quit)
-            self.maximize()
-            self._open_web_page(uri)
+        self.set_title('Neubot 0.4.5-rc1')
+        self.connect('destroy', gtk.main_quit)
+        self.maximize()
+        self._open_web_page(uri)
 
-            self.show_all()
+        self.show_all()
 
-        def _open_web_page(self, uri):
-            ''' Open the specified web page '''
-            self._webview.open(uri)
+    def _open_web_page(self, uri):
+        ''' Open the specified web page '''
+        self._webview.open(uri)
 
 def __is_running(address, port):
 
