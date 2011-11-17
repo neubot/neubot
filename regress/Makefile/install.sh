@@ -35,7 +35,7 @@ make clean
 make -f Makefile _install DESTDIR=dist/temp SYSCONFDIR=/sysconfdir \
     LOCALSTATEDIR=/localstatedir BINDIR=/bindir DATADIR=/datadir \
     MANDIR=/mandir
-find dist/temp -type f | sort > regress/Makefile/install.new
+find dist/temp | sort > regress/Makefile/install.new
 diff -u regress/Makefile/install.txt regress/Makefile/install.new
 grep -RnE '@[A-Z]+@' dist/temp && exit 1
 
