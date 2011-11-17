@@ -169,11 +169,15 @@ _install:
 	    test $$? || exit 1; \
 	done
 
-# TODO There is more stuff we should uninstall
 uninstall:
-	@rm -rf $(DESTDIR)$(DATADIR)/neubot
-	@rm -rf $(DESTDIR)$(BINDIR)/neubot
-	@rm -rf $(DESTDIR)$(BINDIR)/neubotw
+	make -f Makefile _install DESTDIR=dist/r
+	rm -rf dist/f dist/d dist/UNINSTALL
+	find dist/r/ -depth -type f -print -exec rm {} \; >> dist/f
+	find dist/r/ -depth -type d -empty -print >> dist/d
+	sed 's|dist/r|rm -f $(DESTDIR)|g' dist/f >> dist/UNINSTALL
+	sed 's|dist/r|rmdir $(DESTDIR)|g' dist/d >> dist/UNINSTALL
+	@echo ''
+	@echo '*** Commands to uninstall Neubot in dist/UNINSTALL'
 
 #
 # Install should be invoked as root and will actually
