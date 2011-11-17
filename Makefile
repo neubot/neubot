@@ -214,7 +214,6 @@ _deb_data:
 	    dist/data/usr/share/doc/neubot
 
 _deb_control:
-
 	$(INSTALL) -d dist/control
 	$(INSTALL) -m644 Debian/control/control dist/control/control
 	$(INSTALL) -m644 Debian/control/conffiles dist/control/conffiles
