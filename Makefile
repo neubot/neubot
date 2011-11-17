@@ -120,7 +120,7 @@ _install:
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
 	$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)/neubot
 	$(INSTALL) -d $(DESTDIR)$(DATADIR)
-	for DIR in `cd UNIX/share && find . -type d -mindepth 1`; do \
+	for DIR in `cd UNIX/share && find . -mindepth 1 -type d`; do \
 	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/$$DIR; \
 	    test $$? || exit 1; \
 	done
@@ -129,7 +129,7 @@ _install:
 	    test $$? || exit 1; \
 	done
 	$(INSTALL) -d $(DESTDIR)$(MANDIR)
-	for DIR in `cd UNIX/man && find . -type d -mindepth 1`; do \
+	for DIR in `cd UNIX/man && find . -mindepth 1 -type d`; do \
 	    $(INSTALL) -d $(DESTDIR)$(MANDIR)/$$DIR; \
 	    test $$? || exit 1; \
 	done
@@ -140,7 +140,7 @@ _install:
 	    test $$? || exit 1; \
 	done
 	$(INSTALL) -d $(DESTDIR)$(SYSCONFDIR)
-	for DIR in `cd UNIX/etc && find . -type d -mindepth 1`; do \
+	for DIR in `cd UNIX/etc && find . -mindepth 1 -type d`; do \
 	    $(INSTALL) -d $(DESTDIR)$(SYSCONFDIR)/$$DIR; \
 	    test $$? || exit 1; \
 	done
