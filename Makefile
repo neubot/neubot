@@ -96,6 +96,12 @@ archive:
 INSTALL	= install
 
 #
+# Some systems don't install a symlink for python and
+# might want to override
+#
+PYTHON = python
+
+#
 # These are some of the variables accepted by the GNU
 # build system, in order to follow the rule of the least
 # surprise [1].
@@ -171,6 +177,7 @@ _install:
 
 uninstall:
 	make -f Makefile _install DESTDIR=dist/r
+	$(PYTHON) -m compileall dist/r/$(DATADIR)/neubot
 	rm -rf dist/f dist/d dist/UNINSTALL
 	find dist/r/ -depth -type f -print -exec rm {} \; >> dist/f
 	find dist/r/ -depth -type d -empty -print >> dist/d
@@ -183,10 +190,12 @@ uninstall:
 # Install should be invoked as root and will actually
 # copy neubot on the filesystem, making sure that root
 # owns the installed files.
+# Moreover it will compile the modules into .pyc files
+# using the compileall module.
 #
 install:
-	@echo "[INSTALL]"
-	@make -f Makefile _install INSTALL='install -o 0 -g 0'
+	make -f Makefile _install INSTALL='install -o 0 -g 0'
+	$(PYTHON) -m compileall $(DESTDIR)$(DATADIR)/neubot
 
 #      _      _
 #   __| | ___| |__
