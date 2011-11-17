@@ -21,12 +21,15 @@
 #
 
 #
-# We know what files we should install and the comparison
+# 1) We know what files we should install and the comparison
 # with that also allow to say that Makefile honours all
 # variables and allow the package the tweak the installation.
 #
-# We also grep the installer sources for @SOMETHING@ variables
+# 2) We also grep the installer sources for @SOMETHING@ variables
 # to be sure that we don't install stuff with placeholders.
+#
+# 3) We also make sure that we do not install more executable
+#    files than needed.
 #
 
 set -e
@@ -35,9 +38,21 @@ make clean
 make -f Makefile _install DESTDIR=dist/temp SYSCONFDIR=/sysconfdir \
     LOCALSTATEDIR=/localstatedir BINDIR=/bindir DATADIR=/datadir \
     MANDIR=/mandir
+
+# 1)
 find dist/temp | sort > regress/Makefile/install.new
 diff -u regress/Makefile/install.txt regress/Makefile/install.new
+
+# 2)
 grep -RnE '@[A-Z]+@' dist/temp && exit 1
+
+# 3)
+find dist/temp -executable -type f | sort \
+	> regress/Makefile/install.exec.new
+diff -u regress/Makefile/install.exec.txt regress/Makefile/install.exec.new
+find dist/temp ! -executable -type f | sort \
+	> regress/Makefile/install.noexec.new
+diff -u regress/Makefile/install.noexec.txt regress/Makefile/install.noexec.new
 
 echo ''
 echo '*** Success: `make install` works as expected'
