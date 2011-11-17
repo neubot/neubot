@@ -197,7 +197,8 @@ install:
 # Make package for Debian/Ubuntu/Mint
 #
 
-DEB_PACKAGE = dist/$(STEM)-1_all.deb
+DEB_PACKAGE = dist/neubot-$(VERSION)-1_all.deb
+DEB_PACKAGE_NOX = dist/neubot-nox-$(VERSION)-1_all.deb
 
 _deb_data:
 	make -f Makefile _install DESTDIR=dist/data \
@@ -245,14 +246,24 @@ _deb:
 	echo '2.0' > dist/debian-binary
 	@ar r $(DEB_PACKAGE) dist/debian-binary \
 	 dist/control.tar.gz dist/data.tar.gz
+
+	$(INSTALL) -m644 Debian/control/control-nox dist/control/control
+	SIZE=`du -k -s dist/data/|cut -f1` && \
+	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
+	cd dist/control && tar czf ../control.tar.gz ./*
+	@ar r $(DEB_PACKAGE_NOX) dist/debian-binary \
+	 dist/control.tar.gz dist/data.tar.gz
+
 	@cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
          control/ data/
 	@chmod 644 $(DEB_PACKAGE)
+	@chmod 644 $(DEB_PACKAGE_NOX)
 
 deb:
 	@echo "[DEB]"
 	@fakeroot make -f Makefile _deb
 	@lintian $(DEB_PACKAGE) || true
+	@lintian $(DEB_PACKAGE_NOX) || true
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___

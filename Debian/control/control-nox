@@ -1,15 +1,15 @@
-Package: neubot
+Package: neubot-nox
 Version: 0.4.5-rc1-1
 Architecture: all
 Maintainer: Simone Basso <bassosimone@gmail.com>
 Installed-Size: @SIZE@
-Conflicts: neubot-nox
+Conflicts: neubot
 Pre-Depends: python (>= 2.5), sqlite3 (>= 3.5.9-6), procps (>= 1:3.2.7)
-Depends: cron (>= 3.0pl1-105), bsdutils (>= 1:2.13.1.1-1), python-webkit (>= 1.1.7-1), python-notify (>= 0.1.1-2)
+Depends: cron (>= 3.0pl1-105), bsdutils (>= 1:2.13.1.1-1)
 Section: net
 Homepage: http://www.neubot.org/
 Priority: optional
-Description: Network neutrality bot
+Description: Network neutrality bot (-nox flavour)
  Neubot is a research project on network neutrality of the NEXA
  Center for Internet & Society at Politecnico di Torino. The project
  is based on a lightweight open-source program that interested users
