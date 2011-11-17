@@ -20,10 +20,24 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# We know what files we should install and the comparison
+# with that also allow to say that Makefile honours all
+# variables and allow the package the tweak the installation.
+#
+# We also grep the installer sources for @SOMETHING@ variables
+# to be sure that we don't install stuff with placeholders.
+#
+
 set -e
+
 make clean
 make -f Makefile _install DESTDIR=dist/temp SYSCONFDIR=/sysconfdir \
     LOCALSTATEDIR=/localstatedir BINDIR=/bindir DATADIR=/datadir \
     MANDIR=/mandir
-find dist/temp -type f > regress/Makefile/FILES.new
-diff -u regress/Makefile/FILES regress/Makefile/FILES.new
+find dist/temp -type f | sort > regress/Makefile/install.new
+diff -u regress/Makefile/install.txt regress/Makefile/install.new
+grep -RnE '@[A-Z]+@' dist/temp && exit 1
+
+echo ''
+echo '*** Success: `make install` works as expected'
