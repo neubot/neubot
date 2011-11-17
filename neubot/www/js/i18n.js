@@ -47,7 +47,7 @@ var i18n = {
             },
             async: false
         });
-        if (!lang) {
+        if (!lang || lang == 'default') {
             if (navigator.userLanguage) {
                 lang = navigator.userLanguage.toLowerCase();
             }
