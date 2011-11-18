@@ -23,8 +23,11 @@
 ''' Speedtest negotiator '''
 
 from neubot.negotiate.server import NegotiateServerModule
+
 from neubot.database import table_speedtest
 from neubot.database import DATABASE
+from neubot.log import LOG
+
 from neubot import privacy
 
 class NegotiateServerSpeedtest(NegotiateServerModule):
@@ -47,17 +50,31 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
         else:
             raise RuntimeError('Multiple unchoke')
 
-    def collect(self, stream, request_body):
+    def collect_legacy(self, stream, request_body, request):
         ''' Invoked when we must save the result of a session '''
         ident = str(hash(stream))
         if ident not in self.clients:
-            raise RuntimeError('Not authorized to collect')
-        else:
-            # Note: no more than one collect per session
-            self.clients.remove(ident)
-            if privacy.collect_allowed(request_body):
-                table_speedtest.insert(DATABASE.connection(), request_body)
-            return {}
+            #
+            # Before Neubot 0.4.2 we were using multiple connections
+            # for speedtest, which were used both for testing and for
+            # negotiating/collecting.  Sometimes the connection used
+            # to collect is not the one used to negotiate: the code
+            # uses the one that terminates the upload first.
+            # When this happens we inspect the Authorization header
+            # before deciding the collect request is an abuse.
+            #
+            authorization = request['Authorization']
+            if authorization not in self.clients:
+                raise RuntimeError('Not authorized to collect')
+            else:
+                LOG.warning('speedtest: working around multiple conns issue')
+                ident = authorization
+
+        # Note: no more than one collect per session
+        self.clients.remove(ident)
+        if privacy.collect_allowed(request_body):
+            table_speedtest.insert(DATABASE.connection(), request_body)
+        return {}
 
     # Note: if collect is successful ident is not in self.clients
     def _update_clients(self, stream, ignored):
