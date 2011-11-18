@@ -177,4 +177,4 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         print(LibVersion.to_numeric(sys.argv[1]))
     else:
-        print(LibVersion.to_numeric('0.4.5-rc1'))
+        print(LibVersion.to_numeric('0.4.5-rc2'))

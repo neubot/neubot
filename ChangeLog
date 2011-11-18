@@ -1,3 +1,25 @@
+Neubot 0.4.5-rc2 [2011-11-18]
+	* MacOS/makepkg.py: update location of manual page
+	* Makefile: swap find arguments to avoid warning
+	* scripts/cleanup: remember to cleanup gzipped manpages
+	* simplejson: move CHANGES.txt LICENSE.txt below doc/
+	* Makefile: honour $(LOCALSTATEDIR)
+	* regress/Makefile/install.sh: more checks
+	* regress/Makefile/install.sh: also check directories
+	* regress/Makefile/install: do not install more exec files than needed
+	* Makefile: rewrite uninstall in terms of install
+	* Makefile: zap empty line
+	* Debian: get dependency right
+	* Debian: support for -nox flavour
+	* Makefile: remember to compile modules on plain install
+	* i18n: do not use empty string to indicate default language
+	* Makefile: automatize uninstall
+	* viewer/unix.py: refactor
+	* negotiate: tweak the big patch after code review
+	* negotiate: deal with old speedtest clients (part 1)
+	* bittorrent: simplify and clarify maximum message length
+	* Release neubot/0.4.5-rc2
+
 Neubot 0.4.5-rc1 [2011-11-15]
 	* debian: make sure neubot is restarted
 	* debian: document previous patch
