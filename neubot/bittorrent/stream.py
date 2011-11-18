@@ -23,7 +23,7 @@
 
 import struct
 
-from neubot.bittorrent.config import SMALLMESSAGE
+from neubot.bittorrent.config import MAXMESSAGE
 
 from neubot.net.stream import Stream
 from neubot.log import LOG
@@ -182,6 +182,8 @@ class StreamBitTorrent(Stream):
                     self.left = toint("".join(self.buff))
                     if self.left == 0:
                         LOG.debug("< KEEPALIVE")
+                    elif self.left > MAXMESSAGE:
+                        raise RuntimeError('Message too big')
                     del self.buff[:]
                     self.count = 0
 
@@ -191,10 +193,7 @@ class StreamBitTorrent(Stream):
             # Bufferize and pass upstream messages
             elif self.left > 0:
                 amt = min(len(s), self.left)
-                if self.count <= SMALLMESSAGE:
-                    self.buff.append(s[:amt])
-                else:
-                    raise RuntimeError('Message too big')
+                self.buff.append(s[:amt])
                 s = buffer(s, amt)
                 self.left -= amt
                 self.count += amt

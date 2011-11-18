@@ -43,7 +43,6 @@ from neubot import utils
 # Constants
 from neubot.bittorrent.config import NUMPIECES
 from neubot.bittorrent.config import PIECE_LEN
-from neubot.bittorrent.config import SMALLMESSAGE
 from neubot.bittorrent.config import WATCHDOG
 
 LO_THRESH = 3
@@ -153,8 +152,6 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("REQUEST when state != UPLOADING")
 
         if begin + length > PIECE_LEN:
-            raise RuntimeError("REQUEST too big")
-        if length > SMALLMESSAGE:
             raise RuntimeError("REQUEST too big")
 
         #

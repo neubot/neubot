@@ -40,19 +40,7 @@ from neubot.bittorrent import estimate
 NUMPIECES = 1 << 20
 PIECE_LEN = 1 << 17
 
-#
-# When messages are bigger than SMALLMESSAGE we stop
-# buffering the whole message and we pass upstream the
-# incoming chunks.
-# Note that SMALLMESSAGE is the maximum message size
-# suggested by BEP 0003 ("All current implementations
-# close connections which request an amount greater
-# than 2^17").
-# So, the original behavior is preserved for messages
-# in the expected range, and we avoid buffering for
-# "big" messages only.
-#
-SMALLMESSAGE = 1 << 17
+MAXMESSAGE = 1 << 18
 
 PROPERTIES = (
     ('bittorrent.address', '', 'Address to listen/connect to ("" = auto)'),
