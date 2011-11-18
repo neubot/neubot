@@ -1,7 +1,7 @@
 Negotiate server
 ''''''''''''''''
 
-:Version: 1.2 of 2011/11/09
+:Version: 1.3 of 2011/11/18
 :Authors: Simone Basso
 :Documents: neubot/negotiate/server.py
 
@@ -42,7 +42,8 @@ for its turn to perform a test and negotiates test parameters.
 The server keeps a FIFO queue of all the negotiating clients and
 allows only the first N clients to perform a test.  Most of the
 work is performed by a common layer of code and the per-test code
-is invoked only when a new client should be unchoked.
+is invoked only when a new client should be unchoked, i.e. is
+authorized to take the test.
 
 The client establishes a TCP connection with the server and uses
 this connection to negotiate and collect.  The connection shouldn't
@@ -67,13 +68,13 @@ there is nothing meaningful to send.
 
 Note that the server will close the connection if the request
 is bigger than one Megabyte or the transfer-encoding is chunked,
-to prevent sending arbitrarily long request bodies.
+to prevent clients from sending arbitrarily long requests.
 
 Note that the request above uses version 1.1 of the protocol
 and does not contain a ``connection: close`` header, thereby
-enforcing the keepalive semantic.  Of course a client is free
-to close the connection, but that means it will loose its queue
-position.
+enforcing the keepalive semantic.  This is because the position
+in queue is represented by the connection itself, so closing
+the connection implies removing the client from the queue.
 
 Upon receiving a negotiate request, the server checks whether
 it comes from a known connection.  If not, the server checks
@@ -122,41 +123,39 @@ queue_pos
 real_address
   This field is the Internet address of the connecting client,
   as seen by the negotiate server.  This allows a client behind a
-  NAT to know its real network address and communicate it to the
-  server in the collect phase.
+  NAT to know its real network address.
 
 unchoked
-  This field is nonzero when the client can perform a test now
-  and is zero otherwise.
+  This field is nonzero when the client can perform a test
+  immediately and is zero otherwise.
 
 Whenever a connection is lost, either because it was closed or
 because of some timeout, the server will (a) remove that connection
 from the FIFO queue and (b) notify all the connections that (i)
 have changed position in queue and (ii) had sent an HTTP request
-and were waiting for a response.  (In other words, it honours the
-Comet pattern and does not send a response when there is not a
-pending HTTP response.)
+and were waiting for a response.
 
-Each test defines test-specific code.  As far as negotiate is
-concerned, the ``unchoke`` method of test-specific code is invoked
-whenever a client is unchoked.  The minimal ``unchoke`` method
-should return the unique identifier of the stream, as follows::
+On top of the common code layer, there is per-test code, i.e.
+each test must subclass NegotiateServerModule and implement its
+methods.  As far as negotiate is concerned, the ``unchoke`` method
+is invoked whenever a client is unchoked.  The minimal ``unchoke``
+method should return the unique identifier of the stream, as shown
+by the following example::
 
 	def unchoke(self, stream, request_body):
 	    return {'authorization': str(hash(stream))}
 
-The method used to generate a unique identifier from the stream
-does not really matter.  In the above example the code uses
+The method used to generate the unique identifier from the stream
+does not really matter.  In this example the code uses
 hash(), which is unique for each Python object, but one can use
 other methods as long as each stream is mapped to a distinct
-identifier.  The authorization field is opaque and the client
-will use it in a protocol-specific way to identify itself with
-the test server.
+identifier.  The only requirement is that the identifier
+must be 1:1 with the connection and must be unique.
 
 If the ``unchoke()`` method needs to return more fiels to the
 client, it just have to add them to the returned dict.  But
 note that the code does not allow you to override `queue_pos`,
-`real_address` and `unchoked`.  While an exception is raised
+`real_address` and `unchoked`.  Moreover an exception is raised
 if `authorization` is not present in the returned dict.
 
 
@@ -165,9 +164,9 @@ Collect
 
 During collect, the client sends the server its measurements and
 the server sends the clients its measurements, so that there is
-complete information.  This time, most of the work must be performed
-by the per-test code and the common layer of code just takes care
-of serializing and unserializing the documentation.
+complete information. Differently from negotiate, here most of the
+work must be performed by the per-test code: the common layer
+just takes care of serializing and unserializing messages.
 
 The collect phase happens on the same connection that was used
 to perform the negotiate.  The collect request is an HTTP request
@@ -186,11 +185,11 @@ there is nothing meaningful to send.
 
 Note that the server will close the connection if the request
 is bigger than one Megabyte or the transfer-encoding is chunked,
-to prevent sending arbitrarily long request bodies.
+to prevent clients from sending arbitrarily long requests.
 
-In this case, it's not necessary for the client to enforce a
-keepalive semantic because the server will close the connection
-in any case.
+Differently from negotiate, here we use an explicit close semantic
+and the server will close the connection just after sending the
+response.
 
 The collect response is an HTTP response and always includes
 a JSON body::
@@ -199,13 +198,10 @@ a JSON body::
 	Content-Length: 123...
 	Content-Type: application/json
 
-	{
-		...
-	}
+	{ ... }
 
 Of course, 123... is the length of the JSON body and the body
-is properly serialized.  (Here the body is prettyprinted to
-aid the reader.)
+is properly serialized.
 
 No fields here are mandatory but still a body must (and will)
 be sent.

@@ -20,7 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Wrapper for speedtest server '''
+''' Wrapper for speedtest server.  The new negotiator uses JSON
+    messages but old clients still use XML.  Hence this layer
+    of code that maps between the old and the new semantic. '''
 
 import StringIO
 
@@ -35,7 +37,8 @@ from neubot import marshal
 # Classes that represent the old XML messages used
 # by speedtest.  I need to disable pylint because
 # it's not possible here to fix the names and/or to
-# add methods or remove fields.
+# add methods or remove fields.  Doing that will
+# break the protocol.
 #
 
 class SpeedtestCollect(object):
@@ -76,7 +79,12 @@ class SpeedtestNegotiate_Response(object):
         self.queuePos = 0
         self.queueLen = 0
 
-# Wrapper because the negotiator uses JSON and clients use XML
+#
+# This class is named wrapper because the negotiator uses
+# JSON and clients use XML.  And its task is to glue clients
+# and server expectations, waiting for clients to switch to
+# JSON.
+#
 class SpeedtestWrapper(ServerHTTP):
 
     ''' Speedtest server wrapper '''
@@ -86,6 +94,7 @@ class SpeedtestWrapper(ServerHTTP):
         ''' Decide whether we can accept this HTTP request '''
         isgood = (request['transfer-encoding'] == '' and
                   request.content_length() <= 1048576 and
+                  # XXX wrong because the scope of the check is too broad
                   request.uri.startswith('/speedtest/'))
         return isgood
 
@@ -106,6 +115,7 @@ class SpeedtestWrapper(ServerHTTP):
         if response.code != '200':
             return
 
+        # Convert JSON response to XML
         elif request.uri == '/negotiate/speedtest':
             response_body = json.loads(response.body)
 
@@ -121,6 +131,7 @@ class SpeedtestWrapper(ServerHTTP):
             response['content-type'] = 'application/xml'
             response['content-length'] = str(len(response.body))
 
+        # Suppress JSON response
         elif request.uri == '/collect/speedtest':
             del response['content-type']
             del response['content-length']
@@ -131,6 +142,9 @@ class SpeedtestWrapper(ServerHTTP):
         # use the same stream for both negotiation and testing
         # and the stream already has the rewriter installed
         # due to that.
+        # Probably we can remove the rewrite hook just after
+        # usage and be more strict here, but the current code
+        # seems to me more robust.
         #
         else:
             pass
@@ -180,16 +194,19 @@ class SpeedtestWrapper(ServerHTTP):
             'platform': xmlreq.platform,
             'neubot_version': xmlreq.neubot_version,
         }
+        # XXX Here we don't rewrite content-length which becomes bogus
         request['content-type'] = 'application/json'
         request.body = StringIO.StringIO(json.dumps(message))
 
         NEGOTIATE_SERVER.process_request(stream, request)
 
+# No poller, so it cannot be used directly
 SPEEDTEST_WRAPPER = SpeedtestWrapper(None)
 
 #
-# Add here the run() function but this should actually
-# be moved in speedtest/__init__.py in the future.
+# TODO I've added here the run() function for convenience,
+# but this should actually be moved in speedtest/__init__.py
+# in the future.
 #
 def run(poller, conf):
     ''' Start the server-side of the speedtest module '''

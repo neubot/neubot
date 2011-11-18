@@ -1,7 +1,7 @@
 Speedtest negotiator
 ''''''''''''''''''''
 
-:Version: 1.1 of 2011/11/09
+:Version: 1.2 of 2011/11/18
 :Authors: Simone Basso
 :Documents: neubot/negotiate/server_speedtest.py
 
@@ -10,9 +10,11 @@ interfaces with the generic negotiator code.  For more information
 on the generic negotiator code, please refer to the documentation
 available at `doc/negotiate/server.txt`.
 
-The Speedtest server uses hash() to map a stream to the related
-unique identifier.  Given how the HTTP protocol works, the client
-will use such identifier as authorization.  That is the client
-adds the authorization header and the server closes the connection
-if the connection client does not provide a valid value for such
-header or the header is not present.
+In ``unchoke()``, Speedtest uses hash(stream) to map a stream to
+its unique identifier.  The identifier is installed in a global
+table and is returned to the client via the common code layer.
+
+Later, when the client runs the HTTP test, it will send the identifier
+in the 'Authorization' header.  Of course, the server checks such
+authorization against its global table and closes the connection if
+it is unknown.

@@ -37,17 +37,17 @@ class NegotiateServerModule(object):
 
     # The minimal collect echoes the request body
     def collect(self, stream, request_body):
-        ''' Invoked when a stream sends data to collect '''
+        ''' Invoked at the end of the test, to collect data '''
         return request_body
 
     # The minimal unchoke returns the stream unique identifier only
     def unchoke(self, stream, request_body):
-        ''' Invoked when a stream is unchoked '''
+        ''' Invoked when a stream is authorized to take the test '''
         return { 'authorization': str(hash(stream)) }
 
 class NegotiateServer(ServerHTTP):
 
-    ''' Implements /negotiate and /collect '''
+    ''' Common code layer for /negotiate and /collect '''
 
     def __init__(self, poller):
         ''' Initialize the negotiator '''
@@ -62,7 +62,7 @@ class NegotiateServer(ServerHTTP):
 
     #
     # Protect the server from requests with huge request bodies
-    # and, for simplicity, filter out unhandled URIs.
+    # and filter-out unhandled URIs.
     # The HTTP layer should close() the stream when we return
     # False here.
     #
@@ -79,7 +79,8 @@ class NegotiateServer(ServerHTTP):
 
         #
         # We always pass upstream the collect request.  If it is
-        # not expected the module should raise a ValueError.
+        # not authorized the module does not have the identifier in
+        # its global table and will raise a KeyError.
         # Here we always keepalive=False so the HTTP layer closes
         # the connection and we are notified that the queue should
         # be changed.
@@ -99,16 +100,16 @@ class NegotiateServer(ServerHTTP):
 
         #
         # The first time we see a stream, we decide whether to
-        # accept it or drop it, depending on the length of the
+        # accept or drop it, depending on the length of the
         # queue.  The decision whether to accept or not depends
-        # on the current queue length and follows the random
-        # early discard algorithm.  When we accept it, we also
+        # on the current queue length and follows the Random
+        # Early Discard algorithm.  When we accept it, we also
         # register a function to be called when the stream is
-        # closed so that we can update the queue.  Also, in
-        # case we accept it, we do immediately send a response.
+        # closed so that we can update the queue.  And we
+        # immediately send a response.
         # When it's not the first time we see a stream, we just
-        # take note that we owe it a response.  We will not respond
-        # until something changes, tho.
+        # take note that we owe it a response.  But we won't
+        # respond until its queue position changes.
         #
         elif request.uri.startswith('/negotiate/'):
             if not stream in self.known:
@@ -162,11 +163,18 @@ class NegotiateServer(ServerHTTP):
         stream.send_response(request, response)
 
     #
-    # Keep streams before @lost_stream and streams after @lost_stream
-    # that (i) have no pending comet request or (ii) have a pending comet
-    # request and successfully manage to send it.
-    # In case of error sending the pending comet request, unregister
-    # atclose hook to prevent recursion.
+    # In theory this function should walk the queue and remove the
+    # lost stream.  But, actually, it seems better/faster to create
+    # and fill a new queue.
+    # In the new queue we will add streams before @lost_stream and
+    # streams after @lost_stream that (i) have no pending comet
+    # request or (ii) have a pending comet request and successfully
+    # manage to send it.
+    # Note: in case of error sending the pending comet request,
+    # unregister atclose hook to prevent recursion.
+    # TODO Libero Camillo suggests to use an ordered dictionary to
+    # implement the queue.  I like the idea and I will look into
+    # that after the pending Neubot release.
     #
     def _update_queue(self, lost_stream, ignored):
         ''' Invoked when a connection is lost '''
@@ -198,4 +206,5 @@ class NegotiateServer(ServerHTTP):
                     stream.close()
         self.queue = queue
 
+# No poller, so it cannot be used directly
 NEGOTIATE_SERVER = NegotiateServer(None)

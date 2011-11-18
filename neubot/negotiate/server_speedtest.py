@@ -40,8 +40,9 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
         ''' Invoked when we must unchoke a session '''
         ident = str(hash(stream))
         if ident not in self.clients:
-            stream.atclose(self._update_clients)
+            # Create record for this session
             self.clients.add(ident)
+            stream.atclose(self._update_clients)
             return {'authorization': ident}
         else:
             raise RuntimeError('Multiple unchoke')
@@ -52,11 +53,13 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
         if ident not in self.clients:
             raise RuntimeError('Not authorized to collect')
         else:
+            # Note: no more than one collect per session
             self.clients.remove(ident)
             if privacy.collect_allowed(request_body):
                 table_speedtest.insert(DATABASE.connection(), request_body)
             return {}
 
+    # Note: if collect is successful ident is not in self.clients
     def _update_clients(self, stream, ignored):
         ''' Invoked when a session has been closed '''
         ident = str(hash(stream))

@@ -57,6 +57,7 @@ class NegotiateServerBitTorrent(NegotiateServerModule):
             target_bytes = int(request_body['target_bytes'])
             if target_bytes < 0:
                 raise ValueError('Invalid target_bytes')
+            # Create record for this stream
             self.peers[sha1] = {'target_bytes': target_bytes}
             stream.atclose(self._update_peers)
             return {'authorization': self._stream_to_ident(stream)}
@@ -70,7 +71,7 @@ class NegotiateServerBitTorrent(NegotiateServerModule):
             raise RuntimeError('Not authorized to collect')
         else:
 
-            # No more than one collect per session
+            # Note: no more than one collect per session
             result = self.peers[sha1]
             del self.peers[sha1]
 
@@ -93,7 +94,7 @@ class NegotiateServerBitTorrent(NegotiateServerModule):
             request_body['target_bytes'] = result['target_bytes']
             return request_body
 
-    # If collect is successful we should not have self.peers[sha1]
+    # Note: if collect is successful self.peers[sha1] doesn't exist
     def _update_peers(self, stream, ignored):
         ''' Invoked when a session has been closed '''
         sha1 = self._stream_to_sha1(stream)

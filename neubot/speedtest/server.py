@@ -50,11 +50,13 @@ class SpeedtestServer(ServerHTTP):
     def process_request(self, stream, request):
         ''' Process incoming HTTP request '''
 
+        # Just ignore the incoming body
         if request.uri in ('/speedtest/latency', '/speedtest/upload'):
             response = Message()
             response.compose(code='200', reason='Ok')
             stream.send_response(request, response)
 
+        # Honour Range
         elif request.uri == '/speedtest/download':
             first, last = self._parse_range(request)
             response = Message()
@@ -63,7 +65,9 @@ class SpeedtestServer(ServerHTTP):
               mimetype='application/octet-stream')
             stream.send_response(request, response)
 
+        # For robustness
         else:
             raise RuntimeError('Unexpected URI')
 
+# No poller, so it cannot be used directly
 SPEEDTEST_SERVER = SpeedtestServer(None)
