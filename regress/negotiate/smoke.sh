@@ -39,8 +39,8 @@ elif [ "$1" = "--bittorrent-client" ]; then
     while ! test -f STOP; do
         $0 --bittorrent
     done
-elif [ "$1" = "-6" ]; then
-    for I in 1 2 3; do
+elif [ "$1" = "-9" ]; then
+    for I in 1 2 3 4 5 6 7 8 9; do
         $0 --speedtest-client &
         $0 --bittorrent-client &
     done
