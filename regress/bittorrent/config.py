@@ -29,6 +29,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.bittorrent import config
+from neubot.bittorrent import estimate
 
 PROPERTIES = (
     'bittorrent.address',
@@ -57,6 +58,51 @@ class TestPROPERTIES(unittest.TestCase):
 
         properties = tuple([ item[0] for item in config.PROPERTIES ])
         self.assertEquals(properties, PROPERTIES)
+
+# pylint: disable=R0904
+class TestFinalizeConf(unittest.TestCase):
+
+    ''' Make sure that finalize_conf() works as expected '''
+
+    def test_finalize_client(self):
+        ''' Test finalize conf in the client case '''
+
+        conf = {
+                'bittorrent.my_id': '',
+                'bittorrent.infohash': '',
+                'bittorrent.bytes.down': 0,
+                'bittorrent.bytes.up': 0,
+                'bittorrent.listen': False,
+                'bittorrent.address': '',
+               }
+
+        config.finalize_conf(conf)
+
+        self.assertTrue(len(conf['bittorrent.my_id']), 20)
+        self.assertTrue(len(conf['bittorrent.infohash']), 20)
+        self.assertEqual(conf['bittorrent.bytes.down'], estimate.DOWNLOAD)
+        self.assertEqual(conf['bittorrent.bytes.up'], estimate.UPLOAD)
+        self.assertEqual(conf['bittorrent.address'], 'neubot.blupixel.net')
+
+    def test_finalize_server(self):
+        ''' Test finalize conf in the server case '''
+
+        conf = {
+                'bittorrent.my_id': '',
+                'bittorrent.infohash': '',
+                'bittorrent.bytes.down': 0,
+                'bittorrent.bytes.up': 0,
+                'bittorrent.listen': True,
+                'bittorrent.address': '',
+               }
+
+        config.finalize_conf(conf)
+
+        self.assertTrue(len(conf['bittorrent.my_id']), 20)
+        self.assertTrue(len(conf['bittorrent.infohash']), 20)
+        self.assertEqual(conf['bittorrent.bytes.down'], estimate.DOWNLOAD)
+        self.assertEqual(conf['bittorrent.bytes.up'], estimate.UPLOAD)
+        self.assertEqual(conf['bittorrent.address'], '0.0.0.0')
 
 if __name__ == '__main__':
     unittest.main()
