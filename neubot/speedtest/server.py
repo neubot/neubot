@@ -36,6 +36,16 @@ class SpeedtestServer(ServerHTTP):
         isgood = (request.uri == '/speedtest/latency' or
                   request.uri == '/speedtest/download' or
                   request.uri == '/speedtest/upload')
+        #
+        # NOTE Ignore the request body.  First of all, we are
+        # not interested in reading it, we just want to receive
+        # it.  Moreover, reading it leads to framentation, as
+        # we need to actually allocate and then free all those
+        # bytes.  (This is true especially when testing with
+        # fast Neubot clients.)  This fix brings the amount of
+        # memory consumed by the server under control again.
+        #
+        request.body.write = lambda data: None
         return isgood
 
     @staticmethod
