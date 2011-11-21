@@ -102,29 +102,23 @@ if [ -f /var/neubot/database.sqlite3 ]; then
         CAN_COLLECT=1
     fi
 
-    if [ "$INFORMED" = "1" -a "$CAN_COLLECT" = "1" ]; then
-        #
-        # XXX Quick and dirty fix because release is
-        # pending (see below)
-        #
-        invoke-rc.d neubot start
-        exit 0
-    fi
-fi
-
-if [ -d /var/lib/update-notifier/user.d/ ]; then
-    rm -rf /var/lib/update-notifier/user.d/neubot
-    cat << EOF >> /var/lib/update-notifier/user.d/neubot
+    if [ "$INFORMED" = "0" -o "$CAN_COLLECT" = "0" ]; then
+        # Do our best to prompt the user
+        if [ -d /var/lib/update-notifier/user.d/ ]; then
+            rm -rf /var/lib/update-notifier/user.d/neubot
+            cat << EOF >> /var/lib/update-notifier/user.d/neubot
 Name: Neubot privacy settings
 Priority: High
 Terminal: False
-Command: /usr/bin/neubot_gui
+Command: /usr/bin/neubot viewer
 Description: Neubot cannot work without the permission to collect your
  Internet address, because of privacy laws.  Please, click on the button
  below to open Neubot GUI, which will show you the privacy policy and
  will ask you the permissions.
 EOF
-    touch /var/lib/update-notifier/dpkg-run-stamp
+            touch /var/lib/update-notifier/dpkg-run-stamp
+        fi
+    fi
 fi
 
 #
@@ -133,5 +127,4 @@ fi
 # XXX Redirect standard error to /dev/null or
 # neubot does not actually start.
 #
-
 invoke-rc.d neubot start 2>/dev/null
