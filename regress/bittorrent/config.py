@@ -104,5 +104,22 @@ class TestFinalizeConf(unittest.TestCase):
         self.assertEqual(conf['bittorrent.bytes.up'], estimate.UPLOAD)
         self.assertEqual(conf['bittorrent.address'], '0.0.0.0')
 
+# pylint: disable=R0904
+# pylint: disable=W0212
+class TestRanbomBytes(unittest.TestCase):
+
+    ''' Make sure that _random_bytes() works as expected '''
+
+    def test_length(self):
+        ''' Make sure that the output length is correct '''
+        self.assertEqual(len(config._random_bytes(128)), 128)
+
+    def test_content(self):
+        ''' Make sure that the output content is correct '''
+        result = config._random_bytes(128)
+        for char in result:
+            char = ord(char)
+            self.assertTrue(char >= 32 and char <= 126)
+
 if __name__ == '__main__':
     unittest.main()
