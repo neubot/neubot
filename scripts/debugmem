@@ -20,6 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Convenience script to inspect and monitor the usage of
+    memory of a Neubot server.  Works only from the same host
+    where the instance of the server is running. '''
+
 import getopt
 import httplib
 import sys
@@ -32,33 +36,62 @@ from neubot.compat import json
 
 def main():
 
-    try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'r')
-    except getopt.error:
-        sys.exit('Usage: debugmem [-r]')
-    if arguments:
-        sys.exit('Usage: debugmem [-r]')
+    ''' Main of the convenience script '''
 
+    try:
+        options, arguments = getopt.getopt(sys.argv[1:], '1cr')
+    except getopt.error:
+        sys.exit('Usage: debugmem [-1cr]')
+    if arguments:
+        sys.exit('Usage: debugmem [-1cr]')
+
+    cflag = False
+    onceflag = False
     rflag = False
     for tpl in options:
-        if tpl[0] == '-r':
+        if tpl[0] == '-1':
+            onceflag = True
+        elif tpl[0] == '-c':
+            cflag = True
+        elif tpl[0] == '-r':
             rflag = True
 
+    ocount = 0
     odictionary = {}
 
-    while True:
+    while not onceflag:
 
         try:
+            if cflag:
+                uri = '/debug/count'
+            else:
+                uri = '/debug'
 
             connection = httplib.HTTPConnection('127.0.0.1:9774')
-            connection.request('GET', '/debug')
+            connection.request('GET', uri)
             response = connection.getresponse()
             if response.status != 200:
                 continue
 
             body = response.read()
-            dictionary = json.loads(body)
+            response = json.loads(body)
 
+            #
+            # Count active objects
+            #
+
+            if cflag:
+                count = response
+                sys.stdout.write('%d\n' % (count - ocount))
+                if rflag or not ocount:
+                    ocount = count
+                continue
+
+            #
+            # List active objects
+            #
+
+            dictionary = response
             result = {}
 
             keys = set(dictionary.keys()) | set(odictionary.keys())
