@@ -22,8 +22,8 @@
 
 set -e
 
-pkill -KILL -f 'neubot_gui' || true
-pkill -KILL -f 'neubot_notify' || true
+pkill -KILL -f 'neubot viewer' || true
+pkill -KILL -f 'neubot notifier' || true
 
 invoke-rc.d neubot stop
 
