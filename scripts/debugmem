@@ -60,10 +60,12 @@ def main():
     ocount = 0
     odictionary = {}
 
-    while not onceflag:
+    while True:
 
         if firstrun:
             firstrun = False
+        elif onceflag:
+            break
         else:
             time.sleep(30)
 
