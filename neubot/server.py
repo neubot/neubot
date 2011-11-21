@@ -38,6 +38,11 @@ from neubot.http.server import ServerHTTP
 from neubot.net.poller import POLLER
 
 from neubot.negotiate.server import NEGOTIATE_SERVER
+from neubot.negotiate.server_speedtest import NEGOTIATE_SERVER_SPEEDTEST
+from neubot.negotiate.server_bittorrent import NEGOTIATE_SERVER_BITTORRENT
+from neubot.net.dns import DNS_CACHE
+from neubot.notify import NOTIFIER
+from neubot.state import STATE
 
 from neubot.compat import json
 from neubot.debug import objgraph
@@ -62,22 +67,65 @@ class DebugAPI(ServerHTTP):
         ''' Process HTTP request and return response '''
 
         response = Message()
-        if request.uri == '/debug':
-            gc.collect()
-            stats = objgraph.typestats()
-            body = json.dumps(stats, indent=4)
-            response.compose(code="200", reason="Ok", body=body,
-                             mimetype="application/json")
-        elif request.uri == '/debug/count':
-            body = json.dumps(len(gc.get_objects()), indent=4)
-            response.compose(code="200", reason="Ok", body=body,
-                             mimetype="application/json")
-        elif request.uri.startswith('/debug/types/'):
-            typename = request.uri.replace('/debug/types/', '')
-            gc.collect()
-            objects = objgraph.by_type(typename)
-            result = [str(obj) for obj in objects]
-            body = json.dumps(result, indent=4)
+
+        if request.uri == '/debugmem/collect':
+            body = gc.collect(2)
+
+        elif request.uri == '/debugmem/count':
+            counts = gc.get_count()
+            body = {
+                    'len_gc_objects': len(gc.get_objects()),
+                    'len_gc_garbage': len(gc.garbage),
+                    'gc_count0': counts[0],
+                    'gc_count1': counts[1],
+                    'gc_count2': counts[2],
+
+                    # Add the length of the most relevant globals
+                    'NEGOTIATE_SERVER.queue': len(NEGOTIATE_SERVER.queue),
+                    'NEGOTIATE_SERVER.known': len(NEGOTIATE_SERVER.known),
+                    'NEGOTIATE_SERVER_BITTORRENT.peers': \
+                        len(NEGOTIATE_SERVER_BITTORRENT.peers),
+                    'NEGOTIATE_SERVER_SPEEDTEST.clients': \
+                        len(NEGOTIATE_SERVER_SPEEDTEST.clients),
+                    'DNS_CACHE': len(DNS_CACHE),
+                    'POLLER.tasks': len(POLLER.tasks),
+                    'POLLER.pending': len(POLLER.pending),
+                    'POLLER.readset': len(POLLER.readset),
+                    'POLLER.writeset': len(POLLER.writeset),
+                    'LOG._queue': len(LOG._queue),
+                    'CONFIG.conf': len(CONFIG.conf),
+                    'NOTIFIER._timestamps': len(NOTIFIER._timestamps),
+                    'NOTIFIER._subscribers': len(NOTIFIER._subscribers),
+                    'NOTIFIER._tofire': len(NOTIFIER._tofire),
+                    'STATE._events': len(STATE._events),
+                   }
+
+        elif request.uri == '/debugmem/garbage':
+            body = [str(obj) for obj in gc.garbage]
+
+        elif request.uri == '/debugmem/saveall':
+            enable = json.load(request.body)
+            flags = gc.get_debug()
+            if enable:
+                flags |= gc.DEBUG_SAVEALL
+            else:
+                flags &= ~gc.DEBUG_SAVEALL
+            gc.set_debug(flags)
+            body = enable
+
+        elif request.uri.startswith('/debugmem/types'):
+            if request.uri.startswith('/debugmem/types/'):
+                typename = request.uri.replace('/debugmem/types/', '')
+                objects = objgraph.by_type(typename)
+                body = [str(obj) for obj in objects]
+            else:
+                body = objgraph.typestats()
+
+        else:
+            body = None
+
+        if body is not None:
+            body = json.dumps(body, indent=4, sort_keys=True)
             response.compose(code="200", reason="Ok", body=body,
                              mimetype="application/json")
         else:

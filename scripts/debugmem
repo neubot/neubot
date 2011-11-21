@@ -71,9 +71,9 @@ def main():
 
         try:
             if cflag:
-                uri = '/debug/count'
+                uri = '/debugmem/count'
             else:
-                uri = '/debug'
+                uri = '/debugmem/types'
 
             connection = httplib.HTTPConnection('127.0.0.1:9774')
             connection.request('GET', uri)
@@ -89,7 +89,7 @@ def main():
             #
 
             if cflag:
-                count = response
+                count = response['len_gc_objects']
                 sys.stdout.write('%d\n' % (count - ocount))
                 if rflag or not ocount:
                     ocount = count
@@ -114,7 +114,9 @@ def main():
                     result[key] = dictionary[key]
 
             json.dump(result, sys.stdout, indent=4)
-            sys.stdout.write('\n======\n')
+            sys.stdout.write('\n')
+            if not onceflag:
+                sys.stdout.write('======\n')
 
             if rflag or not odictionary:
                 odictionary = dictionary
