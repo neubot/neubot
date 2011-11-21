@@ -56,10 +56,16 @@ def main():
         elif tpl[0] == '-r':
             rflag = True
 
+    firstrun = True
     ocount = 0
     odictionary = {}
 
     while not onceflag:
+
+        if firstrun:
+            firstrun = False
+        else:
+            time.sleep(30)
 
         try:
             if cflag:
@@ -113,8 +119,6 @@ def main():
 
         except:
             pass
-
-        time.sleep(30)
 
 if __name__ == '__main__':
     main()
