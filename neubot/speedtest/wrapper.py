@@ -93,7 +93,9 @@ class SpeedtestWrapper(ServerHTTP):
     def got_request_headers(self, stream, request):
         ''' Decide whether we can accept this HTTP request '''
         isgood = (request['transfer-encoding'] == '' and
-                  request.content_length() <= 1048576 and
+                  # Fix for old clients
+                  (request['content-length'] == '' or
+                   request.content_length() <= 1048576) and
                   # XXX wrong because the scope of the check is too broad
                   request.uri.startswith('/speedtest/'))
         return isgood
