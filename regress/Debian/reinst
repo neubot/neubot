@@ -1,0 +1,91 @@
+#!/bin/sh -e
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# This regress test script attempts to give more confidence
+# that the following things are OK:
+#
+# 1. that we can create the debian package;
+#
+# 2. that we can install the debian package when Neubot
+#    is not installed and it will successfully create its
+#    database and run;
+#
+# 3. that we can cleanly remove and reinstall when there
+#    are or are not permissions to run tests;
+#
+# 4. that, when we reinstall, the notifier and the viewer
+#    are correctly closed.
+#
+
+if dpkg -l | grep -q neubot; then
+    echo "$0: you must uninstall Neubot to run this test" 1>&2
+    exit 1
+fi
+if [ `id -u` -ne 0 ]; then
+    echo "$0: you must be root to run this test" 1>&2
+    exit 1
+fi
+
+if [ $# -eq 0 ]; then
+    $0 --with-permission
+    $0 --no-permission
+    exit 0
+fi
+
+echo 'BEGIN: Create debian package...'
+test -f dist/neubot-0.4.5-rc2-1_all.deb || { make clean; make deb; }
+echo 'END: Create debian package (OK)'
+
+echo 'BEGIN: Install debian package...'
+dpkg -i dist/neubot-0.4.5-rc2-1_all.deb
+echo 'END: Install debian package (OK)'
+
+sleep 3
+
+if [ "$1" = "--with-permission" ]; then
+    echo 'BEGIN: Stop, update privacy and restart...'
+    /etc/init.d/neubot stop
+    /usr/bin/neubot privacy -D privacy.informed=1 -D privacy.can_collect=1
+    /etc/init.d/neubot start
+    echo 'END: Stop, update privacy and restart (OK)'
+fi
+
+sleep 3
+
+echo 'BEGIN: Start the viewer and the notifier...'
+/usr/bin/neubot viewer &
+/usr/bin/neubot notifier &
+echo 'END: Start the viewer and the notifier... (OK)'
+
+sleep 3
+
+echo 'BEGIN: Reinstall debian package...'
+dpkg -i dist/neubot-0.4.5-rc2-1_all.deb
+echo 'END: Reinstall debian package (OK)'
+
+sleep 3
+
+echo 'BEGIN: Cleanup...'
+dpkg --purge neubot
+test -f /var/neubot/database.sqlite3 && exit 1
+echo 'END: Cleanup (OK)'
