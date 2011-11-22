@@ -60,7 +60,8 @@ echo 'BEGIN: Install debian package...'
 dpkg -i dist/neubot-0.4.5-rc2-1_all.deb
 echo 'END: Install debian package (OK)'
 
-sleep 3
+echo '*** Please close the window that asks to update privacy settings...'
+sleep 15
 
 if [ "$1" = "--with-permission" ]; then
     echo 'BEGIN: Stop, update privacy and restart...'
