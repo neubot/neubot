@@ -59,15 +59,19 @@ class ServerRendezvous(ServerHTTP):
 
         m1 = compat.RendezvousResponse()
 
+        #
+        # If we don't say anything the rendezvous server is not
+        # going to prompt for updates.  We need to specify the
+        # updated version number explicitly when we start it up.
+        # This should guarantee that we do not advertise -rc
+        # releases and other weird things.
+        #
         version = self.conf["rendezvous.server.update_version"]
-
-        #
-        # Don't offer a release candidate update if the user is not
-        # running a release candidate as well and viceversa.
-        #
-        if (("-rc" in version and "-rc" in m.version) or
-          (not "-rc" in version and not "-rc" in m.version)):
-            if m.version and LibVersion.compare(version, m.version) > 0:
+        if version and m.version:
+            diff = LibVersion.compare(version, m.version)
+            LOG.debug('rendezvous: version=%s m.version=%s diff=%f' % (
+                      version, m.version, diff))
+            if diff > 0:
                 m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
                 m1.update["version"] = version
 
@@ -134,7 +138,7 @@ CONFIG.register_defaults({
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
     "rendezvous.server.update_uri": "http://www.neubot.org/download",
-    "rendezvous.server.update_version": common.VERSION,
+    "rendezvous.server.update_version": '',
     "rendezvous.geoip_wrapper.country_database": "/usr/local/share/GeoIP/GeoIP.dat",
     "rendezvous.server.default": "master.neubot.org",
 })
