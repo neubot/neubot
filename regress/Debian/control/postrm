@@ -1,0 +1,69 @@
+#!/bin/sh -e
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# Regression test for Debian/control/postrm
+#
+
+if dpkg -l | grep -q neubot; then
+    echo "$0: you must uninstall Neubot to run this test" 1>&2
+    exit 1
+fi
+if [ `id -u` -ne 0 ]; then
+    echo "$0: you must be root to run this test" 1>&2
+    exit 1
+fi
+
+cleanup() {
+    echo 'BEGIN: cleanup'
+    update-rc.d -f neubot remove || true
+    rm -f /etc/init.d/neubot
+    rm -rf /var/neubot
+    echo 'END: cleanup'
+}
+
+cleanup
+
+init() {
+    echo 'BEGIN: Initialize...'
+    install /dev/null /etc/init.d/neubot
+    update-rc.d neubot defaults 99
+    install -d /var/neubot
+    echo 'END: Initialize (OK)'
+}
+
+init
+
+echo 'BEGIN: Make sure that it removes /etc/rcN.d symlinks...'
+./Debian/control/postrm
+test -f /etc/rc2.d/S99nebot && exit 1
+echo 'END: Make sure that it removes /etc/rcN.d symlinks (OK)'
+
+init
+
+echo 'BEGIN: Make sure it ALSO removes /var/neubot on purge...'
+./Debian/control/postrm purge
+test -f /etc/rc2.d/S99nebot && exit 1
+test -d /var/neubot && exit 1
+echo 'END: Make sure it ALSO removes /var/neubot on purge (OK)'
+
+cleanup
