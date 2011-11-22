@@ -1,0 +1,133 @@
+#!/bin/sh -e
+
+#
+# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# Regression test for Debian/control/prerm
+#
+
+#
+# Sanity
+#
+
+if dpkg -l | grep -q neubot; then
+    echo "$0: you must uninstall Neubot to run this test" 1>&2
+    exit 1
+fi
+if [ `id -u` -ne 0 ]; then
+    echo "$0: you must be root to run this test" 1>&2
+    exit 1
+fi
+
+#
+# Cleanup
+#
+
+cleanup() {
+    echo 'BEGIN: cleanup'
+    rm -f /etc/init.d/neubot
+    rm -f /tmp/etc-init.d-neubot
+    rm -rf /usr/share/neubot
+    grep -q _neubot /etc/passwd && userdel _neubot
+    grep -q _neubot /etc/group && groupdel _neubot
+    echo 'END: cleanup'
+}
+
+cleanup
+
+#
+# Init
+#
+
+echo 'BEGIN: run viewer and notifier'
+# FIXME They are not able to deal with database issues
+./bin/neubot viewer &
+./bin/neubot notifier &
+# Give them some time to start
+sleep 3
+echo 'END: run viewer and notifier (OK)'
+
+echo -n 'Install fake /etc/init.d/neubot... '
+install /dev/null /etc/init.d/neubot
+cat << EOF > /etc/init.d/neubot
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides: neubot
+# Required-Start: $syslog $remote_fs
+# Required-Stop: $syslog $remote_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Network neutrality bot (neubot)
+### END INIT INFO
+echo -n \$1 > /tmp/etc-init.d-neubot
+EOF
+echo 'OK'
+
+echo -n 'Setup and compile /usr/share/neubot... '
+install -d /usr/share/neubot
+install -m644 /dev/null /usr/share/neubot/__init__.py
+install -m644 /dev/null /usr/share/neubot/__init__.pyc
+echo 'OK'
+
+echo -n 'Create _neubot group and _user... '
+groupadd -r _neubot
+useradd -r -d/ -g_neubot -s/usr/sbin/nologin _neubot
+echo 'OK'
+
+#
+# Run the script
+#
+
+echo 'BEGIN: run Debian/control/prerm'
+./Debian/control/prerm
+echo 'END: run Debian/control/prerm (OK)'
+
+#
+# Check the aftermath
+#
+
+echo -n 'Make sure that notifier and viewer have been stopped... '
+pgrep -f 'neubot viewer' 2>/dev/null && exit 1
+pgrep -f 'neubot notifier' 2>/dev/null && exit 1
+echo 'OK'
+
+echo -n 'Make sure that /etc/init.d/neubot have been invoked... '
+[ -f /tmp/etc-init.d-neubot ] && [ "`cat /tmp/etc-init.d-neubot`" = 'stop' ]
+echo 'OK'
+
+echo -n 'Make sure that /usr/share/neubot is still there... '
+test -f /usr/share/neubot/__init__.py
+echo 'OK'
+
+echo -n 'Make sure that *.pyc files have been removed... '
+test -f /usr/share/neubot/__init__.pyc && exit 1
+echo 'OK'
+
+echo -n 'Make sure that user and group have been deleted... '
+grep -q _neubot /etc/group && exit 1
+grep -q _neubot /etc/passwd && exit 1
+echo 'OK'
+
+#
+# Finish
+#
+
+cleanup
