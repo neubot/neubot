@@ -22,7 +22,7 @@
 /*
  * I would like to implement automatic updates under Windows as
  * soon as possible.  However this is not feasible for the upcoming
- * 0.4.5-rc2 release.  So here's a webpage that tells users that an
+ * 0.4.5-rc3 release.  So here's a webpage that tells users that an
  * updated version is available.  This will hopefully go away before
  * Neubot 0.5.0 (last famous words...).
  */

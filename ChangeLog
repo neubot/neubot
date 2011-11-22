@@ -1,3 +1,29 @@
+Neubot 0.4.5-rc3 [2011-11-22]
+	* regress: bittorrent/sched.py: add test case for sched_idx()
+	* regress: bittorrent/config.py: add test case for finalize_conf()
+	* regress: bittorrent/config.py: add test case for _random_bytes()
+	* scripts/debugmem: allow to monitor objects count
+	* scripts/debugmem: move time.sleep at the beginning of the loop
+	* scripts/debugmem: doofus in the while condition
+	* server: more flexible debugmem instrumentation
+	* speedtest/server.py: keep memory fragmentation under control
+	* regress: negotiate/smoke.sh: more aggressive testing
+	* Debian: control/prerm: update pkill arguments
+	* Debian: control/postinst: refactor
+	* regress: add unit test Debian/control/postinst
+	* regress: add unit test Debian/control/prerm
+	* regress: add unit test Debian/control/postrm
+	* regress: add Debian/reinst unit test
+	* regress: add Debian/inst regression test
+	* regress: Debian/reinst: account for notification
+	* Debian: control/preinst: show notification on first install
+	* regress: add Debian/conflict regression test
+	* regress: Debian/inst: fix informative message
+	* speedtest/wrapper.py: old clients do not set content-length
+	* rendezvous: more strict rules for redirection
+	* rendezvous/server.py: rewrite update advertisement
+	* Release neubot/0.4.5-rc3
+
 Neubot 0.4.5-rc2 [2011-11-18]
 	* MacOS/makepkg.py: update location of manual page
 	* Makefile: swap find arguments to avoid warning
