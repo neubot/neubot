@@ -66,7 +66,7 @@ cleanup() {
     apt-key list | grep -q F68D1AAD && apt-key del F68D1AAD
     rm -rf /tmp/etc-init.d-neubot
     rm -rf /tmp/usr-bin-neubot
-    rm -rf /var/neubot/database.sqlite3
+    rm -rf /var/neubot
     rm -rf /var/lib/update-notifier/user.d/neubot
     rm -rf /usr/bin/neubot
 }
@@ -81,6 +81,7 @@ if [ "$1" = "-" -a "$1" = "-" ]; then
     : # nothing
 elif [ "$1" = "1" -a "$2" = "1" ]; then
     echo -n 'Create database with good privacy... '
+    install -d /var/neubot
     sqlite3 /var/neubot/database.sqlite3 \
      'CREATE TABLE config(name TEXT PRIMARY KEY, value TEXT);'
     sqlite3 /var/neubot/database.sqlite3 \
@@ -90,6 +91,7 @@ elif [ "$1" = "1" -a "$2" = "1" ]; then
     echo 'OK'
 else
     echo -n 'Create database with bad privacy... '
+    install -d /var/neubot
     sqlite3 /var/neubot/database.sqlite3 \
      'CREATE TABLE config(name TEXT PRIMARY KEY, value TEXT);'
     sqlite3 /var/neubot/database.sqlite3 \
@@ -124,6 +126,11 @@ echo 'OK'
 echo 'BEGIN: run Debian/control/postinst'
 ./Debian/control/postinst
 echo 'END: run Debian/control/postinst (OK)'
+
+if [ "$1" != "1" -o "$2" != "1" ]; then
+    echo '*** Please close the notification window...'
+    sleep 15
+fi
 
 echo -n 'Make sure that /usr/share/neubot was compiled... '
 test -f /usr/share/neubot/__init__.pyc

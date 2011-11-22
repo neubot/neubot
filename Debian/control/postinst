@@ -87,6 +87,7 @@ install_key
 # Privacy
 #
 
+PRIVACY_NOTIFICATION=0
 if [ -f /var/neubot/database.sqlite3 ]; then
 
     INFORMED=$(sqlite3 /var/neubot/database.sqlite3 \
@@ -103,10 +104,16 @@ if [ -f /var/neubot/database.sqlite3 ]; then
     fi
 
     if [ "$INFORMED" = "0" -o "$CAN_COLLECT" = "0" ]; then
-        # Do our best to prompt the user
-        if [ -d /var/lib/update-notifier/user.d/ ]; then
-            rm -rf /var/lib/update-notifier/user.d/neubot
-            cat << EOF >> /var/lib/update-notifier/user.d/neubot
+        PRIVACY_NOTIFICATION=1
+    fi
+else
+    PRIVACY_NOTIFICATION=1
+fi
+
+if [ $PRIVACY_NOTIFICATION -eq 1 ]; then
+    if [ -d /var/lib/update-notifier/user.d/ ]; then
+        rm -rf /var/lib/update-notifier/user.d/neubot
+        cat << EOF >> /var/lib/update-notifier/user.d/neubot
 Name: Neubot privacy settings
 Priority: High
 Terminal: False
@@ -116,8 +123,7 @@ Description: Neubot cannot work without the permission to collect your
  below to open Neubot GUI, which will show you the privacy policy and
  will ask you the permissions.
 EOF
-            touch /var/lib/update-notifier/dpkg-run-stamp
-        fi
+        touch /var/lib/update-notifier/dpkg-run-stamp
     fi
 fi
 
