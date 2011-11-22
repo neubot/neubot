@@ -76,6 +76,9 @@ class ServerRendezvous(ServerHTTP):
         # The default test server is the master server itself.
         # If we know the country, lookup the list of servers for
         # that country in the database.
+        # We only redirect to other servers clients that have
+        # agreed to give us the permission to share, in order
+        # to be compliant with M-Lab policy.
         # If there are no servers for that country, register
         # the master server for the country so that we can notice
         # we have new users and can take the proper steps to
@@ -84,18 +87,20 @@ class ServerRendezvous(ServerHTTP):
         server = self.conf.get("rendezvous.server.default",
                                "master.neubot.org")
         LOG.debug("* default test server: %s" % server)
-        agent_address = stream.peername[0]
-        country = GEOLOCATOR.lookup_country(agent_address)
-        if country:
-            servers = table_geoloc.lookup_servers(DATABASE.connection(),
-                                                  country)
-            if not servers:
-                LOG.info("* learning new country: %s" % country)
-                table_geoloc.insert_server(DATABASE.connection(),
-                                           country, server)
-                servers = [server]
-            server = random.choice(servers)
-            LOG.debug("* selected test server: %s" % server)
+        if m.privacy_informed != 0 and m.privacy_can_collect != 0 \
+                and m.privacy_can_share != 0:
+            agent_address = stream.peername[0]
+            country = GEOLOCATOR.lookup_country(agent_address)
+            if country:
+                servers = table_geoloc.lookup_servers(DATABASE.connection(),
+                                                      country)
+                if not servers:
+                    LOG.info("* learning new country: %s" % country)
+                    table_geoloc.insert_server(DATABASE.connection(),
+                                               country, server)
+                    servers = [server]
+                server = random.choice(servers)
+                LOG.debug("* selected test server: %s" % server)
 
         if "speedtest" in m.accept:
             m1.available["speedtest"] = [ "http://%s/speedtest" % server ]

@@ -32,6 +32,9 @@ class RendezvousRequest(object):
     def __init__(self):
         self.accept = []
         self.version = ""
+        self.privacy_informed = 0
+        self.privacy_can_collect = 0
+        self.privacy_can_share = 0
 
 class RendezvousResponse(object):
     def __init__(self):

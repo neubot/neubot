@@ -117,6 +117,9 @@ class ClientRendezvous(ClientHTTP):
         m.accept.append("speedtest")
         m.accept.append("bittorrent")
         m.version = CONFIG["rendezvous.client.version"]
+        m.privacy_informed = CONFIG['privacy.informed']
+        m.privacy_can_collect = CONFIG['privacy.can_collect']
+        m.privacy_can_share = CONFIG['privacy.can_share']
 
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",
