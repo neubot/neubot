@@ -43,7 +43,7 @@ echo 'BEGIN: Install debian package...'
 dpkg -i dist/neubot-0.4.5-rc2-1_all.deb
 echo 'END: Install debian package (OK)'
 
-echo '*** Please click on "Run this action now"'
+echo '*** Please close the notification window...'
 sleep 15
 
 echo 'BEGIN: Cleanup...'
