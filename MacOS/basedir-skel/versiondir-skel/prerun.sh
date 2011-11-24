@@ -121,11 +121,14 @@ else
             exit 1
         fi
 
-        dscl . -create /Users/_neubot UserShell /sbin/nologin
-        dscl . -create /Users/_neubot RealName "Neubot"
         dscl . -create /Users/_neubot UniqueID $MYUID
         dscl . -create /Users/_neubot PrimaryGroupID $MYGID
     fi
+
+    # Update these records in any case
+    dscl . -create /Users/_neubot UserShell /usr/bin/false
+    dscl . -create /Users/_neubot RealName "Neubot privilege separation user"
+    dscl . -create /Users/_neubot Password '*'
 
     #
     # Group `_neubot_update`
@@ -182,11 +185,14 @@ else
             exit 1
         fi
 
-        dscl . -create /Users/_neubot_update UserShell /sbin/nologin
-        dscl . -create /Users/_neubot_update RealName "Neubot"
         dscl . -create /Users/_neubot_update UniqueID $MYUID
         dscl . -create /Users/_neubot_update PrimaryGroupID $MYGID
     fi
+
+    # Update these records in any case
+    dscl . -create /Users/_neubot_update UserShell /usr/bin/false
+    dscl . -create /Users/_neubot_update RealName "Neubot privilege separation user"
+    dscl . -create /Users/_neubot_update Password '*'
 
     logger -p daemon.info -t $0 'Creating .skip-checks hint file'
     touch $VERSIONDIR/.skip-checks
