@@ -95,6 +95,14 @@ if [ -f /var/neubot/database.sqlite3 ]; then
     CAN_COLLECT=$(sqlite3 /var/neubot/database.sqlite3 \
         'SELECT value FROM config WHERE name="privacy.can_collect";')
 
+    # Empty implies false
+    if [ "$INFORMED"x = ""x ]; then
+        INFORMED=0
+    fi
+    if [ "$CAN_COLLECT"x = ""x ]; then
+        CAN_COLLECT=0
+    fi
+
     # Backward compat
     if [ "$INFORMED" = "true" ]; then
         INFORMED=1
