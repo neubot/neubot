@@ -38,7 +38,7 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.log import LOG
 
-VERSION = "0.4.5-rc3"
+VERSION = "0.4.5"
 
 def write_help(fp, name, descr):
     fp.write('''\

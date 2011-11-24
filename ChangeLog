@@ -1,3 +1,8 @@
+Neubot 0.4.5 [2011-11-24]
+	* MacOS: tell the login screen not to pick Neubot user
+	* Debian: control/postinst: empty setting implies false
+	* Release neubot/0.4.5
+
 Neubot 0.4.5-rc3 [2011-11-22]
 	* regress: bittorrent/sched.py: add test case for sched_idx()
 	* regress: bittorrent/config.py: add test case for finalize_conf()
