@@ -21,10 +21,24 @@
 #
 
 DEBUG=
+RESUME=0
 
-# Prerequisites
-SCP=$HOME/bin/mlab_scp
-SSH=$HOME/bin/mlab_ssh
+# Wrappers for ssh, scp
+SCP="$DEBUG $HOME/bin/mlab_scp"
+SSH="$DEBUG $HOME/bin/mlab_ssh"
+
+# Command line
+while [ $# -gt 0 ]; do
+    if [ "$1" = "-r" ]; then
+        RESUME=1
+    fi
+    shift
+done
+
+if [ -f M-Lab/neubot.tar.gz ]; then
+    echo "error: Working directory not clean" 1>&2
+    exit 1
+fi
 
 $DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
 $DEBUG gzip -9 M-Lab/neubot.tar
@@ -33,33 +47,46 @@ $DEBUG git log --oneline|head -n1 > M-Lab/version
 # Fetch the list of hosts in realtime
 HOSTS=$(./M-Lab/ls.py)
 
+COUNT=0
 for HOST in $HOSTS; do
+    COUNT=$(($COUNT + 1))
 
     # Blank line before to separate each host logs
     echo ""
     echo "$HOST: start deploy"
+    echo "$HOST: current host number $COUNT"
 
     echo "$HOST: make sure it's up and running"
     $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null || continue
 
+    if [ $RESUME -ne 0 ]; then
+        echo "$HOST: check whether we need to resume"
+        {
+            $SSH $HOST 'ps auxww|grep ^_neubot' && {
+                echo "$HOST: deploy complete"
+                continue
+            } || true
+        }
+    fi
+
     echo "$HOST: stop and remove old neubot"
-    $DEBUG $SSH $HOST 'sudo /home/mlab_neubot/neubot/M-Lab/stop.sh || true'
-    $DEBUG $SSH $HOST rm -rf neubot
+    $SSH $HOST 'sudo /home/mlab_neubot/neubot/M-Lab/stop.sh || true' || continue
+    $SSH $HOST rm -rf neubot || continue
 
     echo "$HOST: copy files"
-    $DEBUG $SCP M-Lab/neubot.tar.gz $HOST:
-    $DEBUG $SCP M-Lab/version $HOST:
+    $SCP M-Lab/neubot.tar.gz $HOST: || continue
+    $SCP M-Lab/version $HOST: || continue
 
     echo "$HOST: install new neubot"
-    $DEBUG $SSH $HOST tar -xzf neubot.tar.gz
-    $DEBUG $SSH $HOST python -m compileall neubot/neubot/
+    $SSH $HOST tar -xzf neubot.tar.gz || continue
+    $SSH $HOST python -m compileall neubot/neubot/ || continue
 
     echo "$HOST: start new neubot"
-    $DEBUG $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh
-    $DEBUG $SSH $HOST sudo /etc/rc.local
+    $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh || continue
+    $SSH $HOST sudo /etc/rc.local || continue
 
     echo "$HOST: cleanup"
-    $DEBUG $SSH $HOST rm -rf neubot.tar.gz
+    $SSH $HOST rm -rf neubot.tar.gz || continue
 
     echo "$HOST: deploy complete"
 
