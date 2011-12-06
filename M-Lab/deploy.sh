@@ -23,7 +23,6 @@
 DEBUG=
 
 # Prerequisites
-HOSTS=$HOME/etc/mlab/hosts
 SCP=$HOME/bin/mlab_scp
 SSH=$HOME/bin/mlab_ssh
 
@@ -31,7 +30,10 @@ $DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
 $DEBUG gzip -9 M-Lab/neubot.tar
 $DEBUG git log --oneline|head -n1 > M-Lab/version
 
-for HOST in $(cat $HOSTS); do
+# Fetch the list of hosts in realtime
+HOSTS=$(./M-Lab/ls.py)
+
+for HOST in $HOSTS; do
 
     # Blank line before to separate each host logs
     echo ""
