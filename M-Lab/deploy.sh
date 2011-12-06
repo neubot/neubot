@@ -33,6 +33,8 @@ $DEBUG git log --oneline|head -n1 > M-Lab/version
 
 for HOST in $(cat $HOSTS); do
 
+    # Blank line before to separate each host logs
+    echo ""
     echo "$HOST: start deploy"
 
     echo "$HOST: make sure it's up and running"
