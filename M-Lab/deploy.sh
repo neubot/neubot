@@ -33,6 +33,8 @@ $DEBUG git log --oneline|head -n1 > M-Lab/version
 
 for HOST in $(cat $HOSTS); do
 
+    echo "$HOST: start deploy"
+
     echo "$HOST: make sure it's up and running"
     $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null || continue
 
@@ -54,5 +56,7 @@ for HOST in $(cat $HOSTS); do
 
     echo "$HOST: cleanup"
     $DEBUG $SSH $HOST rm -rf neubot.tar.gz
+
+    echo "$HOST: deploy complete"
 
 done
