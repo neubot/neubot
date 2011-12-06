@@ -33,6 +33,9 @@ $DEBUG git log --oneline|head -n1 > M-Lab/version
 
 for HOST in $(cat $HOSTS); do
 
+    echo "$HOST: make sure it's up and running"
+    $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null || continue
+
     echo "$HOST: stop and remove old neubot"
     $DEBUG $SSH $HOST 'sudo /home/mlab_neubot/neubot/M-Lab/stop.sh || true'
     $DEBUG $SSH $HOST rm -rf neubot
