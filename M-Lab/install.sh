@@ -20,6 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Install Neubot on an M-Lab sliver.
+# Remotely invoked on the sliver by M-Lab/deploy.sh.
+#
+
 DEBUG=
 INSTALL="install -o 0 -g 0"
 

@@ -20,5 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Script to stop Neubot on M-Lab slivers
+#
+
 DEBUG=
 $DEBUG kill -TERM $($DEBUG cat /var/run/neubot.pid)

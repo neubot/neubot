@@ -22,6 +22,11 @@
 
 ''' Lists the hostname of all the nodes within a slice '''
 
+#
+# This file is invoked by various shell scripts to get
+# a list of all the M-Lab nodes in our slice.
+#
+
 import ConfigParser
 import asyncore
 import os

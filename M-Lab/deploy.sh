@@ -20,6 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Deploy Neubot to M-Lab slivers
+#
+
 DEBUG=
 RESUME=0
 

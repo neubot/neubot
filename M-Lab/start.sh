@@ -20,6 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Script to start Neubot on M-Lab slivers
+#
+
 DEBUG=
 $DEBUG /etc/init.d/rsyslog restart
 $DEBUG /usr/bin/python /home/mlab_neubot/neubot/neubot/main/__init__.py server
