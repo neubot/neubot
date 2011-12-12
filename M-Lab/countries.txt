@@ -1,5 +1,0 @@
-The table countries.dat comes from Wikipedia and is released under
-Creative Commons BY-SA 3.0 Unported (as of 9th December 2011)
-
-	http://en.wikipedia.org/wiki/List_of_sovereign_states_and_dependent_territories_by_continent_%28data_file%29
-

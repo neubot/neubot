@@ -1,3 +1,8 @@
+#
+# The table below comes from Wikipedia <http://bit.ly/rogoMm> and is
+# released under Creative Commons BY-SA 3.0 Unported (as of 9th December
+# 2011)
+#
 AS      AF      AFG     4       Afghanistan, Islamic Republic of
 EU      AL      ALB     8       Albania, Republic of
 AN      AQ      ATA     10      Antarctica (the territory South of 60 deg S)
@@ -74,7 +79,7 @@ SA      FK      FLK     238     Falkland Islands (Malvinas)
 AN      GS      SGS     239     South Georgia and the South Sandwich Islands
 OC      FJ      FJI     242     Fiji, Republic of the Fiji Islands
 EU      FI      FIN     246     Finland, Republic of
-EU      AX      ALA     248     Åland Islands
+EU      AX      ALA     248     Ã…land Islands
 EU      FR      FRA     250     France, French Republic
 SA      GF      GUF     254     French Guiana
 OC      PF      PYF     258     French Polynesia
@@ -155,7 +160,7 @@ OC      NR      NRU     520     Nauru, Republic of
 AS      NP      NPL     524     Nepal, State of
 EU      NL      NLD     528     Netherlands, Kingdom of the
 NA      AN      ANT     530     Netherlands Antilles
-NA      CW      CUW     531     Curaçao
+NA      CW      CUW     531     CuraÃ§ao
 NA      AW      ABW     533     Aruba
 NA      SX      SXM     534     Sint Maarten (Netherlands)
 NA      BQ      BES     535     Bonaire, Sint Eustatius and Saba

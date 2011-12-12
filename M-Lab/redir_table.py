@@ -81,6 +81,8 @@ def realmain():
     redir_table = {}
     filep = open('M-Lab/countries.dat', 'rb')
     for line in filep:
+        if line.startswith('#'):
+            continue
         continent, country = line.split()[:2]
         if country in nodes_by_country:
             redir_table[country] = nodes_by_country[country]
