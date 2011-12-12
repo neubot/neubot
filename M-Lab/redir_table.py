@@ -84,10 +84,17 @@ def realmain():
         if line.startswith('#'):
             continue
         continent, country = line.split()[:2]
+        #
+        # XXX Simplified policy, which uses just one server per
+        # country/continent for consistency.
+        # I can do it better, e.g. use DONAR DNS starting from next
+        # version of Neubot and/or exploit servers' latitude and
+        # longitude.
+        #
         if country in nodes_by_country:
-            redir_table[country] = nodes_by_country[country]
+            redir_table[country] = set([list(nodes_by_country[country])[0]])
         elif continent in nodes_by_continent:
-            redir_table[country] = nodes_by_continent[continent]
+            redir_table[country] = set([list(nodes_by_continent[continent])[0]])
         else:
             sys.stderr.write('Internal error: no country/continent: %s/%s\n' %
                               (country, continent))
