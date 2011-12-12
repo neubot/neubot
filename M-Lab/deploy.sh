@@ -35,6 +35,9 @@ SSH="$DEBUG $HOME/bin/mlab_ssh"
 while [ $# -gt 0 ]; do
     if [ "$1" = "-r" ]; then
         RESUME=1
+    else
+        echo "Usage: $0 [-r]" 1>&2
+        exit 1
     fi
     shift
 done
