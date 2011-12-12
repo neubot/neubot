@@ -66,12 +66,14 @@ def serversmain():
             proxy.GetNodes(auth_info, ids, ['hostname'])
     ]
 
+    filep = open('M-Lab/servers.dat', 'wb')
     geoip = GeoIP.open(GEOIP_DATABASE, GeoIP.GEOIP_STANDARD)
     for hostname in hostnames:
         address = socket.getaddrinfo(hostname, 80, socket.AF_INET)[0][4][0]
         country = geoip.country_code_by_addr(address)
         continent = GeoIP.country_continents[country]
-        sys.stdout.write('%s %s %s\n' % (hostname, country, continent))
+        filep.write('%s %s %s\n' % (hostname, country, continent))
+    filep.close()
 
 def main():
     ''' Wrapper for the real main '''
