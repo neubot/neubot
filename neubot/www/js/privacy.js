@@ -33,15 +33,15 @@ function setPrivacy() {
     //
     // Set explicitly values to '1' or '0' because it is confusing
     // for the user to see boolean values represented both as numbers
-    // and as 'true' or 'false' in ``settings.hmtl``.
+    // and as 'true' or 'false' in ``settings.html``.
     //
     utils.setConfigVars({
         'privacy.informed':
           jQuery("#check_privacy_informed").attr("checked") ? "1" : "0",
         'privacy.can_collect':
           jQuery("#check_privacy_can_collect").attr("checked") ? "1" : "0",
-        'privacy.can_share':
-          jQuery("#check_privacy_can_share").attr("checked") ? "1" : "0"
+        'privacy.can_publish':
+          jQuery("#check_privacy_can_publish").attr("checked") ? "1" : "0"
       },
       setPrivacySuccess,
       setPrivacyError
@@ -64,8 +64,11 @@ function checkPrivacy(data) {
     else {
         hidden = false;
     }
-    if (data['privacy.can_share']) {
-        jQuery("#check_privacy_can_share").attr("checked", "checked");
+    if (data['privacy.can_publish']) {
+        jQuery("#check_privacy_can_publish").attr("checked", "checked");
+    }
+    else {
+        hidden = false;
     }
 
     // Unhide text that prompts users to provide privacy permissions

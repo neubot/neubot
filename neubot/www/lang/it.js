@@ -4,6 +4,8 @@
  *  Universita` degli Studi di Milano
  * Copyright (c) 2011 Claudio Artusio <claudioartusio@gmail.com>,
  *  NEXA Center for Internet & Society at Politecnico di Torino
+ * Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
+ *  NEXA Center for Internet & Society at Politecnico di Torino
  *
  * This file is part of Neubot <http://www.neubot.org/>.
  *
@@ -157,16 +159,16 @@ lo stato corrente.",
 
     "i18n_speedtest_title": "Risultati dello speedtest",
 
-    "i18n_speedtest_explanation_1": "Speedtest &egrave; un test che \
-getta un po' di luce sulla qualit&agrave; della tua connessione a \
+    "i18n_speedtest_explanation_1": "Speedtest é un test che \
+getta un po' di luce sulla qualità della tua connessione a \
 Internet, facendo download e upload di dati casuali a/da un server \
-remoto, e riportando le velocit&agrave; medie. Il test stima anche (per \
+remoto, e riportando le velocità medie. Il test stima anche (per \
 eccesso) il round-trip time tra te e il server remoto.  Per maggiori \
 informazioni, vedi le \
 <a href='http://www.neubot.org/faq#what-does-speedtest-test-measures'>FAQ</a>.",
 
     "i18n_speedtest_explanation_2": "Per contestualizzare i risultati \
-di questo test rispetto alla velocit&agrave; media disponibile nel \
+di questo test rispetto alla velocità media disponibile nel \
 tuo paese puoi far riferimento alle statistiche disponibili sul \
 <a href='http://www.oecd.org/sti/ict/broadband'>Portale Banda larga \
 OECD</a>.   In particolare, potrebbe essere interessante leggere \
@@ -190,56 +192,73 @@ un semplice <a href='#dashboard'>quadro privacy</a> per gestire le \
 autorizzazioni che deciderai di fornirci rispetto al trattamento del \
 tuo indirizzo Internet, che è considerato dato personale nell'Unione Europea.",
 
+    'i18n_privacy': 'Privacy',
+
     "i18n_privacy_title_1": "Politica sulla privacy",
 
-    "i18n_privacy_policy": "$Versione: 1.5$\r\n\r\n\
-Lo scopo di Neubot è quello di misurare la qualità e la neutralità \
-della connessione a Internet e di condividere i risultati con la comunità \
-di Internet, al fine di riequilibrare l'asimmetria informativa tra \
-normali utenti e i Service Providers.\r\n\r\n\
-Neubot non controlla o analizza il traffico Internet. Utilizza appena \
-una piccola frazione della capacità di connessione per eseguire test di \
-trasmissione in background, inviando e/o ricevendo dati casuali. Il \
-risultato contiene misure di prestazioni come la velocità di download, \
-la latenza o il carico percentuale del tuo computer. Inoltre, il \
-risultato contiene il tuo indirizzo Internet. Dopo il test, il \
-risultato viene caricato sui server di Neubot.\r\n\r\n\
-Il progetto Neubot ha bisogno di raccogliere il tuo indirizzo Internet, \
-perché ciò permette di inferire il tuo Internet Service Provider e di \
-avere un'idea della tua posizione geografica. Questo è coerente per \
-l'obbiettivo di Neubot di monitorare la qualità e la neutralità di \
-Internet, per provider e area geografica.\r\n\r\n\
-Tuttavia, in Europa gli indirizzi Internet sono dati personali. \
-Pertanto, Neubot non può memorizzare, elaborare, o condividere il tuo \
-indirizzo Internet senza il tuo *consenso informato* preventivo, in \
-base alle disposizioni del 'Codice in Materia di Protezione dei Dati \
-personali' \
-`(Decreto 196/03) <http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248>`_. \
-In accordo con quanto previsto dalla legge, titolare del trattamento è il \
-Centro NEXA di Internet &amp; Società, rappresentato dal suo co-direttore \
-Juan Carlos De Martin.\r\n\r\n\
-Neubot ti chiede di affermare esplicitamente di avete letto questa \
-politica sulla privacy e di dare il consenso a raccogliere e condividere \
-il tuo indirizzo IP. E si rifiuta di eseguire test finché non affermi di \
-avere letto questo politica sulla privacy e non fornisci il permesso di \
-raccogliere il tuo indirizzio IP. Il progetto ha bisogno almeno del \
-consenso a raccogliere il tuo indirizzo Internet, perché altrimenti non \
-può elaborare i tuoi risultati e pubblicare i dati aggregati. Se non \
-dai a neubot il consenso di condividere, il tuo indirizzo Internet non \
-verrà ovviamente condiviso con gli altri e verrà trattato unicamente \
-dai ricercatori autorizzati dal titolare del trattamento. Ti preghiamo \
-di notare che vi è un grande vantaggio nel condividere il tuo \
-Indirizzo Internet, perché consente ad altri ricercatori di studiare \
-e criticare la metodologia e i set di dati di Neubot. Ciò \
-permetterà alla comunità dei ricercatori di comprendere meglio \
-il funzionamento della rete.\r\n\r\n\
-Il titolare del trattamento garantisce i diritti di cui all'articolo 7 \
-del suddetto decreto. In sostanza, tu hai il controllo totale sui \
-tuoi dati personali, puoi, ad esempio, intimare a Neubot di rimuovere \
-il tuo indirizzo Internet dal proprio set di dati. Per esercitare i \
-tuoi diritti, scrivi al Dipartimento di Automatica e Infomatica \
-(DAUIN) - Politecnico di Torino - Corso Duca degli Abruzzi, 24 - 10129 \
-Torino, ITALIA.",
+    'i18n_privacy_policy':
+'\r\n\
+$Versione: 2.0$\r\n\
+\r\n\
+Il Progetto Neubot è un progetto di ricerca che si pongone di studiare\r\n\
+la qualità e la neutralità delle connessioni ad Internet\r\n\
+degli utenti comuni, per ribilanciare l\'asimmetria informativa tra utenti\r\n\
+comuni e Service Providers.  Il Software Neubot (i) *misura* la qualità\r\n\
+e la neutralità della tua connessione a Internet.  I risultati\r\n\
+grezzi delle misure sono (ii) *salvati* sul server di misura per scopi di\r\n\
+ricerca e (iii) *pubblicati*, per permettere ad altri individui e\r\n\
+istituzioni di riutilizzarli per finalità di ricerca.\r\n\
+\r\n\
+Per *misurare* la qualità e la neutralità della tua\r\n\
+connessione a Internet, il Softare Neubot non controlla né analizza\r\n\
+il tuo traffico Internet. Si limita a utilizzare una frazione della\r\n\
+capacità della tua connessione per effettuare dei test di\r\n\
+trasmissione in background, inviando e/o ricevendo dati casuali. I\r\n\
+risultati contengono le metriche misurate, come la velocità di\r\n\
+download o la latenza, il carico del tuo computer, in percentuale, e il\r\n\
+tuo *indirizzo Internet*.\r\n\
+\r\n\
+L\'indirizzo Internet è fondamentale perché permette di\r\n\
+*dedurre il tuo Internet Service Provider* e di avere un\'idea della tua\r\n\
+*posizione geografica*, permettendo di contestualizzare la misura.  Il\r\n\
+Progetto Neubot ha bisogno di *salvarlo* per poter studiare i dati e\r\n\
+desidera *pubblicarlo* per permettere ad altri individui e istituzioni di\r\n\
+eseguire analisi alternative e/o analizzare criticamente la metodologia\r\n\
+utilizzata dal Progetto stesso.  Ciò è coerente con la\r\n\
+policy della piattaforma server distribuita cui si appoggia il Progetto\r\n\
+Neubot, Measurement Lab (M-Lab), che richiede che tutti i risultati\r\n\
+siano rilasciati come dati aperti [1].\r\n\
+\r\n\
+Stai leggendo questa privacy policy perché Neubot viene sviluppato\r\n\
+nell\'Unione Europea, dove gli indirizzi IP sono ritenuti *dati personali*.\r\n\
+Questo significa che il Progetto Neubot non può salvare, processare o\r\n\
+pubblicare il tuo indirizzo senza ottenere il tuo *consenso informato*,\r\n\
+secondo le previsioni del &quot;Codice in materia di protezione dei dati\r\n\
+personali&quot; (Decreto 196/03) [2].  Conformemente alla legge, il\r\n\
+titolare del trattamento è il Centro NEXA su Internet e Società [3],\r\n\
+rappresentato dal suo co-diretore Juan Carlos De Martin.\r\n\
+\r\n\
+Tramite la sua interfaccia web [4], il Software Neubot ti chiede (a) di\r\n\
+dichiarare esplicitamente di essere *informato*, ossia di avere letto la\r\n\
+privacy policy, (b) di fornirgli il permesso di *salvare* e (c) *pubblicare*\r\n\
+il tuo indirizzo IP.  Se non dichiari (a) e non fornisci i permessi (b) e \r\n\
+(c), Neubot non può eseguire alcun test perché, se lo facesse,\r\n\
+violerebbe la normativa sui dati personali e/o la policy di Measurement Lab.\r\n\
+\r\n\
+Il responsabile del trattamento ti garantisce i diritti specificati nello\r\n\
+Articolo 7 del sopra-menzionato Decreto 196/03.  Fondamentalmente, hai il\r\n\
+totale controllo sui tuoi dati personali e puoi, per esempio, chiedere a\r\n\
+Neubot di rimuovere il tuo indirizzo Internet dalla sua banca dati.  Per\r\n\
+esercitare i tuoi diritti, scrivi a &lt;privacy@neubot.org&gt;\r\n\
+oppure a &quot;Centro NEXA su Internet &amp; Società c/o Dipartimento di\r\n\
+Automatica e Infomatica, Politecnico di Torino, Corso Duca degli\r\n\
+Abruzzi 24, 10129 Torino, ITALIA&quot;.\r\n\
+\r\n\
+[1] http://www.measurement-lab.net/about\r\n\
+[2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248\r\n\
+[3] http://nexa.polito.it/\r\n\
+[4] http://127.0.0.1:9774/privacy.html\r\n\
+        ',
 
     "i18n_privacy_title_2": "Quadro privacy",
 
@@ -249,14 +268,14 @@ impostazioni sulla privacy:",
     "i18n_privacy_settings_2_informed":"<b>Informato</b> Affermi di \
 aver letto e compreso la politica sulla privacy di cui sopra",
 
-    "i18n_privacy_settings_2_can_collect": "<b>Può collezionare</b> Consenti \
-a Neubot di collezionare il tuo indirizzo Internet",
+    "i18n_privacy_settings_2_can_collect": "<b>Può salvare</b> Consenti \
+a Neubot di salvare il tuo indirizzo Internet per scopi di ricerca",
 
-    "i18n_privacy_settings_2_can_share": "<b>Può condividere</b> Consenti \
-a Neubot di condividere il tuo indirizzo Internet con la comunità di internet",
+    "i18n_privacy_settings_2_can_publish": "<b>Può pubblicare</b> Consenti \
+a Neubot di pubblicare sul Web il tuo indirizzo Internet affinché possa essere riutilizzato per scopi di ricerca",
 
     "i18n_privacy_warning": "<b>ATTENZIONE! Neubot non eseguirà alcun \
 test finché non confermi di aver letto la privacy policy e non gli \
-fornisci il permesso di collezionare il tuo indirizzo Internet</b>."
+fornisci il permesso di salvare e pubblicare il tuo indirizzo Internet</b>."
 
 };
