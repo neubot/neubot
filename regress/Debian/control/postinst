@@ -24,7 +24,7 @@
 # Regression test for Debian/control/postinst
 #
 
-# Sanity
+# Sanity checks
 if dpkg -l | grep -q neubot; then
     echo "$0: you must uninstall Neubot to run this test" 1>&2
     exit 1
@@ -37,23 +37,27 @@ fi
 # Run serveral tests at once
 if [ $# -eq 0 ]; then
     echo '*** Test with no database'
-    $0 - -
+    $0 - - -
     echo ''
 
     echo '*** Test with good database'
-    $0 1 1
+    $0 1 1 1
     echo ''
 
     echo '*** Test with bad database'
-    $0 0 0
-    $0 0 1
-    $0 1 0
+    $0 0 0 0
+    $0 0 0 1
+    $0 0 1 0
+    $0 0 1 1
+    $0 1 0 0
+    $0 1 0 1
+    $0 1 1 0
     echo ''
 
     echo '*** Done'
     exit 0
-elif [ $# -ne 2 ]; then
-    echo "Usage: $0: [informed can_collect]" 1>&2
+elif [ $# -ne 3 ]; then
+    echo "Usage: $0: [informed can_collect can_publish]" 1>&2
     exit 1
 fi
 
@@ -77,9 +81,9 @@ cleanup
 echo 'END: start from scratch (OK)'
 
 # Setup database
-if [ "$1" = "-" -a "$1" = "-" ]; then
+if [ "$1" = "-" -a "$2" = "-" -a "$3" = "-" ]; then
     : # nothing
-elif [ "$1" = "1" -a "$2" = "1" ]; then
+elif [ "$1" = "1" -a "$2" = "1" -a "$3" = "1" ]; then
     echo -n 'Create database with good privacy... '
     install -d /var/neubot
     sqlite3 /var/neubot/database.sqlite3 \
@@ -88,6 +92,8 @@ elif [ "$1" = "1" -a "$2" = "1" ]; then
      'INSERT INTO config VALUES("privacy.informed", 1);'
     sqlite3 /var/neubot/database.sqlite3 \
      'INSERT INTO config VALUES("privacy.can_collect", 1);'
+    sqlite3 /var/neubot/database.sqlite3 \
+     'INSERT INTO config VALUES("privacy.can_publish", 1);'
     echo 'OK'
 else
     echo -n 'Create database with bad privacy... '
@@ -98,6 +104,8 @@ else
      "INSERT INTO config VALUES('privacy.informed', $1);"
     sqlite3 /var/neubot/database.sqlite3 \
      "INSERT INTO config VALUES('privacy.can_collect', $2);"
+    sqlite3 /var/neubot/database.sqlite3 \
+     "INSERT INTO config VALUES('privacy.can_publish', $3);"
     echo 'OK'
 fi
 
@@ -119,7 +127,10 @@ cat << EOF > /etc/init.d/neubot
 echo -n 1 > /tmp/etc-init.d-neubot
 EOF
 cat << EOF > /usr/bin/neubot
+#!/bin/sh
 echo -n 1 > /tmp/usr-bin-neubot
+# Check whether privacy settings are OK
+python $PWD/neubot/privacy.py -t
 EOF
 echo 'OK'
 
@@ -161,9 +172,9 @@ echo 'BEGIN: Make sure that the script is idempotent'
 ./Debian/control/postinst
 echo 'END: Make sure that the script is idempotent (OK)'
 
-if [ "$1" = "-" -a "$2" = "-" ]; then
+if [ "$1" = "-" -a "$2" = "-" -a "$3" = "-" ]; then
     : # nothing
-elif [ "$1" = "1" -a "$2" = "1" ]; then
+elif [ "$1" = "1" -a "$2" = "1" -a "$3" = "1" ]; then
     echo -n 'Make sure NOT -f /var/lib/update-notifier/user.d/neubot... '
     test -f /var/lib/update-notifier/user.d/neubot && exit 1
     echo 'OK'

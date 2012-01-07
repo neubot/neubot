@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 #
 # Copyright (c) 2009 The Chromium Authors.
@@ -72,7 +72,6 @@ KEYDATA
   fi
 }
 
-set -e
 python -m compileall -q /usr/share/neubot
 if ! grep -q _neubot /etc/group; then
     groupadd -r _neubot
@@ -87,38 +86,7 @@ install_key
 # Privacy
 #
 
-PRIVACY_NOTIFICATION=0
-if [ -f /var/neubot/database.sqlite3 ]; then
-
-    INFORMED=$(sqlite3 /var/neubot/database.sqlite3 \
-        'SELECT value FROM config WHERE name="privacy.informed";')
-    CAN_COLLECT=$(sqlite3 /var/neubot/database.sqlite3 \
-        'SELECT value FROM config WHERE name="privacy.can_collect";')
-
-    # Empty implies false
-    if [ "$INFORMED"x = ""x ]; then
-        INFORMED=0
-    fi
-    if [ "$CAN_COLLECT"x = ""x ]; then
-        CAN_COLLECT=0
-    fi
-
-    # Backward compat
-    if [ "$INFORMED" = "true" ]; then
-        INFORMED=1
-    fi
-    if [ "$CAN_COLLECT" = "true" ]; then
-        CAN_COLLECT=1
-    fi
-
-    if [ "$INFORMED" = "0" -o "$CAN_COLLECT" = "0" ]; then
-        PRIVACY_NOTIFICATION=1
-    fi
-else
-    PRIVACY_NOTIFICATION=1
-fi
-
-if [ $PRIVACY_NOTIFICATION -eq 1 ]; then
+if ! /usr/bin/neubot privacy -t; then
     if [ -d /var/lib/update-notifier/user.d/ ]; then
         rm -rf /var/lib/update-notifier/user.d/neubot
         cat << EOF >> /var/lib/update-notifier/user.d/neubot
@@ -126,10 +94,13 @@ Name: Neubot privacy settings
 Priority: High
 Terminal: False
 Command: /usr/bin/neubot viewer
-Description: Neubot cannot work without the permission to collect your
- Internet address, because of privacy laws.  Please, click on the button
- below to open Neubot GUI, which will show you the privacy policy and
- will ask you the permissions.
+Description: To work, Neubot needs the permission to collect and
+ to publish your Internet address.  The permission must be requested
+ explicitly to comply with European Privacy Laws provisions.
+ Please, click on the button below to open Neubot GUI, which will show
+ you the privacy policy and will ask you the permissions.  If the GUI
+ fails to open, you can access Neubot web interface by pointing your
+ web browser to <http://127.0.0.1:9774/>.
 EOF
         touch /var/lib/update-notifier/dpkg-run-stamp
     fi
@@ -137,7 +108,7 @@ fi
 
 #
 # Startup neubot at the end to avoid races
-# with the sqlite3 command above.
+# with the privacy command above.
 # XXX Redirect standard error to /dev/null or
 # neubot does not actually start.
 #
