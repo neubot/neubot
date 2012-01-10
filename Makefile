@@ -1,7 +1,7 @@
 # Makefile
 
 #
-# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -34,6 +34,7 @@ VERSION	= 0.4.5
 # to maintain this list.
 #
 PHONIES += help
+PHONIES += regress
 PHONIES += clean
 PHONIES += archive
 PHONIES += _install
@@ -55,6 +56,15 @@ help:
 	     fi;							\
 	 done
 	@printf '\n'
+
+regress:
+	for FILE in $$(find regress/ -type f -executable); do		\
+	    echo "* Running regression test: $$FILE";			\
+	    ./$$FILE || exit 1;						\
+	    echo "";							\
+	    echo "";							\
+	done
+
 clean:
 	@echo "[CLEAN]"
 	@./scripts/cleanup
