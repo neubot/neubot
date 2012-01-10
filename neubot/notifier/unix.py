@@ -28,14 +28,6 @@
  notifications if needed.
 '''
 
-#
-# We distribute this script with the debian package but the
-# real target is Ubuntu.  For this reason this script dependencies
-# are not listed into the debian package.  The proper solution
-# is to split the debian package into a -core and -gnome flavors.
-# Where the -gnome one depends on core.
-#
-
 import asyncore
 import getopt
 import json
