@@ -46,6 +46,8 @@ if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
     ICON = None
 
 STATIC_PAGE = '@DATADIR@/neubot/www/not_running.html'
+if STATIC_PAGE.startswith('@DATADIR@'):
+    STATIC_PAGE = os.path.abspath(STATIC_PAGE.replace('@DATADIR@', '.'))
 
 class WebkitGUI(gtk.Window):
 
