@@ -51,12 +51,15 @@
 from neubot.utils import get_uuid
 from neubot import compat
 
+# The regress test requires this variable
+SCHEMA_VERSION = '4.2'
+
 def create(connection, commit=True):
     ''' Creates table_config if it does not exist '''
     connection.execute("""CREATE TABLE IF NOT EXISTS config(
       name TEXT PRIMARY KEY, value TEXT);""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
-      'version', '4.2');""")
+      'version', %s);""" % SCHEMA_VERSION)
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
       'uuid', ?);""", (get_uuid(),))
     if commit:
