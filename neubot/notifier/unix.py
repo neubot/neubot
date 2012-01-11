@@ -55,6 +55,11 @@ try:
 except ImportError:
     sys.exit('Notifier support not available')
 
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
+
+from neubot import privacy
+
 NEUBOT_ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
     NEUBOT_ICON = None
@@ -62,8 +67,7 @@ if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
 PRIVACY_TITLE = 'Neubot | No privacy settings'
 PRIVACY_EXPLANATION = \
 'Neubot is disabled because you did not provided the permission to save ' \
-'your Internet address.  To provide it, use Neubot GUI (Applications -> ' \
-'Internet -> Neubot Network Neutrality Bot).'
+'your Internet address.  To provide it, use Neubot GUI.'
 
 SHORT_PRIVACY_INTERVAL = 30
 LONG_PRIVACY_INTERVAL = 3600
@@ -98,20 +102,7 @@ def __should_adjust_privacy(database_path):
         connection.close()
 
         dictionary = json.loads(body)
-        informed = dictionary['privacy.informed']
-        can_collect = dictionary['privacy.can_collect']
-
-        # Backward compat
-        if informed in ('off', 'no', 'false'):
-            informed = 0
-        if informed in ('on', 'yes', 'true'):
-            informed = 1
-        if can_collect in ('off', 'no', 'false'):
-            can_collect = 0
-        if can_collect in ('on', 'yes', 'true'):
-            can_collect = 1
-
-        if int(informed) == 0 or int(can_collect) == 0:
+        if privacy.count_valid(dictionary, 'privacy.') != 3:
             # Should adjust settings
             return True
 

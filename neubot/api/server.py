@@ -195,8 +195,7 @@ class ServerAPI(ServerHTTP):
          whether the user has already set privacy permissions or not
         '''
         response = Message()
-        if (not utils.intify(CONFIG['privacy.informed']) or
-          not utils.intify(CONFIG['privacy.can_collect'])):
+        if not privacy.allowed_to_run():
             response.compose_redirect(stream, '/privacy.html')
         else:
             response.compose_redirect(stream, '/index.html')
