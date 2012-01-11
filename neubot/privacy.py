@@ -126,6 +126,61 @@ def main(args):
            str(asyncore.compact_traceback()))
         sys.exit(1)
 
+def print_policy():
+
+    ''' Print privacy policy and exit '''
+
+    filep = open(POLICY, 'rb')
+    body = ''.join([ '<HTML>', filep.read(), '</HTML>' ])
+    filep.close()
+
+    # Adapted from scripts/make_lang_en.py
+    document = xml.dom.minidom.parseString(body)
+    for element in document.getElementsByTagName('textarea'):
+        if element.getAttribute('class') != 'i18n i18n_privacy_policy':
+            continue
+        element.normalize()
+        for node in element.childNodes:
+            if node.nodeType == node.TEXT_NODE:
+                for line in node.data.splitlines():
+                    sys.stdout.write(line.strip())
+                    sys.stdout.write('\n')
+                return 0
+
+    sys.stderr.write('ERROR cannot extract policy from privacy.html\n')
+    return 1
+
+def update_settings(connection, settings):
+
+    ''' Update database privacy settings and exit '''
+
+    for name in settings.keys():
+        if name not in ('privacy.informed', 'privacy.can_collect',
+                    'privacy.can_share'):
+            sys.stderr.write('WARNING unknown setting: %s\n' % name)
+            del settings[name]
+    table_config.update(connection, settings.items())
+    # Live with that or provide a patch
+    sys.stdout.write('*** Database changed.  Please, restart Neubot.\n')
+
+    return 0
+
+def print_settings(connection, database_path):
+
+    ''' Print privacy settings and exit '''
+
+    sys.stdout.write(USAGE + '\n')
+    sys.stdout.write('Current database: %s\n' % database_path)
+    sys.stdout.write('Current settings:\n')
+    dictionary = table_config.dictionarize(connection)
+    for name, value in dictionary.items():
+        if name.startswith('privacy.'):
+            sys.stdout.write('    %-20s: %d\n' % (name,
+                    utils.intify(value)))
+    sys.stdout.write('\n')
+
+    return 0
+
 def __main(args):
 
     ''' Initialize privacy settings '''
@@ -150,47 +205,15 @@ def __main(args):
             pflag = True
 
     if pflag:
-        filep = open(POLICY, 'rb')
-        body = ''.join([ '<HTML>', filep.read(), '</HTML>' ])
-        filep.close()
-        document = xml.dom.minidom.parseString(body)
-        for element in document.getElementsByTagName('textarea'):
-            if element.getAttribute('class') != 'i18n i18n_privacy_policy':
-                continue
-            element.normalize()
-            for node in element.childNodes:
-                if node.nodeType == node.TEXT_NODE:
-                    for line in node.data.splitlines():
-                        sys.stdout.write(line.strip())
-                        sys.stdout.write('\n')
-                    sys.exit(0)
-        sys.stderr.write('ERROR cannot extract policy from privacy.html\n')
-        sys.exit(1)
-    else:
+        sys.exit(print_policy())
 
-        DATABASE.set_path(database_path)
-        connection = DATABASE.connection()
-        if settings:
-            for name, value in settings.items():
-                if name not in ('privacy.informed', 'privacy.can_collect',
-                            'privacy.can_share'):
-                    sys.stderr.write('WARNING unknown setting: %s\n' % name)
-                    del settings[name]
-            table_config.update(connection, settings.items())
-            # Live with that or provide a patch
-            sys.stdout.write('*** Database changed.  Please, restart Neubot.\n')
-        else:
+    DATABASE.set_path(database_path)
+    connection = DATABASE.connection()
 
-            sys.stdout.write(USAGE + '\n')
-            sys.stdout.write('Current database: %s\n' % database_path)
-            sys.stdout.write('Current settings:\n')
-            cursor = connection.cursor()
-            cursor.execute('SELECT * FROM config;')
-            for name, value in cursor:
-                if name.startswith('privacy.'):
-                    sys.stdout.write('    %-20s: %d\n' % (name,
-                            utils.intify(value)))
-            sys.stdout.write('\n')
+    if settings:
+        sys.exit(update_settings(connection, settings))
+
+    sys.exit(print_settings(connection, database_path))
 
 if __name__ == '__main__':
     main(sys.argv)
