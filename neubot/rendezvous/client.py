@@ -174,37 +174,30 @@ class ClientRendezvous(ClientHTTP):
                     self._schedule()
                 else:
 
-                    if (CONFIG["privacy.informed"] and
-                      not CONFIG["privacy.can_collect"]):
-                        LOG.warning("cannot run test without permission "
-                          "to save the results")
-                        self._schedule()
+                    conf = self.conf.copy()
+
+                    #
+                    # Subscribe _before_ connecting.  This way we
+                    # immediately see "testdone" if the connection fails
+                    # and we can _schedule the next attempt.
+                    #
+                    NOTIFIER.subscribe("testdone", lambda *a, **kw: \
+                                                     self._schedule())
+
+                    if test == "speedtest":
+                        conf["speedtest.client.uri"] =  m1.available[
+                                                          "speedtest"][0]
+                        client = ClientSpeedtest(POLLER)
+                        client.configure(conf)
+                        client.connect_uri()
+
+                    elif test == "bittorrent":
+                        conf["bittorrent._uri"] =  m1.available[
+                                                    "bittorrent"][0]
+                        bittorrent.run(POLLER, conf)
+
                     else:
-
-                        conf = self.conf.copy()
-
-                        #
-                        # Subscribe _before_ connecting.  This way we
-                        # immediately see "testdone" if the connection fails
-                        # and we can _schedule the next attempt.
-                        #
-                        NOTIFIER.subscribe("testdone", lambda *a, **kw: \
-                                                         self._schedule())
-
-                        if test == "speedtest":
-                            conf["speedtest.client.uri"] =  m1.available[
-                                                              "speedtest"][0]
-                            client = ClientSpeedtest(POLLER)
-                            client.configure(conf)
-                            client.connect_uri()
-
-                        elif test == "bittorrent":
-                            conf["bittorrent._uri"] =  m1.available[
-                                                        "bittorrent"][0]
-                            bittorrent.run(POLLER, conf)
-
-                        else:
-                            NOTIFIER.publish("testdone")
+                        NOTIFIER.publish("testdone")
 
     def _schedule(self):
 
