@@ -1,7 +1,7 @@
 # neubot/database/_table_utils.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -189,3 +189,42 @@ def make_select(table, template, **kwargs):
     vector.append(";")
     query = "".join(vector)
     return query
+
+def rename_column_query(table1, template1, table2, template2):
+
+    ''' Returns the query that copies from table1, described by
+        template1, to table2, described by template2 '''
+
+    query = ["INSERT INTO %s(" % __check(table2)]
+    for name in template2:
+        query.append(__check(name))
+        query.append(",")
+    query[-1] = ") SELECT "
+    for name in template1:
+        query.append(__check(name))
+        query.append(",")
+    query[-1] = " FROM %s;" % __check(table1)
+
+    query = "".join(query)
+    return query
+
+def rename_column(connection, table, template, mapping):
+
+    ''' General procedure to rename one or more columns in a table,
+        described by template, according to the specified mapping '''
+
+    # See http://stackoverflow.com/questions/805363
+
+    table = __check(table)
+    otable = "old_%s" % table
+
+    ntemplate = {}
+    for key, value in template.items():
+        if key in mapping:
+            key = mapping[key]
+        ntemplate[key] = value
+
+    connection.execute("ALTER TABLE %s RENAME TO %s" % (table, otable))
+    connection.execute(make_create_table(table, ntemplate))
+    connection.execute(rename_column_query(otable, template, table, ntemplate))
+    connection.execute("DROP TABLE %s;" % otable)
