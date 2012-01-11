@@ -72,8 +72,21 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
 
         # Note: no more than one collect per session
         self.clients.remove(ident)
+
+        #
+        # Backward compatibility: the variable name changed from
+        # can_share to can_publish after Neubot 0.4.5
+        #
+        if 'privacy_can_share' in request_body:
+            request_body['privacy_can_publish'] = request_body[
+              'privacy_can_share']
+            del request_body['privacy_can_share']
+
         if privacy.collect_allowed(request_body):
             table_speedtest.insert(DATABASE.connection(), request_body)
+        else:
+            LOG.warning('* bad privacy settings: %s' % str(stream))
+
         return {}
 
     # Note: if collect is successful ident is not in self.clients

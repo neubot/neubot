@@ -159,7 +159,7 @@ def obj_to_dict(obj):
         "upload_speed": obj.uploadSpeed,
         "privacy_informed": obj.privacy_informed,
         "privacy_can_collect": obj.privacy_can_collect,
-        "privacy_can_share": obj.privacy_can_share,
+        "privacy_can_publish": obj.privacy_can_share,   #XXX
         "platform": obj.platform,
         "neubot_version": obj.neubot_version,
     }
@@ -188,7 +188,7 @@ class ClientCollect(ClientHTTP):
 
         m1.privacy_informed = self.conf.get("privacy.informed", 0)
         m1.privacy_can_collect = self.conf.get("privacy.can_collect", 0)
-        m1.privacy_can_share = self.conf.get("privacy.can_share", 0)
+        m1.privacy_can_share = self.conf.get("privacy.can_publish", 0)  # XXX
 
         m1.neubot_version = LibVersion.to_numeric("0.4.5")
         m1.platform = sys.platform
@@ -198,7 +198,11 @@ class ClientCollect(ClientHTTP):
         s = marshal.marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)
 
-        if privacy.collect_allowed(m1):
+        #
+        # Pass a dictionary because the function does not accept
+        # anymore an object
+        #
+        if privacy.collect_allowed(m1.__dict__):
             insertxxx(DATABASE.connection(), m1)
 
         request = Message()

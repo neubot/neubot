@@ -119,7 +119,7 @@ class ClientRendezvous(ClientHTTP):
         m.version = CONFIG["rendezvous.client.version"]
         m.privacy_informed = CONFIG['privacy.informed']
         m.privacy_can_collect = CONFIG['privacy.can_collect']
-        m.privacy_can_share = CONFIG['privacy.can_share']
+        m.privacy_can_share = CONFIG['privacy.can_publish']             # XXX
 
         request = Message()
         request.compose(method="GET", pathquery="/rendezvous",

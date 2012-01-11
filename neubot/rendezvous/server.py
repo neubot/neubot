@@ -42,6 +42,7 @@ from neubot.main import common
 from neubot import marshal
 from neubot import system
 from neubot import utils
+from neubot import privacy
 
 from neubot.utils.version import LibVersion
 
@@ -81,7 +82,7 @@ class ServerRendezvous(ServerHTTP):
         # If we know the country, lookup the list of servers for
         # that country in the database.
         # We only redirect to other servers clients that have
-        # agreed to give us the permission to share, in order
+        # agreed to give us the permission to publish, in order
         # to be compliant with M-Lab policy.
         # If there are no servers for that country, register
         # the master server for the country so that we can notice
@@ -91,8 +92,19 @@ class ServerRendezvous(ServerHTTP):
         server = self.conf.get("rendezvous.server.default",
                                "master.neubot.org")
         LOG.debug("* default test server: %s" % server)
-        if m.privacy_informed != 0 and m.privacy_can_collect != 0 \
-                and m.privacy_can_share != 0:
+
+        #
+        # Backward compatibility: the variable name changed from
+        # can_share to can_publish after Neubot 0.4.5
+        #
+        request_body = m.__dict__.copy()
+        if 'privacy_can_share' in request_body:
+            request_body['privacy_can_publish'] = request_body[
+              'privacy_can_share']
+            del request_body['privacy_can_share']
+
+        # Redirect IFF have ALL privacy permissions
+        if privacy.count_valid(request_body, 'privacy_') == 3:
             agent_address = stream.peername[0]
             country = GEOLOCATOR.lookup_country(agent_address)
             if country:

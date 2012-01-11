@@ -142,7 +142,7 @@ class BitTorrentClient(ClientHTTP):
 
             "privacy_informed": self.conf.get("privacy.informed", 0),
             "privacy_can_collect": self.conf.get("privacy.can_collect", 0),
-            "privacy_can_share": self.conf.get("privacy.can_share", 0),
+            "privacy_can_publish": self.conf.get("privacy.can_publish", 0),
 
             # Upload speed measured at the server
             "connect_time": rtt,
