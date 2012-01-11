@@ -134,6 +134,45 @@ class ClientNegotiate(ClientHTTP):
         if m.queuePos:
             self.conf["speedtest.client.queuepos"] = m.queuePos
 
+### Glue result class and dictionary ###
+
+#
+# FIXME The following function glues the speedtest code and
+# the database code.  The speedtest code passes downstream a
+# an object with the following problems:
+#
+# 1. the timestamp _might_ be a floating because old
+#    neubot clients have this bug;
+#
+def obj_to_dict(obj):
+    ''' Hack to convert speedtest result object into a
+        dictionary. '''
+    dictionary = {
+        "uuid": obj.client,
+        "timestamp": int(float(obj.timestamp)),         #XXX
+        "internal_address": obj.internalAddress,
+        "real_address": obj.realAddress,
+        "remote_address": obj.remoteAddress,
+        "connect_time": obj.connectTime,
+        "latency": obj.latency,
+        "download_speed": obj.downloadSpeed,
+        "upload_speed": obj.uploadSpeed,
+        "privacy_informed": obj.privacy_informed,
+        "privacy_can_collect": obj.privacy_can_collect,
+        "privacy_can_share": obj.privacy_can_share,
+        "platform": obj.platform,
+        "neubot_version": obj.neubot_version,
+    }
+    return dictionary
+
+def insertxxx(connection, obj, commit=True, override_timestamp=True):
+    ''' Hack to insert a result object into speedtest table,
+        converting it into a dictionary. '''
+    table_speedtest.insert(connection, obj_to_dict(obj), commit,
+                           override_timestamp)
+
+### Glue result class and dictionary ###
+
 class ClientCollect(ClientHTTP):
     def connection_ready(self, stream):
         m1 = SpeedtestCollect()
@@ -160,7 +199,7 @@ class ClientCollect(ClientHTTP):
         stringio = StringIO.StringIO(s)
 
         if privacy.collect_allowed(m1):
-            table_speedtest.insertxxx(DATABASE.connection(), m1)
+            insertxxx(DATABASE.connection(), m1)
 
         request = Message()
         request.compose(method="POST", pathquery="/speedtest/collect",
