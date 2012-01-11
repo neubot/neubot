@@ -41,47 +41,51 @@ from neubot import rootdir
 from neubot import system
 from neubot import utils
 
-def check(updates):
+def count_valid(updates, prefix):
 
-    ''' Raises ConfigError if the user is trying to update the
-        privacy settings in a wrong way '''
+    ''' Return the number of valid privacy settings found
+        and return -1 in case of error '''
 
-    if (not 'privacy.informed' in updates or
-      not 'privacy.can_collect' in updates):
-        return
+    count = 0
+    for setting in ('informed', 'can_collect', 'can_publish'):
+        name = "%s%s" % (prefix, setting)
+        if name in updates:
+            value = utils.intify(updates[name])
+            if not value:
+                return -1
+            count += 1
+    return count
 
-    conf = CONFIG.copy()
-    conf.update(updates)
+def check(updates, check_all=False, prefix='privacy.'):
 
-    informed = utils.intify(conf['privacy.informed'])
-    can_collect = utils.intify(conf['privacy.can_collect'])
+    ''' Raises ConfigError if the ``updates`` dictionary does not
+        contain valid privacy settings '''
 
-    if not (informed == can_collect == 1):
+    count = count_valid(updates, prefix)
+    if count < 0:
         raise ConfigError(
-'Invalid privacy configuration: (i) you must be informed and (ii) Neubot '
-'cannot work if it cannot collect your Internet address.  If that is a '
-'problem for you, either disable Neubot or uninstall it.')
+'Invalid privacy settings.  Neubot is not allowed to use the distributed '
+'M-Lab platform to perform tests unless you (i) assert that you have '
+'read the privacy policy and you provide the permission to (ii) collect '
+'and (iii) publish your Internet address.')
+
+    elif check_all and count != 3:
+        raise ConfigError('Not all privacy settings were specified')
 
 def collect_allowed(message):
 
-    ''' Returns True if we are allowed to collect a result into the
-        database, and False otherwise '''
+    ''' We are allowed to collect a result in the database if the
+        user is informed and has provided the permission to collect
+        her Internet address '''
 
-    if type(message) != types.DictType:
-        #
-        # XXX This is a shame therefore put the oops() and hope that
-        # it does its moral suasion job as expected.
-        #
-        LOG.oops("TODO: please pass me a dictionary!", LOG.debug)
-        message = message.__dict__
-    return (not utils.intify(message["privacy_informed"])
-            or utils.intify(message["privacy_can_collect"]))
+    return (utils.intify(message['privacy_informed']) and
+            utils.intify(message['privacy_can_collect']))
 
 def allowed_to_run():
-    ''' Returns True if the user is informed and has
-        provided the permission to collect '''
-    return utils.intify(CONFIG['privacy.informed']) and \
-      utils.intify(CONFIG['privacy.can_collect'])
+    ''' We are allowed to run if and only if we have all permissions '''
+
+    # XXX It sucks that here we need to perform a copy
+    return (count_valid(CONFIG.copy(), prefix='privacy.') == 3)
 
 def complain():
     ''' Complain with the user about privacy settings '''
@@ -105,10 +109,13 @@ Options:
 Settings:
     privacy.informed    : You have read Neubot's privacy policy
     privacy.can_collect : Neubot can save your IP address
-    privacy.can_share   : Neubot can publish your IP address
+    privacy.can_publish : Neubot can publish your IP address
 
-Neubot does not work unless you assert that you are informed and
-you provide the permission to collect.
+Neubot is not allowed to use the distributed M-Lab platform to perform
+tests unless you (i) assert that you have read the privacy policy and
+you provide the permission to (ii) collect and (iii) publish your Internet
+address.  We need to ask you (i), (ii) and (iii) explicitly to comply
+with European Union privacy laws.
 '''
 
 POLICY = os.sep.join([rootdir.WWW, 'privacy.html'])
@@ -156,7 +163,7 @@ def update_settings(connection, settings):
 
     for name in settings.keys():
         if name not in ('privacy.informed', 'privacy.can_collect',
-                    'privacy.can_share'):
+                    'privacy.can_publish'):
             sys.stderr.write('WARNING unknown setting: %s\n' % name)
             del settings[name]
     table_config.update(connection, settings.items())
