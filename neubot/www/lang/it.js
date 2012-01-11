@@ -200,7 +200,7 @@ tuo indirizzo Internet, che è considerato dato personale nell'Unione Europea.",
 '\r\n\
 $Versione: 2.0$\r\n\
 \r\n\
-Il Progetto Neubot è un progetto di ricerca che si pongone di studiare\r\n\
+Il Progetto Neubot è un progetto di ricerca che si propone di studiare\r\n\
 la qualità e la neutralità delle connessioni ad Internet\r\n\
 degli utenti comuni, per ribilanciare l\'asimmetria informativa tra utenti\r\n\
 comuni e Service Providers.  Il Software Neubot (i) *misura* la qualità\r\n\
@@ -210,7 +210,7 @@ ricerca e (iii) *pubblicati*, per permettere ad altri individui e\r\n\
 istituzioni di riutilizzarli per finalità di ricerca.\r\n\
 \r\n\
 Per *misurare* la qualità e la neutralità della tua\r\n\
-connessione a Internet, il Softare Neubot non controlla né analizza\r\n\
+connessione a Internet, il Software Neubot non controlla né analizza\r\n\
 il tuo traffico Internet. Si limita a utilizzare una frazione della\r\n\
 capacità della tua connessione per effettuare dei test di\r\n\
 trasmissione in background, inviando e/o ricevendo dati casuali. I\r\n\
@@ -233,8 +233,8 @@ Stai leggendo questa privacy policy perché Neubot viene sviluppato\r\n\
 nell\'Unione Europea, dove gli indirizzi IP sono ritenuti *dati personali*.\r\n\
 Questo significa che il Progetto Neubot non può salvare, processare o\r\n\
 pubblicare il tuo indirizzo senza ottenere il tuo *consenso informato*,\r\n\
-secondo le previsioni del &quot;Codice in materia di protezione dei dati\r\n\
-personali&quot; (Decreto 196/03) [2].  Conformemente alla legge, il\r\n\
+secondo le previsioni del "Codice in materia di protezione dei dati\r\n\
+personali" (Decreto 196/03) [2].  Conformemente alla legge, il\r\n\
 titolare del trattamento è il Centro NEXA su Internet e Società [3],\r\n\
 rappresentato dal suo co-diretore Juan Carlos De Martin.\r\n\
 \r\n\
@@ -249,10 +249,10 @@ Il responsabile del trattamento ti garantisce i diritti specificati nello\r\n\
 Articolo 7 del sopra-menzionato Decreto 196/03.  Fondamentalmente, hai il\r\n\
 totale controllo sui tuoi dati personali e puoi, per esempio, chiedere a\r\n\
 Neubot di rimuovere il tuo indirizzo Internet dalla sua banca dati.  Per\r\n\
-esercitare i tuoi diritti, scrivi a &lt;privacy@neubot.org&gt;\r\n\
-oppure a &quot;Centro NEXA su Internet &amp; Società c/o Dipartimento di\r\n\
+esercitare i tuoi diritti, scrivi a <privacy@neubot.org>\r\n\
+oppure a "Centro NEXA su Internet & Società c/o Dipartimento di\r\n\
 Automatica e Infomatica, Politecnico di Torino, Corso Duca degli\r\n\
-Abruzzi 24, 10129 Torino, ITALIA&quot;.\r\n\
+Abruzzi 24, 10129 Torino, ITALIA".\r\n\
 \r\n\
 [1] http://www.measurement-lab.net/about\r\n\
 [2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248\r\n\
