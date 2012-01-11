@@ -230,6 +230,58 @@ class TestPrintPolicy(unittest.TestCase):
         ''' Make sure print_policy() works '''
         self.assertEqual(privacy.print_policy(), 0)
 
+class TestTestSettings(unittest.TestCase):
+
+    ''' Regression tests for neubot.privacy.test_settings() '''
+
+    def test_success(self):
+        ''' Make sure test_settings() returns 0 for a valid database '''
+
+        connection = sqlite3.connect(':memory:')
+        table_config.create(connection)
+        table_config.update(connection, {
+                                         'privacy.informed': 1,
+                                         'privacy.can_collect': 1,
+                                         'privacy.can_publish': 1
+                                        }.iteritems())
+
+        self.assertEqual(privacy.test_settings(connection), 0)
+
+    def test_failure(self):
+        ''' Make sure test_settings() returns 1 for a bad database '''
+
+        connection = sqlite3.connect(':memory:')
+        table_config.create(connection)
+        table_config.update(connection, {
+                                         'privacy.informed': 1,
+                                         'privacy.can_collect': 1,
+                                         'privacy.can_publish': 0
+                                        }.iteritems())
+
+        self.assertEqual(privacy.test_settings(connection), 1)
+
+    def test_legacy(self):
+        ''' Make sure test_settings() returns 1 for a legacy database '''
+
+        #
+        # This case should not happen, still I want to be sure
+        # an error would be reported in this case.
+        #
+
+        connection = sqlite3.connect(':memory:')
+        table_config.create(connection)
+        table_config.update(connection, {
+                                         'privacy.informed': 1,
+                                         'privacy.can_collect': 1,
+                                         'privacy.can_publish': 1
+                                        }.iteritems())
+
+        # Go back to version 4.1 of the database
+        connection.execute(''' UPDATE config SET name="privacy.can_share"
+                               WHERE name="privacy.can_publish" ''')
+
+        self.assertEqual(privacy.test_settings(connection), 1)
+
 class TestUpdateSettings(unittest.TestCase):
 
     ''' Regression tests for neubot.privacy.update_settings() '''

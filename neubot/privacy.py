@@ -99,12 +99,13 @@ def complain_if_needed():
         complain()
 
 USAGE = '''
-Usage: neubot privacy [-P] [-D name=value] [-f database]
+Usage: neubot privacy [-Pt] [-D name=value] [-f database]
 
 Options:
     -D name=value       : Set privacy setting value
     -f database         : Force database path
     -P                  : Print privacy policy on stdout
+    -t                  : Test privacy settings
 
 Settings:
     privacy.informed    : You have read Neubot's privacy policy
@@ -157,6 +158,17 @@ def print_policy():
     sys.stderr.write('ERROR cannot extract policy from privacy.html\n')
     return 1
 
+def test_settings(connection):
+
+    ''' Test privacy settings and exit, setting properly the
+        exit value '''
+
+    settings = table_config.dictionarize(connection)
+    if count_valid(settings, 'privacy.') == 3:
+        return 0
+
+    return 1
+
 def update_settings(connection, settings):
 
     ''' Update database privacy settings and exit '''
@@ -193,7 +205,7 @@ def __main(args):
     ''' Initialize privacy settings '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'D:f:P')
+        options, arguments = getopt.getopt(args[1:], 'D:f:Pt')
     except getopt.error:
         sys.exit(USAGE)
     if arguments:
@@ -202,6 +214,7 @@ def __main(args):
     settings = {}
     database_path = system.get_default_database_path()
     pflag = False
+    testmode = False
     for name, value in options:
         if name == '-D':
             name, value = value.split('=', 1)
@@ -210,12 +223,17 @@ def __main(args):
             database_path = value
         elif name == '-P':
             pflag = True
+        elif name == '-t':
+            testmode = True
 
     if pflag:
         sys.exit(print_policy())
 
     DATABASE.set_path(database_path)
     connection = DATABASE.connection()
+
+    if testmode:
+        sys.exit(test_settings(connection))
 
     if settings:
         sys.exit(update_settings(connection, settings))
