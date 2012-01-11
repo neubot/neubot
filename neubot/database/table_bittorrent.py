@@ -39,7 +39,7 @@ TEMPLATE = {
 
     "privacy_informed": 0,
     "privacy_can_collect": 0,
-    "privacy_can_share": 0,
+    "privacy_can_publish": 0,
 
     "connect_time": 0.0,
     "download_speed": 0.0,

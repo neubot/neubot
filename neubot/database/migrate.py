@@ -33,9 +33,66 @@
 #
 
 import logging
+import sqlite3
+import sys
 import uuid
 
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
+
 from neubot.marshal import unmarshal_object
+from neubot.database import _table_utils
+
+#
+# Rename 'privacy.can_share' to 'privacy.can_publish', because
+# the latter is more explicit and clear.
+# Bump MINOR version number because we've just changed the name
+# of a variable.
+# This actually requires a lot of work, because there is no
+# support for renaming columns in a simple way in sqlite3.
+#
+def migrate_from__v4_1__to__v4_2(connection):
+    """Migrate database from version 4.1 to version 4.2"""
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT value FROM config WHERE name='version';")
+    ver = cursor.fetchone()[0]
+    if ver == "4.1":
+        logging.info("* Migrating database from version 4.1 to 4.2")
+        cursor.execute("""UPDATE config SET value='4.2'
+                        WHERE name='version';""")
+
+        # Config
+        cursor.execute("""UPDATE config SET name='privacy.can_publish'
+                        WHERE name='privacy.can_share';""")
+
+        logging.info("* Renaming columns (this may take a long time)")
+        mapping = { "privacy_can_share": "privacy_can_publish" }
+
+        # BitTorrent
+        template_bt = { "timestamp": 0, "uuid": "", "internal_address": "",
+                        "real_address": "", "remote_address": "",
+                        "privacy_informed": 0, "privacy_can_collect": 0,
+                        "privacy_can_share": 0, "connect_time": 0.0,
+                        "download_speed": 0.0, "upload_speed": 0.0,
+                        "neubot_version": "", "platform": "", }
+        _table_utils.rename_column(connection, "bittorrent",
+                                   template_bt, mapping)
+
+        # Speedtest
+        template_st = { "timestamp": 0, "uuid": "", "internal_address": "",
+                        "real_address": "", "remote_address": "",
+                        "privacy_informed": 0, "privacy_can_collect": 0,
+                        "privacy_can_share": 0, "connect_time": 0.0,
+                        "download_speed": 0.0, "upload_speed": 0.0,
+                        "neubot_version": "", "platform": "", "latency": 0.0,}
+        _table_utils.rename_column(connection, "speedtest",
+                                   template_st, mapping)
+
+
+        connection.execute('VACUUM;')
+        connection.commit()
+    cursor.close()
 
 #
 # Bump MINOR version number because we've added two
@@ -225,8 +282,19 @@ MIGRATORS = [
     migrate_from__v2_1__to__v3_0,
     migrate_from__v3_0__to__v4_0,
     migrate_from__v4_0__to__v4_1,
+    migrate_from__v4_1__to__v4_2,
 ]
 
 def migrate(connection):
     for migrator in MIGRATORS:
         migrator(connection)
+
+def main(args):
+    ''' main function '''
+    logging.getLogger().setLevel(logging.DEBUG)
+    for path in args[1:]:
+        connection = sqlite3.connect(path)
+        migrate(connection)
+
+if __name__ == '__main__':
+    main(sys.argv)

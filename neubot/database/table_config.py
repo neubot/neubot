@@ -56,7 +56,7 @@ def create(connection, commit=True):
     connection.execute("""CREATE TABLE IF NOT EXISTS config(
       name TEXT PRIMARY KEY, value TEXT);""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
-      'version', '4.1');""")
+      'version', '4.2');""")
     connection.execute("""INSERT OR IGNORE INTO config VALUES(
       'uuid', ?);""", (get_uuid(),))
     if commit:
