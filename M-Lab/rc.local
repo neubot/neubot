@@ -5,7 +5,7 @@
 # want to do the full Sys V style init stuff.
 
 #
-# Modified /etc/rc.local for Neubot
+# Modified /etc/rc.d/rc.local for Neubot
 # Installed by M-Lab/install.sh
 #
 

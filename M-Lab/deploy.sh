@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -90,7 +90,7 @@ for HOST in $HOSTS; do
 
     echo "$HOST: start new neubot"
     $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh || continue
-    $SSH $HOST sudo /etc/rc.local || continue
+    $SSH $HOST sudo /etc/rc.d/rc.local || continue
 
     echo "$HOST: cleanup"
     $SSH $HOST rm -rf neubot.tar.gz || continue
