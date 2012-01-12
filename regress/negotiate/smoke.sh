@@ -45,5 +45,11 @@ elif [ "$1" = "-9" ]; then
         $0 --bittorrent-client &
     done
 else
-    echo 'Wrong usage'
+    #
+    # Optimize for the case when we're run from `make regress`
+    # automatically and provide an insightful message.
+    #
+    echo "This test cannot run automatically"
+    echo "Usage: $0 [--server|-9]"
+    exit 0
 fi

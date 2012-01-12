@@ -206,7 +206,7 @@ class Config(object):
            ...
            CONFIG.store_fp(sys.stdout)
            ...
-           CONFIG.store_database(sqlite3.connect("database.sqlite3"))
+           CONFIG.store_database(database)
 
        Yeah.  This is all you need to know to use this class and
        hence this module."""

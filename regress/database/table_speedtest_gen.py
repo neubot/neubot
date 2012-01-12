@@ -75,9 +75,11 @@ class ResultIterator(object):
             "latency": random.random(),
             "download_speed": random.random() * 100000,
             "upload_speed": random.random() * 40000,
-            "privacy_informed": random.randrange(0, 2),
-            "privacy_can_collect": random.randrange(0, 2),
-            "privacy_can_share": random.randrange(0, 2),
+            "privacy_informed": 1,
+            "privacy_can_collect": 1,
+            "privacy_can_publish": 1,
+            "neubot_version": "0.4.5",
+            "platform": "Linux",
         }
 
 if __name__ == "__main__":
