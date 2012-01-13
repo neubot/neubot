@@ -775,10 +775,9 @@ def main(args):
         system.drop_privileges(LOG.error)
         conf["net.stream.server_side"] = True
         handler.listen(endpoint)
-        POLLER.loop()
-        sys.exit(0)
+    else:
+        handler.connect(endpoint, count=conf["net.stream.clients"])
 
-    handler.connect(endpoint, count=conf["net.stream.clients"])
     POLLER.loop()
     sys.exit(0)
 
