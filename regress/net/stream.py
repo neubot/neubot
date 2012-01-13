@@ -29,6 +29,7 @@ import unittest
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
+from neubot.config import CONFIG
 from neubot.net import stream
 
 #
@@ -69,7 +70,7 @@ class FakeSocket(object):
 class TestStream_Base(unittest.TestCase):
     def setUp(self):
         self.stream = stream.Stream(self)
-        self.stream.attach(self, FakeSocket(), {})
+        self.stream.attach(self, FakeSocket(), CONFIG)
 
     def connection_lost(self, stream):
         raise RuntimeError
