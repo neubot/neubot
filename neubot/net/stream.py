@@ -190,6 +190,10 @@ class Stream(Pollable):
             server_side = conf.get("net.stream.server_side", False)
             certfile = conf.get("net.stream.certfile", None)
 
+            # wrap_socket distinguishes between None and ''
+            if not certfile:
+                certfile = None
+
             so = ssl.wrap_socket(sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
             self.sock = SSLWrapper(so)
