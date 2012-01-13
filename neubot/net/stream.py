@@ -545,17 +545,17 @@ class Listener(Pollable):
             return
 
         last_exception = None
-        for family, socktype, protocol, canonname, sockaddr in addrinfo:
+        for ainfo in addrinfo:
             try:
 
-                lsock = socket.socket(family, socktype, protocol)
+                lsock = socket.socket(self.family, socket.SOCK_STREAM)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 if rcvbuf:
                     lsock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,rcvbuf)
                 if sndbuf:
                     lsock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,sndbuf)
                 lsock.setblocking(False)
-                lsock.bind(sockaddr)
+                lsock.bind(ainfo[4])
                 # Probably the backlog here is too big
                 lsock.listen(128)
 
