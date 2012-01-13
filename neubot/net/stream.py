@@ -459,16 +459,16 @@ class Connector(Pollable):
             return
 
         last_exception = None
-        for family, socktype, protocol, cannonname, sockaddr in addrinfo:
+        for ainfo in addrinfo:
             try:
 
-                sock = socket.socket(family, socktype, protocol)
+                sock = socket.socket(self.family, socket.SOCK_STREAM)
                 if rcvbuf:
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
                 if sndbuf:
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sndbuf)
                 sock.setblocking(False)
-                result = sock.connect_ex(sockaddr)
+                result = sock.connect_ex(ainfo[4])
                 if result not in INPROGRESS:
                     raise socket.error(result, os.strerror(result))
 
