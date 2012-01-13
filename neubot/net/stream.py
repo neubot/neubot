@@ -708,6 +708,7 @@ class GenericProtocolStream(Stream):
         self.start_send(self.buffer)
 
 CONFIG.register_defaults({
+    # General variables
     "net.stream.certfile": "",
     "net.stream.ipv6": False,
     "net.stream.key": "",
@@ -715,8 +716,7 @@ CONFIG.register_defaults({
     "net.stream.server_side": False,
     "net.stream.rcvbuf": 0,
     "net.stream.sndbuf": 0,
-})
-CONFIG.register_defaults({
+    # For main()
     "net.stream.address": "",
     "net.stream.chunk": 32768,
     "net.stream.clients": 1,
@@ -730,6 +730,7 @@ CONFIG.register_defaults({
 def main(args):
 
     CONFIG.register_descriptions({
+        # General variables
         "net.stream.certfile": "Set SSL certfile path",
         "net.stream.ipv6": "Enable IPv6",
         "net.stream.key": "Set key for ARC4",
@@ -737,8 +738,7 @@ def main(args):
         "net.stream.server_side": "Enable SSL server-side mode",
         "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
         "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
-    })
-    CONFIG.register_descriptions({
+        # For main()
         "net.stream.address": "Set client or server address",
         "net.stream.chunk": "Chunk written by each write",
         "net.stream.clients": "Set number of client connections",
