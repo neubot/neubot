@@ -1,7 +1,14 @@
 # neubot/net/stream.py
 
 #
-# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+# There are tons of pylint warnings in this file, disable
+# the less relevant ones for now.
+#
+# pylint: disable=C0111
+#
+
+#
+# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -22,7 +29,6 @@
 
 import collections
 import errno
-import os
 import socket
 import sys
 import types
@@ -49,7 +55,7 @@ from neubot.main import common
 STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
 
 # Maximum amount of bytes we read from a socket
-MAXBUF = 1<<18
+MAXBUF = 1 << 18
 
 # Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
@@ -155,8 +161,6 @@ class Stream(Pollable):
 
         self.bytes_recv_tot = 0
         self.bytes_sent_tot = 0
-        self.bytes_recv = 0
-        self.bytes_sent = 0
 
         self.opaque = None
         self.atclosev = set()
@@ -179,16 +183,20 @@ class Stream(Pollable):
 
         LOG.debug("* Connection made %s" % str(self.logname))
 
-        if conf.get("net.stream.secure", False):
+        if conf["net.stream.secure"]:
             if not ssl:
                 raise RuntimeError("SSL support not available")
 
-            server_side = conf.get("net.stream.server_side", False)
-            certfile = conf.get("net.stream.certfile", None)
+            server_side = conf["net.stream.server_side"]
+            certfile = conf["net.stream.certfile"]
 
-            so = ssl.wrap_socket(sock, do_handshake_on_connect=False,
+            # wrap_socket distinguishes between None and ''
+            if not certfile:
+                certfile = None
+
+            ssl_sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
-            self.sock = SSLWrapper(so)
+            self.sock = SSLWrapper(ssl_sock)
 
             self.recv_ssl_needs_kickoff = not server_side
 
@@ -286,8 +294,6 @@ class Stream(Pollable):
         if status == SUCCESS and octets:
 
             self.bytes_recv_tot += len(octets)
-            self.bytes_recv += len(octets)
-
             self.recv_pending = False
             self.poller.unset_readable(self)
 
@@ -374,9 +380,7 @@ class Stream(Pollable):
         status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
-
             self.bytes_sent_tot += count
-            self.bytes_sent += count
 
             if count == len(self.send_octets):
 
@@ -441,10 +445,10 @@ class Connector(Pollable):
     def connect(self, endpoint, conf):
         self.endpoint = endpoint
         self.family = socket.AF_INET
-        if conf.get("net.stream.ipv6", False):
+        if conf["net.stream.ipv6"]:
             self.family = socket.AF_INET6
-        rcvbuf = conf.get("net.stream.rcvbuf", 0)
-        sndbuf = conf.get("net.stream.sndbuf", 0)
+        rcvbuf = conf["net.stream.rcvbuf"]
+        sndbuf = conf["net.stream.sndbuf"]
 
         try:
             addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
@@ -455,16 +459,16 @@ class Connector(Pollable):
             return
 
         last_exception = None
-        for family, socktype, protocol, cannonname, sockaddr in addrinfo:
+        for ainfo in addrinfo:
             try:
 
-                sock = socket.socket(family, socktype, protocol)
+                sock = socket.socket(self.family, socket.SOCK_STREAM)
                 if rcvbuf:
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
                 if sndbuf:
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sndbuf)
                 sock.setblocking(False)
-                result = sock.connect_ex(sockaddr)
+                result = sock.connect_ex(ainfo[4])
                 if result not in INPROGRESS:
                     raise socket.error(result, os.strerror(result))
 
@@ -527,10 +531,10 @@ class Listener(Pollable):
     def listen(self, endpoint, conf):
         self.endpoint = endpoint
         self.family = socket.AF_INET
-        if conf.get("net.stream.ipv6", False):
+        if conf["net.stream.ipv6"]:
             self.family = socket.AF_INET6
-        rcvbuf = conf.get("net.stream.rcvbuf", 0)
-        sndbuf = conf.get("net.stream.sndbuf", 0)
+        rcvbuf = conf["net.stream.rcvbuf"]
+        sndbuf = conf["net.stream.sndbuf"]
 
         try:
             addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
@@ -541,17 +545,17 @@ class Listener(Pollable):
             return
 
         last_exception = None
-        for family, socktype, protocol, canonname, sockaddr in addrinfo:
+        for ainfo in addrinfo:
             try:
 
-                lsock = socket.socket(family, socktype, protocol)
+                lsock = socket.socket(self.family, socket.SOCK_STREAM)
                 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 if rcvbuf:
                     lsock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,rcvbuf)
                 if sndbuf:
                     lsock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,sndbuf)
                 lsock.setblocking(False)
-                lsock.bind(sockaddr)
+                lsock.bind(ainfo[4])
                 # Probably the backlog here is too big
                 lsock.listen(128)
 
@@ -662,7 +666,7 @@ class StreamHandler(object):
 class GenericHandler(StreamHandler):
     def connection_made(self, sock, rtt=0):
         stream = GenericProtocolStream(self.poller)
-        stream.kind = self.conf.get("net.stream.proto", "")
+        stream.kind = self.conf["net.stream.proto"]
         stream.attach(self, sock, self.conf)
 
 #
@@ -676,8 +680,8 @@ class GenericProtocolStream(Stream):
         self.kind = ""
 
     def connection_made(self):
-        self.buffer = "A" * self.conf.get("net.stream.chunk", 32768)
-        duration = self.conf.get("net.stream.duration", 10)
+        self.buffer = "A" * self.conf["net.stream.chunk"]
+        duration = self.conf["net.stream.duration"]
         if duration >= 0:
             POLLER.sched(duration, self._do_close)
         if self.kind == "discard":
@@ -704,6 +708,7 @@ class GenericProtocolStream(Stream):
         self.start_send(self.buffer)
 
 CONFIG.register_defaults({
+    # General variables
     "net.stream.certfile": "",
     "net.stream.ipv6": False,
     "net.stream.key": "",
@@ -711,10 +716,9 @@ CONFIG.register_defaults({
     "net.stream.server_side": False,
     "net.stream.rcvbuf": 0,
     "net.stream.sndbuf": 0,
-})
-CONFIG.register_defaults({
-    "net.stream.address": "",
-    "net.stream.chunk": 32768,
+    # For main()
+    "net.stream.address": "127.0.0.1",
+    "net.stream.chunk": 262144,
     "net.stream.clients": 1,
     "net.stream.daemonize": False,
     "net.stream.duration": 10,
@@ -726,6 +730,7 @@ CONFIG.register_defaults({
 def main(args):
 
     CONFIG.register_descriptions({
+        # General variables
         "net.stream.certfile": "Set SSL certfile path",
         "net.stream.ipv6": "Enable IPv6",
         "net.stream.key": "Set key for ARC4",
@@ -733,8 +738,7 @@ def main(args):
         "net.stream.server_side": "Enable SSL server-side mode",
         "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
         "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
-    })
-    CONFIG.register_descriptions({
+        # For main()
         "net.stream.address": "Set client or server address",
         "net.stream.chunk": "Chunk written by each write",
         "net.stream.clients": "Set number of client connections",
@@ -748,12 +752,6 @@ def main(args):
     common.main("net.stream", "TCP bulk transfer test", args)
 
     conf = CONFIG.copy()
-
-    if not conf["net.stream.address"]:
-        if not conf["net.stream.listen"]:
-            conf["net.stream.address"] = "neubot.blupixel.net"
-        else:
-            conf["net.stream.address"] = "0.0.0.0"
 
     endpoint = (conf["net.stream.address"], conf["net.stream.port"])
 
@@ -777,10 +775,9 @@ def main(args):
         system.drop_privileges(LOG.error)
         conf["net.stream.server_side"] = True
         handler.listen(endpoint)
-        POLLER.loop()
-        sys.exit(0)
+    else:
+        handler.connect(endpoint, count=conf["net.stream.clients"])
 
-    handler.connect(endpoint, count=conf["net.stream.clients"])
     POLLER.loop()
     sys.exit(0)
 
