@@ -1,6 +1,13 @@
 # neubot/net/stream.py
 
 #
+# There are tons of pylint warnings in this file, disable
+# the less relevant ones for now.
+#
+# pylint: disable=C0111
+#
+
+#
 # Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
