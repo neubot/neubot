@@ -55,7 +55,7 @@ from neubot.main import common
 STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
 
 # Maximum amount of bytes we read from a socket
-MAXBUF = 1<<18
+MAXBUF = 1 << 18
 
 # Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
@@ -194,9 +194,9 @@ class Stream(Pollable):
             if not certfile:
                 certfile = None
 
-            so = ssl.wrap_socket(sock, do_handshake_on_connect=False,
+            ssl_sock = ssl.wrap_socket(sock, do_handshake_on_connect=False,
               certfile=certfile, server_side=server_side)
-            self.sock = SSLWrapper(so)
+            self.sock = SSLWrapper(ssl_sock)
 
             self.recv_ssl_needs_kickoff = not server_side
 
