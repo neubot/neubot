@@ -183,12 +183,12 @@ class Stream(Pollable):
 
         LOG.debug("* Connection made %s" % str(self.logname))
 
-        if conf.get("net.stream.secure", False):
+        if conf["net.stream.secure"]:
             if not ssl:
                 raise RuntimeError("SSL support not available")
 
-            server_side = conf.get("net.stream.server_side", False)
-            certfile = conf.get("net.stream.certfile", None)
+            server_side = conf["net.stream.server_side"]
+            certfile = conf["net.stream.certfile"]
 
             # wrap_socket distinguishes between None and ''
             if not certfile:
@@ -445,10 +445,10 @@ class Connector(Pollable):
     def connect(self, endpoint, conf):
         self.endpoint = endpoint
         self.family = socket.AF_INET
-        if conf.get("net.stream.ipv6", False):
+        if conf["net.stream.ipv6"]:
             self.family = socket.AF_INET6
-        rcvbuf = conf.get("net.stream.rcvbuf", 0)
-        sndbuf = conf.get("net.stream.sndbuf", 0)
+        rcvbuf = conf["net.stream.rcvbuf"]
+        sndbuf = conf["net.stream.sndbuf"]
 
         try:
             addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
@@ -531,10 +531,10 @@ class Listener(Pollable):
     def listen(self, endpoint, conf):
         self.endpoint = endpoint
         self.family = socket.AF_INET
-        if conf.get("net.stream.ipv6", False):
+        if conf["net.stream.ipv6"]:
             self.family = socket.AF_INET6
-        rcvbuf = conf.get("net.stream.rcvbuf", 0)
-        sndbuf = conf.get("net.stream.sndbuf", 0)
+        rcvbuf = conf["net.stream.rcvbuf"]
+        sndbuf = conf["net.stream.sndbuf"]
 
         try:
             addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
@@ -666,7 +666,7 @@ class StreamHandler(object):
 class GenericHandler(StreamHandler):
     def connection_made(self, sock, rtt=0):
         stream = GenericProtocolStream(self.poller)
-        stream.kind = self.conf.get("net.stream.proto", "")
+        stream.kind = self.conf["net.stream.proto"]
         stream.attach(self, sock, self.conf)
 
 #
@@ -680,8 +680,8 @@ class GenericProtocolStream(Stream):
         self.kind = ""
 
     def connection_made(self):
-        self.buffer = "A" * self.conf.get("net.stream.chunk", 32768)
-        duration = self.conf.get("net.stream.duration", 10)
+        self.buffer = "A" * self.conf["net.stream.chunk"]
+        duration = self.conf["net.stream.duration"]
         if duration >= 0:
             POLLER.sched(duration, self._do_close)
         if self.kind == "discard":
