@@ -717,8 +717,8 @@ CONFIG.register_defaults({
     "net.stream.rcvbuf": 0,
     "net.stream.sndbuf": 0,
     # For main()
-    "net.stream.address": "",
-    "net.stream.chunk": 32768,
+    "net.stream.address": "127.0.0.1",
+    "net.stream.chunk": 262144,
     "net.stream.clients": 1,
     "net.stream.daemonize": False,
     "net.stream.duration": 10,
@@ -752,12 +752,6 @@ def main(args):
     common.main("net.stream", "TCP bulk transfer test", args)
 
     conf = CONFIG.copy()
-
-    if not conf["net.stream.address"]:
-        if not conf["net.stream.listen"]:
-            conf["net.stream.address"] = "neubot.blupixel.net"
-        else:
-            conf["net.stream.address"] = "0.0.0.0"
 
     endpoint = (conf["net.stream.address"], conf["net.stream.port"])
 
