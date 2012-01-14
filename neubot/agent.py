@@ -48,8 +48,10 @@ def main(args):
     if conf["agent.api"]:
         server = HTTP_SERVER
         LOG.debug("* API server root directory: %s" % WWW)
-        server.configure({"http.server.rootdir": WWW, "http.server.ssi": True,
-          "http.server.bind_or_die": True})
+        conf["http.server.rootdir"] = WWW
+        conf["http.server.ssi"] = True
+        conf["http.server.bind_or_die"] = True
+        server.configure(conf)
         server.register_child(ServerAPI(POLLER), "/api")
         server.listen((conf["agent.api.address"],
                        conf["agent.api.port"]))
