@@ -47,6 +47,7 @@ from neubot.speedtest.client import QUEUE_HISTORY
 from neubot.state import STATE
 
 from neubot import privacy
+from neubot import runner_api
 from neubot import utils
 
 class ServerAPI(ServerHTTP):
@@ -63,6 +64,7 @@ class ServerAPI(ServerHTTP):
             "/api/index": self._api_index,
             "/api/exit": self._api_exit,
             "/api/log": self._api_log,
+            "/api/runner": runner_api.runner_api,
             "/api/speedtest": self._api_speedtest,
             "/api/state": self._api_state,
             "/api/version": self._api_version,
