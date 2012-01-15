@@ -43,6 +43,8 @@ from neubot import marshal
 from neubot import privacy
 from neubot import utils
 
+from neubot import runner_clnt
+
 TESTDONE = "testdone" #TODO: use directly the string instead
 
 ESTIMATE = {
@@ -448,6 +450,24 @@ def main(args):
 
     common.main("speedtest.client", "Speedtest client", args)
     conf = CONFIG.copy()
+
+    #
+    # If possible use the runner, which will execute the
+    # test in the context of the neubot daemon.  Then exit
+    # to bypass the POLLER.loop() invokation that is below
+    # here.
+    # If the runner fails, fallback to the usual code path,
+    # which executes the test in the context of the local
+    # process.
+    # Set 'runned.enabled' to 0 to bypass the runner and
+    # run the test locally.
+    #
+    if (utils.intify(conf['runner.enabled']) and
+        runner_clnt.runner_client(conf["agent.api.address"],
+                                  conf["agent.api.port"],
+                                  LOG.noisy, "speedtest")):
+        sys.exit(0)
+
     client = ClientSpeedtest(POLLER)
     client.configure(conf)
     client.connect_uri()
