@@ -44,7 +44,9 @@ from neubot.notify import NOTIFIER
 from neubot.main import common
 
 from neubot import negotiate
+from neubot import runner_clnt
 from neubot import system
+from neubot import utils
 
 #
 # This function is invoked when Neubot is already
@@ -143,6 +145,24 @@ def main(args):
         system.drop_privileges(LOG.error)
 
     else:
+
+        #
+        # If possible use the runner, which will execute the
+        # test in the context of the neubot daemon.  Then exit
+        # to bypass the run() invokation that is below here.
+        # If the runner fails, fallback to the usual code path,
+        # which executes the test in the context of the local
+        # process.
+        # Set 'runned.enabled' to 0 to bypass the runner and
+        # run the test locally.
+        #
+        if (utils.intify(conf['runner.enabled']) and
+            runner_clnt.runner_client(conf["agent.api.address"],
+                                      conf["agent.api.port"],
+                                      LOG.noisy, "bittorrent")):
+            sys.exit(0)
+
+
         #
         # When we're connecting to a remote host to perform a test
         # we want Neubot to quit at the end of the test.  When this
