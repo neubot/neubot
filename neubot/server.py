@@ -229,6 +229,9 @@ def main(args):
     # 8080 but we would like to switch to port 80
     # in the long term period, because it's rare
     # that they filter it.
+    # OTOH it looks like it's not possible to
+    # do that easily w/ M-Lab because the port
+    # is already taken.
     #
     address = "0.0.0.0"
     ports = (80, 8080, 9773)
