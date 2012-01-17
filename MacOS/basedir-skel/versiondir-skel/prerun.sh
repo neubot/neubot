@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 #
 # Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>
@@ -33,11 +33,9 @@
 # VERSIONDIR/start.sh runs it unconditionally: the general
 # idea is that this script is basically a noop if the special
 # file VERSIONDIR/.skip-checks exists.  The presence of that
-# means that the script has already run for the current version
-# of the software.
+# file means that the script has already run for the current
+# version of the software.
 #
-
-set -e
 
 #
 # The caller will use an absolute PATH so we can easily get

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 #
 # Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
@@ -26,8 +26,6 @@
 # Postflight script to complete installation.
 #
 
-set -e
-
 BASEDIR=/usr/local/share/neubot
 
 logger -p daemon.info -t $0 "Neubot basedir: $BASEDIR"
@@ -49,9 +47,8 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         #
         # If there is another instance of Neubot already installed
-        # and we're installing a new fresh copy of Neubot -- ignoring
-        # the not-yet-implemented auto-updates -- it's better to
-        # stop the old instance so that we successfully start the
+        # and we're installing a new fresh copy of Neubot it's better
+        # to stop the old instance so that we successfully start the
         # new instance below.  At the same time, be robust.
         #
         if [ -f /Library/LaunchDaemons/org.neubot.plist ]; then
@@ -67,21 +64,9 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         $VERSIONDIR/prerun.sh
 
         #
-        # Match robustly the content of /tmp/neubot-can-share and
-        # and setup CAN_SHARE accordingly.
-        # Please note we've already checked that this file exists in
-        # the preflight script and we don't want to consider the case
-        # where someone is able to remove it between it and us.
-        #
-        CAN_SHARE=no
-        if grep -q '^1$' /tmp/neubot-can-share; then
-            CAN_SHARE=yes
-        fi
-        rm -f /tmp/neubot-can-share
-
-        logger -p daemon.info -t $0 "Can share: $CAN_SHARE"
-
-        #
+        # The installer does not allow to install unless the
+        # user provides all privacy permissions and so here we
+        # can just happily set everything to True.
         # We don't need to setup any PYTHONPATH because the
         # main.py script should be able to guess its location
         # and adjust its sys.path accordingly.
@@ -90,7 +75,7 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         /usr/bin/python $VERSIONDIR/neubot/main/__init__.py privacy     \
           -D privacy.informed=1 -D privacy.can_collect=1                \
-          -D privacy.can_share=$CAN_SHARE
+          -D privacy.can_publish=1
 
         #
         # Install the property list once and forever; it will invoke
@@ -102,8 +87,8 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         #
         # Here we just load org.neubot.plist into launchd(8)
-        # and the start org.neubot.  The installation will
-        # be completed by the commands referenced into such
+        # and then start org.neubot.  The installation will
+        # be completed by the commands referenced into the
         # plist file.  The rationale is that both the install
         # and the auto-update must finalize the procedure
         # adding symlinks etc.  So better to put all the logic
