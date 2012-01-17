@@ -249,7 +249,7 @@ def _make_privacy_plugin():
                )
 
 def _create_tarball():
-    ''' Create the zip file in ../dist ready for distribution '''
+    ''' Create the tgz file in ../dist ready for distribution '''
 
     if not os.path.exists('../dist'):
         os.mkdir('../dist')
@@ -266,10 +266,10 @@ def main():
     _make_package()
 
     #
-    # We make auto update before compiling because we're not
-    # interested in shipping .pyc files in the auto-update.
+    # We make autoupdate before compiling because we're not
+    # interested in shipping .pyc files in the autoupdate.
     # The second _fixup_perms() is to fixup the permissions of
-    # the .pyc compiled by compile.
+    # the .pyc compiled by __compile().
     #
     _make_sharedir()
     _fixup_perms()
