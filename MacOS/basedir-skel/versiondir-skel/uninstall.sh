@@ -26,9 +26,6 @@
 launchctl stop org.neubot
 launchctl unload /Library/LaunchDaemons/org.neubot.plist
 
-# Privacy pane
-rm -f /tmp/neubot-can-share
-
 # Installer
 rm -rf /usr/local/share/neubot
 rm -f /Library/LaunchDaemons/org.neubot.plist
