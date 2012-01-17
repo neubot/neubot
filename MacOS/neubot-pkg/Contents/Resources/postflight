@@ -64,21 +64,9 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
         $VERSIONDIR/prerun.sh
 
         #
-        # Match robustly the content of /tmp/neubot-can-share and
-        # and setup CAN_SHARE accordingly.
-        # Please note we've already checked that this file exists in
-        # the preflight script and we don't want to consider the case
-        # where someone is able to remove it between it and us.
-        #
-        CAN_SHARE=no
-        if grep -q '^1$' /tmp/neubot-can-share; then
-            CAN_SHARE=yes
-        fi
-        rm -f /tmp/neubot-can-share
-
-        logger -p daemon.info -t $0 "Can share: $CAN_SHARE"
-
-        #
+        # The installer does not allow to install unless the
+        # user provides all privacy permissions and so here we
+        # can just happily set everything to True.
         # We don't need to setup any PYTHONPATH because the
         # main.py script should be able to guess its location
         # and adjust its sys.path accordingly.
@@ -87,7 +75,7 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         /usr/bin/python $VERSIONDIR/neubot/main/__init__.py privacy     \
           -D privacy.informed=1 -D privacy.can_collect=1                \
-          -D privacy.can_share=$CAN_SHARE
+          -D privacy.can_publish=1
 
         #
         # Install the property list once and forever; it will invoke
