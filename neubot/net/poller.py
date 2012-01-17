@@ -252,10 +252,8 @@ class Poller(object):
         if self.readset or self.writeset:
 
             streams = set()
-            for stream in self.readset.values():
-                streams.add(stream)
-            for stream in self.writeset.values():
-                streams.add(stream)
+            streams.update(self.readset.values())
+            streams.update(self.writeset.values())
 
             timenow = ticks()
             for stream in streams:
