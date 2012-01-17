@@ -1,7 +1,7 @@
 MacOSX installer
 ''''''''''''''''
 
-:Version: 1.5 of 2011/09/11
+:Version: 1.6 of 2011/12/20
 :Authors: Simone Basso
 
 This document explains briefly how is organized the Neubot installer
@@ -19,43 +19,17 @@ dot so that you can browse into it more easily.)
 
 
 The Privacy plugin lives at MacOS/Privacy/.  Inside this directory
-PrivacyPane.m implements the logic.  The pane contains two check
-boxes: can_collect and can_share.
-
-When the installer enters the pane, in both directions, the logic
-checks can_collect value.  If it is false, the 'next' button is
-disabled.  Otherwise it is enabled.  So the user cannot proceed if
-she does not provide the permission to collect.
-
-The same logic is run when the user changes the value of the
-can_collect check box.
+PrivacyPane.m implements the logic.  The pane contains three check
+boxes: informed, can_collect and can_publish.
 
 When the user tries to leave the pane, the action taken depends on
 the direction.  The user can always go backward.  When she tries
-to go forward the logic is as follows:
-
-1. complain and return error if can_collect is false (it shouldn't!);
-
-2. make sure that /tmp/neubot-can-share either does not exist or
-   is a regular file;
-
-3. open /tmp/neubot-can-share, write as '%d\n' into it the value
-   of can_share, then close the file.
-
-[Using a temporary file is not clean but we've been unable to find
- a better solution.  It seems the installer cannot pass information
- directly to the postflight script.  More details in the code.]
+to go forward, it is permitted to do so iff she asserted she is
+informed and provided the permission to collect and publish her
+Internet address.
 
 So, the Privacy plugin guarantees that the user is informed and
-that we can collect.  Also, the output is a file in /tmp that tells
-the value of the can_share setting.
-
-
-Before the installer runs, the preflight script, which you can find
-in MacOS/neubot-pkg/Contents/Resources/preflight, it will make sure that
-the /tmp/neubot-can-share file actually exists.  If not, it aborts
-the install because it means that our privacy panel didn't loaded for
-whatever reason.
+that we can collect and publish her Internet address.
 
 
 The installer installs Neubot at /usr/local/share/neubot.  We refer
@@ -110,15 +84,12 @@ as follows:
           to invoke Neubot directly (this file guarantees that
           all the needed users exist etc etc);
 
-     2.3. record the value stored in /tmp/neubot-can-share defaulting
-          to false if in doubt;
+     2.3. invoke neubot's privacy command to create an initial
+          database with full privacy settings;
 
-     2.4. invoke neubot's privacy command to create an initial
-          database with the specified privacy settings;
+     2.4. installs org.neubot.plist at /Library/LaunchDaemons;
 
-     2.5. installs org.neubot.plist at /Library/LaunchDaemons;
-
-     2.6. load and start neubot via org.neubot.plist using
+     2.5. loads and starts neubot via org.neubot.plist using
           the launchctl(1) tool (this basically asks launchd(8)
           to execute VERSIONDIR/start.sh).
 
@@ -240,7 +211,7 @@ Very briefly the algorithm to create the package is as follows:
    will read from the the permissions and ownership (I guess);
 
 7. enter into the directory Privacy, compile the plugin and then move
-   Privacy/build/Release/Privacy.bundle -- which is the plugin pan -- into
+   Privacy/build/Release/Privacy.bundle -- which is the plugin pane -- into
    neubot-0.4.0.pkg/MacOS/Contents/Plugins/ and do the same for
    Privacy/InstallerSections.plist -- the file that tells the installer
    where to put the new pane -- and finally leave directory Privacy;

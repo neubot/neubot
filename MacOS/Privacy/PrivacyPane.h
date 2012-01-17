@@ -1,8 +1,10 @@
-// Privacy/PrivacyPane.h
+// MacOS/Privacy/PrivacyPane.h
 
 //
-// Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>
+// Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
 //  Universita` degli Studi di Milano
+// Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
+//  NEXA Center for Internet & Society at Politecnico di Torino
 //
 // This file is part of Neubot <http://www.neubot.org/>.
 //
@@ -25,8 +27,9 @@
 //
 
 @interface PrivacyPane : InstallerPane {
+	IBOutlet NSButton *informed;
 	IBOutlet NSButton *canCollect;
-	IBOutlet NSButton *canShare;
+	IBOutlet NSButton *canPublish;
 }
 
 - (IBAction) checkPrivacy: (id) aSnd;
