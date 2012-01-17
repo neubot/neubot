@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 #
 # Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
@@ -26,8 +26,6 @@
 # Postflight script to complete installation.
 #
 
-set -e
-
 BASEDIR=/usr/local/share/neubot
 
 logger -p daemon.info -t $0 "Neubot basedir: $BASEDIR"
@@ -49,9 +47,8 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         #
         # If there is another instance of Neubot already installed
-        # and we're installing a new fresh copy of Neubot -- ignoring
-        # the not-yet-implemented auto-updates -- it's better to
-        # stop the old instance so that we successfully start the
+        # and we're installing a new fresh copy of Neubot it's better
+        # to stop the old instance so that we successfully start the
         # new instance below.  At the same time, be robust.
         #
         if [ -f /Library/LaunchDaemons/org.neubot.plist ]; then
@@ -102,8 +99,8 @@ for CANDIDATE in $(ls $BASEDIR|sort -rn); do
 
         #
         # Here we just load org.neubot.plist into launchd(8)
-        # and the start org.neubot.  The installation will
-        # be completed by the commands referenced into such
+        # and then start org.neubot.  The installation will
+        # be completed by the commands referenced into the
         # plist file.  The rationale is that both the install
         # and the auto-update must finalize the procedure
         # adding symlinks etc.  So better to put all the logic
