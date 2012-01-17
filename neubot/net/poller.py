@@ -170,6 +170,9 @@ class Poller(object):
     # shrinking the list), but the sort would be slower, and our tests
     # suggest that we loose more with the sort than we gain with the
     # delete.
+    # Here it would be better to use the task scheduler that ships
+    # with Python standard library.  I have a patch for that and it
+    # may be able to go in before 0.5.0 release.
     #
     def _loop_once(self):
 
