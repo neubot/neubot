@@ -96,7 +96,7 @@ class NegotiateServerBitTorrent(NegotiateServerModule):
             if privacy.collect_allowed(request_body):
                 table_bittorrent.insert(DATABASE.connection(), request_body)
             else:
-                logging.warning('* bad privacy settings: %s' % str(stream))
+                logging.warning('* bad privacy settings: %s', str(stream))
 
             #
             # After we've saved the result into the dictionary we

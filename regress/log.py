@@ -28,21 +28,37 @@
 # test would be more than welcome.
 #
 
+import logging
 import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.log import LOG
+from neubot.log import _LOG_info
 from neubot import compat
 
 if __name__ == "__main__":
+    # Make sure the hackish name substitution works
+    assert(logging.info == _LOG_info)
+
     LOG.start("Testing the in-progress feature")
     LOG.progress("...")
     LOG.progress()
     LOG.complete("success!")
 
+    logging.info("INFO w/ logging.info")
+    # The following should work because it should not interpolate
+    logging.debug("DEBUG w/ logging.debug", "ciao")
+    logging.warning("WARNING w/ logging.warning")
+    logging.error("ERROR w/ logging.error")
+
     LOG.verbose()
+
+    logging.info("INFO w/ logging.info")
+    logging.debug("DEBUG w/ logging.debug")
+    logging.warning("WARNING w/ logging.warning")
+    logging.error("ERROR w/ logging.error")
 
     LOG.error("testing neubot logger -- This is an error message")
     LOG.warning("testing neubot logger -- This is an warning message")

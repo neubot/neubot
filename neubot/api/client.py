@@ -78,7 +78,7 @@ def main(args):
             octets = response.read()
             dictionary = json.loads(octets)
 
-            logging.info("APIStateTracker: received JSON: %s" %
+            logging.info("APIStateTracker: received JSON: %s",
                 json.dumps(dictionary, ensure_ascii=True))
 
             if not "events" in dictionary:
@@ -93,7 +93,7 @@ def main(args):
             break
         except:
             error = asyncore.compact_traceback()
-            logging.error('Exception: %s' % str(error))
+            logging.error('Exception: %s', str(error))
             time.sleep(5)
 
 if __name__ == "__main__":

@@ -258,7 +258,7 @@ class Poller(object):
             timenow = ticks()
             for stream in streams:
                 if stream.handle_periodic(timenow):
-                    logging.warning('Watchdog timeout: %s' % str(stream))
+                    logging.warning('Watchdog timeout: %s', str(stream))
                     self.close(stream)
 
     def snap(self, d):

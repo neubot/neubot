@@ -272,12 +272,36 @@ class Logger(object):
 LOG = Logger()
 
 #
-# In many cases it would be better if modules would import
-# and use logging instead of this module in order to reduce
-# dependencies between modules.  To allow for that, over-
-# ride logging functions with our functions.
+# Neubot code should always use logging and we should
+# eventually provide a backend for this subsystem.
+# For now, the hack of the day is to override the names
+# in the logging subsystem.
+# To avoid a pylint warning ("Specify format string arguments
+# as logging function parameters") I had to write the wrappers
+# below.  The debug() method does not interpolate unless the
+# logger is running verbose.  I like that design idea of logging,
+# as I said, I should write my special-purpose backend for the
+# logging module.
 #
-logging.info = LOG.info
-logging.error = LOG.error
-logging.warning = LOG.warning
-logging.debug = LOG.debug
+
+def _LOG_info(msg, *args):
+    ''' Wrapper for info() '''
+    LOG.info(msg % args)
+
+def _LOG_error(msg, *args):
+    ''' Wrapper for error() '''
+    LOG.error(msg % args)
+
+def _LOG_warning(msg, *args):
+    ''' Wrapper for warning() '''
+    LOG.warning(msg % args)
+
+def _LOG_debug(msg, *args):
+    ''' Wrapper for debug() '''
+    if LOG.noisy:
+        LOG.debug(msg % args)
+
+logging.info = _LOG_info
+logging.error = _LOG_error
+logging.warning = _LOG_warning
+logging.debug = _LOG_debug

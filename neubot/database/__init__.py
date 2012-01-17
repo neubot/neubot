@@ -47,7 +47,7 @@ class DatabaseManager(object):
         if not self.dbc:
             if self.path != ":memory:":
                 self.path = system.check_database_path(self.path, logging.error)
-            logging.debug("* Database: %s" % self.path)
+            logging.debug("* Database: %s", self.path)
             self.dbc = sqlite3.connect(self.path)
 
             #
