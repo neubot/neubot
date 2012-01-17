@@ -159,13 +159,6 @@ class Poller(object):
     def break_loop(self):
         self.again = False
 
-    #
-    # Differently from Twisted, we might break out of the loop
-    # with registered tasks.  It is probably wiser to behave like
-    # Twisted, but this requires to update all the places where
-    # loop() is invoked and it might take some time.
-    #
-
     def loop(self):
         while self.again and (self.readset or self.writeset):
             self._loop_once()
