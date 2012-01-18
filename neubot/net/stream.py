@@ -312,7 +312,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and not octets:
             self.eof = True
-            self.close()
+            self.poller.close(self)
             return
 
         if status == ERROR:
@@ -394,7 +394,7 @@ class Stream(Pollable):
 
                 self.send_complete()
                 if self.close_pending:
-                    self.close()
+                    self.poller.close(self)
                 return
 
             if count < len(self.send_octets):
@@ -419,7 +419,7 @@ class Stream(Pollable):
 
         if status == SUCCESS and count == 0:
             self.eof = True
-            self.close()
+            self.poller.close(self)
             return
 
         if status == SUCCESS and count < 0:
