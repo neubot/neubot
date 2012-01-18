@@ -81,6 +81,10 @@ if __name__ == "__main__":
 
     LOG.oops("Testing the new oops feature")
 
+    # Testing variadic args
+    logging.warning("WARNING %s", "variadic warning")
+    LOG.warning("WARNING %s", "variadic warning")
+
     LOG.redirect()
 
     LOG.error("testing neubot logger -- This is an error message")

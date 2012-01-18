@@ -75,6 +75,8 @@ class Logger(object):
         self._use_database = False
         self._queue = []
 
+        self.streams = set()
+
     #
     # Better not to touch the database when a test is in
     # progress, i.e. "testdone" is subscribed.
@@ -107,6 +109,16 @@ class Logger(object):
         self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
         self.interactive = False
+
+    def start_streaming(self, stream):
+        ''' Attach stream to log messages '''
+        self.streams.add(stream)
+
+    def stop_streaming(self):
+        ''' Close all attached streams '''
+        for stream in self.streams:
+            stream.poller.close(stream)
+        self.streams.clear()
 
     #
     # In some cases it makes sense to print progress during a
@@ -167,20 +179,19 @@ class Logger(object):
         for line in traceback.format_stack()[:-1]:
             func(line)
 
-    def error(self, message):
-        self._log("ERROR", message)
+    def error(self, message, *args):
+        self._log("ERROR", message, *args)
 
-    def warning(self, message):
-        self._log("WARNING", message)
+    def warning(self, message, *args):
+        self._log("WARNING", message, *args)
 
-    def info(self, message):
-        self._log("INFO", message)
+    def info(self, message, *args):
+        self._log("INFO", message, *args)
 
-    def debug(self, message):
-        if self.noisy:
-            self._log("DEBUG", message)
+    def debug(self, message, *args):
+        self._log("DEBUG", message, *args)
 
-    def log_access(self, message):
+    def log_access(self, message, *args):
         #
         # CAVEAT Currently Neubot do not update logs "in real
         # time" using AJAX.  If it did we would run in trouble
@@ -189,7 +200,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self._log("ACCESS", message)
+        self._log("ACCESS", message, *args)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
@@ -219,9 +230,48 @@ class Logger(object):
         # Purge the queue in any case
         del self._queue[:]
 
-    def _log(self, severity, message):
-        message = message.rstrip()
+    def _log(self, severity, message, *args):
+        ''' Really log a message '''
 
+        #
+        # Streaming allows consumers to register with the log
+        # object and follow the events that happen during a
+        # test as if they were running the test in their local
+        # context.  When the test is done, the runner of the
+        # test will automatically disconnected all the attached
+        # streams.
+        # Log streaming makes this function less efficient
+        # because lazy processing of log records can't be
+        # performed.  We must pass the client all the logs
+        # and it will decide whether to be verbose.
+        #
+        if self.streams:
+            # "Lazy" processing
+            message = message.rstrip()
+            if args:
+                message = message % args
+                args = ()
+            try:
+                logline = "%s %s\r\n" % (severity, message)
+                logline = logline.encode("utf-8")
+                for stream in self.streams:
+                    stream.start_send(logline)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                pass
+
+        # Not verbose?  Stop processing the log record here
+        if not self.noisy and severity == 'DEBUG':
+            return
+
+        # Lazy processing
+        message = message.rstrip()
+        if args:
+            message = message % args
+            args = ()
+
+        # Write log into the database
         if self._use_database and severity != "ACCESS":
             record = {
                       "timestamp": utils.timestamp(),
@@ -257,6 +307,7 @@ class Logger(object):
             if commit:
                 self._writeback()
 
+        # Write to the current logger object
         self.logger(severity, message)
 
     # Marshal
@@ -286,20 +337,19 @@ LOG = Logger()
 
 def _log_info(msg, *args):
     ''' Wrapper for info() '''
-    LOG.info(msg % args)
+    LOG.info(msg, *args)
 
 def _log_error(msg, *args):
     ''' Wrapper for error() '''
-    LOG.error(msg % args)
+    LOG.error(msg, *args)
 
 def _log_warning(msg, *args):
     ''' Wrapper for warning() '''
-    LOG.warning(msg % args)
+    LOG.warning(msg, *args)
 
 def _log_debug(msg, *args):
     ''' Wrapper for debug() '''
-    if LOG.noisy:
-        LOG.debug(msg % args)
+    LOG.debug(msg, *args)
 
 logging.info = _log_info
 logging.error = _log_error
