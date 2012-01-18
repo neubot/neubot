@@ -284,24 +284,24 @@ LOG = Logger()
 # logging module.
 #
 
-def _LOG_info(msg, *args):
+def _log_info(msg, *args):
     ''' Wrapper for info() '''
     LOG.info(msg % args)
 
-def _LOG_error(msg, *args):
+def _log_error(msg, *args):
     ''' Wrapper for error() '''
     LOG.error(msg % args)
 
-def _LOG_warning(msg, *args):
+def _log_warning(msg, *args):
     ''' Wrapper for warning() '''
     LOG.warning(msg % args)
 
-def _LOG_debug(msg, *args):
+def _log_debug(msg, *args):
     ''' Wrapper for debug() '''
     if LOG.noisy:
         LOG.debug(msg % args)
 
-logging.info = _LOG_info
-logging.error = _LOG_error
-logging.warning = _LOG_warning
-logging.debug = _LOG_debug
+logging.info = _log_info
+logging.error = _log_error
+logging.warning = _log_warning
+logging.debug = _log_debug
