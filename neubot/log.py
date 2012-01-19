@@ -66,7 +66,6 @@ class Logger(object):
 
     def __init__(self):
         self.logger = stderr_logger
-        self.interactive = True
         self.noisy = False
         self.message = None
         self.ticks = 0
@@ -108,7 +107,6 @@ class Logger(object):
     def redirect(self):
         self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
-        self.interactive = False
 
     def start_streaming(self, stream):
         ''' Attach stream to log messages '''
@@ -121,45 +119,31 @@ class Logger(object):
         self.streams.clear()
 
     #
-    # In some cases it makes sense to print progress during a
-    # long operation, as follows::
-    #
-    #   Download in progress......... done
-    #
-    # This makes sense when: (i) the program is not running in
-    # verbose mode; (ii) logs are directed to the stderr.
-    # If the program is running in verbose mode, there might
-    # be many messages between the 'in progress...' and 'done'.
-    # And if the logs are not directed to stderr then it does
-    # not make sense to print progress as well.
-    # So, in these cases, the output will look like::
+    # Below there is convenience code for printing the beginning
+    # and end of long operations, and to calculate timing.
+    # The progress() function is a relic of a past era when we
+    # had "interactive" long operation logging.
+    # Here's a sample output::
     #
     #   Download in progress...
     #    [here we might have many debug messages]
-    #   Download complete.
+    #   Download complete [in 7.12 s].
     #
     def start(self, message):
         self.ticks = utils.ticks()
-        if self.noisy or not self.interactive:
-            self.info(message + " in progress...")
-            self.message = message
-        else:
-            sys.stderr.write(message + "...")
+        self.info(message + " in progress...")
+        self.message = message
 
     def progress(self, dot="."):
-        if not self.noisy and self.interactive:
-            sys.stderr.write(dot)
+        pass
 
     def complete(self, done="done\n"):
         elapsed = utils.time_formatter(utils.ticks() - self.ticks)
         done = "".join([done.rstrip(), " [in ", elapsed, "]\n"])
-        if self.noisy or not self.interactive:
-            if not self.message:
-                self.message = "???"
-            self.info(self.message + "..." + done)
-            self.message = None
-        else:
-            sys.stderr.write(done)
+        if not self.message:
+            self.message = "???"
+        self.info(self.message + "..." + done)
+        self.message = None
 
     # Log functions
 
