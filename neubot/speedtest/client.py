@@ -242,7 +242,7 @@ class ClientSpeedtest(ClientHTTP):
     def connect_uri(self, uri=None, count=None):
         if not uri:
             uri = self.conf.get("speedtest.client.uri",
-              "http://neubot.blupixel.net/")
+              "http://master.neubot.org/")
         if not count:
             count = self.conf.get("speedtest.client.nconn", 1)
         LOG.info("* speedtest with %s" % uri)
@@ -435,7 +435,7 @@ class ClientSpeedtest(ClientHTTP):
                 break
 
 CONFIG.register_defaults({
-    "speedtest.client.uri": "http://neubot.blupixel.net/",
+    "speedtest.client.uri": "http://master.neubot.org/",
     "speedtest.client.nconn": 1,
     "speedtest.client.latency_tries": 10,
 })
