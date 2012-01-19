@@ -101,6 +101,10 @@ di trasmissione dati per testare la tua connessione a Internet utilizzando \
 diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi \
 le FAQ</a>",
 
+    'i18n_startnow': 'Fai partire test ora',
+
+    'i18n_startnowtest': 'Test',
+
     'i18n_footer_text': "Neubot è un progetto di ricerca sulla neutralità \
 della rete realizzato dal<br /><a href='http://nexa.polito.it/'>Centro \
 NEXA su Internet &amp; Società</a> del \

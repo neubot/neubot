@@ -184,5 +184,24 @@ var utils = (function() {
         return false;
     }
 
+    self.startTest = function() {
+
+        var success = function() {
+        };
+
+        var error = function(jqXHR, textStatus, errorThrown) {
+            alert("Start test failed: " + jqXHR.statusText);
+        };
+
+        jQuery.ajax({
+            url: '/api/runner',
+            data: {test: jQuery('#select_startnow').val()},
+            type: 'GET',
+            dataType: 'json',
+            success: success,
+            error: error
+        });
+    }
+
     return self;
 })();
