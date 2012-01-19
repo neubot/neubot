@@ -220,42 +220,23 @@ class RegressionTest(unittest.TestCase):
         self.assertEqual(stream.response['content-length'], '')
         self.assertEqual(stream.response.body.tell(), 0)
 
-    def test_streaming_case_twice(self):
-        ''' Make sure in streaming case we cannot start two
-            consecutive tests '''
+    def test_already_running(self):
+        ''' Make sure we cannot start or schedule a test when
+            one is already in progress '''
 
         #
-        # Here we play a trick with the runner and we set its
-        # running field to True.  Then we check that it is not
-        # possible to request a streaming test while another
-        # test (streaming or not streaming) is in progress.
-        # In particular the API should raise a ConfigError in
-        # this case.
+        # If .running is True we expect run_queue() will
+        # raise a ConfigError.
         #
 
         # Prerequisites (we will restore them later)
         runner_core.RUNNER_CORE.running = True
-        RUNNER_LST.avail = {'bittorrent': 'foo'}
-        saved_run = runner_core.run
-        saved_start_streaming = LOG.start_streaming
-        runner_core.run = lambda test, uri, callback: None
-        LOG.start_streaming = lambda stream: None
 
-        #
-        # This is WHAT we want to check here, i.e. that if
-        # a test is already in progress and request for a
-        # new test with streaming the API invokation fails.
-        # We set .running to True and assume that that is
-        # signals that a test is running (it should be this
-        # way).
-        #
+        # Check
         self.assertRaises(ConfigError, runner_api, None, None,
-                          'test=bittorrent&streaming=1')
+                          'test=bittorrent')
 
         # Undo prerequisites
-        runner_core.run = saved_run
-        RUNNER_LST.avail = {}
-        LOG.start_streaming = saved_start_streaming
         runner_core.RUNNER_CORE.running = False
 
 if __name__ == '__main__':
