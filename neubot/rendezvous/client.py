@@ -158,6 +158,11 @@ class ClientRendezvous(ClientHTTP):
                 # it.
                 #
                 test = runner_lst.get_next_test()
+                if not test:
+                    LOG.warning("No test available")
+                    self._schedule()
+                    return
+
                 LOG.info("* Chosen test: %s" % test)
 
                 # Are we allowed to run a test?
