@@ -99,6 +99,9 @@ def runner_api(stream, request, query):
     #
     # More interesting case: the caller wants to see the log
     # messages during the test via the log streaming API.
+    # We DO NOT allow to start a test when another test is in
+    # progress and log streaming is requested because what the
+    # user would see is very confusing.
     # We prepare a succesful response terminated by EOF and
     # then arrange things so that every new log message will
     # be copied to the HTTP response.
@@ -108,6 +111,8 @@ def runner_api(stream, request, query):
     # The runner core will automatically close all attached
     # streams at the end of the test.
     #
+    if runner_core.test_is_running():
+        raise ConfigError('A test is already in progress, try again later')
     response.compose(code='200', reason='Ok',
       up_to_eof=True, mimetype='text/plain')
     stream.send_response(request, response)
