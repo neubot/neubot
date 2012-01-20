@@ -131,6 +131,8 @@ def _make_sharedir():
                 'neubot/%s' % NUMERIC_VERSION)
     shutil.copy('basedir-skel/versiondir-skel/pubkey.pem',
                 'neubot/%s' % NUMERIC_VERSION)
+    shutil.copy('basedir-skel/versiondir-skel/org.neubot.notifier.plist',
+                'neubot/%s' % NUMERIC_VERSION)
 
     # Build and copy Neubot.app too
     shutil.copytree(
