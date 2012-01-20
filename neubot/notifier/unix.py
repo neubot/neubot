@@ -113,7 +113,7 @@ def __notify_adjust_privacy():
         via the web user interface '''
 
     try:
-        pynotify.init('Neubot 0.4.5')
+        pynotify.init('Neubot 0.4.6-rc3')
         notification = pynotify.Notification(
                                              PRIVACY_TITLE,
                                              PRIVACY_EXPLANATION,

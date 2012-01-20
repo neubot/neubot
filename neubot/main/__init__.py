@@ -52,7 +52,7 @@ Try `neubot help` to get a list of available subcommands.
 Try `neubot COMMAND --help` for more help on COMMAND.
 '''
 
-VERSION = "0.4.5"
+VERSION = "0.4.6-rc3"
 
 def main(argv):
 

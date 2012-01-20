@@ -107,7 +107,7 @@ VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
 BASEDIR = os.path.dirname(VERSIONDIR)
 
 # Version number in numeric representation
-VERSION = "0.004005999"
+VERSION = "0.004006003"
 
 #
 # Common

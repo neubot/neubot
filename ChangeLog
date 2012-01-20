@@ -1,3 +1,112 @@
+Neubot 0.4.6-rc3 [2012-01-20]
+	* M-Lab: scripts to deploy, start and stop
+	* M-Lab/deploy.sh: make sure $HOST is up and running
+	* M-Lab/deploy.sh: two more prints to help automatic output parsing
+	* M-Lab/deploy.sh: stanza format to separate host logs
+	* M-Lab: fetch the list of hosts in realtime
+	* M-Lab/deploy.sh: Improve the deploy script
+	* M-Lab: more explanatory comments
+	* M-Lab: import contries information from Wikipedia
+	* M-Lab/servers.py: write approxymate location of nodes
+	* M-Lab/ip_addr.sh: get slivers IP address
+	* .gitignore: Ignore generated M-Lab files
+	* M-Lab/redir_table.py: code to build redirection table
+	* M-Lab/countries.dat: allow comments and convert to UTF-8
+	* M-Lab/deploy.sh: add help message
+	* M-Lab/servers.py: write output to M-Lab/servers.dat
+	* M-Lab/redir_table.py: always use just one server per country
+	* M-Lab/redir_table.py: DELETE all, don't DROP table
+	* M-Lab/redir_table.py: fix some SQL doofus
+	* www: use new NEXA logo
+	* Toplevel: Update to privacy policy 2.0
+	* neubot/www: Update to privacy policy 2.0
+	* lang/it.js: typos
+	* rendezvous/client.py: Remove useless privacy check
+	* table_speedtest.py: Move glue to speedtest/client.py
+	* database/_table_utils.py: allow to rename columns
+	* neubot/privacy.py: Refactor main()
+	* neubot/config.py: Update to privacy policy 2.0
+	* neubot/privacy.py: Update to privacy policy 2.0
+	* database: Update to privacy policy 2.0
+	* neubot/privacy: Add command line option to test settings
+	* clients servers: Update to privacy policy 2.0
+	* Remainder of neubot/: Update to privacy policy 2.0
+	* Debian: Update to privacy policy 2.0
+	* neubot/log.py: listify(): don't unconditionally connect to database
+	* Makefile: add target to run all the available regression tests
+	* neubot/config.py: do not suggest to sqlite3.connect()
+	* notifier/unix.py: stop spreading lies in comments
+	* regress/negotiate/smoke.sh: better usage message
+	* regress: Add regression tests for database version schema
+	* regress: Add regression test for database/migrate.py
+	* regress: Repair table_*_gen.py
+	* Merge some regression test goodies
+	* M-Lab: Install /etc/rc.d/rc.local not /etc/rc.local
+	* net/stream.py: Bump copyright
+	* net/stream.py: disable less relevant pylint warnings
+	* net/stream.py: remove unused bytes_recv bytes_sent
+	* net/stream.py: remove unused import os
+	* Sanitize certfile before passing it to wrap_socket()
+	* net/stream.py: get rid of two simple pylint warnings
+	* net/stream.py: Connector: avoid pylint warning
+	* net/stream.py: Listener: avoid pylint warning
+	* net/stream.py: directly access all configuration variables
+	* net/stream.py: cosmetic change
+	* net/stream.py: return to settings for localhost
+	* net/stream.py: do not duplicate code in main()
+	* regress: net/stream.py: repair after recent changes
+	* Merge maintenance patches for net/stream.py
+	* agent.py: net.stream does not provide default settings anymore
+	* regress: add regression test for http.server.rootdir setting
+	* server.py: more info on selected ports
+	* net/poller.py: zap comment
+	* net/poller.py: say we're gonna replace the task scheduler
+	* regress: add regression test for net/poller.py
+	* net/poller.py: simplify check_timeout() code
+	* log.py: delayed string interpolation
+	* viewer/unix.py: adjust not_running.html path when not installed
+	* MacOS: Update PrivacyPane to privacy policy 2.0
+	* MacOS: prerun.sh: cosmetic changes
+	* MacOS/makepkg.py: cosmetic changes
+	* MacOS: postflight: cosmetic changes
+	* MacOS: postflight: update to privacy policy 2.0
+	* MacOS: /tmp/neubot-can-share is no more
+	* Merge branch 'pu.privacy' into next
+	* net/stream.py: missing import
+	* http/message.py: compose(): support for up_to_eof body
+	* net/stream.py: Don't delay close() after EOF
+	* log.py: avoid some pylint warnings
+	* log.py: Introduce streaming API
+	* runner_lst.py: Keep track of available tests
+	* runner_core.py: Run a test on demand
+	* runner_api.py: Implements /api/runner
+	* runner_api.py: NOT (streaming AND overlapped tests)
+	* runner_clnt.py: Client for running tests via /api/runner
+	* api/server.py: Enable /api/runner
+	* rendezvous/client.py: Use the runner module
+	* config.py: add runner.enabled setting
+	* bittorrent/__init__.py: Use runner by default
+	* speedtest/client.py: Use runner by default
+	* log.py: Kill interactive
+	* Globally s/neubot.blupixel.net/master.neubot.org/
+	* rendezvous/client.py: get_next_test() may return None
+	* www: allow to start test manually
+	* runner_api: disable /api/runner when a test is running
+	* runner_clnt: select return value more carefully
+	* log.py: don't pass ACCESS logs down the stream
+	* www: now we support tests from the web interface
+	* Merge code to run tests from web user interface
+	* www: Italian is not an opinion
+	* updater/unix.py: Do not delay startup
+	* notifier/macos.py: notify users of bad privacy settings
+	* notifier: support for macos notifier
+	* MacOS: Add notifier PLIST
+	* MacOS: Include notifier PLIST in package
+	* MacOS: Install notifier PLIST
+	* www: better privacy message
+	* Merge simple and stupid MacOS notifier
+	* Release neubot/0.4.6-rc3
+
 Neubot 0.4.5 [2011-11-24]
 	* MacOS: tell the login screen not to pick Neubot user
 	* Debian: control/postinst: empty setting implies false
