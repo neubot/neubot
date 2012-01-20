@@ -162,6 +162,7 @@ def main(args):
                                       LOG.noisy, "bittorrent")):
             sys.exit(0)
 
+        LOG.info('Will run the test in the local context...')
 
         #
         # When we're connecting to a remote host to perform a test

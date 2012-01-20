@@ -468,6 +468,8 @@ def main(args):
                                   LOG.noisy, "speedtest")):
         sys.exit(0)
 
+    LOG.info('Will run the test in the local context...')
+
     client = ClientSpeedtest(POLLER)
     client.configure(conf)
     client.connect_uri()

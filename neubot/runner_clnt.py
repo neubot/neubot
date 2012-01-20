@@ -41,20 +41,54 @@ def runner_client(address, port, verbosity, test):
 
     # Just a wrapper function
 
+    sys.stderr.write('INFO Try to run the test in the context of the '
+                     'local daemon...\n')
+
+    hint = {}
     try:
-        __runner_client(address, port, verbosity, test)
-        return True
+        __runner_client(address, port, verbosity, test, hint)
     except (KeyboardInterrupt, SystemExit):
         pass
     except:
         error = asyncore.compact_traceback()[2]
-        sys.stderr.write('<ERR> %s\n' % str(error))
-        return False
+        sys.stderr.write('ERR Something went wrong with the local '
+                         'daemon: %s\n' % str(error))
 
-def __runner_client(address, port, verbosity, test):
+    return not hint['run_locally']
+
+def __runner_client(address, port, verbosity, test, hint):
     ''' Run the specified test in the context of the Neubot
         daemon and shows log messages while the test is
         in progress '''
+
+    #
+    # Before we make the request, make sure we're really
+    # talking with the Neubot and otherwise suggest the
+    # caller to try to run the test directly and non into
+    # the context of the local daemon.
+    #
+    hint['run_locally'] = True
+
+    connection = httplib.HTTPConnection(address, port)
+    connection.set_debuglevel(verbosity)
+
+    connection.request('GET', '/api/version')
+    response = connection.getresponse()
+    if response.status != 200:
+        raise RuntimeError('Not speaking with a Neubot daemon')
+    body = response.read()
+    if body != "0.4.5":
+        raise RuntimeError('Bad Neubot daemon version')
+
+    #
+    # OK we're talking to Neubot and it's the same version
+    # as us, which means that we must not hint the caller
+    # to run the test directly.  From now on, if something
+    # fails it's because we violated /api/runner API or
+    # the local daemon is busy -- in both cases, running
+    # the test directly is offensive.
+    #
+    hint['run_locally'] = False
 
     #
     # Ask the local Neubot daemon to run a test for us
@@ -65,9 +99,6 @@ def __runner_client(address, port, verbosity, test):
     # http response object does not implement directly
     # such interface.
     #
-
-    connection = httplib.HTTPConnection(address, port)
-    connection.set_debuglevel(verbosity)
     connection.request('GET', '/api/runner?test=%s&streaming=1' % test)
 
     response = connection.getresponse()
