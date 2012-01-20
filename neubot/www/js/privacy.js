@@ -21,6 +21,7 @@
 
 function setPrivacySuccess() {
     alert("Privacy settings successfully saved");
+    window.location.reload();
     return false;
 }
 
