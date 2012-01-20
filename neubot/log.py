@@ -228,6 +228,9 @@ class Logger(object):
         # because lazy processing of log records can't be
         # performed.  We must pass the client all the logs
         # and it will decide whether to be verbose.
+        # Err, of course passing ACCESS logs down the stream
+        # is pointless for a client that wants to follow a
+        # remote test.
         #
         if self.streams:
             # "Lazy" processing
@@ -236,10 +239,11 @@ class Logger(object):
                 message = message % args
                 args = ()
             try:
-                logline = "%s %s\r\n" % (severity, message)
-                logline = logline.encode("utf-8")
-                for stream in self.streams:
-                    stream.start_send(logline)
+                if severity != 'ACCESS':
+                    logline = "%s %s\r\n" % (severity, message)
+                    logline = logline.encode("utf-8")
+                    for stream in self.streams:
+                        stream.start_send(logline)
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
