@@ -218,7 +218,21 @@ class Message(object):
         if not kwargs.get("keepalive", True):
             self["connection"] = "close"
 
-        if kwargs.get("body", None):
+        #
+        # Curl(1) does not enter into up_to_eof mode unless a
+        # content-type is specified, for this reason I've added
+        # an OOPS below.
+        # TODO Looking again at RFC2616 after adding this bits
+        # realized that another patch is due to make the code
+        # that deals with body and length better.
+        #
+        if kwargs.get("up_to_eof", False):
+            if not "mimetype" in kwargs:
+                LOG.oops("up_to_eof without mimetype")
+            self["content-type"] = kwargs.get("mimetype",
+                                       "text/plain")
+
+        elif kwargs.get("body", None):
             self.body = kwargs.get("body", None)
             if isinstance(self.body, basestring):
                 self.length = len(self.body)

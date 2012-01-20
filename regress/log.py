@@ -35,12 +35,12 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.log import LOG
-from neubot.log import _LOG_info
+from neubot.log import _log_info
 from neubot import compat
 
 if __name__ == "__main__":
     # Make sure the hackish name substitution works
-    assert(logging.info == _LOG_info)
+    assert(logging.info == _log_info)
 
     LOG.start("Testing the in-progress feature")
     LOG.progress("...")
@@ -80,6 +80,10 @@ if __name__ == "__main__":
     LOG.complete("success!")
 
     LOG.oops("Testing the new oops feature")
+
+    # Testing variadic args
+    logging.warning("WARNING %s", "variadic warning")
+    LOG.warning("WARNING %s", "variadic warning")
 
     LOG.redirect()
 

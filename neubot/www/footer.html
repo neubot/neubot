@@ -17,8 +17,22 @@
           </div>
 
           <div id='statusBox'>
+            <h4 class='box-title i18n i18n_status'>Status</h4>
             <p><span class='i18n i18n_neubotis'>Neubot is</span>: <span id='statusBoxSpan' class='i18n i18n_infonav'>(n/a)</span>
             <a id='statusBoxA' href='#' onclick='javascript: return false;'>enable/disable</a></p>
+          </div>
+
+          <div id='startNow'>
+            <h4 class='box-title i18n i18n_startnow'>Manually start test</h4>
+            <p>
+              <span class='i18n i18n_startnowtest'>Test</span>:
+              <select id='select_startnow'>
+                <option value='speedtest'>speedtest</option>
+                <option value='bittorrent'>bittorrent</option>
+              </select>
+            <input type='button' value='Go!'
+              onclick='return utils.startTest();' />
+            </p>
           </div>
 
           <!-- XXX js/index.js will write directly into the H4

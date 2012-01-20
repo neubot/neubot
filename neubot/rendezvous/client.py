@@ -37,18 +37,17 @@ if __name__ == "__main__":
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
-from neubot.speedtest.client import ClientSpeedtest
 
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
-from neubot.notify import NOTIFIER
 from neubot.rendezvous import compat
 from neubot.state import STATE
 
-from neubot import bittorrent
 from neubot import marshal
 from neubot import privacy
+from neubot import runner_core
+from neubot import runner_lst
 
 def _open_browser_on_windows(page):
 
@@ -76,7 +75,6 @@ class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
         self._interval = 0
-        self._latest = None
         self._task = None
 
     def connect_uri(self, uri=None, count=None):
@@ -102,7 +100,7 @@ class ClientRendezvous(ClientHTTP):
         self._schedule()
 
     def connection_lost(self, stream):
-        if NOTIFIER.is_subscribed("testdone"):
+        if runner_core.test_is_running():
             LOG.debug("RendezVous: don't _schedule(): test in progress")
             return
         if self._task:
@@ -148,6 +146,9 @@ class ClientRendezvous(ClientHTTP):
                     STATE.update("update", {"version": ver, "uri": uri})
                     _open_browser_on_windows('update.html')
 
+                # Update tests known by the runner
+                runner_lst.update(m1.available)
+
                 #
                 # Choose the test we would like to run even if
                 # we're not going to run it because we're running
@@ -156,16 +157,12 @@ class ClientRendezvous(ClientHTTP):
                 # we /would/ have choosen if we were allowed to run
                 # it.
                 #
-                tests = []
-                if "speedtest" in m1.available:
-                    tests.append("speedtest")
-                if "bittorrent" in m1.available:
-                    tests.append("bittorrent")
-                #XXX alternate the two tests
-                if self._latest:
-                    tests.remove(self._latest)
-                test = random.choice(tests)
-                self._latest = test
+                test = runner_lst.get_next_test()
+                if not test:
+                    LOG.warning("No test available")
+                    self._schedule()
+                    return
+
                 LOG.info("* Chosen test: %s" % test)
 
                 # Are we allowed to run a test?
@@ -174,30 +171,15 @@ class ClientRendezvous(ClientHTTP):
                     self._schedule()
                 else:
 
-                    conf = self.conf.copy()
-
-                    #
-                    # Subscribe _before_ connecting.  This way we
-                    # immediately see "testdone" if the connection fails
-                    # and we can _schedule the next attempt.
-                    #
-                    NOTIFIER.subscribe("testdone", lambda *a, **kw: \
-                                                     self._schedule())
-
-                    if test == "speedtest":
-                        conf["speedtest.client.uri"] =  m1.available[
-                                                          "speedtest"][0]
-                        client = ClientSpeedtest(POLLER)
-                        client.configure(conf)
-                        client.connect_uri()
-
-                    elif test == "bittorrent":
-                        conf["bittorrent._uri"] =  m1.available[
-                                                    "bittorrent"][0]
-                        bittorrent.run(POLLER, conf)
-
+                    # Do we have negotiate URI for test?
+                    negotiate_uri = runner_lst.test_to_negotiate_uri(test)
+                    if not negotiate_uri:
+                        LOG.warning('No negotiate URI for test')
+                        self._schedule()
                     else:
-                        NOTIFIER.publish("testdone")
+
+                        # Actually run the test
+                        runner_core.run(test, negotiate_uri, self._schedule)
 
     def _schedule(self):
 

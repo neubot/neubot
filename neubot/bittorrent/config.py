@@ -85,6 +85,6 @@ def finalize_conf(conf):
 
     if not conf['bittorrent.address']:
         if not conf['bittorrent.listen']:
-            conf['bittorrent.address'] = 'neubot.blupixel.net'
+            conf['bittorrent.address'] = 'master.neubot.org'
         else:
             conf['bittorrent.address'] = '0.0.0.0'

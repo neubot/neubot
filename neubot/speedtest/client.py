@@ -43,6 +43,8 @@ from neubot import marshal
 from neubot import privacy
 from neubot import utils
 
+from neubot import runner_clnt
+
 TESTDONE = "testdone" #TODO: use directly the string instead
 
 ESTIMATE = {
@@ -240,7 +242,7 @@ class ClientSpeedtest(ClientHTTP):
     def connect_uri(self, uri=None, count=None):
         if not uri:
             uri = self.conf.get("speedtest.client.uri",
-              "http://neubot.blupixel.net/")
+              "http://master.neubot.org/")
         if not count:
             count = self.conf.get("speedtest.client.nconn", 1)
         LOG.info("* speedtest with %s" % uri)
@@ -433,7 +435,7 @@ class ClientSpeedtest(ClientHTTP):
                 break
 
 CONFIG.register_defaults({
-    "speedtest.client.uri": "http://neubot.blupixel.net/",
+    "speedtest.client.uri": "http://master.neubot.org/",
     "speedtest.client.nconn": 1,
     "speedtest.client.latency_tries": 10,
 })
@@ -448,6 +450,26 @@ def main(args):
 
     common.main("speedtest.client", "Speedtest client", args)
     conf = CONFIG.copy()
+
+    #
+    # If possible use the runner, which will execute the
+    # test in the context of the neubot daemon.  Then exit
+    # to bypass the POLLER.loop() invokation that is below
+    # here.
+    # If the runner fails, fallback to the usual code path,
+    # which executes the test in the context of the local
+    # process.
+    # Set 'runned.enabled' to 0 to bypass the runner and
+    # run the test locally.
+    #
+    if (utils.intify(conf['runner.enabled']) and
+        runner_clnt.runner_client(conf["agent.api.address"],
+                                  conf["agent.api.port"],
+                                  LOG.noisy, "speedtest")):
+        sys.exit(0)
+
+    LOG.info('Will run the test in the local context...')
+
     client = ClientSpeedtest(POLLER)
     client.configure(conf)
     client.connect_uri()

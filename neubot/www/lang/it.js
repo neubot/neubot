@@ -71,12 +71,6 @@ LANG = {
     'i18n_about': "Informazioni",
     'i18n_state': "Stato",
     'i18n_description': "Descrizione",
-    'i18n_testnow': "Posso far partire un test <em>adesso</em>?",
-
-    'i18n_testnow_text': "L'avvio manuale di un test non è \
-ancora supportato dall'interfaccia web, ma è nella lista delle \
-cose da fare. Al momento, l'unico modo per avviare un test è \
-digitare il comando <b><em>neubot speedtest</em></b> nel terminale.",
 
     'i18n_idle_status_text': "L'Agent sta dormendo. Il prossimo \
 rendezvous inizierà tra <em><span id='next_rendezvous'>(n/a)</span></em>.",
@@ -100,6 +94,10 @@ leggero che viene eseguito in background ed esegue periodicamente test \
 di trasmissione dati per testare la tua connessione a Internet utilizzando \
 diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi \
 le FAQ</a>",
+
+    'i18n_startnow': 'Fai partire test ora',
+
+    'i18n_startnowtest': 'Test',
 
     'i18n_footer_text': "Neubot è un progetto di ricerca sulla neutralità \
 della rete realizzato dal<br /><a href='http://nexa.polito.it/'>Centro \
