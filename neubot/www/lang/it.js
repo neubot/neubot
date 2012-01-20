@@ -95,7 +95,7 @@ di trasmissione dati per testare la tua connessione a Internet utilizzando \
 diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi \
 le FAQ</a>",
 
-    'i18n_startnow': 'Fai partire test ora',
+    'i18n_startnow': 'Fai partire un test adesso',
 
     'i18n_startnowtest': 'Test',
 
@@ -152,6 +152,8 @@ lo stato corrente.",
     "i18n_bittorrent_see_last": "Guarda l'ultimo",
     "i18n_bittorrent_see_last_days": "giorno",
     "i18n_bittorrent_see_last_hours": "ora",
+
+    'i18n_bittorrent_title': 'Risultati del test bittorrent',
 
     // neubot/www/speedtest.html
 
