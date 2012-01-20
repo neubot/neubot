@@ -64,6 +64,12 @@ else
     install -d /usr/local/share/man/man1
     ln -s $VERSIONDIR/neubot.1 /usr/local/share/man/man1/neubot.1
 
+    # Notifier
+    logger -p daemon.info -t $0 'Installing notifier'
+    install -m644 $VERSIONDIR/org.neubot.notifier.plist /Library/LaunchAgents
+    launchctl unload /Library/LaunchAgents/org.neubot.notifier.plist || true
+    launchctl load /Library/LaunchAgents/org.neubot.notifier.plist
+
     #
     # Group `_neubot`
     #

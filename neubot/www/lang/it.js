@@ -182,8 +182,12 @@ advertised download speeds, by country'</a> (in formato XLS).",
     // neubot/www/privacy.html
 
     'i18n_privacy_not_ok':
-'Neubot è DISABILITATO perché non hai ancora impostato i\
- permessi relativi alla privacy.<br/>Puoi settarli qua sotto.',
+'Neubot è DISABILITATO: a partire dalla versione 0.4.6, Neubot ha bisogno\
+ di tutti i permessi sulla privacy per poter utilizzare la piattaforma\
+ server distribuita <a href="http://www.measurementlab.net/">M-Lab</a>.\
+ Per favore, fornisci i permessi altrimenti Neubot non sarà in grado di\
+ funzionare.',
+
 
     "i18n_privacy_explanation": "In questa pagina spieghiamo i dettagli \
 della nostra <a href='#policy'>politica sulla privacy</a>, necessaria \
