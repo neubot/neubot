@@ -334,7 +334,7 @@ CONFIG.register_descriptions({
     "agent.master": "Set master server address",
     "agent.rendezvous": "Enable rendezvous client",
     "agent.use_syslog": "Force syslog usage in any case",
-    "enabled": "Enable Neubot to perform transmission tests",
+    "enabled": "Enable Neubot to perform automatic transmission tests",
     "privacy.informed": "You assert that you have read and understood the privacy policy",
     "privacy.can_collect": "You give Neubot the permission to collect your Internet address for research purposes",
     "privacy.can_publish": "You give Neubot the permission to publish on the web your Internet address so that it can be reused for research purposes",
