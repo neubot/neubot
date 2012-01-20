@@ -896,6 +896,7 @@ def __main():
     #
 
     lastcheck = time.time()
+    firstrun = True
     pid = -1
 
     #
@@ -904,7 +905,10 @@ def __main():
     # five seconds to make sure everything is fine.
     #
     while True:
-        time.sleep(15)
+        if firstrun:
+            firstrun = False
+        else:
+            time.sleep(15)
 
         try:
 
