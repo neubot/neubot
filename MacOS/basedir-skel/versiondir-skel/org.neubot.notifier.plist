@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+      "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <!-- Label to start/stop via launchctl(1) -->
+  <key>Label</key>
+  <string>org.neubot.notifier</string>
+
+  <!-- The notifier script opens the browser if privacy settings
+       are not OK.  -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python</string>
+    <string>/usr/local/share/neubot/0.004005999/neubot/main/__init__.py</string>
+    <string>notifier</string>
+  </array>
+
+  <!-- When the user logs in, tell her we have problems with
+       privacy settings, if needed -->
+  <key>RunAtLoad</key>
+  <true/>
+
+</dict>
+</plist>
