@@ -1,2 +1,4 @@
 M-Lab/ip_addr.dat
 M-Lab/servers.dat
+*.swp
+*.pyc
