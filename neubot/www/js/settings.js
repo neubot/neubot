@@ -98,7 +98,7 @@ function settings_init() {
     utils.setActiveTab("settings");
 
     jQuery.ajax({
-        url: 'api/configlabels',
+        url: 'api/config?labels=1',
         dataType: 'json',
         success: function(data) {
             labels = data;
