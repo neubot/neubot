@@ -27,8 +27,11 @@
 import os
 import sys
 
-if os.name == 'posix' and sys.platform != 'darwin':
-    from neubot.notifier.unix import main
+if os.name == 'posix':
+    if sys.platform != 'darwin':
+        from neubot.notifier.unix import main
+    else:
+        from neubot.notifier.macos import main
 else:
     def main(args):
         ''' main stub '''
