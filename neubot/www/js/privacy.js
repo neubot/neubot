@@ -27,6 +27,7 @@ function setPrivacySuccess() {
 
 function setPrivacyError(jqXHR, textStatus, errorThrown) {
     alert(jqXHR.statusText + "\nNo setting saved");
+    window.location.reload();
     return False;
 }
 
