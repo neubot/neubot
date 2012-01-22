@@ -90,17 +90,6 @@ class RegressionTest(unittest.TestCase):
 
         self.assertRaises(ConfigError, runner_api, None, None, 'foo=bar')
 
-    def test_unknown_test(self):
-        ''' Make sure we raise ConfigError if test name is unknown '''
-
-        #
-        # Provide a test name which is not registered with the system
-        # and make sure that the code raises a ConfigError exception
-        # as expected.
-        #
-
-        self.assertRaises(ConfigError, runner_api, None, None, 'test=bar')
-
     def test_simple_case(self):
         ''' Make sure that we start the test in the simplest case '''
 
@@ -119,7 +108,7 @@ class RegressionTest(unittest.TestCase):
         # the right parameters, not to invoke it.
         #
         run_invoked = [0]
-        def on_run_invoked(test, uri, callback):
+        def on_run_invoked(test, callback):
             ''' Convenience function to notify that run was invoked '''
             # pylint: disable=W0613
             run_invoked[0] += 1
@@ -180,7 +169,7 @@ class RegressionTest(unittest.TestCase):
             start_streaming_invoked[0] += 1
 
         run_invoked = [0]
-        def on_run_invoked(test, uri, callback):
+        def on_run_invoked(test, callback):
             ''' Convenience function to notify that run was invoked '''
             # pylint: disable=W0613
             run_invoked[0] += 1

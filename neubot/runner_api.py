@@ -79,17 +79,7 @@ def runner_api(stream, request, query):
     if not 'test' in options:
         raise ConfigError('Missing "test" option in query string')
 
-    #
-    # Extract the test name and then attempt to map it
-    # to the related negotiate URI.  If that fails, tell
-    # the caller, using ConfigError, which will be auto-
-    # matically transformed into a 500 message with the
-    # proper body and reason.
-    #
     test = options['test'][0]
-    negotiate_uri = runner_lst.test_to_negotiate_uri(test)
-    if not negotiate_uri:
-        raise ConfigError('Cannot map test name to negotiate URI')
 
     #
     # Simple case: the caller does not want to follow the
@@ -99,7 +89,7 @@ def runner_api(stream, request, query):
     # body to keep happy the AJAX code.
     #
     if not 'streaming' in options or not utils.intify(options['streaming'][0]):
-        runner_core.run(test, negotiate_uri, runner_api_done)
+        runner_core.run(test, runner_api_done)
         response.compose(code='200', reason='Ok', body='{}',
                          mimetype='application/json')
         stream.send_response(request, response)
@@ -121,4 +111,4 @@ def runner_api(stream, request, query):
       up_to_eof=True, mimetype='text/plain')
     stream.send_response(request, response)
     LOG.start_streaming(stream)
-    runner_core.run(test, negotiate_uri, runner_api_done)
+    runner_core.run(test, runner_api_done)
