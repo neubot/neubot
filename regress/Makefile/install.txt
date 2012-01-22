@@ -49,6 +49,7 @@ dist/temp/datadir/neubot/http/server.py
 dist/temp/datadir/neubot/http/ssi.py
 dist/temp/datadir/neubot/http/stream.py
 dist/temp/datadir/neubot/log.py
+dist/temp/datadir/neubot/log_api.py
 dist/temp/datadir/neubot/main
 dist/temp/datadir/neubot/main/__init__.py
 dist/temp/datadir/neubot/main/browser.py
@@ -68,6 +69,7 @@ dist/temp/datadir/neubot/net/poller.py
 dist/temp/datadir/neubot/net/stream.py
 dist/temp/datadir/neubot/notifier
 dist/temp/datadir/neubot/notifier/__init__.py
+dist/temp/datadir/neubot/notifier/macos.py
 dist/temp/datadir/neubot/notifier/unix.py
 dist/temp/datadir/neubot/notify.py
 dist/temp/datadir/neubot/privacy.py
@@ -78,6 +80,11 @@ dist/temp/datadir/neubot/rendezvous/compat.py
 dist/temp/datadir/neubot/rendezvous/geoip_wrapper.py
 dist/temp/datadir/neubot/rendezvous/server.py
 dist/temp/datadir/neubot/rootdir.py
+dist/temp/datadir/neubot/runner_api.py
+dist/temp/datadir/neubot/runner_clnt.py
+dist/temp/datadir/neubot/runner_core.py
+dist/temp/datadir/neubot/runner_lst.py
+dist/temp/datadir/neubot/runner_rendezvous.py
 dist/temp/datadir/neubot/server.py
 dist/temp/datadir/neubot/simplejson
 dist/temp/datadir/neubot/simplejson/__init__.py
