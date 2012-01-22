@@ -44,6 +44,7 @@ from neubot.notify import NOTIFIER
 from neubot import bittorrent
 from neubot import privacy
 from neubot import runner_lst
+from neubot import runner_rendezvous
 from neubot import system
 
 class RunnerCore(object):
@@ -59,8 +60,18 @@ class RunnerCore(object):
         ''' Reports whether a test is running '''
         return self.running
 
-    def run(self, test, callback):
+    def run(self, test, callback, auto_rendezvous=True):
         ''' Run test and callback() when done '''
+
+        #
+        # If we are about to run a test and the list of
+        # available tests is empty, we need certainly to
+        # refill it before proceeding.
+        #
+        if auto_rendezvous and len(runner_lst.get_test_names()) == 0:
+            LOG.info('No available tests, need to rendezvous first...')
+            self.queue.append(('rendezvous', lambda: None))
+
         self.queue.append((test, callback))
         self.run_queue()
 
@@ -92,6 +103,11 @@ class RunnerCore(object):
         if privacy.count_valid(conf, 'privacy.') != 3:
             privacy.complain()
             NOTIFIER.publish('testdone')
+
+        # Run rendezvous
+        elif self.queue[0][0] == 'rendezvous':
+            uri = "http://%s:9773/rendezvous" % conf['agent.master']
+            runner_rendezvous.run(uri)
 
         # Run speedtest
         elif self.queue[0][0] == 'speedtest':
@@ -134,8 +150,11 @@ class RunnerCore(object):
         #
         # Stop streaming test events to interested parties
         # via the log streaming API.
+        # This must not be done when we're processing the
+        # somewhat internal 'rendezvous' test.
         #
-        LOG.stop_streaming()
+        if self.queue[0][0] != 'rendezvous':
+            LOG.stop_streaming()
 
         # Paranoid
         if baton[0] != 'testdone':
@@ -157,10 +176,10 @@ class RunnerCore(object):
 
 RUNNER_CORE = RunnerCore()
 
-def run(test, callback):
+def run(test, callback, auto_rendezvous=True):
     ''' Run test using negotiate URI and callback() to
         notify that the test is done '''
-    RUNNER_CORE.run(test, callback)
+    RUNNER_CORE.run(test, callback, auto_rendezvous)
 
 def test_is_running():
     ''' Reports whether a test is running '''
@@ -170,16 +189,19 @@ def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'f')
+        options, arguments = getopt.getopt(args[1:], 'fn')
     except getopt.error:
-        sys.exit('Usage: %s [-f database] test [negotiate_uri]' % args[0])
+        sys.exit('Usage: %s [-n] [-f database] test [negotiate_uri]' % args[0])
     if len(arguments) != 1 and len(arguments) != 2:
-        sys.exit('Usage: %s [-f database] test [negotiate_uri]' % args[0])
+        sys.exit('Usage: %s [-n] [-f database] test [negotiate_uri]' % args[0])
 
     database_path = system.get_default_database_path()
+    auto_rendezvous = True
     for name, value in options:
         if name == '-f':
             database_path = value
+        elif name == '-n':
+            auto_rendezvous = False
 
     DATABASE.set_path(database_path)
     CONFIG.merge_database(DATABASE.connection())
@@ -187,7 +209,7 @@ def main(args):
     if len(arguments) == 2:
         runner_lst.update({arguments[0]: [arguments[1]]})
 
-    run(arguments[0], lambda: None)
+    run(arguments[0], lambda: None, auto_rendezvous)
     POLLER.loop()
 
 if __name__ == '__main__':
