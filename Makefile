@@ -133,6 +133,7 @@ DATADIR = $(PREFIX)/share
 MANDIR = $(PREFIX)/man
 
 _install:
+	find . -type f -name .DS_Store -exec rm {} \;
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
 	$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)/neubot
 	$(INSTALL) -d $(DESTDIR)$(DATADIR)
