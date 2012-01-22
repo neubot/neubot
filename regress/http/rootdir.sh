@@ -26,5 +26,8 @@
 # second chance of catching and reflecting on changes at it.
 #
 
+# Make sure there are no *.pyc files around
+make clean
+
 grep -R http.server.rootdir neubot/ > regress/http/rootdir.txt.new
 diff -u regress/http/rootdir.txt regress/http/rootdir.txt.new
