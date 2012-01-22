@@ -25,6 +25,7 @@ import cgi
 import gc
 import pprint
 import re
+import urllib
 import urlparse
 
 from neubot.main.common import VERSION
@@ -94,7 +95,8 @@ class ServerAPI(ServerHTTP):
             stream.send_response(request, response)
 
     def _serve_request(self, stream, request):
-        path, query = urlparse.urlsplit(request.uri)[2:4]
+        request_uri = urllib.unquote(request.uri)
+        path, query = urlparse.urlsplit(request_uri)[2:4]
         if path in self._dispatch:
             self._dispatch[path](stream, request, query)
         else:
