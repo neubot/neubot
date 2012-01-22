@@ -146,11 +146,23 @@ class ServerAPI(ServerHTTP):
             updates = qs_to_dictionary(s)
             privacy.check(updates)
 
-            # Very low barrier to prevent damage from kiddies
+            #
+            # Neubot servers are a shared resource, better not
+            # allowing for too frequent automatic tests.  A lot
+            # of users with less tests per user is better than
+            # a lot of tests from few users.  I hope that people
+            # that want to modify this setting understand.
+            #
             if "agent.interval" in updates:
                 interval = int(updates["agent.interval"])
                 if interval < 1380 and interval != 0:
-                    raise ConfigError("Bad agent.interval")
+                    raise ConfigError('''
+Invalid agent.interval!  It must be >= 1380 or 0, which hints Neubot
+ that it should extract a random value in a given interval.  The reason
+ why we don't allow to run automatic tests too often is that Neubot
+ servers are a shared resources between many users, so if you run tests
+ too frequently that is unfair to other users.
+''')
 
             CONFIG.merge_api(updates, DATABASE.connection())
             STATE.update("config", updates)
