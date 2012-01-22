@@ -35,6 +35,7 @@ from neubot.runner_core import RunnerCore
 
 from neubot import bittorrent
 from neubot import privacy
+from neubot import runner_lst
 
 class TestIsRunningTest(unittest.TestCase):
     ''' Regression test for test_is_running() '''
@@ -106,7 +107,7 @@ class RunQueueTest(unittest.TestCase):
 
         CONFIG.conf['privacy.informed'] = 0
         core = RunnerCore()
-        core.queue.append(('foo', '/', lambda: None))
+        core.queue.append(('foo', lambda: None))
         core.run_queue()
 
         # Restore
@@ -116,13 +117,14 @@ class RunQueueTest(unittest.TestCase):
         self.assertTrue(privacy_complain[0])
         self.assertFalse(NOTIFIER.is_subscribed("testdone"))
 
-    def test_bittorrent_invokation(self):
-        ''' Verify run_queue() behavior when bittorrent is invoked '''
+    def test_bittorrent_invokation_good(self):
+        ''' Verify run_queue() behavior when bittorrent is invoked
+            and there is a URI for bittorrent '''
 
         #
         # The whole point of this test is to make sure that
         # bittorrent.run() is invoked when privacy is OK and
-        # the test is started.  We also want to check that
+        # we have a negotiate URI.  We also want to check that
         # the "testdone" event is subscribed after run_queue(),
         # i.e. that someone is waiting for the event that
         # signals the end of the test.
@@ -138,16 +140,18 @@ class RunQueueTest(unittest.TestCase):
         # Setup (we will restore that later)
         saved_run = bittorrent.run
         bittorrent.run = on_bittorrent_run
+        runner_lst.update({'bittorrent': '/'})
 
         CONFIG.conf['privacy.can_publish'] = 1
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('bittorrent', '/', lambda: None))
+        core.queue.append(('bittorrent', lambda: None))
         core.run_queue()
 
         # Restore
         bittorrent.run = saved_run
+        runner_lst.update({})
 
         # Worked as expected?
         self.assertTrue(bittorrent_run[0])
@@ -158,6 +162,36 @@ class RunQueueTest(unittest.TestCase):
         # screw up other tests and we don't want that
         #
         NOTIFIER.publish("testdone")
+
+    def test_bittorrent_invokation_nouri(self):
+        ''' Verify run_queue() behavior when bittorrent is invoked
+            and there is NOT a URI for bittorrent '''
+
+        #
+        # The whole point of this test is to make sure that
+        # the callback() is invoked and the "testdone" event
+        # has been fired, when we try to run a bittorrent
+        # test and we don't have a registered URI for such
+        # test.
+        #
+
+        # We need to ensure callback() is invoked
+        callback = [0]
+        def on_callback():
+            ''' Register callback() invokation '''
+            # pylint: disable=W0613
+            callback[0] += 1
+
+        CONFIG.conf['privacy.can_publish'] = 1
+        CONFIG.conf['privacy.informed'] = 1
+        CONFIG.conf['privacy.can_collect'] = 1
+        core = RunnerCore()
+        core.queue.append(('bittorrent', on_callback))
+        core.run_queue()
+
+        # Worked as expected?
+        self.assertTrue(callback[0])
+        self.assertFalse(NOTIFIER.is_subscribed("testdone"))
 
     def test_safety_net(self):
         ''' Verify run_queue() safety net works '''
@@ -184,7 +218,7 @@ class RunQueueTest(unittest.TestCase):
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('foo', '/', lambda: None))
+        core.queue.append(('foo', lambda: None))
         core.run_queue()
 
         # Restore
