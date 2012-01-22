@@ -47,6 +47,7 @@ from neubot.speedtest.client import QUEUE_HISTORY
 from neubot.state import STATE
 
 from neubot import privacy
+from neubot import log_api
 from neubot import runner_api
 from neubot import utils
 
@@ -63,7 +64,7 @@ class ServerAPI(ServerHTTP):
             "/api/debug": self._api_debug,
             "/api/index": self._api_index,
             "/api/exit": self._api_exit,
-            "/api/log": self._api_log,
+            "/api/log": log_api.log_api,
             "/api/runner": runner_api.runner_api,
             "/api/speedtest": self._api_speedtest,
             "/api/state": self._api_state,
@@ -201,29 +202,6 @@ class ServerAPI(ServerHTTP):
             response.compose_redirect(stream, '/privacy.html')
         else:
             response.compose_redirect(stream, '/index.html')
-        stream.send_response(request, response)
-
-    def _api_log(self, stream, request, query):
-
-        response = Message()
-
-        dictionary = cgi.parse_qs(query)
-        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
-            stringio = StringIO.StringIO()
-            for row in LOG.listify():
-                ln = "%d [%s]\t%s" % (row["timestamp"], row["severity"],
-                                      row["message"])
-                stringio.write(ln.encode("utf-8"))
-                stringio.write("\r\n")
-            stringio.seek(0)
-            mimetype = "text/plain"
-        else:
-            s = json.dumps(LOG.listify())
-            stringio = StringIO.StringIO(s)
-            mimetype = "application/json"
-
-        response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype=mimetype)
         stream.send_response(request, response)
 
     def _api_speedtest(self, stream, request, query):
