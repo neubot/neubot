@@ -48,13 +48,15 @@ def object_to_qs(obj):
     return s
 
 def object_to_xml(obj):
-    name = obj.__class__.__name__
+    return dict_to_xml(obj.__class__.__name__, obj.__dict__)
+
+def dict_to_xml(name, thedict):
     document = xml.dom.minidom.parseString("<" + name + "/>")
 
     root = document.documentElement
     root.appendChild( document.createTextNode("\r\n") )
 
-    for name, value in obj.__dict__.items():
+    for name, value in thedict.items():
 
         if type(value) != types.ListType:
             value = [value]

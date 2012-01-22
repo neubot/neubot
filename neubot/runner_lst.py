@@ -74,6 +74,10 @@ class RunnerLst(object):
         self.last = choice
         return choice
 
+    def get_test_names(self):
+        ''' Return names of all registered tests '''
+        return self.avail.keys()
+
 RUNNER_LST = RunnerLst()
 
 def update(avail):
@@ -87,3 +91,7 @@ def test_to_negotiate_uri(test):
 def get_next_test():
     ''' Returns next test that must be performed '''
     return RUNNER_LST.get_next_test()
+
+def get_test_names():
+    ''' Return names of all registered tests '''
+    return RUNNER_LST.get_test_names()

@@ -44,6 +44,7 @@ class RegressionTest(unittest.TestCase):
         lst = RunnerLst()
         self.assertEqual(lst.test_to_negotiate_uri('foo'), None)
         self.assertEqual(lst.get_next_test(), None)
+        self.assertEqual(lst.get_test_names(), [])
 
     def test_test_to_negotiate_uri(self):
         ''' Check test_to_negotiate_uri works as expected '''
@@ -81,6 +82,15 @@ class RegressionTest(unittest.TestCase):
         lst.update({'foo': ['a', 'b', 'c'], 'bar': ['a', 'b', 'c']})
         nxt = lst.get_next_test()
         self.assertNotEqual(lst.get_next_test(), nxt)
+
+    def test_get_test_names(self):
+        ''' Check get_test_names() behavior '''
+        lst = RunnerLst()
+        self.assertEqual(lst.get_test_names(), [])
+        lst.update({'foo': ['a']})
+        self.assertEqual(lst.get_test_names(), ['foo'])
+        lst.update({'foo': ['a'], 'bar': ['b']})
+        self.assertEqual(lst.get_test_names(), ['foo', 'bar'])
 
 if __name__ == '__main__':
     unittest.main()

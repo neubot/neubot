@@ -50,7 +50,7 @@ def runner_client(address, port, verbosity, test):
     except (KeyboardInterrupt, SystemExit):
         pass
     except:
-        error = asyncore.compact_traceback()[2]
+        error = asyncore.compact_traceback()
         sys.stderr.write('ERR Something went wrong with the local '
                          'daemon: %s\n' % str(error))
 
@@ -88,6 +88,7 @@ def __runner_client(address, port, verbosity, test, hint):
     # the local daemon is busy -- in both cases, running
     # the test directly is offensive.
     #
+    sys.stdout.write('INFO The local daemon will run the test for us\n')
     hint['run_locally'] = False
 
     #
@@ -105,6 +106,7 @@ def __runner_client(address, port, verbosity, test, hint):
     if response.status != 200:
         raise RuntimeError('Neubot daemon: %s' % response.reason)
 
+    sys.stdout.write('INFO === BEGIN local daemon log ===\n')
     while True:
         line = response.fp.readline()
         if not line:
@@ -112,6 +114,7 @@ def __runner_client(address, port, verbosity, test, hint):
         if line.startswith('DEBUG') and not verbosity:
             continue
         sys.stdout.write(line)
+    sys.stdout.write('INFO === END local daemon log ===\n')
 
 def main(args):
     ''' Test main for the runner client '''

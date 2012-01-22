@@ -171,15 +171,8 @@ class ClientRendezvous(ClientHTTP):
                     self._schedule()
                 else:
 
-                    # Do we have negotiate URI for test?
-                    negotiate_uri = runner_lst.test_to_negotiate_uri(test)
-                    if not negotiate_uri:
-                        LOG.warning('No negotiate URI for test')
-                        self._schedule()
-                    else:
-
-                        # Actually run the test
-                        runner_core.run(test, negotiate_uri, self._schedule)
+                    # Actually run the test
+                    runner_core.run(test, self._schedule)
 
     def _schedule(self):
 
