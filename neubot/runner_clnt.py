@@ -50,7 +50,7 @@ def runner_client(address, port, verbosity, test):
     except (KeyboardInterrupt, SystemExit):
         pass
     except:
-        error = asyncore.compact_traceback()[2]
+        error = asyncore.compact_traceback()
         sys.stderr.write('ERR Something went wrong with the local '
                          'daemon: %s\n' % str(error))
 
