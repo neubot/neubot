@@ -82,7 +82,7 @@ class TestFinalizeConf(unittest.TestCase):
         self.assertTrue(len(conf['bittorrent.infohash']), 20)
         self.assertEqual(conf['bittorrent.bytes.down'], estimate.DOWNLOAD)
         self.assertEqual(conf['bittorrent.bytes.up'], estimate.UPLOAD)
-        self.assertEqual(conf['bittorrent.address'], 'neubot.blupixel.net')
+        self.assertEqual(conf['bittorrent.address'], 'master.neubot.org')
 
     def test_finalize_server(self):
         ''' Test finalize conf in the server case '''
