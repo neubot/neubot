@@ -58,7 +58,7 @@ help:
 	@printf '\n'
 
 regress:
-	for FILE in $$(find regress/ -type f -executable); do		\
+	for FILE in $$(find regress -type f -perm -0111); do		\
 	    echo "* Running regression test: $$FILE";			\
 	    ./$$FILE || exit 1;						\
 	    echo "";							\
