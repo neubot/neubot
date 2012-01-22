@@ -150,11 +150,14 @@ class RunnerCore(object):
         #
         # Stop streaming test events to interested parties
         # via the log streaming API.
+        # Do not stop processing immediately and give HTTP
+        # code time to stream logs to the client in case
+        # connections fails immediately.
         # This must not be done when we're processing the
         # somewhat internal 'rendezvous' test.
         #
         if self.queue[0][0] != 'rendezvous':
-            LOG.stop_streaming()
+            POLLER.sched(2, LOG.stop_streaming)
 
         # Paranoid
         if baton[0] != 'testdone':
