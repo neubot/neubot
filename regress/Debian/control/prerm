@@ -24,6 +24,8 @@
 # Regression test for Debian/control/prerm
 #
 
+test -x /usr/bin/dpkg || exit 0
+
 #
 # Sanity
 #

@@ -25,6 +25,8 @@
 # and the -nox flavor.
 #
 
+test -x /usr/bin/dpkg || exit 0
+
 if dpkg -l | grep -q neubot; then
     echo "$0: you must uninstall Neubot to run this test" 1>&2
     exit 1
