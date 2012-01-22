@@ -69,7 +69,7 @@ class RunnerCore(object):
         # refill it before proceeding.
         #
         if auto_rendezvous and len(runner_lst.get_test_names()) == 0:
-            LOG.info('No available tests, need to rendezvous first...')
+            LOG.info('runner_core: Need to rendezvous first...')
             self.queue.append(('rendezvous', lambda: None))
 
         self.queue.append((test, callback))
@@ -117,7 +117,7 @@ class RunnerCore(object):
             # because we are offline, abort it.
             #
             if not uri:
-                LOG.error('No negotiate URI for speedtest')
+                LOG.error('runner_core: No negotiate URI for speedtest')
                 NOTIFIER.publish('testdone')
                 return
             conf['speedtest.client.uri'] =  uri
@@ -133,7 +133,7 @@ class RunnerCore(object):
             # because we are offline, abort it.
             #
             if not uri:
-                LOG.error('No negotiate URI for bittorrent')
+                LOG.error('runner_core: No negotiate URI for bittorrent')
                 NOTIFIER.publish('testdone')
                 return
             conf['bittorrent._uri'] =  uri
@@ -141,7 +141,7 @@ class RunnerCore(object):
 
         # Safety net
         else:
-            LOG.error('Asked to run an unknown test')
+            LOG.error('runner_core: Asked to run an unknown test')
             NOTIFIER.publish('testdone')
 
     def test_done(self, *baton):
