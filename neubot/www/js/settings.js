@@ -29,6 +29,7 @@ function settingIdDesanitize(id) {
 
 function configError(jqXHR, textStatus, errorThrown) {
     alert(jqXHR.statusText + "\nNo setting saved");
+    window.location.reload();
 }
 
 function configSuccess() {
