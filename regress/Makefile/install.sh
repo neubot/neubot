@@ -47,10 +47,10 @@ diff -u regress/Makefile/install.txt regress/Makefile/install.new
 grep -RnE '@[A-Z]+@' dist/temp && exit 1
 
 # 3)
-find dist/temp -executable -type f | sort \
+find dist/temp -perm -0111 -type f | sort \
 	> regress/Makefile/install.exec.new
 diff -u regress/Makefile/install.exec.txt regress/Makefile/install.exec.new
-find dist/temp ! -executable -type f | sort \
+find dist/temp ! -perm -0111 -type f | sort \
 	> regress/Makefile/install.noexec.new
 diff -u regress/Makefile/install.noexec.txt regress/Makefile/install.noexec.new
 
