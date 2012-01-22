@@ -330,7 +330,7 @@ CONFIG.register_descriptions({
     "agent.api.address": "Set API server address",
     "agent.api.port": "Set API server port",
     "agent.daemonize": "Enable daemon behavior",
-    "agent.interval": "Set rendezvous interval (0 = random)",
+    "agent.interval": "Set rendezvous interval, in seconds (must be >= 1380 or 0 = random value in a given interval)",
     "agent.master": "Set master server address",
     "agent.rendezvous": "Enable rendezvous client",
     "agent.use_syslog": "Force syslog usage in any case",
