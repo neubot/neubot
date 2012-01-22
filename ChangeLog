@@ -1,3 +1,34 @@
+Neubot 0.4.6-rc4 [2012-01-22]
+	* .gitignore: Ignore .swp .pyc files
+	* www: less confusion: enable controls automatic tests
+	* config.py: less confusion: enable controls automatic tests
+	* privacy.js: reload on success
+	* runner_lst: export list of known test names
+	* marshal: support for dict to xml
+	* runner_core: let run() select negotiate URI
+	* runner_rendezvous: simplified rendezvous client for runner
+	* runner_core: trigger rendezvous when test list is empty
+	* rendezvous_client runner_api: Adapt to new runner_core.run()
+	* runner_clnt: print the full exception
+	* runner_clnt: clear indicate logs copied from the server
+	* runner_core: do not stop streaming immediately
+	* runner_core: prefix log messages with module name
+	* runner: Automatically rendezvous when test list is empty
+	* www: the usage of H4 there is OK
+	* footer.html: Mention Measurement Lab
+	* log_api.py: Rewrite /api/log code
+	* api/server.py: properly unescape incoming URIs
+	* log.html: add small intro
+	* Makefile: find -executable is not portable
+	* regress/Debian/*: be a NOP on non-debian systems
+	* regress/bittorrent/config.py: default on-demand server changed
+	* regress/http/rootdir.sh: *.pyc files break the test
+	* Makefile: _install: clear .DS_Store files first
+	* regress/Makefile/install.sh: find -executable is not portable
+	* regress/Makefile: We're now installing more files
+	* chmod -x neubot/updater/unix.py
+	* Release neubot/0.4.6-rc4
+
 Neubot 0.4.6-rc3 [2012-01-20]
 	* M-Lab: scripts to deploy, start and stop
 	* M-Lab/deploy.sh: make sure $HOST is up and running
