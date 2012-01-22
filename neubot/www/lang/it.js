@@ -101,9 +101,11 @@ le FAQ</a>",
     'i18n_startnowtest': 'Test',
 
     'i18n_footer_text': "Neubot è un progetto di ricerca sulla neutralità \
-della rete realizzato dal<br /><a href='http://nexa.polito.it/'>Centro \
+della rete realizzato dal <a href='http://nexa.polito.it/'>Centro \
 NEXA su Internet &amp; Società</a> del \
-<a href='http://www.dauin.polito.it/'>Politecnico di Torino</a>.",
+<a href='http://www.dauin.polito.it/'>Politecnico di Torino</a>.<br/>\
+I server di Neubot sono installati sulla piattaforma distribuita \
+<a href='http://www.measurementlab.net'>Measurement Lab</a>.",
 
     'i18n_welcome_text': "Grazie per aver installato Neubot! Ora avrai \
 le idee più chiare sulla tua connessione a Internet e potrai aiutare \
