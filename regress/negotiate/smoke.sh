@@ -44,12 +44,14 @@ elif [ "$1" = "-9" ]; then
         $0 --speedtest-client &
         $0 --bittorrent-client &
     done
+elif [ "$1" = "--kill" ]; then
+    ps auxww|grep smoke.sh|grep -v grep|awk '{print $2}'|xargs kill -9
 else
     #
     # Optimize for the case when we're run from `make regress`
     # automatically and provide an insightful message.
     #
     echo "This test cannot run automatically"
-    echo "Usage: $0 [--server|-9]"
+    echo "Usage: $0 [-9|--kill|--server]"
     exit 0
 fi
