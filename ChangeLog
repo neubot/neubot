@@ -1,3 +1,14 @@
+Neubot 0.4.6-rc5 [2012-01-23]
+	* TODO: update
+	* privacy.js: reload when updating privacy fails
+	* config.py: better explain interval
+	* api/server.py: better comment
+	* settings.js: reload settings on failure
+	* bittorrent/client.py: remember to print upload speed
+	* regress/negotiate/smoke.sh: add command to --kill
+	* regress/negotiate/smoke.sh: run w/ runner disabled
+	* Release neubot/0.4.6-rc5
+
 Neubot 0.4.6-rc4 [2012-01-22]
 	* .gitignore: Ignore .swp .pyc files
 	* www: less confusion: enable controls automatic tests
