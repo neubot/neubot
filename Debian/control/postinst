@@ -94,13 +94,13 @@ Name: Neubot privacy settings
 Priority: High
 Terminal: False
 Command: /usr/bin/neubot viewer
-Description: To work, Neubot needs the permission to collect and
- to publish your Internet address.  The permission must be requested
- explicitly to comply with European Privacy Laws provisions.
- Please, click on the button below to open Neubot GUI, which will show
- you the privacy policy and will ask you the permissions.  If the GUI
- fails to open, you can access Neubot web interface by pointing your
- web browser to <http://127.0.0.1:9774/>.
+Description: Starting from version 0.4.6 Neubot servers are deployed on
+ the distributed Measurement Lab (M-Lab) platform.  To comply with
+ M-Lab policy and be allowed to run tests, Neubot needs to ask you the
+ permission to collect and publish your Internet address.
+ To read the privacy policy and provide the permissions, please click to
+ the button below, which will open Neubot GUI, or point directly your web
+ browser to <http://127.0.0.1:9774/>.
 EOF
         touch /var/lib/update-notifier/dpkg-run-stamp
     fi
