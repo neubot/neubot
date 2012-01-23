@@ -27,10 +27,12 @@
 if [ "$1" = "--server" ]; then
     ./bin/neubot server -D server.daemonize=0 -D server.debug=1
 elif [ "$1" = "--speedtest" ]; then
-    ./bin/neubot speedtest -Dspeedtest.client.uri=http://127.0.0.1:9773/
+    ./bin/neubot speedtest -Dspeedtest.client.uri=http://127.0.0.1:9773/ \
+                              -D runner.enabled=0
 elif [ "$1" = "--bittorrent" ]; then
     ./bin/neubot bittorrent -D bittorrent.address=127.0.0.1 \
-                        -D bittorrent.negotiate.port=9773
+                        -D bittorrent.negotiate.port=9773 \
+                              -D runner.enabled=0
 elif [ "$1" = "--speedtest-client" ]; then
     while ! test -f STOP; do
         $0 --speedtest
