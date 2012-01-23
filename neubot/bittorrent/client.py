@@ -183,6 +183,7 @@ class BitTorrentClient(ClientHTTP):
 
             upload = utils.speed_formatter(m["upload_speed"])
             STATE.update("test_upload", upload)
+            LOG.info('BitTorrent: upload speed: %s' % upload)
 
             if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
