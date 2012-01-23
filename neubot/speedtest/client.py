@@ -192,7 +192,7 @@ class ClientCollect(ClientHTTP):
         m1.privacy_can_collect = self.conf.get("privacy.can_collect", 0)
         m1.privacy_can_share = self.conf.get("privacy.can_publish", 0)  # XXX
 
-        m1.neubot_version = LibVersion.to_numeric("0.4.6-rc5")
+        m1.neubot_version = LibVersion.to_numeric("0.4.6")
         m1.platform = sys.platform
 
         m1.connectTime = sum(self.rtts) / len(self.rtts)

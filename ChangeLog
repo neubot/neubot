@@ -1,3 +1,12 @@
+Neubot 0.4.6 [2012-01-23]
+	* regress/http/rootdir.sh: sort output before comparison
+	* regress/http/rootdir.txt: sort lines
+	* log.html: do not open textual logs in another page
+	* notifier/unix.py: better wording
+	* Debian/control/postinst: better wording
+	* privacy.html: better wording
+	* Release neubot/0.4.6
+
 Neubot 0.4.6-rc5 [2012-01-23]
 	* TODO: update
 	* privacy.js: reload when updating privacy fails
