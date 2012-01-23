@@ -58,8 +58,9 @@ if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
 
 PRIVACY_TITLE = 'Neubot | No privacy settings'
 PRIVACY_EXPLANATION = \
-'Neubot is disabled because you did not provided the permission to save ' \
-'your Internet address.  To provide it, use Neubot GUI.'
+'Neubot is disabled because you have not provided the permission to save ' \
+'and publish your Internet address.  To provide them, use Neubot GUI or ' \
+'use (as root) the `neubot privacy` command on the command line.'
 
 SHORT_PRIVACY_INTERVAL = 30
 LONG_PRIVACY_INTERVAL = 3600
