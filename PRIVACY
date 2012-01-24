@@ -1,5 +1,5 @@
 
-$Version: 2.0$
+$Version: 2.0.1$
 
 The Neubot Project is a research effort that aims to study the quality
 and neutrality of ordinary users' Internet connections, to rebalance the
@@ -51,7 +51,7 @@ write to <privacy@neubot.org> or to "NEXA Center for Internet & Society,
 Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
 degli Abruzzi 24, 10129 Turin, ITALY."
 
-[1] http://www.measurement-lab.net/about
+[1] http://www.measurementlab.net/about
 [2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248
 [3] http://nexa.polito.it/
 [4] http://127.0.0.1:9774/privacy.html
