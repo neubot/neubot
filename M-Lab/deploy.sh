@@ -86,7 +86,7 @@ for HOST in $HOSTS; do
 
     echo "$HOST: install new neubot"
     $SSH $HOST tar -xzf neubot.tar.gz || continue
-    $SSH $HOST python -m compileall neubot/neubot/ || continue
+    $SSH $HOST python -m compileall -q neubot/neubot/ || continue
 
     echo "$HOST: start new neubot"
     $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh || continue
