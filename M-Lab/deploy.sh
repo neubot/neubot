@@ -32,14 +32,19 @@ SCP="$DEBUG $HOME/bin/mlab_scp"
 SSH="$DEBUG $HOME/bin/mlab_ssh"
 
 # Command line
+args=$(getopt r $*) || {
+    echo "Usage: $0 [-r] [host... ]" 1>&2
+    exit 1
+}
+set -- $args
 while [ $# -gt 0 ]; do
     if [ "$1" = "-r" ]; then
         RESUME=1
-    else
-        echo "Usage: $0 [-r]" 1>&2
-        exit 1
+        shift
+    elif [ "$1" = "--" ]; then
+        shift
+        break
     fi
-    shift
 done
 
 if [ -f M-Lab/neubot.tar.gz ]; then
@@ -51,8 +56,12 @@ $DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
 $DEBUG gzip -9 M-Lab/neubot.tar
 $DEBUG git log --oneline|head -n1 > M-Lab/version
 
-# Fetch the list of hosts in realtime
-HOSTS=$(./M-Lab/ls.py)
+if [ $# -eq 0 ]; then
+    # Fetch the list of hosts in realtime
+    HOSTS=$(./M-Lab/ls.py)
+else
+    HOSTS=$*
+fi
 
 COUNT=0
 for HOST in $HOSTS; do
