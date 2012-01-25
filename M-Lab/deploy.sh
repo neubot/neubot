@@ -26,13 +26,14 @@
 
 DEBUG=
 RESUME=0
+SKIP=0
 
 # Wrappers for ssh, scp
 SCP="$DEBUG $HOME/bin/mlab_scp"
 SSH="$DEBUG $HOME/bin/mlab_ssh"
 
 # Command line
-args=$(getopt r $*) || {
+args=$(getopt nr $*) || {
     echo "Usage: $0 [-r] [host... ]" 1>&2
     exit 1
 }
@@ -41,20 +42,25 @@ while [ $# -gt 0 ]; do
     if [ "$1" = "-r" ]; then
         RESUME=1
         shift
+    elif [ "$1" = "-n" ]; then
+        SKIP=1
+        shift
     elif [ "$1" = "--" ]; then
         shift
         break
     fi
 done
 
-if [ -f M-Lab/neubot.tar.gz ]; then
-    echo "error: Working directory not clean" 1>&2
-    exit 1
-fi
+if [ "$SKIP" = "0" ]; then
+    if [ -f M-Lab/neubot.tar.gz ]; then
+        echo "error: Working directory not clean" 1>&2
+        exit 1
+    fi
 
-$DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
-$DEBUG gzip -9 M-Lab/neubot.tar
-$DEBUG git log --oneline|head -n1 > M-Lab/version
+    $DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
+    $DEBUG gzip -9 M-Lab/neubot.tar
+    $DEBUG git log --oneline|head -n1 > M-Lab/version
+fi
 
 if [ $# -eq 0 ]; then
     # Fetch the list of hosts in realtime
