@@ -78,38 +78,58 @@ for HOST in $HOSTS; do
     echo "$HOST: start deploy"
     echo "$HOST: current host number $COUNT"
 
-    echo "$HOST: make sure it's up and running"
-    $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null || continue
+    #
+    # Run the installation in the subshell with set -e so that
+    # the first command that fails "throws an exception" and we
+    # know something went wrong looking at $?.
+    # We need to reenable errors otherwise the outer shell is
+    # going to bail out if the inner one fails.
+    #
+    set +e
+    (
+        set -e
 
-    if [ $RESUME -ne 0 ]; then
-        echo "$HOST: check whether we need to resume"
-        {
-            $SSH $HOST 'ps auxww|grep ^_neubot' && {
-                echo "$HOST: deploy complete"
-                continue
-            } || true
-        }
-    fi
+        echo "$HOST: make sure it's up and running"
+        $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null
 
-    echo "$HOST: stop and remove old neubot"
-    $SSH $HOST 'sudo /home/mlab_neubot/neubot/M-Lab/stop.sh || true' || continue
-    $SSH $HOST rm -rf neubot || continue
+        DOINST=1
+        if [ $RESUME -ne 0 ]; then
+            echo "$HOST: do we need to resume?"
+            if $SSH $HOST 'ps auxww|grep ^_neubot'; then
+                DOINST=0
+            fi
+        fi
 
-    echo "$HOST: copy files"
-    $SCP M-Lab/neubot.tar.gz $HOST: || continue
-    $SCP M-Lab/version $HOST: || continue
+        if [ "$DOINST" = "1" ]; then
+            echo "$HOST: stop and remove old neubot"
+            $SSH $HOST 'sudo /home/mlab_neubot/neubot/M-Lab/stop.sh || true'
+            $SSH $HOST rm -rf neubot
 
-    echo "$HOST: install new neubot"
-    $SSH $HOST tar -xzf neubot.tar.gz || continue
-    $SSH $HOST python -m compileall -q neubot/neubot/ || continue
+            echo "$HOST: copy files"
+            $SCP M-Lab/neubot.tar.gz $HOST:
+            $SCP M-Lab/version $HOST:
 
-    echo "$HOST: start new neubot"
-    $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh || continue
-    $SSH $HOST sudo /etc/rc.d/rc.local || continue
+            echo "$HOST: install new neubot"
+            $SSH $HOST tar -xzf neubot.tar.gz
+            $SSH $HOST python -m compileall -q neubot/neubot/
 
-    echo "$HOST: cleanup"
-    $SSH $HOST rm -rf neubot.tar.gz || continue
+            echo "$HOST: start new neubot"
+            $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh
+            $SSH $HOST sudo /etc/rc.d/rc.local
 
+            echo "$HOST: cleanup"
+            $SSH $HOST rm -rf neubot.tar.gz
+        fi
+
+    #
+    # As soon as we exit from the subshell, save the errno and
+    # re-enable errors, to catch potential doofus in the remainder
+    # of the script.
+    #
+    )
+    ERROR=$?
+    set -e
+
+    echo "$HOST: deploy result: $ERROR"
     echo "$HOST: deploy complete"
-
 done
