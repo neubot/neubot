@@ -25,7 +25,7 @@
 #
 
 DEBUG=
-RESUME=0
+FORCE=0
 SKIP=0
 
 # Wrappers for ssh, scp
@@ -33,14 +33,14 @@ SCP="$DEBUG $HOME/bin/mlab_scp"
 SSH="$DEBUG $HOME/bin/mlab_ssh"
 
 # Command line
-args=$(getopt nr $*) || {
-    echo "Usage: $0 [-r] [host... ]" 1>&2
+args=$(getopt fn $*) || {
+    echo "Usage: $0 [-nf] [host... ]" 1>&2
     exit 1
 }
 set -- $args
 while [ $# -gt 0 ]; do
-    if [ "$1" = "-r" ]; then
-        RESUME=1
+    if [ "$1" = "-f" ]; then
+        FORCE=1
         shift
     elif [ "$1" = "-n" ]; then
         SKIP=1
@@ -93,7 +93,7 @@ for HOST in $HOSTS; do
         $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null
 
         DOINST=1
-        if [ $RESUME -ne 0 ]; then
+        if [ $FORCE -eq 0 ]; then
             echo "$HOST: do we need to resume?"
             if $SSH $HOST 'ps auxww|grep ^_neubot'; then
                 DOINST=0
