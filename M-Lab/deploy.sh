@@ -121,6 +121,18 @@ for HOST in $HOSTS; do
             $SSH $HOST rm -rf neubot.tar.gz
         fi
 
+        #
+        # Make sure all our ports are bound on the virtualized
+        # machine.  If they are not, Neubot may work but it hasn't
+        # been deployed correctly and Thomas must be informed.
+        # While there, make sure we've not been able to bind to
+        # port 80, which should not happen.
+        #
+        echo "$HOST: make sure we've bind all ports"
+        $SSH $HOST netstat -a --tcp -n | grep LISTEN \
+               | awk '{print $4}' > M-Lab/ports.new
+        diff -u M-Lab/ports.txt M-Lab/ports.new
+
     #
     # As soon as we exit from the subshell, save the errno and
     # re-enable errors, to catch potential doofus in the remainder
