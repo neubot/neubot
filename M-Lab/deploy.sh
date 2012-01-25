@@ -89,13 +89,11 @@ for HOST in $HOSTS; do
     (
         set -e
 
-        echo "$HOST: make sure it's up and running"
-        $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null
-
         DOINST=1
         if [ $FORCE -eq 0 ]; then
             echo "$HOST: do we need to resume?"
-            if $SSH $HOST 'ps auxww|grep ^_neubot'; then
+            ALLRUNNING=$($SSH $HOST 'ps auxww|grep ^_neubot')
+            if [ ! -z "$ALLRUNNING" ]; then
                 DOINST=0
             fi
         fi
