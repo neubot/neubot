@@ -69,17 +69,22 @@ fi
 printf "YES\n"
 
 #
+# We assume that 'nobody' exists and we don't compare the
+# results directly vs. its user and group IDs, because they
+# may be negative numbers, e.g. on MacOSX nobody user id's
+# -2.  That makes the comparison problematic because they
+# are not always treated as signed numbers.
+# So we compare against the user and group name, which is
+# 'nobody' in BSD and 'nogroup' in Debian.
+#
+
+NOBODY_UID=$(python neubot/utils_posix.py -f pw_uid getpwnam nobody)
+NOBODY_GID=$(python neubot/utils_posix.py -f pw_gid getpwnam nobody)
+
+#
 # Garner confidence that the mkdir functionality works as
 # expected, i.e. is idempotent and updates permissions and
 # ownership as requested.
-#
-# The following code assumes that the user 'nobody' exists
-# on the system and that it belongs to group 'nobody' or to
-# the group 'nogroup'.  The former is the case of MacOSX,
-# the latter happens with Debian.
-# Using the numeric uid and gid portably is more complex
-# because they may be negative numbers, e.g. on MacOSX the
-# uid is -2.
 #
 
 printf "Initializing mkdir test..."
@@ -96,7 +101,7 @@ printf "OK\n"
 printf "Make sure mkdir can create a new directory..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody mkdir XO
+    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -152,7 +157,7 @@ printf "YES\n"
 printf "Make sure mkdir is idempotent..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody mkdir XO
+    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
     [ -d XO ]
     [ $(stat XO|awk '{print $3}') = 'drwxr-xr-x' ]
     [ $(stat XO|awk '{print $5}') = 'nobody' ]
@@ -179,7 +184,7 @@ printf "OK\n"
 printf "Make sure mkdir updates permissions..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody mkdir XO
+    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
     [ $(stat XO|awk '{print $3}') = 'drwxr-xr-x' ]
 )
 if [ $? -ne 0 ]; then
@@ -191,7 +196,7 @@ printf "YES\n"
 printf "Make sure mkdir updates ownership..."
 (
     set -e
-    python neubot/utils_posix.py -u root mkdir XO
+    python neubot/utils_posix.py mkdir XO
     [ $(stat -f %u XO) = '0' ]
     [ $(stat -f %g XO) = '0' ]
 )
@@ -206,19 +211,11 @@ printf "YES\n"
 # expected, i.e. is idempotent and updates permissions and
 # ownership as requested.
 #
-# The following code assumes that the user 'nobody' exists
-# on the system and that it belongs to group 'nobody' or to
-# the group 'nogroup'.  The former is the case of MacOSX,
-# the latter happens with Debian.
-# Using the numeric uid and gid portably is more complex
-# because they may be negative numbers, e.g. on MacOSX the
-# uid is -2.
-#
 
 printf "Make sure touch can create a new file..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody touch XO/f
+    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -274,7 +271,7 @@ printf "YES\n"
 printf "Make sure touch is idempotent..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody touch XO/f
+    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
     [ -f XO/f ]
     [ $(stat XO/f|awk '{print $3}') = '-rw-r--r--' ]
     [ $(stat XO/f|awk '{print $5}') = 'nobody' ]
@@ -301,7 +298,7 @@ printf "OK\n"
 printf "Make sure touch updates permissions..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody touch XO/f
+    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
     [ $(stat XO/f|awk '{print $3}') = '-rw-r--r--' ]
 )
 if [ $? -ne 0 ]; then
@@ -313,7 +310,7 @@ printf "YES\n"
 printf "Make sure touch updates ownership..."
 (
     set -e
-    python neubot/utils_posix.py -u root touch XO/f
+    python neubot/utils_posix.py touch XO/f
     [ $(stat -f %u XO/f) = '0' ]
     [ $(stat -f %g XO/f) = '0' ]
 )
@@ -331,7 +328,7 @@ printf "YES\n"
 printf "Make sure touch bails out if the target exists and is not a file..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody touch XO 2>/dev/null
+    python neubot/utils_posix.py touch XO 2>/dev/null
 )
 if [ $? -eq 0 ]; then
     printf "NO\n"
@@ -342,7 +339,7 @@ printf "YES\n"
 printf "Make sure mkdir bails out if the target exists and is not a file..."
 (
     set -e
-    python neubot/utils_posix.py -u nobody mkdir XO/f 2>/dev/null
+    python neubot/utils_posix.py mkdir XO/f 2>/dev/null
 )
 if [ $? -eq 0 ]; then
     printf "NO\n"

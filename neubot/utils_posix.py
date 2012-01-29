@@ -45,7 +45,7 @@ def getpwnam(uname):
     except KeyError:
         raise RuntimeError('utils_posix: "%s": no such user' % uname)
 
-def mkdir_idempotent(curpath, uname=None):
+def mkdir_idempotent(curpath, uid=None, gid=None):
     ''' Idempotent mkdir with 0755 permissions'''
 
     if not os.path.exists(curpath):
@@ -53,16 +53,15 @@ def mkdir_idempotent(curpath, uname=None):
     elif not os.path.isdir(curpath):
         raise RuntimeError('%s: Not a directory' % curpath)
 
-    if uname:
-        passwd = getpwnam(uname)
-        uid, gid = passwd.pw_uid, passwd.pw_gid
-    else:
-        uid, gid = os.getuid(), os.getgid()
+    if uid is None:
+        uid = os.getuid()
+    if gid is None:
+        gid = os.getgid()
 
     os.chown(curpath, uid, gid)
     os.chmod(curpath, MODE_755)
 
-def touch_idempotent(curpath, uname=None):
+def touch_idempotent(curpath, uid=None, gid=None):
     ''' Idempotent touch with 0644 permissions '''
 
     if not os.path.exists(curpath):
@@ -71,32 +70,35 @@ def touch_idempotent(curpath, uname=None):
     elif not os.path.isfile(curpath):
         raise RuntimeError('%s: Not a file' % curpath)
 
-    if uname:
-        passwd = getpwnam(uname)
-        uid, gid = passwd.pw_uid, passwd.pw_gid
-    else:
-        uid, gid = os.getuid(), os.getgid()
+    if uid is None:
+        uid = os.getuid()
+    if gid is None:
+        gid = os.getgid()
 
     os.chown(curpath, uid, gid)
     os.chmod(curpath, MODE_644)
 
-USAGE = 'Usage: utils_posix.py [-f pwd_field] [-u user] command [args...]'
+USAGE = '''\
+Usage: utils_posix.py [-f pwd_field] [-g gid] [-u uid] command [args...]'''
 
 def main(args):
     ''' main() function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'f:u:')
+        options, arguments = getopt.getopt(args[1:], 'f:g:u:')
     except getopt.error:
         sys.exit(USAGE)
 
+    gid = None
     selector = None
-    uname = None
+    uid = None
     for name, value in options:
         if name == '-f':
             selector = value
+        elif name == '-g':
+            gid = int(value)
         elif name == '-u':
-            uname = value
+            uid = int(value)
 
     if len(arguments) == 2 and arguments[0] == 'getpwnam':
         passwd = getpwnam(arguments[1])
@@ -105,10 +107,10 @@ def main(args):
         sys.stdout.write('%s\n' % str(passwd))
 
     elif len(arguments) == 2 and arguments[0] == 'mkdir':
-        mkdir_idempotent(arguments[1], uname)
+        mkdir_idempotent(arguments[1], uid, gid)
 
     elif len(arguments) == 2 and arguments[0] == 'touch':
-        touch_idempotent(arguments[1], uname)
+        touch_idempotent(arguments[1], uid, gid)
 
     else:
         sys.exit(USAGE)
