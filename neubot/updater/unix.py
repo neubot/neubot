@@ -101,6 +101,13 @@ if sys.version_info[0] == 3:
 else:
     import httplib as __lib_http
 
+if __name__ == '__main__':
+    # PARENT/neubot/updater/unix.py
+    sys.path.insert(0, os.path.dirname (os.path.dirname(os.path.dirname
+                                        (os.path.abspath(__file__)))))
+
+from neubot import utils_rc
+
 # Note: BASEDIR/VERSIONDIR/neubot/updater/unix.py
 VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
                                  os.path.abspath(__file__))))
@@ -887,6 +894,11 @@ def __main():
 
     # Open the system logger
     syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
+
+    # Read configuration file
+    if os.path.isfile('/etc/neubot/updater'):
+        cnf = utils_rc.parse_safe('/etc/neubot/updater')
+        CONFIG.update(cnf)
 
     # Clear root user environment
     __change_user(__lookup_user_info('root'))
