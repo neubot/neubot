@@ -52,7 +52,9 @@ var state = (function() {
                 jQuery("#updateUrl").attr("href", data.events.update.uri);
                 jQuery("#updateUrl").text(data.events.update.uri);
                 jQuery("#updateVersion").text(data.events.update.version);
-                setTimeout(function() { jQuery('#update').slideDown("slow"); }, 500);
+                setTimeout(function() {
+                    jQuery('#update').slideDown("slow");
+                }, 500);
             }
 
             if (data.events.test_name) {
@@ -71,14 +73,18 @@ var state = (function() {
             if (in_array(data.current, state.actions)) {
                 if (data.current == "test") {
                     jQuery('#testResultsBox').qtip("show");
-                    jQuery('#testResultsBox h4').text(i18n.get("Current test results"));
+                    jQuery('#testResultsBox h4').text(i18n.get(
+                      "Current test results"));
                 }
                 else {
                     jQuery('#testResultsBox').qtip("hide");
-                    jQuery('#testResultsBox h4').text(i18n.get("Latest test results"));
+                    jQuery('#testResultsBox h4').text(i18n.get(
+                      "Latest test results"));
                 }
-                jQuery('table#state tr').css('background-color', 'transparent');
-                jQuery('table#state tr#' + data.current).css('background-color', '#ffc');
+                jQuery('table#state tr').css('background-color',
+                  'transparent');
+                jQuery('table#state tr#' + data.current).css(
+                  'background-color', '#ffc');
             }
         }
 
