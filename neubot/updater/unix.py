@@ -109,6 +109,11 @@ BASEDIR = os.path.dirname(VERSIONDIR)
 # Version number in numeric representation
 VERSION = "0.004007999"
 
+# Configuration
+CONFIG = {
+    'channel': 'latest',
+}
+
 #
 # Common
 #
@@ -591,13 +596,13 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
         else:
             os._exit(0)
 
-def __download_version_info(address):
+def __download_version_info(address, channel):
     '''
      Download the latest version number.  The version number here
      is in numeric representation, i.e. a floating point number with
      exactly nine digits after the radix point.
     '''
-    version = __download(address, "/updates/latest")
+    version = __download(address, "/updates/%s" % channel)
     if not version:
         raise RuntimeError('Download failed')
     version = __printable_only(version)
@@ -642,7 +647,7 @@ def __verify_sig(signature, tarball):
     if retval != 0:
         raise RuntimeError('Signature does not match')
 
-def __download_and_verify_update(server):
+def __download_and_verify_update(server, channel):
 
     '''
      If an update is available, download the updated tarball
@@ -655,7 +660,7 @@ def __download_and_verify_update(server):
                   VERSION)
 
     # Get latest version
-    nversion = __download_version_info(server)
+    nversion = __download_version_info(server, channel)
     if decimal.Decimal(nversion) <= decimal.Decimal(VERSION):
         syslog.syslog(syslog.LOG_INFO, 'No updates available')
         return None
@@ -713,7 +718,8 @@ def _download_and_verify_update(server='releases.neubot.org'):
      and handles exceptions.
     '''
     try:
-        return __download_and_verify_update(server)
+        channel = CONFIG['channel']
+        return __download_and_verify_update(server, channel)
     except:
         why = asyncore.compact_traceback()
         syslog.syslog(syslog.LOG_ERR,
