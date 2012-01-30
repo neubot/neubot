@@ -27,7 +27,7 @@ var state = (function() {
     state_ctx.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
 
     state_ctx.tracker = function(callback) {
-        var me = {};
+        var tracker_ctx = {};
         var curtime = 0;
         var next_rendezvous = 0;
 
@@ -129,7 +129,7 @@ var state = (function() {
         // Google Chrome tab icon will keep spinning unless we
         // delay the first get_state a bit
         //
-        me.start = function() {
+        tracker_ctx.start = function() {
             jQuery('#testResultsBox').qtip({
                 content: i18n.get("Test running"),
                 position: {
@@ -160,7 +160,7 @@ var state = (function() {
             setTimeout(get_state, 100);
         }
 
-        return me;
+        return tracker_ctx;
     }
 
     return state_ctx;
