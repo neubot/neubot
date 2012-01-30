@@ -56,7 +56,9 @@ if [ "$SKIP" = "0" ]; then
         echo "error: Working directory not clean" 1>&2
         exit 1
     fi
+fi
 
+if [ ! -f M-Lab/neubot.tar.gz ]; then
     $DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
     $DEBUG gzip -9 M-Lab/neubot.tar
     $DEBUG git log --oneline|head -n1 > M-Lab/version
