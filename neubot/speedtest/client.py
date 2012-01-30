@@ -230,6 +230,9 @@ QUEUE_HISTORY = []
 class ClientSpeedtest(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test_latency", "---", publish=False)
+        STATE.update("test_download", "---", publish=False)
+        STATE.update("test_upload", "---", publish=False)
         STATE.update("test_name", "speedtest")
         self.child = None
         self.streams = collections.deque()
@@ -413,9 +416,6 @@ class ClientSpeedtest(ClientHTTP):
             self.child.host_header = self.host_header
             if self.state not in ("negotiate", "collect"):
                 if ostate == "negotiate" and self.state == "latency":
-                    STATE.update("test_latency", "---", publish=False)
-                    STATE.update("test_download", "---", publish=False)
-                    STATE.update("test_upload", "---", publish=False)
                     STATE.update("test", "speedtest")
             else:
                 STATE.update(self.state)

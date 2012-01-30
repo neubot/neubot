@@ -61,9 +61,6 @@ STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
 class PeerNeubot(StreamHandler):
     def __init__(self, poller):
         StreamHandler.__init__(self, poller)
-        STATE.update("test_latency", "---", publish=False)
-        STATE.update("test_download", "---", publish=False)
-        STATE.update("test_upload", "---", publish=False)
         STATE.update("test", "bittorrent")
         self.connector_side = False
         self.saved_bytes = 0

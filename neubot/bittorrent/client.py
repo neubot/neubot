@@ -51,6 +51,9 @@ TESTDONE = "testdone"
 class BitTorrentClient(ClientHTTP):
     def __init__(self, poller):
         ClientHTTP.__init__(self, poller)
+        STATE.update("test_latency", "---", publish=False)
+        STATE.update("test_download", "---", publish=False)
+        STATE.update("test_upload", "---", publish=False)
         STATE.update("test_name", "bittorrent")
         self.negotiating = True
         self.http_stream = None
