@@ -1,3 +1,33 @@
+Neubot 0.4.7 [2012-01-30]
+	* PRIVACY: s/measurement-lab.net/measurementlab.net/
+	* M-Lab/deploy.sh: pass -q to compileall
+	* M-Lab/deploy.sh: better command line options parsing
+	* M-Lab/deploy.sh: allow to skip check for tarball
+	* M-Lab/deploy.sh: rewrite with two nested shells
+	* M-Lab/deploy.sh: change semantic from resume to force
+	* M-Lab/deploy.sh: make sure all ports are bound
+	* M-Lab/deploy.sh: arrange things so that we don't need ping
+	* M-Lab/post_deploy.py: postprocess deploy log
+	* Merge improvements in M-Lab deployment scripts
+	* utils_path.py: util functions for paths
+	* utils_posix.py: util functions for posix
+	* utils_posix.py: pass uid, gid to mkdir and touch
+	* filesys: file system abstraction
+	* backend: generic backend for saving results
+	* negotiate/server_bittorrent.py: use backend
+	* negotiate/server_speedtest.py: use backend
+	* neubot/server.py: switch to JSON backend
+	* Merge code for scalable data collection
+	* Clear previous test results when we change test name
+	* state.js: wrap long lines
+	* state.js: mechanically replace _self with state_ctx
+	* state.js: mechanically replace me with tracker_ctx
+	* state.js: document the code
+	* state.js: remove useless code
+	* Merge maintenance patches for state.js
+	* update.js: remove pasto and make update.js operative again
+	* Release neubot/0.4.7
+
 Neubot 0.4.6 [2012-01-23]
 	* regress/http/rootdir.sh: sort output before comparison
 	* regress/http/rootdir.txt: sort lines
