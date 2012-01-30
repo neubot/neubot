@@ -22,11 +22,11 @@
  */
 
 var state = (function() {
-    var _self = {};
+    var state_ctx = {};
 
-    _self.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
+    state_ctx.actions = ['idle', 'rendezvous', 'negotiate', 'test', 'collect'];
 
-    _self.tracker = function(callback) {
+    state_ctx.tracker = function(callback) {
         var me = {};
         var curtime = 0;
         var next_rendezvous = 0;
@@ -163,5 +163,5 @@ var state = (function() {
         return me;
     }
 
-    return _self;
+    return state_ctx;
 })();
