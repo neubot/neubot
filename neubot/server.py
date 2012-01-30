@@ -47,6 +47,8 @@ from neubot.state import STATE
 from neubot.compat import json
 from neubot.debug import objgraph
 from neubot.config import CONFIG
+from neubot.backend import BACKEND
+from neubot.filesys import FILESYS
 from neubot.log import LOG
 from neubot.main import common
 
@@ -174,6 +176,10 @@ CONFIG.register_defaults({
 
 def main(args):
     """ Starts the server module """
+
+    # By default, use mlab backend
+    FILESYS.datadir_init()
+    BACKEND.use_backend('mlab')
 
     #
     # Register descriptions in main() only so that

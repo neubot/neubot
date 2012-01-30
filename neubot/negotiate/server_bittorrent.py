@@ -26,8 +26,7 @@ import logging
 import hashlib
 
 from neubot.negotiate.server import NegotiateServerModule
-from neubot.database import table_bittorrent
-from neubot.database import DATABASE
+from neubot.backend import BACKEND
 from neubot import privacy
 
 class NegotiateServerBitTorrent(NegotiateServerModule):
@@ -94,7 +93,7 @@ class NegotiateServerBitTorrent(NegotiateServerModule):
             request_body['upload_speed'] = result['upload_speed']
 
             if privacy.collect_allowed(request_body):
-                table_bittorrent.insert(DATABASE.connection(), request_body)
+                BACKEND.bittorrent_store(request_body)
             else:
                 logging.warning('* bad privacy settings: %s', str(stream))
 

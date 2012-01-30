@@ -23,9 +23,7 @@
 ''' Speedtest negotiator '''
 
 from neubot.negotiate.server import NegotiateServerModule
-
-from neubot.database import table_speedtest
-from neubot.database import DATABASE
+from neubot.backend import BACKEND
 from neubot.log import LOG
 
 from neubot import privacy
@@ -83,7 +81,7 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
             del request_body['privacy_can_share']
 
         if privacy.collect_allowed(request_body):
-            table_speedtest.insert(DATABASE.connection(), request_body)
+            BACKEND.speedtest_store(request_body)
         else:
             LOG.warning('* bad privacy settings: %s' % str(stream))
 
