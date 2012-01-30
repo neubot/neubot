@@ -35,6 +35,8 @@ SSH="$DEBUG $HOME/bin/mlab_ssh"
 # Command line
 args=$(getopt fn $*) || {
     echo "Usage: $0 [-nf] [host... ]" 1>&2
+    echo "  -n : Do not complain if M-Lab/neubot.tgz already exists" 1>&2
+    echo "  -f : Force deployment when it is already deployed" 1>&2
     exit 1
 }
 set -- $args
