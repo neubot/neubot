@@ -28,7 +28,7 @@
  */
 
 function update_init() {
-    tracker = state.tracker(process_state);
+    tracker = state.tracker();
     tracker.start();
 };
 
