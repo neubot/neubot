@@ -136,12 +136,7 @@ var state = (function() {
 
             // Update time of latest event
             if (data.t) {
-                var t = data.t;
-                if (curtime == undefined) {
-                    setTimeout(get_state, 5000);
-                    return;
-                }
-                curtime = t;
+                curtime = data.t;
             }
 
             //
