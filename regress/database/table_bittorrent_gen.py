@@ -77,7 +77,7 @@ class ResultIterator(object):
             "privacy_informed": 1,
             "privacy_can_collect": 1,
             "privacy_can_publish": 1,
-            "neubot_version": "0.4.7",
+            "neubot_version": "0.4.8-rc1",
             "platform": "Linux",
         }
 

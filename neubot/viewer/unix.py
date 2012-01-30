@@ -67,7 +67,7 @@ class WebkitGUI(gtk.Window):
         if ICON:
             self.set_icon_from_file(ICON)
 
-        self.set_title('Neubot 0.4.7')
+        self.set_title('Neubot 0.4.8-rc1')
         self.connect('destroy', gtk.main_quit)
         self.maximize()
         self._open_web_page(uri)
