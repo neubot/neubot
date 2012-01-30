@@ -100,7 +100,8 @@ for HOST in $HOSTS; do
 
         if [ "$DOINST" = "1" ]; then
             echo "$HOST: stop and remove old neubot"
-            $SSH $HOST 'sudo /home/mlab_neubot/neubot/M-Lab/stop.sh || true'
+            stop_sh='/home/mlab_neubot/neubot/M-Lab/stop.sh'
+            $SSH $HOST "if test -x $stop_sh; then sudo $stop_sh; fi "
             $SSH $HOST rm -rf neubot
 
             echo "$HOST: copy files"
