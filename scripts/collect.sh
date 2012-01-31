@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -51,6 +51,9 @@ pull()
     fi
 
     set -- $options
+
+    # Do not tollerate errors
+    set -e
 
     while [ $# -ge 0 ]; do
         if [ "$1" = "-d" ]; then
@@ -127,6 +130,9 @@ classify_by_privacy()
 
     set -- $options
 
+    # Do not tollerate errors
+    set -e
+
     while [ $# -ge 0 ]; do
         if [ "$1" = "-v" ]; then
             log_info=echo
@@ -183,6 +189,9 @@ prepare_for_publish()
         echo "Usage: prepare_for_publish [-v]" 2>&1
         exit 1
     fi
+
+    # Do not tollerate errors
+    set -e
 
     set -- $options
 
@@ -258,6 +267,9 @@ publish()
         echo "Usage: publish [-v] [-R remote] localdir..." 2>&1
         exit 1
     fi
+
+    # Do not tollerate errors
+    set -e
 
     set -- $options
 
