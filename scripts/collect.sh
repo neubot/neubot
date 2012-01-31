@@ -40,7 +40,7 @@
 pull()
 {
     localdir="master.neubot.org"
-    remote="master.neubot.org:/var/lib/neubot"
+    remote="master.neubot.org:/var/lib/neubot/*"
 
     options=$(getopt d:nR:v $*)
     if [ $? -ne 0 ]; then
