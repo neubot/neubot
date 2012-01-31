@@ -229,9 +229,16 @@ prepare_for_publish()
             tar -C $rawdir/pubdir -rf $rawdir/$tarball $(basename $file)
         done
 
+        $log_info "gzip -9 $rawdir/$tarball"
         gzip -9 $rawdir/$tarball
         cd $rawdir && git add $tarball.gz && \
           git commit -m "Add $rawdir" $tarball.gz
+
+        #
+        # Empty line to separate per-directory logs in the
+        # report mailed by cron.
+        #
+        $log_info ""
     done
 }
 
