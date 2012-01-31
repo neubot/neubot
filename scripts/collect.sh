@@ -40,7 +40,7 @@
 pull()
 {
     localdir="master.neubot.org"
-    remote="master.neubot.org:/var/lib/neubot"
+    remote="master.neubot.org:/var/lib/neubot/*"
 
     options=$(getopt d:nR:v $*)
     if [ $? -ne 0 ]; then
@@ -51,6 +51,9 @@ pull()
     fi
 
     set -- $options
+
+    # Do not tollerate errors
+    set -e
 
     while [ $# -ge 0 ]; do
         if [ "$1" = "-d" ]; then
@@ -116,6 +119,7 @@ EOF
 #
 classify_by_privacy()
 {
+    log_always=echo
     log_info=:
 
     options=$(getopt v $*)
@@ -126,6 +130,9 @@ classify_by_privacy()
 
     set -- $options
 
+    # Do not tollerate errors
+    set -e
+
     while [ $# -ge 0 ]; do
         if [ "$1" = "-v" ]; then
             log_info=echo
@@ -137,28 +144,45 @@ classify_by_privacy()
     done
 
     for rawdir in $*; do
+
         if [ -d $rawdir/pubdir ]; then
             $log_info "$0: already classified: $rawdir"
             continue
         fi
+
+        ok_count=0
+        bad_count=0
+
         mkdir $rawdir/pubdir $rawdir/privdir
         for file in $rawdir/*.gz; do
             if privacy_ok $file; then
                 $log_info "$0: privacy ok: $file"
+                ok_count=$(($ok_count + 1))
                 destdir=$rawdir/pubdir
             else
                 $log_info "$0: bad privacy: $file"
+                bad_count=$(($bad_count + 1))
                 destdir=$rawdir/privdir
             fi
             cp $file $destdir
         done
+
+        $log_always "$rawdir: ok_count: $ok_count, bad_count: $bad_count"
     done
 }
 
+#
+# Here's another simple postprocessing step: compress all the
+# publisheable files into a tarball and commit it into the git
+# repository used for the purpose.
+# Automatically separate publisheable and nonpublisheable data
+# if that's needed.
+#
 prepare_for_publish()
 {
     log_info=:
     log_error=echo
+    noisy=''
 
     options=$(getopt v $*)
     if [ $? -ne 0 ]; then
@@ -166,11 +190,15 @@ prepare_for_publish()
         exit 1
     fi
 
+    # Do not tollerate errors
+    set -e
+
     set -- $options
 
     while [ $# -ge 0 ]; do
         if [ "$1" = "-v" ]; then
             log_info=echo
+            noisy='-v'
             shift
         elif [ "$1" = "--" ]; then
             shift
@@ -179,33 +207,113 @@ prepare_for_publish()
     done
 
     for rawdir in $*; do
-        if [ ! -d $rawdir/pubdir ]; then
-            $log_error "$0: not classified: $rawdir"
+
+        #
+        # Make sure we don't prepare $today for publish because the
+        # data collection is not complete for that directory.
+        #
+        if ls $rawdir|head -n1|grep -q $(date +^%Y%m%d); then
+            $log_info "$0: skipping today"
             continue
         fi
-        if [ -f $rawdir/pubdir/tarball.tar.gz ]; then
+
+        if [ ! -d $rawdir/pubdir ]; then
+            classify_by_privacy $noisy $rawdir
+        fi
+
+        # Parametrize the tarball name so we can change it easily
+        tarball=results.tar
+        if [ -f $rawdir/$tarball ]; then
             $log_info "$0: already prepared: $rawdir"
             continue
         fi
-        for file in $rawdir/pubdir/*.gz; do
+
+        # Separate gunzip and tar -rf to ease testing
+        for file in $(ls $rawdir/pubdir/*.gz); do
             $log_info "$0: gunzip $file"
             gunzip $file
-            $log_info "$0: tar -rf $(basename $file)"
-            tar -C $rawdir/pubdir -rf tarball.tar $(basename $file)
         done
-        gzip -9 $rawdir/pubdir/tarball.tar
+        for file in $(ls $rawdir/pubdir/*); do
+            $log_info "$0: tar -rf $(basename $file)"
+            tar -C $rawdir/pubdir -rf $rawdir/$tarball $(basename $file)
+        done
+
+        $log_info "gzip -9 $rawdir/$tarball"
+        gzip -9 $rawdir/$tarball
+        (
+        cd $rawdir && git add $tarball.gz && \
+          git commit -m "Add $rawdir" $tarball.gz
+        )
+
+        #
+        # Empty line to separate per-directory logs in the
+        # report mailed by cron.
+        #
+        $log_info ""
     done
 }
 
+#
+# Find all the results.tar.gz files below a given directory
+# and publish them at a remote location.
+# This is the last step of the deployment pipeline and it runs
+# after the postprocessing phase.
+#
+publish()
+{
+    remote=server-nexa.polito.it:releases/data/
+    noisy=''
+
+    options=$(getopt R:v $*)
+    if [ $? -ne 0 ]; then
+        echo "Usage: publish [-v] [-R remote] localdir..." 2>&1
+        exit 1
+    fi
+
+    # Do not tollerate errors
+    set -e
+
+    set -- $options
+
+    while [ $# -ge 0 ]; do
+        if [ "$1" = "-R" ]; then
+            remote=$2
+            shift
+            shift
+        elif [ "$1" = "-v" ]; then
+            noisy='-v'
+            shift
+        elif [ "$1" = "--" ]; then
+            shift
+            break
+        fi
+    done
+
+    for rawdir in $*; do
+        (
+        cd $rawdir && \
+          rsync -aR $noisy \
+            $(find -type f -name results.tar.gz) $remote
+        )
+    done
+}
+
+usage="Usage: collect.sh pull|prepare|publish [options] [arguments]"
+
 if [ $# -eq 0 ]; then
-    printf "Usage: collect.sh pull [options]\n"
+    echo $usage
     exit 0
 elif [ "$1" = "pull" ]; then
     shift
     pull $*
+elif [ "$1" = "prepare" ]; then
+    shift
+    prepare_for_publish $*
+elif [ "$1" = "publish" ]; then
+    shift
+    publish $*
 else
-    # Work in progress
-    #classify_by_privacy $*
-    #prepare_for_publish $*
-    :
+    echo "Unknown command: $1"
+    echo $usage
+    exit 1
 fi
