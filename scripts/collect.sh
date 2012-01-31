@@ -240,8 +240,10 @@ prepare_for_publish()
 
         $log_info "gzip -9 $rawdir/$tarball"
         gzip -9 $rawdir/$tarball
+        (
         cd $rawdir && git add $tarball.gz && \
           git commit -m "Add $rawdir" $tarball.gz
+        )
 
         #
         # Empty line to separate per-directory logs in the
@@ -288,9 +290,11 @@ publish()
     done
 
     for rawdir in $*; do
+        (
         cd $rawdir && \
           rsync -aR $noisy \
             $(find -type f -name results.tar.gz) $remote
+        )
     done
 }
 
