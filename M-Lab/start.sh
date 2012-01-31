@@ -26,4 +26,10 @@
 
 DEBUG=
 $DEBUG /etc/init.d/rsyslog restart
+#
+# Must redirect stdin to /dev/null because if the input is a socket
+# rsync believes it has been invoked by inetd and tries to negotiate
+# with us.
+#
+$DEBUG rsync --daemon < /dev/null
 $DEBUG /usr/bin/python /home/mlab_neubot/neubot/neubot/main/__init__.py server

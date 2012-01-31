@@ -30,6 +30,7 @@ INSTALL="install -o 0 -g 0"
 
 $DEBUG cd $(dirname $0)
 $DEBUG $INSTALL rc.local /etc/rc.d/rc.local
+$DEBUG $INSTALL rsyncd.conf /etc/rsyncd.conf
 $DEBUG grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
 $DEBUG grep -q ^_neubot /etc/passwd || \
        $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
