@@ -242,8 +242,50 @@ prepare_for_publish()
     done
 }
 
+#
+# Find all the results.tar.gz files below a given directory
+# and publish them at a remote location.
+# This is the last step of the deployment pipeline and it runs
+# after the postprocessing phase.
+#
+publish()
+{
+    remote=server-nexa.polito.it:releases/data/
+    noisy=''
+
+    options=$(getopt R:v $*)
+    if [ $? -ne 0 ]; then
+        echo "Usage: publish [-v] [-R remote] localdir..." 2>&1
+        exit 1
+    fi
+
+    set -- $options
+
+    while [ $# -ge 0 ]; do
+        if [ "$1" = "-R" ]; then
+            remote=$2
+            shift
+            shift
+        elif [ "$1" = "-v" ]; then
+            noisy='-v'
+            shift
+        elif [ "$1" = "--" ]; then
+            shift
+            break
+        fi
+    done
+
+    for rawdir in $*; do
+        cd $rawdir && \
+          rsync -aR $noisy \
+            $(find -type f -name results.tar.gz) $remote
+    done
+}
+
+usage="Usage: collect.sh pull|prepare|publish [options] [arguments]"
+
 if [ $# -eq 0 ]; then
-    printf "Usage: collect.sh pull|prepare [options]\n"
+    echo $usage
     exit 0
 elif [ "$1" = "pull" ]; then
     shift
@@ -251,6 +293,11 @@ elif [ "$1" = "pull" ]; then
 elif [ "$1" = "prepare" ]; then
     shift
     prepare_for_publish $*
+elif [ "$1" = "publish" ]; then
+    shift
+    publish $*
 else
-    :  # Nothing
+    echo "Unknown command: $1"
+    echo $usage
+    exit 1
 fi
