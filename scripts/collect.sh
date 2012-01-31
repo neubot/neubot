@@ -198,6 +198,16 @@ prepare_for_publish()
     done
 
     for rawdir in $*; do
+
+        #
+        # Make sure we don't prepare $today for publish because the
+        # data collection is not complete for that directory.
+        #
+        if ls $rawdir|head -n1|grep -q $(date +^%Y%m%d); then
+            $log_info "$0: skipping today"
+            continue
+        fi
+
         if [ ! -d $rawdir/pubdir ]; then
             classify_by_privacy $noisy $rawdir
         fi
@@ -226,13 +236,14 @@ prepare_for_publish()
 }
 
 if [ $# -eq 0 ]; then
-    printf "Usage: collect.sh pull [options]\n"
+    printf "Usage: collect.sh pull|prepare [options]\n"
     exit 0
 elif [ "$1" = "pull" ]; then
     shift
     pull $*
-else
-    # Work in progress
-    #classify_by_privacy $*
+elif [ "$1" = "prepare" ]; then
+    shift
     prepare_for_publish $*
+else
+    :  # Nothing
 fi
