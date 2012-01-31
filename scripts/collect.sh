@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -165,10 +165,18 @@ classify_by_privacy()
     done
 }
 
+#
+# Here's another simple postprocessing step: compress all the
+# publisheable files into a tarball and commit it into the git
+# repository used for the purpose.
+# Automatically separate publisheable and nonpublisheable data
+# if that's needed.
+#
 prepare_for_publish()
 {
     log_info=:
     log_error=echo
+    noisy=''
 
     options=$(getopt v $*)
     if [ $? -ne 0 ]; then
@@ -181,6 +189,7 @@ prepare_for_publish()
     while [ $# -ge 0 ]; do
         if [ "$1" = "-v" ]; then
             log_info=echo
+            noisy='-v'
             shift
         elif [ "$1" = "--" ]; then
             shift
@@ -190,20 +199,29 @@ prepare_for_publish()
 
     for rawdir in $*; do
         if [ ! -d $rawdir/pubdir ]; then
-            $log_error "$0: not classified: $rawdir"
-            continue
+            classify_by_privacy $noisy $rawdir
         fi
-        if [ -f $rawdir/pubdir/tarball.tar.gz ]; then
+
+        # Parametrize the tarball name so we can change it easily
+        tarball=results.tar
+        if [ -f $rawdir/$tarball ]; then
             $log_info "$0: already prepared: $rawdir"
             continue
         fi
-        for file in $rawdir/pubdir/*.gz; do
+
+        # Separate gunzip and tar -rf to ease testing
+        for file in $(ls $rawdir/pubdir/*.gz); do
             $log_info "$0: gunzip $file"
             gunzip $file
-            $log_info "$0: tar -rf $(basename $file)"
-            tar -C $rawdir/pubdir -rf tarball.tar $(basename $file)
         done
-        gzip -9 $rawdir/pubdir/tarball.tar
+        for file in $(ls $rawdir/pubdir/*); do
+            $log_info "$0: tar -rf $(basename $file)"
+            tar -C $rawdir/pubdir -rf $rawdir/$tarball $(basename $file)
+        done
+
+        gzip -9 $rawdir/$tarball
+        cd $rawdir && git add $tarball.gz && \
+          git commit -m "Add $rawdir" $tarball.gz
     done
 }
 
@@ -215,6 +233,6 @@ elif [ "$1" = "pull" ]; then
     pull $*
 else
     # Work in progress
-    classify_by_privacy $*
-    #prepare_for_publish $*
+    #classify_by_privacy $*
+    prepare_for_publish $*
 fi
