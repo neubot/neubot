@@ -116,6 +116,7 @@ EOF
 #
 classify_by_privacy()
 {
+    log_always=echo
     log_info=:
 
     options=$(getopt v $*)
@@ -137,21 +138,30 @@ classify_by_privacy()
     done
 
     for rawdir in $*; do
+
         if [ -d $rawdir/pubdir ]; then
             $log_info "$0: already classified: $rawdir"
             continue
         fi
+
+        ok_count=0
+        bad_count=0
+
         mkdir $rawdir/pubdir $rawdir/privdir
         for file in $rawdir/*.gz; do
             if privacy_ok $file; then
                 $log_info "$0: privacy ok: $file"
+                ok_count=$(($ok_count + 1))
                 destdir=$rawdir/pubdir
             else
                 $log_info "$0: bad privacy: $file"
+                bad_count=$(($bad_count + 1))
                 destdir=$rawdir/privdir
             fi
             cp $file $destdir
         done
+
+        $log_always "$rawdir: ok_count: $ok_count, bad_count: $bad_count"
     done
 }
 
@@ -205,7 +215,6 @@ elif [ "$1" = "pull" ]; then
     pull $*
 else
     # Work in progress
-    #classify_by_privacy $*
+    classify_by_privacy $*
     #prepare_for_publish $*
-    :
 fi
