@@ -738,6 +738,11 @@ def _download_and_verify_update(server='releases.neubot.org'):
 # Install new version
 #
 
+#
+# XXX This function works because BASEDIR/start.sh chdir()s to
+# BASEDIR, but this is not obvious, undocumented and, especially,
+# fragile.
+#
 def __install_new_version(version):
     ''' Install a new version of Neubot '''
 
