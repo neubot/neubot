@@ -920,7 +920,7 @@ def __main():
     #
     # Loop forever, catch and just log all exceptions.
     # Spend many time sleeping and wake up just once every
-    # five seconds to make sure everything is fine.
+    # few seconds to make sure everything is fine.
     #
     while True:
         if firstrun:
