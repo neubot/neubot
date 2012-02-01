@@ -764,6 +764,9 @@ def __switch_to_new_version():
     ''' Switch to the a new version of Neubot '''
     os.execv('/bin/sh', ['/bin/sh', '%s/start.sh' % BASEDIR])
 
+def __clear_base_directory():
+    ''' Clear base directory and remove old files '''
+
 #
 # Start/stop neubot
 #
@@ -947,6 +950,15 @@ def __main():
                     __install_new_version(nversion)
                     __switch_to_new_version()
                     raise RuntimeError('Internal error')
+
+                #
+                # We have not found an update, while here make
+                # sure that we keep clean our base directory,
+                # remove old files and directories, the tarball
+                # of this version, etc.
+                #
+                else:
+                    __clear_base_directory()
 
             # Monitor the agent
             syslog.syslog(syslog.LOG_INFO, 'Monitoring the agent')
