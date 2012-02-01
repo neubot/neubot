@@ -223,7 +223,7 @@ prepare_for_publish()
 
         # Parametrize the tarball name so we can change it easily
         tarball=results.tar
-        if [ -f $rawdir/$tarball ]; then
+        if [ -f $rawdir/$tarball.gz ]; then
             $log_info "$0: already prepared: $rawdir"
             continue
         fi
