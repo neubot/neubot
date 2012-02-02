@@ -24,6 +24,11 @@
 # Regression test for neubot/filesys_posix.py
 #
 
+#
+# FIXME This regression test works with the BSD version of stat(1)
+# only and should be fixed such that it works with Linux too.
+#
+
 if [ `id -u` -ne 0 ]; then
     echo "$0: you must be root to run this test" 1>&2
     exit 1
