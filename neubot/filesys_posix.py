@@ -38,8 +38,13 @@ UNAME = '_neubot'
 class FileSystemPOSIX(object):
     ''' POSIX file system '''
 
-    def __init__(self, uname=UNAME, datadir=None):
+    def __init__(self):
         ''' Init POSIX filesystem '''
+        self.datadir = None
+        self.passwd = None
+
+    def datadir_init(self, uname=UNAME, datadir=None):
+        ''' Initialize datadir '''
 
         if datadir:
             self.datadir = datadir
@@ -54,8 +59,6 @@ class FileSystemPOSIX(object):
         logging.debug('filesys_posix: uid: %d', self.passwd.pw_uid)
         logging.debug('filesys_posix: gid: %d', self.passwd.pw_gid)
 
-    def datadir_init(self):
-        ''' Initialize datadir '''
         #
         # Here we are assuming that /var (BSD) or /var/lib (Linux)
         # exists and has the correct permissions.
@@ -104,8 +107,8 @@ def main(args):
         elif name == '-v':
             logging.getLogger().setLevel(logging.DEBUG)
 
-    filesys = FileSystemPOSIX(uname, datadir)
-    filesys.datadir_init()
+    filesys = FileSystemPOSIX()
+    filesys.datadir_init(uname, datadir)
     filesys.datadir_touch(arguments)
 
 if __name__ == '__main__':
