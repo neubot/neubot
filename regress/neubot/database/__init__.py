@@ -1,4 +1,4 @@
-# regress/database/__init__.py
+# regress/neubot/database/__init__.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,

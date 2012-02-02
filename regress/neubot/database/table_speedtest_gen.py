@@ -1,4 +1,4 @@
-# regress/database/table_bittorrent_gen.py
+# regress/neubot/database/table_speedtest_gen.py
 
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
@@ -66,12 +66,13 @@ class ResultIterator(object):
         if not myuuid in self.addrs or random.random() < IPCHANGETHR:
             self.addrs[myuuid] = get_addr()
         return {
-            "timestamp": next(self.times),
+            "timestamp": self.times.next(),
             "uuid": myuuid,
             "internal_address": self.addrs[myuuid],
             "real_address": self.addrs[myuuid],
             "remote_address": "130.192.91.211",
             "connect_time": random.random(),
+            "latency": random.random(),
             "download_speed": random.random() * 100000,
             "upload_speed": random.random() * 40000,
             "privacy_informed": 1,
