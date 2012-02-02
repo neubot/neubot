@@ -34,7 +34,7 @@ import logging
 from neubot.net.poller import POLLER
 from neubot.utils import T
 
-INTERVAL = 10
+INTERVAL = 60
 
 class Notifier(object):
     def __init__(self):
