@@ -29,5 +29,7 @@
 # Make sure there are no *.pyc files around
 make clean
 
-grep -R http.server.rootdir neubot/ | sort > regress/http/rootdir.txt.new
-diff -u regress/http/rootdir.txt regress/http/rootdir.txt.new
+grep -R http.server.rootdir neubot/ | sort > \
+  regress/neubot/http/rootdir.txt.new
+diff -u regress/neubot/http/rootdir.txt \
+  regress/neubot/http/rootdir.txt.new
