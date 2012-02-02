@@ -738,6 +738,11 @@ def _download_and_verify_update(server='releases.neubot.org'):
 # Install new version
 #
 
+#
+# XXX This function works because BASEDIR/start.sh chdir()s to
+# BASEDIR, but this is not obvious, undocumented and, especially,
+# fragile.
+#
 def __install_new_version(version):
     ''' Install a new version of Neubot '''
 
@@ -763,6 +768,9 @@ def __install_new_version(version):
 def __switch_to_new_version():
     ''' Switch to the a new version of Neubot '''
     os.execv('/bin/sh', ['/bin/sh', '%s/start.sh' % BASEDIR])
+
+def __clear_base_directory():
+    ''' Clear base directory and remove old files '''
 
 #
 # Start/stop neubot
@@ -920,7 +928,7 @@ def __main():
     #
     # Loop forever, catch and just log all exceptions.
     # Spend many time sleeping and wake up just once every
-    # five seconds to make sure everything is fine.
+    # few seconds to make sure everything is fine.
     #
     while True:
         if firstrun:
@@ -947,6 +955,15 @@ def __main():
                     __install_new_version(nversion)
                     __switch_to_new_version()
                     raise RuntimeError('Internal error')
+
+                #
+                # We have not found an update, while here make
+                # sure that we keep clean our base directory,
+                # remove old files and directories, the tarball
+                # of this version, etc.
+                #
+                else:
+                    __clear_base_directory()
 
             # Monitor the agent
             syslog.syslog(syslog.LOG_INFO, 'Monitoring the agent')

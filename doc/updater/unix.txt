@@ -1,7 +1,7 @@
 Unix updater
 ''''''''''''
 
-:Version: 1.2 of 2011/09/15
+:Version: 1.2.1 of 2012/02/02
 :Authors: Simone Basso
 :Documents: neubot/updater/unix.py
 
@@ -165,7 +165,7 @@ Neubot agent is already running.  If not, it forks a child to
 run the agent algorithm and remembers its PID to be able to
 control it.
 
-Then, it checks for updates, once per hour.  If a new update
+Then, it checks for updates, every 30 mins.  If a new update
 is available, the updater stops the child Neubot agent process,
 if needed, installs the new version and, finally, switches
 over to it.  To do that it tries to exec() BASEDIR/start.sh,
