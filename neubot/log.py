@@ -217,6 +217,10 @@ class Logger(object):
     def _log(self, severity, message, *args):
         ''' Really log a message '''
 
+        # No point in logging empty lines
+        if not message:
+            return
+
         #
         # Streaming allows consumers to register with the log
         # object and follow the events that happen during a
