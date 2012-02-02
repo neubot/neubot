@@ -1,4 +1,4 @@
-# regress/database/table_speedtest_gen.py
+# regress/neubot/database/table_speedtest_gen.py
 
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
