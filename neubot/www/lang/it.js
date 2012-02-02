@@ -89,7 +89,7 @@ test di trasmissione. L'ultima posizione nota in coda è \
     'i18n_collect_status_text': "L'Agent sta esegendo l'upload dei \
 risultati sul server di Neubot.",
 
-    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.8-rc1. \
+    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.7. \
 Neubot è un programma <a href='http://www.neubot.org/copying'>open-source</a> \
 leggero che viene eseguito in background ed esegue periodicamente test \
 di trasmissione dati per testare la tua connessione a Internet utilizzando \
@@ -194,7 +194,7 @@ advertised download speeds, by country'</a> (in formato XLS).",
     // neubot/www/privacy.html
 
     'i18n_privacy_not_ok':
-'Neubot è DISABILITATO: a partire dalla versione 0.4.8-rc1, i server di Neubot\
+'Neubot è DISABILITATO: a partire dalla versione 0.4.7, i server di Neubot\
  sono installati sulla piattaforma server distribuita\
  <a href="http://www.measurementlab.net/">Measurement Lab</a>.\
  Per essere conforme alla policy di Measurement Lab e poter così eseguire\

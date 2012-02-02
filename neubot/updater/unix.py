@@ -114,7 +114,7 @@ VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
 BASEDIR = os.path.dirname(VERSIONDIR)
 
 # Version number in numeric representation
-VERSION = "0.004008001"
+VERSION = "0.004007999"
 
 # Configuration
 CONFIG = {

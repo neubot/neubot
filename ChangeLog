@@ -1,13 +1,3 @@
-Neubot 0.4.8-rc1 [2012-01-30]
-	* M-Lab: fail deploy if we cannot stop a running Neubot
-	* M-Lab/deploy.sh: autogen neubot.tgz even if -n
-	* M-Lab/deploy.sh: document command line options
-	* scripts/collect.sh: scalable data collection
-	* updater/unix.py: make update channel configurable
-	* utils_rc: configuration file parser
-	* updater/unix.py: honor /etc/updater/unix config file
-	* Release neubot/0.4.8-rc1
-
 Neubot 0.4.7 [2012-01-30]
 	* PRIVACY: s/measurement-lab.net/measurementlab.net/
 	* M-Lab/deploy.sh: pass -q to compileall

@@ -48,7 +48,7 @@ var LANG = {
     'i18n_about': 'About',
 
     'i18n_about_text':
-'This is the web user interface of Neubot v0.4.8-rc1.\
+'This is the web user interface of Neubot v0.4.7.\
  Neubot is a lightweight <a href="http://www.neubot.org/copying">open-source</a> program\
  that runs in background and periodically performs\
  transmission tests to probe your Internet connection\
@@ -139,7 +139,7 @@ var LANG = {
  is personal data in EU.',
 
     'i18n_privacy_not_ok':
-'Neubot is DISABLED: starting from version 0.4.8-rc1, Neubot servers\
+'Neubot is DISABLED: starting from version 0.4.7, Neubot servers\
  are deployed on the distributed\
  <a href="http://www.measurementlab.net/">Measurement Lab</a>\
  server platform. To comply with Measurement Lab policy and be allowed\

@@ -20,8 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-name "neubot 0.4.8-rc1"
-outfile "neubot-0.4.8-rc1-setup.exe"
+name "neubot 0.4.7"
+outfile "neubot-0.4.7-setup.exe"
 installdir "$PROFILE\Neubot"
 setcompressor lzma
 requestexecutionlevel user
@@ -53,7 +53,7 @@ section
 
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
-      "DisplayName" "Neubot 0.4.8-rc1"
+      "DisplayName" "Neubot 0.4.7"
     WriteRegStr HKLM                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
