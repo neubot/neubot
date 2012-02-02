@@ -1,4 +1,4 @@
-# neubot/filesys.py
+# neubot/filesys_null.py
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -20,22 +20,13 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Filesystem interface '''
+''' Null filesystem '''
 
-#
-# The mid-term plan is to move here the code that lies in the system
-# module and deals with filesystem.  In this reorganization, also the
-# user-wide database will go away forever.
-#
+class FileSystemNull(object):
+    ''' Null file system '''
 
-import os
+    def datadir_init(self):
+        ''' Initialize datadir '''
 
-if os.name == 'posix':
-    from neubot.filesys_posix import FileSystemPOSIX
-    FILESYS = FileSystemPOSIX()
-elif os.name == 'nt':
-    from neubot.filesys_null import FileSystemNull
-    FILESYS = FileSystemNull()
-else:
-    from neubot.filesys_null import FileSystemNull
-    FILESYS = FileSystemNull()
+    def datadir_touch(self, components):
+        ''' Touch a file below datadir '''
