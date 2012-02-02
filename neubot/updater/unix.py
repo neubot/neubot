@@ -772,6 +772,51 @@ def __switch_to_new_version():
 def __clear_base_directory():
     ''' Clear base directory and remove old files '''
 
+    #
+    # BASEDIR/start.sh chdirs to BASEDIR, still, for robustness,
+    # this function uses absolute paths.
+    # First, make sure we skip known-good files that are essential
+    # for the Neubot distribution.
+    # We do not create symbolic links in BASEDIR, so there is no
+    # point in considering symbolic links.
+    #
+    for name in os.listdir(BASEDIR):
+        if name in ('org.neubot.plist', 'start.sh'):
+            continue
+        path = os.sep.join([BASEDIR, name])
+        if os.path.islink(path):
+            continue
+
+        #
+        # If the path is a regular file, check for the two file
+        # extensions we create, validate the file name, and unlink
+        # the path if the name looks good.
+        #
+        if os.path.isfile(path):
+            if re.match('^([0-9]+)\.([0-9]{9}).tar.gz$', name):
+                os.unlink(path)
+            elif re.match('^([0-9]+)\.([0-9]{9}).tar.gz.sig$', name):
+                os.unlink(path)
+            continue
+
+        #
+        # Make sure path is a directory, validate the name and make sure
+        # the version number IS NOT the current version.  If all these
+        # conditions is True, it must be a previous version, and we can
+        # recursively thrash the directory.
+        # Note that we check if isdir() because we want to be sure the
+        # file name is not e.g. a named pipe.  We create directories and
+        # we remove directories.
+        # Before Python 2.6 there was bug #1669 where rmtree() did not
+        # made sure that path was not a symbolic link.  However, here
+        # we already know that path is not a symbolic link, so we should
+        # be safe even with Python 2.5.  (It goes without saying that
+        # the remainder of rmtree() does not follow symlinks.)
+        #
+        if (os.path.isdir(path) and re.match('^([0-9]+)\.([0-9]{9})$', name)
+            and decimal.Decimal(name) != decimal.Decimal(VERSION)):
+            shutil.rmtree(path)
+
 #
 # Start/stop neubot
 #
