@@ -58,12 +58,22 @@ help:
 	@printf '\n'
 
 regress:
+	rm -rf -- regress/success regress/failure
 	for FILE in $$(find regress -type f -perm -0111); do		\
 	    echo "* Running regression test: $$FILE";			\
-	    ./$$FILE || exit 1;						\
+	    ./$$FILE;							\
+	    if [ $$? -ne 0 ]; then					\
+	        echo $$FILE >> regress/failure;				\
+	    else							\
+	        echo $$FILE >> regress/success;				\
+	    fi;								\
 	    echo "";							\
 	    echo "";							\
 	done
+	if [ -f regress/failure ]; then					\
+	    echo "*** At least one regression test has failed";		\
+	    echo "*** Check regress/failure for more info";		\
+	fi
 
 clean:
 	@echo "[CLEAN]"
