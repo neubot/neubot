@@ -5,6 +5,10 @@ dist/temp/datadir/neubot/agent.py
 dist/temp/datadir/neubot/api/__init__.py
 dist/temp/datadir/neubot/api/client.py
 dist/temp/datadir/neubot/api/server.py
+dist/temp/datadir/neubot/backend.py
+dist/temp/datadir/neubot/backend_mlab.py
+dist/temp/datadir/neubot/backend_neubot.py
+dist/temp/datadir/neubot/backend_null.py
 dist/temp/datadir/neubot/bittorrent/__init__.py
 dist/temp/datadir/neubot/bittorrent/bitfield.py
 dist/temp/datadir/neubot/bittorrent/client.py
@@ -27,6 +31,8 @@ dist/temp/datadir/neubot/database/table_log.py
 dist/temp/datadir/neubot/database/table_speedtest.py
 dist/temp/datadir/neubot/debug/__init__.py
 dist/temp/datadir/neubot/debug/objgraph.py
+dist/temp/datadir/neubot/filesys.py
+dist/temp/datadir/neubot/filesys_posix.py
 dist/temp/datadir/neubot/http/__init__.py
 dist/temp/datadir/neubot/http/client.py
 dist/temp/datadir/neubot/http/message.py
@@ -84,6 +90,8 @@ dist/temp/datadir/neubot/updater/unix.py
 dist/temp/datadir/neubot/utils/__init__.py
 dist/temp/datadir/neubot/utils/blocks.py
 dist/temp/datadir/neubot/utils/version.py
+dist/temp/datadir/neubot/utils_path.py
+dist/temp/datadir/neubot/utils_posix.py
 dist/temp/datadir/neubot/viewer/__init__.py
 dist/temp/datadir/neubot/viewer/unix.py
 dist/temp/datadir/neubot/www/bittorrent.html
