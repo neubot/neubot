@@ -470,6 +470,10 @@ def main(args):
 
     LOG.info('Will run the test in the local context...')
 
+    if not privacy.allowed_to_run():
+        privacy.complain()
+        sys.exit(1)
+
     client = ClientSpeedtest(POLLER)
     client.configure(conf)
     client.connect_uri()

@@ -44,6 +44,7 @@ from neubot.notify import NOTIFIER
 from neubot.main import common
 
 from neubot import negotiate
+from neubot import privacy
 from neubot import runner_clnt
 from neubot import system
 from neubot import utils
@@ -163,6 +164,10 @@ def main(args):
             sys.exit(0)
 
         LOG.info('Will run the test in the local context...')
+
+        if not privacy.allowed_to_run():
+            privacy.complain()
+            sys.exit(1)
 
         #
         # When we're connecting to a remote host to perform a test
