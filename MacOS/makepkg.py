@@ -198,11 +198,6 @@ def _make_auto_update():
        (privkey, os.path.basename(sig), os.path.basename(tarball)))
     os.chdir(MACOSDIR)
 
-    # Write the latest file
-    filep = open('../dist/latest', 'wb')
-    filep.write('%s\n' % NUMERIC_VERSION)
-    filep.close()
-
 def _compile():
 
     '''
