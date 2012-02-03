@@ -101,6 +101,6 @@ platform
 BitTorrent table
 ''''''''''''''''
 
-The BitTorrent table shares most field names and semantics with the
-speedtest table.  The only notable difference is that the BitTorrent
-table does not have the latency field.
+The BitTorrent result is a dictionary that shares most field names and
+semantics with the speedtest result.  The only notable difference is
+that the BitTorrent result does not have the latency field.
