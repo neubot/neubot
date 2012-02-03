@@ -1,0 +1,106 @@
+
+                    The database of the Neubot project
+                       <http://www.neubot.org/data>
+
+This file provides a brief description of the Neubot database published
+on neubot.org website.  For each test, we publish the result in JSON
+format.
+
+To understand what content of the database you need to read at least
+the whole ``technical questions'' section of Neubot FAQs::
+
+    http://www.neubot.org/faq#technical-questions
+
+You should also review the history of the files that implement the
+transmission tests.  At least, it is recommended that you look at the
+history of the following files::
+
+    neubot/bittorrent/peer.py
+    neubot/net/stream.py
+    neubot/speedtest/client.py
+
+In particular, you should at least take into account the following
+nonexhaustive list of caveats:
+
+1. the bittorrent test uses just one connection, while the speedtest
+   test used to use two connections.  That was changed in 0.4.2 and
+   now speedtest too uses just one connection;
+
+2. the bittorrent test uses small messages, always measures at the
+   receiver and doesn't start measuring immediately.  While the
+   speedtest test uses bigger messages, measures the upload at the
+   sender and starts the measurement immediately;
+
+3. Neubot has used a fixed-size (262144 bytes) receive buffer for a
+   long time, until that was reverted in Neubot 0.4.2.  Now each
+   operating system is free to scale both the receive and the send
+   buffer at will;
+
+4. the speedtest test has been significantly modified and the current
+   test is very very different from the one that shipped with the first
+   public version of Neubot;
+
+5. until version 0.4.2 clients were not attaching to the result the
+   version number and the OS name.
+
+You can ask information and report problems using the public mailing
+list of the project: <http://www.neubot.org/mailing-lists>.
+
+Speedtest
+'''''''''
+
+The speedtest result is a dictionary that contains the following fields:
+
+latency
+    The average time required to request a zero-length resource via
+    HEAD and get the response back.  This is measured in seconds.
+
+timestamp
+    The server's timestamp just after the measurement.
+
+connect_time
+    The average time required for connect() to complete.  This is measured
+    in seconds.
+
+privacy_informed
+privacy_can_collect
+privacy_can_publish
+    Respectively: whether the user has read the privacy policy, whether
+    she has given the permission to collect her Internet address, and
+    whether she has given the permission to publish it.
+
+    Starting from Neubot 0.4.6, the software does not work unless it is
+    given all the privacy permissions.  We strip the Internet address
+    from results that come from old clients and do not have the permission
+    to publish.
+
+download_speed
+upload_speed
+    Download or upload goodput.  This is measured in bytes/second.
+
+uuid
+    Unique identifier of the Neubot agent that performed the measurement.
+
+internal_address
+real_address
+remote_address
+    Respectively, the client Internet address as seen by the client,
+    the client Internet address as seen by the server, and the Internet
+    address of the server.
+
+    Please note that internal_address and real_address are set to
+    <0.0.0.0> if we don't have the permission to publish it.
+
+neubot_version
+    The version of the Neubot client that performed the test.
+
+platform
+    The software platform of the Neubot that performed the measurement,
+    e.g. 'linux2'.
+
+BitTorrent table
+''''''''''''''''
+
+The BitTorrent table shares most field names and semantics with the
+speedtest table.  The only notable difference is that the BitTorrent
+table does not have the latency field.
