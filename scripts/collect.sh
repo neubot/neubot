@@ -168,6 +168,7 @@ classify_by_privacy()
         done
 
         $log_always "$rawdir: ok_count: $ok_count, bad_count: $bad_count"
+        $log_always ""
     done
 }
 
