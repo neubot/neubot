@@ -21,16 +21,20 @@
 #
 
 #
-# Hackish script to assemble the phrase I usually add to
-# release messages.  Works IFF master points to the previous
-# version and next points to the current version.
+# Script to assemble the phrase I usually add to release
+# announce.
 #
 
-PATCHES=$(git log --oneline master..next|wc -l)
+test $# -eq 2 || {
+    echo 'Usage: scripts/diffstat start stop' 1>&2
+    exit 1
+}
+
+PATCHES=$(git log --oneline $1..$2|wc -l)
 
 printf "This release contains %d patches." $PATCHES
 
-DIFFSTAT=$(git diff --stat master..next|tail -n1)
+DIFFSTAT=$(git diff --stat $1..$2|tail -n1)
 CHANGED=$(echo $DIFFSTAT|awk '{print $1}')
 INSERTED=$(echo $DIFFSTAT|awk '{print $4}')
 DELETED=$(echo $DIFFSTAT|awk '{print $6}')
