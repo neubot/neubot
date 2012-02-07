@@ -47,6 +47,7 @@ from neubot.state import STATECHANGE
 from neubot.speedtest.client import QUEUE_HISTORY
 from neubot.state import STATE
 
+from neubot import config_api
 from neubot import privacy
 from neubot import log_api
 from neubot import runner_api
@@ -60,8 +61,7 @@ class ServerAPI(ServerHTTP):
             "/api": self._api,
             "/api/": self._api,
             "/api/bittorrent": self._api_bittorrent,
-            "/api/config": self._api_config,
-            "/api/configlabels": self._api_configlabels,
+            "/api/config": config_api.config_api,
             "/api/debug": self._api_debug,
             "/api/index": self._api_index,
             "/api/exit": self._api_exit,
@@ -128,63 +128,6 @@ class ServerAPI(ServerHTTP):
         response = Message()
         lst = table_bittorrent.listify(DATABASE.connection(), since, until)
         s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
-        stringio = StringIO.StringIO(s)
-        response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype=mimetype)
-        stream.send_response(request, response)
-
-    def _api_config(self, stream, request, query):
-        response = Message()
-
-        indent, mimetype, sort_keys = None, "application/json", False
-        dictionary = cgi.parse_qs(query)
-        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
-            indent, mimetype, sort_keys = 4, "text/plain", True
-
-        if request.method == "POST":
-            s = request.body.read()
-            updates = qs_to_dictionary(s)
-            privacy.check(updates)
-
-            #
-            # Neubot servers are a shared resource, better not
-            # allowing for too frequent automatic tests.  A lot
-            # of users with less tests per user is better than
-            # a lot of tests from few users.  I hope that people
-            # that want to modify this setting understand.
-            #
-            if "agent.interval" in updates:
-                interval = int(updates["agent.interval"])
-                if interval < 1380 and interval != 0:
-                    raise ConfigError('''
-Invalid agent.interval!  It must be >= 1380 or 0, which hints Neubot
- that it should extract a random value in a given interval.  The reason
- why we don't allow to run automatic tests too often is that Neubot
- servers are a shared resources between many users, so if you run tests
- too frequently that is unfair to other users.
-''')
-
-            CONFIG.merge_api(updates, DATABASE.connection())
-            STATE.update("config", updates)
-            # Empty JSON b/c '204 No Content' is treated as an error
-            s = "{}"
-        else:
-            s = json.dumps(CONFIG.conf, sort_keys=sort_keys, indent=indent)
-
-        stringio = StringIO.StringIO(s)
-        response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype=mimetype)
-        stream.send_response(request, response)
-
-    def _api_configlabels(self, stream, request, query):
-
-        indent, mimetype = None, "application/json"
-        dictionary = cgi.parse_qs(query)
-        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
-            indent, mimetype = 4, "text/plain"
-
-        response = Message()
-        s = json.dumps(CONFIG.descriptions, sort_keys=True, indent=indent)
         stringio = StringIO.StringIO(s)
         response.compose(code="200", reason="Ok", body=stringio,
                          mimetype=mimetype)

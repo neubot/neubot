@@ -1,0 +1,67 @@
+#!/bin/sh -e
+
+#
+# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# Publish releases
+#
+
+candidate=0
+destdir=_packages
+remote=server-nexa.polito.it:releases
+scp="scp"
+version=0.4.8-rc2
+
+if [ $(echo $version|grep rc) ]; then
+    candidate=1
+    destdir=rc
+fi
+
+if [ $candidate -eq 0 ]; then
+    echo "Publishing stable releases is not yet supported" 2>&1
+    exit 1
+fi
+
+if [ -f dist/0.004008002.tar.gz ]; then
+
+    for ext in "" .sha256 .sig; do
+        $scp dist/0.004008002.tar.gz$ext $remote/updates
+    done
+
+    echo '0.004008002' > dist/v
+    if [ $candidate -ne 0 ]; then
+        $scp dist/v $remote/updates/testing
+    else
+        $scp dist/v $remote/updates/latest
+    fi
+
+    $scp dist/neubot-0.4.8-rc2.pkg.tgz $remote/$destdir
+
+fi
+
+if [ -f dist/neubot-0.4.8-rc2.tar.gz ]; then
+
+    $scp dist/Packages* $remote/$destdir
+    $scp dist/Release* $remote/$destdir
+    $scp dist/neubot-0.4.8-rc2* $remote/$destdir
+    $scp dist/neubot-nox-0.4.8-rc2* $remote/$destdir
+
+fi

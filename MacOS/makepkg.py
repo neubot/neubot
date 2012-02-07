@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 from neubot.utils.version import LibVersion
 
-VERSION = '0.4.7'
+VERSION = '0.4.8-rc2'
 NUMERIC_VERSION = LibVersion.to_numeric(VERSION)
 
 IGNORER = shutil.ignore_patterns('.DS_Store')
@@ -197,11 +197,6 @@ def _make_auto_update():
     __call('openssl dgst -sha256 -sign %s -out %s %s' %
        (privkey, os.path.basename(sig), os.path.basename(tarball)))
     os.chdir(MACOSDIR)
-
-    # Write the latest file
-    filep = open('../dist/latest', 'wb')
-    filep.write('%s\n' % NUMERIC_VERSION)
-    filep.close()
 
 def _compile():
 
