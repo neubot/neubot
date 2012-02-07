@@ -13,7 +13,7 @@ them on the project servers. The collected dataset contains samples
 from various Providers and allows the Neubot project to monitor
 network neutrality.
 
-As a collection Neubot is Copyright (c) 2010-2011 NEXA Center for
+As a collection Neubot is Copyright (c) 2010-2012 NEXA Center for
 Internet & Society at Politecnico di Torino <http://nexa.polito.it/>.
 Each file is copyrighted by the individual contributor.
 
