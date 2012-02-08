@@ -21,20 +21,18 @@
 #
 
 #
-# This script is used to compile the mapping between the
-# FQDN of an M-Lab site and the *actual* address of the
-# sliver inside the site.
+# Compile the mapping between the address of a node and the
+# address of the corresponding sliver, making sure in the process
+# that the node is up and running.
 #
 
 DEBUG=
 
 SSH="$DEBUG $HOME/bin/mlab_ssh"
 
-if [ $# -gt 1 ]; then
-    echo 'Usage: $0 [hostname]' 1>&2
+if [ $# -ne 0 ]; then
+    echo 'Usage: $0' 1>&2
     exit 1
-elif [ $# -eq 1 ]; then
-    $SSH $1 "/sbin/ifconfig|perl -ne 'print \$1 if (/inet addr:(.*) Bcast/)'"
 else
 
     # Start over
@@ -50,17 +48,37 @@ else
 
         # Blank line before to separate each host logs
         echo ""
-        echo "$HOST: start geoloc"
+        echo "$HOST: start ip_addr"
         echo "$HOST: current host number $COUNT"
 
-        echo "$HOST: make sure it's up and running"
-        $DEBUG ping -c3 $HOST 1>/dev/null 2>/dev/null || continue
+        #
+        # Run the code below in the subshell, with set -e, so that
+        # the first command that fails "throws an exception" and we
+        # know something went wrong looking at $?.
+        # We need to reenable errors otherwise the outer shell is
+        # going to bail out if the inner one fails.
+        #
+        set +e
+        (
+            set -e
 
-        echo "$HOST: get *real* IP address"
-        ADDRESS=$($0 $HOST) || continue
-        echo "$HOST $ADDRESS" >> M-Lab/ip_addr.dat
+            # Make sure we can SSH into it
+            echo "$HOST: make sure it's up and running"
+            $SSH $HOST uname -a
 
-        echo "$HOST: geoloc complete"
+            echo "$HOST neubot.mlab.$HOST" >> M-Lab/ip_addr.dat
+
+        #
+        # As soon as we exit from the subshell, save the errno and
+        # re-enable errors, to catch potential doofus in the remainder
+        # of the script.
+        #
+        )
+        ERROR=$?
+        set -e
+
+        echo "$HOST: ip_addr result: $ERROR"
+        echo "$HOST: ip_addr complete"
+
     done
-
 fi
