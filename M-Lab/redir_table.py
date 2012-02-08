@@ -92,7 +92,7 @@ def realmain():
         # longitude.
         #
         if country in nodes_by_country:
-            redir_table[country] = set([list(nodes_by_country[country])[0]])
+            redir_table[country] = set(nodes_by_country[country])
         elif continent in nodes_by_continent:
             redir_table[country] = set([list(nodes_by_continent[continent])[0]])
         else:
