@@ -30,12 +30,6 @@ def realmain():
 
     ''' Build redirection table for the master server '''
 
-    #
-    # TODO Change .dat files name in order to represent more
-    # precisely what their content is.  E.g., instead of using
-    # ip_addr.dat I should use slivers.dat.
-    #
-
     sys.stderr.write('Loading slivers addresses...\n')
     slivers = {}
     filep = open('M-Lab/ip_addr.dat', 'rb')
