@@ -28,7 +28,7 @@ candidate=0
 destdir=_packages
 remote=server-nexa.polito.it:releases
 scp="scp"
-version=0.4.8-rc2
+version=0.4.8
 
 if [ $(echo $version|grep rc) ]; then
     candidate=1
@@ -40,28 +40,28 @@ if [ $candidate -eq 0 ]; then
     exit 1
 fi
 
-if [ -f dist/0.004008002.tar.gz ]; then
+if [ -f dist/0.004008999.tar.gz ]; then
 
     for ext in "" .sha256 .sig; do
-        $scp dist/0.004008002.tar.gz$ext $remote/updates
+        $scp dist/0.004008999.tar.gz$ext $remote/updates
     done
 
-    echo '0.004008002' > dist/v
+    echo '0.004008999' > dist/v
     if [ $candidate -ne 0 ]; then
         $scp dist/v $remote/updates/testing
     else
         $scp dist/v $remote/updates/latest
     fi
 
-    $scp dist/neubot-0.4.8-rc2.pkg.tgz $remote/$destdir
+    $scp dist/neubot-0.4.8.pkg.tgz $remote/$destdir
 
 fi
 
-if [ -f dist/neubot-0.4.8-rc2.tar.gz ]; then
+if [ -f dist/neubot-0.4.8.tar.gz ]; then
 
     $scp dist/Packages* $remote/$destdir
     $scp dist/Release* $remote/$destdir
-    $scp dist/neubot-0.4.8-rc2* $remote/$destdir
-    $scp dist/neubot-nox-0.4.8-rc2* $remote/$destdir
+    $scp dist/neubot-0.4.8* $remote/$destdir
+    $scp dist/neubot-nox-0.4.8* $remote/$destdir
 
 fi

@@ -1,3 +1,72 @@
+Neubot 0.4.8 [2012-02-08]
+	* M-Lab: fail deploy if we cannot stop a running Neubot
+	* M-Lab/deploy.sh: autogen neubot.tgz even if -n
+	* M-Lab/deploy.sh: document command line options
+	* scripts/collect.sh: scalable data collection
+	* updater/unix.py: make update channel configurable
+	* utils_rc: configuration file parser
+	* updater/unix.py: honor /etc/updater/unix config file
+	* Release neubot/0.4.8-rc1
+	* Merge experimental code to follow development on MacOSX
+	* scripts/collect.sh: count number of good/bad privacy settings
+	* scripts/collect.sh: do not mirror the neubot folder
+	* scripts/collect.sh: create and commit the publisheable tarball
+	* scripts/collect.sh: do not prepare $today for publishing
+	* scripts/collect.sh: generate better logs
+	* scripts/collect.sh: publish publisheable data
+	* scripts/collect.sh: set -e after option parsing.
+	* scripts/collect.sh: never change the script directory
+	* Merge working code for automatic data collection
+	* M-Lab: startup the rsync server
+	* scripts/collect.sh: make sure we generate tarball just once
+	* scripts/rh: regression test helper
+	* Check privacy when running command line tests in the local context
+	* filesys_posix.py: delay datadir_init()
+	* regress/filesys_posix.sh: document why it fails on Linux
+	* Makefile: record failures but don't stop regress
+	* regress/Makefile: repair install test
+	* notify.py: raise the interval between comet
+	* log.py: no point in logging empty lines
+	* regress: Tidy up
+	* regress: repair database/table_{bittorrent,speedtest}.py
+	* regress/Makefile: update install.noexec.txt to 0.4.7
+	* regress/neubot/http/rootdir.sh: repair after regress tidy up
+	* regress: adjust some comments
+	* regress/neubot/utils_posix.sh: document why it fails on Linux
+	* Tidy up regression tests
+	* Win32/neubot.nsi: s/HKLM/HKCU/g
+	* filesys: add filesystem null so Neubot for Windows works again
+	* Revert "Release neubot/0.4.8-rc1"
+	* Merge MacOSX code to automatically follow development
+	* updater/unix.py: correct nit in comment
+	* doc/updater/unix.txt: correctly document time between update checks
+	* updater/unix.py: add stub to clear base directory
+	* updater/unix.py: document __install_new_version()
+	* Merge some updater/unix.py fixes
+	* Rewrite /api/config and zap /api/configlables
+	* regress/Makefile: add newly added files
+	* scripts: extract code to update_changelog from release
+	* Release neubot/0.4.8-rc2
+	* MacOS/makepkg.py: do not create the latest file
+	* scripts/publish: helper to publish releases
+	* data: add LICENSE and README for data
+	* data/LICENSE: nit
+	* data/README: update bittorrent result description
+	* scripts/collect.sh: classify_by_privacy(): print extra empty line
+	* Merge branch 'next' into MASTER
+	* README -> README.rst for nicer project description on GitHub
+	* README.rst: bump copyright
+	* scripts/diffstat: require first and last commit
+	* M-Lab/redir_table.py: bump copyright year
+	* M-Lab/redir_table.py: do not override italy anymore
+	* M-Lab/ip_addr.sh: use the proper fqdn names
+	* M-Lab/servers.py: update M-Lab database location
+	* M-Lab/redir_table.py: more than one server per country
+	* M-Lab/redir_table.py: drop comment
+	* M-Lab/redir_table.py: also print time when it was generated
+	* Merge redirection table improvements
+	* Release neubot/0.4.8
+
 Neubot 0.4.7 [2012-01-30]
 	* PRIVACY: s/measurement-lab.net/measurementlab.net/
 	* M-Lab/deploy.sh: pass -q to compileall

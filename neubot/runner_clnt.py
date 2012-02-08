@@ -77,7 +77,7 @@ def __runner_client(address, port, verbosity, test, hint):
     if response.status != 200:
         raise RuntimeError('Not speaking with a Neubot daemon')
     body = response.read()
-    if body != "0.4.8-rc2":
+    if body != "0.4.8":
         raise RuntimeError('Bad Neubot daemon version')
 
     #
