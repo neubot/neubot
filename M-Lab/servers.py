@@ -40,7 +40,7 @@ import socket
 import sys
 import xmlrpclib
 
-GEOIP_DATABASE = '/usr/local/share/GeoIP/GeoIP.dat'
+GEOIP_DATABASE = 'M-Lab/GeoIP.dat'
 
 def serversmain():
 
