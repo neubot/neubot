@@ -24,44 +24,135 @@
 # Publish releases
 #
 
-candidate=0
-destdir=_packages
-remote=server-nexa.polito.it:releases
-scp="scp"
-version=0.4.8
+. $HOME/.neubot-publish
 
-if [ $(echo $version|grep rc) ]; then
-    candidate=1
-    destdir=rc
-fi
-
-if [ $candidate -eq 0 ]; then
-    echo "Publishing stable releases is not yet supported" 2>&1
+if [ -z "$remotedir" -o -z "$scp" -o -z "$server" -o -z "$ssh" ]; then
+    echo "error: invalid $HOME/.neubot-publish file" 2>&1
     exit 1
 fi
 
-if [ -f dist/0.004008999.tar.gz ]; then
+candidate=0
+dry=0
+remote=$server:$remotedir
+stable=0
 
+args=$(getopt nRr $*) || {
+    echo "usage: $0 [-nRr] location" 1>&2
+    exit 1
+}
+set -- $args
+while [ $# -gt 0 ]; do
+    if [ "$1" = "-n" ]; then
+        ssh='echo ssh'
+        dry=1
+        shift
+    elif [ "$1" = "-R" ]; then
+        stable=1
+        shift
+    elif [ "$1" = "-r" ]; then
+        candidate=1
+        shift
+    elif [ "$1" = "--" ]; then
+        shift
+        break
+    fi
+done
+if [ $stable = 1 -a $candidate = 1 ]; then
+    echo "error: options -R and -r are mutually exclusive" 1>&2
+    echo "usage: $0 [-Rr] location" 1>&2
+    exit 1
+fi
+if [ $# -ne 1 ]; then
+    echo "error: missing location" 1>&2
+    echo "usage: $0 [-Rr] location" 1>&2
+    exit 1
+fi
+
+#
+# Wrapper for scp such that we publish packages
+# with the right permissions.
+#
+doscp()
+{
+    [ $# -eq 2 ] || {
+        echo 'usage: doscp source dest' 2>&1
+        exit 1
+    }
+    if [ $dry = 0 ]; then
+        chmod 644 $1
+        $scp $1 $2
+    else
+        echo "scp $1 $2"
+    fi
+}
+
+#
+# If we have a MacOSX release, publish it
+#
+if [ -f $1/0.004008999.tar.gz ]; then
+
+    doscp $1/neubot-0.4.8.pkg.tgz $remote/_packages/
     for ext in "" .sha256 .sig; do
-        $scp dist/0.004008999.tar.gz$ext $remote/updates
+        doscp $1/0.004008999.tar.gz$ext $remote/updates/
     done
 
-    echo '0.004008999' > dist/v
-    if [ $candidate -ne 0 ]; then
-        $scp dist/v $remote/updates/testing
-    else
-        $scp dist/v $remote/updates/latest
+    if [ $candidate = 1 ]; then
+        $ssh $server "echo 0.004008999 > $remotedir/updates/testing"
     fi
 
-    $scp dist/neubot-0.4.8.pkg.tgz $remote/$destdir
+    if [ $stable = 1 ]; then
+        $ssh $server "echo 0.004008999 > $remotedir/updates/stable"
+    fi
 
 fi
 
-if [ -f dist/neubot-0.4.8.tar.gz ]; then
+#
+# If we have a Win32 release, publish it
+#
+if [ -f $1/neubot-0.4.8-setup.exe ]; then
 
-    $scp dist/Packages* $remote/$destdir
-    $scp dist/Release* $remote/$destdir
-    $scp dist/neubot-0.4.8* $remote/$destdir
-    $scp dist/neubot-nox-0.4.8* $remote/$destdir
+    doscp $1/neubot-0.4.8-setup.exe $remote/_packages/
+
+fi
+
+#
+# If we have a source release, publish it
+#
+if [ -f $1/neubot-0.4.8.tar.gz ]; then
+
+    for ext in .tar.gz .zip; do
+        doscp $1/neubot-0.4.8$ext $remote/_packages/
+    done
+
+fi
+
+#
+# If we have a Debian release, publish it
+#
+if [ -f $1/neubot-0.4.8-1_all.deb ]; then
+
+    for pkg in neubot neubot-nox; do
+        doscp $1/$pkg-0.4.8-1_all.deb $remote/_packages/
+    done
+
+    if [ $candidate = 1 ]; then
+        for pkg in neubot-0.4.8 neubot-nox-0.4.8; do
+            $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir/rc
+        done
+        doscp $1/Release $remote/rc/
+        doscp $1/Release.gpg $remote/rc/
+        doscp $1/Packages $remote/rc/
+        doscp $1/Packages.gz $remote/rc/
+    fi
+
+    if [ $stable = 1 ]; then
+        for pkg in neubot-0.4.8 neubot-nox-0.4.8; do
+            $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir
+        done
+        doscp $1/Release $remote/
+        doscp $1/Release.gpg $remote/
+        doscp $1/Packages $remote/
+        doscp $1/Packages.gz $remote/
+    fi
 
 fi
