@@ -303,6 +303,12 @@ deb:
 # Bless a new neubot release (sources and Debian).
 #
 release:
+	if ! [ "$(VERSION)" = "$$(git describe --tags)" ]; then		\
+	    echo "error: not at a release point" 2>&1;			\
+	    echo "Makefile version is: $(VERSION)" 2>&1;		\
+	    echo "git describe is: $$(git describe --tags)" 2>&1;	\
+	    exit 1;							\
+	fi
 	@make clean
 	@make deb
 	@make archive
