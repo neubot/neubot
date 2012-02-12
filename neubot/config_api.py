@@ -52,14 +52,12 @@ def config_api(stream, request, query):
 
     mimetype = 'application/json'
     indent = None
-    sort_keys = False
 
     options = cgi.parse_qs(query)
 
     if utils.intify(options.get('debug', ['0'])[0]):
         mimetype = 'text/plain'
         indent = 4
-        sort_keys = True
 
     #
     # Now that we know the response format, decide what is
@@ -127,6 +125,6 @@ def config_api(stream, request, query):
 
     response = Message()
 
-    body = json.dumps(obj, sort_keys=sort_keys, indent=indent)
+    body = json.dumps(obj, sort_keys=True, indent=indent)
     response.compose(code="200", reason="Ok", body=body, mimetype=mimetype)
     stream.send_response(request, response)
