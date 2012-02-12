@@ -39,7 +39,11 @@ LANG = {
     'Disable': "Disattiva",
     'Test running': "Test in corso",
 
-    'Your download and upload speed': "Risultati recenti",
+    'Your bittorrent connect time': 'Tempo per connettersi del test bittorrent',
+    'Your bittorrent download and upload speed': 'Velocità di download e upload del test bittorrent',
+
+    'Your speedtest connect time and latency': 'Tempo per connettersi e latenza del test speedtest',
+    'Your speedtest download and upload speed': 'Velocità di download e upload del test speedtest',
 
     /*
      * i18n for HTML pages
