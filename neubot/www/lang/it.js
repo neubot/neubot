@@ -25,11 +25,6 @@
 
 LANG = {
 
-    /* neubot/www/header.html */
-
-    'i18n_header_subtitle': "L'interfaccia web per controllare Neubot",
-    'i18n_header_title': '<a href="index.html">Interfaccia Web di Neubot</a>',
-
     /*
      * i18n for javascripts
      * Map the string on the left to the string on the right via
@@ -44,7 +39,11 @@ LANG = {
     'Disable': "Disattiva",
     'Test running': "Test in corso",
 
-    'Your download and upload speed': "Risultati recenti",
+    'Your bittorrent connect time': 'Tempo per connettersi del test bittorrent',
+    'Your bittorrent download and upload speed': 'Velocità di download e upload del test bittorrent',
+
+    'Your speedtest connect time and latency': 'Tempo per connettersi e latenza del test speedtest',
+    'Your speedtest download and upload speed': 'Velocità di download e upload del test speedtest',
 
     /*
      * i18n for HTML pages
@@ -53,6 +52,9 @@ LANG = {
      * below on the left there is the i18n_FOO class and on
      * the right the corresponding translation.
      */
+
+    'i18n_header_subtitle': "L'interfaccia web per controllare Neubot",
+    'i18n_header_title': '<a href="index.html">Interfaccia Web di Neubot</a>',
 
     'i18n_text_direction': "ltr",
     'i18n_settings': "Impostazioni",

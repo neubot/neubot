@@ -100,10 +100,16 @@ var speedtest = (function() {
     self.results_formatter_plot = function(data, since, unit, until) {
         var ipCounter = {};
         var ipCounterN = 0;
+
         var downloadData = [];
         var uploadData = [];
+        var latencyData = [];
+        var connectData = [];
+
         var downloadLabels = [];
         var uploadLabels = [];
+        var latencyLabels = [];
+        var connectLabels = [];
 
         for (i = 0; i < data.length; i++) {
             var result = data[i];
@@ -111,12 +117,16 @@ var speedtest = (function() {
             var timestamp = result["timestamp"];
             var download = result["download_speed"];
             var upload = result["upload_speed"];
+            var latency = result["latency"];
+            var connect = result["connect_time"];
 
             // Update IP counter
             if (ipCounter[address] == undefined) {      // XXX
                 ipCounter[address] = ipCounterN;
                 downloadData[ipCounterN] = [];
                 uploadData[ipCounterN] = [];
+                latencyData[ipCounterN] = [];
+                connectData[ipCounterN] = [];
                 downloadLabels[ipCounterN] = {
                   label: "DOWN " + address,
                   markerOptions: {
@@ -131,11 +141,27 @@ var speedtest = (function() {
                   },
                   neighborThreshold: -1
                 };
+                latencyLabels[ipCounterN] = {
+                  label: "Latency " + address,
+                  markerOptions: {
+                    style: 'square'
+                  },
+                  neighborThreshold: -1
+                };
+                connectLabels[ipCounterN] = {
+                  label: "Connect time " + address,
+                  markerOptions: {
+                    style: 'circle'
+                  },
+                  neighborThreshold: -1
+                };
                 ipCounterN++;
             }
 
-            // Timestamp to millisecond
+            // Convert to millisecond
             timestamp *= 1000;
+            latency *= 1000;
+            connect *= 1000;
 
             // XXX must convert to Number or it does not plot
             counter = ipCounter[address];
@@ -143,7 +169,15 @@ var speedtest = (function() {
             upload = Number(utils.toMbitsPerSecondNumber(upload));
             downloadData[counter].push([timestamp, download]);
             uploadData[counter].push([timestamp, upload]);
+            latencyData[counter].push([timestamp, latency]);
+            connectData[counter].push([timestamp, connect]);
         }
+
+        /*
+         * TODO For correctness, refactor the code below such that,
+         * if (very unlikely) we have connect_time data but not goodput
+         * data, we are still able to plot connect_time data.
+         */
 
         mydata = downloadData.concat(uploadData);
         if (!mydata.length) {
@@ -172,7 +206,7 @@ var speedtest = (function() {
 
         var plot = jQuery.jqplot("chartdiv1", mydata, {
           title: {
-            text: i18n.get("Your download and upload speed"),
+            text: i18n.get("Your speedtest download and upload speed"),
             fontSize: "16pt"
           },
           axes: {
@@ -201,6 +235,43 @@ var speedtest = (function() {
         });
 
         plot.replot();
+
+        mydata = latencyData.concat(connectData);
+        if (!mydata.length) {
+            return;
+        }
+
+        var plot2 = jQuery.jqplot("chartdiv2", mydata, {
+          title: {
+            text: i18n.get("Your speedtest connect time and latency"),
+            fontSize: "16pt"
+          },
+          axes: {
+            xaxis: xaxis,
+            yaxis: {
+              label: "ms",
+              min: 0
+            }
+          },
+          legend: {
+            show: true,
+            location: "e"
+          },
+          cursor: {
+            showVerticalLine: false,
+            showHorizontalLine: true,
+            showCursorLegend: false,
+            showTooltip: false,
+            tooltipLocation: 'sw',
+            zoom: true
+          },
+          highlighter: {
+            show: false
+          },
+          series: latencyLabels.concat(connectLabels)
+        });
+
+        plot2.replot();
 
         // some additional CSS-magic
         jQuery('.jqplot-table-legend').css('top', '200');

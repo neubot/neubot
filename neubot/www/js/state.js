@@ -94,13 +94,13 @@ var state = (function() {
                 // Do we need to show or hide the qtip?
                 if (data.current == "test") {
                     jQuery('#testResultsBox').qtip("show");
-                    jQuery('#testResultsBox h4').text(i18n.get(
-                      "Current test results"));
+                    jQuery('#testResultsBox h4').text(
+                      i18n.get("Current test results"));
                 }
                 else {
                     jQuery('#testResultsBox').qtip("hide");
-                    jQuery('#testResultsBox h4').text(i18n.get(
-                      "Latest test results"));
+                    jQuery('#testResultsBox h4').text(
+                      i18n.get("Latest test results"));
                 }
 
                 //

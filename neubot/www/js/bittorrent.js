@@ -100,8 +100,10 @@ var bittorrent = (function() {
         var ipCounterN = 0;
         var downloadData = [];
         var uploadData = [];
+        var connectData = [];
         var downloadLabels = [];
         var uploadLabels = [];
+        var connectLabels = [];
 
         for (i = 0; i < data.length; i++) {
             var result = data[i];
@@ -109,12 +111,14 @@ var bittorrent = (function() {
             var timestamp = result["timestamp"];
             var download = result["download_speed"];
             var upload = result["upload_speed"];
+            var connect = result["connect_time"];
 
             // Update IP counter
             if (ipCounter[address] == undefined) {      // XXX
                 ipCounter[address] = ipCounterN;
                 downloadData[ipCounterN] = [];
                 uploadData[ipCounterN] = [];
+                connectData[ipCounterN] = [];
                 downloadLabels[ipCounterN] = {
                   label: "DOWN " + address,
                   markerOptions: {
@@ -129,11 +133,19 @@ var bittorrent = (function() {
                   },
                   neighborThreshold: -1
                 };
+                connectLabels[ipCounterN] = {
+                  label: "Connect time " + address,
+                  markerOptions: {
+                    style: 'circle'
+                  },
+                  neighborThreshold: -1
+                };
                 ipCounterN++;
             }
 
-            // Timestamp to millisecond
+            // Convert to millisecond
             timestamp *= 1000;
+            connect *= 1000;
 
             // XXX must convert to Number or it does not plot
             counter = ipCounter[address];
@@ -141,7 +153,14 @@ var bittorrent = (function() {
             upload = Number(utils.toMbitsPerSecondNumber(upload));
             downloadData[counter].push([timestamp, download]);
             uploadData[counter].push([timestamp, upload]);
+            connectData[counter].push([timestamp, connect]);
         }
+
+        /*
+         * TODO For correctness, refactor the code below such that,
+         * if (very unlikely) we have connect_time data but not goodput
+         * data, we are still able to plot connect_time data.
+         */
 
         mydata = downloadData.concat(uploadData);
         if (!mydata.length) {
@@ -199,6 +218,43 @@ var bittorrent = (function() {
         });
 
         plot.replot();
+
+        mydata = connectData;
+        if (!mydata.length) {
+            return;
+        }
+
+        var plot2 = jQuery.jqplot("chartdiv2", mydata, {
+          title: {
+            text: i18n.get("Your bittorrent connect time"),
+            fontSize: "16pt"
+          },
+          axes: {
+            xaxis: xaxis,
+            yaxis: {
+              label: "ms",
+              min: 0
+            }
+          },
+          legend: {
+            show: true,
+            location: "e"
+          },
+          cursor: {
+            showVerticalLine: false,
+            showHorizontalLine: true,
+            showCursorLegend: false,
+            showTooltip: false,
+            tooltipLocation: 'sw',
+            zoom: true
+          },
+          highlighter: {
+            show: false
+          },
+          series: connectLabels
+        });
+
+        plot2.replot();
 
         // some additional CSS-magic
         jQuery('.jqplot-table-legend').css('top', '200');
