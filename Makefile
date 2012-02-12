@@ -203,7 +203,7 @@ uninstall:
 	find dist/r/ -depth -type d -empty -print >> dist/d
 	sed 's|dist/r|rm -f $(DESTDIR)|g' dist/f >> dist/UNINSTALL
 	sed 's|dist/r|rmdir $(DESTDIR)|g' dist/d >> dist/UNINSTALL
-	sh dist/UNINSTALL || true
+	sh dist/UNINSTALL
 
 #
 # Install should be invoked as root and will actually
