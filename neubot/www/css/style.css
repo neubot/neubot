@@ -457,7 +457,7 @@ a#x_link_to_status {
     color: #3da64e;
     font-size: normal;
 }
-#chartdiv1 {
+#chartdiv1, #chartdiv2 {
     margin-bottom: 20px;
     height: 400px;
     width: 100%;
