@@ -158,7 +158,7 @@ var speedtest = (function() {
                 ipCounterN++;
             }
 
-            // Timestamp to millisecond
+            // Convert to millisecond
             timestamp *= 1000;
             latency *= 1000;
             connect *= 1000;
@@ -172,6 +172,12 @@ var speedtest = (function() {
             latencyData[counter].push([timestamp, latency]);
             connectData[counter].push([timestamp, connect]);
         }
+
+        /*
+         * TODO For correctness, refactor the code below such that,
+         * if (very unlikely) we have connect_time data but not goodput
+         * data, we are still able to plot connect_time data.
+         */
 
         mydata = downloadData.concat(uploadData);
         if (!mydata.length) {

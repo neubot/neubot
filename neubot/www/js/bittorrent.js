@@ -143,7 +143,7 @@ var bittorrent = (function() {
                 ipCounterN++;
             }
 
-            // Timestamp to millisecond
+            // Convert to millisecond
             timestamp *= 1000;
             connect *= 1000;
 
@@ -155,6 +155,12 @@ var bittorrent = (function() {
             uploadData[counter].push([timestamp, upload]);
             connectData[counter].push([timestamp, connect]);
         }
+
+        /*
+         * TODO For correctness, refactor the code below such that,
+         * if (very unlikely) we have connect_time data but not goodput
+         * data, we are still able to plot connect_time data.
+         */
 
         mydata = downloadData.concat(uploadData);
         if (!mydata.length) {
