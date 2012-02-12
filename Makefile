@@ -76,8 +76,7 @@ regress:
 	fi
 
 clean:
-	@echo "[CLEAN]"
-	@./scripts/cleanup
+	./scripts/cleanup
 
 #                 _     _
 #   __ _ _ __ ___| |__ (_)_   _____
@@ -92,12 +91,11 @@ STEM = neubot-$(VERSION)
 ARCHIVE = git archive --prefix=$(STEM)/
 
 archive:
-	@echo "[ARCHIVE]"
-	@install -d dist/
-	@for FMT in tar zip; do \
+	install -d dist/
+	for FMT in tar zip; do \
 	 $(ARCHIVE) --format=$$FMT HEAD > dist/$(STEM).$$FMT; \
 	done
-	@gzip -9 dist/$(STEM).tar
+	gzip -9 dist/$(STEM).tar
 
 #  _           _        _ _
 # (_)_ __  ___| |_ __ _| | |
@@ -274,26 +272,25 @@ _deb:
 	make -f Makefile _deb_control
 	cd dist/control && tar czf ../control.tar.gz ./*
 	echo '2.0' > dist/debian-binary
-	@ar r $(DEB_PACKAGE) dist/debian-binary \
+	ar r $(DEB_PACKAGE) dist/debian-binary \
 	 dist/control.tar.gz dist/data.tar.gz
 
 	$(INSTALL) -m644 Debian/control/control-nox dist/control/control
 	SIZE=`du -k -s dist/data/|cut -f1` && \
 	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
 	cd dist/control && tar czf ../control.tar.gz ./*
-	@ar r $(DEB_PACKAGE_NOX) dist/debian-binary \
+	ar r $(DEB_PACKAGE_NOX) dist/debian-binary \
 	 dist/control.tar.gz dist/data.tar.gz
 
-	@cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
+	cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
          control/ data/
-	@chmod 644 $(DEB_PACKAGE)
-	@chmod 644 $(DEB_PACKAGE_NOX)
+	chmod 644 $(DEB_PACKAGE)
+	chmod 644 $(DEB_PACKAGE_NOX)
 
 deb:
-	@echo "[DEB]"
-	@fakeroot make -f Makefile _deb
-	@lintian $(DEB_PACKAGE) || true
-	@lintian $(DEB_PACKAGE_NOX) || true
+	fakeroot make -f Makefile _deb
+	lintian $(DEB_PACKAGE) || true
+	lintian $(DEB_PACKAGE_NOX) || true
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
