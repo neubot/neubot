@@ -160,6 +160,7 @@ _install:
 	    $(INSTALL) -d $(DESTDIR)$(MANDIR)/$$DIR; \
 	    test $$? || exit 1; \
 	done
+	find UNIX/man -type f -name \*.gz | xargs rm -f
 	for FILE in `cd UNIX/man && find . -type f`; do \
 	    gzip -9c UNIX/man/$$FILE > UNIX/man/$$FILE.gz; \
 	    test $$? || exit 1; \
