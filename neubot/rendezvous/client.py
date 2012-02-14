@@ -29,7 +29,6 @@
 import os
 import random
 import sys
-import webbrowser
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -41,6 +40,7 @@ from neubot.net.poller import POLLER
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
+from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.rendezvous import compat
 from neubot.state import STATE
 
@@ -61,15 +61,7 @@ def _open_browser_on_windows(page):
     #
 
     if os.name == 'nt':
-        try:
-            uri = 'http://%s:%s/%s' % (
-                                       CONFIG['agent.api.address'],
-                                       CONFIG['agent.api.port'],
-                                       page
-                                      )
-            webbrowser.open(uri)
-        except:
-            pass
+        NOTIFIER_BROWSER.notify_page(page)
 
 class ClientRendezvous(ClientHTTP):
     def __init__(self, poller):
