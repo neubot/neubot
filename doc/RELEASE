@@ -1,138 +1,87 @@
-Testing procedure before release
-''''''''''''''''''''''''''''''''
+Release procedure
+'''''''''''''''''
 
+:Version: 1.1 of 2012/02/15
+:Authors: Simone Basso
+:Documents: the release procedure
 
-First of all, build the packages, compute SHA256 sums and upload
-packages to the remote server using the following command::
+#. Build a release using the following commands::
 
-	make release &&
-	ssh releases.neubot.org rm -rf releases/rc/* &&
-	scp dist/* releases.neubot.org:releases/rc/
+     make release
+     sudo ./MacOS/makepkg.py
+     Win32/setup.py
 
+   The first command runs on any UNIX operating system and creates
+   a Debian and source release.  The second runs on MacOSX and
+   creates a MacOS release.  The third runs on Windows only and
+   creates a Windows release.
 
-Testing under MacOSX
-````````````````````
+#. Run regression tests.  You need access to a Debian machine
+   where you are root and where Neubot is not installed.
 
-To create and publish the package for MacOSX you need to be on a
-real Mac and type the following command(s)::
+#. Install Neubot on a Debian machine and:
 
-	sudo ./MacOS/makepkg.py &&
-	scp dist/neubot-0.4.8.pkg.tgz releases.neubot.org:rc/
+     #. make sure it prompts for privacy settings during the
+        install;
 
-(Unfortunately you need to be root to run this script.  It may
-be possible to use something like fakeroot(1) but I've not investigated
-that.)
+     #. make sure it prompts for privacy settings after a
+        reboot;
 
+     #. make sure that the `speedtest` and `bittorrent`
+        commands work properly.
 
-Testing under Ubuntu
-````````````````````
+#. Install Neubot on a MacOS machine and:
 
-We assume that the debian machine has already installed a previous
-version of Neubot, so we can test whether the update will work.  To
-be sure::
+     #. make sure it prompts for privacy settings during the
+        install;
 
-	neubot -V
+     #. make sure it prompts for privacy settings after a
+        reboot;
 
-Download and update to the latest package, make sure it is running
-and then open the web user interface::
+     #. make sure that the `speedtest` and `bittorrent`
+        commands work properly.
 
-	wget http://releases.neubot.org/rc/neubot-0.4.8-1_all.deb &&
-	sudo dpkg -i neubot-0.4.8-1_all.deb &&
-	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
-	wget -O- http://127.0.0.1:9774/api/debug &&
-	neubot -V && neubot
+#. Install and upgrade Neubot on a Windows machine and:
 
-Make sure that the user interface i18n works by switching your browser
-to a different language and making sure than all pages are correctly
-translated (expecially log, speedtest and bittorrent that have had some
-glitches in the past).  Please note that this might not work with FF
-less than 5.0 because of a known bug.
+     #. make sure it prompts for privacy settings during the
+        install;
 
-Reboot the debian machine than make sure that Neubot is still working
-using the command line::
+     #. make sure it prompts for privacy settings after a
+        reboot;
 
-	neubot -V &&
-	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
-	wget -O- http://127.0.0.1:9774/api/debug
+     #. make sure that the `speedtest` and `bittorrent`
+        commands work properly.
 
-Wipe the database, rerun Neubot and make sure that you get a notification
-that you must set privacy permissions.
+#. Read the manual page, make sure it's still relevant and
+   that there are no changes to be performed.
 
-Reinstall the package over itself to make sure that future updates are
-going to work (we must test the uninstall script of the new package)::
+#. Make sure that Windows installer is not identified as a
+   virus by <http://www.virustotal.com/>.
 
-	sudo dpkg -i neubot-0.4.8-1_all.deb &&
-	wget -O- 'http://127.0.0.1:9774/api/state?debug=1' &&
-	wget -O- http://127.0.0.1:9774/api/debug &&
-	neubot -V && neubot
+#. Deploy packages on the releases server using the following
+   convenience script::
 
-Make sure that bittorrent and speedtest tests work from command
-line using the following command::
+     ./scripts/publish -r location
+     ./scripts/publish -R location
 
-	neubot bittorrent && neubot speedtest
+   Where `location` is the place where you have placed the
+   release.  The -r form deploys a release candidate, while
+   the -R form deploys a stable release.
 
+#. Make sure that Neubot autoupdates on a Debian machine
+   where it was already installed.
 
-Testing under Windows
-`````````````````````
+#. Make sure that Neubot autoupdates on a MacOS machine
+   where it was already installed.
 
-First of all download the zip sources and then follow this
-building/testing procedure (we assume that you have already
-installed an old copy of the software on your system):
+#. Read wiki/errata and make sure all entries are still up
+   to date with reality.
 
-0. upgrade the required software
+#. Publish SHA256 sums at wiki/sha256.
 
-1. build the installer <http://www.neubot.org/install-sources#win32>
+#. Deploy the new Neubot version on Measurement Lab.
 
-2. upgrade neubot
+#. Announce the availability of the new version.
 
-3. make sure it's running
-
-4. uninstall neubot and make sure c:\program files\neubot was wiped
-
-5. reinstall neubot, this time from scratch
-
-6. make sure it's running
-
-7. remove privacy permissions
-
-8. reboot
-
-9. make sure neubot is still running
-
-10. wait for the notification to appear
-
-If possible, run a private master server that advertises an upgrade
-to make sure that the upgrade notification mechanism works.
-
-Make sure that bittorrent and speedtest tests work from command
-line using the following commands::
-
-	neubot.exe bittorrent
-	neubot.exe speedtest
-
-
-Publish new packages
-````````````````````
-
-At this point it makes sense to read the manual page and ensure it
-is still relevant and there are no changes that must be performed.
-
-Make sure that neubot installer is not mistakenly recognized as a
-virus checking with <http://www.virustotal.com/>.  If everything is
-OK then save the SHA256 of the installer along with the SHAs of
-other packages.
-
-Move the packages in the proper place in <http://releases.neubot.org/>.
-For robustness make a copy of the debian package's files so that we
-can restore them if needed.
-
-Upgrade the server and make sure that the server is running (or believes
-to be) a nonrc version.  Otherwise it will not serve update notifications
-to clients.
-
-Finally install the previous version and make sure that the update via
-apt-get works and that there are no errors.
-
-Save the SHA256s in the proper github project.
-
-Announce the availability of a new version.
+#. Deploy the new Neubot version at the master server and
+   make sure it advertises the update via rendezvous.

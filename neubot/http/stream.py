@@ -49,11 +49,8 @@ SMALLMESSAGE = 8000
 
 class StreamHTTP(Stream):
 
-    '''
-     Specializes stream in order to handle the Hyper-Text Transfer
-     Protocol (HTTP).  See also the finite state machine documented
-     at `doc/protocol.png`.
-    '''
+    ''' Specializes stream in order to handle the Hyper-Text Transfer
+        Protocol (HTTP) '''
 
     def __init__(self, poller):
         ''' Initialize the stream '''

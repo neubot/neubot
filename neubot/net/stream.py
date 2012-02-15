@@ -129,13 +129,6 @@ class SocketWrapper(object):
             else:
                 return ERROR, exception
 
-#
-# To implement the protocol syntax, subclass this class and
-# implement the finite state machine described in the file
-# `doc/protocol.png`.  The low level finite state machines for
-# the send and recv path are documented, respectively, in
-# `doc/sendpath.png` and `doc/recvpath.png`.
-#
 class Stream(Pollable):
     def __init__(self, poller):
         Pollable.__init__(self)
