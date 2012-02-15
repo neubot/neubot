@@ -1,0 +1,124 @@
+Neubot config
+'''''''''''''
+
+:Version: 1.1 of 2012/02/15
+:Authors: Simone Basso
+:Documents: neubot/config.py
+
+Configuration manager
+`````````````````````
+
+Usually there is just one instance of this class, named CONFIG, that
+gatekeeps the configuration.  The expected usage is as follows::
+
+   from neubot.config import CONFIG
+   ...
+
+   #
+   # Each module needs to export its set of properties
+   # along with their default values.
+   #
+   CONFIG.register_defaults({
+     "module.enabled": True,
+     "module.address": "127.0.0.1",
+     "module.port": 9774,
+   })
+   ...
+
+   #
+   # The web user interface shows only properties that
+   # have a description.  So, please add the description
+   # of relevant properties only.  E.g. the bittorrent
+   # module variables are needed only when you run it
+   # directly so the description is added in main():
+   #
+   def main():
+       ...
+       CONFIG.register_descriptions({
+         "bittorrent.listen": False,
+         ...
+       })
+
+       #
+       # When you create a new instance of a test, get
+       # a _copy_ of all the relevant variables and then
+       # create the instance using such copy.
+       # Note that the returned copy is a dictionary, so
+       # so you might want to employ the get() pattern used
+       # below to increment your module robustness.
+       # Of course you can add/remove/change values since
+       # you are working on a copy.
+       #
+       def create_test(self):
+           ...
+           k = CONFIG.copy()
+           if k.get("enabled", True):
+               self.listen(k.get("module.address", "127.0.0.1"),
+                 k.get("module.port", 9774))
+               k["module.ntries"] = 7
+           ...
+
+       #
+       # In certain cases -- such as when you want to check
+       # whether you MUST interrupt the test or not -- it makes
+       # tremendous sense to check the current configuration
+       # instead of using the copy.
+       # In this cases, you can take advantage of Config.get()
+       # that behaves as expected.
+       #
+       def periodic(self):
+           ...
+           if not CONFIG.get("enabled", True):
+               self.interrupt_test()
+           ...
+
+   #
+   # When your module is starting up, register all
+   # the ``-D property`` command line options.
+   #
+   ...
+   for name, value in options:
+       ...
+       if name == "-D":
+           CONFIG.register_property(value, "module")
+           continue
+       ...
+
+   #
+   # When you have processed command line options, you
+   # should merge the default configuration with input
+   # coming from the database (if any), environment, and
+   # command line (in this order!)
+   #
+   CONFIG.merge_database(DATABASE.connection())
+   CONFIG.merge_environ()
+   CONFIG.merge_properties()
+   ...
+
+       #
+       # You can modify the configuration when the program
+       # is running using the API.  The input is a dictionary
+       # containing the changes.  Note that we raise ConfigError
+       # when something goes wrong.
+       # Note that the changes are propagated to the database.
+       # The principle is that:
+       #
+       # 1. the last change rules,
+       # 2. only updates from API affect the database.
+       #
+       def update_from_api(self, kvstore):
+           CONFIG.merge_api(kvstore, DATABASE.connection())
+           ...
+
+   #
+   # Finally, we can read/write from/to file and that
+   # allows to export/import the configuration, should
+   # you want to clone it.
+   # It is very useful to write the current config to
+   # a database as well.
+   #
+   CONFIG.merge_fp(sys.stdin)
+   ...
+   CONFIG.store_fp(sys.stdout)
+   ...
+   CONFIG.store_database(database)
