@@ -544,7 +544,8 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 connection = __lib_http.HTTPSConnection(address)
             else:
                 connection = __lib_http.HTTPConnection(address)
-            connection.request("GET", rpath)
+            headers = {'User-Agent': 'Neubot/0.4.8'}
+            connection.request("GET", rpath, None, headers)
 
             # Recv HTTP response
             response = connection.getresponse()
