@@ -84,8 +84,7 @@ def collect_allowed(message):
 def allowed_to_run():
     ''' We are allowed to run if and only if we have all permissions '''
 
-    # XXX It sucks that here we need to perform a copy
-    return (count_valid(CONFIG.copy(), prefix='privacy.') == 3)
+    return (count_valid(CONFIG.conf, prefix='privacy.') == 3)
 
 def complain():
     ''' Complain with the user about privacy settings '''
