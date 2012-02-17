@@ -200,12 +200,13 @@ prepare()
 #
 publish()
 {
+    dryrun=0
     remote=server-nexa.polito.it:releases/data/
     noisy=''
 
-    options=$(getopt R:v $*)
+    options=$(getopt nR:v $*)
     if [ $? -ne 0 ]; then
-        echo "Usage: publish [-v] [-R remote] localdir..." 2>&1
+        echo "Usage: publish [-nv] [-R remote] localdir..." 2>&1
         exit 1
     fi
 
@@ -215,7 +216,10 @@ publish()
     set -- $options
 
     while [ $# -ge 0 ]; do
-        if [ "$1" = "-R" ]; then
+        if [ "$1" = "-n" ]; then
+            dryrun=1
+            shift
+        elif [ "$1" = "-R" ]; then
             remote=$2
             shift
             shift
@@ -236,7 +240,9 @@ publish()
             for result in $(find /tmp/neubot-data-collect -type f); do
                 privacy_ok $result
             done
-            cd $rawdir && rsync -aR $noisy $file $remote
+            if [ $dryrun -eq 0 ]; then
+                cd $rawdir && rsync -aR $noisy $file $remote
+            fi
         done
     done
 }
