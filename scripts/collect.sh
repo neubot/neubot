@@ -160,10 +160,10 @@ prepare()
         ok_count=0
         bad_count=0
 
-        for file in $(ls $rawdir/*.gz); do
-            $log_info "$0: gunzip $file"
-            gunzip $file
-            file=$(echo $file|sed 's/\.gz//g')
+        for gzfile in $(ls $rawdir/*.gz); do
+            $log_info "$0: zcat $gzfile"
+            file=$(echo $gzfile|sed 's/\.gz//g')
+            zcat $gzfile > $file
             if privacy_ok $file; then
                 $log_info "$0: privacy ok: $file"
                 ok_count=$(($ok_count + 1))
