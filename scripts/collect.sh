@@ -93,9 +93,8 @@ privacy_ok()
     python - $* << EOF
 import json
 import sys
-import gzip
 
-filep = gzip.open(sys.argv[1], 'rb')
+filep = open(sys.argv[1], 'rb')
 content = filep.read()
 dictionary = json.loads(content)
 if (int(dictionary.get('privacy_informed', 0)) == 1 and
@@ -110,84 +109,18 @@ EOF
 }
 
 #
-# This is a simple postprocessing step that moves the
-# results that have the permission to publish into a
-# subdirectory and results that have not the permission
-# into another subdirectory.
-# This command is idempotent and does not process the
-# same directory twice.
+# Package publisheable data into a tarball ready for being
+# published on the web.
 #
-classify_by_privacy()
+prepare()
 {
     log_always=echo
     log_info=:
-
-    options=$(getopt v $*)
-    if [ $? -ne 0 ]; then
-        echo "Usage: classify_by_privacy [-v]" 2>&1
-        exit 1
-    fi
-
-    set -- $options
-
-    # Do not tollerate errors
-    set -e
-
-    while [ $# -ge 0 ]; do
-        if [ "$1" = "-v" ]; then
-            log_info=echo
-            shift
-        elif [ "$1" = "--" ]; then
-            shift
-            break
-        fi
-    done
-
-    for rawdir in $*; do
-
-        if [ -d $rawdir/pubdir ]; then
-            $log_info "$0: already classified: $rawdir"
-            continue
-        fi
-
-        ok_count=0
-        bad_count=0
-
-        mkdir $rawdir/pubdir $rawdir/privdir
-        for file in $rawdir/*.gz; do
-            if privacy_ok $file; then
-                $log_info "$0: privacy ok: $file"
-                ok_count=$(($ok_count + 1))
-                destdir=$rawdir/pubdir
-            else
-                $log_info "$0: bad privacy: $file"
-                bad_count=$(($bad_count + 1))
-                destdir=$rawdir/privdir
-            fi
-            cp $file $destdir
-        done
-
-        $log_always "$rawdir: ok_count: $ok_count, bad_count: $bad_count"
-        $log_always ""
-    done
-}
-
-#
-# Here's another simple postprocessing step: compress all the
-# publisheable files into a tarball and commit it into the git
-# repository used for the purpose.
-# Automatically separate publisheable and nonpublisheable data
-# if that's needed.
-#
-prepare_for_publish()
-{
-    log_info=:
     log_error=echo
-    noisy=''
 
     options=$(getopt v $*)
     if [ $? -ne 0 ]; then
-        echo "Usage: prepare_for_publish [-v]" 2>&1
+        echo "Usage: prepare [-v] dir..." 2>&1
         exit 1
     fi
 
@@ -199,7 +132,6 @@ prepare_for_publish()
     while [ $# -ge 0 ]; do
         if [ "$1" = "-v" ]; then
             log_info=echo
-            noisy='-v'
             shift
         elif [ "$1" = "--" ]; then
             shift
@@ -218,10 +150,6 @@ prepare_for_publish()
             continue
         fi
 
-        if [ ! -d $rawdir/pubdir ]; then
-            classify_by_privacy $noisy $rawdir
-        fi
-
         # Parametrize the tarball name so we can change it easily
         tarball=results.tar
         if [ -f $rawdir/$tarball.gz ]; then
@@ -229,15 +157,25 @@ prepare_for_publish()
             continue
         fi
 
-        # Separate gunzip and tar -rf to ease testing
-        for file in $(ls $rawdir/pubdir/*.gz); do
-            $log_info "$0: gunzip $file"
-            gunzip $file
+        ok_count=0
+        bad_count=0
+
+        for gzfile in $(ls $rawdir/*.gz); do
+            $log_info "$0: zcat $gzfile"
+            file=$(echo $gzfile|sed 's/\.gz//g')
+            zcat $gzfile > $file
+            if privacy_ok $file; then
+                $log_info "$0: privacy ok: $file"
+                ok_count=$(($ok_count + 1))
+                $log_info "$0: tar -rf $(basename $file)"
+                tar -C $rawdir -rf $rawdir/$tarball $(basename $file)
+            else
+                $log_info "$0: bad privacy: $file"
+                bad_count=$(($bad_count + 1))
+            fi
         done
-        for file in $(ls $rawdir/pubdir/*); do
-            $log_info "$0: tar -rf $(basename $file)"
-            tar -C $rawdir/pubdir -rf $rawdir/$tarball $(basename $file)
-        done
+
+        $log_always "$rawdir: ok_count: $ok_count, bad_count: $bad_count"
 
         $log_info "gzip -9 $rawdir/$tarball"
         gzip -9 $rawdir/$tarball
@@ -262,12 +200,14 @@ prepare_for_publish()
 #
 publish()
 {
+    dryrun=0
     remote=server-nexa.polito.it:releases/data/
+    log_info=:
     noisy=''
 
-    options=$(getopt R:v $*)
+    options=$(getopt nR:v $*)
     if [ $? -ne 0 ]; then
-        echo "Usage: publish [-v] [-R remote] localdir..." 2>&1
+        echo "Usage: publish [-nv] [-R remote] localdir..." 2>&1
         exit 1
     fi
 
@@ -277,11 +217,15 @@ publish()
     set -- $options
 
     while [ $# -ge 0 ]; do
-        if [ "$1" = "-R" ]; then
+        if [ "$1" = "-n" ]; then
+            dryrun=1
+            shift
+        elif [ "$1" = "-R" ]; then
             remote=$2
             shift
             shift
         elif [ "$1" = "-v" ]; then
+            log_info=echo
             noisy='-v'
             shift
         elif [ "$1" = "--" ]; then
@@ -291,11 +235,19 @@ publish()
     done
 
     for rawdir in $*; do
-        (
-        cd $rawdir && \
-          rsync -aR $noisy \
-            $(find -type f -name results.tar.gz) $remote
-        )
+        for file in $(cd $rawdir && find . -type f -name results.tar.gz); do
+            rm -rf /tmp/neubot-data-collect
+            mkdir /tmp/neubot-data-collect
+            tar -C /tmp/neubot-data-collect -xzf $rawdir/$file
+            for result in $(find /tmp/neubot-data-collect -type f); do
+                $log_info "$0: check_privacy $result"
+                privacy_ok $result
+            done
+            if [ $dryrun -eq 0 ]; then
+                $log_info "$0: upload tarball"
+                cd $rawdir && rsync -aR $noisy $file $remote
+            fi
+        done
     done
 }
 
@@ -309,7 +261,7 @@ elif [ "$1" = "pull" ]; then
     pull $*
 elif [ "$1" = "prepare" ]; then
     shift
-    prepare_for_publish $*
+    prepare $*
 elif [ "$1" = "publish" ]; then
     shift
     publish $*
