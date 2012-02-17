@@ -202,6 +202,7 @@ publish()
 {
     dryrun=0
     remote=server-nexa.polito.it:releases/data/
+    log_info=:
     noisy=''
 
     options=$(getopt nR:v $*)
@@ -224,6 +225,7 @@ publish()
             shift
             shift
         elif [ "$1" = "-v" ]; then
+            log_info=echo
             noisy='-v'
             shift
         elif [ "$1" = "--" ]; then
@@ -238,9 +240,11 @@ publish()
             mkdir /tmp/neubot-data-collect
             tar -C /tmp/neubot-data-collect -xzf $rawdir/$file
             for result in $(find /tmp/neubot-data-collect -type f); do
+                $log_info "$0: check_privacy $result"
                 privacy_ok $result
             done
             if [ $dryrun -eq 0 ]; then
+                $log_info "$0: upload tarball"
                 cd $rawdir && rsync -aR $noisy $file $remote
             fi
         done
