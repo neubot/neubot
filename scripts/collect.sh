@@ -229,11 +229,15 @@ publish()
     done
 
     for rawdir in $*; do
-        (
-        cd $rawdir && \
-          rsync -aR $noisy \
-            $(find -type f -name results.tar.gz) $remote
-        )
+        for file in $(cd $rawdir && find . -type f -name results.tar.gz); do
+            rm -rf /tmp/neubot-data-collect
+            mkdir /tmp/neubot-data-collect
+            tar -C /tmp/neubot-data-collect -xzf $rawdir/$file
+            for result in $(find /tmp/neubot-data-collect -type f); do
+                privacy_ok $result
+            done
+            cd $rawdir && rsync -aR $noisy $file $remote
+        done
     done
 }
 
