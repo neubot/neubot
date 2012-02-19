@@ -25,6 +25,7 @@
 import compileall
 import getopt
 import os
+import re
 import sys
 import tarfile
 
@@ -51,6 +52,10 @@ def __verify(basedir, member):
 
 def install(basedir, version, dryrun=False):
     ''' Install a new version of Neubot '''
+
+    # Verify version number
+    if not re.match('^([0-9]+)\.([0-9]{9})$', version):
+        raise RuntimeError('updater_install: %s: invalid version' % version)
 
     # Make file names
     targz = os.sep.join([
