@@ -107,6 +107,7 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname (os.path.dirname(os.path.dirname
                                         (os.path.abspath(__file__)))))
 
+from neubot import updater_install
 from neubot import utils_rc
 
 # Note: BASEDIR/VERSIONDIR/neubot/updater/unix.py
@@ -740,32 +741,9 @@ def _download_and_verify_update(server='releases.neubot.org'):
 # Install new version
 #
 
-#
-# XXX This function works because BASEDIR/start.sh chdir()s to
-# BASEDIR, but this is not obvious, undocumented and, especially,
-# fragile.
-#
 def __install_new_version(version):
     ''' Install a new version of Neubot '''
-
-    # Make file names
-    targz = '%s.tar.gz' % version
-    srcdir = '%s' % version
-
-    # Extract from the tarball
-    archive = tarfile.open(targz, mode='r:gz')
-    archive.extractall()
-    archive.close()
-
-    # Compile all modules
-    compileall.compile_dir(srcdir, quiet=1)
-
-    # Write .neubot-installed-ok file
-    filep = open('%s/.neubot-installed-ok' % srcdir, 'wb')
-    filep.close()
-
-    # Call sync
-    os.system('sync')
+    updater_install.install(BASEDIR, version)
 
 def __switch_to_new_version():
     ''' Switch to the a new version of Neubot '''
