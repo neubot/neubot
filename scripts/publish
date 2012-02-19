@@ -100,8 +100,12 @@ if [ -f $1/0.004009001.tar.gz ]; then
         $ssh $server "echo 0.004009001 > $remotedir/updates/testing"
     fi
 
+    #
+    # The default channel name is `latest` and it tracks
+    # stable releases.
+    #
     if [ $stable = 1 ]; then
-        $ssh $server "echo 0.004009001 > $remotedir/updates/stable"
+        $ssh $server "echo 0.004009001 > $remotedir/updates/latest"
     fi
 
 fi
