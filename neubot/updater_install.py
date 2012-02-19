@@ -100,7 +100,7 @@ def main(args):
     if not arguments:
         sys.exit(USAGE)
 
-    basedir = '.'
+    basedir = os.path.abspath('.')
     dryrun = 0
     for name, value in options:
         if name == '-d':
