@@ -23,8 +23,13 @@
 ''' Install a new version of Neubot '''
 
 import compileall
+import getopt
 import os
+import sys
 import tarfile
+
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
 
 from neubot import utils_path
 
@@ -82,3 +87,29 @@ def install(basedir, version, dryrun=False):
     # Call sync
     if os.name == 'posix':
         os.system('sync')
+
+USAGE = 'usage: neubot updater_install [-n] [-d basedir] version...'
+
+def main(args):
+    ''' Main function '''
+
+    try:
+        options, arguments = getopt.getopt(args[1:], 'd:n')
+    except getopt.error:
+        sys.exit(USAGE)
+    if not arguments:
+        sys.exit(USAGE)
+
+    basedir = '.'
+    dryrun = 0
+    for name, value in options:
+        if name == '-d':
+            basedir = value
+        elif name == '-n':
+            dryrun = 1
+
+    for version in arguments:
+        install(basedir, version, dryrun)
+
+if __name__ == '__main__':
+    main(sys.argv)
