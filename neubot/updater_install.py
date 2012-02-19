@@ -44,7 +44,7 @@ def __verify(basedir, member):
     if not member.isdir() and not member.isreg():
         raise RuntimeError('updater_install: %s: invalid type' % member.name)
 
-def install(basedir, version):
+def install(basedir, version, dryrun=False):
     ''' Install a new version of Neubot '''
 
     # Make file names
@@ -57,11 +57,18 @@ def install(basedir, version):
                               '%s' % version,
                              ])
 
-    # Verify and extract from the tarball
+    # Verify the tarball
     archive = tarfile.open(targz, mode='r:gz')
     archive.errorlevel = 2
     for member in archive.getmembers():
         __verify(basedir, member)
+
+    # Honor dryrun
+    if dryrun:
+        archive.close()
+        return
+
+    # Extract from the tarball
     archive.extractall(path=basedir)
     archive.close()
 
