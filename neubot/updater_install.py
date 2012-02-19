@@ -26,6 +26,24 @@ import compileall
 import os
 import tarfile
 
+from neubot import utils_path
+
+def __verify(basedir, member):
+    ''' Verify one member of the tarfile '''
+
+    #
+    # Make sure that the combination of basedir and member
+    # name falls below basedir.
+    #
+    utils_path.append(basedir, member.name)
+
+    #
+    # The tar archive should contain directories and
+    # regular files only.
+    #
+    if not member.isdir() and not member.isreg():
+        raise RuntimeError('updater_install: %s: invalid type' % member.name)
+
 def install(basedir, version):
     ''' Install a new version of Neubot '''
 
@@ -39,9 +57,11 @@ def install(basedir, version):
                               '%s' % version,
                              ])
 
-    # Extract from the tarball
+    # Verify and extract from the tarball
     archive = tarfile.open(targz, mode='r:gz')
     archive.errorlevel = 2
+    for member in archive.getmembers():
+        __verify(basedir, member)
     archive.extractall(path=basedir)
     archive.close()
 
