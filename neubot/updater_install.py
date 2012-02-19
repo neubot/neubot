@@ -73,6 +73,10 @@ def install(basedir, version, dryrun=False):
                               basedir,
                               '%s' % version,
                              ])
+    okfile = os.sep.join([
+                          versiondir,
+                          '.neubot-installed-ok',
+                         ])
 
     # Verify the tarball
     archive = tarfile.open(targz, mode='r:gz')
@@ -93,7 +97,7 @@ def install(basedir, version, dryrun=False):
     compileall.compile_dir(versiondir, quiet=1)
 
     # Write .neubot-installed-ok file
-    filep = open('%s/.neubot-installed-ok' % versiondir, 'wb')
+    filep = open(okfile, 'wb')
     filep.close()
 
     # Call sync
