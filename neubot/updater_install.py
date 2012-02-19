@@ -41,6 +41,7 @@ def install(basedir, version):
 
     # Extract from the tarball
     archive = tarfile.open(targz, mode='r:gz')
+    archive.errorlevel = 2
     archive.extractall(path=basedir)
     archive.close()
 
