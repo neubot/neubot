@@ -50,6 +50,13 @@ def __verify(basedir, member):
     if not member.isdir() and not member.isreg():
         raise RuntimeError('updater_install: %s: invalid type' % member.name)
 
+    #
+    # Make sure that the owner and group of the file is
+    # root, as it should be.
+    #
+    if member.uid != 0 or member.gid != 0:
+        raise RuntimeError('updater_install: %s: invalid uid/gid' % member.name)
+
 def install(basedir, version, dryrun=False):
     ''' Install a new version of Neubot '''
 
