@@ -30,7 +30,6 @@ from neubot.log import LOG
 from neubot.runner_core import RUNNER_CORE
 from neubot.state import STATE
 
-from neubot import runner_lst
 from neubot import utils
 
 def runner_api_done():
