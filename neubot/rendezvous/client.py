@@ -43,11 +43,11 @@ from neubot.main import common
 from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.rendezvous import compat
 from neubot.runner_core import RUNNER_CORE
+from neubot.runner_lst import RUNNER_LST
 from neubot.state import STATE
 
 from neubot import marshal
 from neubot import privacy
-from neubot import runner_lst
 
 def _open_browser_on_windows(page):
 
@@ -139,7 +139,7 @@ class ClientRendezvous(ClientHTTP):
                     _open_browser_on_windows('update.html')
 
                 # Update tests known by the runner
-                runner_lst.update(m1.available)
+                RUNNER_LST.update(m1.available)
 
                 #
                 # Choose the test we would like to run even if
@@ -149,7 +149,7 @@ class ClientRendezvous(ClientHTTP):
                 # we /would/ have choosen if we were allowed to run
                 # it.
                 #
-                test = runner_lst.get_next_test()
+                test = RUNNER_LST.get_next_test()
                 if not test:
                     LOG.warning("No test available")
                     self._schedule()

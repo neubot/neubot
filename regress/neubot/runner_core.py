@@ -32,10 +32,10 @@ from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_core import RunnerCore
+from neubot.runner_lst import RUNNER_LST
 
 from neubot import bittorrent
 from neubot import privacy
-from neubot import runner_lst
 
 class TestIsRunningTest(unittest.TestCase):
     ''' Regression test for test_is_running() '''
@@ -140,7 +140,7 @@ class RunQueueTest(unittest.TestCase):
         # Setup (we will restore that later)
         saved_run = bittorrent.run
         bittorrent.run = on_bittorrent_run
-        runner_lst.update({'bittorrent': '/'})
+        RUNNER_LST.update({'bittorrent': '/'})
 
         CONFIG.conf['privacy.can_publish'] = 1
         CONFIG.conf['privacy.informed'] = 1
@@ -151,7 +151,7 @@ class RunQueueTest(unittest.TestCase):
 
         # Restore
         bittorrent.run = saved_run
-        runner_lst.update({})
+        RUNNER_LST.update({})
 
         # Worked as expected?
         self.assertTrue(bittorrent_run[0])
