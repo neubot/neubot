@@ -140,40 +140,45 @@ class ClientRendezvous(ClientHTTP):
                 # Update information on available updates
                 RUNNER_UPDATES.update(m1.update)
 
-                # Inform the user when we have updates
-                new_version = RUNNER_UPDATES.get_update_version()
-                new_uri = RUNNER_UPDATES.get_update_uri()
-                if new_version and new_uri:
-                    LOG.info("Version %s available at %s" % (new_version,
-                                                             new_uri))
-                    STATE.update("update", {"version": new_version,
-                                            "uri": new_uri})
-                    _open_browser_on_windows('update.html')
+                self._after_rendezvous()
 
-                #
-                # Choose the test we would like to run even if
-                # we're not going to run it because we're running
-                # in debug mode or tests are disabled.
-                # This allows us to print to the logger the test
-                # we /would/ have choosen if we were allowed to run
-                # it.
-                #
-                test = RUNNER_TESTS.get_next_test()
-                if not test:
-                    LOG.warning("No test available")
-                    self._schedule()
-                    return
+    def _after_rendezvous(self):
+        ''' After rendezvous actions '''
 
-                LOG.info("* Chosen test: %s" % test)
+        # Inform the user when we have updates
+        new_version = RUNNER_UPDATES.get_update_version()
+        new_uri = RUNNER_UPDATES.get_update_uri()
+        if new_version and new_uri:
+            LOG.info("Version %s available at %s" % (new_version,
+                                                     new_uri))
+            STATE.update("update", {"version": new_version,
+                                    "uri": new_uri})
+            _open_browser_on_windows('update.html')
 
-                # Are we allowed to run a test?
-                if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
-                    LOG.info("Tests are disabled... not running")
-                    self._schedule()
-                else:
+        #
+        # Choose the test we would like to run even if
+        # we're not going to run it because we're running
+        # in debug mode or tests are disabled.
+        # This allows us to print to the logger the test
+        # we /would/ have choosen if we were allowed to run
+        # it.
+        #
+        test = RUNNER_TESTS.get_next_test()
+        if not test:
+            LOG.warning("No test available")
+            self._schedule()
+            return
 
-                    # Actually run the test
-                    RUNNER_CORE.run(test, self._schedule)
+        LOG.info("* Chosen test: %s" % test)
+
+        # Are we allowed to run a test?
+        if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
+            LOG.info("Tests are disabled... not running")
+            self._schedule()
+        else:
+
+            # Actually run the test
+            RUNNER_CORE.run(test, self._schedule)
 
     def _schedule(self):
 
