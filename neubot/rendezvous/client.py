@@ -124,8 +124,7 @@ class ClientRendezvous(object):
 
         LOG.info("* Next rendezvous in %d seconds" % interval)
 
-        fn = lambda *args, **kwargs: self.run()
-        task = POLLER.sched(interval, fn)
+        task = POLLER.sched(interval, self.run)
 
         STATE.update("idle", publish=False)
         STATE.update("next_rendezvous", task.timestamp)
