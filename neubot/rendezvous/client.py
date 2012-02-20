@@ -44,6 +44,7 @@ from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.rendezvous import compat
 from neubot.runner_core import RUNNER_CORE
 from neubot.runner_tests import RUNNER_TESTS
+from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
 from neubot import marshal
@@ -132,14 +133,22 @@ class ClientRendezvous(ClientHTTP):
                 LOG.exception()
                 self._schedule()
             else:
-                if "version" in m1.update and "uri" in m1.update:
-                    ver, uri = m1.update["version"], m1.update["uri"]
-                    LOG.info("Version %s available at %s" % (ver, uri))
-                    STATE.update("update", {"version": ver, "uri": uri})
-                    _open_browser_on_windows('update.html')
 
                 # Update tests known by the runner
                 RUNNER_TESTS.update(m1.available)
+
+                # Update information on available updates
+                RUNNER_UPDATES.update(m1.update)
+
+                # Inform the user when we have updates
+                new_version = RUNNER_UPDATES.get_update_version()
+                new_uri = RUNNER_UPDATES.get_update_uri()
+                if new_version and new_uri:
+                    LOG.info("Version %s available at %s" % (new_version,
+                                                             new_uri))
+                    STATE.update("update", {"version": new_version,
+                                            "uri": new_uri})
+                    _open_browser_on_windows('update.html')
 
                 #
                 # Choose the test we would like to run even if
