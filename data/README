@@ -98,8 +98,8 @@ platform
     The software platform of the Neubot that performed the measurement,
     e.g. 'linux2'.
 
-BitTorrent table
-''''''''''''''''
+BitTorrent
+''''''''''
 
 The BitTorrent result is a dictionary that shares most field names and
 semantics with the speedtest result.  The only notable difference is

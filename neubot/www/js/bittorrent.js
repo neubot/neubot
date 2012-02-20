@@ -156,105 +156,95 @@ var bittorrent = (function() {
             connectData[counter].push([timestamp, connect]);
         }
 
-        /*
-         * TODO For correctness, refactor the code below such that,
-         * if (very unlikely) we have connect_time data but not goodput
-         * data, we are still able to plot connect_time data.
-         */
-
         mydata = downloadData.concat(uploadData);
-        if (!mydata.length) {
-            return;
-        }
-
-        var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
-        var xaxis = {
-            renderer: jQuery.jqplot.DateAxisRenderer,
-            showTickMarks: true
-        };
-
-        if (hours <= 48) {
-            xaxis.tickOptions = {
-              formatString:'%b %#d, h %H'
+        if (mydata.length) {
+            var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
+            var xaxis = {
+                renderer: jQuery.jqplot.DateAxisRenderer,
+                showTickMarks: true
             };
-            xaxis.tickInterval = '8 hours';
-        }
-        else {
-            xaxis.tickOptions = {
-              formatString:'%b %#d'
-            };
-            xaxis.tickInterval = '1 day';
-        }
-        xaxis.label = "Time";
 
-        var plot = jQuery.jqplot("chartdiv1", mydata, {
-          title: {
-            text: i18n.get("Your bittorrent download and upload speed"),
-            fontSize: "16pt"
-          },
-          axes: {
-            xaxis: xaxis,
-            yaxis: {
-              label: "Mbit/s",
-              min: 0
+            if (hours <= 48) {
+                xaxis.tickOptions = {
+                  formatString:'%b %#d, h %H'
+                };
+                xaxis.tickInterval = '8 hours';
             }
-          },
-          legend: {
-            show: true,
-            location: "e"
-          },
-          cursor: {
-            showVerticalLine: false,
-            showHorizontalLine: true,
-            showCursorLegend: false,
-            showTooltip: false,
-            tooltipLocation: 'sw',
-            zoom: true
-          },
-          highlighter: {
-            show: false
-          },
-          series: downloadLabels.concat(uploadLabels)
-        });
+            else {
+                xaxis.tickOptions = {
+                  formatString:'%b %#d'
+                };
+                xaxis.tickInterval = '1 day';
+            }
+            xaxis.label = "Time";
 
-        plot.replot();
+            var plot = jQuery.jqplot("chartdiv1", mydata, {
+              title: {
+                text: i18n.get("Your bittorrent download and upload speed"),
+                fontSize: "16pt"
+              },
+              axes: {
+                xaxis: xaxis,
+                yaxis: {
+                  label: "Mbit/s",
+                  min: 0
+                }
+              },
+              legend: {
+                show: true,
+                location: "e"
+              },
+              cursor: {
+                showVerticalLine: false,
+                showHorizontalLine: true,
+                showCursorLegend: false,
+                showTooltip: false,
+                tooltipLocation: 'sw',
+                zoom: true
+              },
+              highlighter: {
+                show: false
+              },
+              series: downloadLabels.concat(uploadLabels)
+            });
+
+            plot.replot();
+        }
 
         mydata = connectData;
-        if (!mydata.length) {
-            return;
+        if (mydata.length) {
+            var plot2 = jQuery.jqplot("chartdiv2", mydata, {
+              title: {
+                text: i18n.get("Your bittorrent connect time"),
+                fontSize: "16pt"
+              },
+              axes: {
+                xaxis: xaxis,
+                yaxis: {
+                  label: "ms",
+                  min: 0
+                }
+              },
+              legend: {
+                show: true,
+                location: "e"
+              },
+              cursor: {
+                showVerticalLine: false,
+                showHorizontalLine: true,
+                showCursorLegend: false,
+                showTooltip: false,
+                tooltipLocation: 'sw',
+                zoom: true
+              },
+              highlighter: {
+                show: false
+              },
+              series: connectLabels
+            });
+
+            plot2.replot();
         }
-
-        var plot2 = jQuery.jqplot("chartdiv2", mydata, {
-          title: {
-            text: i18n.get("Your bittorrent connect time"),
-            fontSize: "16pt"
-          },
-          axes: {
-            xaxis: xaxis,
-            yaxis: {
-              label: "ms",
-              min: 0
-            }
-          },
-          legend: {
-            show: true,
-            location: "e"
-          },
-          cursor: {
-            showVerticalLine: false,
-            showHorizontalLine: true,
-            showCursorLegend: false,
-            showTooltip: false,
-            tooltipLocation: 'sw',
-            zoom: true
-          },
-          highlighter: {
-            show: false
-          },
-          series: connectLabels
-        });
-
-        plot2.replot();
 
         // some additional CSS-magic
         jQuery('.jqplot-table-legend').css('top', '200');

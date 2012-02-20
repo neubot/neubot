@@ -94,6 +94,7 @@ import tarfile
 import stat
 import subprocess
 import decimal
+import shutil
 
 # For portability to Python 3
 if sys.version_info[0] == 3:
