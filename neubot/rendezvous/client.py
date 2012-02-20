@@ -23,9 +23,11 @@
 ''' Rendezvous client '''
 
 #
-# This file contains the client that periodically connects
-# to the master server to get next-test and available-updates
-# information.
+# Nowadays rendezvous logic is implemented by runner_rendezvous.py
+# in terms of runner_core.py.  This file is now just a wrapper around
+# runner_rendezvous.py: it periodically runs a rendezvous and then
+# attempts to run a test.  It also notifies the user the availability
+# of updates, if that is the case.
 #
 
 import os
@@ -55,8 +57,10 @@ def _open_browser_on_windows(page):
     #
     # This is possible only on Windows, where we run in the same
     # context of the user.  I contend that opening the browser is
-    # a bit brute force, but it works.  If you have patches that
-    # allow to deploy lowoverhead notifications email me.
+    # a bit brute force, but it works.  This is now mitigated by
+    # code that ensures Neubot does not notify the user too often.
+    # If are annoyed and have time, please consider contributing
+    # a low-overhad PyWin32 notification mechanism.
     #
 
     if os.name == 'nt':
@@ -94,8 +98,8 @@ class ClientRendezvous(object):
         # we're not going to run it because we're running
         # in debug mode or tests are disabled.
         # This allows us to print to the logger the test
-        # we /would/ have choosen if we were allowed to run
-        # it.
+        # we /would/ have choosen if we were allowed to
+        # run tests.
         #
         test = RUNNER_TESTS.get_next_test()
         if not test:
