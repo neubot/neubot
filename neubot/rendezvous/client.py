@@ -115,6 +115,7 @@ class ClientRendezvous(object):
         # and we use a random value around 1500 seconds.
         # The random value is extracted just once and from
         # that point on we keep using it.
+        # Suggested by Elias S.G. Carotti some time ago.
         #
         interval = CONFIG["agent.interval"]
         if not interval:
