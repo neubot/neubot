@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Rendezvous client '''
+
 #
 # This file contains the client that periodically connects
 # to the master server to get next-test and available-updates
@@ -61,7 +63,11 @@ def _open_browser_on_windows(page):
         NOTIFIER_BROWSER.notify_page(page)
 
 class ClientRendezvous(object):
+
+    ''' Rendezvous client '''
+
     def __init__(self):
+        ''' Initializer '''
         self._interval = 0
 
     def _after_rendezvous(self):
@@ -110,6 +116,8 @@ class ClientRendezvous(object):
 
     def _schedule(self):
 
+        ''' Schedule next rendezvous '''
+
         #
         # Typically the user does not specify the interval
         # and we use a random value around 1500 seconds.
@@ -146,6 +154,8 @@ CONFIG.register_defaults({
 })
 
 def main(args):
+
+    ''' Main function '''
 
     CONFIG.register_descriptions({
         "rendezvous.client.debug": "Do not perform any test",
