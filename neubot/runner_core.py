@@ -69,7 +69,8 @@ class RunnerCore(object):
         # available tests is empty, we need certainly to
         # refill it before proceeding.
         #
-        if auto_rendezvous and len(RUNNER_LST.get_test_names()) == 0:
+        if (auto_rendezvous and test != 'rendezvous' and
+            len(RUNNER_LST.get_test_names()) == 0):
             LOG.info('runner_core: Need to rendezvous first...')
             self.queue.append(('rendezvous', lambda: None))
 
