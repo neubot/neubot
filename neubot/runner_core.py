@@ -41,7 +41,7 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
-from neubot.runner_lst import RUNNER_LST
+from neubot.runner_tests import RUNNER_TESTS
 
 from neubot import bittorrent
 from neubot import privacy
@@ -70,7 +70,7 @@ class RunnerCore(object):
         # refill it before proceeding.
         #
         if (auto_rendezvous and test != 'rendezvous' and
-            len(RUNNER_LST.get_test_names()) == 0):
+            len(RUNNER_TESTS.get_test_names()) == 0):
             LOG.info('runner_core: Need to rendezvous first...')
             self.queue.append(('rendezvous', lambda: None))
 
@@ -113,7 +113,7 @@ class RunnerCore(object):
 
         # Run speedtest
         elif self.queue[0][0] == 'speedtest':
-            uri = RUNNER_LST.test_to_negotiate_uri('speedtest')
+            uri = RUNNER_TESTS.test_to_negotiate_uri('speedtest')
             #
             # If we have no negotiate URI for this test, possibly
             # because we are offline, abort it.
@@ -129,7 +129,7 @@ class RunnerCore(object):
 
         # Run bittorrent
         elif self.queue[0][0] == 'bittorrent':
-            uri = RUNNER_LST.test_to_negotiate_uri('bittorrent')
+            uri = RUNNER_TESTS.test_to_negotiate_uri('bittorrent')
             #
             # If we have no negotiate URI for this test, possibly
             # because we are offline, abort it.
@@ -203,7 +203,7 @@ def main(args):
     CONFIG.merge_database(DATABASE.connection())
 
     if len(arguments) == 2:
-        RUNNER_LST.update({arguments[0]: [arguments[1]]})
+        RUNNER_TESTS.update({arguments[0]: [arguments[1]]})
 
     RUNNER_CORE.run(arguments[0], lambda: None, auto_rendezvous)
     POLLER.loop()

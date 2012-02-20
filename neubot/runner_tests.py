@@ -1,4 +1,4 @@
-# neubot/runner_lst.py
+# neubot/runner_tests.py
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -22,6 +22,8 @@
 
 ''' List of available tests '''
 
+# Formerly runner_lst.py
+
 #
 # This component is periodically updated by the rendezvous
 # component and keeps track of the available tests, so that
@@ -31,7 +33,7 @@
 
 import random
 
-class RunnerLst(object):
+class RunnerTests(object):
 
     ''' Implements list of available tests '''
 
@@ -78,4 +80,4 @@ class RunnerLst(object):
         ''' Return names of all registered tests '''
         return self.avail.keys()
 
-RUNNER_LST = RunnerLst()
+RUNNER_TESTS = RunnerTests()

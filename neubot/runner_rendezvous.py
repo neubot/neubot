@@ -39,7 +39,7 @@ from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
-from neubot.runner_lst import RUNNER_LST
+from neubot.runner_tests import RUNNER_TESTS
 from neubot.state import STATE
 
 from neubot import marshal
@@ -109,7 +109,7 @@ class RunnerRendezvous(ClientHTTP):
         # not so difficult to also pass update information
         # to the proper recipient.
         #
-        RUNNER_LST.update(message['available'])
+        RUNNER_TESTS.update(message['available'])
 
         logging.info('runner_rendezvous: rendezvous complete')
         stream.close()

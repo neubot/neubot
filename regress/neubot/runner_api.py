@@ -32,7 +32,7 @@ from neubot.config import ConfigError
 from neubot.log import LOG
 from neubot.runner_api import runner_api
 from neubot.runner_core import RUNNER_CORE
-from neubot.runner_lst import RUNNER_LST
+from neubot.runner_tests import RUNNER_TESTS
 
 class RegressionTestStream(object):
     ''' Stream for this regression test '''
@@ -113,7 +113,7 @@ class RegressionTest(unittest.TestCase):
             run_invoked[0] += 1
 
         # Prerequisites (we will restore original funcs later)
-        RUNNER_LST.avail = {'bittorrent': 'foo'}
+        RUNNER_TESTS.avail = {'bittorrent': 'foo'}
         saved_run = RUNNER_CORE.run
         RUNNER_CORE.run = on_run_invoked
 
@@ -123,7 +123,7 @@ class RegressionTest(unittest.TestCase):
 
         # Undo prerequisites
         RUNNER_CORE.run = saved_run
-        RUNNER_LST.avail = {}
+        RUNNER_TESTS.avail = {}
 
         #
         # We must make sure that run() was invoked and that
@@ -174,7 +174,7 @@ class RegressionTest(unittest.TestCase):
             run_invoked[0] += 1
 
         # Prerequisites (we will restore everything later)
-        RUNNER_LST.avail = {'bittorrent': 'foo'}
+        RUNNER_TESTS.avail = {'bittorrent': 'foo'}
         saved_run = RUNNER_CORE.run
         saved_start_streaming = LOG.start_streaming
         RUNNER_CORE.run = on_run_invoked
@@ -186,7 +186,7 @@ class RegressionTest(unittest.TestCase):
 
         # Undo prerequisites
         RUNNER_CORE.run = saved_run
-        RUNNER_LST.avail = {}
+        RUNNER_TESTS.avail = {}
         LOG.start_streaming = saved_start_streaming
 
         #
