@@ -42,11 +42,11 @@ from neubot.log import LOG
 from neubot.main import common
 from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.rendezvous import compat
+from neubot.runner_core import RUNNER_CORE
 from neubot.state import STATE
 
 from neubot import marshal
 from neubot import privacy
-from neubot import runner_core
 from neubot import runner_lst
 
 def _open_browser_on_windows(page):
@@ -92,7 +92,7 @@ class ClientRendezvous(ClientHTTP):
         self._schedule()
 
     def connection_lost(self, stream):
-        if runner_core.test_is_running():
+        if RUNNER_CORE.test_is_running():
             LOG.debug("RendezVous: don't _schedule(): test in progress")
             return
         if self._task:
@@ -164,7 +164,7 @@ class ClientRendezvous(ClientHTTP):
                 else:
 
                     # Actually run the test
-                    runner_core.run(test, self._schedule)
+                    RUNNER_CORE.run(test, self._schedule)
 
     def _schedule(self):
 

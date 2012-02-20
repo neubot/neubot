@@ -27,9 +27,9 @@ import cgi
 from neubot.config import ConfigError
 from neubot.http.message import Message
 from neubot.log import LOG
+from neubot.runner_core import RUNNER_CORE
 from neubot.state import STATE
 
-from neubot import runner_core
 from neubot import runner_lst
 from neubot import utils
 
@@ -53,7 +53,7 @@ def runner_api(stream, request, query):
     # from
     # command line and WUI.
     #
-    if runner_core.test_is_running():
+    if RUNNER_CORE.test_is_running():
         raise ConfigError('A test is already in progress, try again later')
 
     #
@@ -89,7 +89,7 @@ def runner_api(stream, request, query):
     # body to keep happy the AJAX code.
     #
     if not 'streaming' in options or not utils.intify(options['streaming'][0]):
-        runner_core.run(test, runner_api_done)
+        RUNNER_CORE.run(test, runner_api_done)
         response.compose(code='200', reason='Ok', body='{}',
                          mimetype='application/json')
         stream.send_response(request, response)
@@ -111,4 +111,4 @@ def runner_api(stream, request, query):
       up_to_eof=True, mimetype='text/plain')
     stream.send_response(request, response)
     LOG.start_streaming(stream)
-    runner_core.run(test, runner_api_done)
+    RUNNER_CORE.run(test, runner_api_done)

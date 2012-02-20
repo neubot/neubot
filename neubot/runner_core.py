@@ -179,15 +179,6 @@ class RunnerCore(object):
 
 RUNNER_CORE = RunnerCore()
 
-def run(test, callback, auto_rendezvous=True):
-    ''' Run test using negotiate URI and callback() to
-        notify that the test is done '''
-    RUNNER_CORE.run(test, callback, auto_rendezvous)
-
-def test_is_running():
-    ''' Reports whether a test is running '''
-    return RUNNER_CORE.test_is_running()
-
 def main(args):
     ''' Main function '''
 
@@ -212,7 +203,7 @@ def main(args):
     if len(arguments) == 2:
         runner_lst.update({arguments[0]: [arguments[1]]})
 
-    run(arguments[0], lambda: None, auto_rendezvous)
+    RUNNER_CORE.run(arguments[0], lambda: None, auto_rendezvous)
     POLLER.loop()
 
 if __name__ == '__main__':

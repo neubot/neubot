@@ -31,9 +31,8 @@ if __name__ == '__main__':
 from neubot.config import ConfigError
 from neubot.log import LOG
 from neubot.runner_api import runner_api
+from neubot.runner_core import RUNNER_CORE
 from neubot.runner_lst import RUNNER_LST
-
-from neubot import runner_core
 
 class RegressionTestStream(object):
     ''' Stream for this regression test '''
@@ -97,13 +96,13 @@ class RegressionTest(unittest.TestCase):
         # In this case we want to make sure that if we pass a known
         # test name and we don't request for streaming:
         #
-        # 1. runner_core.run() is invoked;
+        # 1. RUNNER_CORE.run() is invoked;
         #
         # 2. the HTTP response is OK.
         #
 
         #
-        # We need to override the run() function of runner_core
+        # We need to override the run() function of RUNNER_CORE
         # because we just want to test that it was invoked using
         # the right parameters, not to invoke it.
         #
@@ -115,15 +114,15 @@ class RegressionTest(unittest.TestCase):
 
         # Prerequisites (we will restore original funcs later)
         RUNNER_LST.avail = {'bittorrent': 'foo'}
-        saved_run = runner_core.run
-        runner_core.run = on_run_invoked
+        saved_run = RUNNER_CORE.run
+        RUNNER_CORE.run = on_run_invoked
 
         # Invoke runner_api() for an known test
         stream = RegressionTestStream()
         runner_api(stream, None, 'test=bittorrent')
 
         # Undo prerequisites
-        runner_core.run = saved_run
+        RUNNER_CORE.run = saved_run
         RUNNER_LST.avail = {}
 
         #
@@ -148,7 +147,7 @@ class RegressionTest(unittest.TestCase):
         # In this case we want to make sure that if we pass a known
         # test name and we request for streaming:
         #
-        # 1. runner_core.run() is invoked;
+        # 1. RUNNER_CORE.run() is invoked;
         #
         # 2. the HTTP response is OK;
         #
@@ -156,7 +155,7 @@ class RegressionTest(unittest.TestCase):
         #
 
         #
-        # We need to override the run() function of runner_core
+        # We need to override the run() function of RUNNER_CORE
         # and start_streaming of LOG because we just want to
         # test that they were invoked using the right parameters,
         # not to invoke them.
@@ -176,9 +175,9 @@ class RegressionTest(unittest.TestCase):
 
         # Prerequisites (we will restore everything later)
         RUNNER_LST.avail = {'bittorrent': 'foo'}
-        saved_run = runner_core.run
+        saved_run = RUNNER_CORE.run
         saved_start_streaming = LOG.start_streaming
-        runner_core.run = on_run_invoked
+        RUNNER_CORE.run = on_run_invoked
         LOG.start_streaming = on_start_streaming_invoked
 
         # Invoke runner_api()
@@ -186,7 +185,7 @@ class RegressionTest(unittest.TestCase):
         runner_api(stream, None, 'test=bittorrent&streaming=1')
 
         # Undo prerequisites
-        runner_core.run = saved_run
+        RUNNER_CORE.run = saved_run
         RUNNER_LST.avail = {}
         LOG.start_streaming = saved_start_streaming
 
@@ -219,14 +218,14 @@ class RegressionTest(unittest.TestCase):
         #
 
         # Prerequisites (we will restore them later)
-        runner_core.RUNNER_CORE.running = True
+        RUNNER_CORE.running = True
 
         # Check
         self.assertRaises(ConfigError, runner_api, None, None,
                           'test=bittorrent')
 
         # Undo prerequisites
-        runner_core.RUNNER_CORE.running = False
+        RUNNER_CORE.running = False
 
 if __name__ == '__main__':
     unittest.main()
