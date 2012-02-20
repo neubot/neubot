@@ -106,7 +106,7 @@ class ClientRendezvous(object):
         LOG.info("* Chosen test: %s" % test)
 
         # Are we allowed to run a test?
-        if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
+        if not CONFIG["enabled"]:
             LOG.info("Tests are disabled... not running")
             self._schedule()
             return
@@ -148,23 +148,11 @@ class ClientRendezvous(object):
 
         RUNNER_CORE.run('rendezvous', self._after_rendezvous)
 
-CONFIG.register_defaults({
-    "rendezvous.client.debug": False,
-    "rendezvous.client.version": common.VERSION,
-})
-
 def main(args):
 
     ''' Main function '''
 
-    CONFIG.register_descriptions({
-        "rendezvous.client.debug": "Do not perform any test",
-        "rendezvous.client.version": "Set rendezvous client version",
-    })
-
     common.main("rendezvous.client", "Rendezvous client", args)
-
     client = ClientRendezvous()
     client.run()
-
     POLLER.loop()
