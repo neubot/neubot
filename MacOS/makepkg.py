@@ -35,15 +35,6 @@ import hashlib
 import shlex
 import sys
 
-#
-# It annoys me to have two .pyc files around for the version
-# handling utilities around after I run this command.  And, thank
-# god, the Python folks have provided a knob to avoid writing
-# the .pyc!
-#
-if hasattr(sys, 'dont_write_bytecode'):
-    sys.dont_write_bytecode = True
-
 TOPDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #
@@ -52,13 +43,8 @@ TOPDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MACOSDIR = os.sep.join([TOPDIR, 'MacOS'])
 os.chdir(MACOSDIR)
 
-if __name__ == '__main__':
-    sys.path.insert(0, TOPDIR)
-
-from neubot.utils.version import LibVersion
-
 VERSION = '0.4.9-rc2'
-NUMERIC_VERSION = LibVersion.to_numeric(VERSION)
+NUMERIC_VERSION = '0.004009002'
 
 IGNORER = shutil.ignore_patterns('.DS_Store')
 
