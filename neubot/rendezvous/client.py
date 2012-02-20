@@ -103,10 +103,10 @@ class ClientRendezvous(object):
         if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
             LOG.info("Tests are disabled... not running")
             self._schedule()
-        else:
+            return
 
-            # Actually run the test
-            RUNNER_CORE.run(test, self._schedule)
+        # Actually run the test
+        RUNNER_CORE.run(test, self._schedule)
 
     def _schedule(self):
 
