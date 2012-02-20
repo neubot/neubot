@@ -40,21 +40,13 @@ from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
+from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
 from neubot import marshal
 
 class RunnerRendezvous(ClientHTTP):
-    ''' Simplified rendezvous client '''
-
-    #
-    # This is a simplified rendezvous client that just
-    # takes care of updating the list of tests.
-    # Since it is invoked by the runner it behaves like
-    # a test and notifies "testdone" when finished.
-    # With a bit more work we can merge some goodies from
-    # the old client and always use this.
-    #
+    ''' Rendezvous client '''
 
     def start_rendezvous(self, uri):
         ''' Starts a rendezvous '''
@@ -103,13 +95,8 @@ class RunnerRendezvous(ClientHTTP):
 
         message = json.load(response.body)
 
-        #
-        # Just update the list of available tests because
-        # that is what I need immediately, however it is
-        # not so difficult to also pass update information
-        # to the proper recipient.
-        #
         RUNNER_TESTS.update(message['available'])
+        RUNNER_UPDATES.update(message['update'])
 
         logging.info('runner_rendezvous: rendezvous complete')
         stream.close()
