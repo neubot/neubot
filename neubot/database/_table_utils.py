@@ -208,6 +208,19 @@ def rename_column_query(table1, template1, table2, template2):
     query = "".join(query)
     return query
 
+def rename_column_ntemplate(template, mapping):
+
+    ''' Creates new template for rename_column(), given the template
+        and the changes mapping '''
+
+    ntemplate = {}
+    for key, value in template.items():
+        if key in mapping:
+            key = mapping[key]
+        ntemplate[key] = value
+
+    return ntemplate
+
 def rename_column(connection, table, template, mapping):
 
     ''' General procedure to rename one or more columns in a table,
@@ -218,11 +231,7 @@ def rename_column(connection, table, template, mapping):
     table = __check(table)
     otable = "old_%s" % table
 
-    ntemplate = {}
-    for key, value in template.items():
-        if key in mapping:
-            key = mapping[key]
-        ntemplate[key] = value
+    ntemplate = rename_column_ntemplate(template, mapping)
 
     connection.execute("ALTER TABLE %s RENAME TO %s" % (table, otable))
     connection.execute(make_create_table(table, ntemplate))
