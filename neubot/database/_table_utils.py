@@ -31,6 +31,8 @@
 import re
 import types
 
+from neubot.simplejson.ordered_dict import OrderedDict
+
 from neubot import utils
 
 #
@@ -208,12 +210,26 @@ def rename_column_query(table1, template1, table2, template2):
     query = "".join(query)
     return query
 
-def rename_column_ntemplate(template, mapping):
+def rename_column_ntemplate(template, mapping, broken=False):
 
     ''' Creates new template for rename_column(), given the template
         and the changes mapping '''
 
-    ntemplate = {}
+    #
+    # The problem with the broken algorithm is that there is
+    # no guarantee that new template keys() are in same order
+    # as template keys().  Hence, the column reordering bug
+    # that hit migration from 4.1 to 4.2 schema.
+    # Typically Neubot will use the nonbroken algorithm, but
+    # the broken one is needed by migrate to try to fixup the
+    # mess caused by the bug.
+    #
+
+    if not broken:
+        ntemplate = OrderedDict()
+    else:
+        ntemplate = {}
+
     for key, value in template.items():
         if key in mapping:
             key = mapping[key]
@@ -221,7 +237,7 @@ def rename_column_ntemplate(template, mapping):
 
     return ntemplate
 
-def rename_column(connection, table, template, mapping):
+def rename_column(connection, table, template, mapping, broken=False):
 
     ''' General procedure to rename one or more columns in a table,
         described by template, according to the specified mapping '''
@@ -231,7 +247,7 @@ def rename_column(connection, table, template, mapping):
     table = __check(table)
     otable = "old_%s" % table
 
-    ntemplate = rename_column_ntemplate(template, mapping)
+    ntemplate = rename_column_ntemplate(template, mapping, broken)
 
     connection.execute("ALTER TABLE %s RENAME TO %s" % (table, otable))
     connection.execute(make_create_table(table, ntemplate))

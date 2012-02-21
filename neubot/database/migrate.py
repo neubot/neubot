@@ -76,8 +76,13 @@ def migrate_from__v4_1__to__v4_2(connection):
                         "privacy_can_share": 0, "connect_time": 0.0,
                         "download_speed": 0.0, "upload_speed": 0.0,
                         "neubot_version": "", "platform": "", }
+        #
+        # Here we need to break the columns order so that we can
+        # fix it up again when migrating from 4.2 to 4.3
+        #
         _table_utils.rename_column(connection, "bittorrent",
-                                   template_bt, mapping)
+                                   template_bt, mapping,
+                                   broken=True)
 
         # Speedtest
         template_st = { "timestamp": 0, "uuid": "", "internal_address": "",
@@ -86,9 +91,13 @@ def migrate_from__v4_1__to__v4_2(connection):
                         "privacy_can_share": 0, "connect_time": 0.0,
                         "download_speed": 0.0, "upload_speed": 0.0,
                         "neubot_version": "", "platform": "", "latency": 0.0,}
+        #
+        # Here we need to break the columns order so that we can
+        # fix it up again when migrating from 4.2 to 4.3
+        #
         _table_utils.rename_column(connection, "speedtest",
-                                   template_st, mapping)
-
+                                   template_st, mapping,
+                                   broken=True)
 
         connection.execute('VACUUM;')
         connection.commit()
