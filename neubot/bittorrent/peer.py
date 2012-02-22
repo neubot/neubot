@@ -227,7 +227,10 @@ class PeerNeubot(StreamHandler):
     # condition but the fact that TCP is more sensitive to
     # losses might be interesting as well.
     #
-    def got_piece(self, stream, index, begin, block):
+    def got_piece(self, *args):
+
+        stream = args[0]
+
         if self.state != DOWNLOADING:
             raise RuntimeError("PIECE when state != DOWNLOADING")
 
