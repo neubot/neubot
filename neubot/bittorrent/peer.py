@@ -56,7 +56,7 @@ STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
 #
 # This class implements the test finite state
 # machine and message exchange that are documented
-# in <doc/bittorrent/peer.png>.
+# by <doc/bittorrent/peer.png>.
 #
 class PeerNeubot(StreamHandler):
     def __init__(self, poller):
