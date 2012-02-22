@@ -20,11 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# This file tries to emulate the behavior of a
-# BitTorrent peer to the extent that is required
-# by Neubot's purpose.
-#
+'''
+ This file tries to emulate the behavior of a
+ BitTorrent peer to the extent that is required
+ by Neubot's purpose.
+'''
 
 import random
 
