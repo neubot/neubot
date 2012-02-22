@@ -139,10 +139,9 @@ class PeerNeubot(StreamHandler):
     # Upload
 
     #
-    # XXX As suggested by BEP0003, we should keep blocks into
-    # an application level queue and just pipe a few of them
-    # into the socket buffer, so we can abort the upload in a
-    # graceful way.
+    # BEP0003 suggests to keep blocks into an application
+    # level queue and just pipe few blocks into the socket
+    # buffer, allowing for graceful abort.
     #
     def got_request(self, stream, index, begin, length):
         if self.state != UPLOADING:
