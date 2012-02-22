@@ -129,8 +129,8 @@ class PeerNeubot(StreamHandler):
             self.state = SENT_INTERESTED
             stream.send_interested()
 
-    def got_bitfield(self, b):
-        self.peer_bitfield = Bitfield(self.numpieces, b)
+    def got_bitfield(self, bitfield):
+        self.peer_bitfield = Bitfield(self.numpieces, bitfield)
         LOG.complete()
 
     # Upload
