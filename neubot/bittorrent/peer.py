@@ -180,9 +180,10 @@ class PeerNeubot(StreamHandler):
     # Download
 
     #
-    # XXX Not so clean to panic on CHOKE however the test
-    # does not use this message and we cannot simply ignore
-    # it because it would violate the protocol.
+    # We don't implement CHOKE and we cannot ignore it, since
+    # that would violate the specification.  So we raise an
+    # exception, which has the side effect that the connection
+    # will be closed.
     #
     def got_choke(self, stream):
         raise RuntimeError("Unexpected CHOKE message")
