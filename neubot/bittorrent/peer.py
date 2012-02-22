@@ -27,17 +27,26 @@
 '''
 
 import random
+import getopt
+import sys
+
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
 
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.btsched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
+from neubot.net.poller import POLLER
 from neubot.net.stream import StreamHandler
 
+from neubot.bittorrent import config
+from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.state import STATE
 
 from neubot import utils
+from neubot import utils_rc
 
 # Constants
 from neubot.bittorrent.config import PIECE_LEN
@@ -444,3 +453,44 @@ class PeerNeubot(StreamHandler):
 
     def complete(self, stream, speed, rtt, target_bytes):
         pass
+
+def main(args):
+    ''' Main function '''
+
+    try:
+        options, arguments = getopt.getopt(args[1:], 'lO:v')
+    except getopt.error:
+        sys.exit('usage: neubot bittorrent_peer [-lv] [-O setting]')
+    if arguments:
+        sys.exit('usage: neubot bittorrent_peer [-lv] [-O setting]')
+
+    settings = [ 'address 127.0.0.1',
+                 'port 6881',
+                 'version 1' ]
+
+    listener = False
+    for name, value in options:
+        if name == '-l':
+            listener = True
+        elif name == '-O':
+            settings.append(value)
+        elif name == '-v':
+            LOG.verbose()
+
+    settings = utils_rc.parse_safe(iterable=settings)
+
+    config_copy = CONFIG.copy()
+    config.finalize_conf(config_copy)
+
+    peer = PeerNeubot(POLLER)
+    peer.configure(config_copy)  # BLEAH
+    peer.version = int(settings['version'])
+    if not listener:
+        peer.connect((settings['address'], int(settings['port'])))
+    else:
+        peer.listen((settings['address'], int(settings['port'])))
+
+    POLLER.loop()
+
+if __name__ == '__main__':
+    main(sys.argv)
