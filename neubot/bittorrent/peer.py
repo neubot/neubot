@@ -34,16 +34,13 @@ from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.net.stream import StreamHandler
 
-from neubot.bittorrent import estimate
 from neubot.log import LOG
 from neubot.state import STATE
 
 from neubot import utils
 
 # Constants
-from neubot.bittorrent.config import NUMPIECES
 from neubot.bittorrent.config import PIECE_LEN
-from neubot.bittorrent.config import WATCHDOG
 
 LO_THRESH = 3
 MAX_REPEAT = 7
