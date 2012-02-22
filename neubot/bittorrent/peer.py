@@ -156,6 +156,9 @@ class PeerNeubot(StreamHandler):
         block = chr(random.randint(32, 126)) * length
         stream.send_piece(index, begin, block)
 
+    def send_complete(self, stream):
+        ''' Invoked when the send queue is empty '''
+
     def got_interested(self, stream):
         if self.connector_side and self.state != SENT_NOT_INTERESTED:
             raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")

@@ -159,6 +159,10 @@ class StreamBitTorrent(Stream):
         s = ''.join(d)
         self.start_send(s)
 
+    def send_complete(self):
+        ''' Invoked when the send queue is empty '''
+        self.parent.send_complete(self)
+
     #
     # We use three state variables in this loop: self.left is the
     # size left to read in the next message, self.count is the amount
