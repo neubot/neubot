@@ -237,7 +237,8 @@ trasmissione nella sezione `4. Domande tecniche`_.
 
 Neubot/1.0 sarà in grado di eseguire test di trasmissione client-server
 e peer-to-peer, utilizzando vari protocolli di livello applicativo.
-Abbiamo suddiviso il percorso per arrivare a Neubot/1.0 in quattro fasi:
+Inizialmente, avevamo suddiviso il percorso per arrivare a Neubot/1.0 in
+quattro fasi:
 
 #. implementare un semplice test di trasmissione client-server basato su
    HTTP;
@@ -247,7 +248,10 @@ Abbiamo suddiviso il percorso per arrivare a Neubot/1.0 in quattro fasi:
    peer-to-peer;
 #. implementare ulteriori test peer-to-peer per ulteriori protocolli;
 
-Per saperne di più leggi la nostra pagina roadmap_.
+In seguito la roadmap e' stata aggiornata ed estesa per tenere conto
+di difficolta` e opportunita` incontrate durante il processo di sviluppo
+e, adesso, e' possibile leggere la roadmap_ e la TODO_ list, aggiornate
+e gestite utilizzando il `wiki di github`_.
 
 1.9. Quando è prevista la prossima release di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -702,7 +706,7 @@ l'autorizzazione!
 
 .. _roadmap: https://github.com/neubot/neubot/wiki/roadmap
 .. _todo: https://github.com/neubot/neubot/wiki/todo
-.. _`github's wiki`: https://github.com/neubot/neubot/wiki
+.. _`wiki di github`: https://github.com/neubot/neubot/wiki
 
 .. _`rilasciare presto, rilasciare spesso`:
  http://www.catb.org/esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html
