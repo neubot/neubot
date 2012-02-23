@@ -95,8 +95,8 @@ about the Internet, one of the key infrastructures of our societies.
 Another reason why you might want to install Neubot is that test results
 provide a brief picture of how your Internet connection is working, at
 different hours and using different protocols. You can compare these
-local results with the aggregated results published on the Neubot site
-and/or with results obtained using other tests, in order to achieve a
+local results
+with results obtained using other tests, in order to achieve a
 more in-depth understanding of the behavior of your home network and of
 the behavior of your Provider.
 
