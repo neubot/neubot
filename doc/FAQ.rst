@@ -425,11 +425,9 @@ required to transfer them.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The installer writes the following registry key, so that Windows is
-aware of the uninstaller:
+aware of the uninstaller::
 
-::
-
-    HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
+    HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
 
 The key is removed during the uninstall process.
 
