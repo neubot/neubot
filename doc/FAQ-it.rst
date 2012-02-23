@@ -193,26 +193,26 @@ materia di neutralità.
 1.6. Perchè potrei voler installare Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Potresti voler installare Neubot se tieni alla neutralità della rete, se
-desideri sostenere questo lavoro di ricerca, e se sei disponibile a
-donare a questo progetto una piccola parte della tua capacità di rete
-per eseguire i test di trasmissione periodica. Potrai contribuire a
-costruire un set di dati quantitativi sulla neutralità della rete, e la
-disponibilità di questo set di dati indipendenti condurrà probabilmente
-a un processo decisionale più democratico di Internet, una delle
-infrastrutture chiave delle nostre società.
+Potresti voler installare Neubot se tieni alla neutralità della rete,
+se desideri sostenere questo lavoro di ricerca, e se sei disponibile a
+donare a questo progetto una frazione della tua capacità di rete per
+eseguire test periodici di qualità e neutralità. Potrai contribuire
+a costruire un set di dati quantitativi sulla neutralità della rete,
+e la disponibilità di questo set di dati indipendenti condurrà
+probabilmente a un processo decisionale più democratico di Internet,
+una delle infrastrutture chiave delle nostre società.
 
 Un'altra ragione per cui potresti voler installare Neubot è che i
-risultati dei test forniscono un breve quadro di come funzioni la tua
+risultati dei test forniscono un breve quadro del funzionamento della tua
 connessione Internet, in ore diverse ed utilizzando protocolli diversi.
-Puoi confrontare questi risultati locali con i risultati aggregati
-pubblicati sul sito Neubot e/o con i risultati ottenuti con altri test,
-al fine di ottenere una comprensione più approfondita del comportamento
-della tua rete domestica e del comportamento del tuo provider.
+Puoi confrontare questi risultati locali con i risultati ottenuti con
+altri test, al fine di ottenere una comprensione più approfondita
+del comportamento della tua rete domestica e del comportamento del
+tuo provider.
 
 Se sei interessato, non esitare a installarlo, perché il successo di
-questo sforzo di ricerca dipende in larga misura da quanti utenti
-installano il bot.
+questo progetto di ricerca dipende in larga misura da quanti utenti
+installano Neubot.
 
 1.7. Quali sono i test implementati dall'ultima versione?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
