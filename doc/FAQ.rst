@@ -462,13 +462,9 @@ ordinary user you will dump the user-specific database instead.)
 4.6. What does *bittorrent* test measures?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The *bittorrent* test emulates the `BitTorrent peer-wire
-protocol <http://www.bittorrent.org/beps/bep_0003.html>`_ and measures:
-`round-trip
-latency <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_, download
-and upload `goodput <http://en.wikipedia.org/wiki/Goodput>`_. The test
-estimates the round-trip latency measuring the time required to connect.
-It also estimates the download and upload goodput.
+The *bittorrent* test emulates the `BitTorrent peer-wire protocol`_ and
+measures: `round trip time`_, download and upload goodput_. The test
+estimates the `round trip time`_ by measuring the time required to connect.
 
 Since BitTorrent uses small messages, it is not possible to transfer a
 huge resource and divide the number of transmitted bytes by the time of
