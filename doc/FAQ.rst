@@ -442,15 +442,12 @@ Under Windows, the database path is always
 ``%APPDATA%\neubot\database.sqlite3``.
 
 For Neubot >= 0.3.7 you can query the location of the database running
-the following command: ``neubot database``, for example:
-
-::
+the ``neubot database info`` command, for example::
 
     $ neubot database info
     /home/simone/.neubot/database.sqlite3
 
-    $ sudo neubot database info
-    [sudo] password for simone: 
+    # neubot database info
     /var/neubot/database.sqlite3
 
 4.5. How can I dump the content of the database?
