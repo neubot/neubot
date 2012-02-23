@@ -1,6 +1,8 @@
 0. Index
 --------
 
+* `0. Index`_
+
 * `1. General questions`_
 
    * `1.1. What is Neubot?`_
