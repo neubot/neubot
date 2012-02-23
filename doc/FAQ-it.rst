@@ -7,33 +7,35 @@
 
     * `1.1. Che cos'è Neubot?`_
 
-    * `1.2. Che cos'è la neutralità della rete?`_
+    * `1.2. Che cos'è Measurement Lab?`_
 
-    * `1.3. Perchè "network neutrality bot"?`_
+    * `1.3. Che cos'è la neutralità della rete?`_
 
-    * `1.4. Perchè è cruciale monitorare la neutralità della rete?`_
+    * `1.4. Perchè "network neutrality bot"?`_
 
-    * `1.5. Perchè potrei voler installare Neubot?`_
+    * `1.5. Perchè è cruciale monitorare la neutralità della rete?`_
 
-    * `1.6. Quali sono i test implementati dall'ultima versione?`_
+    * `1.6. Perchè potrei voler installare Neubot?`_
 
-    * `1.7. Qual'è la roadmap per arrivare a Neubot/1.0?`_
+    * `1.7. Quali sono i test implementati dall'ultima versione?`_
 
-    * `1.8. Quando è prevista la prossima release di Neubot?`_
+    * `1.8. Qual'è la roadmap per arrivare a Neubot/1.0?`_
 
-    * `1.9. Qual'è la vostra politica sulle versioni?`_
+    * `1.9. Quando è prevista la prossima release di Neubot?`_
 
-    * `1.10. Qual'è la versione migliore di Neubot?`_
+    * `1.10. Qual'è la vostra politica sulle versioni?`_
 
-    * `1.11. Per quanto tempo devo tenere installato Neubot?`_
+    * `1.11. Qual'è la versione migliore di Neubot?`_
 
-    * `1.12. Quanto testate Neubot prima di ogni release?`_
+    * `1.12. Per quanto tempo devo tenere installato Neubot?`_
 
-    * `1.13. Chi sviluppa Neubot?`_
+    * `1.13. Quanto testate Neubot prima di ogni release?`_
 
-    * `1.14. Con quale licenza viene distribuito Neubot?`_
+    * `1.14. Chi sviluppa Neubot?`_
 
-    * `1.15. Quanto costa Neubot?`_
+    * `1.15. Con quale licenza viene distribuito Neubot?`_
+
+    * `1.16. Quanto costa Neubot?`_
 
 * `2. Installare Neubot`_
 
@@ -102,7 +104,21 @@ test server. Il set di dati raccolti contiene campioni provenienti da
 diversi Providers e viene pubblicato sul web, consentendo a chiunque di
 analizzare i dati per finalità di ricerca.
 
-1.2. Che cos'è la neutralità della rete?
+1.2. Che cos'è Measurement Lab?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Measurement Lab (M-Lab_) è una piattaforma server distribuita che fornisce
+connettività e server in giro per il mondo a progetti che si propongono
+di misurare la qualità e/o la neutralità delle connession a banada larga a
+Internet, verificando il comportamento della Rete con test attivi.
+
+A partire dalla versione 0.4.6, Neubot è stato incluso nella piattaforma
+Measurement Lab, e, dalla versione 0.4.8, la maggior parte dei test insiste
+sui server di Measurement Lab.  I vecchi client utilizzano ancora il server
+centrale del progetto Neubot, ma la percentuale di questi test è molto
+piccola.
+
+1.3. Che cos'è la neutralità della rete?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 La neutralità della rete è il principio secondo cui Internet non
@@ -143,7 +159,7 @@ piu' ti consigliamo di fare riferimento alla pagina Wikipedia sulla
 `neutralità della
 rete <http://it.wikipedia.org/wiki/Neutralità_della_Rete>`_.
 
-1.3. Perchè "network neutrality bot"?
+1.4. Perchè "network neutrality bot"?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il programma si chiama *network neutrality bot* perché è un `"software
@@ -151,7 +167,7 @@ che esegue operazioni automatiche su
 Internet" <http://en.wikipedia.org/wiki/Internet_bot>`_, al fine di
 quantificare la *neutralità della rete*.
 
-1.4. Perchè è cruciale monitorare la neutralità della rete?
+1.5. Perchè è cruciale monitorare la neutralità della rete?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Monitorare la neutralità della rete è cruciale perchè permette una più
@@ -169,7 +185,7 @@ scenario *ex-post*. Infatti, consentirebbe di verificare il
 comportamento degli operatori, alla luce delle decisioni normative in
 materia di neutralità.
 
-1.5. Perchè potrei voler installare Neubot?
+1.6. Perchè potrei voler installare Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Potresti voler installare Neubot se tieni alla neutralità della rete, se
@@ -193,7 +209,7 @@ Se sei interessato, non esitare a installarlo, perché il successo di
 questo sforzo di ricerca dipende in larga misura da quanti utenti
 installano il bot.
 
-1.6. Quali sono i test implementati dall'ultima versione?
+1.7. Quali sono i test implementati dall'ultima versione?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'ultima versione di Neubot implementa i seguenti test di trasmissione:
@@ -210,7 +226,7 @@ L'ultima versione di Neubot implementa i seguenti test di trasmissione:
 Se sei interessato, puoi trovare maggiori dettagli sui test di
 trasmissione nella sezione `4. Domande tecniche`_.
 
-1.7. Qual'è la roadmap per arrivare a Neubot/1.0?
+1.8. Qual'è la roadmap per arrivare a Neubot/1.0?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot/1.0 sarà in grado di eseguire test di trasmissione client-server
@@ -227,7 +243,7 @@ Abbiamo suddiviso il percorso per arrivare a Neubot/1.0 in quattro fasi:
 
 Per saperne di più leggi la nostra pagina roadmap_.
 
-1.8. Quando è prevista la prossima release di Neubot?
+1.9. Quando è prevista la prossima release di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il processo di rilascio si sforza di `rilasciare presto, rilasciare
@@ -244,15 +260,15 @@ funzioni sperimentali. Le milestone releases vengono distribuite quando
 una serie di caratteristiche diventa stabile. Consulta la
 roadmap_ per il nostro *roadmap plan*.
 
-1.9. Qual'è la vostra politica sulle versioni?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.10. Qual'è la vostra politica sulle versioni?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Le milestone releases incrementano il numero maggiore (o minore) della
 versione e impostano a zero i numeri delle versioni meno importanti. Le
 patch releases incrementano il numero di ogni patch release. Quindi,
 1.0.0 e 0.4.0 sono milestone releases, mentre 0.3.1 è una patch release.
 
-1.10. Qual'è la versione migliore di Neubot?
+1.11. Qual'è la versione migliore di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 La versione migliore di Neubot sarà sempre quella con il numero di
@@ -261,13 +277,13 @@ releases potrebbero includere caratteristiche sperimentali, ma queste
 caratteristiche non saranno abilitate di default fino a quando non
 matureranno e diventeranno stabili.
 
-1.11. Per quanto tempo devo tenere installato Neubot?
+1.12. Per quanto tempo devo tenere installato Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Più a lungo possibile. Neubot non è un progetto di portata limitata, ma
 piuttosto un impegno continuo.
 
-1.12. Quanto testate Neubot prima di ogni release?
+1.13. Quanto testate Neubot prima di ogni release?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Testiamo le milestone releases per una-due settimane prima di
@@ -275,7 +291,7 @@ rilasciarle. Quando le patch releases includono funzioni sperimentali,
 queste non verranno abilitate di default. Saranno abilitate di default
 dopo un paio di settimane di test.
 
-1.13. Chi sviluppa Neubot?
+1.14. Chi sviluppa Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Capoprogetto del progetto Neubot è Simone Basso, ricercatore del Centro
@@ -286,13 +302,13 @@ Morando, e prof. Juan Carlos De Martin, del Politecnico di Torino.
 Visita la nostra pagina `pagina people`_ per
 ulteriori informazioni.
 
-1.14. Con quale licenza viene distribuito Neubot?
+1.15. Con quale licenza viene distribuito Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot è rilasciato con licenza `GNU General Public License versione
 3`_.
 
-1.15. Quanto costa Neubot?
+1.16. Quanto costa Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Zero. Neubot è disponibile gratuitamente.
