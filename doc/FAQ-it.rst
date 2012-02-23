@@ -491,7 +491,9 @@ Si. Il database di Neubot dovrebbe crescere lentamente per dimensione
 rispetto al tempo di utilizzo. (Il database della mia workstation pesa 2
 MBytes dopo 8 mesi, e io lancio di frequente un test ogni 30 secondi per
 esigenze di monitoraggio.) Per eliminare i risultati vecchi lancia il
-seguente comando (da root): ``neubot database prune``.
+seguente comando (da root)::
+
+    # neubot database prune
 
 4. Domande tecniche
 -------------------
