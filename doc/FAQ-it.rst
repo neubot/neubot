@@ -256,19 +256,18 @@ e gestite utilizzando il `wiki di github`_.
 1.9. Quando è prevista la prossima release di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il processo di rilascio si sforza di `rilasciare presto, rilasciare
-spesso`_
-per massimizzare i feedback. La regola generale è che aggiorniamo il
-`repository git pubblico`_ frequentemente e cerchiamo
-di distribuire una nuova release ogni mese.
+Il processo di rilascio si propone di `rilasciare presto, rilasciare
+spesso`_ per massimizzare il feedback. Il `repository git pubblico`_
+viene aggiornato frequentemente e si cerca di distribuire una nuova
+versione del software ogni mese.
 
-Ci sono due tipi di release: le patch releases e le milestone releases.
-Le patch releases includono correzioni di bug per le funzionalità
-esistenti e aggiungono nuove funzionalità sperimentali. In genere, è
-necessaria una certa quantità di patch releases per stabilizzare le
-funzioni sperimentali. Le milestone releases vengono distribuite quando
-una serie di caratteristiche diventa stabile. Consulta la
-roadmap_ per il nostro *roadmap plan*.
+In generale, la maggior parte delle release sono *patch release*,
+che aggiungono nuove funzionalita` e/o corregono bachi.  Tipicamente,
+dopo un certo numero di patch release, si raggiunge una massa critica
+di funzionalita` e viene rilasciata una *milestone release*.
+
+La politica di versioning riflette direttamente la distinazione tra
+patch e milestone release, come spiega la FAQ successiva.
 
 1.10. Qual'è la vostra politica sulle versioni?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
