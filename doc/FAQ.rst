@@ -5,45 +5,49 @@
 ~~~~~~~~~~~~~~~~~~~~
 
 Neubot is a research project on network neutrality of the `NEXA Center
-for Internet & Society <http://nexa.polito.it>`_ at `Politecnico di
-Torino <http://www.dauin.polito.it>`_. The project is based on a
-lightweight `open-source </copying>`_ program that interested users can
-download and install on their computers. The program runs in background
-and periodically performs transmission tests with some test servers and
-with other instances of the program itself. These transmission tests
-probe the Internet using various application level protocols. The
-program saves tests results locally and uploads them on the project
-servers. The collected dataset contains samples from various Providers
-and allows to monitor network neutrality.
+for Internet & Society <http://nexa.polito.it>`_ at `Politecnico
+di Torino <http://www.dauin.polito.it>`_. The project is based on a
+lightweight `open-source <http://www.neubot.org/copying>`_ program
+that interested users can download and install on their computers. The
+program runs in the background and periodically performs transmission
+tests with some test servers and/or with other instances of the
+program itself. These transmission tests probe the Internet using
+various application level protocols. The program saves tests results
+locally and uploads them on the project servers. The collected dataset
+contains samples from various Providers and allows the Neubot project
+to monitor network neutrality.
 
 1.2. What is network neutrality?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Network neutrality is the principle that the Internet should be neutral
 with respect to kinds of applications, senders and destinations. In
-other words, a network is neutral when
-`routers <http://en.wikipedia.org/wiki/Router_(computing)>`_ forward
-packets using a *first come, first served* strategy. And is not neutral
-when certain packets receive a preferential treatment.
+other words, a network is neutral when routers_ forward packets using
+a *first come, first served* strategy. And is not neutral when certain
+packets receive a preferential treatment.
 
-The ancient Internet was strictly neutral, because it was designed to
-`minimize the interaction between applications and the
-network <http://tools.ietf.org/html/rfc3439#section-2.1>`_. This design
-choice allowed very fast packet switching and enabled strong openness
-towards unforeseen uses of the Internet Protocol. The result has been an
-extraordinary outburst of innovation, and a level-playing field for
-citizens, associations and companies worldwide.
+.. _routers: http://en.wikipedia.org/wiki/Router_(computing)
 
-The modern Internet is not always neutral due to technologies that allow
-fine-grained discrimination of traffic. When they enter into the network
-of an Internet Service Provider, packets might be classified, i.e.
-assigned to a class like *web*, *video*, or *file-sharing*. The most
-commonly exploited characteristics in traffic classification are the
-content of packets headers and the payload. But a packet can also
-inherit the class from the flow it belongs to, if the flow is already
-classified. Once a packet has been classified at the border, it receives
-the service associated with its traffic class from routers inside the
-network.
+The ancient Internet was strictly neutral, because it was designed
+to minimize the interaction between applications and the network
+(see RFC3439_). This design choice allowed very fast packet switching
+and enabled strong openness towards unforeseen uses of the Internet
+Protocol. The result has been an extraordinary outburst of innovation,
+and a level-playing field for citizens, associations and companies
+worldwide.
+
+.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
+
+The modern Internet is not always neutral due to technologies that
+allow for fine-grained discrimination of traffic. When they enter into
+the network of an Internet Service Provider, packets may be classified,
+i.e.  assigned to a class like *web*, *video*, or *file-sharing*. The
+most commonly exploited characteristics in traffic classification
+are the content of packets headers and the payload. But a packet can
+also inherit the class from the flow it belongs to, if the flow is
+already classified. Once a packet has been classified at the border,
+it receives the service associated with its traffic class from routers
+inside the network.
 
 The policy debate regarding network neutrality is on whether it is
 preferable to continue with *laissez-faire* or whether Internet
@@ -81,12 +85,12 @@ regulatory decisions regarding neutrality.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You might want to install Neubot if you care about network neutrality,
-you wish to support this research effort, and you are willing to donate
-this project a tiny fraction of your network capacity to run periodic
+you wish to support this research effort and are willing to donate
+this project a fraction of your network capacity to run periodic
 transmission tests. You will contribute to build a quantitative dataset
 on network neutrality, and the availability of this independent dataset
-will be arguably conducive to a more democratic decisional process about
-the Internet, one of the key infrastructures of our societies.
+will be arguably conducive to a more democratic decisional process
+about the Internet, one of the key infrastructures of our societies.
 
 Another reason why you might want to install Neubot is that test results
 provide a brief picture of how your Internet connection is working, at
@@ -98,7 +102,7 @@ the behavior of your Provider.
 
 If you are interested, don't hesitate to install it, because the success
 of this research effort depends heavily on how much people installs the
-bot.
+Neubot.
 
 1.6. What tests are implemented by the latest version?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
