@@ -546,16 +546,14 @@ peer-to-peer, ossia eseguiranno i test anche tra istanze di Neubot.)*
 4.2. Che cosa misura il test speedtest?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il test *speedtest* utilizza il `protocollo
-HTTP`_ e misura: il `round trip
-time`_ e il goodput_
-in download e
-upload. È ispirato al test speedtest.net_,
-da cui il nome. Il test stima il round-trip time misurando il tempo
-medio richiesto per fare la ``connect()`` e il tempo medio necessario
-per richiedere e scaricare una risorsa di lunghezza zero. Stima inoltre
-la banda disponibile in download e upload dividendo il numero di bytes
-trasferiti per il tempo richiesto a trasferirli.
+Il test *speedtest* utilizza il `protocollo HTTP`_ e misura: il
+`round trip time`_ e il goodput_ in download e upload. È ispirato
+al test speedtest.net_, da cui il nome. Il test stima il `round
+trip time`_ misurando il tempo medio richiesto per connettersi e
+il tempo medio necessario per richiedere e scaricare una risorsa
+di lunghezza zero. Stima inoltre il goodput_ in download e upload
+dividendo il numero di bytes trasferiti per il tempo richiesto a
+trasferirli.
 
 4.3. In che modo Neubot modifica il registro di sistema di Windows?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
