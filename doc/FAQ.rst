@@ -329,30 +329,21 @@ Under all operating systems you can read logs via the *Log* tab of the
 `web user interface`_, available since ``0.3.7``.  The following screenshot
 provides an example:
 
-|neubot log|
-When reporting bugs, it's often a good idea to include the logs. To get
-logs in plain text format, point your browser to
-``http://127.0.0.1:9774/api/log?debug=1`` (this URI works if and only if
-Neubot is running on your machine). The following screenshot provides an
-example:
+.. image:: http://www.neubot.org/neubotfiles/neubot-log.png
+   :align: center
 
-|image5|
 In addition, under UNIX Neubot saves logs with ``syslog(3)`` and
 ``LOG_DAEMON`` facility. Logs end up in ``/var/log``, typically in
 ``daemon.log``. When unsure, I run the following command (as root) to
-lookup the exact file name:
-
-::
+lookup the exact file name::
 
     # grep neubot /var/log/* | awk -F: '{print $1}' | sort | uniq
     /var/log/daemon.log
     /var/log/syslog
 
-In this example, there are interesting logs in both
-``/var/log/daemon.log`` and ``/var/log/syslog``. Once I know the file
-names, I can grep the logs out of each file, as follows:
-
-::
+In this example, there are interesting logs in both ``/var/log/daemon.log``
+and ``/var/log/syslog``. Once I know the file names, I can grep the logs
+out of each file, as follows::
 
     # grep neubot /var/log/daemon.log | less
 
@@ -569,9 +560,6 @@ need your explicit permission, to be compliant with European Union
 privacy law. It's easy: just open the web interface, click on the
 *Privacy* tab, `read the policy </privacy>`_, and give us the
 permissions!
-
-.. |neubot log| image:: /neubotfiles/neubot-log.png
-.. |image5| image:: /neubotfiles/neubot-log-text.png
 
 .. _speedtest.net: http://www.speedtest.net
 
