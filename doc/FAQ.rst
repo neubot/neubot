@@ -360,7 +360,9 @@ should automatically rotate them.
 Yes. Neubot database should grow slowly in space over time. (My
 workstation database weights 2 MBytes after 8 months, and I frequently
 run a test every 30 seconds for testing purpose.) To prune the database
-run the following command (as root): ``neubot database prune``.
+run the following command (as root)::
+
+    # neubot database prune
 
 4. Technical questions
 ----------------------
