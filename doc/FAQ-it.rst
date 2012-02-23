@@ -613,11 +613,11 @@ sia sufficiente per approssimare un trasferimento continuo.
 4.7. Che significa misurare la banda disponibile?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-I test di Neubot NON misurano la velocità della tua connessione
-Internet, ma piuttosto la banda disponibile, cioè la *banda che si
-riesce ad ottenere a livello applicativo nel momento in cui si esegue la
+I test di Neubot **non** misurano la velocità della tua connessione
+Internet, ma piuttosto il goodput_, cioè la *banda che si riesce
+ad ottenere a livello applicativo nel momento in cui si esegue la
 misura*. Il risultato, quindi, potrebbe essere penalizzato dalle
-seguenti condizioni:
+seguenti condizioni sfavorevoli:
 
 #. stai scaricando un grosso file;
 #. il tuo coinquilino sta scaricando un grosso file;
