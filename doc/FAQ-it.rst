@@ -219,14 +219,15 @@ installano Neubot.
 
 L'ultima versione di Neubot implementa i seguenti test di trasmissione:
 
--  **speedtest** Questo test di trasmissione si ispira al test di
-   `Speedtest.net <http://www.speedtest.net>`_. È un test client-server
-   che usa HTTP e misura il `round trip time`_
-   e il goodput_ in upload e download.
--  **bittorrent** Questo test di trasmissione effettua misurazioni
-   client-server sul `round trip time`_ e sul
-   `goodput`_ in upload
-   e download, emulando il `protocollo BitTorrent`_.
+**Speedtest**
+  Questo test di trasmissione, originariamente ispirato al test di
+  speedtest.net_, è un test client-server HTTP che misura il `round
+  trip time`_ e il goodput_ in upload e download.
+
+**BitTorrent**
+  Questo test di trasmissione effettua misurazioni client-server del
+  `round trip time`_ e del `goodput`_ in upload e download, emulando
+  il `protocollo BitTorrent`_.
 
 Se sei interessato, puoi trovare maggiori dettagli sui test di
 trasmissione nella sezione `4. Domande tecniche`_.
