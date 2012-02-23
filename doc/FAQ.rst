@@ -597,13 +597,27 @@ results.
 5.2. Will you publish my IP address?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It depends. By default we don't share your Internet address. But we
-would like to do that, in order to share our results with other
-researchers, to empower the research community at large. To do that we
-need your explicit permission, to be compliant with European Union
-privacy law. It's easy: just open the web interface, click on the
-*Privacy* tab, `read the policy </privacy>`_, and give us the
-permissions!
+Yes.  Neubot wants to publish your Internet addresss to enable other
+individuals and institutions to carry alternative studies and/or peer
+review its measurements and data analysis methodology.
+
+Of course, Neubot cannot publish your Internet address without your
+prior informed consent, in compliance with European privacy laws.
+For this reason, it asks you this permission during the installation,
+if applicable, or during operation.  It goes without saying that it
+will not start any test until you have read the privacy policy and
+provided the permission to publish your Internet address.
+
+One more reason why Neubot cannot run any test until you provide
+the permission to publish your Internet address is that this is
+also request by the policy of the distributed server platform that
+empowers the Neubot Project, Measurement Lab (M-Lab_), which requires
+all results to be released as open data.
+
+For more information, please refer to the `privacy policy`_.
+
+.. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
+.. _M-Lab: http://www.measurementlab.net/about
 
 .. _speedtest.net: http://www.speedtest.net
 
