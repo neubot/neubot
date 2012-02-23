@@ -213,21 +213,21 @@ Zero. Neubot is available for free.
 2.1. On what systems does neubot run?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot is written in `Python <http://www.python.org/>`_ and therefore
-should run on all the systems supported by Python. However, you might
-want to check our `ports </ports>`_ page to be sure that there are not
-"porting" issues.
+Neubot is written in Python_ and therefore should run on all systems
+supported by Python.
+
+The Neubot team provides packages for Ubuntu_ >= 10.04 (and Debian_),
+MacOSX_ >= 10.6, Windows_ >= XP SP3.  Neubot is included in the `FreeBSD
+Ports Collection`_ and is known to run on OpenBSD_ 5.1 current.
 
 2.2. How do I install neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Go to `download page </download>`_ and follow instructions for your
-operating system. We provide binary packages for `MacOS
-X <http://www.apple.com/macosx/>`_,
-`Windows <http://www.microsoft.com/windows/>`_,
-`Debian <http://www.debian.org/>`_, and distributions based on Debian
-(such as `Ubuntu <http://www.ubuntu.com/>`_). If there is not a binary
-package for your system, you can still install Neubot from sources.
+Go to `download page`_ and follow instructions for your operating
+system. The Neubot team provides binary packages for MacOSX_, Windows_,
+Debian_, and distributions based on Debian (such as Ubuntu_). If
+there is not a binary package for your system, you can still install
+Neubot from sources.
 
 3. Using Neubot
 ---------------
@@ -592,3 +592,13 @@ permissions!
 .. _`people page`: http://www.neubot.org/people
 
 .. _`GNU General Public License version 3`: http://www.neubot.org/copying
+
+.. _Python: http://www.python.org/
+.. _Ubuntu: http://www.ubuntu.com/
+.. _Debian: http://www.debian.org/
+.. _MacOSX: http://www.apple.com/macosx/
+.. _Windows: http://windows.microsoft.com/
+.. _`FreeBSD Ports Collection`: http://www.freshports.org/net/neubot
+.. _OpenBSD: http://www.openbsd.org/
+
+.. _`download page`: http://www.neubot.org/download
