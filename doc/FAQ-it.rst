@@ -568,24 +568,21 @@ La chiave viene rimossa durante la procedura di disinstallazione.
 4.4. Qual'è il percorso del database di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In UNIX, se fai girare Neubot come utente root il percorso del database
-è ``/var/neubot/database.sqlite3``. Invece, se fai girare Neubot come
-utente senza privilegi, il percorso del database è
+In UNIX, se esegui Neubot come utente root il percorso del database
+è ``/var/neubot/database.sqlite3``. Invece, se esegui Neubot come
+utente non privilegiato, il percorso del database è
 ``$HOME/.neubot/database.sqlite3``.
 
 In Windows, il percorso del database è sempre
 ``%APPDATA%\neubot\database.sqlite3``.
 
-Con Neubot >= 0.3.7 puoi richiedere la posizione del database lanciando
-il seguente comando: ``neubot database``, ad esempio:
-
-::
+Con Neubot >= 0.3.7 puoi richiedere la posizione del database usando
+il comando ``neubot database info``, ad esempio::
 
     $ neubot database info
     /home/simone/.neubot/database.sqlite3
 
-    $ sudo neubot database info
-    [sudo] password for simone: 
+    # neubot database info
     /var/neubot/database.sqlite3
 
 4.5. Come posso scaricare i contenuti del database?
