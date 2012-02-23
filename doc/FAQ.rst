@@ -200,8 +200,7 @@ See `people page`_ for more information.
 1.14. Under what license is Neubot available?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We release Neubot under `GNU General Public License version
-3 </copying>`_.
+We release Neubot under `GNU General Public License version 3`_.
 
 1.15. How much does Neubot cost?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -591,3 +590,5 @@ permissions!
 .. _`Juan Carlos De Martin`: http://www.neubot.org/people#de_martin
 
 .. _`people page`: http://www.neubot.org/people
+
+.. _`GNU General Public License version 3`: http://www.neubot.org/copying
