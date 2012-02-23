@@ -52,6 +52,12 @@
    * `5.1. What personal data does Neubot collect?`_
    * `5.2. Will you publish my IP address?`_
 
+* `6. Data questions`_
+
+   * `6.1. Where are data published?`_
+   * `6.2. Is there any license attached to data?`_
+   * `6.3. What is data format?`_
+
 1. General questions
 --------------------
 
@@ -628,6 +634,54 @@ empowers the Neubot Project, Measurement Lab (M-Lab_), which requires
 all results to be released as open data.
 
 For more information, please refer to the `privacy policy`_.
+
+6. Data questions
+-----------------
+
+6.1. Where are data published?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Data is automatically harvested and published by Measurement Lab, as
+explained here:
+
+    http://www.measurementlab.net/data
+
+The direct link to access Neubot data is:
+
+    https://sandbox.google.com/storage/m-lab/neubot
+
+The Neubot project publishes old data (collected before being accepted
+into Measurement Lab) and plans to host recent Neubot results collected
+by Measurement Lab at:
+
+    http://www.neubot.org/data
+
+6.2. Is there any license attached to data?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Neubot data is available under the terms and provisions of Creative
+Commons Zero license as explained here:
+
+    https://github.com/neubot/neubot/blob/master/data/LICENSE
+
+6.3. What is data format?
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Data is published in compressed tarballs, where each tarballs contains
+all the results collected during a day by a test server.  Each result
+is a text file that contains JSON-encoded dictionary, which is described
+here:
+
+    https://github.com/neubot/neubot/blob/master/data/README
+
+Data published before the 27th January 2011 is published in different
+format and this is explained better here:
+
+    http://www.neubot.org/data
+
+..
+.. Links
+..
 
 .. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
 .. _M-Lab: http://www.measurementlab.net/about
