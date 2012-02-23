@@ -85,6 +85,14 @@
 
     * `5.2. Pubblicherete il mio indirizzo IP?`_
 
+* `6. Domande sui dati`_
+
+    * `6.1. Dove sono pubblicati i dati?`_
+
+    * `6.2. Con quale licenza sono rilasciati i dati?`_
+
+    * `6.3. Qual e' il formato dei dati?`_
+
 1. Domande generiche
 --------------------
 
@@ -706,6 +714,51 @@ progetto Neubot e richiede che tutti i risultati siano rilasciati
 come open data.
 
 Per maggiori informazioni, fai riferimento alla `privacy policy`_.
+
+6. Domande sui dati
+-------------------
+
+6.1. Dove sono pubblicati i dati?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I dati sono automaticamente raccolti e pubblicati da Measurement Lab,
+come spiegato qui:
+
+    http://www.measurementlab.net/data
+
+Il link diretto per accedere ai dati di Neubot e':
+
+    https://sandbox.google.com/storage/m-lab/neubot
+
+Il progetto Neubot pubblica i dati vecchi (raccolti prima di entrare a
+far parte dei progetti di Measurement Lab) e ha intenzione, in futuro, di
+hostare i risultati piu` recenti raccolti da Measurement Lab al seguente
+indirizzo:
+
+    http://www.neubot.org/data
+
+6.2. Con quale licenza sono rilasciati i dati?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I dati raccolti dal software Neubot sono disponibili con licenza
+Creative Commons Zero, come spiegato qui:
+
+    https://github.com/neubot/neubot/blob/master/data/LICENSE
+
+6.3. Qual e' il formato dei dati?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I dati sono pubblicati come archivi compressi, dove ciascun archivio
+contiene i risultati salvati in un intero giorno da un server di
+test.  Ogni risultato e' un file di testo che contiene un dizionario
+codificato usando JSON, come descritto qui:
+
+    https://github.com/neubot/neubot/blob/master/data/README
+
+I dati raccolti prima del 27 Gennaio 2011 sono pubblicati in un
+formato differente e questo e' spiegato meglio qui:
+
+    http://www.neubot.org/data
 
 ..
 .. Links
