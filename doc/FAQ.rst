@@ -306,8 +306,7 @@ the same bug. All posts to the mailing list are archived here:
 
 Thanks for your cooperation!
 
-3.4. What are the issues if I use mobile broadband, 3G modem, Internet
-key?
+3.4. What are the issues if I use mobile broadband, 3G modem, Internet key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One possible issue with mobile broadband is the following. If you use
