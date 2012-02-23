@@ -5,7 +5,7 @@
 ~~~~~~~~~~~~~~~~~~~~
 
 Neubot is a research project on network neutrality of the `NEXA Center
-for Internet & Society <http://nexa.polito.it>`_ at `Politecnico
+for Internet & Society`_ at `Politecnico
 di Torino <http://www.dauin.polito.it>`_. The project is based on a
 lightweight `open-source <http://www.neubot.org/copying>`_ program
 that interested users can download and install on their computers. The
@@ -190,12 +190,12 @@ least one release cycle, i.e. two to four weeks.
 1.13. Who develops Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot project lead is Simone Basso, a research fellow of the NEXA
-Center for Internet & Society. He develops Neubot in collaboration with
-and under the supervision of prof. Antonio Servetti, prof. Federico
-Morando, and prof. Juan Carlos De Martin, of Politecnico di Torino.
+Neubot project lead is `Simone Basso`_, a research fellow of the `NEXA
+Center for Internet & Society`_. He develops Neubot in collaboration with
+and under the supervision of prof. `Antonio Servetti`_, prof. `Federico
+Morando`_, and prof. `Juan Carlos De Martin`_, of Politecnico di Torino.
 
-See our `people </people>`_ page for more information.
+See `people page`_ for more information.
 
 1.14. Under what license is Neubot available?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -583,3 +583,11 @@ permissions!
 .. _`release early, release often`:
  http://www.catb.org/esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html
 .. _`github repository`: https://github.com/neubot/neubot
+
+.. _`Simone Basso`: http://www.neubot.org/people#basso
+.. _`NEXA Center for Internet & Society`: http://nexa.polito.it/
+.. _`Antonio Servetti`: http://www.neubot.org/people#servetti
+.. _`Federico Morando`: http://www.neubot.org/people#morando
+.. _`Juan Carlos De Martin`: http://www.neubot.org/people#de_martin
+
+.. _`people page`: http://www.neubot.org/people
