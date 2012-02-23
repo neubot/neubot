@@ -413,12 +413,18 @@ Ti preghiamo di usare la nostra mailing list per riportare bugs e fare
 domande. Le lingue ufficiali della mailing list sono l'inglese e
 l'italiano.
 
-Nota che DEVI essere iscritto alla mailing list, altrimenti il tuo
-messaggio NON VERRÀ accettato. Per iscriverti:
+Nota che **devi** essere iscritto alla mailing list, altrimenti il tuo
+messaggio **non verra`** accettato. Per iscriverti:
 
       http://www.neubot.org/cgi-bin/mailman/listinfo/neubot
 
-PRIMA di inviare un messaggio ti consigliamo di consultare l'archivio
+La pagina di iscrizione alla mailing list non ha un certificato SSL
+valido e il tuo browser probabilmente si lamentera` di questo.  Non
+farti spaventare dal messaggio di warning, in fondo si tratta solo
+della pagina per registrarti alla mailing list di Neubot e non del
+sito della tua banca.
+
+**Prima** di inviare un messaggio ti consigliamo di consultare l'archivio
 pubblico, visto che è possibile che qualcun'altro abbia già fatto la
 stessa domanda o riportato lo stesso bug. Tutti i messaggi inviati alla
 mailing list sono archiviati qui:
