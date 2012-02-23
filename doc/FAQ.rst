@@ -289,18 +289,18 @@ particular memory) when Neubot is idle.
 To report bugs and ask questions, please use our mailing list. The
 official languages for the mailing list are English and Italian.
 
-Note that you MUST subscribe the mailing list first, because otherwise
-your message WOULD NOT be accepted. To subscribe, go to:
-
-::
+Note that you **must** subscribe the mailing list first, because otherwise
+your message **would not** be accepted. To subscribe, go to:
 
       http://www.neubot.org/cgi-bin/mailman/listinfo/neubot
 
-We advise you to search the public archive BEFORE posting a message,
+The mailing list subscription page does not have a valid SSL certificate
+and your browser is likely to complain.  Don't be scared by that, it
+is the page to register to Neubot mailing list, not your bank account.
+
+We advise you to search the public archive **before** posting a message,
 because others might have already asked the same question or reported
 the same bug. All posts to the mailing list are archived here:
-
-::
 
       http://www.neubot.org/pipermail/neubot/
 
