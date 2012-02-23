@@ -1,3 +1,56 @@
+0. Index
+--------
+
+* `1. General questions`_
+
+   * `1.1. What is neubot?`_
+   * `1.2. What is network neutrality?`_
+   * `1.3. Why "the network neutrality bot"?`_
+   * `1.4. Why is crucial to monitor network neutrality?`_
+   * `1.5. Why might I want to install Neubot?`_
+   * `1.6. What tests are implemented by the latest version?`_
+   * `1.7. What is the roadmap to Neubot/1.0?`_
+   * `1.8. When is the next release of Neubot?`_
+   * `1.9. What is your versioning policy?`_
+   * `1.10. What is the best version of Neubot?`_
+   * `1.11. How long should I keep Neubot installed?`_
+   * `1.12. How much do you test Neubot before release?`_
+   * `1.13. Who develops Neubot?`_
+   * `1.14. Under what license is Neubot available?`_
+   * `1.15. How much does Neubot cost?`_
+
+* `2. Installing Neubot`_
+
+   * `2.1. On what systems does neubot run?`_
+   * `2.2. How do I install neubot?`_
+
+* `3. Using Neubot`_
+
+   * `3.1. Neubot installed. What should I do now?`_
+   * `3.2. How much resources does Neubot need?`_
+   * `3.3. How do I report bugs, ask questions, make suggestions?`_
+   * `3.4. What are the issues if I use mobile broadband, 3G modem, Internet key?`_
+   * `3.5. Do I need to tweak the configuration of my router?`_
+   * `3.6. How do I read Neubot logs?`_
+   * `3.7. Do I have to periodically rotate log files?`_
+   * `3.8. Do I have to periodically rotate the database?`_
+
+* `4. Technical questions`_
+
+   * `4.1. How does Neubot work?`_
+   * `4.2. What does speedtest test measures?`_
+   * `4.3. How does Neubot change my Windows registry?`_
+   * `4.4. What is the path of Neubot database?`_
+   * `4.5. How can I dump the content of the database?`_
+   * `4.6. What does bittorrent test measures?`_
+   * `4.7. What does measuring goodput mean?`_
+   * `4.8. Is it possible to compare speedtest and bittorrent results?`_
+
+* `5. Privacy questions`_
+
+   * `5.1. What personal data does Neubot collect?`_
+   * `5.2. Will you publish my IP address?`_
+
 1. General questions
 --------------------
 
