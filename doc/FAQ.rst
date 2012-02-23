@@ -235,21 +235,27 @@ Neubot from sources.
 3.1. Neubot installed. What should I do now?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Twice a month, you should check for updates (unless you installed the
-Debian package, which automatically configures auto-updates). To check
-for updates, you just need to open the `web
-interface </documentation#web-ui>`_. If an update is available, you will
+Neubot automatically downloads and installs updates on all platforms
+but Microsoft Windows (and, of course, if you installed it from
+sources, you will not receive automatic updates).
+
+If you are not using Windows, you should periodically make sure that
+it automatically updated to the latest version.  As a rule of thumb, if
+more than two weeks have passed since the last release and it has not
+updated, then it's a bug.
+
+If you are running Windows, the `web user interface` will be opened
+automatically on the browser when an update is available. You will
 see a message like the one in the following screenshot. Click on the
 link, follow instructions, and you're done.
 
-|neubot update notification|
-You might also want to compare the outcome of Neubot with the one of
-speedtest.net_,
-and, possibly, with the
-one of other `online speed
-tests <http://voip.about.com/od/voipbandwidth/tp/topspeedtests.htm>`_.
-We would appreciate it if you would share your results with us,
-expecially in cases where Neubot results are different from the others.
+.. image:: http://www.neubot.org/neubotfiles/neubot-update-notification.png
+   :align: center
+
+You may also want to compare Neubot results with the ones of other online
+speed tests and tools.  If so, we would appreciate it if you would share
+your results with us, especially when Neubot results are not consistent
+with the ones of other tools.
 
 3.2. How much resources does Neubot need?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -317,8 +323,8 @@ No.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Under all operating systems you can read logs via the *Log* tab of the
-`web user interface <documentation#web-ui>`_, available since ``0.3.7``.
-The following screenshot provides an example:
+`web user interface`_, available since ``0.3.7``.  The following screenshot
+provides an example:
 
 |neubot log|
 When reporting bugs, it's often a good idea to include the logs. To get
@@ -561,8 +567,6 @@ privacy law. It's easy: just open the web interface, click on the
 *Privacy* tab, `read the policy </privacy>`_, and give us the
 permissions!
 
-.. |image0| image:: /neubotfiles/flag-of-italy.png
-.. |neubot update notification| image:: http://www.neubot.org/neubotfiles/neubot-update-notification.png
 .. |resources usage 1| image:: /neubotfiles/resources1.png
 .. |resources usage 2| image:: /neubotfiles/resources2.png
 .. |neubot log| image:: /neubotfiles/neubot-log.png
@@ -602,3 +606,5 @@ permissions!
 .. _OpenBSD: http://www.openbsd.org/
 
 .. _`download page`: http://www.neubot.org/download
+
+.. _`web user interface`: http://www.neubot.org/documentation#web-ui
