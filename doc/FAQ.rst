@@ -306,8 +306,8 @@ Windows, you installed Neubot, and you are not connected, and Neubot
 starts a test, it's possible that Windows asks you to connect. If this
 behavior annoys you, stop Neubot from the start menu.
 
-* In future releases we plan to check whether there is an Internet
-connection or not, and start a test only if it's available. *
+*In future releases we plan to check whether there is an Internet
+connection or not, and start a test only if it's available.*
 
 3.5. Do I need to tweak the configuration of my router?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
