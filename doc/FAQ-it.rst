@@ -308,13 +308,13 @@ almeno un ciclo di release, cioe` da due a quattro settimane.
 1.14. Chi sviluppa Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Capoprogetto del progetto Neubot è Simone Basso, ricercatore del Centro
-NEXA su Internet e Società. Simone sviluppa Neubot in collaborazione con
-e sotto la supervisione dei prof. Antonio Servetti, prof. Federico
-Morando, e prof. Juan Carlos De Martin, del Politecnico di Torino.
+Capoprogetto del progetto Neubot è `Simone Basso`_, ricercatore del
+`Centro NEXA su Internet & Società`_. Simone sviluppa Neubot in
+collaborazione con e sotto la supervisione dei prof. `Antonio
+Servetti`_, prof. `Federico Morando`_ e prof. `Juan Carlos De
+Martin`_ del `Politecnico di Torino`_.
 
-Visita la nostra pagina `pagina people`_ per
-ulteriori informazioni.
+Visita la nostra `pagina people`_ per ulteriori informazioni.
 
 1.15. Con quale licenza viene distribuito Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
