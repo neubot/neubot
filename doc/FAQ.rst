@@ -476,8 +476,8 @@ are enough responses in flight to approximate a continuous transfer.
 4.7. What does measuring goodput mean?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot tests DOES NOT measure the speed of your broadband Internet
-connection, but rather the goodput, i.e. *the application-level
+Neubot tests *does not* measure the speed of your broadband Internet
+connection, but rather the `goodput`_, i.e. *the application-level
 achievable speed in the moment of the measurement*. The result will
 suffer if, for example:
 
