@@ -3,7 +3,7 @@
 
 * `1. General questions`_
 
-   * `1.1. What is neubot?`_
+   * `1.1. What is Neubot?`_
    * `1.2. What is Measurement Lab?`_
    * `1.3. What is network neutrality?`_
    * `1.4. Why "the network neutrality bot"?`_
@@ -55,7 +55,7 @@
 1. General questions
 --------------------
 
-1.1. What is neubot?
+1.1. What is Neubot?
 ~~~~~~~~~~~~~~~~~~~~
 
 Neubot is a research project on network neutrality of the `NEXA Center for
