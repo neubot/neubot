@@ -513,7 +513,7 @@ of them.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot does not inspect your traffic, does not monitor the sites you
-have visited, etc. Neubot use a tiny fraction of your network capacity
+have visited, etc. Neubot use a fraction of your network capacity
 to run periodic transmission tests and this tests either use random data
 or data from our servers.
 
@@ -530,7 +530,9 @@ your privacy: in the worst worst case, we would to able to say that a
 given Neubot instance has changed Internet address (and hence Provider
 and/or location). However, if you are concerned and you are running
 Neubot >= 0.3.7, you can generate a new unique identifier running the
-following command: ``neubot database regen_uuid``.
+following command::
+
+    # neubot database regen_uuid
 
 Future versions of Neubot will also monitor and collect information
 regarding your computer load (such as the amount of free memory, the
