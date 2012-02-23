@@ -453,36 +453,26 @@ No.
 3.6. Come leggo i log di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In tutti i sistemi operativi puoi leggere i log attraverso la *Tabella
-log* dell'`interfaccia web`_, disponibile
-a partire dalla versione ``0.3.7``. L'immagine seguente fornisce un
-esempio:
+In tutti i sistemi operativi puoi leggere i log attraverso la
+*Tabella log* dell'`interfaccia web`_, disponibile a partire dalla
+versione ``0.3.7``. L'immagine seguente fornisce un esempio:
 
-|neubot log|
-Quando si segnala un bug, è spesso una buona idea includere i log. Per
-ottenere i log in formato di solo testo, punta il tuo browser a
-``http://127.0.0.1:9774/api/log?debug=1`` (questo URI funziona solo e
-solo se Neubot è in esecuzione sul tuo computer). L'immagine seguente
-fornisce un esempio:
+.. image:: http://www.neubot.org/neubotfiles/neubot-log.png
+   :align: center
 
-|image5|
 Inoltre, in UNIX Neubot salva i log con ``syslog(3)`` e ``LOG_DAEMON``
 *facility*. I log finiscono in ``/var/log``, tipicamente in
-``daemon.log``. Quando non ne sono certo, io lancio il seguente comando
-(da root) per individuare il nome esatto del file:
-
-::
+``daemon.log``. Per capire quale sia il file in cui davvero finiscano
+i log, quando sono in un sistema nuovo, lancio il seguente comando
+(da root)::
 
     # grep neubot /var/log/* | awk -F: '{print $1}' | sort | uniq
     /var/log/daemon.log
     /var/log/syslog
 
-In questo esempio, ci sono log interessanti sia in
-``/var/log/daemon.log`` che in ``/var/log/syslog``. Una volta che
-conosco i nomi dei file, posso estrarre i log da ogni file, come di
-seguito:
-
-::
+In questo esempio, ci sono log interessanti sia in ``/var/log/daemon.log``
+sia in ``/var/log/syslog``. Una volta che conosco i nomi dei file,
+posso estrarre i log da ogni file, come di seguito::
 
     # grep neubot /var/log/daemon.log | less
 
