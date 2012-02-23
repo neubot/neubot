@@ -23,7 +23,7 @@
 
     * `1.9. Quando è prevista la prossima release di Neubot?`_
 
-    * `1.10. Qual'è la vostra politica sulle versioni?`_
+    * `1.10. Qual'è la vostra politica di versioning?`_
 
     * `1.11. Qual'è la versione migliore di Neubot?`_
 
@@ -269,13 +269,17 @@ di funzionalita` e viene rilasciata una *milestone release*.
 La politica di versioning riflette direttamente la distinazione tra
 patch e milestone release, come spiega la FAQ successiva.
 
-1.10. Qual'è la vostra politica sulle versioni?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.10. Qual'è la vostra politica di versioning?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Le milestone releases incrementano il numero maggiore (o minore) della
-versione e impostano a zero i numeri delle versioni meno importanti. Le
-patch releases incrementano il numero di ogni patch release. Quindi,
-1.0.0 e 0.4.0 sono milestone releases, mentre 0.3.1 è una patch release.
+Neubot segue la ben-nota convenzione che prevede di utilizzare tre
+numeri di versione: *major*, *minor* e *patch*.  Ad esempio, Neubot
+0.4.8 ha numero major 0, numero minor 4 e numero patch 8.
+
+Una milestone release ha numero patch 0 e numero major e minor che
+corrisponde a una milestone nella `roadmap`_.  Le release patch,
+invece, hanno numero patch diverso da zero.  Di conseguenza, 1.0.0
+e 0.4.0 sono milestone release, mentre 0.3.1 e' una patch release.
 
 1.11. Qual'è la versione migliore di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
