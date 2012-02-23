@@ -90,17 +90,17 @@
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot è un progetto di ricerca sulla neutralità della rete del `Centro
-NEXA su Internet & Società`_ del `Politecnico di
-Torino`_. Il progetto si basa su un
-programma leggero e `open source`_ che gli utenti interessati
-possono scaricare e installare sul proprio computer. Il programma
-funziona in background ed effettua periodicamente prove di trasmissione
-con alcuni server di prova e con altre istanze del programma stesso.
-Queste prove di trasmissione sondano Internet utilizzando diversi
-protocolli di livello applicativo. Il programma salva i risultati dei
-test localmente e li carica sul server del progetto. Il set di dati
-raccolti contiene campioni provenienti da diversi Providers e consente
-di monitorare la neutralità della rete.
+NEXA su Internet & Società`_ del `Politecnico di Torino`_. Il progetto si
+basa su un programma leggero e `open source`_ che gli utenti interessati
+possono scaricare e installare sul proprio computer. Il programma funziona
+in background ed effettua periodicamente prove di trasmissione con alcuni
+server di prova, ospitati dalla piattaforma distribuita Measurement Lab,
+e (in futuro) con altre istanze del programma stesso.  Queste prove di
+trasmissione testano la Rete utilizzando diversi protocolli di livello
+applicativo e i risultati dei test sono salvati sia localmente sia sui
+test server. Il set di dati raccolti contiene campioni provenienti da
+diversi Providers e viene pubblicato sul web, consentendo a chiunque di
+analizzare i dati per finalità di ricerca.
 
 1.2. Che cos'è la neutralità della rete?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
