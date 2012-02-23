@@ -350,8 +350,9 @@ out of each file, as follows::
 3.7. Do I have to periodically rotate log files?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-No: Under Windows there are no log files, while under UNIX the logging
-subsystem should automatically rotate them.
+No.  Logs are always saved in the database, but Neubot will periodically
+prune old logs.  Under UNIX logs are also saved using ``syslog(3)``, which
+should automatically rotate them.
 
 3.8. Do I have to periodically rotate the database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
