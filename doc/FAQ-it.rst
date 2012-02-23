@@ -299,10 +299,11 @@ piuttosto un impegno continuo.
 1.13. Quanto testate Neubot prima di ogni release?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Testiamo le milestone releases per una-due settimane prima di
-rilasciarle. Quando le patch releases includono funzioni sperimentali,
-queste non verranno abilitate di default. Saranno abilitate di default
-dopo un paio di settimane di test.
+Tipicamente una nuova funzionalita` sperimentale viene inclusa in
+una patch release e non viene abilitata di default finche` non
+matura e diventa stabile.  Quando viene rilasciata una milestone
+release, la maggior parte delle feature sono state testate per
+almeno un ciclo di release, cioe` da due a quattro settimane.
 
 1.14. Chi sviluppa Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
