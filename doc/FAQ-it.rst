@@ -90,9 +90,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot è un progetto di ricerca sulla neutralità della rete del `Centro
-NEXA su Internet & Società <http://nexa.polito.it>`_ del `Politecnico di
-Torino <http://www.dauin.polito.it>`_. Il progetto si basa su un
-programma leggero e `open-source </copying>`_ che gli utenti interessati
+NEXA su Internet & Società`_ del `Politecnico di
+Torino`_. Il progetto si basa su un
+programma leggero e `open source`_ che gli utenti interessati
 possono scaricare e installare sul proprio computer. Il programma
 funziona in background ed effettua periodicamente prove di trasmissione
 con alcuni server di prova e con altre istanze del programma stesso.
@@ -200,19 +200,15 @@ L'ultima versione di Neubot implementa i seguenti test di trasmissione:
 
 -  **speedtest** Questo test di trasmissione si ispira al test di
    `Speedtest.net <http://www.speedtest.net>`_. È un test client-server
-   che usa HTTP e misura il `round-trip
-   time <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_ e la
-   `banda ottenibile <http://en.wikipedia.org/wiki/Goodput>`_ in upload
-   e download.
+   che usa HTTP e misura il `round trip time`_
+   e il goodput_ in upload e download.
 -  **bittorrent** Questo test di trasmissione effettua misurazioni
-   client-server sul `round-trip
-   time <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_ e sulla
-   `banda ottenibile <http://en.wikipedia.org/wiki/Goodput>`_ in upload
-   e download, emulando il `protocollo
-   BitTorrent <http://www.bittorrent.org/beps/bep_0003.html>`_.
+   client-server sul `round trip time`_ e sul
+   `goodput`_ in upload
+   e download, emulando il `protocollo BitTorrent`_.
 
 Se sei interessato, puoi trovare maggiori dettagli sui test di
-trasmissione nella `sezione tecnica </faq/it#domande-tecniche>`_.
+trasmissione nella sezione `4. Domande tecniche`_.
 
 1.7. Qual'è la roadmap per arrivare a Neubot/1.0?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,15 +225,15 @@ Abbiamo suddiviso il percorso per arrivare a Neubot/1.0 in quattro fasi:
    peer-to-peer;
 #. implementare ulteriori test peer-to-peer per ulteriori protocolli;
 
-Per saperne di più leggi la nostra pagina `roadmap </roadmap>`_.
+Per saperne di più leggi la nostra pagina roadmap_.
 
 1.8. Quando è prevista la prossima release di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il processo di rilascio si sforza di `"rilasciare presto, rilasciare
-spesso" <http://www.catb.org/esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html>`_
+Il processo di rilascio si sforza di `rilasciare presto, rilasciare
+spesso`_
 per massimizzare i feedback. La regola generale è che aggiorniamo il
-*`repository git pubblico </download#git>`_* frequentemente e cerchiamo
+`repository git pubblico`_ frequentemente e cerchiamo
 di distribuire una nuova release ogni mese.
 
 Ci sono due tipi di release: le patch releases e le milestone releases.
@@ -246,7 +242,7 @@ esistenti e aggiungono nuove funzionalità sperimentali. In genere, è
 necessaria una certa quantità di patch releases per stabilizzare le
 funzioni sperimentali. Le milestone releases vengono distribuite quando
 una serie di caratteristiche diventa stabile. Consulta la
-`roadmap </roadmap>`_ per il nostro *roadmap plan*.
+roadmap_ per il nostro *roadmap plan*.
 
 1.9. Qual'è la vostra politica sulle versioni?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -287,14 +283,14 @@ NEXA su Internet e Società. Simone sviluppa Neubot in collaborazione con
 e sotto la supervisione dei prof. Antonio Servetti, prof. Federico
 Morando, e prof. Juan Carlos De Martin, del Politecnico di Torino.
 
-Visita la nostra pagina `people <http://www.neubot.org/people>`_ per
+Visita la nostra pagina `pagina people`_ per
 ulteriori informazioni.
 
 1.14. Con quale licenza viene distribuito Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot è rilasciato con licenza `GNU General Public License versione
-3 <http://www.neubot.org/copying>`_.
+3`_.
 
 1.15. Quanto costa Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -307,20 +303,18 @@ Zero. Neubot è disponibile gratuitamente.
 2.1. Su quali sistemi funziona Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot è scritto in `Python <http://www.python.org/>`_ e dovrebbe
-pertanto funzionare su tutti i sistemi supportati da Python. Comunque,
+Neubot è scritto in Python_ e dovrebbe
+pertanto funzionare su tutti i sistemi supportati da Python_. Comunque,
 potresti voler controllare la nostra pagina `ports </ports>`_ per
 assicurarti che non ci siano problemi di "porting".
 
 2.2. Come installo Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Vai alla pagina `download </download>`_ e segui le instruzioni per il
-tuo sistema operativo. Forniamo pacchetti binari per `MacOS
-X <http://www.apple.com/macosx/>`_,
-`Windows <http://www.microsoft.com/windows/>`_,
-`Debian <http://www.debian.org/>`_, e distribuzioni basate su Debian
-(come `Ubuntu <http://www.ubuntu.com/>`_). Se non c'è un pacchetto
+Vai alla pagina `pagina download`_ e segui le instruzioni per il
+tuo sistema operativo. Forniamo pacchetti binari per MacOSX_,
+Windows_, Debian_, e distribuzioni basate su Debian_
+(come Ubuntu_). Se non c'è un pacchetto
 binario per il tuo sistema, puoi comunque installare Neubot dai
 sorgenti.
 
@@ -333,14 +327,15 @@ sorgenti.
 Due volte al mese, dovresti cercare gli aggiornamenti (a meno che tu
 abbia installato il pacchetto Debian, che configura automaticamente gli
 auto-aggiornamenti). Per cercare gli aggiornamenti, è sufficiente aprire
-l'`interfaccia web </documentation#web-ui>`_. Se è disponibile un
+l'`interfaccia web`_. Se è disponibile un
 aggiornamento, comparirà un messaggio come quello contenuto
 nell'immagine seguente. Clicca sul link, segui le istruzioni, ed è
 fatta.
 
 |neubot update notification|
+
 Potresti anche voler confrontare l'esito di Neubot con quello di
-`Speedtest.net <http://www.speedtest.net/>`_, e, eventualmente, con
+speedtest.net_, e, eventualmente, con
 quello di altri `test di velocità
 online <http://voip.about.com/od/voipbandwidth/tp/topspeedtests.htm>`_.
 Ti saremmo grati se decidessi di condividere i tuoi risultati con noi,
@@ -380,16 +375,12 @@ l'italiano.
 Nota che DEVI essere iscritto alla mailing list, altrimenti il tuo
 messaggio NON VERRÀ accettato. Per iscriverti:
 
-::
-
       http://www.neubot.org/cgi-bin/mailman/listinfo/neubot
 
 PRIMA di inviare un messaggio ti consigliamo di consultare l'archivio
 pubblico, visto che è possibile che qualcun'altro abbia già fatto la
 stessa domanda o riportato lo stesso bug. Tutti i messaggi inviati alla
 mailing list sono archiviati qui:
-
-::
 
       http://www.neubot.org/pipermail/neubot/
 
@@ -403,9 +394,9 @@ usi Windows, hai installato Neubot, non sei connesso, e Neubot inizia un
 test, è possibile che Windows ti chieda di connetterti. Se questo
 comportamento ti disturba, arresta Neubot dal menu start.
 
-* Nelle future versioni progettiamo di verificare se ci sia una
+*Nelle future versioni progettiamo di verificare se ci sia una
 connessione Internet o meno, e iniziare un test solo se questa sia
-disponibile. *
+disponibile.*
 
 3.5. Devo modificare la configurazione del mio router?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -416,7 +407,7 @@ No.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In tutti i sistemi operativi puoi leggere i log attraverso la *Tabella
-log* dell'`interfaccia utente web </documentation#web-ui>`_, disponibile
+log* dell'`interfaccia web`_, disponibile
 a partire dalla versione ``0.3.7``. L'immagine seguente fornisce un
 esempio:
 
@@ -515,10 +506,10 @@ peer-to-peer, ossia eseguiranno i test anche tra istanze di Neubot.)*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il test *speedtest* utilizza il `protocollo
-HTTP <http://en.wikipedia.org/wiki/HTTP>`_ e misura: `il round-trip
-time <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_ e `la banda
-ottenibile <http://en.wikipedia.org/wiki/Goodput>`_ in download e
-upload. È ispirato al test `Speedtest.net <http://www.speedtest.net/>`_,
+HTTP`_ e misura: il `round trip
+time`_ e il goodput_
+in download e
+upload. È ispirato al test speedtest.net_,
 da cui il nome. Il test stima il round-trip time misurando il tempo
 medio richiesto per fare la ``connect()`` e il tempo medio necessario
 per richiedere e scaricare una risorsa di lunghezza zero. Stima inoltre
@@ -573,10 +564,10 @@ privilegi scaricherai invece l'user-specific database.)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il test *bittorrent* emula il `protocollo
-BitTorrent <http://www.bittorrent.org/beps/bep_0003.html>`_ e misura: il
-`round-trip time <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_
-e la `banda disponibile <http://en.wikipedia.org/wiki/Goodput>`_ in
-download e upload. Il test stima il round-trip time misurando il tempo
+BitTorrent`_ e misura: il
+`round trip time`_
+e il goodput_ in
+download e upload. Il test stima il `round trip time`_ misurando il tempo
 necessario a connettersi. Stima inoltre la banda disponibile in download
 e upload.
 
@@ -674,10 +665,50 @@ sulla privacy. È facile: basta aprire l'interfaccia web, cliccare sulla
 tabella *Privacy*, `leggere la policy </privacy>`_, e darci
 l'autorizzazione!
 
-.. |image0| image:: /neubotfiles/flag-of-uk.png
-.. |neubot update
-notification| image:: http://www.neubot.org/neubotfiles/neubot-update-notification.png
-.. |resources usage 1| image:: /neubotfiles/resources1.png
-.. |resources usage 2| image:: /neubotfiles/resources2.png
-.. |neubot log| image:: /neubotfiles/neubot-log.png
-.. |image5| image:: /neubotfiles/neubot-log-text.png
+..
+.. Links
+..
+
+.. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
+.. _M-Lab: http://www.measurementlab.net/about
+
+.. _speedtest.net: http://www.speedtest.net
+
+.. _`round trip time`: http://en.wikipedia.org/wiki/Round-trip_delay_time
+.. _goodput: http://en.wikipedia.org/wiki/Goodput
+.. _`protocollo BitTorrent`: http://www.bittorrent.org/beps/bep_0003.html
+
+.. _roadmap: https://github.com/neubot/neubot/wiki/roadmap
+.. _todo: https://github.com/neubot/neubot/wiki/todo
+.. _`github's wiki`: https://github.com/neubot/neubot/wiki
+
+.. _`rilasciare presto, rilasciare spesso`:
+ http://www.catb.org/esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html
+.. _`repository git pubblico`: https://github.com/neubot/neubot
+
+.. _`Simone Basso`: http://www.neubot.org/people#basso
+.. _`Centro NEXA su Internet & Società`: http://nexa.polito.it/
+.. _`Antonio Servetti`: http://www.neubot.org/people#servetti
+.. _`Federico Morando`: http://www.neubot.org/people#morando
+.. _`Juan Carlos De Martin`: http://www.neubot.org/people#de_martin
+
+.. _`pagina people`: http://www.neubot.org/people
+
+.. _`GNU General Public License versione 3`: http://www.neubot.org/copying
+
+.. _Python: http://www.python.org/
+.. _Ubuntu: http://www.ubuntu.com/
+.. _Debian: http://www.debian.org/
+.. _MacOSX: http://www.apple.com/macosx/
+.. _Windows: http://windows.microsoft.com/
+.. _`FreeBSD Ports Collection`: http://www.freshports.org/net/neubot
+.. _OpenBSD: http://www.openbsd.org/
+
+.. _`pagina download`: http://www.neubot.org/download
+
+.. _`interfaccia web`: http://www.neubot.org/documentation#web-ui
+
+.. _`protocollo HTTP`: http://en.wikipedia.org/wiki/HTTP
+
+.. _`Politecnico di Torino`: http://www.dauin.polito.it/
+.. _`open source`: https://github.com/neubot/neubot/blob/master/COPYING
