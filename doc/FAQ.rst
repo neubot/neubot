@@ -182,10 +182,10 @@ ongoing effort.
 1.12. How much do you test Neubot before release?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We test milestone releases for one-two weeks before release. When patch
-releases include experimental features, these will not be enabled by
-default. They will be enabled by default after a couple of weeks of
-testing.
+Typically a new experimental feature is included in a patch release and
+is not enabled by default until it graduates and becomes stable.  When
+a milestone release ships, most stable features have been tested for at
+least one release cycle, i.e. two to four weeks.
 
 1.13. Who develops Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
