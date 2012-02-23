@@ -122,33 +122,36 @@ piccola.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 La neutralità della rete è il principio secondo cui Internet non
-dovrebbe fornire un servizio migliore ad alcuni tipi di applicazioni, ad
-alcuni mittenti o destinatari. In altre parole, una rete è neutrale
-quando i `router <http://it.wikipedia.org/wiki/Router>`_ instradano i
-pacchetti usando una strategia *first come, first served*. E non è
-neutrale quando certi pacchetti ricevono un trattamento privilegiato.
+dovrebbe fornire un servizio migliore ad alcuni tipi di applicazioni,
+ad alcuni mittenti o destinatari. In altre parole, una rete è neutrale
+quando i router_ instradano i pacchetti usando una strategia *first
+come, first served*. E non è neutrale quando certi pacchetti ricevono
+un trattamento privilegiato.
+
+.. _router: http://it.wikipedia.org/wiki/Router
 
 La Internet delle origini era strettamente neutrale, essendo stata
-progettata per `minimizzare le interazioni tra le applicazioni e la
-rete <http://tools.ietf.org/html/rfc3439#section-2.1>`_. Questa scelta
-progettuale rese possibile l'instradamento dei pacchetti ad alta
-velocita\` e rese Internet una piattaforma aperta dove chiunque poteva
-innovare senza chiedere il permesso. Di conseguenza Internet è diventato
-il volano per l'innovazione che tutti conosciamo. E il luogo dove
-cittadini, associazioni e imprese di tutto il mondo si possono
-confrontare a parità di condizioni.
+progettata per minimizzare le interazioni tra le applicazioni e la rete
+(vedi RFC3439_). Questa scelta progettuale rese possibile l'instradamento
+dei pacchetti ad alta velocita\` e rese Internet una piattaforma aperta
+dove chiunque poteva innovare senza chiedere il permesso. Di conseguenza
+Internet è diventato il volano per l'innovazione che tutti conosciamo. E
+il luogo dove cittadini, associazioni e imprese di tutto il mondo si
+possono confrontare a parità di condizioni.
+
+.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 
 Oggigiorno, Internet non è sempre neutrale per via di tecnologie che
 permettono di discriminare in modo fine i flussi di traffico. Quando i
 pacchetti entrano nella rete di un Internet Service Provider, vengono
 classificati, cioè assegnati ad una classe di traffico come *web*,
 *video* o *file-sharing*. Tipicamente, gli algoritmi di classificazione
-ispezionano gli header e la porzione iniziale del contenuto dei
-pacchetti Internet per cercare di "indovinare" la classe. Ma i pacchetti
-che appartengono ad un flusso possono anche ereditare la classificazione
+ispezionano gli header e la porzione iniziale del contenuto dei pacchetti
+Internet per cercare di "indovinare" la classe. Ma i pacchetti che
+appartengono ad un flusso possono anche ereditare la classificazione
 dai pacchetti precedenti, se questi sono gia' stati classificati. Una
-volta che un pacchetto e' stato classificato, riceve dai router che si
-trovano all'interno della rete il servizio associato alla classe di
+volta che un pacchetto e' stato classificato, riceve dai router che
+si trovano all'interno della rete il servizio associato alla classe di
 traffico assegnata.
 
 Il dibatto di policy riguardo la neutralità della rete si chiede se sia
@@ -156,8 +159,10 @@ preferibile (dal punto di vista tecnico, giuridico e per quanto concerne
 l'innovazione) continuare a lasciar fare gli operatori o se la
 neutralità della rete debba essere garantita per legge. Per saperne di
 piu' ti consigliamo di fare riferimento alla pagina Wikipedia sulla
-`neutralità della
-rete <http://it.wikipedia.org/wiki/Neutralità_della_Rete>`_.
+`neutralità della rete`_.
+
+.. _`neutralità della rete`:
+   http://it.wikipedia.org/wiki/Neutralità_della_Rete
 
 1.4. Perchè "network neutrality bot"?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
