@@ -597,13 +597,10 @@ privilegi scaricherai invece l'user-specific database.)
 4.6. Che cosa misura il test bittorrent?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il test *bittorrent* emula il `protocollo
-BitTorrent`_ e misura: il
-`round trip time`_
-e il goodput_ in
-download e upload. Il test stima il `round trip time`_ misurando il tempo
-necessario a connettersi. Stima inoltre la banda disponibile in download
-e upload.
+Il test *bittorrent* emula il `protocollo BitTorrent`_ e misura:
+il `round trip time`_ e il goodput_ in download e upload. Il test
+stima il `round trip time`_ misurando il tempo necessario a
+connettersi.
 
 Dato che BitTorrent utilizza messaggi piccoli, non è possibile
 trasferire un file di grosse dimensioni e dividere il numero di bytes
