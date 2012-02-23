@@ -81,7 +81,7 @@
 
 * `5. Domande sulla privacy`_
 
-    * `5.1. Quali dati personali colleziona Neubot?`_
+    * `5.1. Quali dati personali salva Neubot?`_
 
     * `5.2. Pubblicherete il mio indirizzo IP?`_
 
@@ -648,20 +648,20 @@ in Neubot 0.5.0.
 5. Domande sulla privacy
 ------------------------
 
-5.1. Quali dati personali colleziona Neubot?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5.1. Quali dati personali salva Neubot?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot non ispeziona il tuo traffico, non controlla i siti che hai
-visitato, ecc. Neubot utilizza una piccola parte della tua capacità di
-rete per eseguire i test di trasmissione periodica e questi test
+Neubot non cattura il tuo traffico, non controlla i siti che hai
+visitato, ecc. Neubot utilizza una frazione della capacità della
+tua connessione per eseguire dei test di trasmissione e questi test
 utilizzano dati casuali o dati provenienti dai nostri server.
 
-Neubot raccoglie l'indirizzo Internet del computer nel quale è in
-esecuzione. Dobbiamo raccogliere il tuo indirizzo Internet (che è un
-dato personale), perché questo ci indica il tuo Internet Service
-Provider e (approssimativamente) la tua posizione. Entrambe le
-informazioni sono funzionali al nostro obiettivo di monitorare la
-neutralità della rete.
+Neubot salva l'indirizzo Internet del computer nel quale è in
+esecuzione. Dobbiamo salvare il tuo indirizzo Internet (che è un
+dato personale), perché questo ci permette di sapere il tuo Internet
+Service Provider e (approssimativamente) la tua posizione. Entrambe
+le informazioni sono funzionali al nostro obiettivo di monitorare
+la neutralità della rete.
 
 Identifichiamo ogni istanza di Neubot con un identificativo univoco
 casuale. Usiamo questo identificativo per eseguire analisi di serie
@@ -671,8 +671,9 @@ saremmo in grado di dire che una determinata istanza di Neubot ha
 cambiato indirizzo Internet (e, quindi Provider e/o posizione).
 Tuttavia, se sei veramente preoccupato per questo identificativo univoco
 casuale e stai facendo girare Neubot >= 0.3.7, puoi generare un nuovo
-identificativo univoco lanciando il seguente comando:
-``neubot database regen_uuid``.
+identificativo univoco lanciando il seguente comando::
+
+    # neubot database regen_uuid
 
 Le versioni future di Neubot monitoreranno e raccoglieranno anche
 informazioni riguardanti il carico del computer (come la quantità di
