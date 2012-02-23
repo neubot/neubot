@@ -356,23 +356,28 @@ puoi comunque installare Neubot dai sorgenti.
 3.1. Neubot è installato. Cosa devo fare adesso?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Due volte al mese, dovresti cercare gli aggiornamenti (a meno che tu
-abbia installato il pacchetto Debian, che configura automaticamente gli
-auto-aggiornamenti). Per cercare gli aggiornamenti, è sufficiente aprire
-l'`interfaccia web`_. Se è disponibile un
-aggiornamento, comparirà un messaggio come quello contenuto
-nell'immagine seguente. Clicca sul link, segui le istruzioni, ed è
-fatta.
+Neubot scarica e installa automaticamente gli aggiornamenti su tutte
+le piattaforme tranne Microsoft Windows (e ovviamente non ci sono
+autoaggiornamenti se hai installato Neubot partendo dai sorgenti).
 
-|neubot update notification|
+Se non stai usando Windows, dovresti periodicamente controllare che
+si sia automaticamente aggiornato all'ultima versione.  A spanne,
+se sono passate piu` di due settimane dall'ultima release e non si
+e' autoaggiornato, allora c'e` qualche bug.
 
-Potresti anche voler confrontare l'esito di Neubot con quello di
-speedtest.net_, e, eventualmente, con
-quello di altri `test di velocità
-online <http://voip.about.com/od/voipbandwidth/tp/topspeedtests.htm>`_.
-Ti saremmo grati se decidessi di condividere i tuoi risultati con noi,
-specialmente nei casi in cui i risultati di Neubot fossero differenti
-dagli altri.
+Se stai usando Windows, l'`interfaccia web`_ verra` aperta
+automaticamente nel browser quando c'e` un aggiornamento disponibile.
+Comparirà un messaggio come quello contenuto nell'immagine seguente.
+Clicca sul link, segui le istruzioni, ed è fatta.
+
+.. image:: http://www.neubot.org/neubotfiles/neubot-update-notification.png
+   :align: center
+
+Potresti anche voler confrontare i risultati ottenuti con Neubot
+con quelli di altri test e tool disponibili online.  In tal caso,
+sarebbe cosa gradita se tu condividessi i risultati di altri test
+e tool con il team di sviluppo di Neubot, specie se vengono fuori
+risultati che non sono consistenti con quelli di Neubot.
 
 3.2. Di quante risorse ha bisogno Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
