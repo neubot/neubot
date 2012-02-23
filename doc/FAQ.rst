@@ -127,39 +127,43 @@ the `4. Technical questions`_ section.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot/1.0 will be able to perform client-server and peer-to-peer
-transmission tests using various application level protocols. Very
-briefly, we have divided the path to get to Neubot/1.0 into four steps:
+transmission tests using various application level protocols. At
+the outset, we had divided the path to get to Neubot/1.0 into four
+steps:
 
 #. implement a simple HTTP-based client-server transmission test;
 #. implement a simple BitTorrent client-server transmission test;
 #. amend the BitTorrent test to work in peer-to-peer mode;
-#. implement more peer-to-peer tests for more protocols;
+#. implement more peer-to-peer tests for more protocols.
 
-You can read more on our `roadmap </roadmap>`_ page.
+Roadmap_ and TODO_ list are now updated and maintained using
+`github's wiki`_.
 
 1.8. When is the next release of Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The release process strives to `"release early, release
-often" <http://www.catb.org/esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html>`_
-to maximize feedback. The rule of thumb is that we update the `public
-git repository </download#git>`_ very frequently and we try to deploy a
-new release every month.
+The release process strives to `release early, release often`_ to
+maximize feedback.  The `github repository`_ is updated very frequently
+and there is a commitment to deploy a new release every month.
 
-There are two type of releases: *patch releases* and *milestone
-releases*. Patch releases include bug fixes for existing features and
-add new experimental features. Typically, it takes a certain amount of
-patch releases to stabilize experimental features. Milestone releases
-are deployed when a set of features becomes stable. Please, refer to
-`the roadmap </roadmap>`_ for the milestone plan.
+In general, most releases are *patch releases*, add new features and/or
+correct bugs.  Typically, after a numer of patch releases, there is a
+critical mass of new features, and a *milestone release* is issued.
+
+The version numbering directly reflects the distinction between patch
+and milestone releases, as explained by the next FAQ.
 
 1.9. What is your versioning policy?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Milestone releases increment the major (or minor) version number and set
-to zero the least important version numbers. Patch releases increment
-the patch version number. Therefore, 1.0.0 and 0.4.0 are milestone
-releases, while 0.3.1 is a patch release.
+Neubot follows the well-known *major*, *minor* and *patch* version
+number policy.  E.g. Neubot 0.4.8 has major version number 0, minor
+version number 4 and patch version number 8.
+
+A milestone release has patch number 0 and major, minor version numbers
+match a milestone in the `roadmap`_.  Patch releases, instead, have nonzero
+patch version number.  Therefore, 1.0.0 and 0.4.0 are milestone releases,
+while 0.3.1 is a patch release.
 
 1.10. What is the best version of Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -571,3 +575,11 @@ permissions!
 .. _goodput: http://en.wikipedia.org/wiki/Goodput
 .. _`BitTorrent peer-wire protocol`:
    http://www.bittorrent.org/beps/bep_0003.html
+
+.. _roadmap: https://github.com/neubot/neubot/wiki/roadmap
+.. _todo: https://github.com/neubot/neubot/wiki/todo
+.. _`github's wiki`: https://github.com/neubot/neubot/wiki
+
+.. _`release early, release often`:
+ http://www.catb.org/esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html
+.. _`github repository`: https://github.com/neubot/neubot
