@@ -413,16 +413,13 @@ within instances of Neubot.)*
 4.2. What does *speedtest* test measures?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The *speedtest* test uses the `HTTP
-protocol <http://en.wikipedia.org/wiki/HTTP>`_ and measures: `round-trip
-latency <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_, download
-and upload `goodput <http://en.wikipedia.org/wiki/Goodput>`_. It is
-inspired to speedtest.net_ test, hence the
-name. The test estimates the round-trip latency measuring the time
-required to connect and the average time to request and receive a
-zero-length resource. It also estimates the download and upload goodput
-dividing the number of bytes transferred by the time required to
-transfer them.
+The *speedtest* test uses the `HTTP protocol`_ and measures: `round trip
+time`_, download and upload goodput_. It was originally inspired to
+speedtest.net_ test, hence the name. The test estimates the `round trip
+time`_ measuring the time required to connect and the average time to
+request and receive a zero-length resource. It also estimates the download
+and upload goodput_ dividing the number of bytes transferred by the time
+required to transfer them.
 
 4.3. How does Neubot change my Windows registry?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -600,3 +597,5 @@ permissions!
 .. _`download page`: http://www.neubot.org/download
 
 .. _`web user interface`: http://www.neubot.org/documentation#web-ui
+
+.. _`HTTP protocol`: http://en.wikipedia.org/wiki/HTTP
