@@ -1,3 +1,88 @@
+0. Indice
+---------
+
+* `0. Indice`_
+
+* `1. Domande generiche`_
+
+    * `1.1. Che cos'è Neubot?`_
+
+    * `1.2. Che cos'è la neutralità della rete?`_
+
+    * `1.3. Perchè "network neutrality bot"?`_
+
+    * `1.4. Perchè è cruciale monitorare la neutralità della rete?`_
+
+    * `1.5. Perchè potrei voler installare Neubot?`_
+
+    * `1.6. Quali sono i test implementati dall'ultima versione?`_
+
+    * `1.7. Qual'è la roadmap per arrivare a Neubot/1.0?`_
+
+    * `1.8. Quando è prevista la prossima release di Neubot?`_
+
+    * `1.9. Qual'è la vostra politica sulle versioni?`_
+
+    * `1.10. Qual'è la versione migliore di Neubot?`_
+
+    * `1.11. Per quanto tempo devo tenere installato Neubot?`_
+
+    * `1.12. Quanto testate Neubot prima di ogni release?`_
+
+    * `1.13. Chi sviluppa Neubot?`_
+
+    * `1.14. Con quale licenza viene distribuito Neubot?`_
+
+    * `1.15. Quanto costa Neubot?`_
+
+* `2. Installare Neubot`_
+
+    * `2.1. Su quali sistemi funziona Neubot?`_
+
+    * `2.2. Come installo Neubot?`_
+
+* `3. Usare Neubot`_
+
+    * `3.1. Neubot è installato. Cosa devo fare adesso?`_
+
+    * `3.2. Di quante risorse ha bisogno Neubot?`_
+
+    * `3.3. Come posso riportare bugs, fare domande, dare suggerimenti?`_
+
+    * `3.4. Che problemi ci sono se uso mobile broadband, 3G modem, Internet key?`_
+
+    * `3.5. Devo modificare la configurazione del mio router?`_
+
+    * `3.6. Come leggo i log di Neubot?`_
+
+    * `3.7. Devo ruotare periodicamente i file log?`_
+
+    * `3.8. Devo ruotare periodicamente il database?`_
+
+* `4. Domande tecniche`_
+
+    * `4.1. Come funziona Neubot?`_
+
+    * `4.2. Che cosa misura il test speedtest?`_
+
+    * `4.3. In che modo Neubot modifica il registro di sistema di Windows?`_
+
+    * `4.4. Qual'è il percorso del database di Neubot?`_
+
+    * `4.5. Come posso scaricare i contenuti del database?`_
+
+    * `4.6. Che cosa misura il test bittorrent?`_
+
+    * `4.7. Che significa misurare la banda disponibile?`_
+
+    * `4.8. È possibile paragonare i risultati dei test speedtest e bittorrent?`_
+
+* `5. Domande sulla privacy`_
+
+    * `5.1. Quali dati personali colleziona Neubot?`_
+
+    * `5.2. Pubblicherete il mio indirizzo IP?`_
+
 1. Domande generiche
 --------------------
 
@@ -58,7 +143,7 @@ piu' ti consigliamo di fare riferimento alla pagina Wikipedia sulla
 `neutralità della
 rete <http://it.wikipedia.org/wiki/Neutralità_della_Rete>`_.
 
-1.3. Perchè *"network neutrality bot"*?
+1.3. Perchè "network neutrality bot"?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il programma si chiama *network neutrality bot* perché è un `"software
@@ -284,6 +369,7 @@ della maggior parte delle connsessioni ADSL).
 La seconda immagine mostra quante risorse (soprattutto memoria) vengono
 consumate quando Neubot è inattivo.
 |resources usage 2|
+
 3.3. Come posso riportare bugs, fare domande, dare suggerimenti?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -309,8 +395,7 @@ mailing list sono archiviati qui:
 
 Grazie per la collaborazione!
 
-3.4. Che problemi ci sono se uso mobile broadband, 3G modem, Internet
-key?
+3.4. Che problemi ci sono se uso mobile broadband, 3G modem, Internet key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Un possibile problema con mobile broadband può essere il seguente. Se
@@ -426,7 +511,7 @@ volte se questo non ha richiesto almeno tre secondi.
 *(Le versioni future di Neubot utilizzeranno anche una modalità di test
 peer-to-peer, ossia eseguiranno i test anche tra istanze di Neubot.)*
 
-4.2. Che cosa misura il test *speedtest*?
+4.2. Che cosa misura il test speedtest?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il test *speedtest* utilizza il `protocollo
@@ -484,7 +569,7 @@ risultati. (Nota che in UNIX devi essere root per scaricare i contenuti
 del system-wide database: se lanci questo comando come utente senza
 privilegi scaricherai invece l'user-specific database.)
 
-4.6. Che cosa misura il test *bittorrent*?
+4.6. Che cosa misura il test bittorrent?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il test *bittorrent* emula il `protocollo
