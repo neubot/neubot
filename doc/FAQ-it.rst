@@ -559,11 +559,9 @@ trasferirli.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Il programma di installazione scrive la seguente chiave di registro, in
-modo che Windows sia a conoscenza del programma di disinstallazione:
+modo che Windows sia a conoscenza del programma di disinstallazione::
 
-::
-
-    HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
+    HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
 
 La chiave viene rimossa durante la procedura di disinstallazione.
 
