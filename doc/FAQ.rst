@@ -58,18 +58,17 @@
 1.1. What is neubot?
 ~~~~~~~~~~~~~~~~~~~~
 
-Neubot is a research project on network neutrality of the `NEXA Center
-for Internet & Society`_ at `Politecnico
-di Torino <http://www.dauin.polito.it>`_. The project is based on a
-lightweight `open-source <http://www.neubot.org/copying>`_ program
-that interested users can download and install on their computers. The
-program runs in the background and periodically performs transmission
-tests with some test servers and/or with other instances of the
-program itself. These transmission tests probe the Internet using
-various application level protocols. The program saves tests results
-locally and uploads them on the project servers. The collected dataset
-contains samples from various Providers and allows the Neubot project
-to monitor network neutrality.
+Neubot is a research project on network neutrality of the `NEXA Center for
+Internet & Society`_ at `Politecnico di Torino`_. The project is based on
+a lightweight `open source`_ program that interested users can download
+and install on their computers. The program runs in the background and
+periodically performs transmission tests with test servers, hosted by
+the distributed Measurement Lab platform, and (in future) with other
+instances of the program itself.  Transmission tests probe the Internet
+using various application level protocols and test results are saved both
+locally and on the test servers.  The results dataset contains samples
+from various Provides and is published on the web, allowing anyone to
+analyze the data for research purposes.
 
 1.2. What is Measurement Lab?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -221,7 +220,7 @@ The version numbering directly reflects the distinction between patch
 and milestone releases, as explained by the next FAQ.
 
 1.10. What is your versioning policy?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot follows the well-known *major*, *minor* and *patch* version
 number policy.  E.g. Neubot 0.4.8 has major version number 0, minor
@@ -671,3 +670,6 @@ For more information, please refer to the `privacy policy`_.
 .. _`web user interface`: http://www.neubot.org/documentation#web-ui
 
 .. _`HTTP protocol`: http://en.wikipedia.org/wiki/HTTP
+
+.. _`Politecnico di Torino`: http://www.dauin.polito.it/
+.. _`open source`: https://github.com/neubot/neubot/blob/master/COPYING
