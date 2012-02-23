@@ -77,7 +77,7 @@
 
     * `4.7. Che significa misurare la banda disponibile?`_
 
-    * `4.8. È possibile paragonare i risultati dei test speedtest e bittorrent?`_
+    * `4.8. È possibile confrontare i risultati dei test speedtest e bittorrent?`_
 
 * `5. Domande sulla privacy`_
 
@@ -630,23 +630,20 @@ seguenti condizioni sfavorevoli:
 
 In altre parole, i risultati di Neubot vanno presi cum grano salis.
 
-4.8. È possibile paragonare i risultati dei test speedtest e bittorrent?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4.8. È possibile confrontare i risultati dei test speedtest e bittorrent?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il test bittorrent è stato rilasciato con la versione 0.4.0. In quel
-periodo la comparazione non era sempre possibile perchè il test
+Il test bittorrent è stato rilasciato con la versione 0.4.0. In
+quel periodo il confronto non era sempre possibile perchè il test
 speedtest utilizzava due connessioni mentre bittorrent ne utilizzava
-solo una, con il risultato che le prestazioni erano peggiori in caso di
-traffico ad alta velocità, ad elevato ritardo e/o più congestionato.
-Neubot 0.4.2 ha risolto questo problema e modificato speedtest in modo
-da usare una sola connessione.
+solo una, con il risultato che le prestazioni erano peggiori in
+caso di reti con elevato prodotto banda-ritardo o in caso ci fosse
+moderata congestione in rete.  Neubot 0.4.2 ha risolto questo
+problema e modificato speedtest in modo da usare una sola connessione.
 
-Questo può ancora non essere sufficiente: pertanto, speedtest verrà
-ulteriormente modificato in modo da utilizzare piccoli messaggi come fa
-bittorrent. In questo modo, potremo essere sicuri che entrambi i test
-carichino la rete in modo simile, cioè con pacchetti di dimensioni
-simili in entrambe le direzioni. Questo miglioramento sarà implementato
-prima di Neubot 0.5.0.
+Questa modifica non basta e ci sono modifiche in cantiere per rendere
+comparabili i due test.  Queste modifiche dovrebbero essere incluse
+in Neubot 0.5.0.
 
 5. Domande sulla privacy
 ------------------------
