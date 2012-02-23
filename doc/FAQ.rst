@@ -563,8 +563,7 @@ privacy law. It's easy: just open the web interface, click on the
 permissions!
 
 .. |image0| image:: /neubotfiles/flag-of-italy.png
-.. |neubot update
-notification| image:: http://www.neubot.org/neubotfiles/neubot-update-notification.png
+.. |neubot update notification| image:: http://www.neubot.org/neubotfiles/neubot-update-notification.png
 .. |resources usage 1| image:: /neubotfiles/resources1.png
 .. |resources usage 2| image:: /neubotfiles/resources2.png
 .. |neubot log| image:: /neubotfiles/neubot-log.png
