@@ -685,14 +685,27 @@ al fine di esaminare l'effetto del carico sui risultati.
 5.2. Pubblicherete il mio indirizzo IP?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dipende. Per impostazione predefinita non condividiamo il tuo indirizzo
-Internet. Però ci piacerebbe farlo, per condividere i nostri risultati
-con altri ricercatori e, più in generale, per potenziare la comunità di
-ricerca. Tuttavia, per fare questo abbiamo bisogno del tuo permesso
-esplicito, in conformità a quanto richiesto dalla normativa europea
-sulla privacy. È facile: basta aprire l'interfaccia web, cliccare sulla
-tabella *Privacy*, `leggere la policy </privacy>`_, e darci
-l'autorizzazione!
+Si`.  Neubot pubblica il tuo indirizzo IP per permettere ad altri
+individui e istituzioni di portare avanti studi alternativi e/o
+verificare la metodologia di raccolta e di analisi dei dati.
+
+Ovviamente, Neubot non puo` pubblicare il tuo indirizzo IP senza
+avere il tuo consenso informato, come previsto dalle leggi europee
+in materia di privacy.  Percio`, ti chiede il permesso di farlo
+durante l'installazione, se possibile, oppure, se non e' possibile,
+mentre e' in esecuzione.  Non c'e' bisogno di dire che ovviamente
+Neubot non comincia alcun test finche` non hai letto la privacy
+policy e gli hai fornito il permesso di pubblicare il tuo indirizzo
+IP.
+
+Una ulteriore ragione per cui Neubot non puo` eseguire alcun test
+finche` non gli fornisci il permesso di pubblicare il tuo indirizzo
+IP e' che questo non sarebbe compliant con la policy della piattaforma
+distribuita Measurement Lab (M-Lab_), che fornisce i server al
+progetto Neubot e richiede che tutti i risultati siano rilasciati
+come open data.
+
+Per maggiori informazioni, fai riferimento alla `privacy policy`_.
 
 ..
 .. Links
