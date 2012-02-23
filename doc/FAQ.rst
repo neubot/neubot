@@ -111,7 +111,7 @@ The latest version of Neubot implements the following transmission
 tests:
 
 -  **speedtest** This transmission test is inspired to the test of
-   `Speedtest.net <http://www.speedtest.net>`_. It is a client-server
+   speedtest.net_. It is a client-server
    test using HTTP that measures `round-trip time
    latency <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_,
    upload, and download
@@ -245,7 +245,8 @@ link, follow instructions, and you're done.
 
 |neubot update notification|
 You might also want to compare the outcome of Neubot with the one of
-`Speedtest.net <http://www.speedtest.net/>`_, and, possibly, with the
+speedtest.net_,
+and, possibly, with the
 one of other `online speed
 tests <http://voip.about.com/od/voipbandwidth/tp/topspeedtests.htm>`_.
 We would appreciate it if you would share your results with us,
@@ -414,7 +415,7 @@ The *speedtest* test uses the `HTTP
 protocol <http://en.wikipedia.org/wiki/HTTP>`_ and measures: `round-trip
 latency <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_, download
 and upload `goodput <http://en.wikipedia.org/wiki/Goodput>`_. It is
-inspired to `Speedtest.net <http://www.speedtest.net/>`_ test, hence the
+inspired to speedtest.net_ test, hence the
 name. The test estimates the round-trip latency measuring the time
 required to connect and the average time to request and receive a
 zero-length resource. It also estimates the download and upload goodput
@@ -568,3 +569,5 @@ notification| image:: http://www.neubot.org/neubotfiles/neubot-update-notificati
 .. |resources usage 2| image:: /neubotfiles/resources2.png
 .. |neubot log| image:: /neubotfiles/neubot-log.png
 .. |image5| image:: /neubotfiles/neubot-log-text.png
+
+.. _speedtest.net: http://www.speedtest.net
