@@ -397,10 +397,14 @@ di upload. (L'utilizzo delle risorse è molto più basso se lanci il test
 da casa, dato che la connessione del Politecnico è 5x/10x più veloce
 della maggior parte delle connsessioni ADSL).
 
-|resources usage 1|
+.. image:: http://www.neubot.org/neubotfiles/resources1.png
+   :align: center
+
 La seconda immagine mostra quante risorse (soprattutto memoria) vengono
 consumate quando Neubot è inattivo.
-|resources usage 2|
+
+.. image:: http://www.neubot.org/neubotfiles/resources2.png
+   :align: center
 
 3.3. Come posso riportare bugs, fare domande, dare suggerimenti?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
