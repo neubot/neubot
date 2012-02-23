@@ -110,22 +110,18 @@ Neubot.
 The latest version of Neubot implements the following transmission
 tests:
 
--  **speedtest** This transmission test is inspired to the test of
-   speedtest.net_. It is a client-server
-   test using HTTP that measures `round-trip time
-   latency <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_,
-   upload, and download
-   `goodput <http://en.wikipedia.org/wiki/Goodput>`_.
+**Speedtest**
+  This transmission test was originally inspired to the test of
+  speedtest.net_, hence the name. It is an HTTP client-server test
+  and measures `round trip time`_, download and upload goodput_.
 
--  **bittorrent** This transmission test performs `round-trip time
-   latency <http://en.wikipedia.org/wiki/Round-trip_delay_time>`_,
-   download and upload `goodput <http://en.wikipedia.org/wiki/Goodput>`_
-   client-server measurements emulating the `BitTorrent peer-wire
-   protocol <http://www.bittorrent.org/beps/bep_0003.html>`_.
+**BitTorrent**
+  This transmission test is a `BitTorrent peer-wire protocol`_
+  client-server test and measures `round trip time`_, download and
+  upload goodput_.
 
 If you're interested, you can get more details on transmission tests in
-the `technical
-section <http://www.neubot.org/faq#technical-questions>`_.
+the `4. Technical questions`_ section.
 
 1.7. What is the roadmap to Neubot/1.0?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -570,3 +566,8 @@ permissions!
 .. |image5| image:: /neubotfiles/neubot-log-text.png
 
 .. _speedtest.net: http://www.speedtest.net
+
+.. _`round trip time`: http://en.wikipedia.org/wiki/Round-trip_delay_time
+.. _goodput: http://en.wikipedia.org/wiki/Goodput
+.. _`BitTorrent peer-wire protocol`:
+   http://www.bittorrent.org/beps/bep_0003.html
