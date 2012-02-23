@@ -333,10 +333,13 @@ Zero. Neubot è disponibile gratuitamente.
 2.1. Su quali sistemi funziona Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot è scritto in Python_ e dovrebbe
-pertanto funzionare su tutti i sistemi supportati da Python_. Comunque,
-potresti voler controllare la nostra pagina `ports </ports>`_ per
-assicurarti che non ci siano problemi di "porting".
+Neubot è scritto in Python_ e dovrebbe pertanto funzionare su tutti
+i sistemi supportati da Python_.
+
+Il team di sviluppo fornisce pacchetti per Ubuntu_ >= 10.04 (e
+Debian_), MacOSX_ >= 10.6, Windows_ >= XP SP3.  Neubot e' incluso
+nella `FreeBSD Ports Collection`_ e funziona senza problemi su
+OpenBSD_ 5.1 current.
 
 2.2. Come installo Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
