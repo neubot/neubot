@@ -502,11 +502,9 @@ while the bittorrent one used only one, resulting in worst performances
 with high-speed, high-delay and/or more congested network. Neubot 0.4.2
 fixed this issue and modified speedtest to use just one connection.
 
-This may not be enough: therefore, the speedtest will be further
-modified to use small messages like the bittorrent one does. So we will
-be more confident that they stress the network in a similar way, i.e.
-with similarly sized packets in both directions. This improvement is to
-be implemented before Neubot 0.5.0.
+This is not enough.  Before Neubot 0.5.0 more work is due to make the
+behavior of the two tests much more similar, allowing for a fair comparison
+of them.
 
 5. Privacy questions
 --------------------
