@@ -1,5 +1,5 @@
 
-$Version: 2.0.1$
+$Version: 2.0.2$
 
 The Neubot Project is a research effort that aims to study the quality
 and neutrality of ordinary users' Internet connections, to rebalance the
@@ -22,7 +22,7 @@ Service Provider* and to have a rough idea of *your location*, allowing to
 put the results in context.  The Neubot Project needs to *collect* it
 to study the data and wants to *publish* it to enable other individuals
 and institutions to carry alternative studies and/or peer-review its
-measurement and data analysis methodology.  This is coherent with the
+measurements and data analysis methodology.  This is coherent with the
 policy of the distributed server platform that empowers the Neubot
 Project, Measurement Lab (M-Lab), which requires all results to be
 released as open data [1].
