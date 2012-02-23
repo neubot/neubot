@@ -345,11 +345,10 @@ OpenBSD_ 5.1 current.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Vai alla pagina `pagina download`_ e segui le instruzioni per il
-tuo sistema operativo. Forniamo pacchetti binari per MacOSX_,
-Windows_, Debian_, e distribuzioni basate su Debian_
-(come Ubuntu_). Se non c'è un pacchetto
-binario per il tuo sistema, puoi comunque installare Neubot dai
-sorgenti.
+tuo sistema operativo. Il team di sviluppo fornisce pacchetti binari
+per MacOSX_, Windows_, Debian_, e distribuzioni basate su Debian_
+(come Ubuntu_). Se non c'è un pacchetto binario per il tuo sistema,
+puoi comunque installare Neubot dai sorgenti.
 
 3. Usare Neubot
 ---------------
