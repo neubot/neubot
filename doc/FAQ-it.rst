@@ -479,8 +479,10 @@ posso estrarre i log da ogni file, come di seguito::
 3.7. Devo ruotare periodicamente i file log?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-No: in Windows non ci sono file log, mentre in UNIX il sottosistema di
-logging dovrebbe ruotarli automaticamente.
+No.  Su qualsiasi piattaforma, i log vengono salvati nel database,
+ma periodicamente Neubot cancella i log vecchi.  Nei sistemi UNIX,
+i log vengono anche salvati utilizzando ``syslog(3)``, che dovrebbe
+automaticamente occuparsi di ruotare i file di log.
 
 3.8. Devo ruotare periodicamente il database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
