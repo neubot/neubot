@@ -274,11 +274,15 @@ where Neubot generates the random data to send during the upload phase.
 (The resources usage is much lower if you run the test at home, given
 that Politecnico network is 5x/10x faster than most ADSLs.)
 
-|resources usage 1|
+.. image:: http://www.neubot.org/neubotfiles/resources1.png
+   :align: center
+
 The second screenshot shows the amount of consumed resources (in
 particular memory) when Neubot is idle.
 
-|resources usage 2|
+.. image:: http://www.neubot.org/neubotfiles/resources2.png
+   :align: center
+
 3.3. How do I report bugs, ask questions, make suggestions?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -567,8 +571,6 @@ privacy law. It's easy: just open the web interface, click on the
 *Privacy* tab, `read the policy </privacy>`_, and give us the
 permissions!
 
-.. |resources usage 1| image:: /neubotfiles/resources1.png
-.. |resources usage 2| image:: /neubotfiles/resources2.png
 .. |neubot log| image:: /neubotfiles/neubot-log.png
 .. |image5| image:: /neubotfiles/neubot-log-text.png
 
