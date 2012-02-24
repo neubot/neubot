@@ -41,15 +41,12 @@ USAGE = '''\
 neubot - The network neutrality bot
 
 Usage: neubot
-       neubot start
-       neubot status
-       neubot stop
        neubot --help
        neubot -V
-       neubot COMMAND [-ElvV] [-D PROPERTY[=VALUE]] [-f FILE]
+       neubot subcommand [option]... [argument]...
 
 Try `neubot help` to get a list of available subcommands.
-Try `neubot COMMAND --help` for more help on COMMAND.
+Try `neubot subcommand --help` for more help on subcommand.
 '''
 
 VERSION = "0.4.9-rc2"
