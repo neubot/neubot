@@ -29,6 +29,42 @@
 # only and should be fixed such that it works with Linux too.
 #
 
+stat_perms()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo $(ls -ld $1|awk '{print $1}')
+    else
+        echo $(stat $1|awk '{print $3}')
+    fi
+}
+
+stat_user()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo $(ls -ld $1|awk '{print $3}')
+    else
+        echo $(stat $1|awk '{print $5}')
+    fi
+}
+
+stat_group()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo $(ls -ld $1|awk '{print $4}')
+    else
+        echo $(stat $1|awk '{print $6}')
+    fi
+}
+
+nobody_group()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo "nogroup"
+    else
+        echo "nobody"
+    fi
+}
+
 if [ `id -u` -ne 0 ]; then
     echo "$0: you must be root to run this test" 1>&2
     exit 1
@@ -74,10 +110,9 @@ printf "Make sure /tmp/neubot type, permissions and owner are OK..."
 (
     set -e
     [ -d /tmp/neubot ]
-    [ $(stat /tmp/neubot|awk '{print $3}') = 'drwxr-xr-x' ]
-    [ $(stat /tmp/neubot|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot)" = 'drwxr-xr-x' ]
+    [ "$(stat_user /tmp/neubot)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -89,10 +124,9 @@ printf "Make sure /tmp/neubot/A type, permissions and owner are OK..."
 (
     set -e
     [ -d /tmp/neubot/A ]
-    [ $(stat /tmp/neubot/A|awk '{print $3}') = 'drwxr-xr-x' ]
-    [ $(stat /tmp/neubot/A|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot/A|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot/A|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot/A)" = 'drwxr-xr-x' ]
+    [ "$(stat_user /tmp/neubot/A)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot/A)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -104,10 +138,9 @@ printf "Make sure /tmp/neubot/A/B type, permissions and owner are OK..."
 (
     set -e
     [ -d /tmp/neubot/A/B ]
-    [ $(stat /tmp/neubot/A/B|awk '{print $3}') = 'drwxr-xr-x' ]
-    [ $(stat /tmp/neubot/A/B|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot/A/B|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot/A/B|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot/A/B)" = 'drwxr-xr-x' ]
+    [ "$(stat_user /tmp/neubot/A/B)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot/A/B)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -119,10 +152,9 @@ printf "Make sure /tmp/neubot/A/B/C permissions and owner are OK..."
 (
     set -e
     [ -f /tmp/neubot/A/B/C ]
-    [ $(stat /tmp/neubot/A/B/C|awk '{print $3}') = '-rw-r--r--' ]
-    [ $(stat /tmp/neubot/A/B/C|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot/A/B/C|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot/A/B/C|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot/A/B/C)" = '-rw-r--r--' ]
+    [ "$(stat_user /tmp/neubot/A/B/C)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot/A/B/C)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -149,10 +181,9 @@ printf "Make sure /tmp/neubot/A/B/D permissions and owner are OK..."
 (
     set -e
     [ -f /tmp/neubot/A/B/D ]
-    [ $(stat /tmp/neubot/A/B/D|awk '{print $3}') = '-rw-r--r--' ]
-    [ $(stat /tmp/neubot/A/B/D|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot/A/B/D|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot/A/B/D|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot/A/B/D)" = '-rw-r--r--' ]
+    [ "$(stat_user /tmp/neubot/A/B/D)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot/A/B/D)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -179,10 +210,9 @@ printf "Make sure /tmp/neubot/A/K type, permissions and owner are OK..."
 (
     set -e
     [ -d /tmp/neubot/A/K ]
-    [ $(stat /tmp/neubot/A/K|awk '{print $3}') = 'drwxr-xr-x' ]
-    [ $(stat /tmp/neubot/A/K|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot/A/K|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot/A/K|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot/A/K)" = 'drwxr-xr-x' ]
+    [ "$(stat_user /tmp/neubot/A/K)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot/A/K)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -194,10 +224,9 @@ printf "Make sure /tmp/neubot/A/K/D permissions and owner are OK..."
 (
     set -e
     [ -f /tmp/neubot/A/K/D ]
-    [ $(stat /tmp/neubot/A/K/D|awk '{print $3}') = '-rw-r--r--' ]
-    [ $(stat /tmp/neubot/A/K/D|awk '{print $5}') = 'nobody' ]
-    [ $(stat /tmp/neubot/A/K/D|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat /tmp/neubot/A/K/D|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms /tmp/neubot/A/K/D)" = '-rw-r--r--' ]
+    [ "$(stat_user /tmp/neubot/A/K/D)" = 'nobody' ]
+    [ "$(stat_group /tmp/neubot/A/K/D)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
