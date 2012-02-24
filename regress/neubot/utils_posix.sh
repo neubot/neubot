@@ -24,10 +24,50 @@
 # Regression tests for neubot/utils_posix.py
 #
 
-#
-# FIXME This regression test works with the BSD version of stat(1)
-# only and should be fixed such that it works with Linux too.
-#
+stat_perms()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo $(ls -ld $1|awk '{print $1}')
+    else
+        echo $(stat $1|awk '{print $3}')
+    fi
+}
+
+stat_user()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo $(ls -ld $1|awk '{print $3}')
+    else
+        echo $(stat $1|awk '{print $5}')
+    fi
+}
+
+stat_group()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo $(ls -ld $1|awk '{print $4}')
+    else
+        echo $(stat $1|awk '{print $6}')
+    fi
+}
+
+nobody_group()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo "nogroup"
+    else
+        echo "nobody"
+    fi
+}
+
+root_group()
+{
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo "root"
+    else
+        echo "wheel"
+    fi
+}
 
 if [ `id -u` -ne 0 ]; then
     echo "$0: you must be root to run this test" 1>&2
@@ -128,7 +168,7 @@ printf "YES\n"
 printf "Make sure directory permissions are OK..."
 (
     set -e
-    [ $(stat XO|awk '{print $3}') = 'drwxr-xr-x' ]
+    [ "$(stat_perms XO)" = 'drwxr-xr-x' ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -139,7 +179,7 @@ printf "YES\n"
 printf "Make sure directory user is OK..."
 (
     set -e
-    [ $(stat XO|awk '{print $5}') = 'nobody' ]
+    [ "$(stat_user XO)" = 'nobody' ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -150,8 +190,7 @@ printf "YES\n"
 printf "Make sure directory group is OK..."
 (
     set -e
-    [ $(stat XO|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat XO|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_group XO)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -164,10 +203,9 @@ printf "Make sure mkdir is idempotent..."
     set -e
     python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
     [ -d XO ]
-    [ $(stat XO|awk '{print $3}') = 'drwxr-xr-x' ]
-    [ $(stat XO|awk '{print $5}') = 'nobody' ]
-    [ $(stat XO|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat XO|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms XO)" = 'drwxr-xr-x' ]
+    [ "$(stat_user XO)" = 'nobody' ]
+    [ "$(stat_group XO)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -190,7 +228,7 @@ printf "Make sure mkdir updates permissions..."
 (
     set -e
     python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
-    [ $(stat XO|awk '{print $3}') = 'drwxr-xr-x' ]
+    [ "$(stat_perms XO)" = 'drwxr-xr-x' ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -202,8 +240,8 @@ printf "Make sure mkdir updates ownership..."
 (
     set -e
     python neubot/utils_posix.py mkdir XO
-    [ $(stat -f %u XO) = '0' ]
-    [ $(stat -f %g XO) = '0' ]
+    [ "$(stat_user XO)" = 'root' ]
+    [ "$(stat_group XO)" = "$(root_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -242,7 +280,7 @@ printf "YES\n"
 printf "Make sure file permissions are OK..."
 (
     set -e
-    [ $(stat XO/f|awk '{print $3}') = '-rw-r--r--' ]
+    [ "$(stat_perms XO/f)" = '-rw-r--r--' ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -253,7 +291,7 @@ printf "YES\n"
 printf "Make sure file user is OK..."
 (
     set -e
-    [ $(stat XO/f|awk '{print $5}') = 'nobody' ]
+    [ "$(stat_user XO/f)" = 'nobody' ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -264,8 +302,7 @@ printf "YES\n"
 printf "Make sure file group is OK..."
 (
     set -e
-    [ $(stat XO/f|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat XO/f|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_group XO/f)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -278,10 +315,9 @@ printf "Make sure touch is idempotent..."
     set -e
     python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
     [ -f XO/f ]
-    [ $(stat XO/f|awk '{print $3}') = '-rw-r--r--' ]
-    [ $(stat XO/f|awk '{print $5}') = 'nobody' ]
-    [ $(stat XO/f|awk '{print $6}') = 'nobody' ] ||
-      [ $(stat XO/f|awk '{print $6}') = 'nogroup' ]
+    [ "$(stat_perms XO/f)" = '-rw-r--r--' ]
+    [ "$(stat_user XO/f)" = 'nobody' ]
+    [ "$(stat_group XO/f)" = "$(nobody_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -304,7 +340,7 @@ printf "Make sure touch updates permissions..."
 (
     set -e
     python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
-    [ $(stat XO/f|awk '{print $3}') = '-rw-r--r--' ]
+    [ "$(stat_perms XO/f)" = '-rw-r--r--' ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -316,8 +352,8 @@ printf "Make sure touch updates ownership..."
 (
     set -e
     python neubot/utils_posix.py touch XO/f
-    [ $(stat -f %u XO/f) = '0' ]
-    [ $(stat -f %g XO/f) = '0' ]
+    [ "$(stat_user XO/f)" = 'root' ]
+    [ "$(stat_group XO/f)" = "$(root_group)" ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
