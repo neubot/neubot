@@ -279,27 +279,28 @@ In this section we will follow the well-established convention of
 representing the unprivileged user prompt with *$* and the privileged
 user prompt with *#*.
 
-Run an on-demand HTTP Test:
+Run ondemand speedtest test:
 
 |
 |    $ neubot speedtest
 
-Run an on-demand BitTorrent Test:
+Run ondemand BitTorrent test:
 
 |
 |    $ neubot bittorrent
 
-Start a system-wide Agent:
+Start **neubot**:
 
 |
 |    # neubot start
 
-Stop the Agent:
+Stop **neubot**:
 
 |
 |    $ neubot stop
 
-Run the Agent in foreground and in debug mode for debugging purposes:
+Run the client-side components of **neubot** in foreground and in debug
+mode for debugging purposes:
 
 |
 |    $ neubot agent -v -D agent.daemonize=no
@@ -317,7 +318,7 @@ Track the Agent state using the command line:
 Run Neubot in-place from the sources directory:
 
 |
-|    $ ./bin/neubot COMMAND
+|    $ ./bin/neubot *comand*
 
 FILES
 `````
@@ -386,7 +387,7 @@ The following people have helped with internationalization:
 COPYRIGHT
 `````````
 
-| Copyright (c) 2010-2011 NEXA Center for Internet & Society
+| Copyright (c) 2010-2012 NEXA Center for Internet & Society
 |   at Politecnico di Torino <http://nexa.polito.it/>
 
 | Neubot is free software: you can redistribute it and/or
