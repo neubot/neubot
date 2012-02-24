@@ -93,6 +93,8 @@
 
     * `6.3. Qual e' il formato dei dati?`_
 
+------------------------------------------------------------------------
+
 1. Domande generiche
 --------------------
 
@@ -335,6 +337,8 @@ Neubot è rilasciato con licenza `GNU General Public License versione
 
 Zero. Neubot è disponibile gratuitamente.
 
+------------------------------------------------------------------------
+
 2. Installare Neubot
 --------------------
 
@@ -357,6 +361,8 @@ tuo sistema operativo. Il team di sviluppo fornisce pacchetti binari
 per MacOSX_, Windows_, Debian_, e distribuzioni basate su Debian_
 (come Ubuntu_). Se non c'è un pacchetto binario per il tuo sistema,
 puoi comunque installare Neubot dai sorgenti.
+
+------------------------------------------------------------------------
 
 3. Usare Neubot
 ---------------
@@ -502,6 +508,8 @@ esigenze di monitoraggio.) Per eliminare i risultati vecchi lancia il
 seguente comando (da root)::
 
     # neubot database prune
+
+------------------------------------------------------------------------
 
 4. Domande tecniche
 -------------------
@@ -653,6 +661,8 @@ Questa modifica non basta e ci sono modifiche in cantiere per rendere
 comparabili i due test.  Queste modifiche dovrebbero essere incluse
 in Neubot 0.5.0.
 
+------------------------------------------------------------------------
+
 5. Domande sulla privacy
 ------------------------
 
@@ -714,6 +724,8 @@ progetto Neubot e richiede che tutti i risultati siano rilasciati
 come open data.
 
 Per maggiori informazioni, fai riferimento alla `privacy policy`_.
+
+------------------------------------------------------------------------
 
 6. Domande sui dati
 -------------------

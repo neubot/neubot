@@ -60,6 +60,8 @@
    * `6.2. Is there any license attached to data?`_
    * `6.3. What is data format?`_
 
+------------------------------------------------------------------------
+
 1. General questions
 --------------------
 
@@ -281,6 +283,8 @@ We release Neubot under `GNU General Public License version 3`_.
 
 Zero. Neubot is available for free.
 
+------------------------------------------------------------------------
+
 2. Installing Neubot
 --------------------
 
@@ -302,6 +306,8 @@ system. The Neubot team provides binary packages for MacOSX_, Windows_,
 Debian_, and distributions based on Debian (such as Ubuntu_). If
 there is not a binary package for your system, you can still install
 Neubot from sources.
+
+------------------------------------------------------------------------
 
 3. Using Neubot
 ---------------
@@ -437,6 +443,8 @@ run a test every 30 seconds for testing purpose.) To prune the database
 run the following command (as root)::
 
     # neubot database prune
+
+------------------------------------------------------------------------
 
 4. Technical questions
 ----------------------
@@ -580,6 +588,8 @@ This is not enough.  Before Neubot 0.5.0 more work is due to make the
 behavior of the two tests much more similar, allowing for a fair comparison
 of them.
 
+------------------------------------------------------------------------
+
 5. Privacy questions
 --------------------
 
@@ -636,6 +646,8 @@ empowers the Neubot Project, Measurement Lab (M-Lab_), which requires
 all results to be released as open data.
 
 For more information, please refer to the `privacy policy`_.
+
+------------------------------------------------------------------------
 
 6. Data questions
 -----------------
