@@ -272,19 +272,6 @@ neubot viewer [-f database]
   Interface.  Note that one can always connect to the Web User Interface
   pointing her browset at (by default) *http://127.0.0.1:9774/*.
 
-OPTIONS
-```````
-
--D PROPERTY[=VALUE]  Define the *VALUE* of the given *PROPERTY*.
-
--E  Ignore *NEUBOT_OPTIONS* environment variable.
-
--f FILE  Force file name of the database to *FILE*.
-
--l  List all the available properties and exit.
-
--v  Verbose: print much more log messages.  
-
 EXAMPLES
 ````````
 
