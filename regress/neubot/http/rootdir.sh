@@ -29,6 +29,12 @@
 # Make sure there are no *.pyc files around
 make clean
 
+#
+# Make sure sorting is stable across operating systems
+# that have different defaults
+#
+export LC_COLLATE=C
+
 grep -R http.server.rootdir neubot/ | sort > \
   regress/neubot/http/rootdir.txt.new
 diff -u regress/neubot/http/rootdir.txt \

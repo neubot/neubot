@@ -34,6 +34,12 @@
 
 set -e
 
+#
+# Make sure sorting is stable across operating systems
+# that have different defaults
+#
+export LC_COLLATE=C
+
 make clean
 make -f Makefile _install DESTDIR=dist/temp SYSCONFDIR=/sysconfdir \
     LOCALSTATEDIR=/localstatedir BINDIR=/bindir DATADIR=/datadir \

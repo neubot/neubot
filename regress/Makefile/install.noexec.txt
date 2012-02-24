@@ -18,6 +18,9 @@ dist/temp/datadir/neubot/bittorrent/peer.py
 dist/temp/datadir/neubot/bittorrent/sched.py
 dist/temp/datadir/neubot/bittorrent/server.py
 dist/temp/datadir/neubot/bittorrent/stream.py
+dist/temp/datadir/neubot/browser.py
+dist/temp/datadir/neubot/browser_nt.py
+dist/temp/datadir/neubot/browser_null.py
 dist/temp/datadir/neubot/compat.py
 dist/temp/datadir/neubot/config.py
 dist/temp/datadir/neubot/config_api.py
@@ -60,6 +63,7 @@ dist/temp/datadir/neubot/net/stream.py
 dist/temp/datadir/neubot/notifier/__init__.py
 dist/temp/datadir/neubot/notifier/macos.py
 dist/temp/datadir/neubot/notifier/unix.py
+dist/temp/datadir/neubot/notifier_browser.py
 dist/temp/datadir/neubot/notify.py
 dist/temp/datadir/neubot/privacy.py
 dist/temp/datadir/neubot/rendezvous/__init__.py
