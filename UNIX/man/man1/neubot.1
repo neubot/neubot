@@ -1,6 +1,6 @@
 .\" Man page generated from reStructeredText.
 .
-.TH NEUBOT 1 "2011-11-14" "Neubot 0.4.9-rc2" "Neubot manual"
+.TH NEUBOT 1 "2012-02-24" "Neubot 0.4.9-rc2" "Neubot manual"
 .SH NAME
 neubot \- The network neutrality bot
 .
@@ -32,7 +32,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 ..
 .\" 
 .
-.\" Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+.\" Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 .
 .\" NEXA Center for Internet & Society at Politecnico di Torino
 .
@@ -70,143 +70,391 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .
 .SH SYNOPSIS
 .nf
-neubot
-neubot start
-neubot status
-neubot stop
-neubot \-\-help
-neubot \-V
-neubot \fICOMMAND\fP [\-ElvV] [\-D \fIPROPERTY[=VALUE\fP]] [\-f \fIFILE\fP]
+\fBneubot\fP
+\fBneubot\fP \fB\-\-help\fP
+\fBneubot\fP \fB\-V\fP
+\fBneubot\fP \fIsubcommand\fP [\fIoption\fP]... [\fIargument\fP]...
 .fi
 .sp
 .SH DESCRIPTION
 .sp
-\fINeubot\fP is a research project on network neutrality of the \fINEXA Center
-for Internet & Society\fP at \fIPolitecnico di Torino\fP.  The general idea
-behind Neubot is to deploy to interested users a lightweight computer
-program that performs distributed measurements and collects quantitative
-data on the behavior of \fIInternet Service Providers\fP (ISPs) with respect
-to \fItraffic discrimination\fP and \fIInternet access quality\fP.
+\fBneubot\fP measures quality and neutrality of your Internet connection
+in the background.  It performs periodic, active transmission tests with
+remote test servers and (in future) with neubot instances installed by
+other users.  Tests send and receive random data, emulate different
+protocols and measure application\-level metrics, such as latency and
+goodput.  Results are saved on the local computer and published on the
+web, allowing for better Internet\-access and network\-neutrality research.
+Since results contain the user IP address and that is personal data in
+the European Union, no test is performed until the user gives \fBneubot\fP
+her consent, as explained in the \fI\%PRIVACY\fP section.
 .sp
-This manual page documents the \fINeubot Agent\fP, i.e. the piece of software
-that you install on your computer.  Typically, the Agent \fIruns in the
-background\fP without your intervention, and periodically performs \fITests\fP
-with remote Test Servers and (in future) with other Agents.  Each test
-emulates the syntax and/or behavior of a given application protocol and
-consists of sending and/or receiving random data only, \fIi.e. the Agent
-does not monitor or analyze your traffic.\fP
+The \fIfirst form\fP of the command (with no arguments) starts \fBneubot\fP
+if it is not already running and opens the \fIWeb User Interface\fP in the
+default browser.  Note that the browser is not opened: (a) when the
+user is \fBroot\fP, for obvious security reasons; (b) when the environment
+does not contain the \fBDISPLAY\fP variable, because a graphical browser
+is needed.  This form of the command is now \fIdeprecated on UNIX\fP, and
+users should use the \fIstart\fP and \fIviewer\fP subcommands to start \fBneubot\fP
+and open the Web User Interface respectively.
 .sp
-You can configure and control the Agent either via \fIcommand line\fP or
-via its \fIWeb User Interface\fP (WUI).  The Command Line Interface (CLI)
-allows to start, stop, and query the Agent status, run on\-demand tests,
-and much more.  The WUI, based on a \fIWeb API\fP, permits to configure and
-control the Agent, and to navigate recent results.
+The \fIsecond form\fP of the command (\-\-help) prints on the standard output
+a brief help message that summarizes the synopsis.
 .sp
-The \fIfirst form\fP of the command (with no arguments) starts the Web User
-Interface in the default browser.  Before opening the browser, this command
-ensures that an instance of the Agent is running in background, and starts it
-otherwise.
-Then, if the user is not running as root, the command tries to open the Web
-User Interface in the default
-browser, using this URI: \fIhttp://127.0.0.1:9774/\fP.  Note that it\(aqs not
-possible to open a browser if a graphical environment is not available,
-i.e. if the \fIDISPLAY\fP environment variable is not set.
+The \fIthird form\fP of the command (\-V) prints on the standard output the
+version number.
 .sp
-The \fIsecond form\fP of the command (start) starts the Agent, which will daemonize,
-drop privileges if running as root, and then run in the background.
-(Note that the Agent drops privileges to the user \fB_neubot\fP, so,
-if you install Neubot from sources you need to create this user.)
-An Agent started like this listens at \fI127.0.0.1:9774\fP for Web API requests.
-.sp
-The \fIthird form\fP of the command (status) queries the status of the Agent, and
-prints the result on the standard output.  To do that, the command
-connects to \fI127.0.0.1:9774\fP, and sends a request to the Web API.
-The Agent is reported to be running if the response is successful,
-i.e. \fI200 Ok\fP, and not running otherwise.
-.sp
-The \fIfourth form\fP of the command (stop) stops the agent listening at
-\fI127.0.0.1:9774\fP, using the proper Web
-API command.  Upon receiving this request, the Agent will immediately exit.
-.sp
-The \fIfifth form\fP of the command (\-\-help) prints on the standard output a brief
-help message that summarizes the synopsis.
-.sp
-The \fIsixth form\fP of the command (\-V) prints on the standard output the version
-number.
-.sp
-The \fIseventh form\fP of the command (COMMAND) allows to run an arbitrary Neubot
-module. The design of Neubot is module\-oriented:
-most modules export a function, named \fImain()\fP, that parses command line options
-and implements some behavior.  The available modules are:
+The \fIfourth form\fP of the command (subcommand) allows to run the specified
+subcommand.  The remainder of this section documents the most commonly
+used subcommands.
 .INDENT 0.0
 .TP
-.B agent
+.B neubot bittorrent [\-v] [\-D setting]
 .
-This module implements the Agent behavior described in this manual page.
-I.e. forks in background, starts the Web API server, drops privileges
-if needed, and then periodically performs Tests.  When you run \fIneubot
-start\fP this module is invoked under the hood.
-.TP
-.B bittorrent
-.
-This module performs an on\-demand BitTorrent transmission Test with
-an alternative Test Server reserved for this purpose.
-.TP
-.B database
-.
-This module allows to perform some low\-level tasks with the database.
-It allows to dump the content of the database, delete the content of
-the database, remove old entries, and \fIregenerate the Neubot identifier\fP
-associated to the Agent.
+Sends a Web API request (by default to \fI127.0.0.1:9774\fP) to the local
+instance of \fBneubot\fP running in the background, asking to run a
+bittorrent test immediately.  If it is not possible to communicate
+with the local instance, the subcommand will fallback to running the
+bittorrent test in its own process context.
 .sp
-(Each Agent is associated with an unique identifier that allows to
-perform time series analysis.  We believe it does not breach your
-privacy, but you might not agree and might want to change it from time
-to time.)
+The behavior of this subcommand can be controlled using the following
+settings, where the indicated value is the default one:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
 .TP
-.B speedtest
+.B agent.api.address=127.0.0.1
 .
-This module performs an on\-demand HTTP transmission Test with an
-alternative Test Server reserved for this purpose.
+Address where the local \fBneubot\fP instance is supposed to
+be listening.
 .TP
-.B speedtest.client
+.B agent.api.port=9774
 .
-Alias for \fIspeedtest\fP.
+Port where the local \fBneubot\fP instance is supposed to be
+listening.
 .TP
-.B stream
+.B bittorrent.address=""
 .
-This module performs an on\-demand TCP bulk transfer transmission Test
-with an alternative Test Server reserved for this purpose.
+Address to connect to in order to perform the test (client mode)
+or address to listen to (server mode).  When the value equals \fI""\fP,
+the subcommand uses \fImaster.neubot.org\fP (client mode) or \fI0.0.0.0\fP
+(server mode).
+.sp
+When running in client mode, this setting is only effective if
+the test is run in the process context of the subcommand itself.
+.TP
+.B bittorrent.daemonize=0
+.
+When on (\fInonzero\fP) the subcommand will detach from the current
+shell and become a daemon.  When off (\fI0\fP) the subcommand will
+run in the context of the current shell.
+.sp
+When running in client mode, this setting is only effective if
+the test is run in the process context of the subcommand itself.
+.TP
+.B bittorrent.listen=0
+.
+Run in client (\fI0\fP) or in server (\fInonzero\fP) mode.
+.TP
+.B bittorrent.negotiate=1
+.
+Turn off (\fI0\fP) or on (\fInonzero\fP) negotiation.  Negotiation is the
+procedure that ensures that client and server agree on the test
+parameters, and that keeps the server load under control, by
+keeping clients in queue and allowing only a subset of them to
+perform concurrent tests.
+.sp
+When running in client mode, this setting is only effective if
+the test is run in the process context of the subcommand itself.
+.sp
+You typically want this setting to be on, unless you are testing
+the bittorrent client and server.
+.TP
+.B bittorrent.negotiate.port=80
+.
+The port to be used for negotiation, both for client and for
+server mode.
+.sp
+When running in client mode, this setting is only effective if
+the test is run in the process context of the subcommand itself.
+.TP
+.B bittorrent.port=6881
+.
+Port to connect to in order to perform the test (client mode)
+or Port to listen to (server mode).
+.sp
+When running in client mode, this setting is only effective if
+the test is run in the process context of the subcommand itself.
+.TP
+.B runner.enabled=1
+.
+When this setting is on (\fInonzero\fP) the subcommand will try to run
+the test in the context of the local instance of \fBneubot\fP first,
+and then it will fallback to running the test on its own process
+context if that fails.
+.sp
+When this setting is off (\fIzero\fP) the subcommand will always run
+the test in its own process context.
 .UNINDENT
-.SH OPTIONS
-.TP
-.BI \-D \ PROPERTY[=VALUE]
-.
-Define the \fIVALUE\fP of the given \fIPROPERTY\fP.
-.TP
-.B \-E
-.
-Ignore \fINEUBOT_OPTIONS\fP environment variable.
-.TP
-.BI \-f \ FILE
-.
-Force file name of the database to \fIFILE\fP.
-.TP
-.B \-l
-.
-List all the available properties and exit.
-.TP
-.B \-v
-.
-Verbose: print much more log messages.
 .UNINDENT
+.UNINDENT
+.TP
+.B neubot database [\-\-help] [\-f database] [action]
+.
+Perform low level actions on the database or print the database name
+if no action was specified.  The following options are accepted:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B \-\-help
+.
+Prints an help message on the standard output and exits.
+.TP
+.BI \-f \ database
+.
+Force to use the database at \fIdatabase\fP instead of using the
+default one (see \fI\%FILES\fP section for more info).
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+The following actions are implemented:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B info
+.
+Print the database path.
+.TP
+.B delete_all
+.
+Delete all results in the database.
+.TP
+.B dump
+.
+Dump to stdout the content of the database in JSON format.
+.TP
+.B prune
+.
+Remove results older than one year from the database.
+.TP
+.B regen_uuid
+.
+Each \fBneubot\fP has its own random unique identifier that is sent
+with results and allows to perform time serie anlysis.  This action
+generates a fresh new random unique identifier.
+.TP
+.B show
+.
+Like \fIdump\fP, but pretty\-prints database content.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B neubot privacy [\-Pt] [\-D setting] [\-f database]
+.
+Allows to read privacy policy, test and set privacy settings.  For
+more information on privacy see the \fI\%PRIVACY\fP section.  This subcommand
+accepts the following command line options:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.BI \-D \ setting
+.
+Allow to set privacy settings in the database.  The following
+privacy settings are defined, along with their default value:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B privacy.informed=""
+.
+Turns on (\fInonzero\fP) or off (\fI0\fP) the corresponding privacy
+setting in the database, unless the setting is unspecified
+(\fI""\fP).
+.TP
+.B privacy.can_collect=""
+.
+Turns on (\fInonzero\fP) or off (\fI0\fP) the corresponding privacy
+setting in the database, unless the setting is unspecified
+(\fI""\fP).
+.TP
+.B privacy.can_publish=""
+.
+Turns on (\fInonzero\fP) or off (\fI0\fP) the corresponding privacy
+setting in the database, unless the setting is unspecified
+(\fI""\fP).
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Note that all privacy settings must be on for \fBneubot\fP to be
+allowed to run automatic tests.
+.sp
+Note that this command changes the database, but changes are not
+propagated to the \fBneubot\fP instance running in background.
+.TP
+.BI \-f \ database
+.
+Force to use the database at \fIdatabase\fP instead of using the
+default one (see \fI\%FILES\fP section for more info).
+.TP
+.B \-P
+.
+Prints privacy policy on the standard output.
+.TP
+.B \-t
+.
+Test mode.  Exits with success (exit value \fI0\fP) if privacy
+settings allow to run periodic tests.  Exits with failure (exit
+value \fInonzero\fP) otherwise.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B neubot speedtest [\-v] [\-D setting]
+.
+Sends a Web API request (by default to \fI127.0.0.1:9774\fP) to the local
+instance of \fBneubot\fP running in the background, asking to run a
+speedtest test immediately.  If it is not possible to communicate
+with the local instance, the subcommand will fallback to running the
+bittorrent test in its own process context.
+.sp
+The behavior of this subcommand can be controlled using the following
+settings, where the indicated value is the default one:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B agent.api.address=127.0.0.1
+.
+Address where the local \fBneubot\fP instance is supposed to
+be listening.
+.TP
+.B agent.api.port=9774
+.
+Port where the local \fBneubot\fP instance is supposed to be
+listening.
+.TP
+.B runner.enabled=1
+.
+When this setting is on (\fInonzero\fP) the subcommand will try to run
+the test in the context of the local instance of \fBneubot\fP first,
+and then it will fallback to running the test on its own process
+context if that fails.
+.sp
+When this setting is off (\fIzero\fP) the subcommand will always run
+the test in its own process context.
+.TP
+.B speedtest.uri=uri
+.
+URI of the negotiate server to perform the negotiation with.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.B neubot start
+.
+Starts \fBneubot\fP in the background.  The program will daemonize,
+drop privileges (if needed), \fIlisten()\fP for Web API requests (by
+default at \fI127.0.0.1:9774\fP), and run periodic tests, if the user has
+given her consent.  Typically, this form of the command is invoked by
+startup scripts and the user should not need to run it directly.
+.TP
+.B neubot status
+.
+Issues a Web API request (by default to \fI127.0.0.1:9774\fP) to check
+whether \fBneubot\fP is running, and prints the result on the standard
+output.  When the result is is "not running", it means that either
+\fIconnect()\fP failed or the response is not the expected one (meaning that
+there isn\(aqt a \fBneubot\fP process listening on that address and port).
+.TP
+.B neubot stop
+.
+Issues a Web API command (by default to \fI127.0.0.1:9774\fP) that forces
+\fBneubot\fP to exit.
+.TP
+.B neubot viewer [\-f database]
+.
+Starts the PyGtk PyWebkit viewer application that embeds the Web User
+Interface.  Note that one can always connect to the Web User Interface
+pointing her browset at (by default) \fIhttp://127.0.0.1:9774/\fP.
+.UNINDENT
+.SH PRIVACY
+.\" :Version: 2.0.3
+.
+.sp
+The Neubot project is a research effort that aims to study the quality
+and neutrality of ordinary users\(aq Internet connections, to rebalance the
+information asymmetry between them and Service Providers.  The Neubot
+software (i) \fImeasures\fP the quality and neutrality of your Internet
+connection.  The raw measurement results are (ii) \fIcollected\fP on the
+measurement servers for research purposes and (iii) \fIpublished\fP, to allow
+other individuals and institutions to reuse them for research purposes.
+.sp
+To \fImeasure\fP the quality and neutrality of your Internet connection,
+the Neubot software does not monitor or analyze your Internet traffic.
+It just uses a fraction of your connection capacity to perform background
+transmission tests, sending and/or receiving random data.  The results
+contain the measured performance metrics, such as the download speed,
+or the latency, as well as your computer load, as a percentage, and
+\fIyour Internet address\fP.
+.sp
+The Internet address is paramount because it allows to \fIinfer your Internet
+Service Provider\fP and to have a rough idea of \fIyour location\fP, allowing to
+put the results in context.  The Neubot project needs to \fIcollect\fP it
+to study the data and wants to \fIpublish\fP it to enable other individuals
+and institutions to carry alternative studies and/or peer\-review its
+measurements and data analysis methodology.  This is coherent with the
+policy of the distributed server platform that empowers the Neubot
+project, Measurement Lab (M\-Lab), which requires all results to be
+released as open data [1].
+.sp
+You are reading this privacy policy because Neubot is developed in the
+European Union, where there is consensus that Internet addresses are
+\fIpersonal data\fP.  This means that the Neubot project cannot store, process
+or publish your address without your prior \fIinformed consent\fP, under the
+provisions of the "Codice in materia di protezione dei dati personali"
+(Decree 196/03) [2].  In accordance with the law, data controller is the
+NEXA Center for Internet & Society [3], represented by its co\-director Juan
+Carlos De Martin.
+.sp
+Via its web interface [4], the Neubot software asks you (a) to explicitly
+assert that you are \fIinformed\fP, i.e. that you have read the privacy
+policy, (b) to give it the permission to \fIcollect\fP and (c) \fIpublish\fP your
+IP address.  If you don\(aqt assert (a) and you don\(aqt give the permission
+to do (b) and (c), Neubot cannot run tests because, if it did, it would
+violate privacy laws and/or Measurement Lab policy.
+.sp
+The data controller guarantees you the rights as per Art. 7 of the
+above\-mentioned Decree 196/03.  Basically, you have total control over
+you personal data, and you can, for example, inquire Neubot to remove
+your Internet address from its data sets.  To exercise your rights, please
+write to <\fI\%privacy@neubot.org\fP> or to "NEXA Center for Internet & Society,
+Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
+degli Abruzzi 24, 10129 Turin, ITALY."
+.IP [1] 5
+.
+\fI\%http://www.measurementlab.net/about\fP
+.IP [2] 5
+.
+\fI\%http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248\fP
+.IP [3] 5
+.
+\fI\%http://nexa.polito.it/\fP
+.IP [4] 5
+.
+\fI\%http://127.0.0.1:9774/privacy.html\fP
 .SH EXAMPLES
 .sp
 In this section we will follow the well\-established convention of
 representing the unprivileged user prompt with \fI$\fP and the privileged
 user prompt with \fI#\fP.
 .sp
-Run an on\-demand HTTP Test:
+Run ondemand speedtest test:
 .nf
 
 .in +2
@@ -215,7 +463,7 @@ $ neubot speedtest
 .fi
 .sp
 .sp
-Run an on\-demand BitTorrent Test:
+Run ondemand BitTorrent test:
 .nf
 
 .in +2
@@ -224,7 +472,7 @@ $ neubot bittorrent
 .fi
 .sp
 .sp
-Start a system\-wide Agent:
+Start \fBneubot\fP:
 .nf
 
 .in +2
@@ -233,7 +481,7 @@ Start a system\-wide Agent:
 .fi
 .sp
 .sp
-Stop the Agent:
+Stop \fBneubot\fP:
 .nf
 
 .in +2
@@ -242,7 +490,8 @@ $ neubot stop
 .fi
 .sp
 .sp
-Run the Agent in foreground and in debug mode for debugging purposes:
+Run the client\-side components of \fBneubot\fP in foreground and in debug
+mode for debugging purposes:
 .nf
 
 .in +2
@@ -260,7 +509,7 @@ Export system\-wide results to JSON:
 .fi
 .sp
 .sp
-Track the Agent state using the command line:
+Track \fBneubot\fP state using the command line:
 .nf
 
 .in +2
@@ -273,7 +522,7 @@ Run Neubot in\-place from the sources directory:
 .nf
 
 .in +2
-$ ./bin/neubot COMMAND
+$ ./bin/neubot \fIcomand\fP
 .in -2
 .fi
 .sp
@@ -353,7 +602,7 @@ Claudio Artusio               <\fI\%claudioartusio@gmail.com\fP>
 .sp
 .SH COPYRIGHT
 .nf
-Copyright (c) 2010\-2011 NEXA Center for Internet & Society
+Copyright (c) 2010\-2012 NEXA Center for Internet & Society
 .in +2
 at Politecnico di Torino <\fI\%http://nexa.polito.it/\fP>
 .in -2

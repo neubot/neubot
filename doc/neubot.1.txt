@@ -5,7 +5,7 @@ The network neutrality bot
 ''''''''''''''''''''''''''
 
 ..
-.. Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+.. Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 ..  NEXA Center for Internet & Society at Politecnico di Torino
 ..
 .. This file is part of Neubot <http://www.neubot.org/>.
@@ -32,120 +32,305 @@ The network neutrality bot
 SYNOPSIS
 ````````
 
-|   neubot
-|   neubot start
-|   neubot status
-|   neubot stop
-|   neubot --help
-|   neubot -V
-|   neubot *COMMAND* [-ElvV] [-D *PROPERTY[=VALUE*]] [-f *FILE*]
+|   **neubot**
+|   **neubot** **--help**
+|   **neubot** **-V**
+|   **neubot** *subcommand* [*option*]... [*argument*]...
 
 DESCRIPTION
 ```````````
 
-*Neubot* is a research project on network neutrality of the *NEXA Center
-for Internet & Society* at *Politecnico di Torino*.  The general idea
-behind Neubot is to deploy to interested users a lightweight computer
-program that performs distributed measurements and collects quantitative
-data on the behavior of *Internet Service Providers* (ISPs) with respect
-to *traffic discrimination* and *Internet access quality*.
+**neubot** measures quality and neutrality of your Internet connection
+in the background.  It performs periodic, active transmission tests with
+remote test servers and (in future) with neubot instances installed by
+other users.  Tests send and receive random data, emulate different
+protocols and measure application-level metrics, such as latency and
+goodput.  Results are saved on the local computer and published on the
+web, allowing for better Internet-access and network-neutrality research.
+Since results contain the user IP address and that is personal data in
+the European Union, no test is performed until the user gives **neubot**
+her consent, as explained in the PRIVACY_ section.
 
-This manual page documents the *Neubot Agent*, i.e. the piece of software
-that you install on your computer.  Typically, the Agent *runs in the
-background* without your intervention, and periodically performs *Tests*
-with remote Test Servers and (in future) with other Agents.  Each test
-emulates the syntax and/or behavior of a given application protocol and
-consists of sending and/or receiving random data only, *i.e. the Agent
-does not monitor or analyze your traffic.*
+The *first form* of the command (with no arguments) starts **neubot**
+if it is not already running and opens the *Web User Interface* in the
+default browser.  Note that the browser is not opened: (a) when the
+user is **root**, for obvious security reasons; (b) when the environment
+does not contain the **DISPLAY** variable, because a graphical browser
+is needed.  This form of the command is now *deprecated on UNIX*, and
+users should use the *start* and *viewer* subcommands to start **neubot**
+and open the Web User Interface respectively.
 
-You can configure and control the Agent either via *command line* or
-via its *Web User Interface* (WUI).  The Command Line Interface (CLI)
-allows to start, stop, and query the Agent status, run on-demand tests,
-and much more.  The WUI, based on a *Web API*, permits to configure and
-control the Agent, and to navigate recent results.
+The *second form* of the command (--help) prints on the standard output
+a brief help message that summarizes the synopsis.
 
-The *first form* of the command (with no arguments) starts the Web User
-Interface in the default browser.  Before opening the browser, this command
-ensures that an instance of the Agent is running in background, and starts it
-otherwise.
-Then, if the user is not running as root, the command tries to open the Web
-User Interface in the default
-browser, using this URI: *http://127.0.0.1:9774/*.  Note that it's not
-possible to open a browser if a graphical environment is not available,
-i.e. if the *DISPLAY* environment variable is not set.
+The *third form* of the command (-V) prints on the standard output the
+version number.
 
-The *second form* of the command (start) starts the Agent, which will daemonize,
-drop privileges if running as root, and then run in the background.
-(Note that the Agent drops privileges to the user **_neubot**, so,
-if you install Neubot from sources you need to create this user.)
-An Agent started like this listens at *127.0.0.1:9774* for Web API requests.
+The *fourth form* of the command (subcommand) allows to run the specified
+subcommand.  The remainder of this section documents the most commonly
+used subcommands.
 
-The *third form* of the command (status) queries the status of the Agent, and
-prints the result on the standard output.  To do that, the command
-connects to *127.0.0.1:9774*, and sends a request to the Web API.
-The Agent is reported to be running if the response is successful,
-i.e. *200 Ok*, and not running otherwise.
+neubot bittorrent [-v] [-D setting]
+  Sends a Web API request (by default to *127.0.0.1:9774*) to the local
+  instance of **neubot** running in the background, asking to run a
+  bittorrent test immediately.  If it is not possible to communicate
+  with the local instance, the subcommand will fallback to running the
+  bittorrent test in its own process context.
 
-The *fourth form* of the command (stop) stops the agent listening at
-*127.0.0.1:9774*, using the proper Web
-API command.  Upon receiving this request, the Agent will immediately exit.
+  The behavior of this subcommand can be controlled using the following
+  settings, where the indicated value is the default one:
 
-The *fifth form* of the command (--help) prints on the standard output a brief
-help message that summarizes the synopsis.
+    agent.api.address=127.0.0.1
+      Address where the local **neubot** instance is supposed to
+      be listening.
 
-The *sixth form* of the command (-V) prints on the standard output the version
-number.
+    agent.api.port=9774
+      Port where the local **neubot** instance is supposed to be
+      listening.
 
-The *seventh form* of the command (COMMAND) allows to run an arbitrary Neubot
-module. The design of Neubot is module-oriented:
-most modules export a function, named `main()`, that parses command line options
-and implements some behavior.  The available modules are:
+    bittorrent.address=""
+      Address to connect to in order to perform the test (client mode)
+      or address to listen to (server mode).  When the value equals *""*,
+      the subcommand uses *master.neubot.org* (client mode) or *0.0.0.0*
+      (server mode).
 
-agent
-  This module implements the Agent behavior described in this manual page.
-  I.e. forks in background, starts the Web API server, drops privileges
-  if needed, and then periodically performs Tests.  When you run `neubot
-  start` this module is invoked under the hood.
+      When running in client mode, this setting is only effective if
+      the test is run in the process context of the subcommand itself.
 
-bittorrent
-  This module performs an on-demand BitTorrent transmission Test with
-  an alternative Test Server reserved for this purpose.
+    bittorrent.daemonize=0
+      When on (*nonzero*) the subcommand will detach from the current
+      shell and become a daemon.  When off (*0*) the subcommand will
+      run in the context of the current shell.
 
-database
-  This module allows to perform some low-level tasks with the database.
-  It allows to dump the content of the database, delete the content of
-  the database, remove old entries, and *regenerate the Neubot identifier*
-  associated to the Agent.
+      When running in client mode, this setting is only effective if
+      the test is run in the process context of the subcommand itself.
 
-  (Each Agent is associated with an unique identifier that allows to
-  perform time series analysis.  We believe it does not breach your
-  privacy, but you might not agree and might want to change it from time
-  to time.)
+    bittorrent.listen=0
+      Run in client (*0*) or in server (*nonzero*) mode.
 
-speedtest
-  This module performs an on-demand HTTP transmission Test with an
-  alternative Test Server reserved for this purpose.
+    bittorrent.negotiate=1
+      Turn off (*0*) or on (*nonzero*) negotiation.  Negotiation is the
+      procedure that ensures that client and server agree on the test
+      parameters, and that keeps the server load under control, by
+      keeping clients in queue and allowing only a subset of them to
+      perform concurrent tests.
 
-speedtest.client
-  Alias for `speedtest`.
+      When running in client mode, this setting is only effective if
+      the test is run in the process context of the subcommand itself.
 
-stream
-  This module performs an on-demand TCP bulk transfer transmission Test
-  with an alternative Test Server reserved for this purpose.
+      You typically want this setting to be on, unless you are testing
+      the bittorrent client and server.
 
+    bittorrent.negotiate.port=80
+      The port to be used for negotiation, both for client and for
+      server mode.
 
-OPTIONS
+      When running in client mode, this setting is only effective if
+      the test is run in the process context of the subcommand itself.
+
+    bittorrent.port=6881
+      Port to connect to in order to perform the test (client mode)
+      or Port to listen to (server mode).
+
+      When running in client mode, this setting is only effective if
+      the test is run in the process context of the subcommand itself.
+
+    runner.enabled=1
+      When this setting is on (*nonzero*) the subcommand will try to run
+      the test in the context of the local instance of **neubot** first,
+      and then it will fallback to running the test on its own process
+      context if that fails.
+
+      When this setting is off (*zero*) the subcommand will always run
+      the test in its own process context.
+
+neubot database [--help] [-f database] [action]
+  Perform low level actions on the database or print the database name
+  if no action was specified.  The following options are accepted:
+
+    --help
+      Prints an help message on the standard output and exits.
+
+    -f database
+      Force to use the database at *database* instead of using the
+      default one (see `FILES`_ section for more info).
+
+  The following actions are implemented:
+
+    info
+      Print the database path.
+
+    delete_all
+      Delete all results in the database.
+
+    dump
+      Dump to stdout the content of the database in JSON format.
+
+    prune
+      Remove results older than one year from the database.
+
+    regen_uuid
+      Each **neubot** has its own random unique identifier that is sent
+      with results and allows to perform time serie anlysis.  This action
+      generates a fresh new random unique identifier.
+
+    show
+      Like *dump*, but pretty-prints database content.
+
+neubot privacy [-Pt] [-D setting] [-f database]
+  Allows to read privacy policy, test and set privacy settings.  For
+  more information on privacy see the PRIVACY_ section.  This subcommand
+  accepts the following command line options:
+
+    -D setting
+      Allow to set privacy settings in the database.  The following
+      privacy settings are defined, along with their default value:
+
+        privacy.informed=""
+          Turns on (*nonzero*) or off (*0*) the corresponding privacy
+          setting in the database, unless the setting is unspecified
+          (*""*).
+
+        privacy.can_collect=""
+          Turns on (*nonzero*) or off (*0*) the corresponding privacy
+          setting in the database, unless the setting is unspecified
+          (*""*).
+
+        privacy.can_publish=""
+          Turns on (*nonzero*) or off (*0*) the corresponding privacy
+          setting in the database, unless the setting is unspecified
+          (*""*).
+
+      Note that all privacy settings must be on for **neubot** to be
+      allowed to run automatic tests.
+
+      Note that this command changes the database, but changes are not
+      propagated to the **neubot** instance running in background.
+
+    -f database
+      Force to use the database at *database* instead of using the
+      default one (see `FILES`_ section for more info).
+
+    -P
+      Prints privacy policy on the standard output.
+
+    -t
+      Test mode.  Exits with success (exit value *0*) if privacy
+      settings allow to run periodic tests.  Exits with failure (exit
+      value *nonzero*) otherwise.
+
+neubot speedtest [-v] [-D setting]
+  Sends a Web API request (by default to *127.0.0.1:9774*) to the local
+  instance of **neubot** running in the background, asking to run a
+  speedtest test immediately.  If it is not possible to communicate
+  with the local instance, the subcommand will fallback to running the
+  bittorrent test in its own process context.
+
+  The behavior of this subcommand can be controlled using the following
+  settings, where the indicated value is the default one:
+
+    agent.api.address=127.0.0.1
+      Address where the local **neubot** instance is supposed to
+      be listening.
+
+    agent.api.port=9774
+      Port where the local **neubot** instance is supposed to be
+      listening.
+
+    runner.enabled=1
+      When this setting is on (*nonzero*) the subcommand will try to run
+      the test in the context of the local instance of **neubot** first,
+      and then it will fallback to running the test on its own process
+      context if that fails.
+
+      When this setting is off (*zero*) the subcommand will always run
+      the test in its own process context.
+
+    speedtest.uri=uri
+      URI of the negotiate server to perform the negotiation with.
+
+neubot start
+  Starts **neubot** in the background.  The program will daemonize,
+  drop privileges (if needed), *listen()* for Web API requests (by
+  default at *127.0.0.1:9774*), and run periodic tests, if the user has
+  given her consent.  Typically, this form of the command is invoked by
+  startup scripts and the user should not need to run it directly.
+
+neubot status
+  Issues a Web API request (by default to *127.0.0.1:9774*) to check
+  whether **neubot** is running, and prints the result on the standard
+  output.  When the result is is "not running", it means that either
+  *connect()* failed or the response is not the expected one (meaning that
+  there isn't a **neubot** process listening on that address and port).
+
+neubot stop
+  Issues a Web API command (by default to *127.0.0.1:9774*) that forces
+  **neubot** to exit.
+
+neubot viewer [-f database]
+  Starts the PyGtk PyWebkit viewer application that embeds the Web User
+  Interface.  Note that one can always connect to the Web User Interface
+  pointing her browset at (by default) *http://127.0.0.1:9774/*.
+
+PRIVACY
 ```````
 
--D PROPERTY[=VALUE]  Define the *VALUE* of the given *PROPERTY*.
+.. :Version: 2.0.3
 
--E  Ignore *NEUBOT_OPTIONS* environment variable.
+The Neubot project is a research effort that aims to study the quality
+and neutrality of ordinary users' Internet connections, to rebalance the
+information asymmetry between them and Service Providers.  The Neubot
+software (i) *measures* the quality and neutrality of your Internet
+connection.  The raw measurement results are (ii) *collected* on the
+measurement servers for research purposes and (iii) *published*, to allow
+other individuals and institutions to reuse them for research purposes.
 
--f FILE  Force file name of the database to *FILE*.
+To *measure* the quality and neutrality of your Internet connection,
+the Neubot software does not monitor or analyze your Internet traffic.
+It just uses a fraction of your connection capacity to perform background
+transmission tests, sending and/or receiving random data.  The results
+contain the measured performance metrics, such as the download speed,
+or the latency, as well as your computer load, as a percentage, and
+*your Internet address*.
 
--l  List all the available properties and exit.
+The Internet address is paramount because it allows to *infer your Internet
+Service Provider* and to have a rough idea of *your location*, allowing to
+put the results in context.  The Neubot project needs to *collect* it
+to study the data and wants to *publish* it to enable other individuals
+and institutions to carry alternative studies and/or peer-review its
+measurements and data analysis methodology.  This is coherent with the
+policy of the distributed server platform that empowers the Neubot
+project, Measurement Lab (M-Lab), which requires all results to be
+released as open data [1]_.
 
--v  Verbose: print much more log messages.  
+You are reading this privacy policy because Neubot is developed in the
+European Union, where there is consensus that Internet addresses are
+*personal data*.  This means that the Neubot project cannot store, process
+or publish your address without your prior *informed consent*, under the
+provisions of the "Codice in materia di protezione dei dati personali"
+(Decree 196/03) [2]_.  In accordance with the law, data controller is the
+NEXA Center for Internet & Society [3]_, represented by its co-director Juan
+Carlos De Martin.
+
+Via its web interface [4]_, the Neubot software asks you (a) to explicitly
+assert that you are *informed*, i.e. that you have read the privacy
+policy, (b) to give it the permission to *collect* and (c) *publish* your
+IP address.  If you don't assert (a) and you don't give the permission
+to do (b) and (c), Neubot cannot run tests because, if it did, it would
+violate privacy laws and/or Measurement Lab policy.
+
+The data controller guarantees you the rights as per Art. 7 of the
+above-mentioned Decree 196/03.  Basically, you have total control over
+you personal data, and you can, for example, inquire Neubot to remove
+your Internet address from its data sets.  To exercise your rights, please
+write to <privacy@neubot.org> or to "NEXA Center for Internet & Society,
+Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
+degli Abruzzi 24, 10129 Turin, ITALY."
+
+.. [1] http://www.measurementlab.net/about
+.. [2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248
+.. [3] http://nexa.polito.it/
+.. [4] http://127.0.0.1:9774/privacy.html
 
 EXAMPLES
 ````````
@@ -154,27 +339,28 @@ In this section we will follow the well-established convention of
 representing the unprivileged user prompt with *$* and the privileged
 user prompt with *#*.
 
-Run an on-demand HTTP Test:
+Run ondemand speedtest test:
 
 |
 |    $ neubot speedtest
 
-Run an on-demand BitTorrent Test:
+Run ondemand BitTorrent test:
 
 |
 |    $ neubot bittorrent
 
-Start a system-wide Agent:
+Start **neubot**:
 
 |
 |    # neubot start
 
-Stop the Agent:
+Stop **neubot**:
 
 |
 |    $ neubot stop
 
-Run the Agent in foreground and in debug mode for debugging purposes:
+Run the client-side components of **neubot** in foreground and in debug
+mode for debugging purposes:
 
 |
 |    $ neubot agent -v -D agent.daemonize=no
@@ -184,7 +370,7 @@ Export system-wide results to JSON:
 |
 |    # neubot database dump > output.json
 
-Track the Agent state using the command line:
+Track **neubot** state using the command line:
 
 |
 |    $ neubot api.client
@@ -192,7 +378,7 @@ Track the Agent state using the command line:
 Run Neubot in-place from the sources directory:
 
 |
-|    $ ./bin/neubot COMMAND
+|    $ ./bin/neubot *comand*
 
 FILES
 `````
@@ -261,7 +447,7 @@ The following people have helped with internationalization:
 COPYRIGHT
 `````````
 
-| Copyright (c) 2010-2011 NEXA Center for Internet & Society
+| Copyright (c) 2010-2012 NEXA Center for Internet & Society
 |   at Politecnico di Torino <http://nexa.polito.it/>
 
 | Neubot is free software: you can redistribute it and/or
