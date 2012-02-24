@@ -217,19 +217,19 @@ tuo indirizzo Internet, che è considerato dato personale nell'Unione Europea.",
 
     'i18n_privacy_policy':
 '\r\n\
-$Versione: 2.0$\r\n\
+.. :Versione: 2.0.3$\r\n\
 \r\n\
-Il Progetto Neubot è un progetto di ricerca che si propone di studiare\r\n\
+Il progetto Neubot è un progetto di ricerca che si propone di studiare\r\n\
 la qualità e la neutralità delle connessioni ad Internet\r\n\
 degli utenti comuni, per ribilanciare l\'asimmetria informativa tra utenti\r\n\
-comuni e Service Providers.  Il Software Neubot (i) *misura* la qualità\r\n\
+comuni e Service Providers.  Il software Neubot (i) *misura* la qualità\r\n\
 e la neutralità della tua connessione a Internet.  I risultati\r\n\
 grezzi delle misure sono (ii) *salvati* sul server di misura per scopi di\r\n\
 ricerca e (iii) *pubblicati*, per permettere ad altri individui e\r\n\
 istituzioni di riutilizzarli per finalità di ricerca.\r\n\
 \r\n\
 Per *misurare* la qualità e la neutralità della tua\r\n\
-connessione a Internet, il Software Neubot non controlla né analizza\r\n\
+connessione a Internet, il software Neubot non controlla né analizza\r\n\
 il tuo traffico Internet. Si limita a utilizzare una frazione della\r\n\
 capacità della tua connessione per effettuare dei test di\r\n\
 trasmissione in background, inviando e/o ricevendo dati casuali. I\r\n\
@@ -240,24 +240,24 @@ tuo *indirizzo Internet*.\r\n\
 L\'indirizzo Internet è fondamentale perché permette di\r\n\
 *dedurre il tuo Internet Service Provider* e di avere un\'idea della tua\r\n\
 *posizione geografica*, permettendo di contestualizzare la misura.  Il\r\n\
-Progetto Neubot ha bisogno di *salvarlo* per poter studiare i dati e\r\n\
+progetto Neubot ha bisogno di *salvarlo* per poter studiare i dati e\r\n\
 desidera *pubblicarlo* per permettere ad altri individui e istituzioni di\r\n\
 eseguire analisi alternative e/o analizzare criticamente la metodologia\r\n\
-utilizzata dal Progetto stesso.  Ciò è coerente con la\r\n\
-policy della piattaforma server distribuita cui si appoggia il Progetto\r\n\
+utilizzata dal progetto stesso.  Ciò è coerente con la\r\n\
+policy della piattaforma server distribuita cui si appoggia il progetto\r\n\
 Neubot, Measurement Lab (M-Lab), che richiede che tutti i risultati\r\n\
 siano rilasciati come dati aperti [1].\r\n\
 \r\n\
 Stai leggendo questa privacy policy perché Neubot viene sviluppato\r\n\
 nell\'Unione Europea, dove gli indirizzi IP sono ritenuti *dati personali*.\r\n\
-Questo significa che il Progetto Neubot non può salvare, processare o\r\n\
+Questo significa che il progetto Neubot non può salvare, processare o\r\n\
 pubblicare il tuo indirizzo senza ottenere il tuo *consenso informato*,\r\n\
 secondo le previsioni del "Codice in materia di protezione dei dati\r\n\
 personali" (Decreto 196/03) [2].  Conformemente alla legge, il\r\n\
 titolare del trattamento è il Centro NEXA su Internet e Società [3],\r\n\
 rappresentato dal suo co-diretore Juan Carlos De Martin.\r\n\
 \r\n\
-Tramite la sua interfaccia web [4], il Software Neubot ti chiede (a) di\r\n\
+Tramite la sua interfaccia web [4], il software Neubot ti chiede (a) di\r\n\
 dichiarare esplicitamente di essere *informato*, ossia di avere letto la\r\n\
 privacy policy, (b) di fornirgli il permesso di *salvare* e (c) *pubblicare*\r\n\
 il tuo indirizzo IP.  Se non dichiari (a) e non fornisci i permessi (b) e \r\n\
@@ -273,7 +273,7 @@ oppure a "Centro NEXA su Internet & Società c/o Dipartimento di\r\n\
 Automatica e Infomatica, Politecnico di Torino, Corso Duca degli\r\n\
 Abruzzi 24, 10129 Torino, ITALIA".\r\n\
 \r\n\
-[1] http://www.measurement-lab.net/about\r\n\
+[1] http://www.measurementlab.net/about\r\n\
 [2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248\r\n\
 [3] http://nexa.polito.it/\r\n\
 [4] http://127.0.0.1:9774/privacy.html\r\n\
