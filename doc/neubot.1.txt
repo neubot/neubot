@@ -272,6 +272,66 @@ neubot viewer [-f database]
   Interface.  Note that one can always connect to the Web User Interface
   pointing her browset at (by default) *http://127.0.0.1:9774/*.
 
+PRIVACY
+```````
+
+.. :Version: 2.0.3
+
+The Neubot project is a research effort that aims to study the quality
+and neutrality of ordinary users' Internet connections, to rebalance the
+information asymmetry between them and Service Providers.  The Neubot
+software (i) *measures* the quality and neutrality of your Internet
+connection.  The raw measurement results are (ii) *collected* on the
+measurement servers for research purposes and (iii) *published*, to allow
+other individuals and institutions to reuse them for research purposes.
+
+To *measure* the quality and neutrality of your Internet connection,
+the Neubot software does not monitor or analyze your Internet traffic.
+It just uses a fraction of your connection capacity to perform background
+transmission tests, sending and/or receiving random data.  The results
+contain the measured performance metrics, such as the download speed,
+or the latency, as well as your computer load, as a percentage, and
+*your Internet address*.
+
+The Internet address is paramount because it allows to *infer your Internet
+Service Provider* and to have a rough idea of *your location*, allowing to
+put the results in context.  The Neubot project needs to *collect* it
+to study the data and wants to *publish* it to enable other individuals
+and institutions to carry alternative studies and/or peer-review its
+measurements and data analysis methodology.  This is coherent with the
+policy of the distributed server platform that empowers the Neubot
+project, Measurement Lab (M-Lab), which requires all results to be
+released as open data [1]_.
+
+You are reading this privacy policy because Neubot is developed in the
+European Union, where there is consensus that Internet addresses are
+*personal data*.  This means that the Neubot project cannot store, process
+or publish your address without your prior *informed consent*, under the
+provisions of the "Codice in materia di protezione dei dati personali"
+(Decree 196/03) [2]_.  In accordance with the law, data controller is the
+NEXA Center for Internet & Society [3]_, represented by its co-director Juan
+Carlos De Martin.
+
+Via its web interface [4]_, the Neubot software asks you (a) to explicitly
+assert that you are *informed*, i.e. that you have read the privacy
+policy, (b) to give it the permission to *collect* and (c) *publish* your
+IP address.  If you don't assert (a) and you don't give the permission
+to do (b) and (c), Neubot cannot run tests because, if it did, it would
+violate privacy laws and/or Measurement Lab policy.
+
+The data controller guarantees you the rights as per Art. 7 of the
+above-mentioned Decree 196/03.  Basically, you have total control over
+you personal data, and you can, for example, inquire Neubot to remove
+your Internet address from its data sets.  To exercise your rights, please
+write to <privacy@neubot.org> or to "NEXA Center for Internet & Society,
+Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
+degli Abruzzi 24, 10129 Turin, ITALY."
+
+.. [1] http://www.measurementlab.net/about
+.. [2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248
+.. [3] http://nexa.polito.it/
+.. [4] http://127.0.0.1:9774/privacy.html
+
 EXAMPLES
 ````````
 
