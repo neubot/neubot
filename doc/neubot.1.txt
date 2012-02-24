@@ -219,7 +219,7 @@ neubot privacy [-Pt] [-D setting] [-f database]
       settings allow to run periodic tests.  Exits with failure (exit
       value *nonzero*) otherwise.
 
-neubot bittorrent [-v] [-D setting]
+neubot speedtest [-v] [-D setting]
   Sends a Web API request (by default to *127.0.0.1:9774*) to the local
   instance of **neubot** running in the background, asking to run a
   speedtest test immediately.  If it is not possible to communicate
@@ -370,7 +370,7 @@ Export system-wide results to JSON:
 |
 |    # neubot database dump > output.json
 
-Track the Agent state using the command line:
+Track **neubot** state using the command line:
 
 |
 |    $ neubot api.client
