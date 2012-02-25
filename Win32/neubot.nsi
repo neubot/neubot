@@ -22,7 +22,15 @@
 
 name "neubot 0.4.9"
 outfile "neubot-0.4.9-setup.exe"
-installdir "$PROFILE\Neubot"
+
+#
+# The right place where to install is $LOCALAPPDATA, which is the
+# place where Google Chrome is installed too.  The roaming directory,
+# $APPDATA, should not be used because it is for stuff that must
+# migrate with the user profile.
+#
+installdir "$LOCALAPPDATA\Neubot"
+
 setcompressor lzma
 requestexecutionlevel user
 
