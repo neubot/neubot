@@ -73,8 +73,6 @@ class RunnerRendezvous(ClientHTTP):
                    'privacy_can_publish': CONFIG['privacy.can_publish'],
                   }
 
-        logging.debug('runner_rendezvous: request body %s', message)
-
         request = Message()
         request.compose(method='GET', pathquery='/rendezvous',
           mimetype='application/json', keepalive=False, host=self.host_header,
