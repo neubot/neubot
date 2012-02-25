@@ -221,7 +221,8 @@ class Poller(sched.scheduler):
             try:
                 res = select.select(self.readset.keys(), self.writeset.keys(),
                  [], timeout)
-            except select.error, (code, reason):
+            except select.error:
+                code = sys.exc_info()[1][0]
                 if code != errno.EINTR:
                     logging.error(str(asyncore.compact_traceback()))
                     raise
