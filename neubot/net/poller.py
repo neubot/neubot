@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Dispatch read, write, periodic and other events '''
+
 import asyncore
 import logging
 import errno
@@ -45,26 +47,33 @@ WATCHDOG = 300
 
 class Pollable(object):
 
+    ''' Base class for pollable objects '''
+
     def __init__(self):
+        ''' Initialize '''
         self.created = ticks()
         self.watchdog = WATCHDOG
 
     def fileno(self):
+        ''' Return file number '''
         raise NotImplementedError
 
     def handle_read(self):
-        pass
+        ''' Invoked to handle the read event '''
 
     def handle_write(self):
-        pass
+        ''' Invoked to handle the write event '''
 
     def handle_close(self):
-        pass
+        ''' Invoked to handle the close event '''
 
     def handle_periodic(self, timenow):
+        ''' Invoked to handle the periodic event '''
         return self.watchdog >= 0 and timenow - self.created > self.watchdog
 
 class Task(object):
+
+    ''' A pending task '''
 
     #
     # We need to add timestamp because ticks() might be just the
@@ -73,15 +82,19 @@ class Task(object):
     # the next rendezvous in <rendezvous/client.py>.
     #
     def __init__(self, delta, func):
+        ''' Initialize '''
         self.time = ticks() + delta
         self.timestamp = timestamp() + int(delta)
         self.func = func
 
     def __repr__(self):
+        ''' Task representation '''
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
 
 class Poller(sched.scheduler):
+
+    ''' Dispatch read, write, periodic and other events '''
 
     #
     # We always keep the check_timeout() event registered
@@ -91,6 +104,7 @@ class Poller(sched.scheduler):
     #
 
     def __init__(self, select_timeout):
+        ''' Initialize '''
         sched.scheduler.__init__(self, ticks, self._poll)
         self.select_timeout = select_timeout
         self.again = True
@@ -99,12 +113,14 @@ class Poller(sched.scheduler):
         self.check_timeout()
 
     def sched(self, delta, func):
+        ''' Schedule task '''
         task = Task(delta, func)
         self.enter(delta, 0, self._run_task, (task,))
         return task
 
     @staticmethod
     def _run_task(task):
+        ''' Safely run task '''
         try:
             task.func()
         except (KeyboardInterrupt, SystemExit):
@@ -113,22 +129,27 @@ class Poller(sched.scheduler):
             logging.error(str(asyncore.compact_traceback()))
 
     def set_readable(self, stream):
+        ''' Monitor for readability '''
         self.readset[stream.fileno()] = stream
 
     def set_writable(self, stream):
+        ''' Monitor for writability '''
         self.writeset[stream.fileno()] = stream
 
     def unset_readable(self, stream):
+        ''' Stop monitoring for readability '''
         fileno = stream.fileno()
         if self.readset.has_key(fileno):
             del self.readset[fileno]
 
     def unset_writable(self, stream):
+        ''' Stop monitoring for writability '''
         fileno = stream.fileno()
         if self.writeset.has_key(fileno):
             del self.writeset[fileno]
 
     def close(self, stream):
+        ''' Safely close a stream '''
         self.unset_readable(stream)
         self.unset_writable(stream)
         try:
@@ -151,6 +172,7 @@ class Poller(sched.scheduler):
     #
 
     def _call_handle_read(self, fileno):
+        ''' Safely dispatch read event '''
         if self.readset.has_key(fileno):
             stream = self.readset[fileno]
             try:
@@ -162,6 +184,7 @@ class Poller(sched.scheduler):
                 self.close(stream)
 
     def _call_handle_write(self, fileno):
+        ''' Safely dispatch write event '''
         if self.writeset.has_key(fileno):
             stream = self.writeset[fileno]
             try:
@@ -173,9 +196,11 @@ class Poller(sched.scheduler):
                 self.close(stream)
 
     def break_loop(self):
+        ''' Break out of poller loop '''
         self.again = False
 
     def loop(self):
+        ''' Poller loop '''
         while self.again:
             try:
                 self.run()
@@ -187,6 +212,7 @@ class Poller(sched.scheduler):
                 logging.error(str(asyncore.compact_traceback()))
 
     def _poll(self, timeout):
+        ''' Poll for readability and writability '''
 
         # Monitor streams readability/writability
         if self.readset or self.writeset:
@@ -218,6 +244,8 @@ class Poller(sched.scheduler):
             time.sleep(timeout)
 
     def check_timeout(self):
+        ''' Dispatch the periodic event '''
+
         self.sched(CHECK_TIMEOUT, self.check_timeout)
         if self.readset or self.writeset:
 
@@ -232,6 +260,7 @@ class Poller(sched.scheduler):
                     self.close(stream)
 
     def snap(self, d):
+        ''' Take a snapshot of poller state '''
         d['poller'] = { "readset": self.readset, "writeset": self.writeset }
 
 POLLER = Poller(1)
