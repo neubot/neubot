@@ -55,8 +55,13 @@ class ServerRendezvous(ServerHTTP):
         ServerHTTP.configure(self, conf)
 
     def process_request(self, stream, request):
-        m = marshal.unmarshal_object(request.body.read(),
-          "application/xml", compat.RendezvousRequest)
+
+        if request['content-type'] == 'application/json':
+            m = marshal.unmarshal_object(request.body.read(),
+              'application/json', compat.RendezvousRequest)
+        else:
+            m = marshal.unmarshal_object(request.body.read(),
+              "application/xml", compat.RendezvousRequest)
 
         m1 = compat.RendezvousResponse()
 
