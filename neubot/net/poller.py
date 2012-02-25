@@ -24,6 +24,7 @@ import asyncore
 import logging
 import errno
 import select
+import sched
 import time
 
 from neubot.utils import ticks
@@ -80,21 +81,36 @@ class Task(object):
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
 
-class Poller(object):
+class Poller(sched.scheduler):
+
+    #
+    # We always keep the check_timeout() event registered
+    # so the scheduler is alive forever.
+    # We register self._poll() as the delay function and
+    # in that function we either invoke select().
+    #
 
     def __init__(self, select_timeout):
+        sched.scheduler.__init__(self, ticks, self._poll)
         self.select_timeout = select_timeout
         self.again = True
         self.readset = {}
         self.writeset = {}
-        self.pending = []
-        self.tasks = []
-        self.sched(CHECK_TIMEOUT, self.check_timeout)
+        self.check_timeout()
 
     def sched(self, delta, func):
         task = Task(delta, func)
-        self.pending.append(task)
+        self.enter(delta, 0, self._run_task, (task,))
         return task
+
+    @staticmethod
+    def _run_task(task):
+        try:
+            task.func()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.error(str(asyncore.compact_traceback()))
 
     def set_readable(self, stream):
         self.readset[stream.fileno()] = stream
@@ -160,63 +176,17 @@ class Poller(object):
         self.again = False
 
     def loop(self):
-        while self.again and (self.readset or self.writeset):
-            self._loop_once()
+        while self.again:
+            try:
+                self.run()
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except select.error:
+                raise
+            except:
+                logging.error(str(asyncore.compact_traceback()))
 
-    #
-    # Tests shows that updating tasks would be slower if we kept tasks
-    # sorted in reverse order--yes, with this arrangement it would be
-    # faster to delete elements (because it would be just a matter of
-    # shrinking the list), but the sort would be slower, and our tests
-    # suggest that we loose more with the sort than we gain with the
-    # delete.
-    # Here it would be better to use the task scheduler that ships
-    # with Python standard library.  I have a patch for that and it
-    # may be able to go in before 0.5.0 release.
-    #
-    def _loop_once(self):
-
-        now = ticks()
-
-        # Add pending tasks
-        if self.pending:
-            for task in self.pending:
-                self.tasks.append(task)
-            self.pending = []
-
-        # Process expired tasks
-        if self.tasks:
-
-            self.tasks.sort(key=lambda task: task.time)
-
-            # Run expired tasks
-            index = 0
-            for task in self.tasks:
-                if task.time - now > 1:
-                    break
-                index = index + 1
-
-                try:
-                    task.func()
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except:
-                    logging.error(str(asyncore.compact_traceback()))
-
-            # Get rid of expired tasks
-            del self.tasks[:index]
-
-        #
-        # Calculate select() timeout now that all
-        # the tasks are in a good state, i.e. no pending
-        # and no unscheduled tasks around.
-        #
-        if not self.tasks:
-            timeout = self.select_timeout
-        else:
-            timeout = self.tasks[0].time - now
-            if timeout < 0.1:
-                timeout = 0
+    def _poll(self, timeout):
 
         # Monitor streams readability/writability
         if self.readset or self.writeset:
@@ -262,7 +232,6 @@ class Poller(object):
                     self.close(stream)
 
     def snap(self, d):
-        d['poller'] = {"pending": self.pending, "tasks": self.tasks,
-          "readset": self.readset, "writeset": self.writeset}
+        d['poller'] = { "readset": self.readset, "writeset": self.writeset }
 
 POLLER = Poller(1)
