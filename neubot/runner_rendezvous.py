@@ -43,8 +43,6 @@ from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
-from neubot import marshal
-
 class RunnerRendezvous(ClientHTTP):
     ''' Rendezvous client '''
 
@@ -72,16 +70,15 @@ class RunnerRendezvous(ClientHTTP):
                    'version': '0.4.9',
                    'privacy_informed': CONFIG['privacy.informed'],
                    'privacy_can_collect': CONFIG['privacy.can_collect'],
-                   # Sending on the wire the old name for backward compat
-                   'privacy_can_share': CONFIG['privacy.can_publish'],
+                   'privacy_can_publish': CONFIG['privacy.can_publish'],
                   }
 
         logging.debug('runner_rendezvous: request body %s', message)
 
         request = Message()
         request.compose(method='GET', pathquery='/rendezvous',
-          mimetype='text/xml', keepalive=False, host=self.host_header,
-          body=marshal.dict_to_xml('RendezvousRequest', message))
+          mimetype='application/json', keepalive=False, host=self.host_header,
+          body=json.dumps(message))
 
         stream.send_request(request)
 
