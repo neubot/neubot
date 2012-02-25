@@ -259,8 +259,8 @@ class Poller(sched.scheduler):
                     logging.warning('Watchdog timeout: %s', str(stream))
                     self.close(stream)
 
-    def snap(self, d):
+    def snap(self, data):
         ''' Take a snapshot of poller state '''
-        d['poller'] = { "readset": self.readset, "writeset": self.writeset }
+        data['poller'] = { "readset": self.readset, "writeset": self.writeset }
 
 POLLER = Poller(1)
