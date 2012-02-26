@@ -26,7 +26,6 @@
 
 import getopt
 import os.path
-import sqlite3
 import sys
 import time
 
@@ -40,6 +39,11 @@ try:
     import webkit
 except ImportError:
     sys.exit('Viewer support not available.')
+
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
+
+from neubot import utils_rc
 
 ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
@@ -121,25 +125,24 @@ def main(args):
     try:
         options, arguments = getopt.getopt(args[1:], 'f:')
     except getopt.error:
-        sys.exit('Usage: neubot viewer [-f database]')
+        sys.exit('Usage: neubot viewer [-f file]')
     if arguments:
-        sys.exit('Usage: neubot viewer [-f database]')
+        sys.exit('Usage: neubot viewer [-f file]')
 
-    database = '/var/neubot/database.sqlite3'
+    conf = {
+        'address': '127.0.0.1',
+        'port': '9774',
+    }
+
+    fpath = '/etc/neubot/api'
     for name, value in options:
         if name == '-f':
-            database = value
+            fpath = value
 
-    address, port = '127.0.0.1', '9774'
-    connection = sqlite3.connect(database)
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM config;')
-    for name, value in cursor:
-        if name == 'agent.api.address':
-            address = value
-        elif name == 'agent.api.port':
-            port = value
-    connection.close()
+    cnf = utils_rc.parse_safe(fpath)
+    conf.update(cnf)
+
+    address, port = conf['address'], conf['port']
 
     uri = STATIC_PAGE
     if __is_running(address, port):
