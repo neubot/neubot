@@ -98,13 +98,27 @@ class RunnerCore(object):
         # Prevent concurrent tests
         self.running = True
 
+        # Safely run first element in queue
+        try:
+            self._do_run_queue()
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except:
+            exc = sys.exc_info()[1]
+            error = str(exc)
+            LOG.error('runner_core: catched exception: %s' % error)
+            NOTIFIER.publish('testdone')
+
+    def _do_run_queue(self):
+        ''' Actually run first element in queue '''
+
         # Make a copy of current settings
         conf = CONFIG.copy()
 
         # Make sure we abide to M-Lab policy
         if privacy.count_valid(conf, 'privacy.') != 3:
             privacy.complain()
-            NOTIFIER.publish('testdone')
+            raise RuntimeError('Bad privacy settings')
 
         # Run rendezvous
         elif self.queue[0][0] == 'rendezvous':
@@ -119,9 +133,7 @@ class RunnerCore(object):
             # because we are offline, abort it.
             #
             if not uri:
-                LOG.error('runner_core: No negotiate URI for speedtest')
-                NOTIFIER.publish('testdone')
-                return
+                raise RuntimeError('No negotiate URI for speedtest')
             conf['speedtest.client.uri'] =  uri
             client = ClientSpeedtest(POLLER)
             client.configure(conf)
@@ -135,16 +147,13 @@ class RunnerCore(object):
             # because we are offline, abort it.
             #
             if not uri:
-                LOG.error('runner_core: No negotiate URI for bittorrent')
-                NOTIFIER.publish('testdone')
-                return
+                raise RuntimeError('No negotiate URI for bittorrent')
             conf['bittorrent._uri'] =  uri
             bittorrent.run(POLLER, conf)
 
         # Safety net
         else:
-            LOG.error('runner_core: Asked to run an unknown test')
-            NOTIFIER.publish('testdone')
+            raise RuntimeError('Asked to run an unknown test')
 
     def test_done(self, *baton):
         ''' Invoked when the test is done '''
