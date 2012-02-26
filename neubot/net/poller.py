@@ -139,13 +139,13 @@ class Poller(sched.scheduler):
     def unset_readable(self, stream):
         ''' Stop monitoring for readability '''
         fileno = stream.fileno()
-        if self.readset.has_key(fileno):
+        if fileno in self.readset:
             del self.readset[fileno]
 
     def unset_writable(self, stream):
         ''' Stop monitoring for writability '''
         fileno = stream.fileno()
-        if self.writeset.has_key(fileno):
+        if fileno in self.writeset:
             del self.writeset[fileno]
 
     def close(self, stream):
@@ -173,7 +173,7 @@ class Poller(sched.scheduler):
 
     def _call_handle_read(self, fileno):
         ''' Safely dispatch read event '''
-        if self.readset.has_key(fileno):
+        if fileno in self.readset:
             stream = self.readset[fileno]
             try:
                 stream.handle_read()
@@ -185,7 +185,7 @@ class Poller(sched.scheduler):
 
     def _call_handle_write(self, fileno):
         ''' Safely dispatch write event '''
-        if self.writeset.has_key(fileno):
+        if fileno in self.writeset:
             stream = self.writeset[fileno]
             try:
                 stream.handle_write()
@@ -219,7 +219,7 @@ class Poller(sched.scheduler):
 
             # Get list of readable/writable streams
             try:
-                res = select.select(self.readset.keys(), self.writeset.keys(),
+                res = select.select(list(self.readset.keys()), list(self.writeset.keys()),
                  [], timeout)
             except select.error:
                 code = sys.exc_info()[1][0]
@@ -251,8 +251,8 @@ class Poller(sched.scheduler):
         if self.readset or self.writeset:
 
             streams = set()
-            streams.update(self.readset.values())
-            streams.update(self.writeset.values())
+            streams.update(list(self.readset.values()))
+            streams.update(list(self.writeset.values()))
 
             timenow = ticks()
             for stream in streams:
