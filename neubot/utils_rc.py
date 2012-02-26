@@ -36,7 +36,7 @@ def parse(path):
         if not tokens:
             continue
         if len(tokens) != 2:
-            sys.stderr.write('utils_rc: %s:%d: Invalid line\n' % (
+            sys.stderr.write('WARNING: utils_rc: %s:%d: Invalid line\n' % (
                              path, lineno))
             return {}
         name, value = tokens
@@ -50,6 +50,9 @@ def parse_safe(path):
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
+        exc = sys.exc_info()[1]
+        error = str(exc)
+        sys.stderr.write('WARNING: utils_rc: %s\n' % error)
         return {}
 
 def main(args):
