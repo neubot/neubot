@@ -25,12 +25,21 @@
 import shlex
 import sys
 
-def parse(path):
-    ''' Parse configuration file '''
+def parse(path=None, iterable=None):
+    ''' Parse configuration file or iterable '''
+
+    if path and iterable:
+        raise ValueError('Both path and iterable are not None')
+    elif path:
+        iterable = open(path, 'rb')
+    elif iterable:
+        path = '<cmdline>'
+    else:
+        return {}
+
     conf = {}
-    filep = open(path, 'rb')
     lineno = 0
-    for line in filep:
+    for line in iterable:
         lineno += 1
         tokens = shlex.split(line, True)
         if not tokens:
@@ -41,12 +50,13 @@ def parse(path):
             return {}
         name, value = tokens
         conf[name] = value
+
     return conf
 
-def parse_safe(path):
-    ''' Parse configuration file (safe) '''
+def parse_safe(path=None, iterable=None):
+    ''' Parse configuration file or iterable (safe) '''
     try:
-        return parse(path)
+        return parse(path, iterable)
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
