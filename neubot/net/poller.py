@@ -27,6 +27,7 @@ import logging
 import errno
 import select
 import sched
+import sys
 import time
 
 from neubot.utils import ticks
