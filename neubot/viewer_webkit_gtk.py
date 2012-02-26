@@ -123,23 +123,29 @@ def main(args):
     ''' Entry point for simple gtk+webkit GUI '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'f:')
+        options, arguments = getopt.getopt(args[1:], 'f:O:')
     except getopt.error:
-        sys.exit('Usage: neubot viewer [-f file]')
+        sys.exit('Usage: neubot viewer [-f file] [-O option]')
     if arguments:
-        sys.exit('Usage: neubot viewer [-f file]')
+        sys.exit('Usage: neubot viewer [-f file] [-O option]')
 
     conf = {
         'address': '127.0.0.1',
         'port': '9774',
     }
-
+    settings = []
     fpath = '/etc/neubot/api'
+
     for name, value in options:
         if name == '-f':
             fpath = value
+        elif name == '-O':
+            settings.append(value)
 
     cnf = utils_rc.parse_safe(fpath)
+    conf.update(cnf)
+
+    cnf = utils_rc.parse_safe(iterable=settings)
     conf.update(cnf)
 
     address, port = conf['address'], conf['port']
