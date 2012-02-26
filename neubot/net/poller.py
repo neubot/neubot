@@ -219,8 +219,9 @@ class Poller(sched.scheduler):
 
             # Get list of readable/writable streams
             try:
-                res = select.select(list(self.readset.keys()), list(self.writeset.keys()),
-                 [], timeout)
+                res = select.select(list(self.readset.keys()),
+                                    list(self.writeset.keys()),
+                                    [], timeout)
             except select.error:
                 code = sys.exc_info()[1][0]
                 if code != errno.EINTR:
