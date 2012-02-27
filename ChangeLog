@@ -1,3 +1,147 @@
+Neubot 0.4.9 [2012-02-27]
+	* scripts/publish: rewrite from scratch
+	* scripts/diffstat: remove
+	* updater/unix.py: Implement __clear_base_directory()
+	* Makefile: make sure we release at release point only
+	* Makefile: release: do not hide the commands we run
+	* Makefile: do not release .gz.gz... manpages
+	* Makefile: make it always explicit
+	* Makefile: uninstall: do not hide failures
+	* Merge some maintenance patches for Makefile
+	* Added chartdiv2
+	* Added style for chartdiv2
+	* Latency and connect time graph on speedtest page
+	* added chartdiv2 to bittorrent.html
+	* added connect time graph to bittorrent page
+	* bittorrent.js speedtest.js: update comments
+	* speedtest.js: sync labels with bittorrent.js
+	* state.js: make_lang_en.js does not handle line continuation
+	* it.js: move down certain strings
+	* en.js: regen
+	* it.js: sync
+	* Merge latency-plots and www-maintenance patches
+	* config_api.py: always sort keys
+	* scripts/publish: fix some usage strings
+	* browser: open page in the browser
+	* notifier_browser: configurabile browser-based notifier
+	* rendezvous/client.py: do not open browser too frequently
+	* Merge code to prevent too frequent Win32 browser notifications
+	* updater/unix.py: add user-agent header
+	* neubot/privacy.py: remove XXX
+	* doc/neubot/config.txt: document neubot/config.py
+	* config.py: documentation moved at doc/neubot/config.txt
+	* Stop spreading lies about documentation
+	* doc: Move Neubot documentation below doc/neubot/
+	* doc/RELEASE: rewrite and sync with reality
+	* Merge maintenance patches for documentation
+	* Merge branch 'master' into next
+	* Release neubot/0.4.9-rc1
+	* collect.sh: Meld classify_by_privacy into prepare_for_publish
+	* collect.sh: more robust publish
+	* collect.sh: add -n to publish
+	* collect.sh: more verbosity in publish
+	* collect.sh: do not remove .gz files
+	* Merge improvements for the collect script
+	* data/README: bittorrent is not a table, of course
+	* scripts/publish: fix stable channel name
+	* updater/unix.py: add missing import shutil
+	* js: load second graph even when the first is empty
+	* Remove scripts/rh from the public repository
+	* Merge remote-tracking branch 'tersicore/next' into next
+	* Release neubot/0.4.9-rc2
+	* MacOS/makepkg.py: we don't need to import LibVersion
+	* TODO: reference the wiki
+	* Add doc/FAQ.rst: website faq converted to restructuredtext
+	* Add doc/FAQ-it.rst: website faq-it converted to restructuredtext
+	* doc/FAQ.rst: cosmetic changes
+	* doc/FAQ.rst: don't lie, we don't publish aggreate results yet
+	* doc/FAQ.rst: unique link to speedtest.net
+	* doc/FAQ.rst: fix warning generated during pandoc conversion
+	* doc/FAQ.rst: fix warning generated during pandoc conversion
+	* doc/FAQ.rst: reword section 1.6
+	* doc/FAQ.rst: update section 1.7, 1.8 and 1.9
+	* doc/FAQ.rst: improve section 1.12
+	* doc/FAQ.rst: section 1.13 link cosmetics
+	* doc/FAQ.rst: section 1.14 link cosmetics
+	* doc/FAQ.rst: revamp section 2
+	* doc/FAQ.rst: update section 3.1
+	* doc/FAQ.rst: fix images in section 4.2
+	* doc/FAQ.rst: tweak section 3.3
+	* doc/FAQ.rst: fix title of section 3.4
+	* doc/FAQ.rst: bring section 3.6 up to date
+	* doc/FAQ.rst: update the wording of section 3.7
+	* doc/FAQ.rst: update wording in section 3.8
+	* doc/FAQ.rst: simplify links in section 4.2
+	* doc/FAQ.rst: section 4.3: it's HKCU not HKLM
+	* doc/FAQ.rst: minor tweaks to section 4.4
+	* doc/FAQ.rst: minor tweaks to section 4.6
+	* doc/FAQ.rst: minor tweaks to section 4.7
+	* doc/FAQ.rst: section 4.8: be less specific
+	* doc/FAQ.rst: minor tweaks to section 5.1
+	* doc/FAQ.rst: readd the index
+	* doc/FAQ.rst: stop spreading lies in section 5.2
+	* doc/FAQ.rst: add faq on M-Lab
+	* doc/FAQ.rst: mention M-Lab in section 1.1
+	* doc/FAQ.rst: correct the title of section 1.1
+	* doc/FAQ.rst: add data section
+	* Merge improvements for english FAQ
+	* doc/FAQ.rst: add self-link to index
+	* PRIVACY: measurement -> measurements
+	* doc/FAQ-it.rst: readd index, fix some links
+	* doc/FAQ-it.rst: fix most obvious links
+	* doc/FAQ-it.rst: section 1.1. is OK
+	* doc/FAQ-it.rst: add question on Measurement Lab
+	* doc/FAQ-it.rst: section 1.3 OK
+	* doc/FAQ-it.rst: give some love to section 1.6
+	* doc/FAQ-it.rst: section 1.7 OK
+	* doc/FAQ-it.rst: updated section 1.8
+	* doc/FAQ-it.rst: bring FAQ 1.9 up to date
+	* doc/FAQ-it.rst: sync 1.10 with english FAQ
+	* doc/FAQ-it.rst: sync 1.13 with english faq
+	* doc/FAQ-it.rst: section 1.15 improvements
+	* doc/FAQ-it.rst: section 2.1 OK
+	* doc/FAQ-it.rst: nit in sect. 2.2
+	* doc/FAQ-it.rst: bring section 3.1 uptodate
+	* doc/FAQ-it.rst: fix image links in 3.2
+	* doc/FAQ-it.rst: sync 3.3 w/ english FAQ
+	* doc/FAQ-it.rst: bring 3.6 up to date
+	* doc/FAQ-it.rst: rewrite 3.7
+	* doc/FAQ-it.rst: cosmetic change in 3.8
+	* doc/FAQ-it.rst: update 4.2
+	* doc/FAQ-it.rst: in 4.3: s/HKLM/HKCU/
+	* doc/FAQ-it.rst: minor fixes to 4.4
+	* doc/FAQ-it.rst: sync bittorrent test description with speedtest one
+	* doc/FAQ-it.rst: twak section 4.7
+	* doc/FAQ-it.rst: rewrite, clarify section 4.8
+	* doc/FAQ-it.rst: tweak wording in section 5.1
+	* doc/FAQ-it.rst: stop spreading lies in section 5.2
+	* doc/FAQ-it.rst: port data questions from english FAQ
+	* Merge improvements for italian FAQ
+	* neubot.1.txt: bump copyright year
+	* neubot.1.txt: rewrite description
+	* neubot.1.txt: remove common options section
+	* neubot.1.txt: minor fixes to the rest of the manpage
+	* main/__init__.py: sync --help with manpage
+	* PRIVACY: tweak restructured text a bit
+	* neubot.1.txt: add privacy policy
+	* man1/neubot.1: regen
+	* doc/neubot.1.txt: fix a couple of nits
+	* man/neubot.1: regen
+	* Merge manual page improvements
+	* www: en.js privacy.html: regen
+	* it.js: update to privacy policy 2.0.3
+	* doc: FAQ.rst FAQ-it.rst: add transitions
+	* regress/Makefile/install.sh: stable sort
+	* regress/Makefile: updated install.sh good-files lists
+	* regress/neubot/http/rootdir.sh: stable sort
+	* regress/neubot/filesys_posix.sh: repair for linux
+	* regress/neubot/utils_posix.sh: repair for linux
+	* Merge some fixes for the regression tests suite
+	* Release neubot/0.4.9-rc3
+	* M-Lab/deploy.sh: use git describe
+	* scripts: release, update_changelog: better wording
+	* Neubot/0.4.9 released
+
 Neubot 0.4.8 [2012-02-08]
 	* M-Lab: fail deploy if we cannot stop a running Neubot
 	* M-Lab/deploy.sh: autogen neubot.tgz even if -n
