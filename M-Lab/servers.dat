@@ -1,5 +1,6 @@
 mlab1.ams01.measurement-lab.org GB EU
 mlab1.ams02.measurement-lab.org US NA
+mlab1.arn01.measurement-lab.org EU EU
 mlab1.ath01.measurement-lab.org GR EU
 mlab1.ath02.measurement-lab.org GR EU
 mlab1.atl01.measurement-lab.org US NA
@@ -26,6 +27,7 @@ mlab1.trn01.measurement-lab.org IT EU
 mlab1.wlg01.measurement-lab.org NZ OC
 mlab2.ams01.measurement-lab.org GB EU
 mlab2.ams02.measurement-lab.org US NA
+mlab2.arn01.measurement-lab.org EU EU
 mlab2.ath01.measurement-lab.org GR EU
 mlab2.ath02.measurement-lab.org GR EU
 mlab2.atl01.measurement-lab.org US NA
@@ -52,6 +54,7 @@ mlab2.trn01.measurement-lab.org IT EU
 mlab2.wlg01.measurement-lab.org NZ OC
 mlab3.ams01.measurement-lab.org GB EU
 mlab3.ams02.measurement-lab.org US NA
+mlab3.arn01.measurement-lab.org EU EU
 mlab3.ath01.measurement-lab.org GR EU
 mlab3.ath02.measurement-lab.org GR EU
 mlab3.atl01.measurement-lab.org US NA
