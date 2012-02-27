@@ -72,5 +72,5 @@ done
 #
 # Commit
 #
-git commit -a -m "Release neubot/$NEW"
+git commit -a -m "Neubot/$NEW released"
 git tag $NEW
