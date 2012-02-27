@@ -73,6 +73,7 @@ regress:
 	if [ -f regress/failure ]; then					\
 	    echo "*** At least one regression test has failed";		\
 	    echo "*** Check regress/failure for more info";		\
+	    exit 1;							\
 	fi
 
 clean:
