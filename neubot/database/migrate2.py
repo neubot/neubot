@@ -359,14 +359,15 @@ class MigrateFrom42To43(object):
     def migrate(cls, connection):
         ''' Migrate database from schema v4.2 to v4.3 '''
 
-        logging.info('migrate2: fix reordering column bug')
+        logging.info('migrate2: fix reordering column bug of v4.2')
 
         instance = cls()
         operations = []
 
         for tbl in ('bittorrent', 'speedtest'):
             result = instance.build_operations(connection, tbl, operations)
-            logging.info('migrate2: build_operations: %s' % str(result))
+            logging.info('migrate2: build_operations for %s: %s' %
+                         (tbl, str(result)))
 
         cursor = connection.cursor()
         for operation in operations:
