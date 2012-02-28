@@ -34,7 +34,10 @@ from neubot import system
 from neubot import utils
 
 def stderr_logger(severity, message):
-    sys.stderr.write('<%s> %s\n' % (severity, message))
+    if severity != 'INFO':
+        sys.stderr.write('%s: %s\n' % (severity, message))
+    else:
+        sys.stderr.write('%s\n' % message)
 
 #
 # We commit every NOCOMMIT log messages or when we see
