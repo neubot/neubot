@@ -236,21 +236,33 @@ class MigrateFrom42To43(object):
     @staticmethod
     def _reordered_version(value):
         ''' reordered if does not match version regex '''
+        # version may not be set 
+        if value == 'None' or value == '':
+            return False
         return not re.match('^[0-9]+\.[0-9]{9}$', value)
 
     @staticmethod
     def _reordered_platform(value):
         ''' reordered if is not a supported platform '''
-        return value not in (
-                             'linux2'
-                             'win32'
-                             'cygwin'
-                             'darwin'
-                             'os2'
-                             'os2emx'
-                             'riscos'
-                             'atheos'
-                            )
+        # platform may not be set 
+        if value == 'None' or value == '':
+            return False
+        for prefix in (
+                       'linux',
+                       'win32',
+                       'cygwin',
+                       'darwin',
+                       'os2',
+                       'os2emx',
+                       'riscos',
+                       'atheos',
+                       'freebsd',
+                       'openbsd',
+                       'netbsd',
+                      ):
+            if value.startswith(prefix):
+                return False
+        return True
 
     def _reordered(self, row, has_latency):
         ''' Returns true if the row was reordered '''
