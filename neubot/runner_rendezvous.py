@@ -101,7 +101,6 @@ class RunnerRendezvous(ClientHTTP):
             return
 
         message = json.load(response.body)
-        logging.debug('runner_rendezvous: response body %s', message)
 
         #
         # Just update the list of available tests because
