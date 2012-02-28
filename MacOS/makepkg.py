@@ -70,10 +70,13 @@ def _init():
 
     os.umask(0022)
 
-    shutil.rmtree('neubot-%s.pkg' % VERSION, ignore_errors=True)
-    shutil.rmtree('neubot', ignore_errors=True)
+    if os.path.lexists('neubot-%s.pkg' % VERSION):
+        shutil.rmtree('neubot-%s.pkg' % VERSION)
+    if os.path.lexists('neubot'):
+        shutil.rmtree('neubot')
 
-    shutil.rmtree('Privacy/build', ignore_errors=True)
+    if os.path.lexists('Privacy/build'):
+        shutil.rmtree('Privacy/build')
 
 def _make_package():
     ''' Creates package copying from package skeleton '''
