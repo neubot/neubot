@@ -70,10 +70,13 @@ def _init():
 
     os.umask(0022)
 
-    shutil.rmtree('neubot-%s.pkg' % VERSION, ignore_errors=True)
-    shutil.rmtree('neubot', ignore_errors=True)
+    if os.path.lexists('neubot-%s.pkg' % VERSION):
+        shutil.rmtree('neubot-%s.pkg' % VERSION)
+    if os.path.lexists('neubot'):
+        shutil.rmtree('neubot')
 
-    shutil.rmtree('Privacy/build', ignore_errors=True)
+    if os.path.lexists('Privacy/build'):
+        shutil.rmtree('Privacy/build')
 
 def _make_package():
     ''' Creates package copying from package skeleton '''
@@ -130,7 +133,8 @@ def _make_sharedir():
     # Add manual page(s)
     shutil.copy('../UNIX/man/man1/neubot.1', 'neubot/%s' % NUMERIC_VERSION)
 
-    # Tell start.sh we've been installed OK
+def _add_okfile():
+    ''' Add okfile to VERSIONDIR '''
     filep = open('neubot/%s/.neubot-installed-ok' % NUMERIC_VERSION, 'w')
     filep.close()
 
@@ -179,10 +183,11 @@ def _make_auto_update():
 
     # Make digital signature
     privkey = raw_input('Enter privkey location: ')
-    os.chdir('../dist')
-    __call('openssl dgst -sha256 -sign %s -out %s %s' %
-       (privkey, os.path.basename(sig), os.path.basename(tarball)))
-    os.chdir(MACOSDIR)
+    if privkey:
+        os.chdir('../dist')
+        __call('openssl dgst -sha256 -sign %s -out %s %s' %
+           (privkey, os.path.basename(sig), os.path.basename(tarball)))
+        os.chdir(MACOSDIR)
 
 def _compile():
 
@@ -253,12 +258,16 @@ def main():
     # interested in shipping .pyc files in the autoupdate.
     # The second _fixup_perms() is to fixup the permissions of
     # the .pyc compiled by __compile().
+    # Similarly, we add okfile after we've created the auto
+    # update because okfile should not be part of the set of
+    # files distributed with an autoupdate.
     #
     _make_sharedir()
     _fixup_perms()
     _make_auto_update()
     _compile()
     _fixup_perms()
+    _add_okfile()
 
     _make_archive_pax()
     _make_archive_bom()

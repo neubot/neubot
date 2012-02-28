@@ -118,11 +118,17 @@ class ServerRendezvous(ServerHTTP):
                 server = random.choice(servers)
                 LOG.debug("* selected test server: %s" % server)
 
-        if "speedtest" in m.accept:
-            m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
+        #
+        # We require at least informed and can_collect since 0.4.4
+        # (released 25 October 2011), so stop clients without empty
+        # privacy settings, who were still using master.
+        #
+        if privacy.collect_allowed(request_body):
+            if "speedtest" in m.accept:
+                m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
 
-        if "bittorrent" in m.accept:
-            m1.available["bittorrent"] = [ "http://%s/" % server ]
+            if "bittorrent" in m.accept:
+                m1.available["bittorrent"] = [ "http://%s/" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while

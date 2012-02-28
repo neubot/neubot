@@ -200,9 +200,14 @@ class ServerHTTP(StreamHandler):
             stream.send_response(request, response)
             return
 
+        if '?' in request.uri:
+            request_uri = request.uri.split('?')[0]
+        else:
+            request_uri = request.uri
+
         # Paranoid mode: ON
         rootdir = utils.asciiify(rootdir)
-        uripath = utils.asciiify(request.uri)
+        uripath = utils.asciiify(request_uri)
         fullpath = os.path.normpath(rootdir + uripath)
         fullpath = utils.asciiify(fullpath)
 
