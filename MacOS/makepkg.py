@@ -133,7 +133,8 @@ def _make_sharedir():
     # Add manual page(s)
     shutil.copy('../UNIX/man/man1/neubot.1', 'neubot/%s' % NUMERIC_VERSION)
 
-    # Tell start.sh we've been installed OK
+def _add_okfile():
+    ''' Add okfile to VERSIONDIR '''
     filep = open('neubot/%s/.neubot-installed-ok' % NUMERIC_VERSION, 'w')
     filep.close()
 
@@ -257,12 +258,16 @@ def main():
     # interested in shipping .pyc files in the autoupdate.
     # The second _fixup_perms() is to fixup the permissions of
     # the .pyc compiled by __compile().
+    # Similarly, we add okfile after we've created the auto
+    # update because okfile should not be part of the set of
+    # files distributed with an autoupdate.
     #
     _make_sharedir()
     _fixup_perms()
     _make_auto_update()
     _compile()
     _fixup_perms()
+    _add_okfile()
 
     _make_archive_pax()
     _make_archive_bom()
