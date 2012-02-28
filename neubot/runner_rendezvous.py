@@ -24,6 +24,7 @@
 
 # Adapted from neubot/rendezvous/client.py
 
+import getopt
 import logging
 import sys
 
@@ -121,10 +122,27 @@ def run(uri):
 
 def main(args):
     ''' main() function '''
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    LOG.verbose()
-    run(args[1])
+
+    try:
+        options, arguments = getopt.getopt(args[1:], 'vy')
+    except getopt.error:
+        sys.exit('usage: neubot runner_rendezvous [-vy] uri')
+    if len(arguments) != 1:
+        sys.exit('usage: neubot runner_rendezvous [-vy] uri')
+
+    for tpl in options:
+        if tpl[0] == '-v':
+            logger = logging.getLogger()
+            logger.setLevel(logging.DEBUG)
+            LOG.verbose()
+        elif tpl[0] == '-y':
+            CONFIG.conf.update({
+                                'privacy.informed': 1,
+                                'privacy.can_collect': 1,
+                                'privacy.can_publish': 1
+                               })
+
+    run(arguments[0])
     POLLER.loop()
 
 if __name__ == '__main__':
