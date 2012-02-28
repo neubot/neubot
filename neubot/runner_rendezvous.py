@@ -132,8 +132,6 @@ def main(args):
 
     for tpl in options:
         if tpl[0] == '-v':
-            logger = logging.getLogger()
-            logger.setLevel(logging.DEBUG)
             LOG.verbose()
         elif tpl[0] == '-y':
             CONFIG.conf.update({
