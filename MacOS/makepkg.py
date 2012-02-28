@@ -179,10 +179,11 @@ def _make_auto_update():
 
     # Make digital signature
     privkey = raw_input('Enter privkey location: ')
-    os.chdir('../dist')
-    __call('openssl dgst -sha256 -sign %s -out %s %s' %
-       (privkey, os.path.basename(sig), os.path.basename(tarball)))
-    os.chdir(MACOSDIR)
+    if privkey:
+        os.chdir('../dist')
+        __call('openssl dgst -sha256 -sign %s -out %s %s' %
+           (privkey, os.path.basename(sig), os.path.basename(tarball)))
+        os.chdir(MACOSDIR)
 
 def _compile():
 
