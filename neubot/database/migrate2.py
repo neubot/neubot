@@ -23,6 +23,7 @@
 ''' Migrate database from one version to another.  This module takes
     care of migration from version 4.2 of the schema onwards. '''
 
+import asyncore
 import logging
 import re
 import sqlite3
@@ -371,24 +372,31 @@ class MigrateFrom42To43(object):
     def migrate(cls, connection):
         ''' Migrate database from schema v4.2 to v4.3 '''
 
-        logging.info('migrate2: fix reordering column bug of v4.2')
+        try:
+            logging.info('migrate2: fix reordering column bug of v4.2')
 
-        instance = cls()
-        operations = []
+            instance = cls()
+            operations = []
 
-        for tbl in ('bittorrent', 'speedtest'):
-            logging.info('migrate2: build operations for %s...', tbl)
-            result = instance.build_operations(connection, tbl, operations)
-            logging.info('migrate2: built operations for %s: %s',
-                         tbl, str(result))
+            for tbl in ('bittorrent', 'speedtest'):
+                logging.info('migrate2: build operations for %s...', tbl)
+                result = instance.build_operations(connection, tbl, operations)
+                logging.info('migrate2: built operations for %s: %s',
+                             tbl, str(result))
 
-        cursor = connection.cursor()
-        for operation in operations:
-            cursor.execute(operation[0], operation[1])
+            cursor = connection.cursor()
+            for operation in operations:
+                cursor.execute(operation[0], operation[1])
+        except:
+            exc = asyncore.compact_traceback()
+            logging.error('migrate2: cannot recover from reordering column '
+                          'bug, please contact Neubot developers and report '
+                          'this problem.')
+            logging.error('migrate2: error details: %s', str(exc))
 
         logging.info('migrate2: from schema version 4.2 to 4.3')
-        cursor.execute('''UPDATE config SET value='4.3'
-                          WHERE name='version';''')
+        connection.execute('''UPDATE config SET value='4.3'
+                              WHERE name='version';''')
 
         connection.commit()
 
