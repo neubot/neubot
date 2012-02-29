@@ -377,9 +377,10 @@ class MigrateFrom42To43(object):
         operations = []
 
         for tbl in ('bittorrent', 'speedtest'):
+            logging.info('migrate2: build operations for %s...', tbl)
             result = instance.build_operations(connection, tbl, operations)
-            logging.info('migrate2: build_operations for %s: %s' %
-                         (tbl, str(result)))
+            logging.info('migrate2: built operations for %s: %s',
+                         tbl, str(result))
 
         cursor = connection.cursor()
         for operation in operations:
