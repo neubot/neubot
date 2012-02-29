@@ -341,12 +341,13 @@ class MigrateFrom42To43(object):
                 # Since we are pulling values from rows having the WRONG
                 # type, we must cast them back to the EXPECTED type.
                 #
-                if right in self.integers:
-                    value = int(value)
-                elif right in self.floats:
-                    value = float(value)
-                else:
-                    value = str(value)
+                if value is not None:
+                    if right in self.integers:
+                        value = int(value)
+                    elif right in self.floats:
+                        value = float(value)
+                    else:
+                        value = str(value)
 
                 new_row[right] = value
 
