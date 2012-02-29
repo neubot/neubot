@@ -188,12 +188,12 @@ class MigrateFrom42To43(object):
 
     @staticmethod
     def _reordered_timestamp(value):
-        ''' reordered if not an integer '''
+        ''' reordered if not an integer and before 13 feb 2009 '''
         try:
-            int(value)
+            value = int(value)
         except ValueError:
             return True
-        return False
+        return value < 1234567890
 
     @staticmethod
     def _reordered_uuid(value):
@@ -265,8 +265,27 @@ class MigrateFrom42To43(object):
                 return False
         return True
 
-    def _reordered(self, row, has_latency):
-        ''' Returns true if the row was reordered '''
+    def _seems_reordered(self, row):
+        ''' Returns true if we believe the row was reordered '''
+
+        count = 0
+
+        # Stringify because we don't know the sqlite3-converted type
+        count += self._reordered_timestamp(str(row['timestamp']))
+        count += self._reordered_uuid(str(row['uuid']))
+        count += self._reordered_platform(str(row['platform']))
+        count += self._reordered_version(str(row['neubot_version']))
+        count += self._reordered_privacy(str(row['privacy_informed']))
+        count += self._reordered_privacy(str(row['privacy_can_collect']))
+        count += self._reordered_privacy(str(row['privacy_can_publish']))
+        count += self._reordered_address(str(row['internal_address']))
+        count += self._reordered_address(str(row['real_address']))
+        count += self._reordered_address(str(row['remote_address']))
+
+        return count >= 2
+
+    def _looks_good(self, row, has_latency):
+        ''' Returns true if the row looks good after reordering '''
 
         # indirection table
         functions = {
@@ -295,9 +314,11 @@ class MigrateFrom42To43(object):
         #
         for key, function in functions.items():
             if function(str(row[key])):
-                return True
+                # Seen reordering
+                return False
 
-        return False
+        # Looks good
+        return True
 
     #   ___                     _   _
     #  / _ \ _ __  ___ _ _ __ _| |_(_)___ _ _  ___
@@ -328,7 +349,7 @@ class MigrateFrom42To43(object):
         for row in cursor:
 
             # Was reordered?
-            if not self._reordered(row, has_latency):
+            if not self._seems_reordered(row):
                 good = good + 1
                 continue
 
@@ -340,14 +361,21 @@ class MigrateFrom42To43(object):
                 #
                 # Since we are pulling values from rows having the WRONG
                 # type, we must cast them back to the EXPECTED type.
+                # If we are unable to convert the type back to the type
+                # we would have expected, we have made an error and we
+                # should have not reordered the row, so undo.
                 #
-                if value is not None:
-                    if right in self.integers:
-                        value = int(value)
-                    elif right in self.floats:
-                        value = float(value)
-                    else:
-                        value = str(value)
+                try:
+                    if value is not None:
+                        if right in self.integers:
+                            value = int(value)
+                        elif right in self.floats:
+                            value = float(value)
+                        else:
+                            value = str(value)
+                except:
+                    nonfixed = nonfixed + 1
+                    continue
 
                 new_row[right] = value
 
@@ -359,8 +387,8 @@ class MigrateFrom42To43(object):
                 query = 'UPDATE %s SET %s=? WHERE id=?;' % (table, right)
                 new_operations.append(( query, (value, row['id']) ))
 
-            # Is still reordered?
-            if self._reordered(new_row, has_latency):
+            # Does it looks good now?
+            if not self._looks_good(new_row, has_latency):
                 nonfixed = nonfixed + 1
                 continue
 
