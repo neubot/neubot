@@ -60,6 +60,18 @@
    * `6.2. Is there any license attached to data?`_
    * `6.3. What is data format?`_
 
+* `7. Web user interface`_
+
+   * `7.1. What is the web user interface?`_
+   * `7.2. How do I open the web user interface?`_
+   * `7.3. What does the status page shows?`_
+   * `7.4. What does the speedtest page shows?`_
+   * `7.5. What does the bittorrent page shows?`_
+   * `7.6. What does the log page shows?`_
+   * `7.7. What does the privacy page shows?`_
+   * `7.8. What does the settings page shows?`_
+   * `7.9. How do I change the web user interface language?`_
+
 ------------------------------------------------------------------------
 
 1. General questions
@@ -324,7 +336,8 @@ it automatically updated to the latest version.  As a rule of thumb, if
 more than two weeks have passed since the last release and it has not
 updated, then it's a bug.
 
-If you are running Windows, the `web user interface` will be opened
+If you are running Windows, the web user interface (see `7. Web user
+interface`_) will be opened
 automatically on the browser when an update is available. You will
 see a message like the one in the following screenshot. Click on the
 link, follow instructions, and you're done.
@@ -406,7 +419,8 @@ No.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Under all operating systems you can read logs via the *Log* tab of the
-`web user interface`_, available since ``0.3.7``.  The following screenshot
+web user interface (see `7. Web user interface`_), available since
+``0.3.7``.  The following screenshot
 provides an example:
 
 .. image:: http://www.neubot.org/neubotfiles/neubot-log.png
@@ -693,6 +707,133 @@ format and this is explained better here:
 
     http://www.neubot.org/data
 
+------------------------------------------------------------------------
+
+7. Web user interface
+---------------------
+
+7.1. What is the web user interface?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The web user interface is a web-based interface that allows to
+control **neubot** and show recent results.  By default, when
+**neubot** is started, it binds port ``9774`` on ``127.0.0.1``
+and waits for web requests.
+
+Users can request raw information, using a ``JSON`` API, or regular
+web pages.  If no page or API is specified, **neubot** will return
+the content of the *status* page.  In turn, this page will
+use ``javascript`` to query the ``JSON`` API and populate the page
+itself.  Similarly, other web pages use ``javascript`` and the
+``JSON`` API to fill themselves with dynamic data, e.g. settings,
+recent results, logs.
+
+7.2. How do I open the web user interface?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On **Windows**, the *Neubot* command on the start menu should open
+the web user interface in the default browser.
+
+On **MacOSX**, the *Neubot* application (``/Applications/Neubot.app``)
+should open the web user interface in the default browser.
+
+On **Ubuntu and Debian**, if the user has installed the `neubot`
+package (and not the `neubot-nox` package), the *Neubot* command
+on the applications menu should open the web user interface in
+a custom ``Gtk+`` application that embeds ``WebKit`` and uses it
+to show the web user interface.
+
+On **UNIX**, if `Gtk+` and `WebKit` bindings for Python are installed,
+the following command::
+
+    neubot viewer
+
+opens a custom ``Gtk+`` application that embeds ``WebKit`` and uses
+it to show the web user interface.
+
+On **any platform**, of course, the user can open her favorite web
+browser and point it to the following URI::
+
+    http://127.0.0.1:9774/
+
+7.3. What does the status page shows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *status* page (which is the default one) shows the status of Neubot
+Agent, and the result of the latest transmission test.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-status.png
+   :align: center
+
+7.4. What does the speedtest page shows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *speedtest* page shows the results of recent *speedtest* tests, i.e.
+latency, download and upload goodput, both in graphical and in tabular
+form.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-speedtest.png
+   :align: center
+
+7.5. What does the bittorrent page shows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *bittorrent* page shows the results of recent *bittorrent* tests, i.e.
+latency, download and upload goodput, both in graphical and in tabular
+form.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-bittorrent.png
+   :align: center
+
+7.6. What does the log page shows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *log* page shows recent logs.  The color of each log entry reflects
+severity.  In particular, the page uses:
+
+* *red* for error messages;
+* *yellow* for warning messages;
+* *blue* for notice messages;
+* *grey* for debug messages.
+
+One can refresh the page by clicking on the `Refresh page` link.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-log.png
+   :align: center
+
+7.7. What does the privacy page shows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *privacy* page shows the privacy policy and allows to set privacy
+permissions.  See `5. Privacy questions`_ section for more info.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-privacy.png
+   :align: center
+
+7.8. What does the settings page shows?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *settings* page shows and allow to change Neubot settings.  One must
+click on the `Save` button to make changes effective.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-settings.png
+   :align: center
+
+7.9. How do I change the web user interface language?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Change the value of the ``www.lang`` setting, which can be modified
+using the *settings* page.  Currently the value can be one of:
+
+**default**
+  Uses the browser's default language.
+
+**en**
+  Uses english.
+
+**it**
+  Uses italian.
+
 ..
 .. Links
 ..
@@ -734,8 +875,6 @@ format and this is explained better here:
 .. _OpenBSD: http://www.openbsd.org/
 
 .. _`download page`: http://www.neubot.org/download
-
-.. _`web user interface`: http://www.neubot.org/documentation#web-ui
 
 .. _`HTTP protocol`: http://en.wikipedia.org/wiki/HTTP
 
