@@ -93,6 +93,18 @@
 
     * `6.3. Qual e' il formato dei dati?`_
 
+* `7. Web user interface`_
+
+   * `7.1. Che cos'è la web user interface?`_
+   * `7.2. Come apro la web user interface?`_
+   * `7.3. Cosa contiene la pagina status?`_
+   * `7.4. Cosa contiene la pagina speedtest?`_
+   * `7.5. Cosa contiene la pagina bittorrent?`_
+   * `7.6. Cosa contiene la pagina log?`_
+   * `7.7. Cosa contiene la pagina privacy?`_
+   * `7.8. Cosa contiene la pagina settings?`_
+   * `7.9. Come cambio la lingua della web user interface?`_
+
 ------------------------------------------------------------------------
 
 1. Domande generiche
@@ -379,7 +391,8 @@ si sia automaticamente aggiornato all'ultima versione.  A spanne,
 se sono passate piu` di due settimane dall'ultima release e non si
 e' autoaggiornato, allora c'e` qualche bug.
 
-Se stai usando Windows, l'`interfaccia web`_ verra` aperta
+Se stai usando Windows, l'interfaccia web (vedi `7. Web user
+interface`_) verra` aperta
 automaticamente nel browser quando c'e` un aggiornamento disponibile.
 Comparirà un messaggio come quello contenuto nell'immagine seguente.
 Clicca sul link, segui le istruzioni, ed è fatta.
@@ -468,7 +481,8 @@ No.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In tutti i sistemi operativi puoi leggere i log attraverso la
-*Tabella log* dell'`interfaccia web`_, disponibile a partire dalla
+*Tabella log* dell'interfaccia web (vedi `7. Web user interface`_),
+disponibile a partire dalla
 versione ``0.3.7``. L'immagine seguente fornisce un esempio:
 
 .. image:: http://www.neubot.org/neubotfiles/neubot-log.png
@@ -772,6 +786,142 @@ formato differente e questo e' spiegato meglio qui:
 
     http://www.neubot.org/data
 
+------------------------------------------------------------------------
+
+7. Web user interface
+---------------------
+
+7.1. Che cos'è la web user interface?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La web user interface è una interfaccia web-based che permette
+di controllare **neubot** e di vedere i risultati recenti.  Per
+impostazione predefinita, quando **neubot** viene avviato, si
+associa alla porta ``9774`` su ``127.0.0.1`` e attende richieste
+web.
+
+Gli utenti possono richiedere dati grezzi, usando una API
+``JSON``, oppure normali pagine web.  Se non viene specificata
+alcuna pagina web, **neubot** ritorna il contenuto della pagina
+*status*.  A sua volta, questa pagina usa ``javascript`` per
+inviare richieste alla API ``JSON`` e popolare la pagina stessa.
+Allo stesso modo, le altre pagine web usano ``javascript`` e
+la API ``JSON`` per inserire al proprio interno contenuti
+dinamici, come, ad esempio, la configurazione, i risultati
+recenti, o i log.
+
+7.2. Come apro la web user interface?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Su **Windows**, il comando *Neubot* nello start menu dovrebbe aprire
+la web user interface nel browser predefinito.
+
+Su **MacOSX**, l'applicazione *Neubot* (``/Applications/Neubot.app``)
+dovrebbe aprire la web user interface nel browser predefinito.
+
+Su **Ubuntu e Debian**, se l'utente ha installato il pacchetto
+`neubot` (e non il pacchetto `neubot-nox`), il comando *Neubot*
+nel menu applicazioni dovrebbe aprire la web user interface in
+una applicazione ad-hoc, basata su ``Gtk+`` e ``WebKit``, utilizzata
+per accedere alla web user interface.
+
+Su **UNIX**, se i binding `Gtk+` e `WebKit` per Python sono installati,
+il seguente comando::
+
+    neubot viewer
+
+apre una applicazione ad-hoc, basata su ``Gtk+`` e ``WebKit``,
+utilizzata per accedere alla web user interface.
+
+Su **qualsiasi sistema**, ovviamente, l'utente può aprire il suo
+web browser predefinito e farlo puntare alla seguente URI::
+
+    http://127.0.0.1:9774/
+
+7.3. Cosa contiene la pagina status?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La pagina *status* (che è quella predefinita) fa vedere lo stato
+di Neubot, e il risultato dell'ultimo test di trasmissione.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-status.png
+   :align: center
+
+7.4. Cosa contiene la pagina speedtest?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La pagina *speedtest* mostra i risultati recenti del test *speedtest*,
+vale a dire latenza, goodput in download e in upload, sia in forma
+grafica sia in forma tabulare.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-speedtest.png
+   :align: center
+
+7.5. Cosa contiene la pagina bittorrent?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La pagina *bittorrent* mostra i risultati recenti del test *bittorrent*,
+vale a dire latenza, goodput in download e in upload, sia in forma
+grafica sia in forma tabulare.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-bittorrent.png
+   :align: center
+
+7.6. Cosa contiene la pagina log?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La pagina *log* fa vedere i log recenti.  Il colore di ciascuna log
+entry indica la gravità del messaggio di log.  In particolare, la
+pagina utilizza:
+
+* il *rosso* per i messaggi di errore;
+* il *giallo* per i messaggi di warning;
+* il *blu* per i messaggi informativi;
+* il *grigio* per i messaggi di debug.
+
+Cliccando sul link `Refresh page` è possibile aggiornare la pagina
+dei *log*.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-log.png
+   :align: center
+
+7.7. Cosa contiene la pagina privacy?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La pagina *privacy* fa vedere la privacy policy e permette di fornire
+a **neubot** i permessi relativi alla privacy.  Vedi `5. Domande sulla
+privacy`_ per maggiori informazioni.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-privacy.png
+   :align: center
+
+7.8. Cosa contiene la pagina settings?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+La pagina *settings* permette di vedere e cambiare le impostazioni
+di Neubot.  Bisogna cliccare sul bottone `Save` per rendere permanenti
+le modifiche.
+
+.. image:: http://www.neubot.org/neubotfiles/faq-wui-settings.png
+   :align: center
+
+7.9. Come cambio la lingua della web user interface?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cambiando il valore dell'opzione ``www.lang``, che può essere
+modificato utilizzando la pagina *settings*.  Al momento, questa
+opzione può assumere uno dei seguenti valori:
+
+**default**
+  Usa la lingua predefinita del browser.
+
+**en**
+  Usa l'inglese.
+
+**it**
+  Usa l'italiano.
+
 ..
 .. Links
 ..
@@ -812,8 +962,6 @@ formato differente e questo e' spiegato meglio qui:
 .. _OpenBSD: http://www.openbsd.org/
 
 .. _`pagina download`: http://www.neubot.org/download
-
-.. _`interfaccia web`: http://www.neubot.org/documentation#web-ui
 
 .. _`protocollo HTTP`: http://en.wikipedia.org/wiki/HTTP
 
