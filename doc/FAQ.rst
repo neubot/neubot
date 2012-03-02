@@ -759,8 +759,8 @@ browser and point it to the following URI::
 7.3. What does the status page shows?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The *status* page (which is the default one) shows the status of Neubot
-Agent, and the result of the latest transmission test.
+The *status* page (which is the default one) shows the status of Neubot,
+and the result of the latest transmission test.
 
 .. image:: http://www.neubot.org/neubotfiles/faq-wui-status.png
    :align: center
