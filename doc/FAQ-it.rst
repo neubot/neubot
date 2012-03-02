@@ -835,7 +835,7 @@ apre una applicazione ad-hoc, basata su ``Gtk+`` e ``WebKit``,
 utilizzata per accedere alla web user interface.
 
 Su **qualsiasi sistema**, ovviamente, l'utente può aprire il suo
-web browser predefinito e farlo puntare alla seguente URI::
+web browser preferito e farlo puntare alla seguente URI::
 
     http://127.0.0.1:9774/
 
