@@ -104,27 +104,37 @@ def install(basedir, version, dryrun=False):
     if os.name == 'posix':
         os.system('sync')
 
-USAGE = 'usage: neubot updater_install [-n] [-d basedir] version...'
+USAGE = 'usage: neubot updater_install [-n] file...'
 
 def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'd:n')
+        options, arguments = getopt.getopt(args[1:], 'n')
     except getopt.error:
         sys.exit(USAGE)
     if not arguments:
         sys.exit(USAGE)
 
-    basedir = os.path.abspath('.')
     dryrun = 0
-    for name, value in options:
-        if name == '-d':
-            basedir = value
-        elif name == '-n':
+    for tpl in options:
+        if tpl[0] == '-n':
             dryrun = 1
 
-    for version in arguments:
+    origdir = os.getcwd()
+    for path in arguments:
+
+        basedir = os.path.dirname(path)
+        if not basedir:
+            basedir = origdir
+        path = os.path.basename(path)
+
+        if not re.match('^[0-9]+\.[0-9]{9}.tar.gz$', path):
+            sys.stderr.write('WARNING: this does not seem a valid '
+                             'update file: %s\n' % path)
+            continue
+        index = path.rfind('.tar.gz')
+        version = path[:index]
         install(basedir, version, dryrun)
 
 if __name__ == '__main__':
