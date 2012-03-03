@@ -22,40 +22,79 @@
 
 ''' Configuration file utils '''
 
+import getopt
+import pprint
 import shlex
 import sys
 
-def parse(path):
-    ''' Parse configuration file '''
+def parse(path=None, iterable=None):
+    ''' Parse configuration file or iterable '''
+
+    if path and iterable:
+        raise ValueError('Both path and iterable are not None')
+    elif path:
+        iterable = open(path, 'rb')
+    elif iterable:
+        path = '<cmdline>'
+    else:
+        return {}
+
     conf = {}
-    filep = open(path, 'rb')
     lineno = 0
-    for line in filep:
+    for line in iterable:
         lineno += 1
         tokens = shlex.split(line, True)
         if not tokens:
             continue
+
+        # Support both key=value and 'key value' syntaxes
+        if len(tokens) == 1 and '=' in tokens[0]:
+            tokens = tokens[0].split('=', 1)
         if len(tokens) != 2:
-            sys.stderr.write('utils_rc: %s:%d: Invalid line\n' % (
-                             path, lineno))
-            return {}
+            raise ValueError('%s:%d: Invalid line' % (path, lineno))
+
         name, value = tokens
         conf[name] = value
+
     return conf
 
-def parse_safe(path):
-    ''' Parse configuration file (safe) '''
+def parse_safe(path=None, iterable=None):
+    ''' Parse configuration file or iterable (safe) '''
     try:
-        return parse(path)
+        return parse(path, iterable)
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
+        exc = sys.exc_info()[1]
+        error = str(exc)
+        sys.stderr.write('WARNING: utils_rc: %s\n' % error)
         return {}
 
 def main(args):
     ''' main() function '''
-    for arg in args[1:]:
-        print parse(arg)
+
+    try:
+        options, arguments = getopt.getopt(args[1:], 'f:O:')
+    except getopt.error:
+        sys.exit('usage: neubot utils_rc [-f file] [-O setting]')
+    if arguments:
+        sys.exit('usage: neubot utils_rc [-f file] [-O setting]')
+
+    path = None
+    settings = []
+    for name, value in options:
+        if name == '-f':
+            path = value
+        elif name == '-O':
+            settings.append(value)
+
+    if path:
+        result = parse_safe(path)
+        pprint.pprint(result)
+
+    if settings:
+        result = parse_safe(iterable=settings)
+        pprint.pprint(result)
 
 if __name__ == '__main__':
     main(sys.argv)
