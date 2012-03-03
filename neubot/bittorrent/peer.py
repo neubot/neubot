@@ -20,11 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# This file tries to emulate the behavior of a
-# BitTorrent peer to the extent that is required
-# by Neubot's purpose.
-#
+'''
+ This file tries to emulate the behavior of a
+ BitTorrent peer to the extent that is required
+ by Neubot's purpose.
+'''
 
 import random
 
@@ -34,16 +34,13 @@ from neubot.bittorrent.sched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.net.stream import StreamHandler
 
-from neubot.bittorrent import estimate
 from neubot.log import LOG
 from neubot.state import STATE
 
 from neubot import utils
 
 # Constants
-from neubot.bittorrent.config import NUMPIECES
 from neubot.bittorrent.config import PIECE_LEN
-from neubot.bittorrent.config import WATCHDOG
 
 LO_THRESH = 3
 MAX_REPEAT = 7
@@ -56,7 +53,7 @@ STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
 #
 # This class implements the test finite state
 # machine and message exchange that are documented
-# in <doc/bittorrent/peer.png>.
+# by <doc/bittorrent/peer.png>.
 #
 class PeerNeubot(StreamHandler):
     def __init__(self, poller):
@@ -132,17 +129,16 @@ class PeerNeubot(StreamHandler):
             self.state = SENT_INTERESTED
             stream.send_interested()
 
-    def got_bitfield(self, b):
-        self.peer_bitfield = Bitfield(self.numpieces, b)
+    def got_bitfield(self, bitfield):
+        self.peer_bitfield = Bitfield(self.numpieces, bitfield)
         LOG.complete()
 
     # Upload
 
     #
-    # XXX As suggested by BEP0003, we should keep blocks into
-    # an application level queue and just pipe a few of them
-    # into the socket buffer, so we can abort the upload in a
-    # graceful way.
+    # BEP0003 suggests to keep blocks into an application
+    # level queue and just pipe few blocks into the socket
+    # buffer, allowing for graceful abort.
     #
     def got_request(self, stream, index, begin, length):
         if self.state != UPLOADING:
@@ -184,9 +180,10 @@ class PeerNeubot(StreamHandler):
     # Download
 
     #
-    # XXX Not so clean to panic on CHOKE however the test
-    # does not use this message and we cannot simply ignore
-    # it because it would violate the protocol.
+    # We don't implement CHOKE and we cannot ignore it, since
+    # that would violate the specification.  So we raise an
+    # exception, which has the side effect that the connection
+    # will be closed.
     #
     def got_choke(self, stream):
         raise RuntimeError("Unexpected CHOKE message")
@@ -230,7 +227,10 @@ class PeerNeubot(StreamHandler):
     # condition but the fact that TCP is more sensitive to
     # losses might be interesting as well.
     #
-    def got_piece(self, stream, index, begin, block):
+    def got_piece(self, *args):
+
+        stream = args[0]
+
         if self.state != DOWNLOADING:
             raise RuntimeError("PIECE when state != DOWNLOADING")
 
