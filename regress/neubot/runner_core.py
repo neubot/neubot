@@ -163,7 +163,7 @@ class RunQueueTest(unittest.TestCase):
         #
         NOTIFIER.publish("testdone")
 
-    def test_bittorrent_invokation_nouri(self):
+    def test_bittorrent_invokation_bad(self):
         ''' Verify run_queue() behavior when bittorrent is invoked
             and there is NOT a URI for bittorrent '''
 
