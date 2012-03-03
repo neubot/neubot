@@ -25,12 +25,6 @@
 #
 # This file is used to compile M-Lab/servers.dat.
 #
-# We cannot use the Internet address associated with a node,
-# because we need to address of the sliver, not the address
-# of the node.  Indeed, the Neubot server is listening on the
-# sliver and not on the node.  The task of getting the address
-# of a sliver is performed by another script.
-#
 
 import ConfigParser
 import GeoIP
