@@ -66,6 +66,8 @@ def main():
     ''' Wrapper for the real main '''
     try:
         serversmain()
+    except (KeyboardInterrupt, SystemExit):
+        raise
     except:
         sys.stderr.write('%s\n' % str(asyncore.compact_traceback()))
         sys.exit(1)
