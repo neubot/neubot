@@ -1,7 +1,7 @@
 # neubot/rendezvous/client.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,10 +20,14 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Rendezvous client '''
+
 #
-# This file contains the client that periodically connects
-# to the master server to get next-test and available-updates
-# information.
+# Nowadays rendezvous logic is implemented by runner_rendezvous.py
+# in terms of runner_core.py.  This file is now just a wrapper around
+# runner_rendezvous.py: it periodically runs a rendezvous and then
+# attempts to run a test.  It also notifies the user the availability
+# of updates, if that is the case.
 #
 
 import os
@@ -53,15 +57,21 @@ def _open_browser_on_windows(page):
     #
     # This is possible only on Windows, where we run in the same
     # context of the user.  I contend that opening the browser is
-    # a bit brute force, but it works.  If you have patches that
-    # allow to deploy lowoverhead notifications email me.
+    # a bit brute force, but it works.  This is now mitigated by
+    # code that ensures Neubot does not notify the user too often.
+    # If are annoyed and have time, please consider contributing
+    # a low-overhad PyWin32 notification mechanism.
     #
 
     if os.name == 'nt':
         NOTIFIER_BROWSER.notify_page(page)
 
 class ClientRendezvous(object):
+
+    ''' Rendezvous client '''
+
     def __init__(self):
+        ''' Initializer '''
         self._interval = 0
 
     def _after_rendezvous(self):
@@ -88,8 +98,8 @@ class ClientRendezvous(object):
         # we're not going to run it because we're running
         # in debug mode or tests are disabled.
         # This allows us to print to the logger the test
-        # we /would/ have choosen if we were allowed to run
-        # it.
+        # we /would/ have choosen if we were allowed to
+        # run tests.
         #
         test = RUNNER_TESTS.get_next_test()
         if not test:
@@ -100,21 +110,24 @@ class ClientRendezvous(object):
         LOG.info("* Chosen test: %s" % test)
 
         # Are we allowed to run a test?
-        if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
+        if not CONFIG["enabled"]:
             LOG.info("Tests are disabled... not running")
             self._schedule()
-        else:
+            return
 
-            # Actually run the test
-            RUNNER_CORE.run(test, self._schedule)
+        # Actually run the test
+        RUNNER_CORE.run(test, self._schedule)
 
     def _schedule(self):
+
+        ''' Schedule next rendezvous '''
 
         #
         # Typically the user does not specify the interval
         # and we use a random value around 1500 seconds.
         # The random value is extracted just once and from
         # that point on we keep using it.
+        # Suggested by Elias S.G. Carotti some time ago.
         #
         interval = CONFIG["agent.interval"]
         if not interval:
@@ -124,8 +137,7 @@ class ClientRendezvous(object):
 
         LOG.info("* Next rendezvous in %d seconds" % interval)
 
-        fn = lambda *args, **kwargs: self.run()
-        task = POLLER.sched(interval, fn)
+        task = POLLER.sched(interval, self.run)
 
         STATE.update("idle", publish=False)
         STATE.update("next_rendezvous", task.timestamp)
@@ -140,21 +152,11 @@ class ClientRendezvous(object):
 
         RUNNER_CORE.run('rendezvous', self._after_rendezvous)
 
-CONFIG.register_defaults({
-    "rendezvous.client.debug": False,
-    "rendezvous.client.version": common.VERSION,
-})
-
 def main(args):
 
-    CONFIG.register_descriptions({
-        "rendezvous.client.debug": "Do not perform any test",
-        "rendezvous.client.version": "Set rendezvous client version",
-    })
+    ''' Main function '''
 
     common.main("rendezvous.client", "Rendezvous client", args)
-
     client = ClientRendezvous()
     client.run()
-
     POLLER.loop()
