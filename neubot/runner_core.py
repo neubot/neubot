@@ -194,7 +194,7 @@ def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'fn')
+        options, arguments = getopt.getopt(args[1:], 'f:n')
     except getopt.error:
         sys.exit('Usage: %s [-n] [-f database] test [negotiate_uri]' % args[0])
     if len(arguments) != 1 and len(arguments) != 2:
