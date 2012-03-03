@@ -28,9 +28,42 @@
 
 import ConfigParser
 import asyncore
+import json
 import os
+import shlex
 import sys
 import xmlrpclib
+
+def __load_airports():
+    ''' Load and patch airports information '''
+
+    airports_new = {}
+
+    filep = open('M-Lab/airports.json', 'rb')
+    airports_orig = json.load(filep)
+    filep.close()
+
+    for airport in airports_orig:
+        code = airport['code'].lower()
+        location = airport['location'].lower()
+        airports_new[code] = location
+
+    return airports_new
+
+def __load_airports_cache():
+    ''' Load already mapped airports information '''
+
+    cache = {}
+
+    filep = open('M-Lab/airports_cache.dat', 'rb')
+    for line in filep:
+        line = shlex.split(line)
+        if not line:
+            continue
+        cache[line[0]] = ( line[1], line[2] )
+    filep.close()
+
+    return cache
 
 def serversmain():
 
@@ -56,9 +89,18 @@ def serversmain():
             proxy.GetNodes(auth_info, ids, ['hostname'])
     ]
 
+    airports = __load_airports()
+    cache = __load_airports_cache()
+
     filep = open('M-Lab/servers.dat', 'wb')
     for hostname in hostnames:
-        country, continent = '', ''
+        # E.g. mlab1.atl01.measurement-lab.org
+        vector = hostname.split('.')
+        code = vector[1][:3]
+        location = airports[code]
+        if not location in cache:
+            raise RuntimeError('Not in cache: %s' % location)
+        continent, country = cache[location]
         filep.write('%s %s %s\n' % (hostname, country, continent))
     filep.close()
 
