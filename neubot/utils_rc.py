@@ -49,9 +49,7 @@ def parse(path=None, iterable=None):
         if len(tokens) == 1 and '=' in tokens[0]:
             tokens = tokens[0].split('=', 1)
         if len(tokens) != 2:
-            sys.stderr.write('WARNING: utils_rc: %s:%d: Invalid line\n' % (
-                             path, lineno))
-            return {}
+            raise ValueError('%s:%d: Invalid line' % (path, lineno))
 
         name, value = tokens
         conf[name] = value
