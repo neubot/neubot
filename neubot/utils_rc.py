@@ -44,10 +44,15 @@ def parse(path=None, iterable=None):
         tokens = shlex.split(line, True)
         if not tokens:
             continue
+
+        # Support both key=value and 'key value' syntaxes
+        if len(tokens) == 1 and '=' in tokens[0]:
+            tokens = tokens[0].split('=', 1)
         if len(tokens) != 2:
             sys.stderr.write('WARNING: utils_rc: %s:%d: Invalid line\n' % (
                              path, lineno))
             return {}
+
         name, value = tokens
         conf[name] = value
 
