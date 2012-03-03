@@ -61,7 +61,7 @@ def install(basedir, version, dryrun=False):
     ''' Install a new version of Neubot '''
 
     # Verify version number
-    if not re.match('^([0-9]+)\.([0-9]{9})$', version):
+    if not re.match('^[0-9]+\.[0-9]{9}$', version):
         raise RuntimeError('updater_install: %s: invalid version' % version)
 
     # Make file names
