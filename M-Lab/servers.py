@@ -27,14 +27,10 @@
 #
 
 import ConfigParser
-import GeoIP
 import asyncore
 import os
-import socket
 import sys
 import xmlrpclib
-
-GEOIP_DATABASE = 'M-Lab/GeoIP.dat'
 
 def serversmain():
 
@@ -61,11 +57,8 @@ def serversmain():
     ]
 
     filep = open('M-Lab/servers.dat', 'wb')
-    geoip = GeoIP.open(GEOIP_DATABASE, GeoIP.GEOIP_STANDARD)
     for hostname in hostnames:
-        address = socket.getaddrinfo(hostname, 80, socket.AF_INET)[0][4][0]
-        country = geoip.country_code_by_addr(address)
-        continent = GeoIP.country_continents[country]
+        country, continent = '', ''
         filep.write('%s %s %s\n' % (hostname, country, continent))
     filep.close()
 
