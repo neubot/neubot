@@ -75,9 +75,8 @@ def main(args):
     LOG.use_database()
 
     if conf["agent.rendezvous"]:
-        client = ClientRendezvous(POLLER)
-        client.configure(conf)
-        client.connect_uri()
+        client = ClientRendezvous()
+        client.run()
 
     POLLER.loop()
 

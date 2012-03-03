@@ -33,20 +33,17 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.http.client import ClientHTTP
-from neubot.http.message import Message
 from neubot.net.poller import POLLER
 
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
 from neubot.notifier_browser import NOTIFIER_BROWSER
-from neubot.rendezvous import compat
 from neubot.runner_core import RUNNER_CORE
-from neubot.runner_lst import RUNNER_LST
+from neubot.runner_tests import RUNNER_TESTS
+from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
-from neubot import marshal
 from neubot import privacy
 
 def _open_browser_on_windows(page):
@@ -63,108 +60,53 @@ def _open_browser_on_windows(page):
     if os.name == 'nt':
         NOTIFIER_BROWSER.notify_page(page)
 
-class ClientRendezvous(ClientHTTP):
-    def __init__(self, poller):
-        ClientHTTP.__init__(self, poller)
+class ClientRendezvous(object):
+    def __init__(self):
         self._interval = 0
-        self._task = None
 
-    def connect_uri(self, uri=None, count=None):
-        self._task = None
+    def _after_rendezvous(self):
+        ''' After rendezvous actions '''
 
-        if not privacy.allowed_to_run():
-            _open_browser_on_windows('privacy.html')
-            privacy.complain()
+        #
+        # If rendezvous fails, RUNNER_UPDATES and RUNNER_TESTS
+        # may be empty.  In such case, this function becomes just
+        # a no operation and nothing happens.
+        #
+
+        # Inform the user when we have updates
+        new_version = RUNNER_UPDATES.get_update_version()
+        new_uri = RUNNER_UPDATES.get_update_uri()
+        if new_version and new_uri:
+            LOG.info("Version %s available at %s" % (new_version,
+                                                     new_uri))
+            STATE.update("update", {"version": new_version,
+                                    "uri": new_uri})
+            _open_browser_on_windows('update.html')
+
+        #
+        # Choose the test we would like to run even if
+        # we're not going to run it because we're running
+        # in debug mode or tests are disabled.
+        # This allows us to print to the logger the test
+        # we /would/ have choosen if we were allowed to run
+        # it.
+        #
+        test = RUNNER_TESTS.get_next_test()
+        if not test:
+            LOG.warning("No test available")
             self._schedule()
             return
 
-        if not uri:
-            uri = "http://%s:9773/rendezvous" % CONFIG["agent.master"]
+        LOG.info("* Chosen test: %s" % test)
 
-        LOG.start("* Rendezvous with %s" % uri)
-        STATE.update("rendezvous")
-
-        # We need to make just one connection
-        ClientHTTP.connect_uri(self, uri, 1)
-
-    def connection_failed(self, connector, exception):
-        STATE.update("rendezvous", {"status": "failed"})
-        self._schedule()
-
-    def connection_lost(self, stream):
-        if RUNNER_CORE.test_is_running():
-            LOG.debug("RendezVous: don't _schedule(): test in progress")
-            return
-        if self._task:
-            LOG.debug("RendezVous: don't _schedule(): we already have a task")
-            return
-        self._schedule()
-
-    def connection_ready(self, stream):
-        LOG.progress()
-
-        m = compat.RendezvousRequest()
-        m.accept.append("speedtest")
-        m.accept.append("bittorrent")
-        m.version = CONFIG["rendezvous.client.version"]
-        m.privacy_informed = CONFIG['privacy.informed']
-        m.privacy_can_collect = CONFIG['privacy.can_collect']
-        m.privacy_can_share = CONFIG['privacy.can_publish']             # XXX
-
-        request = Message()
-        request.compose(method="GET", pathquery="/rendezvous",
-          mimetype="text/xml", keepalive=False, host=self.host_header,
-          body=marshal.marshal_object(m, "text/xml"))
-
-        stream.send_request(request)
-
-    def got_response(self, stream, request, response):
-        if response.code != "200":
-            LOG.complete("bad response")
+        # Are we allowed to run a test?
+        if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
+            LOG.info("Tests are disabled... not running")
             self._schedule()
         else:
-            LOG.complete()
-            s = response.body.read()
-            try:
-                m1 = marshal.unmarshal_object(s, "application/json",
-                  compat.RendezvousResponse)
-            except ValueError:
-                LOG.exception()
-                self._schedule()
-            else:
-                if "version" in m1.update and "uri" in m1.update:
-                    ver, uri = m1.update["version"], m1.update["uri"]
-                    LOG.info("Version %s available at %s" % (ver, uri))
-                    STATE.update("update", {"version": ver, "uri": uri})
-                    _open_browser_on_windows('update.html')
 
-                # Update tests known by the runner
-                RUNNER_LST.update(m1.available)
-
-                #
-                # Choose the test we would like to run even if
-                # we're not going to run it because we're running
-                # in debug mode or tests are disabled.
-                # This allows us to print to the logger the test
-                # we /would/ have choosen if we were allowed to run
-                # it.
-                #
-                test = RUNNER_LST.get_next_test()
-                if not test:
-                    LOG.warning("No test available")
-                    self._schedule()
-                    return
-
-                LOG.info("* Chosen test: %s" % test)
-
-                # Are we allowed to run a test?
-                if not CONFIG["enabled"] or CONFIG["rendezvous.client.debug"]:
-                    LOG.info("Tests are disabled... not running")
-                    self._schedule()
-                else:
-
-                    # Actually run the test
-                    RUNNER_CORE.run(test, self._schedule)
+            # Actually run the test
+            RUNNER_CORE.run(test, self._schedule)
 
     def _schedule(self):
 
@@ -182,11 +124,21 @@ class ClientRendezvous(ClientHTTP):
 
         LOG.info("* Next rendezvous in %d seconds" % interval)
 
-        fn = lambda *args, **kwargs: self.connect_uri()
-        self._task = POLLER.sched(interval, fn)
+        fn = lambda *args, **kwargs: self.run()
+        task = POLLER.sched(interval, fn)
 
         STATE.update("idle", publish=False)
-        STATE.update("next_rendezvous", self._task.timestamp)
+        STATE.update("next_rendezvous", task.timestamp)
+
+    def run(self):
+        ''' Periodically run rendezvous '''
+
+        if not privacy.allowed_to_run():
+            _open_browser_on_windows('privacy.html')
+            # Except from opening the browser, privacy actions are
+            # now performed by RUNNER_CORE
+
+        RUNNER_CORE.run('rendezvous', self._after_rendezvous)
 
 CONFIG.register_defaults({
     "rendezvous.client.debug": False,
@@ -201,10 +153,8 @@ def main(args):
     })
 
     common.main("rendezvous.client", "Rendezvous client", args)
-    conf = CONFIG.copy()
 
-    client = ClientRendezvous(POLLER)
-    client.configure(conf)
-    client.connect_uri()
+    client = ClientRendezvous()
+    client.run()
 
     POLLER.loop()

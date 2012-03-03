@@ -20,7 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Regression test for runner_lst module '''
+''' Regression test for runner_tests module '''
+
+# Formerly runner_lst.py
 
 import unittest
 import sys
@@ -28,10 +30,10 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.runner_lst import RunnerLst
+from neubot.runner_tests import RunnerTests
 
 class RegressionTest(unittest.TestCase):
-    ''' Regression test for runner_lst module '''
+    ''' Regression test for runner_tests module '''
 
     #
     # We have too many public methods and we know that
@@ -41,7 +43,7 @@ class RegressionTest(unittest.TestCase):
     def test_when_empty(self):
         ''' Check behavior is correct when empty '''
         # It should return None in both cases
-        lst = RunnerLst()
+        lst = RunnerTests()
         self.assertEqual(lst.test_to_negotiate_uri('foo'), None)
         self.assertEqual(lst.get_next_test(), None)
         self.assertEqual(lst.get_test_names(), [])
@@ -52,7 +54,7 @@ class RegressionTest(unittest.TestCase):
         # It should always return the first URI: it suck but that is
         # how it works as of now.
         #
-        lst = RunnerLst()
+        lst = RunnerTests()
         lst.update({'foo': ['a', 'b', 'c']})
         self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
         self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
@@ -65,7 +67,7 @@ class RegressionTest(unittest.TestCase):
         # test name, I know that seems silly but we need to ensure
         # it works OK because that is a special case in the code.
         #
-        lst = RunnerLst()
+        lst = RunnerTests()
         lst.update({'foo': ['a', 'b', 'c']})
         self.assertEqual(lst.get_next_test(), 'foo')
         self.assertEqual(lst.get_next_test(), 'foo')
@@ -78,14 +80,14 @@ class RegressionTest(unittest.TestCase):
         # same test two times in a row.  Not so clever, but that's
         # the way the current code is working.
         #
-        lst = RunnerLst()
+        lst = RunnerTests()
         lst.update({'foo': ['a', 'b', 'c'], 'bar': ['a', 'b', 'c']})
         nxt = lst.get_next_test()
         self.assertNotEqual(lst.get_next_test(), nxt)
 
     def test_get_test_names(self):
         ''' Check get_test_names() behavior '''
-        lst = RunnerLst()
+        lst = RunnerTests()
         self.assertEqual(lst.get_test_names(), [])
         lst.update({'foo': ['a']})
         self.assertEqual(lst.get_test_names(), ['foo'])
