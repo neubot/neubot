@@ -80,11 +80,10 @@ def realmain():
             continue
         continent, country = line.split()[:2]
         #
-        # XXX Simplified policy, which uses just one server per
-        # country/continent for consistency.
-        # I can do it better, e.g. use DONAR DNS starting from next
-        # version of Neubot and/or exploit servers' latitude and
-        # longitude.
+        # Simplified policy, which uses just one server per continent
+        # to avoid jumping from close to distant servers, which may be
+        # surprising.
+        # The plan is to migrate to DONAR DNS before Neubot 0.5.0.
         #
         if country in nodes_by_country:
             redir_table[country] = set(nodes_by_country[country])

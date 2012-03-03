@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -25,22 +25,45 @@
 #
 # This file is used to compile M-Lab/servers.dat.
 #
-# We cannot use the Internet address associated with a node,
-# because we need to address of the sliver, not the address
-# of the node.  Indeed, the Neubot server is listening on the
-# sliver and not on the node.  The task of getting the address
-# of a sliver is performed by another script.
-#
 
 import ConfigParser
-import GeoIP
 import asyncore
+import json
 import os
-import socket
+import shlex
 import sys
 import xmlrpclib
 
-GEOIP_DATABASE = 'M-Lab/GeoIP.dat'
+def __load_airports():
+    ''' Load and patch airports information '''
+
+    airports_new = {}
+
+    filep = open('M-Lab/airports.json', 'rb')
+    airports_orig = json.load(filep)
+    filep.close()
+
+    for airport in airports_orig:
+        code = airport['code'].lower()
+        location = airport['location'].lower()
+        airports_new[code] = location
+
+    return airports_new
+
+def __load_airports_cache():
+    ''' Load already mapped airports information '''
+
+    cache = {}
+
+    filep = open('M-Lab/airports_cache.dat', 'rb')
+    for line in filep:
+        line = shlex.split(line)
+        if not line:
+            continue
+        cache[line[0]] = ( line[1], line[2] )
+    filep.close()
+
+    return cache
 
 def serversmain():
 
@@ -66,12 +89,18 @@ def serversmain():
             proxy.GetNodes(auth_info, ids, ['hostname'])
     ]
 
+    airports = __load_airports()
+    cache = __load_airports_cache()
+
     filep = open('M-Lab/servers.dat', 'wb')
-    geoip = GeoIP.open(GEOIP_DATABASE, GeoIP.GEOIP_STANDARD)
     for hostname in hostnames:
-        address = socket.getaddrinfo(hostname, 80, socket.AF_INET)[0][4][0]
-        country = geoip.country_code_by_addr(address)
-        continent = GeoIP.country_continents[country]
+        # E.g. mlab1.atl01.measurement-lab.org
+        vector = hostname.split('.')
+        code = vector[1][:3]
+        location = airports[code]
+        if not location in cache:
+            raise RuntimeError('Not in cache: %s' % location)
+        continent, country = cache[location]
         filep.write('%s %s %s\n' % (hostname, country, continent))
     filep.close()
 
@@ -79,6 +108,8 @@ def main():
     ''' Wrapper for the real main '''
     try:
         serversmain()
+    except (KeyboardInterrupt, SystemExit):
+        raise
     except:
         sys.stderr.write('%s\n' % str(asyncore.compact_traceback()))
         sys.exit(1)
