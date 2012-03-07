@@ -223,7 +223,13 @@ class MigrateFrom42To43(object):
             value = float(value)
         except ValueError:
             return True
-        return value >= 100.0
+        #
+        # I've seen very few cases where the connect_time or
+        # latency is very big.  Still, in bytes this is 4 KiB/s,
+        # which is low and should still allow to differentiate
+        # this from speeds for 99.99% rows out there.
+        #
+        return value >= 4096.0
 
     @staticmethod
     def _reordered_speed(value):
@@ -389,8 +395,22 @@ class MigrateFrom42To43(object):
 
             # Does it looks good now?
             if not self._looks_good(new_row, has_latency):
-                nonfixed = nonfixed + 1
-                continue
+
+                #
+                # I've seen this in the wild, in the period between
+                # Neubot 0.4.5 and 0.4.6-rc2:
+                #
+                if new_row['privacy_can_publish'] is None:
+                    new_row['privacy_can_publish'] = 0
+
+                    if not self._looks_good(new_row, has_latency):
+                        # This time really give up
+                        nonfixed = nonfixed + 1
+                        continue
+
+                else:
+                    nonfixed = nonfixed + 1
+                    continue
 
             operations.extend(new_operations)
             fixed = fixed + 1
