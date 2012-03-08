@@ -6,91 +6,58 @@
 * `1. Domande generiche`_
 
     * `1.1. Che cos'è Neubot?`_
-
     * `1.2. Che cos'è Measurement Lab?`_
-
     * `1.3. Che cos'è la neutralità della rete?`_
-
     * `1.4. Perchè "network neutrality bot"?`_
-
     * `1.5. Perchè è cruciale monitorare la neutralità della rete?`_
-
     * `1.6. Perchè potrei voler installare Neubot?`_
-
     * `1.7. Quali sono i test implementati dall'ultima versione?`_
-
     * `1.8. Qual'è la roadmap per arrivare a Neubot/1.0?`_
-
     * `1.9. Quando è prevista la prossima release di Neubot?`_
-
     * `1.10. Qual'è la vostra politica di versioning?`_
-
     * `1.11. Qual'è la versione migliore di Neubot?`_
-
     * `1.12. Per quanto tempo devo tenere installato Neubot?`_
-
     * `1.13. Quanto testate Neubot prima di ogni release?`_
-
     * `1.14. Chi sviluppa Neubot?`_
-
     * `1.15. Con quale licenza viene distribuito Neubot?`_
-
     * `1.16. Quanto costa Neubot?`_
 
 * `2. Installare Neubot`_
 
     * `2.1. Su quali sistemi funziona Neubot?`_
-
     * `2.2. Come installo Neubot?`_
 
 * `3. Usare Neubot`_
 
     * `3.1. Neubot è installato. Cosa devo fare adesso?`_
-
     * `3.2. Di quante risorse ha bisogno Neubot?`_
-
     * `3.3. Come posso riportare bugs, fare domande, dare suggerimenti?`_
-
     * `3.4. Che problemi ci sono se uso mobile broadband, 3G modem, Internet key?`_
-
     * `3.5. Devo modificare la configurazione del mio router?`_
-
     * `3.6. Come leggo i log di Neubot?`_
-
     * `3.7. Devo ruotare periodicamente i file log?`_
-
     * `3.8. Devo ruotare periodicamente il database?`_
 
 * `4. Domande tecniche`_
 
     * `4.1. Come funziona Neubot?`_
-
     * `4.2. Che cosa misura il test speedtest?`_
-
     * `4.3. In che modo Neubot modifica il registro di sistema di Windows?`_
-
     * `4.4. Qual'è il percorso del database di Neubot?`_
-
     * `4.5. Come posso scaricare i contenuti del database?`_
-
     * `4.6. Che cosa misura il test bittorrent?`_
-
     * `4.7. Che significa misurare la banda disponibile?`_
-
     * `4.8. È possibile confrontare i risultati dei test speedtest e bittorrent?`_
 
 * `5. Domande sulla privacy`_
 
     * `5.1. Quali dati personali salva Neubot?`_
-
     * `5.2. Pubblicherete il mio indirizzo IP?`_
 
 * `6. Domande sui dati`_
 
     * `6.1. Dove sono pubblicati i dati?`_
-
     * `6.2. Con quale licenza sono rilasciati i dati?`_
-
     * `6.3. Qual e' il formato dei dati?`_
 
 * `7. Web user interface`_
