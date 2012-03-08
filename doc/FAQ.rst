@@ -138,16 +138,15 @@ preferable to continue with *laissez-faire* or whether Internet
 neutrality should be safeguarded by the law. The topic can be tackled
 using a variety of disciplinary perspectives, such as the ones of
 competition law and innovation processes. To know more about neutrality,
-the related debate and the various positions, refer to Wikipedia's
-`article <http://en.wikipedia.org/wiki/Network_neutrality>`_.
+the related debate and the various positions, refer to `Wikipedia's
+article`_.
 
 1.4. Why *"the network neutrality bot"*?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The program is called *network neutrality bot* because it is a
-`"software application that runs automated tasks over the
-Internet" <http://en.wikipedia.org/wiki/Internet_bot>`_ in order to
-quantify *network neutrality*.
+`software application that runs automated tasks over the Internet`_
+in order to quantify *network neutrality*.
 
 1.5. Why is crucial to monitor network neutrality?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -844,6 +843,10 @@ using the *settings* page.  Currently the value can be one of:
 .. _goodput: http://en.wikipedia.org/wiki/Goodput
 .. _`BitTorrent peer-wire protocol`:
    http://www.bittorrent.org/beps/bep_0003.html
+
+.. _`software application that runs automated tasks over the Internet`:
+   http://en.wikipedia.org/wiki/Internet_bot
+.. _`Wikipedia's article`: http://en.wikipedia.org/wiki/Network_neutrality
 
 .. _roadmap: https://github.com/neubot/neubot/wiki/roadmap
 .. _todo: https://github.com/neubot/neubot/wiki/todo
