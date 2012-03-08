@@ -409,6 +409,24 @@ class MigrateFrom42To43(object):
                         nonfixed = nonfixed + 1
                         continue
 
+                #
+                # Very old Neubot versions have either None or ''
+                # unique identifier, try to cope with those as well,
+                # but be careful to keep original values.
+                # NB: the intersection between this new case and
+                # the above one SHOULD be empty.
+                #
+                elif new_row['uuid'] in (None, ''):
+                    saved_uuid = new_row['uuid']
+                    new_row['uuid'] = '71d22636-a584-441e-99ea-32c11ce073ef'
+
+                    if not self._looks_good(new_row, has_latency):
+                        # This time really give up
+                        nonfixed = nonfixed + 1
+                        continue
+
+                    new_row['uuid'] = saved_uuid
+
                 else:
                     nonfixed = nonfixed + 1
                     continue
