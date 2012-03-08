@@ -380,6 +380,8 @@ class MigrateFrom42To43(object):
                             value = float(value)
                         else:
                             value = str(value)
+                except (KeyboardInterrupt, SystemExit):
+                    raise
                 except:
                     nonfixed = nonfixed + 1
                     continue
@@ -455,6 +457,8 @@ class MigrateFrom42To43(object):
             cursor = connection.cursor()
             for operation in operations:
                 cursor.execute(operation[0], operation[1])
+        except (KeyboardInterrupt, SystemExit):
+            raise
         except:
             exc = asyncore.compact_traceback()
             logging.error('migrate2: cannot recover from reordering column '
