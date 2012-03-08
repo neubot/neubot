@@ -114,8 +114,6 @@ other words, a network is neutral when routers_ forward packets using
 a *first come, first served* strategy. And is not neutral when certain
 packets receive a preferential treatment.
 
-.. _routers: http://en.wikipedia.org/wiki/Router_(computing)
-
 The ancient Internet was strictly neutral, because it was designed
 to minimize the interaction between applications and the network
 (see RFC3439_). This design choice allowed very fast packet switching
@@ -123,8 +121,6 @@ and enabled strong openness towards unforeseen uses of the Internet
 Protocol. The result has been an extraordinary outburst of innovation,
 and a level-playing field for citizens, associations and companies
 worldwide.
-
-.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 
 The modern Internet is not always neutral due to technologies that
 allow for fine-grained discrimination of traffic. When they enter into
@@ -581,13 +577,10 @@ suffer if, for example:
 #. your roommate is downloading a large file;
 #. you have a bad wireless connection with high packet loss ratio;
 #. there is congestion outside your provider network;
-#. you don't live
-   `near <http://en.wikipedia.org/wiki/TCP_tuning#Window_size>`_ our
-   server;
+#. you don't live `near our server`_;
 #. our server is overloaded.
 
-I.e. you must take Neubot results `cum grano
-salis <http://en.wikipedia.org/wiki/Grain_of_salt>`_.
+I.e. you must take Neubot results `cum grano salis`_.
 
 4.8. Is it possible to compare speedtest and bittorrent results?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -843,6 +836,8 @@ using the *settings* page.  Currently the value can be one of:
 .. _`published on the web`: http://www.neubot.org/data
 .. _M-Lab: http://www.measurementlab.net/about
 
+.. _routers: http://en.wikipedia.org/wiki/Router_(computing)
+.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 .. _speedtest.net: http://www.speedtest.net
 
 .. _`round trip time`: http://en.wikipedia.org/wiki/Round-trip_delay_time
@@ -882,3 +877,6 @@ using the *settings* page.  Currently the value can be one of:
 
 .. _`Politecnico di Torino`: http://www.dauin.polito.it/
 .. _`open source`: https://github.com/neubot/neubot/blob/master/COPYING
+
+.. _`near our server`: http://en.wikipedia.org/wiki/TCP_tuning#Window_size
+.. _`cum grano salis`: http://en.wikipedia.org/wiki/Grain_of_salt
