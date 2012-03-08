@@ -85,11 +85,11 @@ Internet & Society`_ at `Politecnico di Torino`_. The project is based on
 a lightweight `open source`_ program that interested users can download
 and install on their computers. The program runs in the background and
 periodically performs transmission tests with test servers, hosted by
-the distributed Measurement Lab platform, and (in future) with other
+the distributed `Measurement Lab`_ platform, and (in future) with other
 instances of the program itself.  Transmission tests probe the Internet
 using various application level protocols and test results are saved both
 locally and on the test servers.  The results dataset contains samples
-from various Provides and is published on the web, allowing anyone to
+from various Provides and is `published on the web`_, allowing anyone to
 analyze the data for research purposes.
 
 1.2. What is Measurement Lab?
@@ -839,6 +839,8 @@ using the *settings* page.  Currently the value can be one of:
 ..
 
 .. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
+.. _`Measurement Lab`: http://www.measurementlab.net/about
+.. _`published on the web`: http://www.neubot.org/data
 .. _M-Lab: http://www.measurementlab.net/about
 
 .. _speedtest.net: http://www.speedtest.net

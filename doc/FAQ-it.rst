@@ -118,12 +118,12 @@ NEXA su Internet & Società`_ del `Politecnico di Torino`_. Il progetto si
 basa su un programma leggero e `open source`_ che gli utenti interessati
 possono scaricare e installare sul proprio computer. Il programma funziona
 in background ed effettua periodicamente prove di trasmissione con alcuni
-server di prova, ospitati dalla piattaforma distribuita Measurement Lab,
+server di prova, ospitati dalla piattaforma distribuita `Measurement Lab`_,
 e (in futuro) con altre istanze del programma stesso.  Queste prove di
 trasmissione testano la Rete utilizzando diversi protocolli di livello
 applicativo e i risultati dei test sono salvati sia localmente sia sui
 test server. Il set di dati raccolti contiene campioni provenienti da
-diversi Providers e viene pubblicato sul web, consentendo a chiunque di
+diversi Providers e viene `pubblicato sul web`_, consentendo a chiunque di
 analizzare i dati per finalità di ricerca.
 
 1.2. Che cos'è Measurement Lab?
@@ -927,6 +927,8 @@ opzione può assumere uno dei seguenti valori:
 ..
 
 .. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
+.. _`Measurement Lab`: http://www.measurementlab.net/about
+.. _`pubblicato sul web`: http://www.neubot.org/data
 .. _M-Lab: http://www.measurementlab.net/about
 
 .. _speedtest.net: http://www.speedtest.net
