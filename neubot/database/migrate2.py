@@ -224,12 +224,13 @@ class MigrateFrom42To43(object):
         except ValueError:
             return True
         #
-        # I've seen very few cases where the connect_time or
-        # latency is very big.  Still, in bytes this is 4 KiB/s,
-        # which is low and should still allow to differentiate
-        # this from speeds for 99.99% rows out there.
+        # This is an upper bound of all connections time I was
+        # able to observe in Neubot datasets.  I hope it is big
+        # enough to catch all connection times, but still able
+        # to distinguish between a connection time and reordered
+        # speed.
         #
-        return value >= 4096.0
+        return value >= 40000
 
     @staticmethod
     def _reordered_speed(value):
