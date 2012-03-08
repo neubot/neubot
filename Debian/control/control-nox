@@ -12,12 +12,13 @@ Priority: optional
 Description: Network neutrality bot (-nox flavour)
  Neubot is a research project on network neutrality of the NEXA
  Center for Internet & Society at Politecnico di Torino. The project
- is based on a lightweight open-source program that interested users
+ is based on a lightweight open source program that interested users
  can download and install on their computers. The program runs in
- background and periodically performs transmission tests with some
- test servers and with other instances of the program itself. These
- transmission tests probe the Internet using various application
- level protocols. The program saves tests results locally and uploads
- them on the project servers. The collected dataset contains samples
- from various Providers and allows the Neubot project to monitor
- network neutrality.
+ the background and periodically performs transmission tests with
+ test servers, hosted by the distributed Measurement Lab platform,
+ and (in future) with other instances of the program itself.
+ Transmission tests probe the Internet using various application
+ level protocols and test results are saved both locally and on the
+ test servers. The results dataset contains samples from various
+ Provides and is published on the web, allowing anyone to analyze
+ the data for research purposes.
