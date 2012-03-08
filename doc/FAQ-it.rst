@@ -6,91 +6,58 @@
 * `1. Domande generiche`_
 
     * `1.1. Che cos'è Neubot?`_
-
     * `1.2. Che cos'è Measurement Lab?`_
-
     * `1.3. Che cos'è la neutralità della rete?`_
-
     * `1.4. Perchè "network neutrality bot"?`_
-
     * `1.5. Perchè è cruciale monitorare la neutralità della rete?`_
-
     * `1.6. Perchè potrei voler installare Neubot?`_
-
     * `1.7. Quali sono i test implementati dall'ultima versione?`_
-
     * `1.8. Qual'è la roadmap per arrivare a Neubot/1.0?`_
-
     * `1.9. Quando è prevista la prossima release di Neubot?`_
-
     * `1.10. Qual'è la vostra politica di versioning?`_
-
     * `1.11. Qual'è la versione migliore di Neubot?`_
-
     * `1.12. Per quanto tempo devo tenere installato Neubot?`_
-
     * `1.13. Quanto testate Neubot prima di ogni release?`_
-
     * `1.14. Chi sviluppa Neubot?`_
-
     * `1.15. Con quale licenza viene distribuito Neubot?`_
-
     * `1.16. Quanto costa Neubot?`_
 
 * `2. Installare Neubot`_
 
     * `2.1. Su quali sistemi funziona Neubot?`_
-
     * `2.2. Come installo Neubot?`_
 
 * `3. Usare Neubot`_
 
     * `3.1. Neubot è installato. Cosa devo fare adesso?`_
-
     * `3.2. Di quante risorse ha bisogno Neubot?`_
-
     * `3.3. Come posso riportare bugs, fare domande, dare suggerimenti?`_
-
     * `3.4. Che problemi ci sono se uso mobile broadband, 3G modem, Internet key?`_
-
     * `3.5. Devo modificare la configurazione del mio router?`_
-
     * `3.6. Come leggo i log di Neubot?`_
-
     * `3.7. Devo ruotare periodicamente i file log?`_
-
     * `3.8. Devo ruotare periodicamente il database?`_
 
 * `4. Domande tecniche`_
 
     * `4.1. Come funziona Neubot?`_
-
     * `4.2. Che cosa misura il test speedtest?`_
-
     * `4.3. In che modo Neubot modifica il registro di sistema di Windows?`_
-
     * `4.4. Qual'è il percorso del database di Neubot?`_
-
     * `4.5. Come posso scaricare i contenuti del database?`_
-
     * `4.6. Che cosa misura il test bittorrent?`_
-
     * `4.7. Che significa misurare la banda disponibile?`_
-
     * `4.8. È possibile confrontare i risultati dei test speedtest e bittorrent?`_
 
 * `5. Domande sulla privacy`_
 
     * `5.1. Quali dati personali salva Neubot?`_
-
     * `5.2. Pubblicherete il mio indirizzo IP?`_
 
 * `6. Domande sui dati`_
 
     * `6.1. Dove sono pubblicati i dati?`_
-
     * `6.2. Con quale licenza sono rilasciati i dati?`_
-
     * `6.3. Qual e' il formato dei dati?`_
 
 * `7. Web user interface`_
@@ -118,12 +85,12 @@ NEXA su Internet & Società`_ del `Politecnico di Torino`_. Il progetto si
 basa su un programma leggero e `open source`_ che gli utenti interessati
 possono scaricare e installare sul proprio computer. Il programma funziona
 in background ed effettua periodicamente prove di trasmissione con alcuni
-server di prova, ospitati dalla piattaforma distribuita Measurement Lab,
+server di prova, ospitati dalla piattaforma distribuita `Measurement Lab`_,
 e (in futuro) con altre istanze del programma stesso.  Queste prove di
 trasmissione testano la Rete utilizzando diversi protocolli di livello
 applicativo e i risultati dei test sono salvati sia localmente sia sui
 test server. Il set di dati raccolti contiene campioni provenienti da
-diversi Providers e viene pubblicato sul web, consentendo a chiunque di
+diversi Providers e viene `pubblicato sul web`_, consentendo a chiunque di
 analizzare i dati per finalità di ricerca.
 
 1.2. Che cos'è Measurement Lab?
@@ -150,8 +117,6 @@ quando i router_ instradano i pacchetti usando una strategia *first
 come, first served*. E non è neutrale quando certi pacchetti ricevono
 un trattamento privilegiato.
 
-.. _router: http://it.wikipedia.org/wiki/Router
-
 La Internet delle origini era strettamente neutrale, essendo stata
 progettata per minimizzare le interazioni tra le applicazioni e la rete
 (vedi RFC3439_). Questa scelta progettuale rese possibile l'instradamento
@@ -160,8 +125,6 @@ dove chiunque poteva innovare senza chiedere il permesso. Di conseguenza
 Internet è diventato il volano per l'innovazione che tutti conosciamo. E
 il luogo dove cittadini, associazioni e imprese di tutto il mondo si
 possono confrontare a parità di condizioni.
-
-.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 
 Oggigiorno, Internet non è sempre neutrale per via di tecnologie che
 permettono di discriminare in modo fine i flussi di traffico. Quando i
@@ -183,16 +146,12 @@ neutralità della rete debba essere garantita per legge. Per saperne di
 piu' ti consigliamo di fare riferimento alla pagina Wikipedia sulla
 `neutralità della rete`_.
 
-.. _`neutralità della rete`:
-   http://it.wikipedia.org/wiki/Neutralità_della_Rete
-
 1.4. Perchè "network neutrality bot"?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il programma si chiama *network neutrality bot* perché è un `"software
-che esegue operazioni automatiche su
-Internet" <http://en.wikipedia.org/wiki/Internet_bot>`_, al fine di
-quantificare la *neutralità della rete*.
+Il programma si chiama *network neutrality bot* perché è un `software
+che esegue operazioni automatiche su Internet`_, al fine di quantificare
+la *neutralità della rete*.
 
 1.5. Perchè è cruciale monitorare la neutralità della rete?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -653,9 +612,7 @@ seguenti condizioni sfavorevoli:
 #. il tuo coinquilino sta scaricando un grosso file;
 #. hai una cattiva connessione wireless che perde molti pacchetti;
 #. c'è congestione nella rete del tuo provider;
-#. non vivi
-   `vicino <http://en.wikipedia.org/wiki/TCP_tuning#Window_size>`_ ai
-   nostri server;
+#. non vivi `vicino ai nostri server`_;
 #. il nostro server è sovraccarico.
 
 In altre parole, i risultati di Neubot vanno presi cum grano salis.
@@ -927,8 +884,20 @@ opzione può assumere uno dei seguenti valori:
 ..
 
 .. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
+.. _`Measurement Lab`: http://www.measurementlab.net/about
+.. _`pubblicato sul web`: http://www.neubot.org/data
 .. _M-Lab: http://www.measurementlab.net/about
 
+.. _`neutralità della rete`:
+   http://it.wikipedia.org/wiki/Neutralità_della_Rete
+.. _`software che esegue operazioni automatiche su Internet`:
+   http://en.wikipedia.org/wiki/Internet_bot
+
+.. _`vicino ai nostri server`:
+   http://en.wikipedia.org/wiki/TCP_tuning#Window_size
+
+.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
+.. _router: http://it.wikipedia.org/wiki/Router
 .. _speedtest.net: http://www.speedtest.net
 
 .. _`round trip time`: http://en.wikipedia.org/wiki/Round-trip_delay_time

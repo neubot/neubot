@@ -85,11 +85,11 @@ Internet & Society`_ at `Politecnico di Torino`_. The project is based on
 a lightweight `open source`_ program that interested users can download
 and install on their computers. The program runs in the background and
 periodically performs transmission tests with test servers, hosted by
-the distributed Measurement Lab platform, and (in future) with other
+the distributed `Measurement Lab`_ platform, and (in future) with other
 instances of the program itself.  Transmission tests probe the Internet
 using various application level protocols and test results are saved both
 locally and on the test servers.  The results dataset contains samples
-from various Provides and is published on the web, allowing anyone to
+from various Provides and is `published on the web`_, allowing anyone to
 analyze the data for research purposes.
 
 1.2. What is Measurement Lab?
@@ -114,8 +114,6 @@ other words, a network is neutral when routers_ forward packets using
 a *first come, first served* strategy. And is not neutral when certain
 packets receive a preferential treatment.
 
-.. _routers: http://en.wikipedia.org/wiki/Router_(computing)
-
 The ancient Internet was strictly neutral, because it was designed
 to minimize the interaction between applications and the network
 (see RFC3439_). This design choice allowed very fast packet switching
@@ -123,8 +121,6 @@ and enabled strong openness towards unforeseen uses of the Internet
 Protocol. The result has been an extraordinary outburst of innovation,
 and a level-playing field for citizens, associations and companies
 worldwide.
-
-.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 
 The modern Internet is not always neutral due to technologies that
 allow for fine-grained discrimination of traffic. When they enter into
@@ -142,16 +138,15 @@ preferable to continue with *laissez-faire* or whether Internet
 neutrality should be safeguarded by the law. The topic can be tackled
 using a variety of disciplinary perspectives, such as the ones of
 competition law and innovation processes. To know more about neutrality,
-the related debate and the various positions, refer to Wikipedia's
-`article <http://en.wikipedia.org/wiki/Network_neutrality>`_.
+the related debate and the various positions, refer to `Wikipedia's
+article`_.
 
 1.4. Why *"the network neutrality bot"*?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The program is called *network neutrality bot* because it is a
-`"software application that runs automated tasks over the
-Internet" <http://en.wikipedia.org/wiki/Internet_bot>`_ in order to
-quantify *network neutrality*.
+`software application that runs automated tasks over the Internet`_
+in order to quantify *network neutrality*.
 
 1.5. Why is crucial to monitor network neutrality?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -581,13 +576,10 @@ suffer if, for example:
 #. your roommate is downloading a large file;
 #. you have a bad wireless connection with high packet loss ratio;
 #. there is congestion outside your provider network;
-#. you don't live
-   `near <http://en.wikipedia.org/wiki/TCP_tuning#Window_size>`_ our
-   server;
+#. you don't live `near our server`_;
 #. our server is overloaded.
 
-I.e. you must take Neubot results `cum grano
-salis <http://en.wikipedia.org/wiki/Grain_of_salt>`_.
+I.e. you must take Neubot results `cum grano salis`_.
 
 4.8. Is it possible to compare speedtest and bittorrent results?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -839,14 +831,22 @@ using the *settings* page.  Currently the value can be one of:
 ..
 
 .. _`privacy policy`: https://github.com/neubot/neubot/blob/master/PRIVACY
+.. _`Measurement Lab`: http://www.measurementlab.net/about
+.. _`published on the web`: http://www.neubot.org/data
 .. _M-Lab: http://www.measurementlab.net/about
 
+.. _routers: http://en.wikipedia.org/wiki/Router_(computing)
+.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 .. _speedtest.net: http://www.speedtest.net
 
 .. _`round trip time`: http://en.wikipedia.org/wiki/Round-trip_delay_time
 .. _goodput: http://en.wikipedia.org/wiki/Goodput
 .. _`BitTorrent peer-wire protocol`:
    http://www.bittorrent.org/beps/bep_0003.html
+
+.. _`software application that runs automated tasks over the Internet`:
+   http://en.wikipedia.org/wiki/Internet_bot
+.. _`Wikipedia's article`: http://en.wikipedia.org/wiki/Network_neutrality
 
 .. _roadmap: https://github.com/neubot/neubot/wiki/roadmap
 .. _todo: https://github.com/neubot/neubot/wiki/todo
@@ -880,3 +880,6 @@ using the *settings* page.  Currently the value can be one of:
 
 .. _`Politecnico di Torino`: http://www.dauin.polito.it/
 .. _`open source`: https://github.com/neubot/neubot/blob/master/COPYING
+
+.. _`near our server`: http://en.wikipedia.org/wiki/TCP_tuning#Window_size
+.. _`cum grano salis`: http://en.wikipedia.org/wiki/Grain_of_salt
