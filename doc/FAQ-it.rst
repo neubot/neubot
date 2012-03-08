@@ -117,8 +117,6 @@ quando i router_ instradano i pacchetti usando una strategia *first
 come, first served*. E non è neutrale quando certi pacchetti ricevono
 un trattamento privilegiato.
 
-.. _router: http://it.wikipedia.org/wiki/Router
-
 La Internet delle origini era strettamente neutrale, essendo stata
 progettata per minimizzare le interazioni tra le applicazioni e la rete
 (vedi RFC3439_). Questa scelta progettuale rese possibile l'instradamento
@@ -127,8 +125,6 @@ dove chiunque poteva innovare senza chiedere il permesso. Di conseguenza
 Internet è diventato il volano per l'innovazione che tutti conosciamo. E
 il luogo dove cittadini, associazioni e imprese di tutto il mondo si
 possono confrontare a parità di condizioni.
-
-.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
 
 Oggigiorno, Internet non è sempre neutrale per via di tecnologie che
 permettono di discriminare in modo fine i flussi di traffico. Quando i
@@ -150,16 +146,12 @@ neutralità della rete debba essere garantita per legge. Per saperne di
 piu' ti consigliamo di fare riferimento alla pagina Wikipedia sulla
 `neutralità della rete`_.
 
-.. _`neutralità della rete`:
-   http://it.wikipedia.org/wiki/Neutralità_della_Rete
-
 1.4. Perchè "network neutrality bot"?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il programma si chiama *network neutrality bot* perché è un `"software
-che esegue operazioni automatiche su
-Internet" <http://en.wikipedia.org/wiki/Internet_bot>`_, al fine di
-quantificare la *neutralità della rete*.
+Il programma si chiama *network neutrality bot* perché è un `software
+che esegue operazioni automatiche su Internet`_, al fine di quantificare
+la *neutralità della rete*.
 
 1.5. Perchè è cruciale monitorare la neutralità della rete?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -620,9 +612,7 @@ seguenti condizioni sfavorevoli:
 #. il tuo coinquilino sta scaricando un grosso file;
 #. hai una cattiva connessione wireless che perde molti pacchetti;
 #. c'è congestione nella rete del tuo provider;
-#. non vivi
-   `vicino <http://en.wikipedia.org/wiki/TCP_tuning#Window_size>`_ ai
-   nostri server;
+#. non vivi `vicino ai nostri server`_;
 #. il nostro server è sovraccarico.
 
 In altre parole, i risultati di Neubot vanno presi cum grano salis.
@@ -898,6 +888,16 @@ opzione può assumere uno dei seguenti valori:
 .. _`pubblicato sul web`: http://www.neubot.org/data
 .. _M-Lab: http://www.measurementlab.net/about
 
+.. _`neutralità della rete`:
+   http://it.wikipedia.org/wiki/Neutralità_della_Rete
+.. _`software che esegue operazioni automatiche su Internet`:
+   http://en.wikipedia.org/wiki/Internet_bot
+
+.. _`vicino ai nostri server`:
+   http://en.wikipedia.org/wiki/TCP_tuning#Window_size
+
+.. _RFC3439: http://tools.ietf.org/html/rfc3439#section-2.1
+.. _router: http://it.wikipedia.org/wiki/Router
 .. _speedtest.net: http://www.speedtest.net
 
 .. _`round trip time`: http://en.wikipedia.org/wiki/Round-trip_delay_time
