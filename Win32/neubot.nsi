@@ -52,6 +52,17 @@ section
         execwait '"$INSTDIR\uninstall.exe" _?=$INSTDIR'
         sleep 2000
 
+    #
+    # From 0.4.3 to 0.4.9 Neubot was installed in $PROFILE.
+    # It seems that after uninstall, some garbage is left in
+    # user's profile.  If so, collect it.
+    #
+    iffileexists "$PROFILE\Neubot\uninstall.exe" 0 +5
+        execwait '"$PROFILE\Neubot\uninstall.exe" _?=$PROFILE\Neubot'
+        sleep 2000
+        iffileexists "$PROFILE\Neubot" 0 +2
+            rmdir /r "$PROFILE\Neubot"
+
     setoutpath "$INSTDIR"
     file /r "dist\*.*"
     writeuninstaller "$INSTDIR\uninstall.exe"
