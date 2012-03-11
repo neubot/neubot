@@ -25,7 +25,7 @@
 import os.path
 
 # Magic!
-CANDIDATE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #
 # When there is a library.zip web pages are in the same directory,
@@ -33,11 +33,11 @@ CANDIDATE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # that also contains Neubot sources.
 #
 #
-if CANDIDATE.endswith('library.zip') and os.path.isfile(CANDIDATE):
-    CANDIDATE = os.path.dirname(CANDIDATE)
-    WWW = os.sep.join([CANDIDATE, 'www'])
+if ROOTDIR.endswith('library.zip') and os.path.isfile(ROOTDIR):
+    ROOTDIR = os.path.dirname(ROOTDIR)
+    WWW = os.sep.join([ROOTDIR, 'www'])
 else:
-    WWW = os.sep.join([CANDIDATE, 'neubot/www'])
+    WWW = os.sep.join([ROOTDIR, 'neubot/www'])
 
 if __name__ == "__main__":
     print(WWW)
