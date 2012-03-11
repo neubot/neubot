@@ -20,4 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-pass
+''' Main for speedtest module '''
+
+from neubot.speedtest.client import main
