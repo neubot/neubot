@@ -61,7 +61,7 @@ class RunnerCore(object):
         ''' Reports whether a test is running '''
         return self.running
 
-    def run(self, test, callback, auto_rendezvous=True, conf=None):
+    def run(self, test, callback, auto_rendezvous=True, ctx=None):
         ''' Run test and callback() when done '''
 
         #
@@ -74,7 +74,7 @@ class RunnerCore(object):
             LOG.info('runner_core: Need to rendezvous first...')
             self.queue.append(('rendezvous', lambda: None, None))
 
-        self.queue.append((test, callback, conf))
+        self.queue.append((test, callback, ctx))
         self.run_queue()
 
     def run_queue(self):
@@ -175,8 +175,18 @@ class RunnerCore(object):
             raise RuntimeError('Invoked for the wrong event')
 
         # Notify the caller that the test is done
-        callback = self.queue.popleft()[1]
-        callback()
+        callback, ctx = self.queue.popleft()[1:]
+        try:
+            if ctx:
+                callback(ctx)
+            else:
+                callback()
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        except:
+            exc = sys.exc_info()[1]
+            error = str(exc)
+            LOG.error('runner_core: catched exception: %s' % error)
 
         #
         # Allow for more tests
