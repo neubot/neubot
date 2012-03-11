@@ -208,6 +208,7 @@ CONFIG.register_defaults({
     "runner.enabled": 1,
     "uuid": "",
     "version": "",
+    'win32_updater': 0,
     "www.lang": "default",
 })
 CONFIG.register_descriptions({
@@ -228,5 +229,6 @@ CONFIG.register_descriptions({
     "runner.enabled": "When true command line tests are executed in the context of the local daemon, provided that it is running",
     "uuid": "Random unique identifier of this Neubot agent",
     "version": "Version number of the Neubot database schema",
+    'win32_updater': 'Set to nonzero to enable Win32 automatic updates',
     "www.lang": "Web GUI language (`default' means: use browser default)",
 })
