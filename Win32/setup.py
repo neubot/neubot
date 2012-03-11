@@ -43,7 +43,7 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 CONSOLE = [{
     "icon_resources": [(0, "neubot/www/favicon.ico")],
-    "script": "bin/neubot",
+    "script": "Win32/neubot",
 }]
 
 PACKAGES = [
@@ -80,13 +80,13 @@ def fill_package_data(entry):
 fill_package_data("neubot/www")
 
 SCRIPTS = [
-    "bin/neubot",
-    "bin/neubotw",
+    "Win32/neubot",
+    "Win32/neubotw",
 ]
 
 WINDOWS = [{
     "icon_resources": [(0, "neubot/www/favicon.ico")],
-    "script": "bin/neubotw",
+    "script": "Win32/neubotw",
 }]
 
 RUN_PY2EXE = False
