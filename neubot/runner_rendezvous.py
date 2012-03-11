@@ -70,7 +70,8 @@ class RunnerRendezvous(ClientHTTP):
                    'version': '0.4.10-rc2',
                    'privacy_informed': CONFIG['privacy.informed'],
                    'privacy_can_collect': CONFIG['privacy.can_collect'],
-                   'privacy_can_publish': CONFIG['privacy.can_publish'],
+                   # Using the old name for backward compatibility
+                   'privacy_can_share': CONFIG['privacy.can_publish'],
                   }
 
         request = Message()
