@@ -75,8 +75,9 @@ dist/temp/datadir/neubot/rootdir.py
 dist/temp/datadir/neubot/runner_api.py
 dist/temp/datadir/neubot/runner_clnt.py
 dist/temp/datadir/neubot/runner_core.py
-dist/temp/datadir/neubot/runner_lst.py
 dist/temp/datadir/neubot/runner_rendezvous.py
+dist/temp/datadir/neubot/runner_tests.py
+dist/temp/datadir/neubot/runner_updates.py
 dist/temp/datadir/neubot/server.py
 dist/temp/datadir/neubot/simplejson/__init__.py
 dist/temp/datadir/neubot/simplejson/decoder.py
@@ -93,6 +94,7 @@ dist/temp/datadir/neubot/system/linux.py
 dist/temp/datadir/neubot/system/unix.py
 dist/temp/datadir/neubot/system/win32.py
 dist/temp/datadir/neubot/updater/unix.py
+dist/temp/datadir/neubot/updater_install.py
 dist/temp/datadir/neubot/utils/__init__.py
 dist/temp/datadir/neubot/utils/blocks.py
 dist/temp/datadir/neubot/utils/version.py
