@@ -89,7 +89,7 @@ the distributed `Measurement Lab`_ platform, and (in future) with other
 instances of the program itself.  Transmission tests probe the Internet
 using various application level protocols and test results are saved both
 locally and on the test servers.  The results dataset contains samples
-from various Provides and is `published on the web`_, allowing anyone to
+from various Providers and is `published on the web`_, allowing anyone to
 analyze the data for research purposes.
 
 1.2. What is Measurement Lab?
