@@ -355,6 +355,14 @@ class MigrateFrom42To43(object):
         cursor.execute('SELECT * FROM %s;' % table)
         for row in cursor:
 
+            # Avoid consuming too much memory
+            if len(operations) >= 4096:
+                ncursor = connection.cursor()
+                for operation in operations:
+                    ncursor.execute(operation[0], operation[1])
+                ncursor.close()
+                del ncursor, operations[:]
+
             # Was reordered?
             if not self._seems_reordered(row):
                 good = good + 1
@@ -457,6 +465,8 @@ class MigrateFrom42To43(object):
             cursor = connection.cursor()
             for operation in operations:
                 cursor.execute(operation[0], operation[1])
+            cursor.close()
+
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
