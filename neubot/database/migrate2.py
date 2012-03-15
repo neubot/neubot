@@ -218,7 +218,7 @@ class MigrateFrom42To43(object):
 
     @staticmethod
     def _reordered_connect_time(value):
-        ''' reordered if not float or greater than 100 seconds '''
+        ''' reordered if not float or greater than 40000 seconds '''
         try:
             value = float(value)
         except ValueError:
