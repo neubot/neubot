@@ -101,7 +101,8 @@ class Poller(sched.scheduler):
     # We always keep the check_timeout() event registered
     # so the scheduler is alive forever.
     # We register self._poll() as the delay function and
-    # in that function we either invoke select().
+    # in that function we either invoke select() or we
+    # sleep for the requested amount of time.
     #
 
     def __init__(self, select_timeout):
