@@ -1,3 +1,115 @@
+Neubot 0.4.10 [2012-03-15]
+	* Makefile: exit 1 when make regress fails
+	* .gitignore: no need to ignore those two files
+	* M-Lab: import ip_addr.dat, servers.dat
+	* M-Lab/servers.dat: update
+	* M-Lab/ip_addr.dat: update
+	* http/server.py: ignore query string when serving files
+	* Win32: install Neubot in $LOCALAPPDATA
+	* MacOS: Privacy.xib: update to policy 2.0.3
+	* MacOS/makepkg.py: allow to skip privkey step
+	* MacOS/makepkg.py: rmtree: lstat() instead of ignoring errors
+	* MacOS/makepkg.py: don't ship okfile with autoupdate
+	* rendezvous/server.py: ignore users w/o can_collect perm
+	* Merge some bug fixes
+	* log.py: change standard error logging format
+	* runner_rendezvous.py: remove unnecessary log
+	* runner_rendezvous.py: add -vy command line options
+	* runner_rendezvous.py: remove redundant code
+	* Merge some runner_rendezvous.py cleanups
+	* doc/FAQ.rst: add section 7 on web user interface
+	* doc/FAQ.rst: for gawd's don't mention agent
+	* doc/FAQ-it.rst: add section 7 on web user interface
+	* doc/FAQ-it.rst: predefinito -> preferito
+	* Merge patches to add FAQ section 7 on web user interface
+	* Always use global RUNNER_CORE object
+	* runner_api.py: remove unused runner_lst import
+	* Always use RUNNER_LST global object
+	* regress: neubot/runner_core.py: avoid pylint warning
+	* Merge cleanups for the runner
+	* Merge remote-tracking branch 'whitespider/next' into next
+	* bittorrent/peer.py: file-wide docstring
+	* bittorrent/peer.py: comment nit
+	* bittorrent/peer.py: rephrase comment
+	* bittorrent/peer.py: remove unused imports
+	* bittorrent/peer.py: one less pylint warning
+	* bittorrent/peer.py: reword the comment, remove unneeded XXX
+	* bittorrent/peer.py: avoid unused-params warning
+	* Merge cleanups for bittorrent/peer.py
+	* runner_core.py: avoid two consecutive rendezvous
+	* add runner_updates.py: keep track of avail updates
+	* Rename runner_lst.py runner_tests.py
+	* rendezvous/client.py: use RUNNER_UPDATES
+	* rendezvous/client.py: refactor after-rendezvous actions
+	* rendezvous/client.py: Use runner_rendezvous.py
+	* Merge code to always use runner_rendezvous.py for rendezvous
+	* rendezvous/client.py: no need to lambda-wrap self.run
+	* rendezvous/client.py: credit Elias in comment
+	* rendezvous/client.py: use uniform style in _after_rendezvous()
+	* rendezvous/client.py: add docstrings
+	* rendezvous/client.py: bump copyright
+	* rendezvous/client.py: zap semi-hidden config variables
+	* rendezvous/client.py: update comments
+	* Merge more cleanups for rendezvous/client.py
+	* runner_core.py: safely run first element in queue
+	* runner_core.py: -f receives a parameter
+	* runner_core.py: allow to pass conf
+	* Merge runner_core.py enhancements
+	* runner_rendezvous.py: send json request
+	* rendezvous/server.py: accept json requests
+	* runner_rendezvous.py: remove now-useless debug()
+	* Merge code to allow to use JSON in rendezvous
+	* utils_rc.py: warn if we cannot open the file
+	* utils_rc.py: support for parsing iterables
+	* utils_rc.py: support both key=value and 'key value' syntaxes
+	* utils_rc.py: parse() can safely raise on error
+	* utils_rc.py: better embedded main() for testing
+	* Merge enhancements for utils_rc.py
+	* negotiate: bump default parallelism to 7
+	* add M-Lab/airports.json: from jbrooksuk's JSON-Airports project
+	* M-Lab/servers.py: bump copyright
+	* M-Lab/servers.py: stop spreading lies in comments
+	* M-Lab/servers.py: zap old code for guessing locations
+	* M-Lab/servers.py: remove the last pylint warning
+	* M-Lab/airports_cache.dat: map airports.json to countries.dat
+	* M-Lab/servers.py: locate servers, new style
+	* M-Lab/servers.dat: updated list of servers
+	* add M-Lab/redir_table.sh: the redirection table
+	* M-Lab/redir_table.py: correct comment
+	* Merge better code for M-Lab redirection table
+	* updater_install: install new version
+	* updater_install: tell tarfile to raise all errors
+	* updater_install: verify tarfile content
+	* updater_install: implement dryrun
+	* updater_install: add simple main()
+	* updater_install: default absolute basedir
+	* updater_install: verify version number
+	* updater_install: verify uid, gid
+	* updater_install: portably construct okfile path
+	* updater/unix: use updater_install module
+	* updater_install.py: remove unneeded braces from regex
+	* updater_installer.py: simplify usage
+	* Merge code that factors install() out of updater/unix.py
+	* Neubot/0.4.10-rc1 released
+	* doc: sync FAQs with http://www.neubot.org/about
+	* doc/FAQ.rst: move down links
+	* doc/FAQ-it.rst: sync index style with english faq
+	* doc/FAQ-it.rst: move link down
+	* doc/FAQ.rst: normalize more links
+	* README.rst: sync with FAQ
+	* Debian: sync control and control-nox w/ FAQ
+	* MacOS: update installer welcome text
+	* Merge documentation and faq enhancements
+	* Win32/neubot.nsi: properly auto-uninstall Neubot 0.4.9
+	* Neubot/0.4.10-rc2 released
+	* runner_rendezvous.py: repair json-based rendezvous
+	* Neubot/0.4.10-rc3 released
+	* regress/Makefile/install.txt: sync
+	* regress/Makefile/install.noexec.txt: sync
+	* Typo: Provides -> Providers
+	* Debian: Make sure description is one single paragraph
+	* Neubot/0.4.10 released
+
 Neubot 0.4.9 [2012-02-27]
 	* scripts/publish: rewrite from scratch
 	* scripts/diffstat: remove

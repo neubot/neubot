@@ -89,15 +89,15 @@ doscp()
 #
 # If we have a MacOSX release, publish it
 #
-if [ -f $1/0.004010003.tar.gz ]; then
+if [ -f $1/0.004010999.tar.gz ]; then
 
-    doscp $1/neubot-0.4.10-rc3.pkg.tgz $remote/_packages/
+    doscp $1/neubot-0.4.10.pkg.tgz $remote/_packages/
     for ext in "" .sha256 .sig; do
-        doscp $1/0.004010003.tar.gz$ext $remote/updates/
+        doscp $1/0.004010999.tar.gz$ext $remote/updates/
     done
 
     if [ $candidate = 1 ]; then
-        $ssh $server "echo 0.004010003 > $remotedir/updates/testing"
+        $ssh $server "echo 0.004010999 > $remotedir/updates/testing"
     fi
 
     #
@@ -105,7 +105,7 @@ if [ -f $1/0.004010003.tar.gz ]; then
     # stable releases.
     #
     if [ $stable = 1 ]; then
-        $ssh $server "echo 0.004010003 > $remotedir/updates/latest"
+        $ssh $server "echo 0.004010999 > $remotedir/updates/latest"
     fi
 
 fi
@@ -113,19 +113,19 @@ fi
 #
 # If we have a Win32 release, publish it
 #
-if [ -f $1/neubot-0.4.10-rc3-setup.exe ]; then
+if [ -f $1/neubot-0.4.10-setup.exe ]; then
 
-    doscp $1/neubot-0.4.10-rc3-setup.exe $remote/_packages/
+    doscp $1/neubot-0.4.10-setup.exe $remote/_packages/
 
 fi
 
 #
 # If we have a source release, publish it
 #
-if [ -f $1/neubot-0.4.10-rc3.tar.gz ]; then
+if [ -f $1/neubot-0.4.10.tar.gz ]; then
 
     for ext in .tar.gz .zip; do
-        doscp $1/neubot-0.4.10-rc3$ext $remote/_packages/
+        doscp $1/neubot-0.4.10$ext $remote/_packages/
     done
 
 fi
@@ -133,14 +133,14 @@ fi
 #
 # If we have a Debian release, publish it
 #
-if [ -f $1/neubot-0.4.10-rc3-1_all.deb ]; then
+if [ -f $1/neubot-0.4.10-1_all.deb ]; then
 
     for pkg in neubot neubot-nox; do
-        doscp $1/$pkg-0.4.10-rc3-1_all.deb $remote/_packages/
+        doscp $1/$pkg-0.4.10-1_all.deb $remote/_packages/
     done
 
     if [ $candidate = 1 ]; then
-        for pkg in neubot-0.4.10-rc3 neubot-nox-0.4.10-rc3; do
+        for pkg in neubot-0.4.10 neubot-nox-0.4.10; do
             $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir/rc
         done
         doscp $1/Release $remote/rc/
@@ -150,7 +150,7 @@ if [ -f $1/neubot-0.4.10-rc3-1_all.deb ]; then
     fi
 
     if [ $stable = 1 ]; then
-        for pkg in neubot-0.4.10-rc3 neubot-nox-0.4.10-rc3; do
+        for pkg in neubot-0.4.10 neubot-nox-0.4.10; do
             $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir
         done
         doscp $1/Release $remote/
