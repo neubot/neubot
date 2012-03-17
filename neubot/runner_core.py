@@ -28,6 +28,7 @@
 # user interface of Neubot.
 #
 
+import asyncore
 import collections
 import getopt
 import sys
@@ -104,7 +105,7 @@ class RunnerCore(object):
         except (SystemExit, KeyboardInterrupt):
             raise
         except:
-            exc = sys.exc_info()[1]
+            exc = asyncore.compact_traceback()
             error = str(exc)
             LOG.error('runner_core: catched exception: %s' % error)
             NOTIFIER.publish('testdone')
@@ -184,7 +185,7 @@ class RunnerCore(object):
         except (KeyboardInterrupt, SystemExit):
             pass
         except:
-            exc = sys.exc_info()[1]
+            exc = asyncore.compact_traceback()
             error = str(exc)
             LOG.error('runner_core: catched exception: %s' % error)
 
