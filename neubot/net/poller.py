@@ -28,7 +28,6 @@ import errno
 import select
 import sched
 import sys
-import time
 
 from neubot.utils import ticks
 from neubot.utils import timestamp
@@ -92,6 +91,9 @@ class Task(object):
         ''' Task representation '''
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
+
+class StopPoller(Exception):
+    ''' Raise when we should stop polling '''
 
 class Poller(sched.scheduler):
 
@@ -203,21 +205,27 @@ class Poller(sched.scheduler):
 
     def loop(self):
         ''' Poller loop '''
-        while self.again:
+        while True:
             try:
                 self.run()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except select.error:
                 raise
+            except StopPoller:
+                break
             except:
                 logging.error(str(asyncore.compact_traceback()))
 
     def _poll(self, timeout):
         ''' Poll for readability and writability '''
 
+        # Immediately break out of the loop if requested to do so
+        if not self.again:
+            raise StopPoller('self.again is False')
+
         # Monitor streams readability/writability
-        if self.readset or self.writeset:
+        elif self.readset or self.writeset:
 
             # Get list of readable/writable streams
             try:
@@ -240,12 +248,9 @@ class Poller(sched.scheduler):
             for fileno in res[1]:
                 self._call_handle_write(fileno)
 
-        #
-        # No I/O pending?  So let's just wait for the
-        # next task to be ready to be fired.
-        #
-        elif timeout > 0:
-            time.sleep(timeout)
+        # No I/O pending?  Break out of the loop.
+        else:
+            raise StopPoller('No I/O pending')
 
     def check_timeout(self):
         ''' Dispatch the periodic event '''
