@@ -56,6 +56,8 @@ def open_browser(uri):
 
 def main(args):
     ''' Main function '''
+    if len(args) == 1:
+        args.append('http://127.0.0.1:9774/index.html')
     open_browser(args[1])
 
 if __name__ == '__main__':
