@@ -1,7 +1,7 @@
-# neubot/rootdir.py
+# neubot/api_server.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,24 +20,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' This module tells you where the web pages are '''
+''' API server '''
 
-import os.path
+from neubot.api.server import ServerAPI
 
-# Magic!
-ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-#
-# When there is a library.zip web pages are in the same directory,
-# and this happens with py2exe.  Otherwise, web pages are in the dir
-# that also contains Neubot sources.
-#
-#
-if ROOTDIR.endswith('library.zip') and os.path.isfile(ROOTDIR):
-    ROOTDIR = os.path.dirname(ROOTDIR)
-    WWW = os.sep.join([ROOTDIR, 'www'])
-else:
-    WWW = os.sep.join([ROOTDIR, 'neubot/www'])
-
-if __name__ == "__main__":
-    print(WWW)
+# No poller, so it cannot be used directly
+API_SERVER = ServerAPI(None)
