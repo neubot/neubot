@@ -109,7 +109,9 @@ distutils.core.setup(name="neubot",
                     )
 
 if RUN_PY2EXE:
-    shutil.copytree("neubot/www", "dist/www")
+    IGNORER = shutil.ignore_patterns('.DS_Store')
+    shutil.copytree("neubot/www", "dist/www", ignore=IGNORER)
+
     if "PROGRAMFILES" in os.environ:
         MAKENSIS = os.environ["PROGRAMFILES"] + "\\NSIS\\makensis.exe"
         if os.path.exists(MAKENSIS):
