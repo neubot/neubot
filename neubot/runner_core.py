@@ -43,6 +43,7 @@ from neubot.database import DATABASE
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
+from neubot.runner_dload import RunnerDload
 
 from neubot import bittorrent
 from neubot import privacy
@@ -152,6 +153,10 @@ class RunnerCore(object):
             conf['bittorrent._uri'] =  uri
             bittorrent.run(POLLER, conf)
 
+        # Run dload
+        elif self.queue[0][0] == 'dload':
+            RunnerDload(self.queue[0][2])
+
         # Safety net
         else:
             raise RuntimeError('Asked to run an unknown test')
@@ -224,8 +229,11 @@ def main(args):
 
     if len(arguments) == 2:
         RUNNER_TESTS.update({arguments[0]: [arguments[1]]})
+        ctx = {'uri': arguments[1]}
+    else:
+        ctx = None
 
-    RUNNER_CORE.run(arguments[0], lambda: None, auto_rendezvous)
+    RUNNER_CORE.run(arguments[0], lambda *args: None, auto_rendezvous, ctx)
     POLLER.loop()
 
 if __name__ == '__main__':

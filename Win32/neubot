@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,26 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Neubot.exe on Windows '''
+
 import sys
-import os
-
-NEUBOT_HOME = "@DATADIR@"
-if NEUBOT_HOME.startswith("@"):
-    NEUBOT_HOME = "."
-
-if os.environ.has_key("NEUBOT_HOME"):
-    NEUBOT_HOME = os.environ["NEUBOT_HOME"]
-sys.path.insert(0, NEUBOT_HOME)
-
-from neubot.main import main
-from neubot.log import LOG
-
-#
-# Redirect the logger immediately because we're going to run in
-# windows mode and therefore there is neither a console nor a standard
-# error for the default logger.  The logs are available in the proper
-# tab of the Web User Interface (WUI) or via the API.
-#
-LOG.redirect()
-
+from neubot.main_win32 import main
 main(sys.argv)

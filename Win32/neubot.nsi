@@ -20,6 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+!ifdef UNINST
+outfile "uninstaller-generator.exe"
+!else
+
 name "neubot 0.4.10"
 outfile "neubot-0.4.10-setup.exe"
 
@@ -29,12 +33,20 @@ outfile "neubot-0.4.10-setup.exe"
 # $APPDATA, should not be used because it is for stuff that must
 # migrate with the user profile.
 #
-installdir "$LOCALAPPDATA\Neubot"
+installdir "$LOCALAPPDATA\Neubot\0.004010999"
+
+!endif
 
 setcompressor lzma
 requestexecutionlevel user
 
 section
+
+!ifdef UNINST
+    System::Call "kernel32::GetCurrentDirectory(i ${NSIS_MAX_STRLEN}, t .r0)"
+    createdirectory "$0\dist"
+    writeuninstaller "$0\dist\uninstall.exe"
+!else
 
     # Cannot uninstall Neubot <= 0.4.2
     iffileexists "$PROGRAMFILES\neubot\uninstall.exe" 0 +3
@@ -47,9 +59,12 @@ section
     # will not wait for the uninstaller (see NSIS wiki).
     # To be sure that the system is not locking anymore uninstall.exe
     # so that we can overwrite it, we sleep for a while.
+    # Note that only Neubot 0.4.10 was installing the uninstaller
+    # in LOCALAPPDATA/Neubot and subsequent versions install everything,
+    # including the uninstaller, in VERSIONDIR.
     #
-    iffileexists "$INSTDIR\uninstall.exe" 0 +3
-        execwait '"$INSTDIR\uninstall.exe" _?=$INSTDIR'
+    iffileexists "$LOCALAPPDATA\Neubot\uninstall.exe" 0 +3
+        execwait '"$LOCALAPPDATA\Neubot\uninstall.exe" _?=$INSTDIR'
         sleep 2000
 
     #
@@ -65,10 +80,9 @@ section
 
     setoutpath "$INSTDIR"
     file /r "dist\*.*"
-    writeuninstaller "$INSTDIR\uninstall.exe"
 
-    createshortcut "$SMPROGRAMS\Neubot.lnk" "$INSTDIR\neubotw.exe"
-    createshortcut "$SMSTARTUP\Neubot.lnk" "$INSTDIR\neubotw.exe" "start"
+    createshortcut "$SMPROGRAMS\Neubot.lnk"				\
+                   "$INSTDIR\neubotw.exe" "browser"
 
     WriteRegStr HKCU                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
@@ -76,11 +90,16 @@ section
     WriteRegStr HKCU                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
+    WriteRegStr HKCU							\
+      "Software\Microsoft\Windows\CurrentVersion\Run"			\
+      "Neubot" '"$INSTDIR\neubotw.exe" start'
 
     exec '"$INSTDIR\neubotw.exe" start'
 
+!endif
 sectionend
 
+!ifdef UNINST
 section "uninstall"
 
     execwait '"$INSTDIR\neubotw.exe" stop'
@@ -91,11 +110,13 @@ section "uninstall"
     #
     sleep 2000
 
-    rmdir /r "$INSTDIR"
+    rmdir /r "$LOCALAPPDATA\Neubot"
     delete "$SMPROGRAMS\Neubot.lnk"
-    delete "$SMSTARTUP\Neubot.lnk"
 
     deleteregkey HKCU                                                   \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"
+    deleteregvalue HKCU							\
+      "Software\Microsoft\Windows\CurrentVersion\Run" "Neubot"
 
 sectionend
+!endif

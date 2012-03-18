@@ -30,6 +30,7 @@ import distutils.core
 import os.path
 import shutil
 import sys
+import tarfile
 import glob
 
 try:
@@ -43,7 +44,7 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 CONSOLE = [{
     "icon_resources": [(0, "neubot/www/favicon.ico")],
-    "script": "bin/neubot",
+    "script": "Win32/neubot",
 }]
 
 PACKAGES = [
@@ -80,13 +81,13 @@ def fill_package_data(entry):
 fill_package_data("neubot/www")
 
 SCRIPTS = [
-    "bin/neubot",
-    "bin/neubotw",
+    "Win32/neubot",
+    "Win32/neubotw",
 ]
 
 WINDOWS = [{
     "icon_resources": [(0, "neubot/www/favicon.ico")],
-    "script": "bin/neubotw",
+    "script": "Win32/neubotw",
 }]
 
 RUN_PY2EXE = False
@@ -115,11 +116,29 @@ if RUN_PY2EXE:
     if "PROGRAMFILES" in os.environ:
         MAKENSIS = os.environ["PROGRAMFILES"] + "\\NSIS\\makensis.exe"
         if os.path.exists(MAKENSIS):
+
             #
             # Use standard input because NSIS has the bad habit
             # of performing a chdir(2) in the directory where its
             # script is located.
             #
+
+            FILEP = open('Win32/neubot.nsi')
+            subprocess.call([MAKENSIS, '/DUNINST' , '-'], stdin=FILEP)
+            FILEP.close()
+
+            subprocess.call(['uninstaller-generator.exe'])
+
             FILEP = open('Win32/neubot.nsi')
             subprocess.call([MAKENSIS, '-'], stdin=FILEP)
             FILEP.close()
+
+    #
+    # XXX Create tarball for auto-update.  Yes, it would be
+    # more tidy to create it inside dist/, but that requires
+    # more work on this file.
+    #
+    shutil.copytree('dist', '0.004010999')
+    TARBALL = tarfile.open('0.004010999.tar.gz', 'w:gz')
+    TARBALL.add('0.004010999')
+    TARBALL.close()
