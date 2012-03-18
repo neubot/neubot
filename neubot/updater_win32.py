@@ -97,7 +97,7 @@ class UpdaterWin32(UpdaterRunner):
         # version should be stopped before proceeding with normal
         # startup.
         #
-        subprocess.Popen(cmdline_k)
+        subprocess.Popen(cmdline_k, close_fds=True)
 
 def main(args):
     ''' main() function '''
