@@ -61,13 +61,13 @@ class ServerRendezvous(ServerHTTP):
         ''' Process rendezvous request '''
 
         if request['content-type'] == 'application/json':
-            m = marshal.unmarshal_object(request.body.read(),
+            ibody = marshal.unmarshal_object(request.body.read(),
               'application/json', compat.RendezvousRequest)
         else:
-            m = marshal.unmarshal_object(request.body.read(),
+            ibody = marshal.unmarshal_object(request.body.read(),
               "application/xml", compat.RendezvousRequest)
 
-        m1 = compat.RendezvousResponse()
+        obody = compat.RendezvousResponse()
 
         #
         # If we don't say anything the rendezvous server is not
@@ -77,13 +77,13 @@ class ServerRendezvous(ServerHTTP):
         # releases and other weird things.
         #
         version = self.conf["rendezvous.server.update_version"]
-        if version and m.version:
-            diff = LibVersion.compare(version, m.version)
-            LOG.debug('rendezvous: version=%s m.version=%s diff=%f' % (
-                      version, m.version, diff))
+        if version and ibody.version:
+            diff = LibVersion.compare(version, ibody.version)
+            LOG.debug('rendezvous: version=%s ibody.version=%s diff=%f' % (
+                      version, ibody.version, diff))
             if diff > 0:
-                m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
-                m1.update["version"] = version
+                obody.update["uri"] = self.conf["rendezvous.server.update_uri"]
+                obody.update["version"] = version
 
         #
         # Select test server address.
@@ -106,7 +106,7 @@ class ServerRendezvous(ServerHTTP):
         # Backward compatibility: the variable name changed from
         # can_share to can_publish after Neubot 0.4.5
         #
-        request_body = m.__dict__.copy()
+        request_body = ibody.__dict__.copy()
         if 'privacy_can_share' in request_body:
             request_body['privacy_can_publish'] = request_body[
               'privacy_can_share']
@@ -138,22 +138,23 @@ class ServerRendezvous(ServerHTTP):
         # privacy settings, who were still using master.
         #
         if privacy.collect_allowed(request_body):
-            if "speedtest" in m.accept:
-                m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
+            if "speedtest" in ibody.accept:
+                obody.available["speedtest"] = [
+                    "http://%s/speedtest" % server ]
 
-            if "bittorrent" in m.accept:
-                m1.available["bittorrent"] = [ "http://%s/" % server ]
+            if "bittorrent" in ibody.accept:
+                obody.available["bittorrent"] = [ "http://%s/" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while
         # newer Neubots want a JSON.  I hope old clients will upgrade
         # pretty soon.
         #
-        if m.version and LibVersion.compare(m.version, "0.3.7") >= 0:
-            body = marshal.marshal_object(m1, "application/json")
+        if ibody.version and LibVersion.compare(ibody.version, "0.3.7") >= 0:
+            body = marshal.marshal_object(obody, "application/json")
             mimetype = "application/json"
         else:
-            body = compat.adhoc_marshaller(m1)
+            body = compat.adhoc_marshaller(obody)
             mimetype = "text/xml"
 
         response = Message()
