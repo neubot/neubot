@@ -172,7 +172,7 @@ CONFIG.register_defaults({
     "rendezvous.server.default": "master.neubot.org",
 })
 
-def run(poller, conf):
+def run():
     """ Load MaxMind database and register our child server """
 
     GEOLOCATOR.open_or_die()
@@ -180,7 +180,7 @@ def run(poller, conf):
              "available from <http://www.maxmind.com/>.")
 
     server = ServerRendezvous(None)
-    server.configure(conf)
+    server.configure(CONFIG)
     HTTP_SERVER.register_child(server, "/rendezvous")
 
 def main(args):
@@ -205,7 +205,7 @@ def main(args):
         HTTP_SERVER.listen((conf["rendezvous.server.address"], int(port)))
 
     # Really start this module
-    run(POLLER, conf)
+    run()
 
     if conf["rendezvous.server.daemonize"]:
         system.change_dir()

@@ -228,7 +228,7 @@ def main(args):
     # Migrating from old style to new style
     if conf["server.rendezvous"]:
         #conf["rendezvous.listen"] = True       # Not yet
-        neubot.rendezvous.server.run(POLLER, conf)
+        neubot.rendezvous.server.run()
 
     #
     # Historically Neubot runs on port 9773 and
