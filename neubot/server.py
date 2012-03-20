@@ -90,8 +90,6 @@ class DebugAPI(ServerHTTP):
                     'NEGOTIATE_SERVER_SPEEDTEST.clients': \
                         len(NEGOTIATE_SERVER_SPEEDTEST.clients),
                     'DNS_CACHE': len(DNS_CACHE),
-                    'POLLER.tasks': len(POLLER.tasks),
-                    'POLLER.pending': len(POLLER.pending),
                     'POLLER.readset': len(POLLER.readset),
                     'POLLER.writeset': len(POLLER.writeset),
                     'LOG._queue': len(LOG._queue),
