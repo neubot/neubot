@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Rendezvous server '''
+
 import StringIO
 import random
 import sys
@@ -50,11 +52,15 @@ GEOLOCATOR = Geolocator()
 
 class ServerRendezvous(ServerHTTP):
 
+    ''' Rendezvous server '''
+
     def configure(self, conf):
+        ''' Configure rendezvous server '''
         conf["http.server.rootdir"] = ""
         ServerHTTP.configure(self, conf)
 
     def process_request(self, stream, request):
+        ''' Process rendezvous request '''
 
         if request['content-type'] == 'application/json':
             m = marshal.unmarshal_object(request.body.read(),
@@ -183,6 +189,7 @@ def run(poller, conf):
     HTTP_SERVER.register_child(server, "/rendezvous")
 
 def main(args):
+    ''' Main function '''
 
     CONFIG.register_descriptions({
         "rendezvous.server.address": "Set rendezvous server address",
