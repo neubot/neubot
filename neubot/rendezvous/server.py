@@ -121,7 +121,12 @@ class ServerRendezvous(ServerHTTP):
                                                country, server)
                     servers = [server]
                 server = random.choice(servers)
-                LOG.debug("* selected test server: %s" % server)
+                LOG.info("rendezvous_server: %s[%s] -> %s", agent_address,
+                         country, server)
+
+        else:
+            LOG.warning('rendezvous_server: cannot redirect to M-Lab: %s',
+                        request_body)
 
         #
         # We require at least informed and can_collect since 0.4.4
