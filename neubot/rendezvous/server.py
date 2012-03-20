@@ -20,7 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import StringIO
+''' Rendezvous server '''
+
 import random
 import sys
 
@@ -41,7 +42,6 @@ from neubot.rendezvous import compat
 from neubot.main import common
 from neubot import marshal
 from neubot import system
-from neubot import utils
 from neubot import privacy
 
 from neubot.utils.version import LibVersion
@@ -50,20 +50,24 @@ GEOLOCATOR = Geolocator()
 
 class ServerRendezvous(ServerHTTP):
 
+    ''' Rendezvous server '''
+
     def configure(self, conf):
+        ''' Configure rendezvous server '''
         conf["http.server.rootdir"] = ""
         ServerHTTP.configure(self, conf)
 
     def process_request(self, stream, request):
+        ''' Process rendezvous request '''
 
         if request['content-type'] == 'application/json':
-            m = marshal.unmarshal_object(request.body.read(),
+            ibody = marshal.unmarshal_object(request.body.read(),
               'application/json', compat.RendezvousRequest)
         else:
-            m = marshal.unmarshal_object(request.body.read(),
+            ibody = marshal.unmarshal_object(request.body.read(),
               "application/xml", compat.RendezvousRequest)
 
-        m1 = compat.RendezvousResponse()
+        obody = compat.RendezvousResponse()
 
         #
         # If we don't say anything the rendezvous server is not
@@ -73,13 +77,13 @@ class ServerRendezvous(ServerHTTP):
         # releases and other weird things.
         #
         version = self.conf["rendezvous.server.update_version"]
-        if version and m.version:
-            diff = LibVersion.compare(version, m.version)
-            LOG.debug('rendezvous: version=%s m.version=%s diff=%f' % (
-                      version, m.version, diff))
+        if version and ibody.version:
+            diff = LibVersion.compare(version, ibody.version)
+            LOG.debug('rendezvous: version=%s ibody.version=%s diff=%f' % (
+                      version, ibody.version, diff))
             if diff > 0:
-                m1.update["uri"] = self.conf["rendezvous.server.update_uri"]
-                m1.update["version"] = version
+                obody.update["uri"] = self.conf["rendezvous.server.update_uri"]
+                obody.update["version"] = version
 
         #
         # Select test server address.
@@ -102,7 +106,7 @@ class ServerRendezvous(ServerHTTP):
         # Backward compatibility: the variable name changed from
         # can_share to can_publish after Neubot 0.4.5
         #
-        request_body = m.__dict__.copy()
+        request_body = ibody.__dict__.copy()
         if 'privacy_can_share' in request_body:
             request_body['privacy_can_publish'] = request_body[
               'privacy_can_share']
@@ -121,7 +125,12 @@ class ServerRendezvous(ServerHTTP):
                                                country, server)
                     servers = [server]
                 server = random.choice(servers)
-                LOG.debug("* selected test server: %s" % server)
+                LOG.info("rendezvous_server: %s[%s] -> %s", agent_address,
+                         country, server)
+
+        else:
+            LOG.warning('rendezvous_server: cannot redirect to M-Lab: %s',
+                        request_body)
 
         #
         # We require at least informed and can_collect since 0.4.4
@@ -129,31 +138,28 @@ class ServerRendezvous(ServerHTTP):
         # privacy settings, who were still using master.
         #
         if privacy.collect_allowed(request_body):
-            if "speedtest" in m.accept:
-                m1.available["speedtest"] = [ "http://%s/speedtest" % server ]
+            if "speedtest" in ibody.accept:
+                obody.available["speedtest"] = [
+                    "http://%s/speedtest" % server ]
 
-            if "bittorrent" in m.accept:
-                m1.available["bittorrent"] = [ "http://%s/" % server ]
+            if "bittorrent" in ibody.accept:
+                obody.available["bittorrent"] = [ "http://%s/" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while
         # newer Neubots want a JSON.  I hope old clients will upgrade
         # pretty soon.
         #
-        if m.version and LibVersion.compare(m.version, "0.3.7") >= 0:
-            s = marshal.marshal_object(m1, "application/json")
+        if ibody.version and LibVersion.compare(ibody.version, "0.3.7") >= 0:
+            body = marshal.marshal_object(obody, "application/json")
             mimetype = "application/json"
         else:
-            s = compat.adhoc_marshaller(m1)
+            body = compat.adhoc_marshaller(obody)
             mimetype = "text/xml"
-
-        stringio = StringIO.StringIO()
-        stringio.write(s)
-        stringio.seek(0)
 
         response = Message()
         response.compose(code="200", reason="Ok",
-          mimetype=mimetype, body=stringio)
+          mimetype=mimetype, body=body)
         stream.send_response(request, response)
 
 CONFIG.register_defaults({
@@ -162,11 +168,12 @@ CONFIG.register_defaults({
     "rendezvous.server.ports": "9773,8080",
     "rendezvous.server.update_uri": "http://www.neubot.org/download",
     "rendezvous.server.update_version": '',
-    "rendezvous.geoip_wrapper.country_database": "/usr/local/share/GeoIP/GeoIP.dat",
+    "rendezvous.geoip_wrapper.country_database":                        \
+        "/usr/local/share/GeoIP/GeoIP.dat",
     "rendezvous.server.default": "master.neubot.org",
 })
 
-def run(poller, conf):
+def run():
     """ Load MaxMind database and register our child server """
 
     GEOLOCATOR.open_or_die()
@@ -174,10 +181,11 @@ def run(poller, conf):
              "available from <http://www.maxmind.com/>.")
 
     server = ServerRendezvous(None)
-    server.configure(conf)
+    server.configure(CONFIG)
     HTTP_SERVER.register_child(server, "/rendezvous")
 
 def main(args):
+    ''' Main function '''
 
     CONFIG.register_descriptions({
         "rendezvous.server.address": "Set rendezvous server address",
@@ -185,7 +193,8 @@ def main(args):
         "rendezvous.server.ports": "List of rendezvous server ports",
         "rendezvous.server.update_uri": "Where to download updates from",
         "rendezvous.server.update_version": "Update Neubot version number",
-        "rendezvous.geoip_wrapper.country_database": "Path of the GeoIP country database",
+        "rendezvous.geoip_wrapper.country_database":                    \
+          "Path of the GeoIP country database",
         "rendezvous.server.default": "Default test server to use",
     })
 
@@ -197,7 +206,7 @@ def main(args):
         HTTP_SERVER.listen((conf["rendezvous.server.address"], int(port)))
 
     # Really start this module
-    run(POLLER, conf)
+    run()
 
     if conf["rendezvous.server.daemonize"]:
         system.change_dir()
