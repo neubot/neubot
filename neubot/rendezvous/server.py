@@ -151,14 +151,14 @@ class ServerRendezvous(ServerHTTP):
         # pretty soon.
         #
         if m.version and LibVersion.compare(m.version, "0.3.7") >= 0:
-            s = marshal.marshal_object(m1, "application/json")
+            body = marshal.marshal_object(m1, "application/json")
             mimetype = "application/json"
         else:
-            s = compat.adhoc_marshaller(m1)
+            body = compat.adhoc_marshaller(m1)
             mimetype = "text/xml"
 
         stringio = StringIO.StringIO()
-        stringio.write(s)
+        stringio.write(body)
         stringio.seek(0)
 
         response = Message()
