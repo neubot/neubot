@@ -43,7 +43,6 @@ from neubot.rendezvous import compat
 from neubot.main import common
 from neubot import marshal
 from neubot import system
-from neubot import utils
 from neubot import privacy
 
 from neubot.utils.version import LibVersion
