@@ -173,7 +173,8 @@ CONFIG.register_defaults({
     "rendezvous.server.ports": "9773,8080",
     "rendezvous.server.update_uri": "http://www.neubot.org/download",
     "rendezvous.server.update_version": '',
-    "rendezvous.geoip_wrapper.country_database": "/usr/local/share/GeoIP/GeoIP.dat",
+    "rendezvous.geoip_wrapper.country_database":                        \
+        "/usr/local/share/GeoIP/GeoIP.dat",
     "rendezvous.server.default": "master.neubot.org",
 })
 
@@ -197,7 +198,8 @@ def main(args):
         "rendezvous.server.ports": "List of rendezvous server ports",
         "rendezvous.server.update_uri": "Where to download updates from",
         "rendezvous.server.update_version": "Update Neubot version number",
-        "rendezvous.geoip_wrapper.country_database": "Path of the GeoIP country database",
+        "rendezvous.geoip_wrapper.country_database":                    \
+          "Path of the GeoIP country database",
         "rendezvous.server.default": "Default test server to use",
     })
 
