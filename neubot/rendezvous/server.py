@@ -22,7 +22,6 @@
 
 ''' Rendezvous server '''
 
-import StringIO
 import random
 import sys
 
@@ -157,13 +156,9 @@ class ServerRendezvous(ServerHTTP):
             body = compat.adhoc_marshaller(m1)
             mimetype = "text/xml"
 
-        stringio = StringIO.StringIO()
-        stringio.write(body)
-        stringio.seek(0)
-
         response = Message()
         response.compose(code="200", reason="Ok",
-          mimetype=mimetype, body=stringio)
+          mimetype=mimetype, body=body)
         stream.send_response(request, response)
 
 CONFIG.register_defaults({
