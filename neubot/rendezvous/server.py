@@ -125,7 +125,7 @@ class ServerRendezvous(ServerHTTP):
 
         #
         # We require at least informed and can_collect since 0.4.4
-        # (released 25 October 2011), so stop clients without empty
+        # (released 25 October 2011), so stop clients with empty
         # privacy settings, who were still using master.
         #
         if privacy.collect_allowed(request_body):
