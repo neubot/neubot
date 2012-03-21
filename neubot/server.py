@@ -90,8 +90,6 @@ class DebugAPI(ServerHTTP):
                     'NEGOTIATE_SERVER_SPEEDTEST.clients': \
                         len(NEGOTIATE_SERVER_SPEEDTEST.clients),
                     'DNS_CACHE': len(DNS_CACHE),
-                    'POLLER.tasks': len(POLLER.tasks),
-                    'POLLER.pending': len(POLLER.pending),
                     'POLLER.readset': len(POLLER.readset),
                     'POLLER.writeset': len(POLLER.writeset),
                     'LOG._queue': len(LOG._queue),
@@ -228,7 +226,7 @@ def main(args):
     # Migrating from old style to new style
     if conf["server.rendezvous"]:
         #conf["rendezvous.listen"] = True       # Not yet
-        neubot.rendezvous.server.run(POLLER, conf)
+        neubot.rendezvous.server.run()
 
     #
     # Historically Neubot runs on port 9773 and
