@@ -24,8 +24,8 @@
 outfile "uninstaller-generator.exe"
 !else
 
-name "neubot 0.4.10"
-outfile "neubot-0.4.10-setup.exe"
+name "neubot 0.4.11-rc1"
+outfile "neubot-0.4.11-rc1-setup.exe"
 
 #
 # The right place where to install is $LOCALAPPDATA, which is the
@@ -33,7 +33,7 @@ outfile "neubot-0.4.10-setup.exe"
 # $APPDATA, should not be used because it is for stuff that must
 # migrate with the user profile.
 #
-installdir "$LOCALAPPDATA\Neubot\0.004010999"
+installdir "$LOCALAPPDATA\Neubot\0.004011001"
 
 !endif
 
@@ -59,7 +59,7 @@ section
     # will not wait for the uninstaller (see NSIS wiki).
     # To be sure that the system is not locking anymore uninstall.exe
     # so that we can overwrite it, we sleep for a while.
-    # Note that only Neubot 0.4.10 was installing the uninstaller
+    # Note that only Neubot 0.4.11-rc1 was installing the uninstaller
     # in LOCALAPPDATA/Neubot and subsequent versions install everything,
     # including the uninstaller, in VERSIONDIR.
     #
@@ -86,7 +86,7 @@ section
 
     WriteRegStr HKCU                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
-      "DisplayName" "Neubot 0.4.10"
+      "DisplayName" "Neubot 0.4.11-rc1"
     WriteRegStr HKCU                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
