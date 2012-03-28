@@ -120,6 +120,7 @@ if [ -f $1/neubot-0.4.11-rc1-setup.exe ]; then
     # Autoupdates stuff
     $ssh $server "install -d $remotedir/updates/win32/"
     doscp $1/win32_0.004011001.tar.gz $remote/updates/win32/0.004011001.tar.gz
+    doscp $1/win32_0.004011001.tar.gz.sha256 $remote/updates/win32/0.004011001.tar.gz.sha256
 
     if [ $candidate = 1 ]; then
         $ssh $server "echo 0.004011001 > $remotedir/updates/win32/testing"
