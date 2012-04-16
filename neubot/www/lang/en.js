@@ -52,7 +52,7 @@ var LANG = {
     'i18n_about': 'About',
 
     'i18n_about_text':
-'This is the web user interface of Neubot v0.4.11-rc1.\
+'This is the web user interface of Neubot v0.4.11-rc2.\
  Neubot is a lightweight <a href="http://www.neubot.org/copying">open-source</a> program\
  that runs in background and periodically performs\
  transmission tests to probe your Internet connection\

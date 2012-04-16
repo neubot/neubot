@@ -100,7 +100,7 @@ distutils.core.setup(name="neubot",
                      license="GPLv3",
                      packages=PACKAGES,
                      package_data={"neubot": PACKAGE_DATA},
-                     version="0.4.11-rc1",
+                     version="0.4.11-rc2",
                      author="Simone Basso",
                      author_email="bassosimone@gmail.com",
                      windows=WINDOWS,
@@ -138,7 +138,7 @@ if RUN_PY2EXE:
     # more tidy to create it inside dist/, but that requires
     # more work on this file.
     #
-    shutil.copytree('dist', '0.004011001')
-    TARBALL = tarfile.open('0.004011001.tar.gz', 'w:gz')
-    TARBALL.add('0.004011001')
+    shutil.copytree('dist', '0.004011002')
+    TARBALL = tarfile.open('0.004011002.tar.gz', 'w:gz')
+    TARBALL.add('0.004011002')
     TARBALL.close()

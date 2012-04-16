@@ -68,7 +68,7 @@ class RunnerDload(ClientHTTP):
         ''' Invoked when the connection is ready '''
         request = Message()
         request.compose(method='GET', uri=self.ctx['uri'], keepalive=False)
-        request['user-agent'] = 'Neubot/0.4.11-rc1'
+        request['user-agent'] = 'Neubot/0.4.11-rc2'
         stream.send_request(request)
 
     def got_response(self, stream, request, response):
