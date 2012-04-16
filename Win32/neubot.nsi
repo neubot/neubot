@@ -59,7 +59,7 @@ section
     # will not wait for the uninstaller (see NSIS wiki).
     # To be sure that the system is not locking anymore uninstall.exe
     # so that we can overwrite it, we sleep for a while.
-    # Note that only Neubot 0.4.11-rc2 was installing the uninstaller
+    # Note that only Neubot 0.4.10 was installing the uninstaller
     # in LOCALAPPDATA/Neubot and subsequent versions install everything,
     # including the uninstaller, in VERSIONDIR.
     #
