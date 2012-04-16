@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
+#  NEXA Center for Internet & Society at Politecnico di Torino
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+''' Convert FAQ to HTML suitable for inclusion on website '''
+
+import sys
+import xml.dom.minidom
+
+def html():
+    ''' Generate FAQ page '''
+    content = sys.stdin.read()
+    document = xml.dom.minidom.parseString(content)
+    root = document.documentElement
+    __process_dom(root)
+
+def __process_dom(root):
+    ''' Process dom to generate FAQ page '''
+
+    # Scan all ELEMENT nodes
+    for node in root.childNodes:
+        if node.nodeType == node.ELEMENT_NODE:
+
+            classes = node.getAttribute("class").split()
+            if "document" in classes:
+
+                #
+                # Content is not always text,
+                # stringify using toxml() so we
+                # keep all the tags in output
+                #
+                text = []
+                node.normalize()
+                for child in node.childNodes:
+                    text.append(child.toxml())
+                text = "".join(text)
+
+                # Adapt style to drupal
+                text = text.replace('<h2>', '<h3>')
+                text = text.replace('</h2>', '</h3>')
+                text = text.replace('<h1>', '<h2>')
+                text = text.replace('</h1>', '</h2>')
+
+                text = text.encode('utf-8')
+                sys.stdout.write(text)
+                sys.exit(0)
+
+            else:
+                __process_dom(node)
+
+if __name__ == '__main__':
+    html()
