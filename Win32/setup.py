@@ -139,6 +139,6 @@ if RUN_PY2EXE:
     # more work on this file.
     #
     shutil.copytree('dist', '0.004011002')
-    TARBALL = tarfile.open('0.004011002.tar.gz', 'w:gz')
+    TARBALL = tarfile.open('win32_0.004011002.tar.gz', 'w:gz')
     TARBALL.add('0.004011002')
     TARBALL.close()
