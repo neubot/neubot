@@ -36,6 +36,7 @@ VERSION	= 0.4.11-rc1
 PHONIES += help
 PHONIES += regress
 PHONIES += clean
+PHONIES += doc
 PHONIES += archive
 PHONIES += _install
 PHONIES += install
@@ -78,6 +79,10 @@ regress:
 
 clean:
 	./scripts/cleanup
+
+doc:
+	rst2html doc/FAQ.rst | ./scripts/faq > doc/FAQ.html
+	rst2html doc/FAQ-it.rst | ./scripts/faq > doc/FAQ-it.html
 
 #                 _     _
 #   __ _ _ __ ___| |__ (_)_   _____
