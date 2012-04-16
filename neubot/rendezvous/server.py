@@ -54,7 +54,15 @@ class ServerRendezvous(ServerHTTP):
 
     def configure(self, conf):
         ''' Configure rendezvous server '''
+
+        #
+        # Ensure that the rootdir is empty, but do that on
+        # a copy of the original settings, just in case any
+        # other module needs the original setting.
+        #
+        conf = conf.copy()
         conf["http.server.rootdir"] = ""
+
         ServerHTTP.configure(self, conf)
 
     def process_request(self, stream, request):
