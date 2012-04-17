@@ -188,7 +188,7 @@ class RunnerCore(object):
             else:
                 callback()
         except (KeyboardInterrupt, SystemExit):
-            pass
+            raise
         except:
             exc = asyncore.compact_traceback()
             error = str(exc)
