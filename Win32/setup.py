@@ -153,10 +153,15 @@ if RUN_PY2EXE:
     CKSUMFILE.write(CKSUM)
     CKSUMFILE.close()
 
-    # Move results into dist
+    #
+    # Move results into wdist and wdist/win32.  We keep in
+    # wdist/win32 stuff that must be deployed on the website
+    # and in wdist alone all the rest.
+    #
     os.mkdir('wdist')
+    os.mkdir('wdist/win32')
     shutil.move('uninstaller-generator.exe', 'wdist')
-    shutil.move('neubot-0.4.11-rc2-setup.exe', 'wdist')
+    shutil.move('neubot-0.4.11-rc2-setup.exe', 'wdist/win32')
     shutil.move('0.004011002', 'wdist')
-    shutil.move('0.004011002.tar.gz', 'wdist')
-    shutil.move('0.004011002.tar.gz.sha256', 'wdist')
+    shutil.move('0.004011002.tar.gz', 'wdist/win32')
+    shutil.move('0.004011002.tar.gz.sha256', 'wdist/win32')
