@@ -150,3 +150,9 @@ if RUN_PY2EXE:
     TARBALL = tarfile.open('win32_0.004011002.tar.gz', 'w:gz')
     TARBALL.add('0.004011002')
     TARBALL.close()
+
+    # Create SHA256 sum
+    CKSUM = cksum_path('win32_0.004011002.tar.gz', 'sha256')
+    CKSUMFILE = open('win32_0.004011002.tar.gz.sha256', 'wb')
+    CKSUMFILE.write(CKSUM)
+    CKSUMFILE.close()
