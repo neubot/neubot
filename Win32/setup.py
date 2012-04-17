@@ -108,7 +108,7 @@ distutils.core.setup(name="neubot",
                      license="GPLv3",
                      packages=PACKAGES,
                      package_data={"neubot": PACKAGE_DATA},
-                     version="0.4.11-rc3",
+                     version="0.4.11-rc4",
                      author="Simone Basso",
                      author_email="bassosimone@gmail.com",
                      windows=WINDOWS,
@@ -142,14 +142,14 @@ if RUN_PY2EXE:
             FILEP.close()
 
     # Create tarball for auto-update
-    shutil.copytree('dist', '0.004011003')
-    TARBALL = tarfile.open('0.004011003.tar.gz', 'w:gz')
-    TARBALL.add('0.004011003')
+    shutil.copytree('dist', '0.004011004')
+    TARBALL = tarfile.open('0.004011004.tar.gz', 'w:gz')
+    TARBALL.add('0.004011004')
     TARBALL.close()
 
     # Create SHA256 sum
-    CKSUM = cksum_path('0.004011003.tar.gz', 'sha256')
-    CKSUMFILE = open('0.004011003.tar.gz.sha256', 'wb')
+    CKSUM = cksum_path('0.004011004.tar.gz', 'sha256')
+    CKSUMFILE = open('0.004011004.tar.gz.sha256', 'wb')
     CKSUMFILE.write(CKSUM)
     CKSUMFILE.close()
 
@@ -161,7 +161,7 @@ if RUN_PY2EXE:
     os.mkdir('wdist')
     os.mkdir('wdist/win32')
     shutil.move('uninstaller-generator.exe', 'wdist')
-    shutil.move('neubot-0.4.11-rc3-setup.exe', 'wdist/win32')
-    shutil.move('0.004011003', 'wdist')
-    shutil.move('0.004011003.tar.gz', 'wdist/win32')
-    shutil.move('0.004011003.tar.gz.sha256', 'wdist/win32')
+    shutil.move('neubot-0.4.11-rc4-setup.exe', 'wdist/win32')
+    shutil.move('0.004011004', 'wdist')
+    shutil.move('0.004011004.tar.gz', 'wdist/win32')
+    shutil.move('0.004011004.tar.gz.sha256', 'wdist/win32')
