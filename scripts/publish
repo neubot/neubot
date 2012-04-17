@@ -119,11 +119,11 @@ if [ -f $1/win32/neubot-0.4.11-rc3-setup.exe ]; then
 
     # Autoupdates stuff
     $ssh $server "install -d $remotedir/updates/win32/"
-    doscp $1/win32/0.004011001.tar.gz $remote/updates/win32
-    doscp $1/win32/0.004011001.tar.gz.sha256 $remote/updates/win32
+    doscp $1/win32/0.004011003.tar.gz $remote/updates/win32
+    doscp $1/win32/0.004011003.tar.gz.sha256 $remote/updates/win32
 
     if [ $candidate = 1 ]; then
-        $ssh $server "echo 0.004011001 > $remotedir/updates/win32/testing"
+        $ssh $server "echo 0.004011003 > $remotedir/updates/win32/testing"
     fi
 
     #
@@ -131,7 +131,7 @@ if [ -f $1/win32/neubot-0.4.11-rc3-setup.exe ]; then
     # stable releases.
     #
     if [ $stable = 1 ]; then
-        $ssh $server "echo 0.004011001 > $remotedir/updates/win32/latest"
+        $ssh $server "echo 0.004011003 > $remotedir/updates/win32/latest"
     fi
 
 fi
