@@ -24,7 +24,7 @@
 
 import os.path
 
-# Magic!
+# $ROOTDIR/neubot/rootdir.py -> $ROOTDIR
 ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #
