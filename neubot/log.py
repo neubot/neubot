@@ -317,36 +317,15 @@ class Logger(object):
 
 LOG = Logger()
 
-#
-# Neubot code should always use logging and we should
-# eventually provide a backend for this subsystem.
-# For now, the hack of the day is to override the names
-# in the logging subsystem.
-# To avoid a pylint warning ("Specify format string arguments
-# as logging function parameters") I had to write the wrappers
-# below.  The debug() method does not interpolate unless the
-# logger is running verbose.  I like that design idea of logging,
-# as I said, I should write my special-purpose backend for the
-# logging module.
-#
+class LogWrapper(logging.Handler):
 
-def _log_info(msg, *args):
-    ''' Wrapper for info() '''
-    LOG.info(msg, *args)
+    def emit(self, record):
+        msg = record.msg
+        args = record.args
+        level = record.levelname
+        LOG._log(level, msg, *args)
 
-def _log_error(msg, *args):
-    ''' Wrapper for error() '''
-    LOG.error(msg, *args)
-
-def _log_warning(msg, *args):
-    ''' Wrapper for warning() '''
-    LOG.warning(msg, *args)
-
-def _log_debug(msg, *args):
-    ''' Wrapper for debug() '''
-    LOG.debug(msg, *args)
-
-logging.info = _log_info
-logging.error = _log_error
-logging.warning = _log_warning
-logging.debug = _log_debug
+ROOT = logging.getLogger()
+ROOT.handlers = []
+ROOT.addHandler(LogWrapper())
+ROOT.setLevel('DEBUG')
