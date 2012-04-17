@@ -20,12 +20,22 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Emulates OpenBSD `cksum -a` functionality '''
+
 import getopt
 import hashlib
 import sys
 import traceback
 
+def cksum_path(path, aarg):
+    ''' Computes cksum of a given path '''
+    cksum = hashlib.new(aarg)
+    filep = open(path, 'rb')
+    cksum.update(filep.read())
+    return '%s  %s\n' % (cksum.hexdigest(), path)
+
 def main():
+    ''' Main function '''
     try:
         aarg = "sha1"
         options, arguments = getopt.getopt(sys.argv[1:], "a:")
@@ -34,10 +44,7 @@ def main():
                 aarg = value
 
         for path in arguments:
-            k = hashlib.new(aarg)
-            filep = open(path, "rb")
-            k.update(filep.read())
-            sys.stdout.write("%s  %s\n" % (k.hexdigest(), path))
+            sys.stdout.write(cksum_path(path, aarg))
 
     except:
         traceback.print_exc()
