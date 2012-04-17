@@ -113,14 +113,14 @@ fi
 #
 # If we have a Win32 release, publish it
 #
-if [ -f $1/neubot-0.4.11-rc2-setup.exe ]; then
+if [ -f $1/win32/neubot-0.4.11-rc2-setup.exe ]; then
 
-    doscp $1/neubot-0.4.11-rc2-setup.exe $remote/_packages/
+    doscp $1/win32/neubot-0.4.11-rc2-setup.exe $remote/_packages/
 
     # Autoupdates stuff
     $ssh $server "install -d $remotedir/updates/win32/"
-    doscp $1/win32_0.004011001.tar.gz $remote/updates/win32/0.004011001.tar.gz
-    doscp $1/win32_0.004011001.tar.gz.sha256 $remote/updates/win32/0.004011001.tar.gz.sha256
+    doscp $1/win32/0.004011001.tar.gz $remote/updates/win32
+    doscp $1/win32/0.004011001.tar.gz.sha256 $remote/updates/win32
 
     if [ $candidate = 1 ]; then
         $ssh $server "echo 0.004011001 > $remotedir/updates/win32/testing"
