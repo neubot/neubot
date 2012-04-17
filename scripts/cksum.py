@@ -46,6 +46,9 @@ def main():
         for path in arguments:
             sys.stdout.write(cksum_path(path, aarg))
 
+    except KeyboardInterrupt:
+        sys.stderr.write('Interrupt\n')
+        sys.exit(0)
     except:
         traceback.print_exc()
         sys.exit(1)
