@@ -25,6 +25,7 @@
  to generate an installer for Windows.
 '''
 
+import hashlib
 import subprocess
 import distutils.core
 import os.path
@@ -38,9 +39,16 @@ try:
 except ImportError:
     sys.exit('Please install py2exe.')
 
-
 # To toplevel dir ($TOP/Win32/setup.py -> $TOP)
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Copied from scripts/cksum.py
+def cksum_path(path, aarg):
+    ''' Computes cksum of a given path '''
+    cksum = hashlib.new(aarg)
+    filep = open(path, 'rb')
+    cksum.update(filep.read())
+    return '%s  %s\n' % (cksum.hexdigest(), path)
 
 CONSOLE = [{
     "icon_resources": [(0, "neubot/www/favicon.ico")],
