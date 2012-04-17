@@ -59,13 +59,21 @@ section
     # will not wait for the uninstaller (see NSIS wiki).
     # To be sure that the system is not locking anymore uninstall.exe
     # so that we can overwrite it, we sleep for a while.
-    # Note that only Neubot 0.4.10 was installing the uninstaller
-    # in LOCALAPPDATA/Neubot and subsequent versions install everything,
-    # including the uninstaller, in VERSIONDIR.
     #
-    iffileexists "$LOCALAPPDATA\Neubot\uninstall.exe" 0 +3
-        execwait '"$LOCALAPPDATA\Neubot\uninstall.exe" _?=$INSTDIR'
+    iffileexists "$INSTDIR\uninstall.exe" 0 +3
+        execwait '"$INSTDIR\uninstall.exe" _?=$INSTDIR'
         sleep 2000
+
+    #
+    # Neubot 0.4.10 was installed in $LOCALAPPDATA.
+    # It seems that after uninstall, some garbage is left in
+    # such directory.  If so, collect it.
+    #
+    iffileexists "$LOCALAPPDATA\Neubot\uninstall.exe" 0 +5
+        execwait '"$LOCALAPPDATA\Neubot\uninstall.exe" _?=$LOCALAPPDATA\Neubot'
+        sleep 2000
+        iffileexists "$LOCALAPPDATA\Neubot" 0 +2
+            rmdir /r "$LOCALAPPDATA\Neubot"
 
     #
     # From 0.4.3 to 0.4.9 Neubot was installed in $PROFILE.
