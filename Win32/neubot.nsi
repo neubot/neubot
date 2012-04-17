@@ -1,7 +1,7 @@
 # neubot.nsi
 
 #
-# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
