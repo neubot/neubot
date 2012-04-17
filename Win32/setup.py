@@ -141,18 +141,22 @@ if RUN_PY2EXE:
             subprocess.call([MAKENSIS, '-'], stdin=FILEP)
             FILEP.close()
 
-    #
-    # XXX Create tarball for auto-update.  Yes, it would be
-    # more tidy to create it inside dist/, but that requires
-    # more work on this file.
-    #
+    # Create tarball for auto-update
     shutil.copytree('dist', '0.004011002')
-    TARBALL = tarfile.open('win32_0.004011002.tar.gz', 'w:gz')
+    TARBALL = tarfile.open('0.004011002.tar.gz', 'w:gz')
     TARBALL.add('0.004011002')
     TARBALL.close()
 
     # Create SHA256 sum
-    CKSUM = cksum_path('win32_0.004011002.tar.gz', 'sha256')
-    CKSUMFILE = open('win32_0.004011002.tar.gz.sha256', 'wb')
+    CKSUM = cksum_path('0.004011002.tar.gz', 'sha256')
+    CKSUMFILE = open('0.004011002.tar.gz.sha256', 'wb')
     CKSUMFILE.write(CKSUM)
     CKSUMFILE.close()
+
+    # Move results into dist
+    os.mkdir('wdist')
+    shutil.move('uninstaller-generator.exe', 'wdist')
+    shutil.move('neubot-0.4.11-rc2-setup.exe', 'wdist')
+    shutil.move('0.004011002', 'wdist')
+    shutil.move('0.004011002.tar.gz', 'wdist')
+    shutil.move('0.004011002.tar.gz.sha256', 'wdist')
