@@ -28,13 +28,13 @@ import os
 import sys
 import types
 import xml.dom.minidom
+import logging
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
 from neubot.config import ConfigError
-from neubot.log import LOG
 from neubot.database import table_config
 from neubot.database import DATABASE
 from neubot import rootdir
@@ -88,9 +88,9 @@ def allowed_to_run():
 
 def complain():
     ''' Complain with the user about privacy settings '''
-    LOG.warning('Neubot is disabled because privacy settings are not OK.')
-    LOG.warning('Please, set privacy settings via web user interface.')
-    LOG.warning('Alternatively, you can use the `neubot privacy` command.')
+    logging.warning('Neubot is disabled because privacy settings are not OK.')
+    logging.warning('Please, set privacy settings via web user interface.')
+    logging.warning('Alternatively, you can use the `neubot privacy` command.')
 
 def complain_if_needed():
     ''' Complain with the user if privacy settings are not OK '''

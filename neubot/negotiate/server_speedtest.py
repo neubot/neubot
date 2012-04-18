@@ -22,9 +22,10 @@
 
 ''' Speedtest negotiator '''
 
+import logging
+
 from neubot.negotiate.server import NegotiateServerModule
 from neubot.backend import BACKEND
-from neubot.log import LOG
 
 from neubot import privacy
 
@@ -65,7 +66,8 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
             if authorization not in self.clients:
                 raise RuntimeError('Not authorized to collect')
             else:
-                LOG.warning('speedtest: working around multiple conns issue')
+                logging.warning('speedtest: working around multiple conns '
+                                'issue')
                 ident = authorization
 
         # Note: no more than one collect per session
@@ -83,7 +85,7 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
         if privacy.collect_allowed(request_body):
             BACKEND.speedtest_store(request_body)
         else:
-            LOG.warning('* bad privacy settings: %s' % str(stream))
+            logging.warning('* bad privacy settings: %s' % str(stream))
 
         return {}
 

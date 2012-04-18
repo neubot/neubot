@@ -33,6 +33,7 @@
 import os
 import random
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -40,7 +41,6 @@ if __name__ == "__main__":
 from neubot.net.poller import POLLER
 
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.main import common
 from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.runner_core import RUNNER_CORE
@@ -87,7 +87,7 @@ class ClientRendezvous(object):
         new_version = RUNNER_UPDATES.get_update_version()
         new_uri = RUNNER_UPDATES.get_update_uri()
         if new_version and new_uri:
-            LOG.info("Version %s available at %s" % (new_version,
+            logging.info("Version %s available at %s" % (new_version,
                                                      new_uri))
             STATE.update("update", {"version": new_version,
                                     "uri": new_uri})
@@ -103,15 +103,15 @@ class ClientRendezvous(object):
         #
         test = RUNNER_TESTS.get_next_test()
         if not test:
-            LOG.warning("No test available")
+            logging.warning("No test available")
             self._schedule()
             return
 
-        LOG.info("* Chosen test: %s" % test)
+        logging.info("* Chosen test: %s" % test)
 
         # Are we allowed to run a test?
         if not CONFIG["enabled"]:
-            LOG.info("Tests are disabled... not running")
+            logging.info("Tests are disabled... not running")
             self._schedule()
             return
 
@@ -135,7 +135,7 @@ class ClientRendezvous(object):
                 self._interval = 1380 + random.randrange(0, 240)
             interval = self._interval
 
-        LOG.info("* Next rendezvous in %d seconds" % interval)
+        logging.info("* Next rendezvous in %d seconds" % interval)
 
         task = POLLER.sched(interval, self.run)
 

@@ -25,12 +25,12 @@
 
 import os.path
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
-from neubot.log import LOG
 
 from neubot import utils
 
@@ -54,9 +54,9 @@ class Geolocator(object):
         ''' Open the database or die '''
 
         if not GEOIP:
-            LOG.error("Missing dependency: GeoIP")
-            LOG.info("Please install GeoIP python wrappers, e.g.")
-            LOG.info("    sudo apt-get install python-geoip")
+            logging.error("Missing dependency: GeoIP")
+            logging.info("Please install GeoIP python wrappers, e.g.")
+            logging.info("    sudo apt-get install python-geoip")
             sys.exit(1)
 
         path = CONFIG.get("rendezvous.geoip_wrapper.country_database",
@@ -68,8 +68,8 @@ class Geolocator(object):
         # going on, let the GeoIP library stacktrace for us.
         #
         if not os.path.exists(path):
-            LOG.error("Missing GeoLiteCountry database: %s" % path)
-            LOG.info("Please download it from "
+            logging.error("Missing GeoLiteCountry database: %s" % path)
+            logging.info("Please download it from "
                      "<http://www.maxmind.com/app/geolitecountry>.")
             sys.exit(1)
 
@@ -79,7 +79,7 @@ class Geolocator(object):
         ''' Lookup for country entry '''
         country = self.countries.country_code_by_addr(address)
         if not country:
-            LOG.error("Geolocator: %s: not found" % address)
+            logging.error("Geolocator: %s: not found" % address)
             return ""
         return utils.stringify(country)
 
