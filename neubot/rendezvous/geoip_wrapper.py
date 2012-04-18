@@ -68,7 +68,7 @@ class Geolocator(object):
         # going on, let the GeoIP library stacktrace for us.
         #
         if not os.path.exists(path):
-            logging.error("Missing GeoLiteCountry database: %s" % path)
+            logging.error("Missing GeoLiteCountry database: %s", path)
             logging.info("Please download it from "
                      "<http://www.maxmind.com/app/geolitecountry>.")
             sys.exit(1)
@@ -79,7 +79,7 @@ class Geolocator(object):
         ''' Lookup for country entry '''
         country = self.countries.country_code_by_addr(address)
         if not country:
-            logging.error("Geolocator: %s: not found" % address)
+            logging.error("Geolocator: %s: not found", address)
             return ""
         return utils.stringify(country)
 
