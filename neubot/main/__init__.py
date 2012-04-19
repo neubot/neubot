@@ -149,7 +149,10 @@ def main(argv):
 
                 connection = httplib.HTTPConnection("127.0.0.1", "9774")
                 connection.request("POST", "/api/exit")
-                response = connection.getresponse()
+
+                # New /api/exit does not send any response
+                #response = connection.getresponse()
+
                 connection.close()
 
             except (SystemExit, KeyboardInterrupt):

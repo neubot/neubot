@@ -74,8 +74,11 @@ def stop(address, port):
 
         connection = httplib.HTTPConnection(address, port)
         connection.request('POST', '/api/exit')
-        response = connection.getresponse()
-        response.read()
+
+        # New /api/exit does not send any response
+        #response = connection.getresponse()
+        #response.read()
+
         connection.close()
         return True
 

@@ -221,9 +221,5 @@ class ServerAPI(ServerHTTP):
         stream.send_response(request, response)
 
     def _api_exit(self, stream, request, query):
-        POLLER.sched(0, POLLER.break_loop)
-        response = Message()
-        stringio = StringIO.StringIO("See you, space cowboy\n")
-        response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype="text/plain", keepalive=False)
-        stream.send_response(request, response)
+        # Break out of the loop immediately
+        POLLER.break_loop()
