@@ -64,22 +64,6 @@ class TestCheckTimeoutStream(object):
 class TestCheckTimeout(unittest.TestCase):
     ''' Regression test for poller.check_timeout() '''
 
-    def test_empty(self):
-        ''' Invoked without nothing to do '''
-        poller = Poller(1)
-        poller.check_timeout()
-
-        #
-        # There are two pending check_timeout() invokations here
-        # one because we've just created the poller and the other
-        # because we've just invoked check_timeout().
-        #
-        self.assertEqual(len(poller.pending), 2)
-        self.assertEqual(poller.pending[0].func,
-          poller.check_timeout)
-        self.assertEqual(poller.pending[1].func,
-          poller.check_timeout)
-
     def test_readable(self):
         ''' Make sure it runs when there's only readable stuff '''
         poller = Poller(1)
