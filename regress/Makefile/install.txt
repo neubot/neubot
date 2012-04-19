@@ -16,10 +16,14 @@ dist/temp/datadir/neubot/api
 dist/temp/datadir/neubot/api/__init__.py
 dist/temp/datadir/neubot/api/client.py
 dist/temp/datadir/neubot/api/server.py
+dist/temp/datadir/neubot/api_server.py
 dist/temp/datadir/neubot/backend.py
 dist/temp/datadir/neubot/backend_mlab.py
 dist/temp/datadir/neubot/backend_neubot.py
 dist/temp/datadir/neubot/backend_null.py
+dist/temp/datadir/neubot/background_api.py
+dist/temp/datadir/neubot/background_rendezvous.py
+dist/temp/datadir/neubot/background_win32.py
 dist/temp/datadir/neubot/bittorrent
 dist/temp/datadir/neubot/bittorrent/__init__.py
 dist/temp/datadir/neubot/bittorrent/bitfield.py
@@ -41,6 +45,7 @@ dist/temp/datadir/neubot/database/__init__.py
 dist/temp/datadir/neubot/database/_table_utils.py
 dist/temp/datadir/neubot/database/main.py
 dist/temp/datadir/neubot/database/migrate.py
+dist/temp/datadir/neubot/database/migrate2.py
 dist/temp/datadir/neubot/database/table_bittorrent.py
 dist/temp/datadir/neubot/database/table_config.py
 dist/temp/datadir/neubot/database/table_geoloc.py
@@ -59,6 +64,7 @@ dist/temp/datadir/neubot/http/message.py
 dist/temp/datadir/neubot/http/server.py
 dist/temp/datadir/neubot/http/ssi.py
 dist/temp/datadir/neubot/http/stream.py
+dist/temp/datadir/neubot/http_server.py
 dist/temp/datadir/neubot/log.py
 dist/temp/datadir/neubot/log_api.py
 dist/temp/datadir/neubot/main
@@ -66,6 +72,7 @@ dist/temp/datadir/neubot/main/__init__.py
 dist/temp/datadir/neubot/main/browser.py
 dist/temp/datadir/neubot/main/common.py
 dist/temp/datadir/neubot/main/module.py
+dist/temp/datadir/neubot/main_win32.py
 dist/temp/datadir/neubot/marshal.py
 dist/temp/datadir/neubot/negotiate
 dist/temp/datadir/neubot/negotiate/__init__.py
@@ -84,6 +91,7 @@ dist/temp/datadir/neubot/notifier/macos.py
 dist/temp/datadir/neubot/notifier/unix.py
 dist/temp/datadir/neubot/notifier_browser.py
 dist/temp/datadir/neubot/notify.py
+dist/temp/datadir/neubot/poller.py
 dist/temp/datadir/neubot/privacy.py
 dist/temp/datadir/neubot/rendezvous
 dist/temp/datadir/neubot/rendezvous/__init__.py
@@ -95,6 +103,7 @@ dist/temp/datadir/neubot/rootdir.py
 dist/temp/datadir/neubot/runner_api.py
 dist/temp/datadir/neubot/runner_clnt.py
 dist/temp/datadir/neubot/runner_core.py
+dist/temp/datadir/neubot/runner_dload.py
 dist/temp/datadir/neubot/runner_rendezvous.py
 dist/temp/datadir/neubot/runner_tests.py
 dist/temp/datadir/neubot/runner_updates.py
@@ -119,10 +128,15 @@ dist/temp/datadir/neubot/system/win32.py
 dist/temp/datadir/neubot/updater
 dist/temp/datadir/neubot/updater/unix.py
 dist/temp/datadir/neubot/updater_install.py
+dist/temp/datadir/neubot/updater_runner.py
+dist/temp/datadir/neubot/updater_utils.py
+dist/temp/datadir/neubot/updater_win32.py
 dist/temp/datadir/neubot/utils
 dist/temp/datadir/neubot/utils/__init__.py
 dist/temp/datadir/neubot/utils/blocks.py
 dist/temp/datadir/neubot/utils/version.py
+dist/temp/datadir/neubot/utils_ctl.py
+dist/temp/datadir/neubot/utils_module.py
 dist/temp/datadir/neubot/utils_path.py
 dist/temp/datadir/neubot/utils_posix.py
 dist/temp/datadir/neubot/utils_rc.py
@@ -145,6 +159,13 @@ dist/temp/datadir/neubot/www/js/bittorrent.js
 dist/temp/datadir/neubot/www/js/contrib.js
 dist/temp/datadir/neubot/www/js/excanvas.min.js
 dist/temp/datadir/neubot/www/js/i18n.js
+dist/temp/datadir/neubot/www/js/ie8_jqplot.canvasAxisTickRenderer.min.js
+dist/temp/datadir/neubot/www/js/ie8_jqplot.canvasTextRenderer.min.js
+dist/temp/datadir/neubot/www/js/ie8_jqplot.categoryAxisRenderer.min.js
+dist/temp/datadir/neubot/www/js/ie8_jqplot.cursor.min.js
+dist/temp/datadir/neubot/www/js/ie8_jqplot.dateAxisRenderer.min.js
+dist/temp/datadir/neubot/www/js/ie8_jqplot.highlighter.min.js
+dist/temp/datadir/neubot/www/js/ie8_jquery.jqplot.min.js
 dist/temp/datadir/neubot/www/js/index.js
 dist/temp/datadir/neubot/www/js/jqplot.canvasAxisTickRenderer.min.js
 dist/temp/datadir/neubot/www/js/jqplot.canvasTextRenderer.min.js
