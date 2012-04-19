@@ -75,20 +75,20 @@ LANG = {
     'i18n_state': "Stato",
     'i18n_description': "Descrizione",
 
-    'i18n_idle_status_text': "L'Agent sta dormendo. Il prossimo \
+    'i18n_idle_status_text': "Neubot sta dormendo. Il prossimo \
 rendezvous inizierà tra <em><span id='next_rendezvous'>(n/a)</span></em>.",
 
-    'i18n_rendezvous_status_text': "L'Agent si sta connettendo al \
+    'i18n_rendezvous_status_text': "Neubot si sta connettendo al \
 server di Neubot per reperire informazioni su test e aggiornamenti.",
 
-    'i18n_negotiate_status_text': "L'Agent attende il turno per il \
+    'i18n_negotiate_status_text': "Neubot attende il turno per il \
 test di trasmissione. L'ultima posizione nota in coda è \
 <em><span id='queuePos'>(n/a)</span></em>.",
 
     'i18n_test_status_text': "Il test <em><span id='testName'>(n/a)</span>\
 </em> è in corso.",
 
-    'i18n_collect_status_text': "L'Agent sta esegendo l'upload dei \
+    'i18n_collect_status_text': "Neubot sta eseguendo l'upload dei \
 risultati sul server di Neubot.",
 
     'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.11-rc4. \
@@ -112,15 +112,15 @@ I server di Neubot sono installati sulla piattaforma distribuita \
     'i18n_welcome_text': "Grazie per aver installato Neubot! Ora avrai \
 le idee più chiare sulla tua connessione a Internet e potrai aiutare \
 la comunità a capire cosa accade nella rete. Questa sezione fornisce un \
-prospetto generale dell'agent Neubot. Clicca sui vari tab per visualizzare \
+prospetto generale del demone Neubot. Clicca sui vari tab per visualizzare \
 le informazioni relative ai vari test.",
 
     'i18n_current_status': "Stato di Neubot",
 
-    'i18n_status_text': "Questo è il pannello di controllo dell'Agent \
-di Neubot, in esecuzione con PID <em><span id='pid'>(n/a)</span></em> da \
+    'i18n_status_text': "Questo è il pannello di controllo del demone \
+Neubot, in esecuzione con PID <em><span id='pid'>(n/a)</span></em> da \
 <em><span id='since'>(n/a)</span></em>. La tabella sottostante fornisce \
-dettagli aggiuntivi sullo stato dell'Agent. La riga evidenziata rappresenta \
+dettagli aggiuntivi sullo stato del demone. La riga evidenziata rappresenta \
 lo stato corrente.",
 
     // neubot/www/settings.html
