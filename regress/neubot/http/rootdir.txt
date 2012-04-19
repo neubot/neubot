@@ -1,4 +1,5 @@
 neubot/agent.py:        conf["http.server.rootdir"] = WWW
+neubot/background_api.py:    conf['http.server.rootdir'] = WWW
 neubot/http/server.py:        "http.server.rootdir": "Root directory for static pages",
 neubot/http/server.py:        conf["http.server.rootdir"] = os.path.abspath(".")
 neubot/http/server.py:        rootdir = self.conf.get("http.server.rootdir", "")
