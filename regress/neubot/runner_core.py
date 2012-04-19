@@ -107,7 +107,7 @@ class RunQueueTest(unittest.TestCase):
 
         CONFIG.conf['privacy.informed'] = 0
         core = RunnerCore()
-        core.queue.append(('foo', lambda: None))
+        core.queue.append(('foo', lambda: None, None))
         core.run_queue()
 
         # Restore
@@ -146,7 +146,7 @@ class RunQueueTest(unittest.TestCase):
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('bittorrent', lambda: None))
+        core.queue.append(('bittorrent', lambda: None, None))
         core.run_queue()
 
         # Restore
@@ -186,7 +186,7 @@ class RunQueueTest(unittest.TestCase):
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('bittorrent', on_callback))
+        core.queue.append(('bittorrent', on_callback, None))
         core.run_queue()
 
         # Worked as expected?
@@ -218,7 +218,7 @@ class RunQueueTest(unittest.TestCase):
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('foo', lambda: None))
+        core.queue.append(('foo', lambda: None, None))
         core.run_queue()
 
         # Restore
