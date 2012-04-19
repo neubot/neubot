@@ -27,9 +27,7 @@
 
 TABLE_CONFIG=$(grep ^SCHEMA_VERSION neubot/database/table_config.py	\
                |awk -F= '{print $2}'|tr -d \'|tr -d ' ')
-MIGRATE=$(grep '^    migrate_from__' neubot/database/migrate.py		\
-          |tail -n1|awk -F__ '{print $4}'|tr -d v|tr -d ,		\
-          |sed 's/_/./g')
+MIGRATE=$(python neubot/database/migrate2.py)
 
 if [ "$TABLE_CONFIG" != "$MIGRATE" ]; then
     echo "<ERR> Inconsistent database schema version" 1>&2

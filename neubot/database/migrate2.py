@@ -448,7 +448,7 @@ class MigrateFrom42To43(object):
 
     @classmethod
     def migrate(cls, connection):
-        ''' Migrate database from schema v4.2 to v4.3 '''
+        ''' Migrate: 4.2 -> 4.3 '''
 
         try:
             logging.info('migrate2: fix reordering column bug of v4.2')
@@ -512,6 +512,13 @@ def main(args):
 
     arguments = args[1:]
     logging.getLogger().setLevel(logging.DEBUG)
+
+    if not arguments:
+        maxkey = max(MIGRATORS.keys())
+        dest = MIGRATORS[maxkey].__doc__
+        dest = dest[dest.index('->') + len('->'):].strip()
+        sys.stdout.write('%s\n' % dest)
+        sys.exit(0)
 
     for path in arguments:
         connection = sqlite3.connect(path)
