@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Regression test for neubot/bittorrent/sched.py '''
+''' Regression test for neubot/bittorrent/btsched.py '''
 
 import unittest
 import sys
@@ -29,8 +29,8 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.bittorrent.bitfield import make_bitfield
-from neubot.bittorrent.sched import _sched_piece
-from neubot.bittorrent.sched import sched_idx
+from neubot.bittorrent.btsched import _sched_piece
+from neubot.bittorrent.btsched import sched_idx
 
 # pylint: disable=R0904
 class TestSchedIdx(unittest.TestCase):

@@ -1,4 +1,4 @@
-# neubot/bittorrent/sched.py
+# neubot/bittorrent/btsched.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,

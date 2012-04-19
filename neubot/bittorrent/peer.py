@@ -30,7 +30,7 @@ import random
 
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
-from neubot.bittorrent.sched import sched_req
+from neubot.bittorrent.btsched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
 from neubot.net.stream import StreamHandler
 
