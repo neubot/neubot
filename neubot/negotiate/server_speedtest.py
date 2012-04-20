@@ -85,7 +85,7 @@ class NegotiateServerSpeedtest(NegotiateServerModule):
         if privacy.collect_allowed(request_body):
             BACKEND.speedtest_store(request_body)
         else:
-            logging.warning('* bad privacy settings: %s' % str(stream))
+            logging.warning('* bad privacy settings: %s', str(stream))
 
         return {}
 

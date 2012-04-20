@@ -60,7 +60,7 @@ class State(object):
         self._t = self._T()
         self._events[name] = event
 
-        logging.debug("state: %s %s" % (name, event))
+        logging.debug("state: %s %s", name, event)
 
         if publish:
             self._publish(STATECHANGE, self._t)

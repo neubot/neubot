@@ -147,7 +147,7 @@ class ClientHTTP(StreamHandler):
     def connection_made(self, sock, rtt=0):
         ''' Invoked when the connection is created '''
         if rtt:
-            logging.debug("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
+            logging.debug("ClientHTTP: latency: %s", utils.time_formatter(rtt))
             self.rtt = rtt
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf)
@@ -167,7 +167,7 @@ class TestClient(ClientHTTP):
         if method == "PUT":
             fpath = uri.split("/")[-1]
             if not os.path.exists(fpath):
-                logging.error("* Local file does not exist: %s" % fpath)
+                logging.error("* Local file does not exist: %s", fpath)
                 sys.exit(1)
             request.compose(method=method, uri=uri, keepalive=False,
               mimetype="text/plain", body=open(fpath, "rb"))
@@ -178,7 +178,7 @@ class TestClient(ClientHTTP):
         if method == "GET" and not stdout:
             fpath = uri.split("/")[-1]
             if os.path.exists(fpath):
-                logging.error("* Local file already exists: %s" % fpath)
+                logging.error("* Local file already exists: %s", fpath)
                 sys.exit(1)
             response.body = open(fpath, "wb")
         else:
