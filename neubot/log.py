@@ -167,16 +167,16 @@ class Logger(object):
             func(line)
 
     def error(self, message, *args):
-        self._log("ERROR", message, *args)
+        self.log("ERROR", message, *args)
 
     def warning(self, message, *args):
-        self._log("WARNING", message, *args)
+        self.log("WARNING", message, *args)
 
     def info(self, message, *args):
-        self._log("INFO", message, *args)
+        self.log("INFO", message, *args)
 
     def debug(self, message, *args):
-        self._log("DEBUG", message, *args)
+        self.log("DEBUG", message, *args)
 
     def log_access(self, message, *args):
         #
@@ -187,7 +187,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self._log("ACCESS", message, *args)
+        self.log("ACCESS", message, *args)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
@@ -217,7 +217,7 @@ class Logger(object):
         # Purge the queue in any case
         del self._queue[:]
 
-    def _log(self, severity, message, *args):
+    def log(self, severity, message, *args):
         ''' Really log a message '''
 
         # No point in logging empty lines
@@ -319,11 +319,13 @@ LOG = Logger()
 
 class LogWrapper(logging.Handler):
 
+    """Wrapper for stdlib logging."""
+
     def emit(self, record):
         msg = record.msg
         args = record.args
         level = record.levelname
-        LOG._log(level, msg, *args)
+        LOG.log(level, msg, *args)
 
 ROOT = logging.getLogger()
 ROOT.handlers = []
