@@ -36,7 +36,7 @@ from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.speedtest.wrapper import SpeedtestCollect
 from neubot.speedtest.wrapper import SpeedtestNegotiate_Response
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 
 from neubot.main import common
 from neubot import marshal

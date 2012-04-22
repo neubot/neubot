@@ -38,7 +38,7 @@ from neubot.bittorrent import estimate
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE

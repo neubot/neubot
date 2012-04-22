@@ -30,7 +30,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 
 class TestLibVersion(unittest.TestCase):
 

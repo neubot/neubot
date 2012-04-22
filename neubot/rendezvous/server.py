@@ -44,7 +44,7 @@ from neubot import marshal
 from neubot import system
 from neubot import privacy
 
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 
 GEOLOCATOR = Geolocator()
 

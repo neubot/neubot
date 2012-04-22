@@ -35,7 +35,7 @@ if sys.version_info[0] >= 3:
 else:
     import _winreg
 
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 
 from neubot.config import CONFIG
 from neubot.log import LOG
