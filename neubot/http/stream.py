@@ -99,7 +99,7 @@ class StreamHTTP(Stream):
             return
 
         #This one should be debug2 as well
-        #logging.debug("HTTP receiver: got %d bytes", len(data))
+        #logging.debug("HTTP receiver: got %d bytes" % len(data))
 
         # merge with previous fragments (if any)
         if self.incoming:
@@ -151,7 +151,7 @@ class StreamHTTP(Stream):
         if length > 0:
             remainder = data[offset:]
             self.incoming.append(remainder)
-            logging.debug("HTTP receiver: remainder %d", len(remainder))
+            logging.debug("HTTP receiver: remainder %d" % len(remainder))
 
         # get the next fragment
         self.start_recv()
@@ -160,7 +160,7 @@ class StreamHTTP(Stream):
         ''' We've got a line... what do we do? '''
         if self.state == FIRSTLINE:
             line = line.strip()
-            logging.debug("< %s", line)
+            logging.debug("< %s" % line)
             vector = line.split(None, 2)
             if len(vector) == 3:
                 if line.startswith("HTTP"):
@@ -179,7 +179,7 @@ class StreamHTTP(Stream):
                 raise RuntimeError("Invalid first line")
         elif self.state == HEADER:
             if line.strip():
-                logging.debug("< %s", line)
+                logging.debug("< %s" % line)
                 # not handling mime folding
                 index = line.find(":")
                 if index >= 0:

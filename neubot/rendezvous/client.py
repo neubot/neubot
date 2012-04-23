@@ -87,7 +87,8 @@ class ClientRendezvous(object):
         new_version = RUNNER_UPDATES.get_update_version()
         new_uri = RUNNER_UPDATES.get_update_uri()
         if new_version and new_uri:
-            logging.info("Version %s available at %s", new_version, new_uri)
+            logging.info("Version %s available at %s" % (new_version,
+                                                     new_uri))
             STATE.update("update", {"version": new_version,
                                     "uri": new_uri})
             _open_browser_on_windows('update.html')
@@ -106,7 +107,7 @@ class ClientRendezvous(object):
             self._schedule()
             return
 
-        logging.info("* Chosen test: %s", test)
+        logging.info("* Chosen test: %s" % test)
 
         # Are we allowed to run a test?
         if not CONFIG["enabled"]:
@@ -134,7 +135,7 @@ class ClientRendezvous(object):
                 self._interval = 1380 + random.randrange(0, 240)
             interval = self._interval
 
-        logging.info("* Next rendezvous in %d seconds", interval)
+        logging.info("* Next rendezvous in %d seconds" % interval)
 
         task = POLLER.sched(interval, self.run)
 

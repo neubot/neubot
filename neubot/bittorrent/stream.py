@@ -120,12 +120,12 @@ class StreamBitTorrent(Stream):
 
     def send_request(self, index, begin, length):
         ''' Send the REQUEST message '''
-        logging.debug("> REQUEST %d %d %d", index, begin, length)
+        logging.debug("> REQUEST %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!cIII", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
         ''' Send the CANCEL message '''
-        logging.debug("> CANCEL %d %d %d", index, begin, length)
+        logging.debug("> CANCEL %d %d %d" % (index, begin, length))
         self._send_message(struct.pack("!cIII", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
@@ -135,7 +135,7 @@ class StreamBitTorrent(Stream):
 
     def send_have(self, index):
         ''' Send the HAVE message '''
-        logging.debug("> HAVE %d", index)
+        logging.debug("> HAVE %d" % index)
         self._send_message(struct.pack("!cI", HAVE, index))
 
     def send_keepalive(self):
@@ -145,7 +145,7 @@ class StreamBitTorrent(Stream):
 
     def send_piece(self, index, begin, block):
         ''' Send the PIECE message '''
-        logging.debug("> PIECE %d %d len=%d", index, begin, len(block))
+        logging.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
         self._send_message(struct.pack("!cII%ss" % len(block), PIECE,
           index, begin, block))
 
@@ -270,7 +270,7 @@ class StreamBitTorrent(Stream):
             i = struct.unpack("!xI", message)[0]
             if i >= self.parent.numpieces:
                 raise RuntimeError("HAVE: index out of bounds")
-            logging.debug("< HAVE %d", i)
+            logging.debug("< HAVE %d" % i)
             self.parent.got_have(i)
 
         elif t == BITFIELD:
@@ -279,14 +279,14 @@ class StreamBitTorrent(Stream):
 
         elif t == REQUEST:
             i, a, b = struct.unpack("!xIII", message)
-            logging.debug("< REQUEST %d %d %d", i, a, b)
+            logging.debug("< REQUEST %d %d %d" % (i, a, b))
             if i >= self.parent.numpieces:
                 raise RuntimeError("REQUEST: index out of bounds")
             self.parent.got_request(self, i, a, b)
 
         elif t == CANCEL:
             i, a, b = struct.unpack("!xIII", message)
-            logging.debug("< CANCEL %d %d %d", i, a, b)
+            logging.debug("< CANCEL %d %d %d" % (i, a, b))
             if i >= self.parent.numpieces:
                 raise RuntimeError("CANCEL: index out of bounds")
             # NOTE Ignore CANCEL message
@@ -294,7 +294,7 @@ class StreamBitTorrent(Stream):
         elif t == PIECE:
             n = len(message) - 9
             i, a, b = struct.unpack("!xII%ss" % n, message)
-            logging.debug("< PIECE %d %d len=%d", i, a, n)
+            logging.debug("< PIECE %d %d len=%d" % (i, a, n))
             if i >= self.parent.numpieces:
                 raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)

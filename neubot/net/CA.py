@@ -98,13 +98,13 @@ def main(args):
     # Generate RSA private key
     genrsa = [ "openssl", "genrsa", "-out", conf["net.CA.privkey"],
                str(conf["net.CA.bits"]) ]
-    logging.debug("CA: exec: %s", genrsa)
+    logging.debug("CA: exec: %s" % genrsa)
     subprocess.call(genrsa)
 
     # Generate self-signed certificate
     req = [ "openssl", "req", "-new", "-x509", "-key", conf["net.CA.privkey"],
             "-out", conf["net.CA.cacert"], "-days", str(conf["net.CA.days"]) ]
-    logging.debug("CA: exec: %s", req)
+    logging.debug("CA: exec: %s" % req)
     subprocess.call(req)
 
     #

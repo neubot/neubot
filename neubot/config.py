@@ -75,7 +75,7 @@ class ConfigDict(dict):
             ovalue = "(none)"
             cast = utils.smart_cast(value)
         value = cast(value)
-        logging.debug("config: %s: %s -> %s", key, ovalue, value)
+        logging.debug("config: %s: %s -> %s" % (key, ovalue, value))
         dict.__setitem__(self, key, value)
 
     def update(self, *args, **kwds):
