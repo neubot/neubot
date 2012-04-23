@@ -245,10 +245,10 @@ class Logger(object):
         #
         if self.streams:
             # "Lazy" processing
-            message = message.rstrip()
             if args:
                 message = message % args
                 args = ()
+            message = message.rstrip()
             try:
                 if severity != 'ACCESS':
                     logline = "%s %s\r\n" % (severity, message)
@@ -265,10 +265,10 @@ class Logger(object):
             return
 
         # Lazy processing
-        message = message.rstrip()
         if args:
             message = message % args
             args = ()
+        message = message.rstrip()
 
         # Write log into the database
         if self._use_database and severity != "ACCESS":
