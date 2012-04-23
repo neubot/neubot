@@ -130,7 +130,6 @@ if RUN_PY2EXE:
             # of performing a chdir(2) in the directory where its
             # script is located.
             #
-
             FILEP = open('Win32/neubot.nsi')
             subprocess.call([MAKENSIS, '/DUNINST' , '-'], stdin=FILEP)
             FILEP.close()
