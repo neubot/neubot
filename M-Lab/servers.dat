@@ -24,6 +24,7 @@ mlab1.syd01.measurement-lab.org AU OC
 mlab1.syd02.measurement-lab.org AU OC
 mlab1.tpe01.measurement-lab.org TW AS
 mlab1.trn01.measurement-lab.org IT EU
+mlab1.vie01.measurement-lab.org AT EU
 mlab1.wlg01.measurement-lab.org NZ OC
 mlab2.ams01.measurement-lab.org NL EU
 mlab2.ams02.measurement-lab.org NL EU
@@ -51,6 +52,7 @@ mlab2.syd01.measurement-lab.org AU OC
 mlab2.syd02.measurement-lab.org AU OC
 mlab2.tpe01.measurement-lab.org TW AS
 mlab2.trn01.measurement-lab.org IT EU
+mlab2.vie01.measurement-lab.org AT EU
 mlab2.wlg01.measurement-lab.org NZ OC
 mlab3.ams01.measurement-lab.org NL EU
 mlab3.ams02.measurement-lab.org NL EU
@@ -78,5 +80,6 @@ mlab3.syd01.measurement-lab.org AU OC
 mlab3.syd02.measurement-lab.org AU OC
 mlab3.tpe01.measurement-lab.org TW AS
 mlab3.trn01.measurement-lab.org IT EU
+mlab3.vie01.measurement-lab.org AT EU
 mlab3.wlg01.measurement-lab.org NZ OC
 mlab4.nuq01.measurement-lab.org US NA
