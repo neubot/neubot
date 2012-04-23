@@ -81,8 +81,7 @@ clean:
 	./scripts/cleanup
 
 doc:
-	rst2html doc/FAQ.rst | ./scripts/faq > doc/FAQ.html
-	rst2html doc/FAQ-it.rst | ./scripts/faq > doc/FAQ-it.html
+	./scripts/faq
 
 #                 _     _
 #   __ _ _ __ ___| |__ (_)_   _____
