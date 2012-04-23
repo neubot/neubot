@@ -69,7 +69,7 @@ Usage: nagios-plugin-neubot [-?vV] [-H|--hostname hostname]
 '''
 
 USAGE_LONG = '''
-Version: 0.4.11-rc5
+Version: 0.4.11
 Purpose: Monitor Neubot server
 Usage: nagios-plugin-neubot [-?hvV] [-H|--hostname hostname]
                             [--version] [--help]
@@ -103,7 +103,7 @@ def __getopt(args):
             sys.stdout.write(USAGE_SHORT)
             sys.exit(0)
         elif name == "-V" or name == "--version":
-            sys.stdout.write("Neubot 0.4.11-rc5\n")
+            sys.stdout.write("Neubot 0.4.11\n")
             sys.exit(0)
         elif name == "-H" or name == "--hostname":
             hostname = tpl[1]
