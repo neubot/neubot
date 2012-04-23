@@ -20,20 +20,21 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Convert FAQ to HTML suitable for inclusion on website '''
+''' Filters FAQ HTML and transform it in a form suitable
+    for inclusion in the website '''
 
 import sys
 import xml.dom.minidom
 
 def html():
-    ''' Generate FAQ page '''
+    ''' Filter FAQ page and adapt to Drupal '''
     content = sys.stdin.read()
     document = xml.dom.minidom.parseString(content)
     root = document.documentElement
     __process_dom(root)
 
 def __process_dom(root):
-    ''' Process dom to generate FAQ page '''
+    ''' Process dom to transform FAQ page '''
 
     # Scan all ELEMENT nodes
     for node in root.childNodes:
