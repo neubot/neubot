@@ -62,9 +62,8 @@ def main(args):
     CONFIG.merge_database(DATABASE.connection())
 
     #
-    # When we run as an agent we also save logs into
-    # the database, to easily access and show them via
-    # the web user interface.
+    # Save logs into the database, to easily access
+    # and show them via the web user interface.
     #
     LOG.use_database()
 
