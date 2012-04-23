@@ -219,6 +219,10 @@ class Logger(object):
 
     def log(self, severity, message, *args):
         ''' Really log a message '''
+        self.log_tuple(severity, message, args)
+
+    def log_tuple(self, severity, message, args):
+        ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
         if not message:
@@ -325,7 +329,7 @@ class LogWrapper(logging.Handler):
         msg = record.msg
         args = record.args
         level = record.levelname
-        LOG.log(level, msg, *args)
+        LOG.log_tuple(level, msg, args)
 
 ROOT = logging.getLogger()
 ROOT.handlers = []
