@@ -28,7 +28,11 @@ if [ -z $rst2html ]; then
     rst2html=/usr/bin/rst2html
 fi
 
+faq_filter() {
+    ./scripts/faq_filter "$(date)" "$(git describe --tags)"
+}
+
 for file in doc/FAQ.rst doc/FAQ-it.rst; do
     ofile=$(echo $file|sed 's/\.rst$/.html/g')
-    $rst2html $file | ./scripts/faq_filter > $ofile
+    $rst2html $file | faq_filter > $ofile
 done
