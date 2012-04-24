@@ -21,7 +21,7 @@
 #
 
 """
- Unit test for neubot.utils.version.py
+ Unit test for neubot/utils_version.py
 """
 
 import unittest
