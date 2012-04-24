@@ -177,6 +177,11 @@ prepare()
 
         $log_always "$rawdir: ok_count: $ok_count, bad_count: $bad_count"
 
+        # For when there is nothing we cannot publish
+        if ! test -f $rawdir/$tarball; then
+            continue
+        fi
+
         $log_info "gzip -9 $rawdir/$tarball"
         gzip -9 $rawdir/$tarball
         (
