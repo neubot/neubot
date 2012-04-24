@@ -1,3 +1,122 @@
+Neubot 0.4.11 [2012-04-24]
+	* rename_column(): factor out code to create ntemplate
+	* database: Fix column migration bug
+	* Add migrate2 with migrator that undoes column reordering
+	* database/migrate2.py: better log messages
+	* database/__init__.py: attach migrate2
+	* database/migrate2.py: deal with corner cases
+	* database/table_config.py: bump schema to 4.3
+	* database/migrate2.py: log before and after build_operation
+	* database/migrate2.py: more robust migration
+	* database/migrate2.py: value may be None
+	* database/migrate2.py: better is-reordered and looks-good tests
+	* database/migrate2.py: catch more corner cases
+	* database/migrate2.py: bump again connect_time threshold
+	* database/migrate2.py: deal with empty uuids
+	* database/migrate2.py: two less pylint warnings
+	* database/migrate2.py: avoid consuming too much memory
+	* Merge fix for column reordering bug
+	* migrate2.py: sync docstring with actual code
+	* js: add jqplot 0.9.6 to workaround IE8 plot bug
+	* www/header.html: use jqplot 0.9.6 for IE8
+	* Merge workaround for IE8 bug
+	* net/poller.py: use standard library scheduler
+	* net/poller.py: add docstrings
+	* net/poller.py: one less pylint warning
+	* net/poller.py: portably catch exception
+	* net/poller.py: python3 ready
+	* net/poller.py: wrap long line
+	* net/poller.py: add missing import
+	* Merge code to use stdlib scheduler in poller
+	* net/poller.py: finish nonfinished comment
+	* M-Lab/ip_addr.dat: sync
+	* M-Lab/redir_table.sh: sync
+	* www/header.html: sync with master
+	* net/poller.py: make sure we break loop when no I/O is pending
+	* runner_core.py: safely run callback()
+	* rootdir.py: s/CANDIDATE/ROOTDIR/g
+	* api_server.py http_server.py poller.py: forward compatibility
+	* runner_core.py: print traceback not just exception
+	* Merge cleanups for 0.4.11
+	* Win32/setup.py: do not copy MacOSX special files
+	* Merge branch 'next'
+	* browser.py: use default URI if no URI is specified
+	* config.py: add win32_updater setting
+	* add runner_dload.py: runner-based downloader
+	* add updater_win32.py: automatic updates for windows
+	* add background_win32.py: run neubot in background in windows
+	* add main_win32.py: new main() for windows
+	* Win32: use main_win32.py instead of main/__init__.py
+	* Win32: neubot.nsi setup.py: adapt to Win32 autoupdates
+	* updater_win32.py: Remember to close open handles before Popen()
+	* Merge experimental win32 autoupdater
+	* rendezvous/server.py: make crystal clear redirection
+	* rendezvous/server.py: add docstrings
+	* rendezvous/server.py: wrap a couple of long lines
+	* rendezvous/server.py: remove unused import
+	* rendezvous/server.py: s/s/body/g to make pylint happy
+	* rendezvous/server.py: no need to use stringio
+	* Modify rendezvous.server.run() to receive no arguments
+	* rendezvous/server.py: s/m/ibody/g s/m1/obody/g to make pylint content
+	* Merge maintenance patches for rendezvous/server.py
+	* server.py: POLLER.tasks POLLER.pending are no more
+	* rendezvous/server.py: fix comment
+	* Merge remote-tracking branch 'whitespider/next' into next
+	* Neubot/0.4.11-rc1 released
+	* scripts/publish: publish also win32 autoupdate tarball
+	* Win32/setup.py: prefix win32 to autoupdater tarball
+	* scripts/publish: repair publish of win32 autoupdater tarball
+	* scripts/publish: publish Win32 autoupdate tarball sha256
+	* add scripts/faq: RST -> HTML suitable for drupal
+	* Makefile: add rules to update HTML FAQ pages
+	* Merge code to autogenerate FAQ FAQ-it for website
+	* rendezvous/server.py: repair rendezvous server startup
+	* Neubot/0.4.11-rc2 released
+	* Win32/neubot.nsi: repair version number autobumped by mistake
+	* Merge branch 'next'
+	* scripts/cksum.py: factor out code to compute the checksum
+	* scripts/cksum.py: no more pylint warnings
+	* Win32/setup.py: copy cksum_path() from scripts/cksum.py
+	* Win32/setup.py: autocreate sha256sum for autoupdater tarball
+	* Merge code to autocompute win32 autoupdater tarball sha256
+	* Win32/setup.py: be tidy, put results into wdist directory
+	* Win32/setup.py: put deployable stuff in wdist/win32
+	* scripts/publish: search win32 stuff in win32 subfolder
+	* Neubot/0.4.11-rc3 released
+	* scripts/publish: fix some wrong version numbers
+	* scripts/publish: relax -r XOR -R restriction
+	* rootdir.py: better comment
+	* runner_core.py: raise, not pass, exceptions we must not ignore
+	* Win32/neubot.nsi: bump copyright year
+	* Win32/neubot.nsi: uninstall: split 0.4.10 and post-0.4.10 cases
+	* Neubot/0.4.11-rc4 released
+	* lang/it.js: stop saying agent
+	* api/server.py: /api/exit: break out of loop immediately
+	* Repair make install regress test
+	* bittorrent: sched.py -> btsched.py to repair regress test
+	* Repair database version test
+	* Repair http/rootdir.sh regression test
+	* regress/neubot/net/poller.py: remove test, now we use sched.scheduler
+	* regress: repair neubot/runner_core.py test
+	* Neubot/0.4.11-rc5 released
+	* M-Lab/airports_cache.dat: add Vienna, AT
+	* M-Lab/servers.dat: add Vienna, AT servers
+	* M-Lab/ip_addr.dat: server is down
+	* M-Lab/redir_table.sh: regen
+	* Merge updates for redirection table
+	* scripts: faq -> faq_filter: since this is what it does
+	* scripts/faq: script to autogenerate FAQ.html FAQ-it.html
+	* scripts: faq faq_filter: add date and neubot version
+	* doc: add autogen FAQ.html FAQ-it.html
+	* Merge better code to autogenerate FAQ FAQ-it
+	* Neubot/0.4.11 released
+	* Makefile: use ./scripts/faq to autogen faq files
+	* Win32/setup.py: zap added-by-mistake empty line
+	* background_win32: bring comment uptodate
+	* Merge nits spotted while reviewing release patch
+	* scripts/collect.sh: prepare: skip dirs w/o any data
+	* Neubot/0.4.11 released
+
 Neubot 0.4.10 [2012-03-15]
 	* Makefile: exit 1 when make regress fails
 	* .gitignore: no need to ignore those two files
