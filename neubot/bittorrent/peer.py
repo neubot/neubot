@@ -183,7 +183,7 @@ class PeerNeubot(StreamHandler):
         # not valid anymore, pieces go on the wire when the send queue
         # becomes empty.
         #
-        if self.version >= 2:
+        if self.version == 2:
             return
 
         #
