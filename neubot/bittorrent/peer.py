@@ -165,9 +165,10 @@ class PeerNeubot(StreamHandler):
             if self.state == WAIT_REQUEST:
                 self.begin_upload = utils.ticks()
                 self.state = UPLOADING
-                # send_complete() kickstarts the uploader
-                self.send_complete(stream)
-                return
+                if self.version == 2:
+                    # send_complete() kickstarts the uploader
+                    self.send_complete(stream)
+                    return
             elif self.state == WAIT_NOT_INTERESTED:
                 return
 
@@ -208,6 +209,9 @@ class PeerNeubot(StreamHandler):
             if diff > TARGET:
                 self.state = WAIT_NOT_INTERESTED
                 stream.send_choke()
+                return
+
+            if self.version == 3:
                 return
 
             #
@@ -359,7 +363,7 @@ class PeerNeubot(StreamHandler):
         # end, with probability 10%.
         #
         if self.version >= 2:
-            if random.random() < 0.1:
+            if self.version == 3 or random.random() < 0.1:
                 index = random.randrange(self.numpieces)
                 stream.send_request(index, 0, PIECE_LEN)
             return
