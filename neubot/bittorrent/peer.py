@@ -245,12 +245,13 @@ class PeerNeubot(StreamHandler):
 
     def got_not_interested(self, stream):
 
+        if self.state != UPLOADING and self.version == 1:
+            raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
+
         #
         # It's the sender that decides when it has sent
         # for enough time and enters WAIT_NOT_INTERESTED.
         #
-        if self.state != UPLOADING and self.version == 1:
-            raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
         if self.state != WAIT_NOT_INTERESTED and self.version >= 2:
             raise RuntimeError("NOT_INTERESTED when state "
                                "!= WAIT_NOT_INTERESTED")
