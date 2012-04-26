@@ -137,6 +137,7 @@ class PeerNeubot(StreamHandler):
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))
+        LOG.debug('BitTorrent: test version %d' % self.version)
         LOG.start("BitTorrent: receiving bitfield")
         if self.connector_side:
             self.state = SENT_INTERESTED
