@@ -137,9 +137,6 @@ class Logger(object):
         self.info(message + " in progress...")
         self.message = message
 
-    def progress(self, dot="."):
-        pass
-
     def complete(self, done="done\n"):
         elapsed = utils.time_formatter(utils.ticks() - self.ticks)
         done = "".join([done.rstrip(), " [in ", elapsed, "]\n"])

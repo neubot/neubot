@@ -39,8 +39,6 @@ from neubot import compat
 
 if __name__ == "__main__":
     LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
     LOG.complete("success!")
 
     logging.info("INFO w/ logging.info")
@@ -71,8 +69,6 @@ if __name__ == "__main__":
         LOG.exception(func=LOG.warning)
 
     LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
     LOG.complete("success!")
 
     LOG.oops("Testing the new oops feature")

@@ -286,7 +286,6 @@ class ClientSpeedtest(ClientHTTP):
         if self.finished:
             stream.close()
             return
-        LOG.progress()
         if response.code not in ("200", "206"):
             stream.close()
             self.cleanup("bad response code")
@@ -351,8 +350,6 @@ class ClientSpeedtest(ClientHTTP):
                 elapsed = (max(map(lambda t: t[1], speed)) -
                   min(map(lambda t: t[0], speed)))
                 speed = sum(map(lambda t: t[2], speed)) / elapsed
-                LOG.progress(".[%s,%s]." % (utils.time_formatter(elapsed),
-                       utils.speed_formatter(speed)))
 
                 #
                 # O(N) loopless adaptation to the channel w/ memory
