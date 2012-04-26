@@ -86,7 +86,7 @@ class Logger(object):
     # is mandatory because we don't want the database to grow
     # without control.
     #
-    def _maintain_database(self, *args, **kwargs):
+    def _maintain_database(self):
 
         POLLER.sched(INTERVAL, self._maintain_database)
 
