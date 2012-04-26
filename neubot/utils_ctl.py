@@ -25,9 +25,10 @@
 ''' Helpers to control Neubot daemon '''
 
 import httplib
+import sys
 import time
 
-def is_running(address, port):
+def is_running(address, port, verbose=0):
 
     ''' Returns True if Neubot is running '''
 
@@ -43,8 +44,10 @@ def is_running(address, port):
         running = False
 
         try:
+            sys.stderr.write('DEBUG: checking whether Neubot is running\n')
 
             connection = httplib.HTTPConnection(address, port)
+            connection.set_debuglevel(verbose)
             connection.request('GET', '/api/version')
             response = connection.getresponse()
             if response.status == 200:
@@ -59,13 +62,16 @@ def is_running(address, port):
             pass
 
         if running:
+            sys.stderr.write('DEBUG: is running\n')
             return True
 
+        sys.stderr.write('DEBUG: is not running... will retry in one second\n')
         time.sleep(1)
 
+    sys.stderr.write('DEBUG: is not running... giving up\n')
     return False
 
-def stop(address, port):
+def stop(address, port, verbose=0):
     ''' Stop running neubot instance '''
 
     # Adapted from neubot/main/__init__.py
@@ -73,6 +79,7 @@ def stop(address, port):
     try:
 
         connection = httplib.HTTPConnection(address, port)
+        connection.set_debuglevel(verbose)
         connection.request('POST', '/api/exit')
 
         # New /api/exit does not send any response
