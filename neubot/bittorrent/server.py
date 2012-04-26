@@ -57,9 +57,12 @@ class ServerPeer(PeerNeubot):
         # Override the number of bytes using information passed
         # from the peer and regenerate the schedule so that we
         # actually transfer that number of bytes.
+        # Override the test_version information as well.
         #
         self.target_bytes = NEGOTIATE_SERVER_BITTORRENT.peers[stream.id][
                                                    "target_bytes"]
+        self.version = NEGOTIATE_SERVER_BITTORRENT.peers[stream.id][
+                                                   "test_version"]
         self.make_sched()
 
         PeerNeubot.connection_ready(self, stream)
