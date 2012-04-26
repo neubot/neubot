@@ -124,8 +124,6 @@ class Logger(object):
     #
     # Below there is convenience code for printing the beginning
     # and end of long operations, and to calculate timing.
-    # The progress() function is a relic of a past era when we
-    # had "interactive" long operation logging.
     # Here's a sample output::
     #
     #   Download in progress...
