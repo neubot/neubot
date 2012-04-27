@@ -33,8 +33,8 @@
 import itertools
 import os
 import shlex
+import logging
 
-from neubot.log import LOG
 from neubot.database import table_config
 from neubot import utils
 
@@ -75,7 +75,7 @@ class ConfigDict(dict):
             ovalue = "(none)"
             cast = utils.smart_cast(value)
         value = cast(value)
-        LOG.debug("config: %s: %s -> %s" % (key, ovalue, value))
+        logging.debug("config: %s: %s -> %s", key, ovalue, value)
         dict.__setitem__(self, key, value)
 
     def update(self, *args, **kwds):
@@ -120,27 +120,27 @@ class Config(object):
         self.properties.append(prop)
 
     def merge_fp(self, fp):
-        LOG.debug("config: reading properties from file")
+        logging.debug("config: reading properties from file")
         map(self.merge_kv, itertools.imap(string_to_kv, fp))
 
     def merge_database(self, database):
-        LOG.debug("config: reading properties from database")
+        logging.debug("config: reading properties from database")
         dictionary = table_config.dictionarize(database)
         for key, value in dictionary.items():
             self.merge_kv((key, value))
 
     def merge_environ(self):
-        LOG.debug("config: reading properties from the environment")
+        logging.debug("config: reading properties from the environment")
         map(self.merge_kv, itertools.imap(string_to_kv,
           shlex.split(os.environ.get("NEUBOT_OPTIONS",""))))
 
     def merge_properties(self):
-        LOG.debug("config: reading properties from command-line")
+        logging.debug("config: reading properties from command-line")
         map(self.merge_kv, itertools.imap(string_to_kv, self.properties))
 
     def merge_api(self, dictlike, database=None):
         # enforce all-or-nothing
-        LOG.debug("config: reading properties from /api/config")
+        logging.debug("config: reading properties from /api/config")
         map(lambda t: self.merge_kv(t, dry=True), dictlike.iteritems())
         map(self.merge_kv, dictlike.iteritems())
         if database:

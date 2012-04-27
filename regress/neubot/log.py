@@ -35,16 +35,10 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.log import LOG
-from neubot.log import _log_info
 from neubot import compat
 
 if __name__ == "__main__":
-    # Make sure the hackish name substitution works
-    assert(logging.info == _log_info)
-
     LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
     LOG.complete("success!")
 
     logging.info("INFO w/ logging.info")
@@ -75,8 +69,6 @@ if __name__ == "__main__":
         LOG.exception(func=LOG.warning)
 
     LOG.start("Testing the in-progress feature")
-    LOG.progress("...")
-    LOG.progress()
     LOG.complete("success!")
 
     LOG.oops("Testing the new oops feature")

@@ -1,7 +1,7 @@
 # neubot/speedtest/client.py
 
 #
-# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -36,13 +36,14 @@ from neubot.notify import NOTIFIER
 from neubot.state import STATE
 from neubot.speedtest.wrapper import SpeedtestCollect
 from neubot.speedtest.wrapper import SpeedtestNegotiate_Response
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 
 from neubot.main import common
 from neubot import marshal
 from neubot import privacy
 from neubot import utils
 
+from neubot.bytegen_speedtest import BytegenSpeedtest
 from neubot import runner_clnt
 
 TESTDONE = "testdone" #TODO: use directly the string instead
@@ -83,7 +84,15 @@ class ClientDownload(ClientHTTP):
         request = Message()
         request.compose(method="GET", pathquery="/speedtest/download",
           host=self.host_header)
-        request["range"] = "bytes=0-%d" % ESTIMATE['download']
+
+        #
+        # With version 2, we do not send range header and the
+        # server will understand that it needs to send us chunked
+        # data for its TARGET number of seconds.
+        #
+        if self.conf['version'] == 1:
+            request["range"] = "bytes=0-%d" % ESTIMATE['download']
+
         request["authorization"] = self.conf.get(
           "speedtest.client.authorization", "")
         self.ticks[stream] = utils.ticks()
@@ -105,6 +114,22 @@ class ClientUpload(ClientHTTP):
 
     def connection_ready(self, stream):
         request = Message()
+
+        #
+        # With version 2, we upload bytes using chunked transfer
+        # encoding for TARGET seconds.
+        #
+        if self.conf['version'] == 2:
+            body = BytegenSpeedtest(TARGET)
+            request.compose(method='POST', chunked=body,
+              pathquery='/speedtest/upload', host=self.host_header)
+            request['authorization'] = self.conf[
+              'speedtest.client.authorization']
+            stream.send_request(request)
+            self.ticks[stream] = utils.ticks()
+            self.bytes[stream] = stream.bytes_sent_tot
+            return
+
         request.compose(method="POST", body=RandomBody(ESTIMATE["upload"]),
           pathquery="/speedtest/upload", host=self.host_header)
         request["authorization"] = self.conf.get(
@@ -252,6 +277,10 @@ class ClientSpeedtest(ClientHTTP):
         ClientHTTP.connect_uri(self, uri, count)
 
     def connection_ready(self, stream):
+
+        # Force version 2 of the speedtest
+        self.conf['version'] = 2
+
         self.streams.append(stream)
         if len(self.streams) == self.conf.get("speedtest.client.nconn", 1):
             self.update()
@@ -286,7 +315,6 @@ class ClientSpeedtest(ClientHTTP):
         if self.finished:
             stream.close()
             return
-        LOG.progress()
         if response.code not in ("200", "206"):
             stream.close()
             self.cleanup("bad response code")
@@ -351,8 +379,6 @@ class ClientSpeedtest(ClientHTTP):
                 elapsed = (max(map(lambda t: t[1], speed)) -
                   min(map(lambda t: t[0], speed)))
                 speed = sum(map(lambda t: t[2], speed)) / elapsed
-                LOG.progress(".[%s,%s]." % (utils.time_formatter(elapsed),
-                       utils.speed_formatter(speed)))
 
                 #
                 # O(N) loopless adaptation to the channel w/ memory

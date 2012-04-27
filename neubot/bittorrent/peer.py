@@ -27,17 +27,26 @@
 '''
 
 import random
+import getopt
+import sys
+
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
 
 from neubot.bittorrent.bitfield import Bitfield
 from neubot.bittorrent.bitfield import make_bitfield
 from neubot.bittorrent.btsched import sched_req
 from neubot.bittorrent.stream import StreamBitTorrent
+from neubot.net.poller import POLLER
 from neubot.net.stream import StreamHandler
 
+from neubot.bittorrent import config
+from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.state import STATE
 
 from neubot import utils
+from neubot import utils_rc
 
 # Constants
 from neubot.bittorrent.config import PIECE_LEN
@@ -48,7 +57,7 @@ TARGET = 5
 
 # States of the PeerNeubot object
 STATES = (INITIAL, SENT_INTERESTED, DOWNLOADING, UPLOADING,
-          SENT_NOT_INTERESTED) = range(5)
+          SENT_NOT_INTERESTED, WAIT_REQUEST, WAIT_NOT_INTERESTED) = range(7)
 
 #
 # This class implements the test finite state
@@ -68,6 +77,8 @@ class PeerNeubot(StreamHandler):
         self.state = INITIAL
         self.infohash = None
         self.rtt = 0
+        self.version = 1
+        self.begin_upload = 0.0
 
     def configure(self, conf):
         StreamHandler.configure(self, conf)
@@ -117,6 +128,8 @@ class PeerNeubot(StreamHandler):
             #
             peer = self.__class__(self.poller)
             peer.configure(self.conf)
+            # Inherit version
+            peer.version = self.version
         else:
             peer = self
         stream.attach(peer, sock, peer.conf)
@@ -124,6 +137,7 @@ class PeerNeubot(StreamHandler):
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))
+        LOG.debug('BitTorrent: test version %d' % self.version)
         LOG.start("BitTorrent: receiving bitfield")
         if self.connector_side:
             self.state = SENT_INTERESTED
@@ -141,11 +155,37 @@ class PeerNeubot(StreamHandler):
     # buffer, allowing for graceful abort.
     #
     def got_request(self, stream, index, begin, length):
+
+        #
+        # Start actual uploading when we receive the first REQUEST.
+        # When the upload is over and we are waiting for NOT_INTERESTED
+        # we ignore incoming REQUESTs.  Because they have "certainly"
+        # been sent before the peer received our NOT_INTERESTED.
+        #
+        if self.version >= 2:
+            if self.state == WAIT_REQUEST:
+                self.begin_upload = utils.ticks()
+                self.state = UPLOADING
+                if self.version == 2:
+                    # send_complete() kickstarts the uploader
+                    self.send_complete(stream)
+                    return
+            elif self.state == WAIT_NOT_INTERESTED:
+                return
+
         if self.state != UPLOADING:
             raise RuntimeError("REQUEST when state != UPLOADING")
 
         if begin + length > PIECE_LEN:
             raise RuntimeError("REQUEST too big")
+
+        #
+        # The rule that we send a PIECE each time we get a REQUEST is
+        # not valid anymore, pieces go on the wire when the send queue
+        # becomes empty.
+        #
+        if self.version == 2:
+            return
 
         #
         # TODO Here we should use the random block
@@ -156,18 +196,67 @@ class PeerNeubot(StreamHandler):
         block = chr(random.randint(32, 126)) * length
         stream.send_piece(index, begin, block)
 
+    def send_complete(self, stream):
+        ''' Invoked when the send queue is empty '''
+
+        if self.version >= 2 and self.state == UPLOADING:
+
+            #
+            # The sender stops sending when the upload has run for
+            # enough time, notifies peer with CHOKE and waits for
+            # NOT_INTERESTED.
+            #
+            diff = utils.ticks() - self.begin_upload
+            if diff > TARGET:
+                self.state = WAIT_NOT_INTERESTED
+                stream.send_choke()
+                return
+
+            if self.version == 3:
+                return
+
+            #
+            # TODO Here we should use the random block
+            # generator but before we do that we should
+            # also make sure it does not slow down the
+            # bittorrent test.
+            #
+            block = chr(random.randint(32, 126)) * PIECE_LEN
+            index = random.randrange(self.numpieces)
+            stream.send_piece(index, 0, block)
+
     def got_interested(self, stream):
         if self.connector_side and self.state != SENT_NOT_INTERESTED:
             raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")
         if not self.connector_side and self.state != INITIAL:
             raise RuntimeError("INTERESTED when state != INITIAL")
         LOG.start("BitTorrent: uploading")
+
+        #
+        # We don't start uploading until we receive
+        # the first REQUEST from the peer.
+        #
+        if self.version >= 2:
+            self.state = WAIT_REQUEST
+            stream.send_unchoke()
+            return
+
         self.state = UPLOADING
         stream.send_unchoke()
 
     def got_not_interested(self, stream):
-        if self.state != UPLOADING:
+
+        if self.state != UPLOADING and self.version == 1:
             raise RuntimeError("NOT_INTERESTED when state != UPLOADING")
+
+        #
+        # It's the sender that decides when it has sent
+        # for enough time and enters WAIT_NOT_INTERESTED.
+        #
+        if self.state != WAIT_NOT_INTERESTED and self.version >= 2:
+            raise RuntimeError("NOT_INTERESTED when state "
+                               "!= WAIT_NOT_INTERESTED")
+
         LOG.complete()
         if self.connector_side:
             self.complete(stream, self.dload_speed, self.rtt,
@@ -179,29 +268,71 @@ class PeerNeubot(StreamHandler):
 
     # Download
 
-    #
-    # We don't implement CHOKE and we cannot ignore it, since
-    # that would violate the specification.  So we raise an
-    # exception, which has the side effect that the connection
-    # will be closed.
-    #
     def got_choke(self, stream):
+
+        #
+        # The download terminates when we recv CHOKE.
+        # The code below is adapted from version 1
+        # code in got_piece().
+        #
+        if self.version >= 2:
+            LOG.complete()
+
+            # Calculate speed
+            xfered = stream.bytes_recv_tot - self.saved_bytes
+            elapsed = utils.ticks() - self.saved_ticks
+            self.dload_speed = xfered/elapsed
+
+            # Properly terminate download
+            self.state = SENT_NOT_INTERESTED
+            stream.send_not_interested()
+
+            download = utils.speed_formatter(self.dload_speed)
+            LOG.info('BitTorrent: download speed: %s' % download)
+
+            # To next state
+            if not self.connector_side:
+                self.complete(stream, self.dload_speed, self.rtt,
+                              self.target_bytes)
+            else:
+                STATE.update("test_download", download)
+
+            # We MUST NOT fallthru
+            return
+
+        #
+        # We don't implement CHOKE and we cannot ignore it, since
+        # that would violate the specification.  So we raise an
+        # exception, which has the side effect that the connection
+        # will be closed.
+        #
         raise RuntimeError("Unexpected CHOKE message")
 
-    #
-    # When we're unchoked immediately pipeline a number
-    # of requests and then put another request on the pipe
-    # as soon as a piece arrives.  Note that the pipelining
-    # is automagically done by the scheduler generator.
-    # The idea of pipelining is that of filling with many
-    # messages the space between us and the peer to do
-    # something that approxymates a continuous download.
-    #
     def got_unchoke(self, stream):
         if self.state != SENT_INTERESTED:
             raise RuntimeError("UNCHOKE when state != SENT_INTERESTED")
         else:
             self.state = DOWNLOADING
+
+            #
+            # We just need to send one request to tell
+            # the peer we would like the download to start.
+            #
+            if self.version >= 2:
+                LOG.start('BitTorrent: download')
+                index = random.randrange(self.numpieces)
+                stream.send_request(index, 0, PIECE_LEN)
+                return
+
+            #
+            # When we're unchoked immediately pipeline a number
+            # of requests and then put another request on the pipe
+            # as soon as a piece arrives.  Note that the pipelining
+            # is automagically done by the scheduler generator.
+            # The idea of pipelining is that of filling with many
+            # messages the space between us and the peer to do
+            # something that approxymates a continuous download.
+            #
             LOG.start("BitTorrent: downloading %d bytes" % self.target_bytes)
             burst = self.sched_req.next()
             for index, begin, length in burst:
@@ -215,6 +346,32 @@ class PeerNeubot(StreamHandler):
         # We don't use HAVE messages at the moment
         LOG.warning("Ignoring unexpected HAVE message")
 
+    def got_piece(self, *args):
+
+        stream = args[0]
+
+        if self.state != DOWNLOADING:
+            raise RuntimeError("PIECE when state != DOWNLOADING")
+
+        # Start measuring
+        if not self.saved_ticks:
+            self.saved_bytes = stream.bytes_recv_tot
+            self.saved_ticks = utils.ticks()
+
+        #
+        # The download is driven by the sender and
+        # we just need to discard the pieces.
+        # Periodically send some requests to the other
+        # end, with probability 10%.
+        #
+        if self.version >= 2:
+            if self.version == 3 or random.random() < 0.1:
+                index = random.randrange(self.numpieces)
+                stream.send_request(index, 0, PIECE_LEN)
+            return
+
+        self.get_piece_old(stream)
+
     #
     # Time to put another piece on the wire, assuming
     # that we can do that.  Note that we start measuring
@@ -227,17 +384,8 @@ class PeerNeubot(StreamHandler):
     # condition but the fact that TCP is more sensitive to
     # losses might be interesting as well.
     #
-    def got_piece(self, *args):
-
-        stream = args[0]
-
-        if self.state != DOWNLOADING:
-            raise RuntimeError("PIECE when state != DOWNLOADING")
-
-        # Start measuring
-        if not self.saved_ticks:
-            self.saved_bytes = stream.bytes_recv_tot
-            self.saved_ticks = utils.ticks()
+    def get_piece_old(self, stream):
+        ''' implements get_piece() for test version 1 '''
 
         # Get next piece
         try:
@@ -311,3 +459,44 @@ class PeerNeubot(StreamHandler):
 
     def complete(self, stream, speed, rtt, target_bytes):
         pass
+
+def main(args):
+    ''' Main function '''
+
+    try:
+        options, arguments = getopt.getopt(args[1:], 'lO:v')
+    except getopt.error:
+        sys.exit('usage: neubot bittorrent_peer [-lv] [-O setting]')
+    if arguments:
+        sys.exit('usage: neubot bittorrent_peer [-lv] [-O setting]')
+
+    settings = [ 'address 127.0.0.1',
+                 'port 6881',
+                 'version 1' ]
+
+    listener = False
+    for name, value in options:
+        if name == '-l':
+            listener = True
+        elif name == '-O':
+            settings.append(value)
+        elif name == '-v':
+            LOG.verbose()
+
+    settings = utils_rc.parse_safe(iterable=settings)
+
+    config_copy = CONFIG.copy()
+    config.finalize_conf(config_copy)
+
+    peer = PeerNeubot(POLLER)
+    peer.configure(config_copy)  # BLEAH
+    peer.version = int(settings['version'])
+    if not listener:
+        peer.connect((settings['address'], int(settings['port'])))
+    else:
+        peer.listen((settings['address'], int(settings['port'])))
+
+    POLLER.loop()
+
+if __name__ == '__main__':
+    main(sys.argv)

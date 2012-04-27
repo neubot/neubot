@@ -54,11 +54,15 @@ class NegotiateServerBitTorrent(NegotiateServerModule):
         ''' Invoked when we must unchoke a session '''
         sha1 = self._stream_to_sha1(stream)
         if sha1 not in self.peers:
-            target_bytes = int(request_body['target_bytes'])
+            test_version = int(request_body.get('test_version', 1))
+            if test_version < 1 or test_version > 2:
+                raise ValueError('Invalid test_version')
+            target_bytes = int(request_body.get('target_bytes', 0))
             if target_bytes < 0:
                 raise ValueError('Invalid target_bytes')
             # Create record for this stream
-            self.peers[sha1] = {'target_bytes': target_bytes}
+            self.peers[sha1] = {'target_bytes': target_bytes,
+                                'test_version': test_version}
             stream.atclose(self._update_peers)
             return {'authorization': self._stream_to_ident(stream)}
         else:

@@ -1,7 +1,7 @@
 # neubot/speedtest/server.py
 
 #
-# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -25,6 +25,10 @@
 from neubot.utils.blocks import RandomBody
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
+
+from neubot.bytegen_speedtest import BytegenSpeedtest
+
+TARGET = 5
 
 class SpeedtestServer(ServerHTTP):
 
@@ -66,8 +70,23 @@ class SpeedtestServer(ServerHTTP):
             response.compose(code='200', reason='Ok')
             stream.send_response(request, response)
 
-        # Honour Range
         elif request.uri == '/speedtest/download':
+
+            #
+            # If range is not present send chunked
+            # data for TARGET seconds.
+            # This is version 2 of the speedtest.
+            #
+            if not request['range']:
+                body = BytegenSpeedtest(TARGET)
+                response = Message()
+                response.compose(code='200', reason='Ok',
+                  mimetype='application/octet-stream',
+                  chunked=body)
+                stream.send_response(request, response)
+                return
+
+            # Honour range
             first, last = self._parse_range(request)
             response = Message()
             response.compose(code='200', reason='Ok',

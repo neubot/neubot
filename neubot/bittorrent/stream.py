@@ -22,11 +22,11 @@
 ''' BitTorrent peer wire protocol implementation '''
 
 import struct
+import logging
 
 from neubot.bittorrent.config import MAXMESSAGE
 
 from neubot.net.stream import Stream
-from neubot.log import LOG
 
 # Available msgs
 MESSAGES = (CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD,
@@ -92,60 +92,60 @@ class StreamBitTorrent(Stream):
 
     def _send_handshake(self):
         ''' Convenience function to send handshake '''
-        LOG.debug("> HANDSHAKE infohash=%s id=%s" %
-                  (self.parent.infohash.encode("hex"),
-                   self.parent.my_id.encode("hex")))
+        logging.debug("> HANDSHAKE infohash=%s id=%s",
+                      self.parent.infohash.encode("hex"),
+                      self.parent.my_id.encode("hex"))
         self.start_send("".join((chr(len(PROTOCOL_NAME)), PROTOCOL_NAME,
           FLAGS, self.parent.infohash, self.parent.my_id)))
 
     def send_interested(self):
         ''' Send the INTERESTED message '''
-        LOG.debug("> INTERESTED")
+        logging.debug("> INTERESTED")
         self._send_message(INTERESTED)
 
     def send_not_interested(self):
         ''' Send the NOT_INTERESTED message '''
-        LOG.debug("> NOT_INTERESTED")
+        logging.debug("> NOT_INTERESTED")
         self._send_message(NOT_INTERESTED)
 
     def send_choke(self):
         ''' Send the CHOKE message '''
-        LOG.debug("> CHOKE")
+        logging.debug("> CHOKE")
         self._send_message(CHOKE)
 
     def send_unchoke(self):
         ''' Send the UNCHOKE message '''
-        LOG.debug("> UNCHOKE")
+        logging.debug("> UNCHOKE")
         self._send_message(UNCHOKE)
 
     def send_request(self, index, begin, length):
         ''' Send the REQUEST message '''
-        LOG.debug("> REQUEST %d %d %d" % (index, begin, length))
+        logging.debug("> REQUEST %d %d %d", index, begin, length)
         self._send_message(struct.pack("!cIII", REQUEST, index, begin, length))
 
     def send_cancel(self, index, begin, length):
         ''' Send the CANCEL message '''
-        LOG.debug("> CANCEL %d %d %d" % (index, begin, length))
+        logging.debug("> CANCEL %d %d %d", index, begin, length)
         self._send_message(struct.pack("!cIII", CANCEL, index, begin, length))
 
     def send_bitfield(self, bitfield):
         ''' Send the BITFIELD message '''
-        LOG.debug("> BITFIELD {bitfield}")
+        logging.debug("> BITFIELD {bitfield}")
         self._send_message(BITFIELD, bitfield)
 
     def send_have(self, index):
         ''' Send the HAVE message '''
-        LOG.debug("> HAVE %d" % index)
+        logging.debug("> HAVE %d", index)
         self._send_message(struct.pack("!cI", HAVE, index))
 
     def send_keepalive(self):
         ''' Send the KEEPALIVE message '''
-        LOG.debug("> KEEPALIVE")
+        logging.debug("> KEEPALIVE")
         self._send_message('')
 
     def send_piece(self, index, begin, block):
         ''' Send the PIECE message '''
-        LOG.debug("> PIECE %d %d len=%d" % (index, begin, len(block)))
+        logging.debug("> PIECE %d %d len=%d", index, begin, len(block))
         self._send_message(struct.pack("!cII%ss" % len(block), PIECE,
           index, begin, block))
 
@@ -158,6 +158,10 @@ class StreamBitTorrent(Stream):
         d.extend(msg_a)
         s = ''.join(d)
         self.start_send(s)
+
+    def send_complete(self):
+        ''' Invoked when the send queue is empty '''
+        self.parent.send_complete(self)
 
     #
     # We use three state variables in this loop: self.left is the
@@ -181,7 +185,7 @@ class StreamBitTorrent(Stream):
                 if self.count == 4:
                     self.left = toint("".join(self.buff))
                     if self.left == 0:
-                        LOG.debug("< KEEPALIVE")
+                        logging.debug("< KEEPALIVE")
                     elif self.left > MAXMESSAGE:
                         raise RuntimeError('Message too big')
                     del self.buff[:]
@@ -223,8 +227,8 @@ class StreamBitTorrent(Stream):
                 raise RuntimeError("Invalid handshake")
             self.id = message[-20:]
             infohash = message[-40:-20]
-            LOG.debug("< HANDSHAKE infohash=%s id=%s" %
-              (infohash.encode("hex"), self.id.encode("hex")))
+            logging.debug("< HANDSHAKE infohash=%s id=%s",
+                          infohash.encode("hex"), self.id.encode("hex"))
 
             #
             # In Neubot the listener does not have an infohash
@@ -251,42 +255,42 @@ class StreamBitTorrent(Stream):
         self.got_anything = True
 
         if t == CHOKE:
-            LOG.debug("< CHOKE")
+            logging.debug("< CHOKE")
             self.parent.got_choke(self)
 
         elif t == UNCHOKE:
-            LOG.debug("< UNCHOKE")
+            logging.debug("< UNCHOKE")
             self.parent.got_unchoke(self)
 
         elif t == INTERESTED:
-            LOG.debug("< INTERESTED")
+            logging.debug("< INTERESTED")
             self.parent.got_interested(self)
 
         elif t == NOT_INTERESTED:
-            LOG.debug("< NOT_INTERESTED")
+            logging.debug("< NOT_INTERESTED")
             self.parent.got_not_interested(self)
 
         elif t == HAVE:
             i = struct.unpack("!xI", message)[0]
             if i >= self.parent.numpieces:
                 raise RuntimeError("HAVE: index out of bounds")
-            LOG.debug("< HAVE %d" % i)
+            logging.debug("< HAVE %d", i)
             self.parent.got_have(i)
 
         elif t == BITFIELD:
-            LOG.debug("< BITFIELD {bitfield}")
+            logging.debug("< BITFIELD {bitfield}")
             self.parent.got_bitfield(message[1:])
 
         elif t == REQUEST:
             i, a, b = struct.unpack("!xIII", message)
-            LOG.debug("< REQUEST %d %d %d" % (i, a, b))
+            logging.debug("< REQUEST %d %d %d", i, a, b)
             if i >= self.parent.numpieces:
                 raise RuntimeError("REQUEST: index out of bounds")
             self.parent.got_request(self, i, a, b)
 
         elif t == CANCEL:
             i, a, b = struct.unpack("!xIII", message)
-            LOG.debug("< CANCEL %d %d %d" % (i, a, b))
+            logging.debug("< CANCEL %d %d %d", i, a, b)
             if i >= self.parent.numpieces:
                 raise RuntimeError("CANCEL: index out of bounds")
             # NOTE Ignore CANCEL message
@@ -294,7 +298,7 @@ class StreamBitTorrent(Stream):
         elif t == PIECE:
             n = len(message) - 9
             i, a, b = struct.unpack("!xII%ss" % n, message)
-            LOG.debug("< PIECE %d %d len=%d" % (i, a, n))
+            logging.debug("< PIECE %d %d len=%d", i, a, n)
             if i >= self.parent.numpieces:
                 raise RuntimeError("PIECE: index out of bounds")
             self.parent.got_piece(self, i, a, b)

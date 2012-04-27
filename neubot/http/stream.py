@@ -22,9 +22,10 @@
 
 ''' HTTP stream '''
 
+import logging
+
 from neubot.net.stream import MAXBUF
 from neubot.net.stream import Stream
-from neubot.log import LOG
 
 # Accepted HTTP protocols
 PROTOCOLS = [ "HTTP/1.0", "HTTP/1.1" ]
@@ -98,7 +99,7 @@ class StreamHTTP(Stream):
             return
 
         #This one should be debug2 as well
-        #LOG.debug("HTTP receiver: got %d bytes" % len(data))
+        #logging.debug("HTTP receiver: got %d bytes", len(data))
 
         # merge with previous fragments (if any)
         if self.incoming:
@@ -143,14 +144,14 @@ class StreamHTTP(Stream):
                 return
 
 #           Should be debug2() not debug()
-#           LOG.debug("HTTP receiver: %s -> %s" %
-#             (STATES[ostate], STATES[self.state]))
+#           logging.debug("HTTP receiver: %s -> %s",
+#                         STATES[ostate], STATES[self.state])
 
         # keep the eventual remainder for later
         if length > 0:
             remainder = data[offset:]
             self.incoming.append(remainder)
-            LOG.debug("HTTP receiver: remainder %d" % len(remainder))
+            logging.debug("HTTP receiver: remainder %d", len(remainder))
 
         # get the next fragment
         self.start_recv()
@@ -159,7 +160,7 @@ class StreamHTTP(Stream):
         ''' We've got a line... what do we do? '''
         if self.state == FIRSTLINE:
             line = line.strip()
-            LOG.debug("< %s" % line)
+            logging.debug("< %s", line)
             vector = line.split(None, 2)
             if len(vector) == 3:
                 if line.startswith("HTTP"):
@@ -178,7 +179,7 @@ class StreamHTTP(Stream):
                 raise RuntimeError("Invalid first line")
         elif self.state == HEADER:
             if line.strip():
-                LOG.debug("< %s" % line)
+                logging.debug("< %s", line)
                 # not handling mime folding
                 index = line.find(":")
                 if index >= 0:
@@ -187,7 +188,7 @@ class StreamHTTP(Stream):
                 else:
                     raise RuntimeError("Invalid header line")
             else:
-                LOG.debug("<")
+                logging.debug("<")
                 self.state, self.left = self.got_end_of_headers()
                 if self.state == ERROR:
                     # allow upstream to filter out unwanted requests

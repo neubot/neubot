@@ -86,7 +86,7 @@ class Logger(object):
     # is mandatory because we don't want the database to grow
     # without control.
     #
-    def _maintain_database(self, *args, **kwargs):
+    def _maintain_database(self):
 
         POLLER.sched(INTERVAL, self._maintain_database)
 
@@ -124,8 +124,6 @@ class Logger(object):
     #
     # Below there is convenience code for printing the beginning
     # and end of long operations, and to calculate timing.
-    # The progress() function is a relic of a past era when we
-    # had "interactive" long operation logging.
     # Here's a sample output::
     #
     #   Download in progress...
@@ -136,9 +134,6 @@ class Logger(object):
         self.ticks = utils.ticks()
         self.info(message + " in progress...")
         self.message = message
-
-    def progress(self, dot="."):
-        pass
 
     def complete(self, done="done\n"):
         elapsed = utils.time_formatter(utils.ticks() - self.ticks)
@@ -167,16 +162,16 @@ class Logger(object):
             func(line)
 
     def error(self, message, *args):
-        self._log("ERROR", message, *args)
+        self.log("ERROR", message, *args)
 
     def warning(self, message, *args):
-        self._log("WARNING", message, *args)
+        self.log("WARNING", message, *args)
 
     def info(self, message, *args):
-        self._log("INFO", message, *args)
+        self.log("INFO", message, *args)
 
     def debug(self, message, *args):
-        self._log("DEBUG", message, *args)
+        self.log("DEBUG", message, *args)
 
     def log_access(self, message, *args):
         #
@@ -187,7 +182,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self._log("ACCESS", message, *args)
+        self.log("ACCESS", message, *args)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
@@ -217,8 +212,12 @@ class Logger(object):
         # Purge the queue in any case
         del self._queue[:]
 
-    def _log(self, severity, message, *args):
+    def log(self, severity, message, *args):
         ''' Really log a message '''
+        self.log_tuple(severity, message, args)
+
+    def log_tuple(self, severity, message, args):
+        ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
         if not message:
@@ -241,10 +240,10 @@ class Logger(object):
         #
         if self.streams:
             # "Lazy" processing
-            message = message.rstrip()
             if args:
                 message = message % args
                 args = ()
+            message = message.rstrip()
             try:
                 if severity != 'ACCESS':
                     logline = "%s %s\r\n" % (severity, message)
@@ -261,10 +260,10 @@ class Logger(object):
             return
 
         # Lazy processing
-        message = message.rstrip()
         if args:
             message = message % args
             args = ()
+        message = message.rstrip()
 
         # Write log into the database
         if self._use_database and severity != "ACCESS":
@@ -317,36 +316,17 @@ class Logger(object):
 
 LOG = Logger()
 
-#
-# Neubot code should always use logging and we should
-# eventually provide a backend for this subsystem.
-# For now, the hack of the day is to override the names
-# in the logging subsystem.
-# To avoid a pylint warning ("Specify format string arguments
-# as logging function parameters") I had to write the wrappers
-# below.  The debug() method does not interpolate unless the
-# logger is running verbose.  I like that design idea of logging,
-# as I said, I should write my special-purpose backend for the
-# logging module.
-#
+class LogWrapper(logging.Handler):
 
-def _log_info(msg, *args):
-    ''' Wrapper for info() '''
-    LOG.info(msg, *args)
+    """Wrapper for stdlib logging."""
 
-def _log_error(msg, *args):
-    ''' Wrapper for error() '''
-    LOG.error(msg, *args)
+    def emit(self, record):
+        msg = record.msg
+        args = record.args
+        level = record.levelname
+        LOG.log_tuple(level, msg, args)
 
-def _log_warning(msg, *args):
-    ''' Wrapper for warning() '''
-    LOG.warning(msg, *args)
-
-def _log_debug(msg, *args):
-    ''' Wrapper for debug() '''
-    LOG.debug(msg, *args)
-
-logging.info = _log_info
-logging.error = _log_error
-logging.warning = _log_warning
-logging.debug = _log_debug
+ROOT = logging.getLogger()
+ROOT.handlers = []
+ROOT.addHandler(LogWrapper())
+ROOT.setLevel('DEBUG')

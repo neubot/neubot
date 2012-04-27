@@ -25,6 +25,7 @@
 import collections
 import os.path
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -36,7 +37,6 @@ from neubot.http.stream import ERROR
 from neubot.http.stream import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
-from neubot.log import LOG
 from neubot import utils
 from neubot.main import common
 
@@ -147,7 +147,7 @@ class ClientHTTP(StreamHandler):
     def connection_made(self, sock, rtt=0):
         ''' Invoked when the connection is created '''
         if rtt:
-            LOG.debug("ClientHTTP: latency: %s" % utils.time_formatter(rtt))
+            logging.debug("ClientHTTP: latency: %s", utils.time_formatter(rtt))
             self.rtt = rtt
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf)
@@ -167,7 +167,7 @@ class TestClient(ClientHTTP):
         if method == "PUT":
             fpath = uri.split("/")[-1]
             if not os.path.exists(fpath):
-                LOG.error("* Local file does not exist: %s" % fpath)
+                logging.error("* Local file does not exist: %s", fpath)
                 sys.exit(1)
             request.compose(method=method, uri=uri, keepalive=False,
               mimetype="text/plain", body=open(fpath, "rb"))
@@ -178,7 +178,7 @@ class TestClient(ClientHTTP):
         if method == "GET" and not stdout:
             fpath = uri.split("/")[-1]
             if os.path.exists(fpath):
-                LOG.error("* Local file already exists: %s" % fpath)
+                logging.error("* Local file already exists: %s", fpath)
                 sys.exit(1)
             response.body = open(fpath, "wb")
         else:

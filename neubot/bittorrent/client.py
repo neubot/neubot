@@ -38,7 +38,7 @@ from neubot.bittorrent import estimate
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
-from neubot.utils.version import LibVersion
+from neubot.utils_version import LibVersion
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
@@ -77,7 +77,7 @@ class BitTorrentClient(ClientHTTP):
         LOG.start("BitTorrent: negotiating")
 
         request = Message()
-        body = json.dumps({"target_bytes": self.conf["bittorrent.bytes.up"]})
+        body = json.dumps({"test_version": 2, "target_bytes": 0})
         request.compose(method="GET", pathquery="/negotiate/bittorrent",
           host=self.host_header, body=body, mimetype="application/json")
         request["authorization"] = self.conf.get("_authorization", "")
@@ -110,6 +110,7 @@ class BitTorrentClient(ClientHTTP):
             self.http_stream = stream
             self.negotiating = False
             peer = PeerNeubot(self.poller)
+            peer.version = 2
             peer.complete = self.peer_test_complete
             peer.connection_lost = self.peer_connection_lost
             peer.connection_failed = self.peer_connection_failed
