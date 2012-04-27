@@ -518,7 +518,7 @@ required to transfer them.
 The installer writes the two following registry keys::
 
     HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
-    HKCU "Software\Microsoft\Windows\CurrentVersion\Run"  "Neubot"
+    HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Neubot"
 
 The former makes Windows aware of the uninstaller program, while
 the latter starts Neubot when you log in.

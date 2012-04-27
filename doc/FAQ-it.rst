@@ -550,7 +550,7 @@ trasferirli.
 Il programma di installazione scrive le seguente due chiavi di registro::
 
     HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
-    HKCU "Software\Microsoft\Windows\CurrentVersion\Run"	"Neubot"
+    HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Neubot"
 
 La prima fa si' che Windows sia a conoscenza dell'uninstaller, mentre
 la seconda fa si' che Neubot sia avviato quando fai login.
