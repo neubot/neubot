@@ -515,12 +515,15 @@ required to transfer them.
 4.3. How does Neubot change my Windows registry?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The installer writes the following registry key, so that Windows is
-aware of the uninstaller::
+The installer writes the two following registry keys::
 
     HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
+    HKCU "Software\Microsoft\Windows\CurrentVersion\Run"  "Neubot"
 
-The key is removed during the uninstall process.
+The former makes Windows aware of the uninstaller program, while
+the latter starts Neubot when you log in.
+
+Both keys are removed by the uninstall process.
 
 4.4. What is the path of Neubot database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
