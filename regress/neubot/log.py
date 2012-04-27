@@ -38,9 +38,6 @@ from neubot.log import LOG
 from neubot import compat
 
 if __name__ == "__main__":
-    LOG.start("Testing the in-progress feature")
-    LOG.complete("success!")
-
     logging.info("INFO w/ logging.info")
     # The following should work because it should not interpolate
     logging.debug("DEBUG w/ logging.debug", "ciao")
@@ -67,9 +64,6 @@ if __name__ == "__main__":
     except:
         LOG.exception()
         LOG.exception(func=LOG.warning)
-
-    LOG.start("Testing the in-progress feature")
-    LOG.complete("success!")
 
     LOG.oops("Testing the new oops feature")
 
