@@ -547,12 +547,15 @@ trasferirli.
 4.3. In che modo Neubot modifica il registro di sistema di Windows?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il programma di installazione scrive la seguente chiave di registro, in
-modo che Windows sia a conoscenza del programma di disinstallazione::
+Il programma di installazione scrive le seguente due chiavi di registro::
 
     HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
+    HKCU "Software\Microsoft\Windows\CurrentVersion\Run"	"Neubot"
 
-La chiave viene rimossa durante la procedura di disinstallazione.
+La prima fa si' che Windows sia a conoscenza dell'uninstaller, mentre
+la seconda fa si' che Neubot sia avviato quando fai login.
+
+Le due chiavi vengono rimosse dall'uninstaller.
 
 4.4. Qual'è il percorso del database di Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
