@@ -29,6 +29,7 @@
 import StringIO
 import hashlib
 import sys
+import logging
 
 from neubot.bittorrent.peer import PeerNeubot
 from neubot.http.client import ClientHTTP
@@ -39,7 +40,6 @@ from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.utils_version import LibVersion
-from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
@@ -66,15 +66,16 @@ class BitTorrentClient(ClientHTTP):
             port = self.conf["bittorrent.negotiate.port"]
             uri = "http://%s:%s/" % (address, port)
 
-        LOG.start("BitTorrent: connecting to %s" % uri)
+        logging.info("BitTorrent: connecting to %s in progress...", uri)
 
         ClientHTTP.connect_uri(self, uri, 1)
 
     def connection_ready(self, stream):
-        LOG.complete()
+        uri = "http://%s/" % self.host_header
+        logging.info("BitTorrent: connecting to %s ... done", uri)
 
         STATE.update("negotiate")
-        LOG.start("BitTorrent: negotiating")
+        logging.info("BitTorrent: negotiating in progress...")
 
         request = Message()
         body = json.dumps({"test_version": 2, "target_bytes": 0})
@@ -97,16 +98,17 @@ class BitTorrentClient(ClientHTTP):
             self.conf["_%s" % k] = m[k]
 
         if not self.conf["_unchoked"]:
-            LOG.complete("done (queue_pos %d)" % m["queue_pos"])
+            logging.info("BitTorrent: negotiating ... done (queue_pos %d)",
+              m["queue_pos"])
             STATE.update("negotiate", {"queue_pos": m["queue_pos"]})
             self.connection_ready(stream)
         else:
-            LOG.complete("done (unchoked)")
+            logging.info("BitTorrent: negotiating ... done (unchoked)")
 
             sha1 = hashlib.sha1()
             sha1.update(m["authorization"])
             self.conf["bittorrent.my_id"] = sha1.digest()
-            LOG.debug("* My ID: %s" % sha1.hexdigest())
+            logging.debug("* My ID: %s", sha1.hexdigest())
             self.http_stream = stream
             self.negotiating = False
             peer = PeerNeubot(self.poller)
@@ -157,7 +159,7 @@ class BitTorrentClient(ClientHTTP):
             "platform": sys.platform,
         }
 
-        LOG.start("BitTorrent: collecting")
+        logging.info("BitTorrent: collecting in progress...")
         STATE.update("collect")
 
         s = json.dumps(self.my_side)
@@ -171,7 +173,7 @@ class BitTorrentClient(ClientHTTP):
         stream.send_request(request)
 
     def got_response_collecting(self, stream, request, response):
-        LOG.complete()
+        logging.info("BitTorrent: collecting ... done")
 
         if self.success:
             #
@@ -187,7 +189,7 @@ class BitTorrentClient(ClientHTTP):
 
             upload = utils.speed_formatter(m["upload_speed"])
             STATE.update("test_upload", upload)
-            LOG.info('BitTorrent: upload speed: %s' % upload)
+            logging.info('BitTorrent: upload speed: %s', upload)
 
             if privacy.collect_allowed(self.my_side):
                 table_bittorrent.insert(DATABASE.connection(), self.my_side)
@@ -203,5 +205,7 @@ class BitTorrentClient(ClientHTTP):
         NOTIFIER.publish(TESTDONE)
 
     def connection_failed(self, connector, exception):
-        LOG.complete("failure (error: %s)" % str(exception))
+        uri = "http://%s/" % self.host_header
+        logging.info("BitTorrent: connecting to %s ... failure (error: %s)",
+          uri, str(exception))
         NOTIFIER.publish(TESTDONE)
