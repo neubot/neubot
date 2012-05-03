@@ -44,6 +44,7 @@ from neubot.net.stream import StreamHandler
 from neubot.bittorrent import config
 from neubot.config import CONFIG
 from neubot.state import STATE
+from neubot.log import LOG
 
 from neubot import utils
 from neubot import utils_rc
