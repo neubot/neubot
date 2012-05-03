@@ -23,6 +23,7 @@
 import StringIO
 import collections
 import sys
+import logging
 
 from neubot.utils.blocks import RandomBody
 from neubot.config import CONFIG
@@ -273,7 +274,7 @@ class ClientSpeedtest(ClientHTTP):
               "http://master.neubot.org/")
         if not count:
             count = self.conf.get("speedtest.client.nconn", 1)
-        LOG.info("* speedtest with %s" % uri)
+        logging.info("* speedtest with %s", uri)
         ClientHTTP.connect_uri(self, uri, count)
 
     def connection_ready(self, stream):
@@ -305,7 +306,7 @@ class ClientSpeedtest(ClientHTTP):
         if not self.finished:
             self.finished = True
             if message:
-                LOG.error("* speedtest: %s" % message)
+                logging.error("* speedtest: %s", message)
             while self.streams:
                 self.streams.popleft().close()
             self.child = None
@@ -349,11 +350,13 @@ class ClientSpeedtest(ClientHTTP):
 
         elif self.state == "negotiate":
             if self.conf.get("speedtest.client.unchoked", False):
-                LOG.complete("authorized to take the test\n")
+                logging.info("* speedtest: %s ... authorized to "
+                  "take the test\n", self.state)
                 self.state = "latency"
             elif "speedtest.client.queuepos" in self.conf:
                 queuepos = self.conf["speedtest.client.queuepos"]
-                LOG.complete("waiting in queue, pos %s\n" % queuepos)
+                logging.info("* speedtest: %s ... waiting in queue, "
+                  "pos %s\n", self.state, queuepos)
                 STATE.update("negotiate", {"queue_pos": queuepos})
                 QUEUE_HISTORY.append(queuepos)
 
@@ -366,7 +369,8 @@ class ClientSpeedtest(ClientHTTP):
                 self.conf["speedtest.client.latency"] = latency
                 # Advertise the result
                 STATE.update("test_latency", utils.time_formatter(latency))
-                LOG.complete("done, %s\n" % utils.time_formatter(latency))
+                logging.info("* speedtest: %s ...  done, %s\n", self.state,
+                  utils.time_formatter(latency))
                 self.state = "download"
             else:
                 self.conf["speedtest.client.latency_tries"] = tries - 1
@@ -393,7 +397,8 @@ class ClientSpeedtest(ClientHTTP):
                     # Advertise
                     STATE.update("test_%s" % self.state,
                       utils.speed_formatter(speed))
-                    LOG.complete("done, %s\n" % utils.speed_formatter(speed))
+                    logging.info("* speedtest: %s ...  done, %s\n", self.state,
+                      utils.speed_formatter(speed))
                     if self.state == "download":
                         self.state = "upload"
                     else:
@@ -410,7 +415,7 @@ class ClientSpeedtest(ClientHTTP):
                 return
 
         elif self.state == "collect":
-            LOG.complete()
+            logging.info("* speedtest: %s ... done\n", self.state)
             self.cleanup()
             return
 
@@ -445,9 +450,9 @@ class ClientSpeedtest(ClientHTTP):
                     STATE.update("test", "speedtest")
             else:
                 STATE.update(self.state)
-            LOG.start("* speedtest: %s" % self.state)
+            logging.info("* speedtest: %s in progress...", self.state)
         elif self.state == "negotiate":
-            LOG.start("* speedtest: %s" % self.state)
+            logging.info("* speedtest: %s in progress...", self.state)
 
         while self.streams:
             #
@@ -494,7 +499,7 @@ def main(args):
                                   LOG.noisy, "speedtest")):
         sys.exit(0)
 
-    LOG.info('Will run the test in the local context...')
+    logging.info('Will run the test in the local context...')
 
     if not privacy.allowed_to_run():
         privacy.complain()
