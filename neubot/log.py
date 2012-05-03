@@ -121,28 +121,6 @@ class Logger(object):
             stream.poller.close(stream)
         self.streams.clear()
 
-    #
-    # Below there is convenience code for printing the beginning
-    # and end of long operations, and to calculate timing.
-    # Here's a sample output::
-    #
-    #   Download in progress...
-    #    [here we might have many debug messages]
-    #   Download complete [in 7.12 s].
-    #
-    def start(self, message):
-        self.ticks = utils.ticks()
-        self.info(message + " in progress...")
-        self.message = message
-
-    def complete(self, done="done\n"):
-        elapsed = utils.time_formatter(utils.ticks() - self.ticks)
-        done = "".join([done.rstrip(), " [in ", elapsed, "]\n"])
-        if not self.message:
-            self.message = "???"
-        self.info(self.message + "..." + done)
-        self.message = None
-
     # Log functions
 
     def exception(self, message="", func=None):
