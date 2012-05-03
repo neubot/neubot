@@ -31,25 +31,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-
     <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
 
-    <!--
-        XXX The embedded jqplot does not work with IE8 unless the
-        user sets the browser in compatibility mode.
-        Upgrading jqplot should solve the problem but unfortunately
-        jqplot API changed and we need to adapt our scripts.
-        We will do that.
-        Meanwhile, the following hack should fix the display of
-        plots in IE8:
-
-        1. load all javascripts we need;
-        2. include excanvas, unless it's IE9;
-        3. if IE8 override jqplot using a version of jqplot that
-           works on it.
-    -->
-
+    <script type="text/javascript" src="js/excanvas.min.js"></script>
     <script type="text/javascript" src="js/jquery.jqplot.min.js"></script>
     <script type="text/javascript" src="js/jqplot.cursor.min.js"></script>
     <script type="text/javascript" src="js/jqplot.highlighter.min.js"></script>
@@ -57,21 +41,6 @@
     <script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.min.js"></script>
     <script type="text/javascript" src="js/jqplot.categoryAxisRenderer.min.js"></script>
     <script type="text/javascript" src="js/jqplot.dateAxisRenderer.min.js"></script>
-
-    <!--[if IE]>
-        <!--[if !(IE 9)]>
-            <script type="text/javascript" src="js/excanvas.min.js"></script>
-        <![endif]-->
-        <!--[if IE 8]>
-            <script type="text/javascript" src="js/ie8_jquery.jqplot.min.js"></script>
-            <script type="text/javascript" src="js/ie8_jqplot.cursor.min.js"></script>
-            <script type="text/javascript" src="js/ie8_jqplot.highlighter.min.js"></script>
-            <script type="text/javascript" src="js/ie8_jqplot.canvasTextRenderer.min.js"></script>
-            <script type="text/javascript" src="js/ie8_jqplot.canvasAxisTickRenderer.min.js"></script>
-            <script type="text/javascript" src="js/ie8_jqplot.categoryAxisRenderer.min.js"></script>
-            <script type="text/javascript" src="js/ie8_jqplot.dateAxisRenderer.min.js"></script>
-        <![endif]-->
-    <![endif]-->
 
     <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/state.js"></script>
