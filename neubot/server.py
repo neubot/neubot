@@ -40,7 +40,6 @@ from neubot.net.poller import POLLER
 from neubot.negotiate.server import NEGOTIATE_SERVER
 from neubot.negotiate.server_speedtest import NEGOTIATE_SERVER_SPEEDTEST
 from neubot.negotiate.server_bittorrent import NEGOTIATE_SERVER_BITTORRENT
-from neubot.net.dns import DNS_CACHE
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
@@ -89,7 +88,6 @@ class DebugAPI(ServerHTTP):
                         len(NEGOTIATE_SERVER_BITTORRENT.peers),
                     'NEGOTIATE_SERVER_SPEEDTEST.clients': \
                         len(NEGOTIATE_SERVER_SPEEDTEST.clients),
-                    'DNS_CACHE': len(DNS_CACHE),
                     'POLLER.readset': len(POLLER.readset),
                     'POLLER.writeset': len(POLLER.writeset),
                     'LOG._queue': len(LOG._queue),
