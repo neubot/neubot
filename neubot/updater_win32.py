@@ -35,7 +35,7 @@ if sys.version_info[0] >= 3:
 else:
     import _winreg
 
-from neubot.utils_version import LibVersion
+from neubot import utils_version
 
 from neubot.config import CONFIG
 from neubot.log import LOG
@@ -87,7 +87,7 @@ class UpdaterWin32(UpdaterRunner):
           "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot", 0,
           _winreg.KEY_WRITE)
         _winreg.SetValueEx(regkey, "DisplayName", 0, _winreg.REG_SZ,
-          "Neubot " + LibVersion.to_canonical(ctx['vinfo']))
+          "Neubot " + utils_version.to_canonical(ctx['vinfo']))
         _winreg.SetValueEx(regkey, "UninstallString", 0, _winreg.REG_SZ,
           uninst)
         _winreg.CloseKey(regkey)

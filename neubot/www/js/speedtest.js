@@ -173,25 +173,26 @@ var speedtest = (function() {
             connectData[counter].push([timestamp, connect]);
         }
 
+        var xaxis = {
+            renderer: jQuery.jqplot.DateAxisRenderer,
+            showTickMarks: true
+        };
+
         mydata = downloadData.concat(uploadData);
         if (mydata.length) {
             var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
-            var xaxis = {
-                renderer: jQuery.jqplot.DateAxisRenderer,
-                showTickMarks: true
-            };
 
-            if (hours <= 48) {
+            if (hours <= 120) {
                 xaxis.tickOptions = {
                   formatString:'%b %#d, h %H'
                 };
-                xaxis.tickInterval = '8 hours';
+                // xaxis.tickInterval = '8 hours';
             }
             else {
                 xaxis.tickOptions = {
                   formatString:'%b %#d'
                 };
-                xaxis.tickInterval = '1 day';
+                // xaxis.tickInterval = '1 day';
             }
             xaxis.label = "Time";
 

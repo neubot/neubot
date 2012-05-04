@@ -44,7 +44,7 @@ from neubot import marshal
 from neubot import system
 from neubot import privacy
 
-from neubot.utils_version import LibVersion
+from neubot import utils_version
 
 GEOLOCATOR = Geolocator()
 
@@ -86,7 +86,7 @@ class ServerRendezvous(ServerHTTP):
         #
         version = self.conf["rendezvous.server.update_version"]
         if version and ibody.version:
-            diff = LibVersion.compare(version, ibody.version)
+            diff = utils_version.compare(version, ibody.version)
             LOG.debug('rendezvous: version=%s ibody.version=%s diff=%f' % (
                       version, ibody.version, diff))
             if diff > 0:
@@ -158,7 +158,7 @@ class ServerRendezvous(ServerHTTP):
         # newer Neubots want a JSON.  I hope old clients will upgrade
         # pretty soon.
         #
-        if ibody.version and LibVersion.compare(ibody.version, "0.3.7") >= 0:
+        if ibody.version and utils_version.compare(ibody.version, "0.3.7") >= 0:
             body = marshal.marshal_object(obody, "application/json")
             mimetype = "application/json"
         else:

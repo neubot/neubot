@@ -24,12 +24,12 @@
 
 import unittest
 import sys
-import logging
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
+from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_core import RunnerCore
 from neubot.runner_tests import RUNNER_TESTS
@@ -203,16 +203,16 @@ class RunQueueTest(unittest.TestCase):
         # test name is bad.
         #
 
-        # We need to ensure logging.error() is invoked
+        # We need to ensure LOG.error() is invoked
         log_error = [0]
         def on_log_error(message, *args):
-            ''' Register logging.error() invokation '''
+            ''' Register LOG.error() invokation '''
             # pylint: disable=W0613
             log_error[0] += 1
 
         # Setup (we will restore that later)
-        saved_log_error = logging.error
-        logging.error = on_log_error
+        saved_log_error = LOG.error
+        LOG.error = on_log_error
 
         CONFIG.conf['privacy.can_publish'] = 1
         CONFIG.conf['privacy.informed'] = 1
@@ -222,7 +222,7 @@ class RunQueueTest(unittest.TestCase):
         core.run_queue()
 
         # Restore
-        logging.error = saved_log_error
+        LOG.error = saved_log_error
 
         # Worked as expected?
         self.assertTrue(log_error[0])

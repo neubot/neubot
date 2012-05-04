@@ -30,7 +30,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.utils_version import LibVersion
+from neubot import utils_version
 
 class TestLibVersion(unittest.TestCase):
 
@@ -45,12 +45,12 @@ class TestLibVersion(unittest.TestCase):
          in comparing different version numbers.
         """
 
-        self.assertTrue(LibVersion.compare("7.5.3", "7.5.3") == 0)
-        self.assertTrue(LibVersion.compare("7.0", "7.5.3") < 0)
-        self.assertTrue(LibVersion.compare("8.0", "7.5.3") > 0)
-        self.assertTrue(LibVersion.compare("8.0.0", "8.0.1") < 0)
-        self.assertTrue(LibVersion.compare("8.0.0-rc3", "8.0.0-rc4") < 0)
-        self.assertTrue(LibVersion.compare("8.0.0-rc3", "8.0.0") < 0)
+        self.assertTrue(utils_version.compare("7.5.3", "7.5.3") == 0)
+        self.assertTrue(utils_version.compare("7.0", "7.5.3") < 0)
+        self.assertTrue(utils_version.compare("8.0", "7.5.3") > 0)
+        self.assertTrue(utils_version.compare("8.0.0", "8.0.1") < 0)
+        self.assertTrue(utils_version.compare("8.0.0-rc3", "8.0.0-rc4") < 0)
+        self.assertTrue(utils_version.compare("8.0.0-rc3", "8.0.0") < 0)
 
     def test_to_numeric_failures(self):
 
@@ -66,25 +66,25 @@ class TestLibVersion(unittest.TestCase):
         #
 
         # Minor number must always be there
-        self.assertRaises(ValueError, LibVersion.to_numeric, "8")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8")
 
         # Minor number must indeed be a number
-        self.assertRaises(ValueError, LibVersion.to_numeric, "8.xo")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.xo")
 
         # Only one -rc is allowed
-        self.assertRaises(ValueError, LibVersion.to_numeric, "8-rc1-rc2")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8-rc1-rc2")
 
         # We need something to chew
-        self.assertRaises(ValueError, LibVersion.to_numeric, " ")
+        self.assertRaises(ValueError, utils_version.to_numeric, " ")
 
         # RCNUM is limited to 999
-        self.assertRaises(ValueError, LibVersion.to_numeric, "8.3-rc1000")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.3-rc1000")
 
         # RCNUM must be positive
-        self.assertRaises(ValueError, LibVersion.to_numeric, "8-rc-1")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8-rc-1")
 
         # MINOR must be positive
-        self.assertRaises(ValueError, LibVersion.to_numeric, "8.-1")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.-1")
 
     def test_to_canonical_failures(self):
 
@@ -100,7 +100,7 @@ class TestLibVersion(unittest.TestCase):
         #
 
         # We need nine digits after the radix point
-        self.assertRaises(ValueError, LibVersion.to_canonical, "1.000000")
+        self.assertRaises(ValueError, utils_version.to_canonical, "1.000000")
 
     def test_double_conversion(self):
 
@@ -110,18 +110,18 @@ class TestLibVersion(unittest.TestCase):
         """
 
         # canonical -> numeric -> canonical
-        self.assertEquals(LibVersion.to_canonical(
-          LibVersion.to_numeric("133.35.71-rc19")),
+        self.assertEquals(utils_version.to_canonical(
+          utils_version.to_numeric("133.35.71-rc19")),
           "133.35.71-rc19")
 
         # Same as above but check for -rc999
-        self.assertEquals(LibVersion.to_canonical(
-          LibVersion.to_numeric("133.35.71-rc999")),
+        self.assertEquals(utils_version.to_canonical(
+          utils_version.to_numeric("133.35.71-rc999")),
           "133.35.71")
 
         # numeric -> canonical -> numeric
-        self.assertEquals(LibVersion.to_numeric(
-          LibVersion.to_canonical("133.035071019")),
+        self.assertEquals(utils_version.to_numeric(
+          utils_version.to_canonical("133.035071019")),
           "133.035071019")
 
 if __name__ == "__main__":

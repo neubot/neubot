@@ -27,6 +27,7 @@
 '''
 
 import random
+import logging
 import getopt
 import sys
 
@@ -42,8 +43,8 @@ from neubot.net.stream import StreamHandler
 
 from neubot.bittorrent import config
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.state import STATE
+from neubot.log import LOG
 
 from neubot import utils
 from neubot import utils_rc
@@ -102,7 +103,8 @@ class PeerNeubot(StreamHandler):
         # it receives the connector handshake.
         #
         self.infohash = self.conf["bittorrent.infohash"]
-        LOG.start("BitTorrent: connecting to %s" % str(endpoint))
+        logging.info("BitTorrent: connecting to %s in progress...",
+          str(endpoint))
         StreamHandler.connect(self, endpoint, count)
 
     #
@@ -117,7 +119,8 @@ class PeerNeubot(StreamHandler):
     def connection_made(self, sock, rtt=0):
         if rtt:
             latency = utils.time_formatter(rtt)
-            LOG.complete("done, %s" % latency)
+            logging.info("BitTorrent: connecting to %s ... done, %s",
+              str(sock.getpeername()), latency)
             STATE.update("test_latency", latency)
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)
@@ -137,15 +140,15 @@ class PeerNeubot(StreamHandler):
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))
-        LOG.debug('BitTorrent: test version %d' % self.version)
-        LOG.start("BitTorrent: receiving bitfield")
+        logging.debug('BitTorrent: test version %d', self.version)
+        logging.info("BitTorrent: receiving bitfield in progress...")
         if self.connector_side:
             self.state = SENT_INTERESTED
             stream.send_interested()
 
     def got_bitfield(self, bitfield):
         self.peer_bitfield = Bitfield(self.numpieces, bitfield)
-        LOG.complete()
+        logging.info("BitTorrent: receiving bitfield ... done")
 
     # Upload
 
@@ -230,7 +233,7 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("INTERESTED when state != SENT_NOT_INTERESTED")
         if not self.connector_side and self.state != INITIAL:
             raise RuntimeError("INTERESTED when state != INITIAL")
-        LOG.start("BitTorrent: uploading")
+        logging.info("BitTorrent: uploading in progress...")
 
         #
         # We don't start uploading until we receive
@@ -257,7 +260,8 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("NOT_INTERESTED when state "
                                "!= WAIT_NOT_INTERESTED")
 
-        LOG.complete()
+        logging.info("BitTorrent: uploading ... done")
+
         if self.connector_side:
             self.complete(stream, self.dload_speed, self.rtt,
                           self.target_bytes)
@@ -276,7 +280,7 @@ class PeerNeubot(StreamHandler):
         # code in got_piece().
         #
         if self.version >= 2:
-            LOG.complete()
+            logging.info('BitTorrent: download ... done')
 
             # Calculate speed
             xfered = stream.bytes_recv_tot - self.saved_bytes
@@ -288,7 +292,7 @@ class PeerNeubot(StreamHandler):
             stream.send_not_interested()
 
             download = utils.speed_formatter(self.dload_speed)
-            LOG.info('BitTorrent: download speed: %s' % download)
+            logging.info('BitTorrent: download speed: %s', download)
 
             # To next state
             if not self.connector_side:
@@ -319,7 +323,7 @@ class PeerNeubot(StreamHandler):
             # the peer we would like the download to start.
             #
             if self.version >= 2:
-                LOG.start('BitTorrent: download')
+                logging.info('BitTorrent: download in progress...')
                 index = random.randrange(self.numpieces)
                 stream.send_request(index, 0, PIECE_LEN)
                 return
@@ -333,7 +337,8 @@ class PeerNeubot(StreamHandler):
             # messages the space between us and the peer to do
             # something that approxymates a continuous download.
             #
-            LOG.start("BitTorrent: downloading %d bytes" % self.target_bytes)
+            logging.info("BitTorrent: downloading %d bytes in progress...",
+              self.target_bytes)
             burst = self.sched_req.next()
             for index, begin, length in burst:
                 stream.send_request(index, begin, length)
@@ -344,7 +349,7 @@ class PeerNeubot(StreamHandler):
             raise RuntimeError("HAVE when state != UPLOADING")
         self.peer_bitfield[index] = 1
         # We don't use HAVE messages at the moment
-        LOG.warning("Ignoring unexpected HAVE message")
+        logging.warning("Ignoring unexpected HAVE message")
 
     def got_piece(self, *args):
 
@@ -413,7 +418,8 @@ class PeerNeubot(StreamHandler):
                 elapsed = utils.ticks() - self.saved_ticks
                 speed = xfered/elapsed
 
-                LOG.complete("%s" % utils.speed_formatter(speed))
+                logging.info("BitTorrent: downloading %d bytes ... %s",
+                  self.target_bytes, utils.speed_formatter(speed))
 
                 #
                 # Make sure that next test would take about
