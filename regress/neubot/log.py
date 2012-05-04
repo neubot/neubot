@@ -38,11 +38,6 @@ from neubot.log import LOG
 from neubot import compat
 
 if __name__ == "__main__":
-    logging.info("INFO w/ logging.info")
-    # The following should work because it should not interpolate
-    logging.debug("DEBUG w/ logging.debug", "ciao")
-    logging.warning("WARNING w/ logging.warning")
-    logging.error("ERROR w/ logging.error")
 
     LOG.verbose()
 
