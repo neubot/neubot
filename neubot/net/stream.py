@@ -633,7 +633,6 @@ class GenericProtocolStream(Stream):
 CONFIG.register_defaults({
     # General variables
     "net.stream.certfile": "",
-    "net.stream.ipv6": False,
     "net.stream.key": "",
     "net.stream.secure": False,
     "net.stream.server_side": False,
@@ -655,7 +654,6 @@ def main(args):
     CONFIG.register_descriptions({
         # General variables
         "net.stream.certfile": "Set SSL certfile path",
-        "net.stream.ipv6": "Enable IPv6",
         "net.stream.key": "Set key for ARC4",
         "net.stream.secure": "Enable SSL",
         "net.stream.server_side": "Enable SSL server-side mode",
