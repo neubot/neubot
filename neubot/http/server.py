@@ -145,7 +145,7 @@ class ServerHTTP(StreamHandler):
         self._ssl_ports = set()
         self.childs = {}
 
-    def bind_failed(self, listener, exception):
+    def bind_failed(self, epnt):
         ''' Invoked when we cannot bind a socket '''
         if self.conf.get("http.server.bind_or_die", False):
             sys.exit(1)
