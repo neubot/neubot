@@ -635,8 +635,6 @@ CONFIG.register_defaults({
     "net.stream.certfile": "",
     "net.stream.secure": False,
     "net.stream.server_side": False,
-    "net.stream.rcvbuf": 0,
-    "net.stream.sndbuf": 0,
     # For main()
     "net.stream.address": "127.0.0.1",
     "net.stream.chunk": 262144,
@@ -655,8 +653,6 @@ def main(args):
         "net.stream.certfile": "Set SSL certfile path",
         "net.stream.secure": "Enable SSL",
         "net.stream.server_side": "Enable SSL server-side mode",
-        "net.stream.rcvbuf": "Set sock recv buffer (0 = use default)",
-        "net.stream.sndbuf": "Set sock send buffer (0 = use default)",
         # For main()
         "net.stream.address": "Set client or server address",
         "net.stream.chunk": "Chunk written by each write",
