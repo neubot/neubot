@@ -38,7 +38,7 @@ from neubot.bittorrent import estimate
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
-from neubot.utils_version import LibVersion
+from neubot import utils_version
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
@@ -153,7 +153,7 @@ class BitTorrentClient(ClientHTTP):
             "download_speed": download_speed,
 
             # OS and version info
-            "neubot_version": LibVersion.to_numeric("0.4.11"),
+            "neubot_version": utils_version.to_numeric("0.4.11"),
             "platform": sys.platform,
         }
 

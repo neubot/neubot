@@ -57,124 +57,111 @@ CANONICAL_REPR = "^([0-9]+)\.([0-9]+)(\.([0-9]+))?(-rc([0-9]+))?$"
 # Numeric representation
 NUMERIC_REPR = "^([0-9]+)\.([0-9]{3,3})([0-9]{3,3})([0-9]{3,3})$"
 
-class LibVersion(object):
+def check(major, minor, patch, rcnum):
 
     """
-     This class contains class methods to switch from canonical
-     representation to numeric representation and viceversa.  It also
-     contains a method to compare two version numbers in canonical
-     representation.
+    Make sure that version number components are integer numbers in
+    the expected range.  The @major number must be positive or zero.
+    @minor, @patch and @rcnum must be between 0 and 999 included.
+
+    Raises ValueError in case of failure.
     """
 
-    @classmethod
-    def _check(cls, major, minor, patch, rcnum):
+    if major < 0:
+        raise ValueError("utils_version: MAJOR is negative")
 
-        """
-        Make sure that version number components are integer numbers in
-        the expected range.  The @major number must be positive or zero.
-        @minor, @patch and @rcnum must be between 0 and 999 included.
+    if minor < 0 or minor > 999:
+        raise ValueError("utils_version: MINOR out of range(1000)")
 
-        Raises ValueError in case of failure.
-        """
+    if patch < 0 or patch > 999:
+        raise ValueError("utils_version: PATCH out of range(1000)")
 
-        if major < 0:
-            raise ValueError("LibVersion: MAJOR is negative")
+    if rcnum < 0 or rcnum > 999:
+        raise ValueError("utils_version: RCNUM out of range(1000)")
 
-        if minor < 0 or minor > 999:
-            raise ValueError("LibVersion: MINOR out of range(1000)")
+def to_numeric(string):
 
-        if patch < 0 or patch > 999:
-            raise ValueError("LibVersion: PATCH out of range(1000)")
+    """
+    Convert version number from canonical representation to
+    numeric representation.
 
-        if rcnum < 0 or rcnum > 999:
-            raise ValueError("LibVersion: RCNUM out of range(1000)")
+    Raises ValueError in case of failure.
+    """
 
-    @classmethod
-    def to_numeric(cls, string):
+    string = string.strip()
 
-        """
-        Convert version number from canonical representation to
-        numeric representation.
+    match = re.match(CANONICAL_REPR, string)
+    if not match:
+        raise ValueError("utils_version: Invalid canonical representation")
 
-        Raises ValueError in case of failure.
-        """
+    major = int(match.group(1))
+    minor = int(match.group(2))
 
-        string = string.strip()
+    if match.group(4):
+        patch = int(match.group(4))
+    else:
+        patch = 0
 
-        match = re.match(CANONICAL_REPR, string)
-        if not match:
-            raise ValueError("LibVersion: Invalid canonical representation")
+    if match.group(6):
+        rcnum = int(match.group(6))
+    else:
+        rcnum = 999
 
-        major = int(match.group(1))
-        minor = int(match.group(2))
+    check(major, minor, patch, rcnum)
 
-        if match.group(4):
-            patch = int(match.group(4))
-        else:
-            patch = 0
+    return "%d.%03d%03d%03d" % (major, minor, patch, rcnum)
 
-        if match.group(6):
-            rcnum = int(match.group(6))
-        else:
-            rcnum = 999
+def to_canonical(string):
 
-        cls._check(major, minor, patch, rcnum)
+    """
+    Convert version number from numeric representation to
+    canonical representation.
 
-        return "%d.%03d%03d%03d" % (major, minor, patch, rcnum)
+    Raises ValueError in case of failure.
+    """
 
-    @classmethod
-    def to_canonical(cls, string):
+    string = string.strip()
 
-        """
-        Convert version number from numeric representation to
-        canonical representation.
+    match = re.match(NUMERIC_REPR, string)
+    if not match:
+        raise ValueError("utils_version: Invalid numeric representation")
 
-        Raises ValueError in case of failure.
-        """
+    major = int(match.group(1))
+    minor = int(match.group(2))
+    patch = int(match.group(3))
+    rcnum = int(match.group(4))
 
-        string = string.strip()
+    vector = [str(major), ".", str(minor)]
+    if patch:
+        vector.append(".")
+        vector.append(str(patch))
+    if rcnum < 999:
+        vector.append("-rc")
+        vector.append(str(rcnum))
 
-        match = re.match(NUMERIC_REPR, string)
-        if not match:
-            raise ValueError("LibVersion: Invalid numeric representation")
+    return "".join(vector)
 
-        major = int(match.group(1))
-        minor = int(match.group(2))
-        patch = int(match.group(3))
-        rcnum = int(match.group(4))
+def compare(left, right):
 
-        vector = [str(major), ".", str(minor)]
-        if patch:
-            vector.append(".")
-            vector.append(str(patch))
-        if rcnum < 999:
-            vector.append("-rc")
-            vector.append(str(rcnum))
+    """
+    Returns a negative value if the @left version number is
+    smaller than the @right one; zero if they are equal; and
+    a positive value if @left is bigger.
 
-        return "".join(vector)
+    Raises ValueError if one of @left or @right is not in
+    the expected canonical form.
+    """
 
-    @classmethod
-    def compare(cls, left, right):
+    #
+    # Way better to use Decimal than float here: we don't need
+    # to wonder about all the floating point oddities.
+    #
 
-        """
-        Returns a negative value if the @left version number is
-        smaller than the @right one; zero if they are equal; and
-        a positive value if @left is bigger.
-
-        Raises ValueError if one of @left or @right is not in
-        the expected canonical form.
-        """
-
-        #
-        # Way better to use Decimal than float here: we don't need
-        # to wonder about all the floating point oddities.
-        #
-
-        return (decimal.Decimal(cls.to_numeric(left)) -
-               decimal.Decimal(cls.to_numeric(right)))
+    return (decimal.Decimal(to_numeric(left)) -
+           decimal.Decimal(to_numeric(right)))
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
-        print(LibVersion.to_numeric(sys.argv[1]))
+        print(to_numeric(sys.argv[1]))
     else:
-        print(LibVersion.to_numeric('0.4.11'))
+        print(to_numeric('0.4.11'))
