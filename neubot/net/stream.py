@@ -50,6 +50,8 @@ from neubot.net.poller import Pollable
 
 from neubot import system
 from neubot import utils
+from neubot import utils_net
+
 from neubot.main import common
 
 # States returned by the socket model
@@ -60,9 +62,6 @@ MAXBUF = 1 << 18
 
 # Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
-
-# Winsock returns EWOULDBLOCK
-INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
 if ssl:
     class SSLWrapper(object):
@@ -431,54 +430,21 @@ class Connector(Pollable):
         self.sock = None
         self.timestamp = 0
         self.endpoint = None
-        self.family = 0
 
     def __repr__(self):
         return "connector to %s" % str(self.endpoint)
 
     def connect(self, endpoint, conf):
         self.endpoint = endpoint
-        self.family = socket.AF_INET
-        if conf["net.stream.ipv6"]:
-            self.family = socket.AF_INET6
-        rcvbuf = conf["net.stream.rcvbuf"]
-        sndbuf = conf["net.stream.sndbuf"]
 
-        try:
-            addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
-                                   socket.SOCK_STREAM)
-        except socket.error, exception:
-            LOG.error("* Connection to %s failed: %s" % (endpoint, exception))
-            self.parent._connection_failed(self, exception)
+        sock = utils_net.connect(endpoint)
+        if not sock:
+            self.parent._connection_failed(self, None)
             return
 
-        last_exception = None
-        for ainfo in addrinfo:
-            try:
-
-                sock = socket.socket(self.family, socket.SOCK_STREAM)
-                if rcvbuf:
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
-                if sndbuf:
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, sndbuf)
-                sock.setblocking(False)
-                result = sock.connect_ex(ainfo[4])
-                if result not in INPROGRESS:
-                    raise socket.error(result, os.strerror(result))
-
-                self.sock = sock
-                self.timestamp = utils.ticks()
-                self.poller.set_writable(self)
-                if result != 0:
-                    LOG.debug("* Connecting to %s ..." % str(endpoint))
-                    self.parent.started_connecting(self)
-                return
-
-            except socket.error, exception:
-                last_exception = exception
-
-        LOG.error("* Connection to %s failed: %s" % (endpoint, last_exception))
-        self.parent._connection_failed(self, last_exception)
+        self.sock = sock
+        self.timestamp = utils.ticks()
+        self.poller.set_writable(self)
 
     def fileno(self):
         return self.sock.fileno()
@@ -508,13 +474,12 @@ class Connector(Pollable):
         self.parent._connection_failed(self, None)
 
 class Listener(Pollable):
-    def __init__(self, poller, parent):
+    def __init__(self, poller, parent, sock, endpoint):
         Pollable.__init__(self)
         self.poller = poller
         self.parent = parent
-        self.lsock = None
-        self.endpoint = None
-        self.family = 0
+        self.lsock = sock
+        self.endpoint = endpoint
 
         # Want to listen "forever"
         self.watchdog = -1
@@ -522,49 +487,9 @@ class Listener(Pollable):
     def __repr__(self):
         return "listener at %s" % str(self.endpoint)
 
-    def listen(self, endpoint, conf):
-        self.endpoint = endpoint
-        self.family = socket.AF_INET
-        if conf["net.stream.ipv6"]:
-            self.family = socket.AF_INET6
-        rcvbuf = conf["net.stream.rcvbuf"]
-        sndbuf = conf["net.stream.sndbuf"]
-
-        try:
-            addrinfo = getaddrinfo(endpoint[0], endpoint[1], self.family,
-                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
-        except socket.error, exception:
-            LOG.error("* Bind %s failed: %s" % (self.endpoint, exception))
-            self.parent.bind_failed(self, exception)
-            return
-
-        last_exception = None
-        for ainfo in addrinfo:
-            try:
-
-                lsock = socket.socket(self.family, socket.SOCK_STREAM)
-                lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                if rcvbuf:
-                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,rcvbuf)
-                if sndbuf:
-                    lsock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF,sndbuf)
-                lsock.setblocking(False)
-                lsock.bind(ainfo[4])
-                # Probably the backlog here is too big
-                lsock.listen(128)
-
-                LOG.debug("* Listening at %s" % str(self.endpoint))
-
-                self.lsock = lsock
-                self.poller.set_readable(self)
-                self.parent.started_listening(self)
-                return
-
-            except socket.error, exception:
-                last_exception = exception
-
-        LOG.error("* Bind %s failed: %s" % (self.endpoint, last_exception))
-        self.parent.bind_failed(self, last_exception)
+    def listen(self):
+        self.poller.set_readable(self)
+        self.parent.started_listening(self)
 
     def fileno(self):
         return self.lsock.fileno()
@@ -586,7 +511,7 @@ class Listener(Pollable):
             return
 
     def handle_close(self):
-        self.parent.bind_failed(self, None)     # XXX
+        self.parent.bind_failed(self.endpoint)  # XXX
 
 class StreamHandler(object):
     def __init__(self, poller):
@@ -601,10 +526,15 @@ class StreamHandler(object):
         self.conf = conf
 
     def listen(self, endpoint):
-        listener = Listener(self.poller, self)
-        listener.listen(endpoint, self.conf)
+        sockets = utils_net.listen(endpoint)
+        if not sockets:
+            self.bind_failed(endpoint)
+            return
+        for sock in sockets:
+            listener = Listener(self.poller, self, sock, endpoint)
+            listener.listen()
 
-    def bind_failed(self, listener, exception):
+    def bind_failed(self, epnt):
         pass
 
     def started_listening(self, listener):
