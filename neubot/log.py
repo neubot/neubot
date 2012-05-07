@@ -172,7 +172,7 @@ class Logger(object):
 
     def exception(self, message="", func=None):
         if not func:
-            func = self.error
+            func = logging.error
         if message:
             func("EXCEPT: " + message + " (traceback follows)")
         for line in traceback.format_exc().split("\n"):
@@ -180,23 +180,11 @@ class Logger(object):
 
     def oops(self, message="", func=None):
         if not func:
-            func = self.error
+            func = logging.error
         if message:
             func("OOPS: " + message + " (traceback follows)")
         for line in traceback.format_stack()[:-1]:
             func(line)
-
-    def error(self, message, *args):
-        self.log("ERROR", message, *args)
-
-    def warning(self, message, *args):
-        self.log("WARNING", message, *args)
-
-    def info(self, message, *args):
-        self.log("INFO", message, *args)
-
-    def debug(self, message, *args):
-        self.log("DEBUG", message, *args)
 
     def log_access(self, message, *args):
         #
