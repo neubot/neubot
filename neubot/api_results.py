@@ -36,10 +36,11 @@ from neubot import utils
 
 
 class NotImplementedTest(Exception):
-    pass
+    ''' Raised when a test is not implemented '''
 
 
 def api_results(stream, request, query):
+    ''' Provide results for queried tests '''
     since, until = -1, -1
     test = ''
 
