@@ -3,6 +3,7 @@
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012 Marco Scopesi <marco.scopesi@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
