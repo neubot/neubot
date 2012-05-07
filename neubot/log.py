@@ -61,6 +61,63 @@ INTERVAL = 120
 #
 DAYS_AGO = 7
 
+class StreamLogger(object):
+
+    ''' Stream logging object '''
+
+    def __init__(self):
+        self.streams = set()
+
+    def start_streaming(self, stream):
+        ''' Attach stream to log messages '''
+        self.streams.add(stream)
+
+    def stop_streaming(self):
+        ''' Close all attached streams '''
+        for stream in self.streams:
+            stream.poller.close(stream)
+        self.streams.clear()
+
+    def log_tuple(self, severity, message, args):
+        ''' Really log a message (without any *magic) '''
+
+        # No point in logging empty lines
+        if not message:
+            return
+
+        #
+        # Streaming allows consumers to register with the log
+        # object and follow the events that happen during a
+        # test as if they were running the test in their local
+        # context.  When the test is done, the runner of the
+        # test will automatically disconnected all the attached
+        # streams.
+        # Log streaming makes this function less efficient
+        # because lazy processing of log records can't be
+        # performed.  We must pass the client all the logs
+        # and it will decide whether to be verbose.
+        # Err, of course passing ACCESS logs down the stream
+        # is pointless for a client that wants to follow a
+        # remote test.
+        #
+        if self.streams:
+            # "Lazy" processing
+            if args:
+                message = message % args
+                args = ()
+            message = message.rstrip()
+            try:
+                if severity != 'ACCESS':
+                    logline = "%s %s\r\n" % (severity, message)
+                    logline = logline.encode("utf-8")
+                    for stream in self.streams:
+                        stream.start_send(logline)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                pass
+
+
 class Logger(object):
 
     """Logging object.  Usually there should be just one instance
@@ -78,7 +135,6 @@ class Logger(object):
         self._use_database = False
         self._queue = []
 
-        self.streams = set()
 
     #
     # Better not to touch the database when a test is in
@@ -111,16 +167,6 @@ class Logger(object):
     def redirect(self):
         self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
-
-    def start_streaming(self, stream):
-        ''' Attach stream to log messages '''
-        self.streams.add(stream)
-
-    def stop_streaming(self):
-        ''' Close all attached streams '''
-        for stream in self.streams:
-            stream.poller.close(stream)
-        self.streams.clear()
 
     # Log functions
 
@@ -202,38 +248,6 @@ class Logger(object):
         if not message:
             return
 
-        #
-        # Streaming allows consumers to register with the log
-        # object and follow the events that happen during a
-        # test as if they were running the test in their local
-        # context.  When the test is done, the runner of the
-        # test will automatically disconnected all the attached
-        # streams.
-        # Log streaming makes this function less efficient
-        # because lazy processing of log records can't be
-        # performed.  We must pass the client all the logs
-        # and it will decide whether to be verbose.
-        # Err, of course passing ACCESS logs down the stream
-        # is pointless for a client that wants to follow a
-        # remote test.
-        #
-        if self.streams:
-            # "Lazy" processing
-            if args:
-                message = message % args
-                args = ()
-            message = message.rstrip()
-            try:
-                if severity != 'ACCESS':
-                    logline = "%s %s\r\n" % (severity, message)
-                    logline = logline.encode("utf-8")
-                    for stream in self.streams:
-                        stream.start_send(logline)
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                pass
-
         # Not verbose?  Stop processing the log record here
         if not self.noisy and severity == 'DEBUG':
             return
@@ -310,7 +324,20 @@ class LogWrapper(logging.Handler):
         exc_info = record.exc_info
         LOG.log_tuple(level, msg, args, exc_info)
 
+STREAM_LOG = StreamLogger()
+
+class StreamLogWrapper(logging.Handler):
+
+    """Wrapper between stdlib logging and StreamLogger"""
+
+    def emit(self, record):
+        msg = record.msg
+        args = record.args
+        level = record.levelname
+        STREAM_LOG.log_tuple(level, msg, args)
+
 ROOT = logging.getLogger()
 ROOT.handlers = []
 ROOT.addHandler(LogWrapper())
-ROOT.setLevel(logging.DEBUG)
+ROOT.addHandler(StreamLogWrapper(level=logging.DEBUG))
+ROOT.setLevel(logging.INFO)
