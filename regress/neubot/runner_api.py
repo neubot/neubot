@@ -29,7 +29,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import ConfigError
-from neubot.log import LOG
+from neubot.log import STREAM_LOG
 from neubot.runner_api import runner_api
 from neubot.runner_core import RUNNER_CORE
 from neubot.runner_tests import RUNNER_TESTS
@@ -151,12 +151,12 @@ class RegressionTest(unittest.TestCase):
         #
         # 2. the HTTP response is OK;
         #
-        # 3. LOG.start_streaming() is invoked.
+        # 3. STREAM_LOG.start_streaming() is invoked.
         #
 
         #
         # We need to override the run() function of RUNNER_CORE
-        # and start_streaming of LOG because we just want to
+        # and start_streaming of STREAM_LOG because we just want to
         # test that they were invoked using the right parameters,
         # not to invoke them.
         #
@@ -176,9 +176,9 @@ class RegressionTest(unittest.TestCase):
         # Prerequisites (we will restore everything later)
         RUNNER_TESTS.avail = {'bittorrent': 'foo'}
         saved_run = RUNNER_CORE.run
-        saved_start_streaming = LOG.start_streaming
+        saved_start_streaming = STREAM_LOG.start_streaming
         RUNNER_CORE.run = on_run_invoked
-        LOG.start_streaming = on_start_streaming_invoked
+        STREAM_LOG.start_streaming = on_start_streaming_invoked
 
         # Invoke runner_api()
         stream = RegressionTestStream()
@@ -187,10 +187,10 @@ class RegressionTest(unittest.TestCase):
         # Undo prerequisites
         RUNNER_CORE.run = saved_run
         RUNNER_TESTS.avail = {}
-        LOG.start_streaming = saved_start_streaming
+        STREAM_LOG.start_streaming = saved_start_streaming
 
         #
-        # We must make sure that run() was invoked, that LOG's
+        # We must make sure that run() was invoked, that STREAM_LOG's
         # start_streaming was invoked and that the response
         # contains precisely what we expect.
         #
