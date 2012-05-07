@@ -78,7 +78,7 @@ class StreamLogger(object):
             stream.poller.close(stream)
         self.streams.clear()
 
-    def log_tuple(self, severity, message, args):
+    def log(self, severity, message, args):
         ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
@@ -207,7 +207,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self.log("ACCESS", message, *args)
+        self.log("ACCESS", message, args)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
@@ -237,11 +237,7 @@ class Logger(object):
         # Purge the queue in any case
         del self._queue[:]
 
-    def log(self, severity, message, *args):
-        ''' Really log a message '''
-        self.log_tuple(severity, message, args, None)
-
-    def log_tuple(self, severity, message, args, exc_info):
+    def log(self, severity, message, args, exc_info):
         ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
@@ -322,7 +318,7 @@ class LogWrapper(logging.Handler):
         args = record.args
         level = record.levelname
         exc_info = record.exc_info
-        LOG.log_tuple(level, msg, args, exc_info)
+        LOG.log(level, msg, args, exc_info)
 
 STREAM_LOG = StreamLogger()
 
@@ -334,7 +330,7 @@ class StreamLogWrapper(logging.Handler):
         msg = record.msg
         args = record.args
         level = record.levelname
-        STREAM_LOG.log_tuple(level, msg, args)
+        STREAM_LOG.log(level, msg, args)
 
 ROOT = logging.getLogger()
 ROOT.handlers = []
