@@ -66,7 +66,7 @@ def main(args):
     if conf["agent.use_syslog"]:
         LOG.redirect()
 
-    system.drop_privileges(LOG.error)
+    system.drop_privileges(logging.error)
 
     #
     # When we run as an agent we also save logs into

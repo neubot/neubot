@@ -270,7 +270,7 @@ def main(args):
         system.write_pidfile()
         LOG.redirect()
 
-    system.drop_privileges(LOG.error)
+    system.drop_privileges(logging.error)
     POLLER.loop()
 
 if __name__ == "__main__":

@@ -697,7 +697,7 @@ def main(args):
             system.change_dir()
             system.go_background()
             LOG.redirect()
-        system.drop_privileges(LOG.error)
+        system.drop_privileges(logging.error)
         conf["net.stream.server_side"] = True
         handler.listen(endpoint)
     else:

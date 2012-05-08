@@ -109,7 +109,7 @@ class RunnerCore(object):
         except:
             exc = asyncore.compact_traceback()
             error = str(exc)
-            LOG.error('runner_core: catched exception: %s' % error)
+            logging.error('runner_core: catched exception: %s', error)
             NOTIFIER.publish('testdone')
 
     def _do_run_queue(self):
@@ -193,7 +193,7 @@ class RunnerCore(object):
         except:
             exc = asyncore.compact_traceback()
             error = str(exc)
-            LOG.error('runner_core: catched exception: %s' % error)
+            logging.error('runner_core: catched exception: %s', error)
 
         #
         # Allow for more tests
