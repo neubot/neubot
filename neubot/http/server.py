@@ -305,7 +305,7 @@ class ServerHTTP(StreamHandler):
 
     def accept_failed(self, listener, exception):
         ''' Print a warning if accept() fails (often due to SSL) '''
-        LOG.warning("ServerHTTP: accept() failed: %s" % str(exception))
+        logging.warning("ServerHTTP: accept() failed: %s", str(exception))
 
 HTTP_SERVER = ServerHTTP(POLLER)
 

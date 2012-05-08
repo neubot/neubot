@@ -58,7 +58,7 @@ if __name__ == "__main__":
         raise
     except:
         LOG.exception()
-        LOG.exception(func=LOG.warning)
+        LOG.exception(func=logging.warning)
 
     LOG.oops("Testing the new oops feature")
 

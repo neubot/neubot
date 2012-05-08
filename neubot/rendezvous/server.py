@@ -138,7 +138,7 @@ class ServerRendezvous(ServerHTTP):
                          country, server)
 
         else:
-            LOG.warning('rendezvous_server: cannot redirect to M-Lab: %s',
+            logging.warning('rendezvous_server: cannot redirect to M-Lab: %s',
                         request_body)
 
         #
