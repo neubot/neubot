@@ -28,6 +28,7 @@ import collections
 import urlparse
 import socket
 import os
+import logging
 
 from neubot.log import LOG
 
@@ -122,7 +123,7 @@ class Message(object):
             vector.append(" ")
             vector.append(self.reason)
 
-        LOG.debug("> %s" % ("".join(vector)))
+        logging.debug("> %s", "".join(vector))
         vector.append("\r\n")
 
         for key, value in self.headers.items():
@@ -131,10 +132,10 @@ class Message(object):
             vector.append(": ")
             vector.append(value)
 
-            LOG.debug("> %s: %s" % (key, value))
+            logging.debug("> %s: %s" , key, value)
             vector.append("\r\n")
 
-        LOG.debug(">")
+        logging.debug(">")
         vector.append("\r\n")
 
         string = "".join(vector)
@@ -289,7 +290,7 @@ class Message(object):
 
         # Prettyprint
         for line in string.split("\n"):
-            LOG.debug("%s %s" % (prefix, line.rstrip()))
+            logging.debug("%s %s", prefix, line.rstrip())
 
         # Seek to the beginning if needed
         if not isinstance(self.body, basestring):

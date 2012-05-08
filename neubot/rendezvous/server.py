@@ -88,8 +88,8 @@ class ServerRendezvous(ServerHTTP):
         version = self.conf["rendezvous.server.update_version"]
         if version and ibody.version:
             diff = utils_version.compare(version, ibody.version)
-            LOG.debug('rendezvous: version=%s ibody.version=%s diff=%f' % (
-                      version, ibody.version, diff))
+            logging.debug('rendezvous: version=%s ibody.version=%s diff=%f', 
+                      version, ibody.version, diff)
             if diff > 0:
                 obody.update["uri"] = self.conf["rendezvous.server.update_uri"]
                 obody.update["version"] = version
@@ -109,7 +109,7 @@ class ServerRendezvous(ServerHTTP):
         #
         server = self.conf.get("rendezvous.server.default",
                                "master.neubot.org")
-        LOG.debug("* default test server: %s" % server)
+        logging.debug("* default test server: %s", server)
 
         #
         # Backward compatibility: the variable name changed from

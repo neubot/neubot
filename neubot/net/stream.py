@@ -33,6 +33,7 @@ import os
 import socket
 import sys
 import types
+import logging
 
 try:
     import ssl
@@ -173,7 +174,7 @@ class Stream(Pollable):
         self.peername = sock.getpeername()
         self.logname = str((self.myname, self.peername))
 
-        LOG.debug("* Connection made %s" % str(self.logname))
+        logging.debug("* Connection made %s", str(self.logname))
 
         if conf["net.stream.secure"]:
             if not ssl:
