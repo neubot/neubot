@@ -46,10 +46,6 @@ if __name__ == "__main__":
     logging.warning("WARNING w/ logging.warning")
     logging.error("ERROR w/ logging.error")
 
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
     print compat.json.dumps(LOG.listify())
 
     try:
@@ -64,11 +60,5 @@ if __name__ == "__main__":
 
     # Testing variadic args
     logging.warning("WARNING %s", "variadic warning")
-    LOG.warning("WARNING %s", "variadic warning")
 
     LOG.redirect()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
