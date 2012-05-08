@@ -23,7 +23,6 @@
 
 ''' API results '''
 
-import StringIO
 import cgi
 
 from neubot.compat import json
@@ -67,7 +66,5 @@ def api_results(stream, request, query):
     response = Message()
     lst = table.listify(DATABASE.connection(), since, until)
     s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
-    stringio = StringIO.StringIO(s)
-    response.compose(code="200", reason="Ok", body=stringio,
-                     mimetype=mimetype)
+    response.compose(code="200", reason="Ok", body=s, mimetype=mimetype)
     stream.send_response(request, response)
