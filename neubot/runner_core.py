@@ -32,6 +32,7 @@ import asyncore
 import collections
 import getopt
 import sys
+import logging
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
@@ -73,7 +74,7 @@ class RunnerCore(object):
         #
         if (auto_rendezvous and test != 'rendezvous' and
             len(RUNNER_TESTS.get_test_names()) == 0):
-            LOG.info('runner_core: Need to rendezvous first...')
+            logging.info('runner_core: Need to rendezvous first...')
             self.queue.append(('rendezvous', lambda: None, None))
 
         self.queue.append((test, callback, ctx))

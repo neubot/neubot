@@ -27,6 +27,7 @@
 #
 
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -163,7 +164,7 @@ def main(args):
                                       LOG.noisy, "bittorrent")):
             sys.exit(0)
 
-        LOG.info('Will run the test in the local context...')
+        logging.info('Will run the test in the local context...')
 
         if not privacy.allowed_to_run():
             privacy.complain()

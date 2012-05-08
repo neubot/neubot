@@ -24,6 +24,7 @@
 
 import random
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -128,12 +129,12 @@ class ServerRendezvous(ServerHTTP):
                 servers = table_geoloc.lookup_servers(DATABASE.connection(),
                                                       country)
                 if not servers:
-                    LOG.info("* learning new country: %s" % country)
+                    logging.info("* learning new country: %s", country)
                     table_geoloc.insert_server(DATABASE.connection(),
                                                country, server)
                     servers = [server]
                 server = random.choice(servers)
-                LOG.info("rendezvous_server: %s[%s] -> %s", agent_address,
+                logging.info("rendezvous_server: %s[%s] -> %s", agent_address,
                          country, server)
 
         else:
@@ -185,8 +186,8 @@ def run():
     """ Load MaxMind database and register our child server """
 
     GEOLOCATOR.open_or_die()
-    LOG.info("This product includes GeoLite data created by MaxMind, "
-             "available from <http://www.maxmind.com/>.")
+    logging.info("This product includes GeoLite data created by MaxMind, "
+                 "available from <http://www.maxmind.com/>.")
 
     server = ServerRendezvous(None)
     server.configure(CONFIG)

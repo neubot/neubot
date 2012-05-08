@@ -27,6 +27,7 @@ import pprint
 import re
 import urllib
 import urlparse
+import logging
 
 from neubot.main.common import VERSION
 from neubot.compat import json
@@ -88,7 +89,7 @@ class ServerAPI(ServerHTTP):
         except ConfigError, error:
             reason = re.sub(r"[\0-\31]", "", str(error))
             reason = re.sub(r"[\x7f-\xff]", "", reason)
-            LOG.exception(func=LOG.info)
+            LOG.exception(func=logging.info)
             response = Message()
             response.compose(code="500", reason=reason,
                     body=StringIO.StringIO(reason))
