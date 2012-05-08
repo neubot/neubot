@@ -127,7 +127,6 @@ class Logger(object):
 
     def __init__(self):
         self.logger = stderr_logger
-        self.noisy = False
         self.message = None
         self.ticks = 0
 
@@ -157,12 +156,6 @@ class Logger(object):
     def use_database(self):
         POLLER.sched(INTERVAL, self._maintain_database)
         self._use_database = True
-
-    def verbose(self):
-        self.noisy = True
-
-    def quiet(self):
-        self.noisy = False
 
     def redirect(self):
         self.logger = system.get_background_logger()
@@ -230,10 +223,6 @@ class Logger(object):
 
         # No point in logging empty lines
         if not message:
-            return
-
-        # Not verbose?  Stop processing the log record here
-        if not self.noisy and severity == 'DEBUG':
             return
 
         # Lazy processing
