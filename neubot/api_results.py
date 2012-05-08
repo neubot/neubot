@@ -65,6 +65,6 @@ def api_results(stream, request, query):
 
     response = Message()
     lst = table.listify(DATABASE.connection(), since, until)
-    s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
-    response.compose(code="200", reason="Ok", body=s, mimetype=mimetype)
+    body = json.dumps(lst, indent=indent, sort_keys=sort_keys)
+    response.compose(code="200", reason="Ok", body=body, mimetype=mimetype)
     stream.send_response(request, response)
