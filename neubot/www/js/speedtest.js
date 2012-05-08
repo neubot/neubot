@@ -175,7 +175,8 @@ var speedtest = (function() {
 
         var xaxis = {
             renderer: jQuery.jqplot.DateAxisRenderer,
-            showTickMarks: true
+            showTickMarks: true,
+            min: since
         };
 
         var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
