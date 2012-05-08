@@ -161,23 +161,24 @@ var bittorrent = (function() {
             showTickMarks: true
         };
 
+        var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
+
+        if (hours <= 120) {
+            xaxis.tickOptions = {
+              formatString:'%b %#d, h %H'
+            };
+            // xaxis.tickInterval = '8 hours';
+        }
+        else {
+            xaxis.tickOptions = {
+              formatString:'%b %#d'
+            };
+            // xaxis.tickInterval = '1 day';
+        }
+        xaxis.label = "Time";
+
         mydata = downloadData.concat(uploadData);
         if (mydata.length) {
-            var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
-
-            if (hours <= 120) {
-                xaxis.tickOptions = {
-                  formatString:'%b %#d, h %H'
-                };
-                // xaxis.tickInterval = '8 hours';
-            }
-            else {
-                xaxis.tickOptions = {
-                  formatString:'%b %#d'
-                };
-                // xaxis.tickInterval = '1 day';
-            }
-            xaxis.label = "Time";
 
             var plot = jQuery.jqplot("chartdiv1", mydata, {
               title: {
