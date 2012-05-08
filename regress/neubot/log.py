@@ -39,7 +39,7 @@ from neubot import compat
 
 if __name__ == "__main__":
 
-    LOG.verbose()
+    logging.getLogger('').setLevel(logging.DEBUG)
 
     logging.info("INFO w/ logging.info")
     logging.debug("DEBUG w/ logging.debug")

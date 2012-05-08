@@ -32,7 +32,6 @@ if __name__ == '__main__':
 from neubot.api_server import API_SERVER
 from neubot.config import CONFIG
 from neubot.http_server import HTTP_SERVER
-from neubot.log import LOG
 from neubot.poller import POLLER
 from neubot.rootdir import WWW
 
@@ -74,7 +73,7 @@ def main(args):
         if name == '-O':
             settings.append(value)
         elif name == '-v':
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
 
     settings = utils_rc.parse_safe(iterable=settings)
     if not 'address' in settings:

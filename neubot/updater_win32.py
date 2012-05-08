@@ -26,6 +26,7 @@ import getopt
 import os
 import subprocess
 import sys
+import logging
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
@@ -38,7 +39,6 @@ else:
 from neubot import utils_version
 
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.poller import POLLER
 from neubot.rootdir import ROOTDIR
 from neubot.updater_runner import UpdaterRunner
@@ -112,7 +112,7 @@ def main(args):
     privacy = False
     for tpl in options:
         if tpl[0] == '-v':
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
         elif tpl[0] == '-y':
             privacy = True
 

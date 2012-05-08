@@ -42,7 +42,6 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
@@ -193,7 +192,7 @@ def main(args):
         elif name == '-O':
             settings.append(value)
         elif name == '-v':
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
         elif name == '-y':
             fakeprivacy = True
 

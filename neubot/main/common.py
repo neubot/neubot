@@ -30,13 +30,13 @@
 
 import getopt
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
 from neubot.database import DATABASE
-from neubot.log import LOG
 
 VERSION = "0.4.12-rc2"
 
@@ -88,7 +88,7 @@ def main(name, descr, args):
             sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif key == "-v":
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
 
     DATABASE.connect()
 
