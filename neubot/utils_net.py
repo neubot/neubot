@@ -74,11 +74,20 @@ def format_ainfo(ainfo):
 def listen(epnt):
     ''' Listen to all sockets represented by epnt '''
 
+    logging.debug('listen(): about to listen to: %s' % str(epnt))
+
     sockets = []
 
     # Allow to set any-address from command line
     if not epnt[0]:
         epnt = (None, epnt[1])
+
+    # Allow to listen on a list of addresses
+    if ',' in epnt[0]:
+        for address in epnt[0].split(','):
+            result = listen((address.strip(), epnt[1]))
+            sockets.extend(result)
+        return sockets
 
     try:
         addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
@@ -120,6 +129,8 @@ def listen(epnt):
 
 def connect(epnt):
     ''' Connect to epnt '''
+
+    logging.debug('connect(): about to connect to: %s' % str(epnt))
 
     try:
         addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
