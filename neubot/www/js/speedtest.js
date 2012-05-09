@@ -230,6 +230,9 @@ var speedtest = (function() {
 
             plot.replot();
         }
+        else {
+            jQuery("#chartdiv1").html("<span>No results</span>");
+        }
 
         mydata = latencyData.concat(connectData);
         if (mydata.length) {
@@ -264,6 +267,9 @@ var speedtest = (function() {
             });
 
             plot2.replot();
+        }
+        else {
+            jQuery("#chartdiv2").html("<span>No results</span>");
         }
 
         // some additional CSS-magic

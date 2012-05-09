@@ -462,6 +462,11 @@ a#x_link_to_status {
     height: 400px;
     width: 100%;
 }
+#chartdiv1 span, #chartdiv2 span {
+    font-size: 2em;
+    text-align: center;
+    display: block;
+}
 #table_settings td {
     padding: 3px 2px;
 }

@@ -213,6 +213,9 @@ var bittorrent = (function() {
 
             plot.replot();
         }
+        else {
+            jQuery("#chartdiv1").html("<span>No results</span>");
+        }
 
         mydata = connectData;
         if (mydata.length) {
@@ -247,6 +250,9 @@ var bittorrent = (function() {
             });
 
             plot2.replot();
+        }
+        else {
+            jQuery("#chartdiv2").html("<span>No results</span>");
         }
 
         // some additional CSS-magic
