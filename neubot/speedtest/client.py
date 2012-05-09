@@ -279,8 +279,7 @@ class ClientSpeedtest(ClientHTTP):
 
     def connection_ready(self, stream):
 
-        # Force version 2 of the speedtest
-        self.conf['version'] = 2
+        self.conf['version'] = CONFIG['speedtest_test_version']
 
         self.streams.append(stream)
         if len(self.streams) == self.conf.get("speedtest.client.nconn", 1):
