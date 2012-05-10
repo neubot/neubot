@@ -445,9 +445,9 @@ class Connector(Pollable):
     def connect(self, endpoint, conf):
 
         # Connect first address in a list
-        if ',' in endpoint[0]:
+        if ' ' in endpoint[0]:
             LOG.debug('* Connecting to %s' % str(endpoint))
-            for address in endpoint[0].split(','):
+            for address in endpoint[0].split():
                 epnt = (address.strip(), endpoint[1])
                 self.epnts.append(epnt)
             endpoint = self.epnts.popleft()
