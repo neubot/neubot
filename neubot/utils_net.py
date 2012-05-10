@@ -28,6 +28,8 @@ import os
 import socket
 import sys
 
+from neubot.config import CONFIG
+
 # Winsock returns EWOULDBLOCK
 INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
@@ -71,6 +73,18 @@ def format_ainfo(ainfo):
     return '(%s, %s, %s, %s, %s)' % (family, socktype, proto,
       canonname, sockaddr)
 
+# Make sure AF_INET < AF_INET6
+__COMPARE_AF = {
+    socket.AF_INET: 1,
+    socket.AF_INET6: 2,
+}
+
+def __compare_af(left, right):
+    ''' Compare address families '''
+    left = __COMPARE_AF[left[0]]
+    right = __COMPARE_AF[right[0]]
+    return cmp(left, right)
+
 def listen(epnt):
     ''' Listen to all sockets represented by epnt '''
 
@@ -97,6 +111,9 @@ def listen(epnt):
         logging.error('listen(): cannot listen to %s: %s',
                       format_epnt(epnt), str(exception))
         return sockets
+
+    prefer_ipv6 = CONFIG['prefer_ipv6']
+    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
@@ -140,6 +157,9 @@ def connect(epnt):
         logging.error('connect(): cannot connect to %s: %s',
                       format_epnt(epnt), str(exception))
         return None
+
+    prefer_ipv6 = CONFIG['prefer_ipv6']
+    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
