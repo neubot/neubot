@@ -654,7 +654,7 @@ CONFIG.register_defaults({
     "net.stream.secure": False,
     "net.stream.server_side": False,
     # For main()
-    "net.stream.address": "127.0.0.1",
+    "net.stream.address": "127.0.0.1 ::1",
     "net.stream.chunk": 262144,
     "net.stream.clients": 1,
     "net.stream.daemonize": False,

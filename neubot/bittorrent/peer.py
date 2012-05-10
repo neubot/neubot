@@ -476,7 +476,7 @@ def main(args):
     if arguments:
         sys.exit('usage: neubot bittorrent_peer [-lv] [-O setting]')
 
-    settings = [ 'address 127.0.0.1',
+    settings = [ 'address "127.0.0.1 ::1"',
                  'port 6881',
                  'version 1' ]
 

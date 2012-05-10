@@ -192,7 +192,7 @@ CONFIG.register_descriptions_helper = lambda properties: \
 
 CONFIG.register_defaults({
     "agent.api": True,
-    "agent.api.address": "127.0.0.1",
+    "agent.api.address": "127.0.0.1 ::1",
     "agent.api.port": 9774,
     "agent.daemonize": True,
     "agent.interval": 0,

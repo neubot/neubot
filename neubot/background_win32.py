@@ -70,7 +70,7 @@ def main(args):
     # Complain if privacy settings are not OK
     privacy.complain_if_needed()
 
-    background_api.start('127.0.0.1', '9774')
+    background_api.start('127.0.0.1 ::1', '9774')
     BACKGROUND_RENDEZVOUS.start()
 
     __start_updater()

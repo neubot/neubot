@@ -254,10 +254,10 @@ def main(args):
     # Create localhost-only debug server
     #
     if CONFIG['server.debug']:
-        LOG.info('server: Starting debug server at 127.0.0.1:9774')
+        LOG.info('server: Starting debug server at {127.0.0.1,::1}:9774')
         server = DebugAPI(POLLER)
         server.configure(conf)
-        server.listen(('127.0.0.1', 9774))
+        server.listen(('127.0.0.1 ::1', 9774))
 
     #
     # Go background and drop privileges,
