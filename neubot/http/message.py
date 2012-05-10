@@ -33,6 +33,7 @@ from neubot.log import LOG
 
 from neubot import compat
 from neubot import utils
+from neubot import utils_net
 
 REDIRECT = '''\
 <HTML>
@@ -260,9 +261,8 @@ class Message(object):
         ''' Prepare a redirect response '''
         if not target.startswith("/"):
             target = "/" + target
-        #XXX With IPv6 we need to enclose address in square braces
-        location = "http://%s:%s%s" % (stream.myname[0],
-                      stream.myname[1], target)
+        location = "http://%s%s" % (utils_net.format_epnt(
+                                    stream.myname), target)
         body = REDIRECT % (target, target)
         self.compose(code="302", reason="Found", body=body,
                      mimetype="text/html; charset=UTF-8")
