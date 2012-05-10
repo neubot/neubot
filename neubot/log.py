@@ -307,4 +307,4 @@ class LogWrapper(logging.Handler):
 ROOT = logging.getLogger()
 ROOT.handlers = []
 ROOT.addHandler(LogWrapper())
-ROOT.setLevel('DEBUG')
+ROOT.setLevel(logging.DEBUG)
