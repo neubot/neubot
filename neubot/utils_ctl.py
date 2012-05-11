@@ -25,6 +25,7 @@
 ''' Helpers to control Neubot daemon '''
 
 import httplib
+import logging
 import time
 
 def is_running(address, port):
@@ -39,6 +40,8 @@ def is_running(address, port):
     # for a number of seconds before giving up.
     #
 
+    logging.debug('checking whether neubot daemon is running...')
+
     for _ in range(15):
         running = False
 
@@ -47,22 +50,26 @@ def is_running(address, port):
             connection = httplib.HTTPConnection(address, port)
             connection.request('GET', '/api/version')
             response = connection.getresponse()
-            if response.status == 200:
-                running = True
 
             response.read()
             connection.close()
 
+            if response.status == 200:
+                running = True
+
         except (SystemExit, KeyboardInterrupt):
             raise
         except:
-            pass
+            logging.warning('cannot contact neubot daemon', exc_info=1)
 
         if running:
+            logging.debug('checking whether neubot daemon is running... YES')
             return True
 
+        logging.debug('daemon not running... retrying in one second...')
         time.sleep(1)
 
+    logging.debug('checking whether neubot daemon is running... NO')
     return False
 
 def stop(address, port):
