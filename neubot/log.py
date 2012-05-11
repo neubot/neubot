@@ -192,9 +192,9 @@ class Logger(object):
 
     def log(self, severity, message, *args):
         ''' Really log a message '''
-        self.log_tuple(severity, message, args)
+        self.log_tuple(severity, message, args, None)
 
-    def log_tuple(self, severity, message, args):
+    def log_tuple(self, severity, message, args, exc_info):
         ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
@@ -241,6 +241,10 @@ class Logger(object):
         if args:
             message = message % args
             args = ()
+        if exc_info:
+            message = "%s: %s\n" % (message, str(exc_info[1]))
+            # Ensure we do not accidentaly keep the exception alive
+            exc_info = None
         message = message.rstrip()
 
         # Write log into the database
@@ -302,7 +306,8 @@ class LogWrapper(logging.Handler):
         msg = record.msg
         args = record.args
         level = record.levelname
-        LOG.log_tuple(level, msg, args)
+        exc_info = record.exc_info
+        LOG.log_tuple(level, msg, args, exc_info)
 
 ROOT = logging.getLogger()
 ROOT.handlers = []
