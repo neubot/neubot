@@ -46,13 +46,13 @@ fi
 
 #
 # Update the numeric representation first because
-# utils/version.py has the current canonical version
+# utils_version.py has the current canonical version
 # number written into its code.  So if we update
 # the canonical repr first the code below would
 # not work.
 #
-PATTERN=$(python neubot/utils/version.py)
-NEW_NUMERIC=$(python neubot/utils/version.py $NEW)
+PATTERN=$(python neubot/utils_version.py)
+NEW_NUMERIC=$(python neubot/utils_version.py $NEW)
 FILES=`grep -Rn $PATTERN *|grep -v ^ChangeLog|awk -F: '{print $1}'|sort -u`
 for FILE in $FILES; do
     ./scripts/sed_inplace s/$PATTERN/$NEW_NUMERIC/g $FILE
