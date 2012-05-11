@@ -26,7 +26,6 @@
 
 import getopt
 import os.path
-import sqlite3
 import sys
 import time
 
@@ -40,6 +39,12 @@ try:
     import webkit
 except ImportError:
     sys.exit('Viewer support not available.')
+
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
+
+from neubot import utils_rc
+from neubot import utils_ctl
 
 ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
@@ -78,71 +83,40 @@ class WebkitGUI(gtk.Window):
         ''' Open the specified web page '''
         self._webview.open(uri)
 
-def __is_running(address, port):
-
-    ''' Returns True if Neubot is running '''
-
-    #
-    # When there is a huge database upgrade Neubot may take
-    # time to start.  For this reason here we retry and wait
-    # for a number of seconds before giving up.
-    #
-
-    for _ in range(15):
-        running = False
-
-        try:
-
-            connection = lib_http.HTTPConnection(address, port)
-            connection.request("GET", "/api/version")
-            response = connection.getresponse()
-            if response.status == 200:
-                running = True
-
-            response.read()
-            connection.close()
-
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except:
-            pass
-
-        if running:
-            return True
-
-        time.sleep(1)
-
-    return False
-
 def main(args):
 
     ''' Entry point for simple gtk+webkit GUI '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'f:')
+        options, arguments = getopt.getopt(args[1:], 'f:O:')
     except getopt.error:
-        sys.exit('Usage: neubot viewer [-f database]')
+        sys.exit('Usage: neubot viewer [-f file] [-O option]')
     if arguments:
-        sys.exit('Usage: neubot viewer [-f database]')
+        sys.exit('Usage: neubot viewer [-f file] [-O option]')
 
-    database = '/var/neubot/database.sqlite3'
+    conf = {
+        'address': '127.0.0.1',
+        'port': '9774',
+    }
+    settings = []
+    fpath = '/etc/neubot/api'
+
     for name, value in options:
         if name == '-f':
-            database = value
+            fpath = value
+        elif name == '-O':
+            settings.append(value)
 
-    address, port = '127.0.0.1', '9774'
-    connection = sqlite3.connect(database)
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM config;')
-    for name, value in cursor:
-        if name == 'agent.api.address':
-            address = value
-        elif name == 'agent.api.port':
-            port = value
-    connection.close()
+    cnf = utils_rc.parse_safe(fpath)
+    conf.update(cnf)
+
+    cnf = utils_rc.parse_safe(iterable=settings)
+    conf.update(cnf)
+
+    address, port = conf['address'], conf['port']
 
     uri = STATIC_PAGE
-    if __is_running(address, port):
+    if utils_ctl.is_running(address, port):
         uri = 'http://%s:%s/' % (address, port)
 
     if not 'DISPLAY' in os.environ:

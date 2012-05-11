@@ -29,7 +29,7 @@ import os
 import sys
 
 if os.name == 'posix' and sys.platform != 'darwin':
-    from neubot.viewer.unix import main
+    from neubot.viewer_webkit_gtk import main
 else:
     def main(args):
         ''' main stub '''

@@ -493,7 +493,7 @@ MIGRATORS = {
 def migrate(connection):
     ''' Migrate database '''
 
-    logging.info('migrate2: checking whether we need to migrate...')
+    logging.debug('migrate2: checking whether we need to migrate...')
     while True:
 
         cursor = connection.cursor()
@@ -501,7 +501,7 @@ def migrate(connection):
         version = cursor.fetchone()[0]
 
         if not version in MIGRATORS:
-            logging.info('migrate2: done')
+            logging.debug('migrate2: done')
             break
 
         migrator = MIGRATORS[version]

@@ -1,6 +1,6 @@
 .\" Man page generated from reStructeredText.
 .
-.TH NEUBOT 1 "2012-02-24" "Neubot 0.4.11" "Neubot manual"
+.TH NEUBOT 1 "@DATE@" "Neubot 0.4.9-rc3" "Neubot manual"
 .SH NAME
 neubot \- The network neutrality bot
 .
@@ -377,11 +377,50 @@ there isn\(aqt a \fBneubot\fP process listening on that address and port).
 Issues a Web API command (by default to \fI127.0.0.1:9774\fP) that forces
 \fBneubot\fP to exit.
 .TP
-.B neubot viewer [\-f database]
+.B neubot viewer [\-f file] [\-O option]
 .
-Starts the PyGtk PyWebkit viewer application that embeds the Web User
-Interface.  Note that one can always connect to the Web User Interface
-pointing her browset at (by default) \fIhttp://127.0.0.1:9774/\fP.
+Starts a viewer application that embeds the Web User Interface, if
+the dependencies are installed.  By default, the viewer connects to
+\fI127.0.0.1:9774\fP, but that can be changed specifying an alternate
+configuration file or overriding options from command line.
+.sp
+Accepts the following command line options:
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.BI \-f \ file
+.
+Forces to read settings from \fIfile\fP, instead of using the default
+configuration file \fB/etc/neubot/api\fP.  If the file does not
+exist or contains errors, this subcommand will ignore it and will
+continue with default settings.
+.sp
+The following options are recognized (here the options are
+represented together with their default values):
+.INDENT 7.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.B address 127.0.0.1
+.
+Address where the Web API is supposed to be listening.
+.TP
+.B port 9774
+.
+Port where the Web API is supposed to be listening.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.TP
+.BI \-O \ option
+.
+Overrides configuration file option from the command line,
+see description of \fB\-f\fP flag for the list of available
+options.
+.UNINDENT
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .SH PRIVACY
 .\" :Version: 2.0.3

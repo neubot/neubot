@@ -45,7 +45,7 @@ var speedtest = (function() {
             since = 0;
         }
         since_s = Math.ceil(since / 1000);
-        var url = "/api/speedtest?since=" + since_s;
+        var url = "/api/results?test=speedtest&since=" + since_s;
         if (until != undefined) {
             until_s = Math.ceil(until / 1000);
             url += "&until=" + until_s;
@@ -175,26 +175,28 @@ var speedtest = (function() {
 
         var xaxis = {
             renderer: jQuery.jqplot.DateAxisRenderer,
-            showTickMarks: true
+            showTickMarks: true,
+            min: since
         };
+
+        var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
+
+        if (hours <= 120) {
+            xaxis.tickOptions = {
+              formatString:'%b %#d, h %H'
+            };
+            // xaxis.tickInterval = '8 hours';
+        }
+        else {
+            xaxis.tickOptions = {
+              formatString:'%b %#d'
+            };
+            // xaxis.tickInterval = '1 day';
+        }
+        xaxis.label = "Time";
 
         mydata = downloadData.concat(uploadData);
         if (mydata.length) {
-            var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
-
-            if (hours <= 120) {
-                xaxis.tickOptions = {
-                  formatString:'%b %#d, h %H'
-                };
-                // xaxis.tickInterval = '8 hours';
-            }
-            else {
-                xaxis.tickOptions = {
-                  formatString:'%b %#d'
-                };
-                // xaxis.tickInterval = '1 day';
-            }
-            xaxis.label = "Time";
 
             var plot = jQuery.jqplot("chartdiv1", mydata, {
               title: {
@@ -227,6 +229,9 @@ var speedtest = (function() {
             });
 
             plot.replot();
+        }
+        else {
+            jQuery("#chartdiv1").html("<span>No results</span>");
         }
 
         mydata = latencyData.concat(connectData);
@@ -262,6 +267,9 @@ var speedtest = (function() {
             });
 
             plot2.replot();
+        }
+        else {
+            jQuery("#chartdiv2").html("<span>No results</span>");
         }
 
         // some additional CSS-magic

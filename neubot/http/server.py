@@ -111,6 +111,7 @@ class ServerStream(StreamHTTP):
             self.response_rewriter(request, response)
 
         if request['connection'] == 'close' or request.protocol == 'HTTP/1.0':
+            del response['connection']
             response['connection'] = 'close'
 
         self.send_message(response)

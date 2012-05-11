@@ -267,10 +267,33 @@ neubot stop
   Issues a Web API command (by default to *127.0.0.1:9774*) that forces
   **neubot** to exit.
 
-neubot viewer [-f database]
-  Starts the PyGtk PyWebkit viewer application that embeds the Web User
-  Interface.  Note that one can always connect to the Web User Interface
-  pointing her browset at (by default) *http://127.0.0.1:9774/*.
+neubot viewer [-f file] [-O option]
+  Starts a viewer application that embeds the Web User Interface, if
+  the dependencies are installed.  By default, the viewer connects to
+  *127.0.0.1:9774*, but that can be changed specifying an alternate
+  configuration file or overriding options from command line.
+
+  Accepts the following command line options:
+
+    -f file
+      Forces to read settings from *file*, instead of using the default
+      configuration file ``/etc/neubot/api``.  If the file does not
+      exist or contains errors, this subcommand will ignore it and will
+      continue with default settings.
+
+      The following options are recognized (here the options are
+      represented together with their default values):
+
+        address 127.0.0.1
+          Address where the Web API is supposed to be listening.
+
+        port 9774
+          Port where the Web API is supposed to be listening.
+
+    -O option
+      Overrides configuration file option from the command line,
+      see description of **-f** flag for the list of available
+      options.
 
 PRIVACY
 ```````

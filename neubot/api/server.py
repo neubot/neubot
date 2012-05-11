@@ -52,6 +52,7 @@ from neubot import privacy
 from neubot import log_api
 from neubot import runner_api
 from neubot import utils
+from neubot import api_results
 
 class ServerAPI(ServerHTTP):
 
@@ -60,14 +61,13 @@ class ServerAPI(ServerHTTP):
         self._dispatch = {
             "/api": self._api,
             "/api/": self._api,
-            "/api/bittorrent": self._api_bittorrent,
+            "/api/results": api_results.api_results,
             "/api/config": config_api.config_api,
             "/api/debug": self._api_debug,
             "/api/index": self._api_index,
             "/api/exit": self._api_exit,
             "/api/log": log_api.log_api,
             "/api/runner": runner_api.runner_api,
-            "/api/speedtest": self._api_speedtest,
             "/api/state": self._api_state,
             "/api/version": self._api_version,
         }
@@ -111,28 +111,6 @@ class ServerAPI(ServerHTTP):
           json.dumps(sorted(self._dispatch.keys()), indent=4)))
         stream.send_response(request, response)
 
-    def _api_bittorrent(self, stream, request, query):
-        since, until = -1, -1
-
-        dictionary = cgi.parse_qs(query)
-
-        if dictionary.has_key("since"):
-            since = int(dictionary["since"][0])
-        if dictionary.has_key("until"):
-            until = int(dictionary["until"][0])
-
-        indent, mimetype, sort_keys = None, "application/json", False
-        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
-            indent, mimetype, sort_keys = 4, "text/plain", True
-
-        response = Message()
-        lst = table_bittorrent.listify(DATABASE.connection(), since, until)
-        s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
-        stringio = StringIO.StringIO(s)
-        response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype=mimetype)
-        stream.send_response(request, response)
-
     def _api_debug(self, stream, request, query):
         response = Message()
         debuginfo = {}
@@ -159,28 +137,6 @@ class ServerAPI(ServerHTTP):
             response.compose_redirect(stream, '/privacy.html')
         else:
             response.compose_redirect(stream, '/index.html')
-        stream.send_response(request, response)
-
-    def _api_speedtest(self, stream, request, query):
-        since, until = -1, -1
-
-        dictionary = cgi.parse_qs(query)
-
-        if dictionary.has_key("since"):
-            since = int(dictionary["since"][0])
-        if dictionary.has_key("until"):
-            until = int(dictionary["until"][0])
-
-        indent, mimetype, sort_keys = None, "application/json", False
-        if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
-            indent, mimetype, sort_keys = 4, "text/plain", True
-
-        response = Message()
-        lst = table_speedtest.listify(DATABASE.connection(), since, until)
-        s = json.dumps(lst, indent=indent, sort_keys=sort_keys)
-        stringio = StringIO.StringIO(s)
-        response.compose(code="200", reason="Ok", body=stringio,
-                         mimetype=mimetype)
         stream.send_response(request, response)
 
     def _api_state(self, stream, request, query):
