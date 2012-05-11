@@ -1,4 +1,4 @@
-# neubot/utils/blocks.py
+# neubot/utils_random.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,

@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Unit test for neubot/utils/blocks.py '''
+''' Unit test for neubot/utils_random.py '''
 
 import sys
 
@@ -29,14 +29,14 @@ sys.path.insert(0, '.')
 from neubot import utils
 
 BEFORE = utils.ticks()
-from neubot.utils.blocks import RANDOMBLOCKS
-from neubot.utils.blocks import RandomBody
+from neubot.utils_random import RANDOMBLOCKS
+from neubot.utils_random import RandomBody
 ELAPSED = utils.ticks() - BEFORE
 print('Time to import: %s' % (utils.time_formatter(ELAPSED)))
 
 def main():
 
-    ''' Unit test for neubot/utils/blocks.py '''
+    ''' Unit test for neubot/utils_random.py '''
 
     assert(len(RANDOMBLOCKS.get_block()) == RANDOMBLOCKS.blocksiz)
     assert(RANDOMBLOCKS.get_block() != RANDOMBLOCKS.get_block())

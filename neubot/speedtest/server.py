@@ -22,7 +22,7 @@
 
 ''' Speedtest server '''
 
-from neubot.utils.blocks import RandomBody
+from neubot.utils_random import RandomBody
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 

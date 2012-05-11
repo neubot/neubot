@@ -25,7 +25,7 @@ import collections
 import sys
 import logging
 
-from neubot.utils.blocks import RandomBody
+from neubot.utils_random import RandomBody
 from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_speedtest
