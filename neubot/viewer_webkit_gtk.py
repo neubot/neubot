@@ -44,6 +44,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import utils_rc
+from neubot import utils_ctl
 
 ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
@@ -82,42 +83,6 @@ class WebkitGUI(gtk.Window):
         ''' Open the specified web page '''
         self._webview.open(uri)
 
-def __is_running(address, port):
-
-    ''' Returns True if Neubot is running '''
-
-    #
-    # When there is a huge database upgrade Neubot may take
-    # time to start.  For this reason here we retry and wait
-    # for a number of seconds before giving up.
-    #
-
-    for _ in range(15):
-        running = False
-
-        try:
-
-            connection = lib_http.HTTPConnection(address, port)
-            connection.request("GET", "/api/version")
-            response = connection.getresponse()
-            if response.status == 200:
-                running = True
-
-            response.read()
-            connection.close()
-
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except:
-            pass
-
-        if running:
-            return True
-
-        time.sleep(1)
-
-    return False
-
 def main(args):
 
     ''' Entry point for simple gtk+webkit GUI '''
@@ -151,7 +116,7 @@ def main(args):
     address, port = conf['address'], conf['port']
 
     uri = STATIC_PAGE
-    if __is_running(address, port):
+    if utils_ctl.is_running(address, port):
         uri = 'http://%s:%s/' % (address, port)
 
     if not 'DISPLAY' in os.environ:
