@@ -112,6 +112,13 @@ def listen(epnt):
                       format_epnt(epnt), str(exception))
         return sockets
 
+    message = ['listen(): getaddrinfo() returned: [']
+    for ainfo in addrinfo:
+        message.append(format_ainfo(ainfo))
+        message.append(', ')
+    message[-1] = ']'
+    logging.debug(''.join(message))
+
     prefer_ipv6 = CONFIG['prefer_ipv6']
     addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
@@ -157,6 +164,13 @@ def connect(epnt):
         logging.error('connect(): cannot connect to %s: %s',
                       format_epnt(epnt), str(exception))
         return None
+
+    message = ['connect(): getaddrinfo() returned: [']
+    for ainfo in addrinfo:
+        message.append(format_ainfo(ainfo))
+        message.append(', ')
+    message[-1] = ']'
+    logging.debug(''.join(message))
 
     prefer_ipv6 = CONFIG['prefer_ipv6']
     addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
