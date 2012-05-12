@@ -201,3 +201,33 @@ def connect(epnt):
     logging.error('connect(): cannot connect to %s: %s',
       format_epnt(epnt), 'all attempts failed')
     return None
+
+def isconnected(endpoint, sock):
+    ''' Check whether connect() succeeded '''
+
+    # See http://cr.yp.to/docs/connect.html
+
+    logging.debug('isconnected(): checking whether connect() to %s succeeded',
+                  format_epnt(endpoint))
+
+    try:
+        peername = sock.getpeername()
+    except socket.error:
+        exception = sys.exc_info()
+
+        # MacOSX getpeername() fails with EINVAL
+        if exception[0] in (errno.ENOTCONN, errno.EINVAL):
+            try:
+                sock.recv(1024)
+            except socket.error:
+                # Override exception to get real error
+                exception = sys.exc_info()
+
+        logging.error('isconnected(): connect() to %s failed: %s ',
+                      format_epnt(endpoint), exception[1])
+
+        return None
+
+    logging.debug('isconnected(): connect() to %s succeeded', (
+                  format_epnt(peername)))
+    return peername

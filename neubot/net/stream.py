@@ -471,18 +471,7 @@ class Connector(Pollable):
     def handle_write(self):
         self.poller.unset_writable(self)
 
-        # See http://cr.yp.to/docs/connect.html
-        try:
-            self.sock.getpeername()
-        except socket.error, exception:
-            # MacOSX getpeername() fails with EINVAL
-            if exception[0] in (errno.ENOTCONN, errno.EINVAL):
-                try:
-                    self.sock.recv(MAXBUF)
-                except socket.error, exception2:
-                    exception = exception2
-            LOG.error("* Connection to %s failed: %s" % (self.endpoint,
-              exception))
+        if not utils_net.isconnected(self.endpoint, self.sock):
             self._connection_failed()
             return
 
