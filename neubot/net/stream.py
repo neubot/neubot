@@ -430,6 +430,7 @@ class Connector(Pollable):
         self.timestamp = 0
         self.endpoint = None
         self.epnts = collections.deque()
+        self.watchdog = 10
 
     def __repr__(self):
         return "connector to %s" % str(self.endpoint)
