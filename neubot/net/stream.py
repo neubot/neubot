@@ -436,8 +436,9 @@ class Connector(Pollable):
         return "connector to %s" % str(self.endpoint)
 
     def _connection_failed(self):
-        # Just in case...
-        self.poller.unset_writable(self)
+        if self.sock:
+            self.poller.unset_writable(self)
+            self.sock = None
         if not self.epnts:
             self.parent._connection_failed(self, None)
             return
