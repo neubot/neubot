@@ -78,7 +78,7 @@ def main(args):
 
     settings = utils_rc.parse_safe(iterable=settings)
     if not 'address' in settings:
-        settings['address'] = '127.0.0.1'
+        settings['address'] = '127.0.0.1 ::1'
     if not 'port' in settings:
         settings['port'] = '9774'
 

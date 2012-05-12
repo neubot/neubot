@@ -28,6 +28,8 @@ import os
 import socket
 import sys
 
+from neubot.config import CONFIG
+
 # Winsock returns EWOULDBLOCK
 INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
@@ -71,14 +73,35 @@ def format_ainfo(ainfo):
     return '(%s, %s, %s, %s, %s)' % (family, socktype, proto,
       canonname, sockaddr)
 
+# Make sure AF_INET < AF_INET6
+__COMPARE_AF = {
+    socket.AF_INET: 1,
+    socket.AF_INET6: 2,
+}
+
+def __compare_af(left, right):
+    ''' Compare address families '''
+    left = __COMPARE_AF[left[0]]
+    right = __COMPARE_AF[right[0]]
+    return cmp(left, right)
+
 def listen(epnt):
     ''' Listen to all sockets represented by epnt '''
+
+    logging.debug('listen(): about to listen to: %s', str(epnt))
 
     sockets = []
 
     # Allow to set any-address from command line
     if not epnt[0]:
         epnt = (None, epnt[1])
+
+    # Allow to listen on a list of addresses
+    if ' ' in epnt[0]:
+        for address in epnt[0].split():
+            result = listen((address.strip(), epnt[1]))
+            sockets.extend(result)
+        return sockets
 
     try:
         addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
@@ -88,6 +111,9 @@ def listen(epnt):
         logging.error('listen(): cannot listen to %s: %s',
                       format_epnt(epnt), str(exception))
         return sockets
+
+    prefer_ipv6 = CONFIG['prefer_ipv6']
+    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
@@ -121,6 +147,8 @@ def listen(epnt):
 def connect(epnt):
     ''' Connect to epnt '''
 
+    logging.debug('connect(): about to connect to: %s', str(epnt))
+
     try:
         addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
                                       socket.SOCK_STREAM)
@@ -129,6 +157,9 @@ def connect(epnt):
         logging.error('connect(): cannot connect to %s: %s',
                       format_epnt(epnt), str(exception))
         return None
+
+    prefer_ipv6 = CONFIG['prefer_ipv6']
+    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:

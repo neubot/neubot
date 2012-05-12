@@ -192,7 +192,7 @@ CONFIG.register_descriptions_helper = lambda properties: \
 
 CONFIG.register_defaults({
     "agent.api": True,
-    "agent.api.address": "127.0.0.1",
+    "agent.api.address": "127.0.0.1 ::1",
     "agent.api.port": 9774,
     "agent.daemonize": True,
     "agent.interval": 0,
@@ -203,6 +203,7 @@ CONFIG.register_defaults({
     "enabled": True,
     "notifier_browser.min_interval": 86400,
     "notifier_browser.honor_enabled": False,
+    "prefer_ipv6": 0,
     "privacy.informed": False,
     "privacy.can_collect": False,
     "privacy.can_publish": False,
@@ -226,6 +227,7 @@ CONFIG.register_descriptions({
     "enabled": "Enable Neubot to perform automatic transmission tests",
     "notifier_browser.min_interval": "Minimum interval between each browser notification",
     "notifier_browser.honor_enabled": "Set to 1 to suppress notifications when Neubot is disabled",
+    "prefer_ipv6": "Prefer IPv6 over IPv4 when resolving domain names",
     "privacy.informed": "You assert that you have read and understood the privacy policy",
     "privacy.can_collect": "You give Neubot the permission to collect your Internet address for research purposes",
     "privacy.can_publish": "You give Neubot the permission to publish on the web your Internet address so that it can be reused for research purposes",

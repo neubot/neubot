@@ -429,16 +429,34 @@ class Connector(Pollable):
         self.sock = None
         self.timestamp = 0
         self.endpoint = None
+        self.epnts = collections.deque()
 
     def __repr__(self):
         return "connector to %s" % str(self.endpoint)
 
+    def _connection_failed(self):
+        # Just in case...
+        self.poller.unset_writable(self)
+        if not self.epnts:
+            self.parent._connection_failed(self, None)
+            return
+        self.connect(self.epnts.popleft(), None)
+
     def connect(self, endpoint, conf):
+
+        # Connect first address in a list
+        if ' ' in endpoint[0]:
+            LOG.debug('* Connecting to %s' % str(endpoint))
+            for address in endpoint[0].split():
+                epnt = (address.strip(), endpoint[1])
+                self.epnts.append(epnt)
+            endpoint = self.epnts.popleft()
+
         self.endpoint = endpoint
 
         sock = utils_net.connect(endpoint)
         if not sock:
-            self.parent._connection_failed(self, None)
+            self._connection_failed()
             return
 
         self.sock = sock
@@ -463,14 +481,14 @@ class Connector(Pollable):
                     exception = exception2
             LOG.error("* Connection to %s failed: %s" % (self.endpoint,
               exception))
-            self.parent._connection_failed(self, exception)
+            self._connection_failed()
             return
 
         rtt = utils.ticks() - self.timestamp
         self.parent._connection_made(self.sock, rtt)
 
     def handle_close(self):
-        self.parent._connection_failed(self, None)
+        self._connection_failed()
 
 class Listener(Pollable):
     def __init__(self, poller, parent, sock, endpoint):
@@ -636,7 +654,7 @@ CONFIG.register_defaults({
     "net.stream.secure": False,
     "net.stream.server_side": False,
     # For main()
-    "net.stream.address": "127.0.0.1",
+    "net.stream.address": "127.0.0.1 ::1",
     "net.stream.chunk": 262144,
     "net.stream.clients": 1,
     "net.stream.daemonize": False,
