@@ -119,8 +119,10 @@ def listen(epnt):
     message[-1] = ']'
     logging.debug(''.join(message))
 
-    prefer_ipv6 = CONFIG['prefer_ipv6']
-    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
+    if CONFIG['prefer_ipv6']:
+        addrinfo.sort(cmp=__compare_af, reverse=1)
+    if CONFIG['prefer_ipv4']:
+        addrinfo.sort(cmp=__compare_af, reverse=0)
 
     for ainfo in addrinfo:
         try:
@@ -172,8 +174,10 @@ def connect(epnt):
     message[-1] = ']'
     logging.debug(''.join(message))
 
-    prefer_ipv6 = CONFIG['prefer_ipv6']
-    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
+    if CONFIG['prefer_ipv6']:
+        addrinfo.sort(cmp=__compare_af, reverse=1)
+    if CONFIG['prefer_ipv4']:
+        addrinfo.sort(cmp=__compare_af, reverse=0)
 
     for ainfo in addrinfo:
         try:
