@@ -309,7 +309,7 @@ class ServerHTTP(StreamHandler):
 HTTP_SERVER = ServerHTTP(POLLER)
 
 CONFIG.register_defaults({
-    "http.server.address": "0.0.0.0",
+    "http.server.address": "",
     "http.server.class": "",
     "http.server.daemonize": True,
     "http.server.mime": True,

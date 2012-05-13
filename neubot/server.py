@@ -235,7 +235,7 @@ def main(args):
     # do that easily w/ M-Lab because the port
     # is already taken.
     #
-    address = "0.0.0.0"
+    address = ""
     ports = (80, 8080, 9773)
     for port in ports:
         HTTP_SERVER.listen((address, port))

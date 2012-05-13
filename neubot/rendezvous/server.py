@@ -171,7 +171,7 @@ class ServerRendezvous(ServerHTTP):
         stream.send_response(request, response)
 
 CONFIG.register_defaults({
-    "rendezvous.server.address": "0.0.0.0",
+    "rendezvous.server.address": "",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
     "rendezvous.server.update_uri": "http://www.neubot.org/download",
