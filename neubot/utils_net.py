@@ -97,7 +97,7 @@ def listen(epnt):
         epnt = (None, epnt[1])
 
     # Allow to listen on a list of addresses
-    if ' ' in epnt[0]:
+    if epnt[0] and ' ' in epnt[0]:
         for address in epnt[0].split():
             result = listen((address.strip(), epnt[1]))
             sockets.extend(result)
