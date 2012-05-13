@@ -308,11 +308,12 @@ Ports Collection`_ and is known to run on OpenBSD_ 5.1 current.
 2.2. How do I install neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Go to `download page`_ and follow instructions for your operating
-system. The Neubot team provides binary packages for MacOSX_, Windows_,
-Debian_, and distributions based on Debian (such as Ubuntu_). If
-there is not a binary package for your system, you can still install
-Neubot from sources.
+The Neubot team provides packages for MacOSX_, Windows_, Debian_ and
+distributions based on Debian_ (such as Ubuntu_).  Neubot is part
+of the FreeBSD port collection.  If there are no binary packages available
+for your system, you can still install it from sources.
+
+Subsequent FAQ entries will deal with all these options.
 
 ------------------------------------------------------------------------
 
