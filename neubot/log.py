@@ -192,7 +192,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self.log("ACCESS", message, args)
+        self.log("ACCESS", message, args, None)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
