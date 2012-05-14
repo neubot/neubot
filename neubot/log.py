@@ -78,7 +78,7 @@ class StreamLogger(object):
             stream.poller.close(stream)
         self.streams.clear()
 
-    def log(self, severity, message, args):
+    def log(self, severity, message, args, exc_info):
         ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
@@ -105,6 +105,10 @@ class StreamLogger(object):
             if args:
                 message = message % args
                 args = ()
+            if exc_info:
+                message = "%s: %s\n" % (message, str(exc_info[1]))
+                # Ensure we do not accidentaly keep the exception alive
+                exc_info = None
             message = message.rstrip()
             try:
                 if severity != 'ACCESS':
@@ -307,7 +311,8 @@ class StreamLogWrapper(logging.Handler):
         msg = record.msg
         args = record.args
         level = record.levelname
-        STREAM_LOG.log(level, msg, args)
+        exc_info = record.exc_info
+        STREAM_LOG.log(level, msg, args, exc_info)
 
 ROOT = logging.getLogger()
 ROOT.handlers = []
