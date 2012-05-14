@@ -26,6 +26,7 @@
 
    * `2.1. On what systems does neubot run?`_
    * `2.2. How do I install neubot?`_
+   * `2.3. How do I install Neubot on FreeBSD?`_
 
 * `3. Using Neubot`_
 
@@ -308,11 +309,39 @@ Ports Collection`_ and is known to run on OpenBSD_ 5.1 current.
 2.2. How do I install neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Go to `download page`_ and follow instructions for your operating
-system. The Neubot team provides binary packages for MacOSX_, Windows_,
-Debian_, and distributions based on Debian (such as Ubuntu_). If
-there is not a binary package for your system, you can still install
-Neubot from sources.
+The Neubot team provides packages for MacOSX_, Windows_, Debian_ and
+distributions based on Debian_ (such as Ubuntu_).  Neubot is part
+of the FreeBSD port collection.  If there are no binary packages available
+for your system, you can still install it from sources.
+
+Subsequent FAQ entries will deal with all these options.
+
+2.3. How do I install Neubot on FreeBSD?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Neubot is part of `FreeBSD ports collection`.  So it can be installed
+easily, either by using ``pkg_add`` or by compiling the package for the
+ports tree.  Of course, when in doubt, please refer to `FreeBSD
+documentation`_ and `FreeBSD manpages`_.  In particular, the authoritative
+Neubot port page is::
+
+    http://www.freshports.org/net/neubot/
+
+For your convenience, here we mirror the two base commands to add Neubot
+to your FreeBSD system.  To add the precompiled package to your system,
+you should run the following command as root::
+
+    pkg_add -r neubot
+
+To compile and install the port, again as root, you need to type the
+following command::
+
+    cd /usr/ports/net/neubot/ && make install clean
+
+Please, do not ask Neubot developers questions related to the FreeBSD
+port because they may not be able to help.  We suggest instead to direct
+questions to `FreeBSD ports mailing list`_.  Bugs should be reported
+using the `send-pr`_ interface.
 
 ------------------------------------------------------------------------
 
@@ -875,6 +904,11 @@ using the *settings* page.  Currently the value can be one of:
 .. _MacOSX: http://www.apple.com/macosx/
 .. _Windows: http://windows.microsoft.com/
 .. _`FreeBSD Ports Collection`: http://www.freshports.org/net/neubot
+.. _`FreeBSD documentation`: http://www.freebsd.org/docs.html
+.. _`FreeBSD manpages`: http://www.freebsd.org/cgi/man.cgi
+.. _`FreeBSD ports mailing list`: http://lists.freebsd.org/mailman/listinfo/freebsd-ports
+.. _`send-pr`: http://www.freebsd.org/send-pr.html
+.. _FreeBSD: http://www.freebsd.org/
 .. _OpenBSD: http://www.openbsd.org/
 
 .. _`download page`: http://www.neubot.org/download
