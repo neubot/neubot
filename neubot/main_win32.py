@@ -108,7 +108,7 @@ def main(args):
         sys.exit(0)
 
     if subcommand == '-V':
-        sys.stdout.write('Neubot 0.4.12-rc1\n')
+        sys.stdout.write('Neubot 0.4.12-rc2\n')
         sys.exit(0)
 
     if subcommand == 'start':
