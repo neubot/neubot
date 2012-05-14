@@ -220,7 +220,7 @@ def isconnected(endpoint, sock):
         exception = sys.exc_info()
 
         # MacOSX getpeername() fails with EINVAL
-        if exception[0] in (errno.ENOTCONN, errno.EINVAL):
+        if exception[1][0] in (errno.ENOTCONN, errno.EINVAL):
             try:
                 sock.recv(1024)
             except socket.error:
