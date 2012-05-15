@@ -928,11 +928,6 @@ def __main():
     # Open the system logger
     syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
 
-    # Read configuration file
-    if os.path.isfile('/etc/neubot/updater'):
-        cnf = utils_rc.parse_safe('/etc/neubot/updater')
-        CONFIG.update(cnf)
-
     # Clear root user environment
     __change_user(__lookup_user_info('root'))
 
@@ -960,6 +955,11 @@ def __main():
             firstrun = False
         else:
             time.sleep(15)
+
+        # Read configuration file
+        if os.path.isfile('/etc/neubot/updater'):
+            cnf = utils_rc.parse_safe('/etc/neubot/updater')
+            CONFIG.update(cnf)
 
         try:
 
