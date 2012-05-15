@@ -62,7 +62,7 @@
  This is the privilege separated Neubot updater daemon.  It is
  started as a system daemon, runs as root, spawns and monitors an
  unprivileged child Neubot process and periodically checks for
- updates.  The check is not not performed by the privileged daemon
+ updates.  The check is not performed by the privileged daemon
  itself but by a child process that runs on behalf of the
  unprivileged user ``_neubot_update``.
 '''
