@@ -47,10 +47,11 @@ class UpdaterRunner(object):
 
     ''' An updater that uses the runner '''
 
-    def __init__(self, system, basedir):
+    def __init__(self, system, basedir, channel):
         ''' Initializer '''
         self.system = system
         self.basedir = basedir
+        self.channel = channel
 
     def start(self):
         ''' Schedule first check for updates '''
@@ -72,7 +73,8 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system) }
+        ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system,
+                                                         self.channel) }
         RUNNER_CORE.run('dload', self._process_versioninfo, False, ctx)
 
     def _process_versioninfo(self, ctx):
@@ -183,7 +185,7 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR))
+    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR), 'latest')
 
     if arguments:
         updater.retrieve_files(arguments[0])

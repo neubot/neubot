@@ -45,9 +45,9 @@ def versioninfo_is_newer(vinfo):
     ''' Is vinfo newer than current version? '''
     return decimal.Decimal(vinfo) > decimal.Decimal(VERSION)
 
-def versioninfo_get_uri(system):
+def versioninfo_get_uri(system, channel):
     ''' Return URI for versioninfo '''
-    return 'http://releases.neubot.org/updates/%s/latest' % system
+    return 'http://releases.neubot.org/updates/%s/%s' % (system, channel)
 
 def sha256sum_extract(vinfo, content):
     ''' Extract sha256sum '''
