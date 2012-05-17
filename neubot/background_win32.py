@@ -45,7 +45,7 @@ BASEDIR = os.path.dirname(ROOTDIR)
 
 def __start_updater():
     ''' Start updater '''
-    updater = UpdaterWin32('win32', BASEDIR)
+    updater = UpdaterWin32('win32', BASEDIR, 'latest')
     updater.start()
 
 def main(args):
