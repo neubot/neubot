@@ -45,9 +45,9 @@ def versioninfo_is_newer(vinfo):
     ''' Is vinfo newer than current version? '''
     return decimal.Decimal(vinfo) > decimal.Decimal(VERSION)
 
-def versioninfo_get_uri(channel):
+def versioninfo_get_uri(system):
     ''' Return URI for versioninfo '''
-    return 'http://releases.neubot.org/updates/%s/latest' % channel
+    return 'http://releases.neubot.org/updates/%s/latest' % system
 
 def sha256sum_extract(vinfo, content):
     ''' Extract sha256sum '''
@@ -66,10 +66,10 @@ def sha256sum_verify(sha256, content):
     digest = hashp.hexdigest()
     return digest == sha256
 
-def sha256sum_get_uri(channel, vinfo):
+def sha256sum_get_uri(system, vinfo):
     ''' Return URI for sha256sum '''
     return 'http://releases.neubot.org/updates/%s/%s.tar.gz.sha256' % (
-             channel, vinfo)
+             system, vinfo)
 
 def tarball_path(basedir, vinfo):
     ''' Return tarball path '''
@@ -84,7 +84,7 @@ def tarball_save(basedir, vinfo, tarball):
     filep.write(tarball)
     filep.close()
 
-def tarball_get_uri(channel, vinfo):
+def tarball_get_uri(system, vinfo):
     ''' Return URI for tarball '''
     return 'http://releases.neubot.org/updates/%s/%s.tar.gz' % (
-             channel, vinfo)
+             system, vinfo)
