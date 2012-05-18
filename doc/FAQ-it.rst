@@ -26,6 +26,7 @@
 
     * `2.1. Su quali sistemi funziona Neubot?`_
     * `2.2. Come installo Neubot?`_
+    * `2.3. Come installo Neubot su FreeBSD?`_
 
 * `3. Usare Neubot`_
 
@@ -327,11 +328,42 @@ OpenBSD_ 5.1 current.
 2.2. Come installo Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Vai alla pagina `pagina download`_ e segui le instruzioni per il
-tuo sistema operativo. Il team di sviluppo fornisce pacchetti binari
-per MacOSX_, Windows_, Debian_, e distribuzioni basate su Debian_
-(come Ubuntu_). Se non c'è un pacchetto binario per il tuo sistema,
-puoi comunque installare Neubot dai sorgenti.
+Il team di sviluppo di Neubot fornisce pacchetti binari per MacOSX_,
+Windows_, Debian_, e distribuzioni basate su Debian_ (come Ubuntu_).
+Neubot è parte del FreeBSD port collection. Se non c'è un pacchetto
+binario per il tuo sistema, puoi comunque installare Neubot dai
+sorgenti.
+
+Le voci successive del FAQ riguarderanno tutte queste opzioni.
+
+2.3. Come installo Neubot su FreeBSD?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Neubot è parte della `FreeBSD Ports Collection`. Quindi può essere
+installato facilmente, sia usando ``pkg_add`` sia compilando il
+pacchetto dal port tree. Certamente, se sei in dubbio, puoi far
+riferimento alla  `documentazione FreeBSD`_ e alle `FreeBSD manpages`_.
+In particolare, la pagina autorizzata del port è::
+
+    http://www.freshports.org/net/neubot/
+
+Per la tua comodità, elenchiamo i due comandi base per
+aggiungere Neubot al tuo sistema FreeBSD. Per aggiungere il pacchetto
+precompilato al tuo sistema, devi lanciare il seguente comando come
+root::
+
+    pkg_add -r neubot
+
+Per compilare e installare il port, ancora come root, devi eseguire il
+seguente comando::
+
+    cd /usr/ports/net/neubot/ && make install clean
+
+Per favore, non chiedere agli sviluppatori di Neubot domande relative al
+port di FreeBSD perchè potrebbero non essere capaci di rispondere. Noi
+invece suggeriamo di rivolgere le domande alla `FreeBSD ports mailing
+list`_. I bugs dovrebbero essere riportati usando l'interfaccia
+`send-pr`_.
 
 ------------------------------------------------------------------------
 
@@ -931,6 +963,12 @@ opzione può assumere uno dei seguenti valori:
 .. _MacOSX: http://www.apple.com/macosx/
 .. _Windows: http://windows.microsoft.com/
 .. _`FreeBSD Ports Collection`: http://www.freshports.org/net/neubot
+.. _`documentazione FreeBSD`: http://www.freebsd.org/docs.html
+.. _`FreeBSD manpages`: http://www.freebsd.org/cgi/man.cgi
+.. _`FreeBSD ports mailing list`:
+http://lists.freebsd.org/mailman/listinfo/freebsd-ports
+.. _`send-pr`: http://www.freebsd.org/send-pr.html
+.. _FreeBSD: http://www.freebsd.org/
 .. _OpenBSD: http://www.openbsd.org/
 
 .. _`pagina download`: http://www.neubot.org/download
