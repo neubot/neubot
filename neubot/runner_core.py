@@ -41,7 +41,7 @@ from neubot.net.poller import POLLER
 from neubot.speedtest.client import ClientSpeedtest
 from neubot.config import CONFIG
 from neubot.database import DATABASE
-from neubot.log import LOG, STREAM_LOG
+from neubot.log import STREAM_LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_dload import RunnerDload
