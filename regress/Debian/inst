@@ -38,11 +38,11 @@ if [ `id -u` -ne 0 ]; then
 fi
 
 echo 'BEGIN: Create debian package...'
-test -f dist/neubot-0.4.12-rc2-1_all.deb || { make clean; make deb; }
+test -f dist/neubot-0.4.12-rc3-1_all.deb || { make clean; make deb; }
 echo 'END: Create debian package (OK)'
 
 echo 'BEGIN: Install debian package...'
-dpkg -i dist/neubot-0.4.12-rc2-1_all.deb
+dpkg -i dist/neubot-0.4.12-rc3-1_all.deb
 echo 'END: Install debian package (OK)'
 
 echo '*** Please close the notification window...'
