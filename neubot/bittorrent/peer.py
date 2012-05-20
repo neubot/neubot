@@ -116,7 +116,7 @@ class PeerNeubot(StreamHandler):
     def connection_failed(self, connector, exception):
         pass
 
-    def connection_made(self, sock, rtt=0):
+    def connection_made(self, sock, endpoint, rtt=0):
         if rtt:
             latency = utils.time_formatter(rtt)
             logging.info("BitTorrent: connecting to %s ... done, %s",

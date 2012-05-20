@@ -144,7 +144,7 @@ class ClientHTTP(StreamHandler):
     def got_response(self, stream, request, response):
         ''' Invoked when we receive the response '''
 
-    def connection_made(self, sock, rtt=0):
+    def connection_made(self, sock, endpoint, rtt=0):
         ''' Invoked when the connection is created '''
         if rtt:
             logging.debug("ClientHTTP: latency: %s", utils.time_formatter(rtt))

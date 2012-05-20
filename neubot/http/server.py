@@ -271,7 +271,7 @@ class ServerHTTP(StreamHandler):
         stream.send_response(request, response)
         stream.close()
 
-    def connection_made(self, sock, rtt=0):
+    def connection_made(self, sock, endpoint, rtt=0):
         ''' Invoked when the connection is made '''
         stream = ServerStream(self.poller)
         nconf = self.conf.copy()
