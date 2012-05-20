@@ -126,7 +126,6 @@ class ClientHTTP(StreamHandler):
             if message.scheme == "https":
                 self.conf["net.stream.secure"] = True
             endpoint = (message.address, int(message.port))
-            self.host_header = "%s:%s" % (message.address, message.port)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception, why:
@@ -149,6 +148,7 @@ class ClientHTTP(StreamHandler):
         if rtt:
             logging.debug("ClientHTTP: latency: %s", utils.time_formatter(rtt))
             self.rtt = rtt
+        self.host_header = "%s:%s" % (endpoint[0], endpoint[1])
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf)
         self.connection_ready(stream)
