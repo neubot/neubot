@@ -124,8 +124,7 @@ class RunnerCore(object):
 
         # Run rendezvous
         elif self.queue[0][0] == 'rendezvous':
-            uri = "http://%s:9773/rendezvous" % conf['agent.master']
-            runner_rendezvous.run(uri)
+            runner_rendezvous.run(conf['agent.master'])
 
         # Run speedtest
         elif self.queue[0][0] == 'speedtest':
