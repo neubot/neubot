@@ -511,7 +511,7 @@ class Listener(Pollable):
         try:
             sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
-            self.parent.connection_made(sock, self.endpoint)
+            self.parent.connection_made(sock, self.endpoint, 0)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception, exception:
@@ -589,14 +589,14 @@ class StreamHandler(object):
         self.good.append((sock, endpoint, rtt))
         self._next_connect()
 
-    def connection_made(self, sock, endpoint, rtt=0):
+    def connection_made(self, sock, endpoint, rtt):
         pass
 
     def connection_lost(self, stream):
         pass
 
 class GenericHandler(StreamHandler):
-    def connection_made(self, sock, endpoint, rtt=0):
+    def connection_made(self, sock, endpoint, rtt):
         stream = GenericProtocolStream(self.poller)
         stream.kind = self.conf["net.stream.proto"]
         stream.attach(self, sock, self.conf)
