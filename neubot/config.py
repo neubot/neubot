@@ -196,7 +196,7 @@ CONFIG.register_defaults({
     "agent.api.port": 9774,
     "agent.daemonize": True,
     "agent.interval": 0,
-    "agent.master": "master.neubot.org",
+    "agent.master": "master.neubot.org master2.neubot.org",
     "agent.rendezvous": True,
     "agent.use_syslog": False,
     "bittorrent_test_version": 2,
