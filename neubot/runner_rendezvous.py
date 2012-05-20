@@ -46,11 +46,11 @@ from neubot.state import STATE
 class RunnerRendezvous(ClientHTTP):
     ''' Rendezvous client '''
 
-    def start_rendezvous(self, uri):
+    def start_rendezvous(self, address):
         ''' Starts a rendezvous '''
-        logging.info('runner_rendezvous: connecting to %s', uri)
+        logging.info('runner_rendezvous: connecting to: "%s"', address)
         STATE.update('rendezvous')
-        self.connect_uri(uri)
+        self.connect((address, '9773'))
 
     def connection_failed(self, connector, exception):
         ''' Invoked when the connection fails '''

@@ -476,7 +476,7 @@ class Connector(Pollable):
             return
 
         rtt = utils.ticks() - self.timestamp
-        self.parent._connection_made(self.sock, rtt)
+        self.parent._connection_made(self.sock, self.endpoint, rtt)
 
     def handle_close(self):
         self._connection_failed()
@@ -511,7 +511,7 @@ class Listener(Pollable):
         try:
             sock, sockaddr = self.lsock.accept()
             sock.setblocking(False)
-            self.parent.connection_made(sock)
+            self.parent.connection_made(sock, self.endpoint, 0)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception, exception:
@@ -571,8 +571,8 @@ class StreamHandler(object):
                     sock.close()
             else:
                 while self.good:
-                    sock, rtt = self.good.popleft()
-                    self.connection_made(sock, rtt)
+                    sock, endpoint, rtt = self.good.popleft()
+                    self.connection_made(sock, endpoint, rtt)
 
     def _connection_failed(self, connector, exception):
         self.bad.append((connector, exception))
@@ -584,19 +584,19 @@ class StreamHandler(object):
     def started_connecting(self, connector):
         pass
 
-    def _connection_made(self, sock, rtt):
+    def _connection_made(self, sock, endpoint, rtt):
         self.rtts.append(rtt)
-        self.good.append((sock, rtt))
+        self.good.append((sock, endpoint, rtt))
         self._next_connect()
 
-    def connection_made(self, sock, rtt=0):
+    def connection_made(self, sock, endpoint, rtt):
         pass
 
     def connection_lost(self, stream):
         pass
 
 class GenericHandler(StreamHandler):
-    def connection_made(self, sock, rtt=0):
+    def connection_made(self, sock, endpoint, rtt):
         stream = GenericProtocolStream(self.poller)
         stream.kind = self.conf["net.stream.proto"]
         stream.attach(self, sock, self.conf)
