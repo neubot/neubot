@@ -120,6 +120,7 @@ distutils.core.setup(name="neubot",
 if RUN_PY2EXE:
     IGNORER = shutil.ignore_patterns('.DS_Store')
     shutil.copytree("neubot/www", "dist/www", ignore=IGNORER)
+    shutil.copy('Win32/openssl.exe', 'dist/')
 
     if "PROGRAMFILES" in os.environ:
         MAKENSIS = os.environ["PROGRAMFILES"] + "\\NSIS\\makensis.exe"
