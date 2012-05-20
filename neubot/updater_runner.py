@@ -58,8 +58,7 @@ class UpdaterRunner(object):
 
     def _schedule(self):
         ''' Schedule next check for updates '''
-        # TODO remember to raise this to 1800 seconds
-        POLLER.sched(60, self.retrieve_versioninfo)
+        POLLER.sched(1800, self.retrieve_versioninfo)
 
     def retrieve_versioninfo(self):
         ''' Retrieve version information '''
