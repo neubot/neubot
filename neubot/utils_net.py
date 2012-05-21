@@ -121,8 +121,6 @@ def listen(epnt):
 
     if CONFIG['prefer_ipv6']:
         addrinfo.sort(cmp=__compare_af, reverse=1)
-    if CONFIG['prefer_ipv4']:
-        addrinfo.sort(cmp=__compare_af, reverse=0)
 
     for ainfo in addrinfo:
         try:
@@ -176,8 +174,6 @@ def connect(epnt):
 
     if CONFIG['prefer_ipv6']:
         addrinfo.sort(cmp=__compare_af, reverse=1)
-    if CONFIG['prefer_ipv4']:
-        addrinfo.sort(cmp=__compare_af, reverse=0)
 
     for ainfo in addrinfo:
         try:
