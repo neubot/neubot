@@ -26,9 +26,14 @@
 launchctl stop org.neubot
 launchctl unload /Library/LaunchDaemons/org.neubot.plist
 
+# TODO Verify whether this works if run w/ root privileges
+#launchctl stop org.neubot.notifier
+#launchctl unload /Library/LaunchAgents/org.neubot.notifier.plist
+
 # Installer
 rm -rf /usr/local/share/neubot
 rm -f /Library/LaunchDaemons/org.neubot.plist
+rm -f /Library/LaunchAgents/org.neubot.notifier.plist
 
 #
 # VERSIONDIR/start.sh
