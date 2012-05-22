@@ -47,6 +47,7 @@ from neubot.state import STATE
 from neubot.log import LOG
 
 from neubot import utils
+from neubot import utils_net
 from neubot import utils_rc
 
 # Constants
@@ -120,7 +121,7 @@ class PeerNeubot(StreamHandler):
         if rtt:
             latency = utils.time_formatter(rtt)
             logging.info("BitTorrent: connecting to %s ... done, %s",
-              str(sock.getpeername()), latency)
+              str(utils_net.getpeername(sock)), latency)
             STATE.update("test_latency", latency)
             self.rtt = rtt
         stream = StreamBitTorrent(self.poller)

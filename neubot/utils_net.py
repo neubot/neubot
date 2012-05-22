@@ -211,7 +211,7 @@ def isconnected(endpoint, sock):
                   format_epnt(endpoint))
 
     try:
-        peername = sock.getpeername()
+        peername = getpeername(sock)
     except socket.error:
         exception = sys.exc_info()
 
@@ -231,3 +231,22 @@ def isconnected(endpoint, sock):
     logging.debug('isconnected(): connect() to %s succeeded', (
                   format_epnt(peername)))
     return peername
+
+def __strip_ipv4mapped_prefix(function):
+    ''' Strip IPv4-mapped and IPv4-compatible prefix when the kernel does
+        not implement a hard separation between IPv4 and IPv6 '''
+    result = function()
+    result = list(result)
+    if result[0].startswith('::ffff:'):
+        result[0] = result[0][7:]
+    elif result[0].startswith('::'):
+        result[0] = result[0][1:]
+    return tuple(result)
+
+def getpeername(sock):
+    ''' getpeername() wrapper that strips IPv4-mapped prefix '''
+    return __strip_ipv4mapped_prefix(sock.getpeername)
+
+def getsockname(sock):
+    ''' getsockname() wrapper that strips IPv4-mapped prefix '''
+    return __strip_ipv4mapped_prefix(sock.getsockname)

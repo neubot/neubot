@@ -44,6 +44,7 @@ from neubot.net.poller import POLLER
 from neubot.main import common
 from neubot import system
 from neubot import utils
+from neubot import utils_net
 
 #
 # 3-letter abbreviation of month names.
@@ -290,7 +291,7 @@ class ServerHTTP(StreamHandler):
         # Maybe radical privilege separation is the answer
         # here, but I'm not sure: I need to study more.
         #
-        port = sock.getsockname()[1]
+        port = utils_net.getsockname(sock)[1]
         if port in self._ssl_ports:
             nconf["net.stream.certfile"] = "/etc/neubot/cert.pem"
             nconf["net.stream.secure"] = True

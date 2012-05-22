@@ -169,8 +169,8 @@ class Stream(Pollable):
         self.conf = conf
 
         self.filenum = sock.fileno()
-        self.myname = sock.getsockname()
-        self.peername = sock.getpeername()
+        self.myname = utils_net.getsockname(sock)
+        self.peername = utils_net.getpeername(sock)
         self.logname = str((self.myname, self.peername))
 
         LOG.debug("* Connection made %s" % str(self.logname))
