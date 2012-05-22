@@ -45,6 +45,7 @@ from neubot.config import CONFIG
 
 from neubot import browser
 from neubot import utils
+from neubot import utils_net
 
 class NotifierBrowser(object):
     ''' Browser notifications '''
@@ -83,11 +84,15 @@ class NotifierBrowser(object):
 
         self.last_show[html_page] = now
 
-        uri = 'http://%s:%s/%s' % (
-                                   CONFIG['agent.api.address'],
-                                   CONFIG['agent.api.port'],
+        # FIXME This discards IPv6 localhost address
+        address = CONFIG['agent.api.address']
+        if ' ' in address:
+            address = address.split()[0]
+        uri = 'http://%s/%s' % (
+                                   utils_net.format_epnt((address,
+                                     CONFIG['agent.api.port'])),
                                    html_page
-                                  )
+                                )
 
         return browser.open_browser(uri)
 

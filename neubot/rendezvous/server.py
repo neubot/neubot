@@ -146,12 +146,17 @@ class ServerRendezvous(ServerHTTP):
         # privacy settings, who were still using master.
         #
         if privacy.collect_allowed(request_body):
+            #
+            # Note: Here we will have problems if we store unquoted
+            # IPv6 addresses into the database.  Because the resulting
+            # URI won't be valid.
+            #
             if "speedtest" in ibody.accept:
                 obody.available["speedtest"] = [
                     "http://%s/speedtest" % server ]
-
             if "bittorrent" in ibody.accept:
-                obody.available["bittorrent"] = [ "http://%s/" % server ]
+                obody.available["bittorrent"] = [
+                    "http://%s/" % server ]
 
         #
         # Neubot <=0.3.7 expects to receive an XML document while

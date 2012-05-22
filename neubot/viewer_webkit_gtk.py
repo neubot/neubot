@@ -43,6 +43,7 @@ except ImportError:
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import utils_net
 from neubot import utils_rc
 from neubot import utils_ctl
 
@@ -117,7 +118,7 @@ def main(args):
 
     uri = STATIC_PAGE
     if utils_ctl.is_running(address, port):
-        uri = 'http://%s:%s/' % (address, port)
+        uri = 'http://%s/' % utils_net.format_epnt((address, port))
 
     if not 'DISPLAY' in os.environ:
         sys.exit('No DISPLAY available')

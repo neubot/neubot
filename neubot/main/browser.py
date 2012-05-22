@@ -37,6 +37,8 @@ if sys.version_info[0] == 3:
 else:
     import httplib as lib_http
 
+from neubot import utils_net
+
 def open_patient(address, port, newthread=False):
 
     '''
@@ -93,7 +95,7 @@ def open_patient(address, port, newthread=False):
             count = count + 1
 
         sys.stderr.write("* Opening Neubot web gui\n")
-        webbrowser.open("http://%s:%s/" % (address, port))
+        webbrowser.open("http://%s/" % utils_net.format_epnt((address, port)))
 
     else:
         sys.stderr.write("* Starting Neubot web gui daemon thread\n")

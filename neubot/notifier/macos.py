@@ -40,6 +40,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import privacy
+from neubot import utils_net
 
 def __should_adjust_privacy(database_path):
 
@@ -79,7 +80,7 @@ def __should_adjust_privacy(database_path):
         dictionary = json.loads(body)
         if privacy.count_valid(dictionary, 'privacy.') != 3:
             # Should adjust settings
-            return "http://%s:%s/" % (address, port)
+            return "http://%s/" % utils_net.format_epnt((address, port))
 
     except SystemExit:
         raise

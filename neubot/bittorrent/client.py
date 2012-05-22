@@ -46,6 +46,7 @@ from neubot.state import STATE
 
 from neubot import privacy
 from neubot import utils
+from neubot import utils_net
 
 TESTDONE = "testdone"
 
@@ -65,7 +66,7 @@ class BitTorrentClient(ClientHTTP):
         if not uri:
             address = self.conf["bittorrent.address"]
             port = self.conf["bittorrent.negotiate.port"]
-            uri = "http://%s:%s/" % (address, port)
+            uri = "http://%s/" % utils_net.format_epnt((address, port))
 
         logging.info("BitTorrent: connecting to %s in progress...", uri)
 

@@ -51,12 +51,33 @@ def urlsplit(uri):
     scheme, netloc, path, query, fragment = urlparse.urlsplit(uri)
     if scheme != "http" and scheme != "https":
         raise ValueError("Unknown scheme")
-    if ":" in netloc:
+
+    # Unquote IPv6 [<address>]:<port> or [<address>]
+    if netloc.startswith('['):
+        netloc = netloc[1:]
+        index = netloc.find(']')
+        if index == -1:
+            raise ValueError("Invalid quoted IPv6 address")
+        address = netloc[:index]
+
+        port = netloc[index + 1:].strip()
+        if not port:
+            if scheme == 'https':
+                port = "443"
+            else:
+                port = "80"
+        elif not port.startswith(':'):
+            raise ValueError("Missing port separator")
+        else:
+            port = port[1:]
+
+    elif ":" in netloc:
         address, port = netloc.split(":", 1)
     elif scheme == "https":
         address, port = netloc, "443"
     else:
         address, port = netloc, "80"
+
     if not path:
         path = "/"
     pathquery = path
