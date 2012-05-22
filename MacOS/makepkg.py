@@ -156,10 +156,12 @@ def _make_auto_update():
 
     if not os.path.exists('../dist'):
         os.mkdir('../dist')
+    if not os.path.exists('../dist/macos'):
+        os.mkdir('../dist/macos')
 
-    tarball = '../dist/%s.tar.gz' % NUMERIC_VERSION
-    sha256sum = '../dist/%s.tar.gz.sha256' % NUMERIC_VERSION
-    sig = '../dist/%s.tar.gz.sig' % NUMERIC_VERSION
+    tarball = '../dist/macos/%s.tar.gz' % NUMERIC_VERSION
+    sha256sum = '../dist/macos/%s.tar.gz.sha256' % NUMERIC_VERSION
+    sig = '../dist/macos/%s.tar.gz.sig' % NUMERIC_VERSION
 
     # Create tarball
     arch = tarfile.open(tarball, 'w:gz')
@@ -184,7 +186,7 @@ def _make_auto_update():
     # Make digital signature
     privkey = raw_input('Enter privkey location: ')
     if privkey:
-        os.chdir('../dist')
+        os.chdir('../dist/macos')
         __call('openssl dgst -sha256 -sign %s -out %s %s' %
            (privkey, os.path.basename(sig), os.path.basename(tarball)))
         os.chdir(MACOSDIR)

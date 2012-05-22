@@ -84,15 +84,16 @@ doscp()
 #
 # If we have a MacOSX release, publish it
 #
-if [ -f $1/0.004012003.tar.gz ]; then
-
+if [ -f $1/macos/0.004012003.tar.gz ]; then
     doscp $1/neubot-0.4.12-rc3.pkg.tgz $remote/_packages/
+
+    $ssh $server "install -d $remotedir/updates/macos/"
     for ext in "" .sha256 .sig; do
-        doscp $1/0.004012003.tar.gz$ext $remote/updates/
+        doscp $1/macos/0.004012003.tar.gz$ext $remote/updates/macos/
     done
 
     if [ $candidate = 1 ]; then
-        $ssh $server "echo 0.004012003 > $remotedir/updates/testing"
+        $ssh $server "echo 0.004012003 > $remotedir/updates/macos/testing"
     fi
 
     #
@@ -100,7 +101,7 @@ if [ -f $1/0.004012003.tar.gz ]; then
     # stable releases.
     #
     if [ $stable = 1 ]; then
-        $ssh $server "echo 0.004012003 > $remotedir/updates/latest"
+        $ssh $server "echo 0.004012003 > $remotedir/updates/macos/latest"
     fi
 
 fi

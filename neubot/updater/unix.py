@@ -612,7 +612,7 @@ def __download_version_info(address, channel):
      is in numeric representation, i.e. a floating point number with
      exactly nine digits after the radix point.
     '''
-    version = __download(address, "/updates/%s" % channel)
+    version = __download(address, "/updates/macos/%s" % channel)
     if not version:
         raise RuntimeError('Download failed')
     version = __printable_only(version)
@@ -628,7 +628,7 @@ def __download_sha256sum(version, address):
      name again is a version number in numeric representation.  Note
      that the sha256 file contains just one SHA256 entry.
     '''
-    sha256 = __download(address, '/updates/%s.tar.gz.sha256' % version)
+    sha256 = __download(address, '/updates/macos/%s.tar.gz.sha256' % version)
     if not sha256:
         raise RuntimeError('Download failed')
     line = __printable_only(sha256)
@@ -686,7 +686,7 @@ def __download_and_verify_update(server, channel):
     # Get tarball
     tarball = __download(
                          server,
-                         '/updates/%s.tar.gz' % nversion,
+                         '/updates/macos/%s.tar.gz' % nversion,
                          tofile=True
                         )
     if not tarball:
@@ -709,7 +709,7 @@ def __download_and_verify_update(server, channel):
     # Download signature
     signature = __download(
                            server,
-                           '/updates/%s.tar.gz.sig' % nversion,
+                           '/updates/macos/%s.tar.gz.sig' % nversion,
                            tofile=True
                           )
     if not signature:
