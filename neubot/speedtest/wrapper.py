@@ -65,6 +65,9 @@ class SpeedtestCollect(object):
         self.platform = ''
         self.neubot_version = ''
 
+        # Test version (added Neubot 0.4.12)
+        self.testVersion = 1
+
 class SpeedtestNegotiate_Response(object):
 
     ''' Old XML negotiate response '''
@@ -195,6 +198,9 @@ class SpeedtestWrapper(ServerHTTP):
             'privacy_can_share': xmlreq.privacy_can_share,
             'platform': xmlreq.platform,
             'neubot_version': xmlreq.neubot_version,
+
+            # Test version (added Neubot 0.4.12)
+            'test_version': xmlreq.testVersion,
         }
         # XXX Here we don't rewrite content-length which becomes bogus
         request['content-type'] = 'application/json'

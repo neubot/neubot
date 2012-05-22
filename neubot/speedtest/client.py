@@ -190,6 +190,9 @@ def obj_to_dict(obj):
         "privacy_can_publish": obj.privacy_can_share,   #XXX
         "platform": obj.platform,
         "neubot_version": obj.neubot_version,
+
+        # Test version (added Neubot 0.4.12)
+        "test_version": obj.testVersion,
     }
     return dictionary
 
@@ -222,6 +225,9 @@ class ClientCollect(ClientHTTP):
         m1.platform = sys.platform
 
         m1.connectTime = sum(self.rtts) / len(self.rtts)
+
+        # Test version (added Neubot 0.4.12)
+        m1.testVersion = CONFIG['speedtest_test_version']
 
         s = marshal.marshal_object(m1, "text/xml")
         stringio = StringIO.StringIO(s)

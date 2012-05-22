@@ -159,6 +159,9 @@ class BitTorrentClient(ClientHTTP):
             # OS and version info
             "neubot_version": utils_version.to_numeric("0.4.12-rc3"),
             "platform": sys.platform,
+
+            # Test version (added Neubot 0.4.12)
+            'test_version': CONFIG['bittorrent_test_version'],
         }
 
         logging.info("BitTorrent: collecting in progress...")

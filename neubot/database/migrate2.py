@@ -482,12 +482,31 @@ class MigrateFrom42To43(object):
 
         connection.commit()
 
+
+# ===================
+# Migrate: 4.3 -> 4.4
+# ===================
+
+def migrate_from_4_3_to_4_4(connection):
+    ''' Migrate: 4.3 -> 4.4 '''
+
+    logging.info('migrate2: from schema version 4.3 to 4.4...')
+
+    connection.execute("ALTER TABLE speedtest ADD test_version INTEGER;")
+    connection.execute("ALTER TABLE bittorrent ADD test_version INTEGER;")
+    connection.execute('''UPDATE config SET value='4.4'
+                              WHERE name='version';''')
+    connection.commit()
+
+    logging.info('migrate2: from schema version 4.3 to 4.4... done')
+
 # ====
 # Main
 # ====
 
 MIGRATORS = {
     '4.2': MigrateFrom42To43.migrate,
+    '4.3': migrate_from_4_3_to_4_4,
 }
 
 def migrate(connection):

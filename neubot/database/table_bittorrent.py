@@ -47,6 +47,9 @@ TEMPLATE = {
 
     "neubot_version": "",
     "platform": "",
+
+    # Added Neubot 0.4.12
+    "test_version": 1,
 }
 
 CREATE_TABLE = _table_utils.make_create_table("bittorrent", TEMPLATE)
