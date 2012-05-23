@@ -48,6 +48,9 @@ if __name__ == "__main__":
 
     print compat.json.dumps(LOG.listify())
 
+    access_logger = logging.getLogger('access')
+    access_logger.info('Test access logger')
+
     try:
         raise Exception("Testing LOG.exception")
     except (KeyboardInterrupt, SystemExit):
