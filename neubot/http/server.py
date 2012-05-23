@@ -46,6 +46,8 @@ from neubot.main import common
 from neubot import system
 from neubot import utils
 
+ACCESS_LOGGER = logging.getLogger('access')
+
 #
 # 3-letter abbreviation of month names.
 # We use our abbreviation because we don't want the
@@ -133,9 +135,8 @@ class ServerStream(StreamHTTP):
             if nbytes == "0":
                 nbytes = "-"
 
-        LOG.log_access("%s - - [%s] \"%s\" %s %s" % (address, timestring,
-                                                     requestline, statuscode,
-                                                     nbytes))
+        ACCESS_LOGGER.info("%s - - [%s] \"%s\" %s %s", address, timestring,
+                requestline, statuscode, nbytes)
 
 class ServerHTTP(StreamHandler):
 
@@ -265,7 +266,7 @@ class ServerHTTP(StreamHandler):
 
     def _on_internal_error(self, stream, request):
         ''' Generate 500 Internal Server Error page '''
-        LOG.exception()
+        logging.error('Exception', exc_info=1)
         response = Message()
         response.compose(code="500", reason="Internal Server Error",
                          body="500 Internal Server Error", keepalive=0)

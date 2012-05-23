@@ -272,9 +272,6 @@ class NegotiateServerForUpdateQueue(NegotiateServer):
         else:
             self.negotiated.append(baton)
 
-# Override LOG.exception to avoid printing the above RuntimeError
-LOG.exception = lambda: None
-
 class UpdateQueue(unittest.TestCase):
 
     ''' Verifies the behavior of _update_queue() method

@@ -40,7 +40,7 @@ from neubot.net.poller import POLLER
 
 from neubot.bittorrent import config
 from neubot.config import CONFIG
-from neubot.log import LOG
+from neubot.log import LOG, oops
 from neubot.notify import NOTIFIER
 from neubot.main import common
 
@@ -87,7 +87,7 @@ def run(poller, conf):
         # none times out of ten.
         #
         if not NOTIFIER.is_subscribed("testdone"):
-            LOG.oops("The 'testdone' event is not subscribed")
+            oops("The 'testdone' event is not subscribed")
 
         if conf["bittorrent.negotiate"]:
             client = BitTorrentClient(poller)

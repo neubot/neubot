@@ -39,7 +39,6 @@ from neubot.database import table_speedtest
 from neubot.debug import objgraph
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
-from neubot.log import LOG
 from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
@@ -89,7 +88,7 @@ class ServerAPI(ServerHTTP):
         except ConfigError, error:
             reason = re.sub(r"[\0-\31]", "", str(error))
             reason = re.sub(r"[\x7f-\xff]", "", reason)
-            LOG.exception(func=logging.info)
+            logging.info('Exception', exc_info=1)
             response = Message()
             response.compose(code="500", reason=reason,
                     body=StringIO.StringIO(reason))

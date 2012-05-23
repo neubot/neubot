@@ -22,8 +22,7 @@
 
 import sys
 import textwrap
-
-from neubot.log import LOG
+import logging
 
 #
 # XXX It would be nice to run just main() in MOD.__init__
@@ -115,7 +114,7 @@ def run(argv):
     except SystemExit:
         raise
     except:
-        LOG.exception()
+        logging.error('Exception', exc_info=1)
         sys.exit(1)
     sys.exit(0)
 

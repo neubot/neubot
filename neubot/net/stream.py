@@ -44,7 +44,7 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
-from neubot.log import LOG
+from neubot.log import LOG, oops
 from neubot.net.poller import POLLER
 from neubot.net.poller import Pollable
 
@@ -72,7 +72,7 @@ if ssl:
             try:
                 self.sock.close()
             except ssl.SSLError:
-                LOG.exception()
+                logging.error('Exception', exc_info=1)
 
         def sorecv(self, maxlen):
             try:
@@ -106,7 +106,7 @@ class SocketWrapper(object):
         try:
             self.sock.close()
         except socket.error:
-            LOG.exception()
+            logging.error('Exception', exc_info=1)
 
     def sorecv(self, maxlen):
         try:
@@ -203,7 +203,7 @@ class Stream(Pollable):
 
     def atclose(self, func):
         if func in self.atclosev:
-            LOG.oops("Duplicate atclose(): %s" % func)
+            oops("Duplicate atclose(): %s" % func)
         self.atclosev.add(func)
 
     def unregister_atclose(self, func):
@@ -237,7 +237,7 @@ class Stream(Pollable):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.exception("Error in atclosev")
+                logging.error("Error in atclosev", exc_info=1)
 
         self.send_octets = None
         self.sock.soclose()
@@ -337,7 +337,7 @@ class Stream(Pollable):
 
         if octets:
             if type(octets) == types.UnicodeType:
-                LOG.oops("Received unicode input")
+                oops("Received unicode input")
                 octets = octets.encode("utf-8")
 
         return octets

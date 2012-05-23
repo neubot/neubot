@@ -24,12 +24,12 @@
 
 import collections
 import random
+import logging
 
 from neubot.config import CONFIG
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.compat import json
-from neubot.log import LOG
 
 class NegotiateServerModule(object):
 
@@ -207,7 +207,7 @@ class NegotiateServer(ServerHTTP):
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
-                    LOG.exception()
+                    logging.error('Exception', exc_info=1)
                     stream.unregister_atclose(self._update_queue)
                     self.known.remove(stream)
                     stream.close()

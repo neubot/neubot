@@ -46,10 +46,11 @@ class UpdaterRunner(object):
 
     ''' An updater that uses the runner '''
 
-    def __init__(self, channel, basedir):
+    def __init__(self, system, basedir, channel):
         ''' Initializer '''
-        self.channel = channel
+        self.system = system
         self.basedir = basedir
+        self.channel = channel
 
     def start(self):
         ''' Schedule first check for updates '''
@@ -72,7 +73,8 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        ctx = { 'uri': updater_utils.versioninfo_get_uri(self.channel) }
+        ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system,
+                                                         self.channel) }
         RUNNER_CORE.run('dload', self._process_versioninfo, False, ctx)
 
     def _process_versioninfo(self, ctx):
@@ -105,7 +107,7 @@ class UpdaterRunner(object):
     def retrieve_files(self, vinfo):
         ''' Retrieve files for a given version '''
         # Note: this is a separate function for testability
-        uri = updater_utils.sha256sum_get_uri(self.channel, vinfo)
+        uri = updater_utils.sha256sum_get_uri(self.system, vinfo)
         ctx = {'vinfo': vinfo, 'uri': uri}
         RUNNER_CORE.run('dload', self._retrieve_tarball, False, ctx)
 
@@ -132,7 +134,7 @@ class UpdaterRunner(object):
 
         # XXX We should not reuse the same CTX here
         ctx['sha256'] = sha256
-        ctx['uri'] = updater_utils.tarball_get_uri(self.channel, ctx['vinfo'])
+        ctx['uri'] = updater_utils.tarball_get_uri(self.system, ctx['vinfo'])
 
         RUNNER_CORE.run('dload', self._process_files, False, ctx)
 
@@ -183,7 +185,8 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR))
+    channel = CONFIG['win32_updater_channel']
+    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR), channel)
 
     if arguments:
         updater.retrieve_files(arguments[0])
