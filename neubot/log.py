@@ -183,17 +183,6 @@ class Logger(object):
         for line in traceback.format_stack()[:-1]:
             func(line)
 
-    def log_access(self, message, *args):
-        #
-        # CAVEAT Currently Neubot do not update logs "in real
-        # time" using AJAX.  If it did we would run in trouble
-        # because each request for /api/log would generate a
-        # new access log record.  A new access log record will
-        # cause a new "logwritten" event.  And the result is
-        # something like a Comet storm.
-        #
-        self.log("ACCESS", message, args, None)
-
     def __writeback(self):
         """Really commit pending log records into the database"""
 
@@ -319,3 +308,11 @@ ROOT.handlers = []
 ROOT.addHandler(LogWrapper())
 ROOT.addHandler(StreamLogWrapper(level=logging.DEBUG))
 ROOT.setLevel(logging.INFO)
+# Create 'access' logger
+ACCESS_LOGGER = logging.getLogger('access')
+ACCESS_LOGGER.setLevel(logging.INFO)
+__ACCESS_HANDLER = logging.StreamHandler()
+__ACCESS_HANDLER.setFormatter(logging.Formatter(fmt='ACCESS: %(message)s'))
+ACCESS_LOGGER.addHandler(__ACCESS_HANDLER)
+# Avoid passing log messages to the ROOT logger
+ACCESS_LOGGER.propagate = False
