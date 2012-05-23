@@ -214,6 +214,7 @@ CONFIG.register_defaults({
     "version": "",
     'win32_updater': 0,
     "www.lang": "default",
+    "win32_updater_channel": "latest",
 })
 CONFIG.register_descriptions({
     "agent.api": "Enable API server",
@@ -239,4 +240,5 @@ CONFIG.register_descriptions({
     "version": "Version number of the Neubot database schema",
     'win32_updater': 'Set to nonzero to enable Win32 automatic updates',
     "www.lang": "Web GUI language (`default' means: use browser default)",
+    "win32_updater_channel": "The channel used for automatic updates",
 })
