@@ -185,7 +185,8 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR), 'latest')
+    channel = CONFIG['win32_updater_channel']
+    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR), channel)
 
     if arguments:
         updater.retrieve_files(arguments[0])
