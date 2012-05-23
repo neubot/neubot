@@ -165,16 +165,6 @@ class Logger(object):
         self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
 
-    # Log functions
-
-    def exception(self, message="", func=None):
-        if not func:
-            func = logging.error
-        if message:
-            func("EXCEPT: " + message + " (traceback follows)")
-        for line in traceback.format_exc().split("\n"):
-            func(line)
-
     def __writeback(self):
         """Really commit pending log records into the database"""
 

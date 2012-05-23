@@ -72,7 +72,7 @@ if ssl:
             try:
                 self.sock.close()
             except ssl.SSLError:
-                LOG.exception()
+                logging.error('Exception', exc_info=1)
 
         def sorecv(self, maxlen):
             try:
@@ -106,7 +106,7 @@ class SocketWrapper(object):
         try:
             self.sock.close()
         except socket.error:
-            LOG.exception()
+            logging.error('Exception', exc_info=1)
 
     def sorecv(self, maxlen):
         try:
@@ -237,7 +237,7 @@ class Stream(Pollable):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.exception("Error in atclosev")
+                logging.error("Error in atclosev", exc_info=1)
 
         self.send_octets = None
         self.sock.soclose()

@@ -31,7 +31,6 @@ from neubot.database import DATABASE
 from neubot.database import table_speedtest
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
-from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATE
@@ -324,7 +323,7 @@ class ClientSpeedtest(ClientHTTP):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                LOG.exception()
+                logging.error('Exception', exc_info=1)
                 stream.close()
                 self.cleanup("unexpected exception")
             else:

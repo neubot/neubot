@@ -266,7 +266,7 @@ class ServerHTTP(StreamHandler):
 
     def _on_internal_error(self, stream, request):
         ''' Generate 500 Internal Server Error page '''
-        LOG.exception()
+        logging.error('Exception', exc_info=1)
         response = Message()
         response.compose(code="500", reason="Internal Server Error",
                          body="500 Internal Server Error", keepalive=0)

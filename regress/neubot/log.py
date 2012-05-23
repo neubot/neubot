@@ -52,12 +52,11 @@ if __name__ == "__main__":
     access_logger.info('Test access logger')
 
     try:
-        raise Exception("Testing LOG.exception")
+        raise Exception("Testing exc_info")
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
-        LOG.exception()
-        LOG.exception(func=logging.warning)
+        logging.error('EXCEPTION', exc_info=1)
 
     oops("Testing the new oops feature")
 
