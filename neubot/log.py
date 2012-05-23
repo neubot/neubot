@@ -175,14 +175,6 @@ class Logger(object):
         for line in traceback.format_exc().split("\n"):
             func(line)
 
-    def oops(self, message="", func=None):
-        if not func:
-            func = logging.error
-        if message:
-            func("OOPS: " + message + " (traceback follows)")
-        for line in traceback.format_stack()[:-1]:
-            func(line)
-
     def __writeback(self):
         """Really commit pending log records into the database"""
 
@@ -276,6 +268,14 @@ class Logger(object):
             return lst
         else:
             return []
+
+def oops(message="", func=None):
+    if not func:
+        func = logging.error
+    if message:
+        func("OOPS: " + message + " (traceback follows)")
+    for line in traceback.format_stack()[:-1]:
+        func(line)
 
 LOG = Logger()
 

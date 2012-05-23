@@ -34,7 +34,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.log import LOG
+from neubot.log import LOG, oops
 from neubot import compat
 
 if __name__ == "__main__":
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         LOG.exception()
         LOG.exception(func=logging.warning)
 
-    LOG.oops("Testing the new oops feature")
+    oops("Testing the new oops feature")
 
     # Testing variadic args
     logging.warning("WARNING %s", "variadic warning")
