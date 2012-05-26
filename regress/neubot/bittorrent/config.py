@@ -82,7 +82,8 @@ class TestFinalizeConf(unittest.TestCase):
         self.assertTrue(len(conf['bittorrent.infohash']), 20)
         self.assertEqual(conf['bittorrent.bytes.down'], estimate.DOWNLOAD)
         self.assertEqual(conf['bittorrent.bytes.up'], estimate.UPLOAD)
-        self.assertEqual(conf['bittorrent.address'], 'master.neubot.org')
+        self.assertEqual(conf['bittorrent.address'],
+          'master.neubot.org master2.neubot.org')
 
     def test_finalize_server(self):
         ''' Test finalize conf in the server case '''
@@ -102,7 +103,7 @@ class TestFinalizeConf(unittest.TestCase):
         self.assertTrue(len(conf['bittorrent.infohash']), 20)
         self.assertEqual(conf['bittorrent.bytes.down'], estimate.DOWNLOAD)
         self.assertEqual(conf['bittorrent.bytes.up'], estimate.UPLOAD)
-        self.assertEqual(conf['bittorrent.address'], '0.0.0.0')
+        self.assertEqual(conf['bittorrent.address'], ':: 0.0.0.0')
 
 # pylint: disable=R0904
 # pylint: disable=W0212
