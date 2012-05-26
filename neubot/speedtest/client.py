@@ -512,5 +512,16 @@ def main(args):
 
     client = ClientSpeedtest(POLLER)
     client.configure(conf)
-    client.connect_uri()
+
+    #
+    # XXX Quick and dirty fix such that `neubot speedtest` when
+    # there is no daemon running considers both the master and
+    # the backup master server.  At the same time, respect user
+    # choices if she overrides the default URI.
+    #
+    if CONFIG['speedtest.client.uri'] == 'http://master.neubot.org/':
+        client.connect(('master.neubot.org master2.neubot.org', 8080))
+    else:
+        client.connect_uri()
+
     POLLER.loop()
