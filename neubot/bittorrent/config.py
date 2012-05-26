@@ -50,7 +50,7 @@ PROPERTIES = (
     ('bittorrent.infohash', '', 'Set InfoHash ("" = auto)'),
     ('bittorrent.listen', False, 'Run in server mode'),
     ('bittorrent.negotiate', True, 'Enable negotiate client/server'),
-    ('bittorrent.negotiate.port', 80, 'Negotiate port'),
+    ('bittorrent.negotiate.port', 8080, 'Negotiate port'),
     ('bittorrent.my_id', '', 'Set local PeerId ("" = auto)'),
     ('bittorrent.numpieces', NUMPIECES, 'Num of pieces in bitfield'),
     ('bittorrent.piece_len', PIECE_LEN, 'Length of each piece'),
@@ -85,6 +85,6 @@ def finalize_conf(conf):
 
     if not conf['bittorrent.address']:
         if not conf['bittorrent.listen']:
-            conf['bittorrent.address'] = 'master.neubot.org'
+            conf['bittorrent.address'] = 'master.neubot.org master2.neubot.org'
         else:
             conf['bittorrent.address'] = ':: 0.0.0.0'
