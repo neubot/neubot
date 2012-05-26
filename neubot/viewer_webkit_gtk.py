@@ -1,4 +1,4 @@
-# neubot/viewer/unix.py
+# neubot/viewer_webkit_gtk.py
 
 #
 # Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
