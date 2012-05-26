@@ -167,15 +167,18 @@ def main(args):
     ''' main() function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'vy')
+        options, arguments = getopt.getopt(args[1:], 'C:vy')
     except getopt.error:
-        sys.exit('neubot updater_runner [-vy] [version]')
+        sys.exit('neubot updater_runner [-vy] [-C channel] [version]')
     if len(arguments) > 1:
-        sys.exit('neubot updater_runner [-vy] [version]')
+        sys.exit('neubot updater_runner [-vy] [-C channel] [version]')
 
+    channel = CONFIG['win32_updater_channel']
     privacy = False
     for tpl in options:
-        if tpl[0] == '-v':
+        if tpl[0] == '-C':
+            channel = tpl[1]
+        elif tpl[0] == '-v':
             LOG.verbose()
         elif tpl[0] == '-y':
             privacy = True
@@ -185,7 +188,6 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    channel = CONFIG['win32_updater_channel']
     updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR), channel)
 
     if arguments:
