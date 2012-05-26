@@ -168,6 +168,7 @@ var bittorrent = (function() {
             minx = since;
 
         var xaxis = {
+            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
             renderer: jQuery.jqplot.DateAxisRenderer,
             showTickMarks: true,
             min: minx
@@ -200,6 +201,7 @@ var bittorrent = (function() {
               axes: {
                 xaxis: xaxis,
                 yaxis: {
+                  labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
                   label: "Mbit/s",
                   min: 0
                 }
@@ -238,6 +240,7 @@ var bittorrent = (function() {
               axes: {
                 xaxis: xaxis,
                 yaxis: {
+                  labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
                   label: "ms",
                   min: 0
                 }
