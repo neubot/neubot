@@ -111,6 +111,9 @@ var speedtest = (function() {
         var latencyLabels = [];
         var connectLabels = [];
 
+        var timestamps = [];
+        var minx = 0;
+
         for (i = 0; i < data.length; i++) {
             var result = data[i];
             var address = result["real_address"];
@@ -171,12 +174,20 @@ var speedtest = (function() {
             uploadData[counter].push([timestamp, upload]);
             latencyData[counter].push([timestamp, latency]);
             connectData[counter].push([timestamp, connect]);
+
+            timestamps.push(timestamp);
         }
+
+        // Do not waste plot estate without a good reason
+        if (timestamps.length)
+            minx = Math.min.apply(null, timestamps) - 300000;
+        else
+            minx = since;
 
         var xaxis = {
             renderer: jQuery.jqplot.DateAxisRenderer,
             showTickMarks: true,
-            min: since
+            min: minx
         };
 
         var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
