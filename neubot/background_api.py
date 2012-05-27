@@ -34,9 +34,9 @@ from neubot.config import CONFIG
 from neubot.http_server import HTTP_SERVER
 from neubot.log import LOG
 from neubot.poller import POLLER
-from neubot.rootdir import WWW
 
 from neubot import utils_rc
+from neubot import utils_sysdirs
 
 def start(address, port):
     ''' Starts API for background module '''
@@ -45,8 +45,9 @@ def start(address, port):
 
     # Configure HTTP server
     conf = CONFIG.copy()
-    logging.debug('background_api: API server rootdir: %s', WWW)
-    conf['http.server.rootdir'] = WWW
+    logging.debug('background_api: API server rootdir: %s',
+                  utils_sysdirs.WWWDIR)
+    conf['http.server.rootdir'] = utils_sysdirs.WWWDIR
     conf['http.server.ssi'] = True
     conf['http.server.bind_or_die'] = True
     HTTP_SERVER.configure(conf)

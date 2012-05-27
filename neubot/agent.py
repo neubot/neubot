@@ -33,10 +33,10 @@ from neubot.net.poller import POLLER
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.main import common
-from neubot.rootdir import WWW
 
 from neubot import privacy
 from neubot import system
+from neubot import utils_sysdirs
 
 def main(args):
     common.main("agent", "Run in background, periodically run tests", args)
@@ -47,8 +47,8 @@ def main(args):
 
     if conf["agent.api"]:
         server = HTTP_SERVER
-        LOG.debug("* API server root directory: %s" % WWW)
-        conf["http.server.rootdir"] = WWW
+        LOG.debug("* API server root directory: %s" % utils_sysdirs.WWWDIR)
+        conf["http.server.rootdir"] = utils_sysdirs.WWWDIR
         conf["http.server.ssi"] = True
         conf["http.server.bind_or_die"] = True
         server.configure(conf)

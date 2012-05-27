@@ -32,11 +32,11 @@ import os.path
 import random
 
 #
-# Must use WWW because Python modules are not
+# Must use WWWDIR because Python modules are not
 # reachable with Windows.  They are stored into
 # library.zip.
 #
-from neubot.rootdir import WWW
+from neubot import utils_sysdirs
 
 # Maximum depth
 MAXDEPTH = 16
@@ -66,7 +66,7 @@ def create_base_block(length):
     base_block = collections.deque()
 
     files = []
-    listdir(WWW, files, 0)
+    listdir(utils_sysdirs.WWWDIR, files, 0)
     random.shuffle(files)
 
     for fpath in files:

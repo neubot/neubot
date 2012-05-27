@@ -42,15 +42,15 @@ if hasattr(sys, 'frozen'):
     ROOTDIR = os.path.dirname(ROOTDIR)
 
 #
-# WWW is the directory that contains Neubot web files.  When we
+# WWWDIR is the directory that contains Neubot web files.  When we
 # are not a py2exe executable, web files are contained within
 # Neubot sources.  Otherwise, they are on the root directory in
 # a folder called ``www``.
 #
 if not hasattr(sys, 'frozen'):
-    WWW = os.sep.join([ROOTDIR, 'neubot/www'])
+    WWWDIR = os.sep.join([ROOTDIR, 'neubot/www'])
 else:
-    WWW = os.sep.join([ROOTDIR, 'www'])
+    WWWDIR = os.sep.join([ROOTDIR, 'www'])
 
 #
 # BASEDIR is the directory that contains ROOTDIR.  This directory
@@ -111,7 +111,7 @@ BASEDIR       : "%(BASEDIR)s"
 LOCALSTATEDIR : "%(LOCALSTATEDIR)s"
 ROOTDIR       : "%(ROOTDIR)s"
 SYSCONFDIR    : "%(SYSCONFDIR)s"
-WWW           : "%(WWW)s"
+WWWDIR        : "%(WWWDIR)s"
 ''' % globals())
 
 if __name__ == "__main__":
