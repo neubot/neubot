@@ -82,7 +82,8 @@ doscp()
 }
 
 #
-# If we have a MacOSX release, publish it
+# If we have a MacOSX release, publish it.  We now install in updates/macos/
+# but, for backwards compatibility, we also install in updates/ alone.
 #
 if [ -f $1/macos/0.004012006.tar.gz ]; then
     doscp $1/neubot-0.4.12-rc6.pkg.tgz $remote/_packages/
@@ -90,10 +91,12 @@ if [ -f $1/macos/0.004012006.tar.gz ]; then
     $ssh $server "install -d $remotedir/updates/macos/"
     for ext in "" .sha256 .sig; do
         doscp $1/macos/0.004012006.tar.gz$ext $remote/updates/macos/
+        doscp $1/macos/0.004012006.tar.gz$ext $remote/updates/
     done
 
     if [ $candidate = 1 ]; then
         $ssh $server "echo 0.004012006 > $remotedir/updates/macos/testing"
+        $ssh $server "echo 0.004012006 > $remotedir/updates/testing"
     fi
 
     #
@@ -102,6 +105,7 @@ if [ -f $1/macos/0.004012006.tar.gz ]; then
     #
     if [ $stable = 1 ]; then
         $ssh $server "echo 0.004012006 > $remotedir/updates/macos/latest"
+        $ssh $server "echo 0.004012006 > $remotedir/updates/latest"
     fi
 
 fi
