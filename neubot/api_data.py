@@ -1,4 +1,4 @@
-# neubot/api_results.py
+# neubot/api_data.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -21,7 +21,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' API results '''
+''' API to fetch data '''
 
 import cgi
 
@@ -38,8 +38,8 @@ class NotImplementedTest(Exception):
     ''' Raised when a test is not implemented '''
 
 
-def api_results(stream, request, query):
-    ''' Provide results for queried tests '''
+def api_data(stream, request, query):
+    ''' Get data stored on the local database '''
     since, until = -1, -1
     test = ''
 

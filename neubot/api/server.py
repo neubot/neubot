@@ -52,7 +52,7 @@ from neubot import privacy
 from neubot import log_api
 from neubot import runner_api
 from neubot import utils
-from neubot import api_results
+from neubot import api_data
 
 class ServerAPI(ServerHTTP):
 
@@ -61,7 +61,7 @@ class ServerAPI(ServerHTTP):
         self._dispatch = {
             "/api": self._api,
             "/api/": self._api,
-            "/api/results": api_results.api_results,
+            "/api/data": api_data.api_data,
             "/api/config": config_api.config_api,
             "/api/debug": self._api_debug,
             "/api/index": self._api_index,
