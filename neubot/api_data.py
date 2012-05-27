@@ -30,12 +30,9 @@ from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
 from neubot.http.message import Message
+from neubot.utils_api import NotImplementedTest
 
 from neubot import utils
-
-
-class NotImplementedTest(Exception):
-    ''' Raised when a test is not implemented '''
 
 
 def api_data(stream, request, query):
