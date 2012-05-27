@@ -36,6 +36,8 @@ import signal
 import syslog
 import sys
 
+from neubot import utils_sysdirs
+
 def __logger(severity, message):
 
     ''' Log @message at the given @severity using syslog '''
@@ -86,7 +88,7 @@ def _get_profile_dir():
         homedir = os.environ["HOME"]
         profiledir = os.sep.join([homedir, ".neubot"])
     else:
-        profiledir = "/var/neubot"
+        profiledir = utils_sysdirs.LOCALSTATEDIR
     return profiledir
 
 def change_dir():
