@@ -113,9 +113,9 @@ fi
 #
 # If we have a Win32 release, publish it
 #
-if [ -f $1/win32/neubot-0.4.12-rc6-setup.exe ]; then
+if [ -f $1/neubot-0.4.12-rc6-setup.exe ]; then
 
-    doscp $1/win32/neubot-0.4.12-rc6-setup.exe $remote/_packages/
+    doscp $1/neubot-0.4.12-rc6-setup.exe $remote/_packages/
 
     # Autoupdates stuff
     $ssh $server "install -d $remotedir/updates/win32/"

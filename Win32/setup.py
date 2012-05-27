@@ -160,7 +160,7 @@ if RUN_PY2EXE:
     os.mkdir('wdist')
     os.mkdir('wdist/win32')
     shutil.move('uninstaller-generator.exe', 'wdist')
-    shutil.move('neubot-0.4.12-rc6-setup.exe', 'wdist/win32')
+    shutil.move('neubot-0.4.12-rc6-setup.exe', 'wdist')
     shutil.move('0.004012006', 'wdist')
     shutil.move('0.004012006.tar.gz', 'wdist/win32')
     shutil.move('0.004012006.tar.gz.sha256', 'wdist/win32')
