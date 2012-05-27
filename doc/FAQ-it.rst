@@ -966,7 +966,7 @@ opzione può assumere uno dei seguenti valori:
 .. _`documentazione FreeBSD`: http://www.freebsd.org/docs.html
 .. _`FreeBSD manpages`: http://www.freebsd.org/cgi/man.cgi
 .. _`FreeBSD ports mailing list`:
-http://lists.freebsd.org/mailman/listinfo/freebsd-ports
+    http://lists.freebsd.org/mailman/listinfo/freebsd-ports
 .. _`send-pr`: http://www.freebsd.org/send-pr.html
 .. _FreeBSD: http://www.freebsd.org/
 .. _OpenBSD: http://www.openbsd.org/
