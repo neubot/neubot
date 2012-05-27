@@ -26,7 +26,7 @@ import cgi
 
 from neubot.config import ConfigError
 from neubot.http.message import Message
-from neubot.log import LOG
+from neubot.log import STREAM_LOG
 from neubot.runner_core import RUNNER_CORE
 from neubot.state import STATE
 
@@ -109,5 +109,5 @@ def runner_api(stream, request, query):
     response.compose(code='200', reason='Ok',
       up_to_eof=True, mimetype='text/plain')
     stream.send_response(request, response)
-    LOG.start_streaming(stream)
+    STREAM_LOG.start_streaming(stream)
     RUNNER_CORE.run(test, runner_api_done)

@@ -39,17 +39,13 @@ from neubot import compat
 
 if __name__ == "__main__":
 
-    LOG.verbose()
+    logging.getLogger('').setLevel(logging.DEBUG)
 
     logging.info("INFO w/ logging.info")
     logging.debug("DEBUG w/ logging.debug")
     logging.warning("WARNING w/ logging.warning")
     logging.error("ERROR w/ logging.error")
 
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")
     print compat.json.dumps(LOG.listify())
 
     try:
@@ -58,17 +54,11 @@ if __name__ == "__main__":
         raise
     except:
         LOG.exception()
-        LOG.exception(func=LOG.warning)
+        LOG.exception(func=logging.warning)
 
     LOG.oops("Testing the new oops feature")
 
     # Testing variadic args
     logging.warning("WARNING %s", "variadic warning")
-    LOG.warning("WARNING %s", "variadic warning")
 
     LOG.redirect()
-
-    LOG.error("testing neubot logger -- This is an error message")
-    LOG.warning("testing neubot logger -- This is an warning message")
-    LOG.info("testing neubot logger -- This is an info message")
-    LOG.debug("testing neubot logger -- This is a debug message")

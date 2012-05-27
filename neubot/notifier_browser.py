@@ -40,7 +40,6 @@ import time
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.log import LOG
 from neubot.config import CONFIG
 
 from neubot import browser
@@ -123,7 +122,7 @@ def main(args):
         elif name == '-t':
             sleeptime = int(value)
         elif name == '-v':
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
 
     CONFIG.merge_properties()
 

@@ -39,7 +39,6 @@ from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.poller import POLLER
 from neubot.notify import NOTIFIER
 
@@ -100,7 +99,6 @@ def main(args):
 
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    LOG.verbose()
 
     ctx = {'uri': args[1]}
     RunnerDload(ctx)

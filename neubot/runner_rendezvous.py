@@ -36,7 +36,6 @@ from neubot.http.message import Message
 
 from neubot.compat import json
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
@@ -115,7 +114,7 @@ def main(args):
 
     for tpl in options:
         if tpl[0] == '-v':
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
         elif tpl[0] == '-y':
             CONFIG.conf.update({
                                 'privacy.informed': 1,

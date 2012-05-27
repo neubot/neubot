@@ -27,6 +27,7 @@
 #
 
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -143,7 +144,7 @@ def main(args):
             system.go_background()
             LOG.redirect()
 
-        system.drop_privileges(LOG.error)
+        system.drop_privileges(logging.error)
 
     else:
 
@@ -159,11 +160,12 @@ def main(args):
         #
         if (utils.intify(conf['runner.enabled']) and
             runner_clnt.runner_client(conf["agent.api.address"],
-                                      conf["agent.api.port"],
-                                      LOG.noisy, "bittorrent")):
+                                   conf["agent.api.port"],
+                                   logging.getLogger('').level == logging.DEBUG,
+                                   "bittorrent")):
             sys.exit(0)
 
-        LOG.info('Will run the test in the local context...')
+        logging.info('Will run the test in the local context...')
 
         if not privacy.allowed_to_run():
             privacy.complain()

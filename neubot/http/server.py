@@ -27,6 +27,7 @@ import mimetypes
 import os.path
 import sys
 import time
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -222,7 +223,7 @@ class ServerHTTP(StreamHandler):
         try:
             filep = open(fullpath, "rb")
         except (IOError, OSError):
-            LOG.error("HTTP: Not Found: %s (WWW: %s)" % (fullpath, rootdir))
+            logging.error("HTTP: Not Found: %s (WWW: %s)", fullpath, rootdir)
             response.compose(code="404", reason="Not Found",
                              body="404 Not Found")
             stream.send_response(request, response)
@@ -305,7 +306,7 @@ class ServerHTTP(StreamHandler):
 
     def accept_failed(self, listener, exception):
         ''' Print a warning if accept() fails (often due to SSL) '''
-        LOG.warning("ServerHTTP: accept() failed: %s" % str(exception))
+        logging.warning("ServerHTTP: accept() failed: %s", str(exception))
 
 HTTP_SERVER = ServerHTTP(POLLER)
 
@@ -357,7 +358,7 @@ def main(args):
         system.write_pidfile()
         LOG.redirect()
 
-    system.drop_privileges(LOG.error)
+    system.drop_privileges(logging.error)
 
     POLLER.loop()
 

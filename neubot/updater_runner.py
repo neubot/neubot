@@ -36,7 +36,6 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
-from neubot.log import LOG
 from neubot.poller import POLLER
 from neubot.rootdir import ROOTDIR
 from neubot.runner_core import RUNNER_CORE

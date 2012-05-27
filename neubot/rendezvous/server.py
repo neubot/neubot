@@ -24,6 +24,7 @@
 
 import random
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -87,8 +88,8 @@ class ServerRendezvous(ServerHTTP):
         version = self.conf["rendezvous.server.update_version"]
         if version and ibody.version:
             diff = utils_version.compare(version, ibody.version)
-            LOG.debug('rendezvous: version=%s ibody.version=%s diff=%f' % (
-                      version, ibody.version, diff))
+            logging.debug('rendezvous: version=%s ibody.version=%s diff=%f', 
+                      version, ibody.version, diff)
             if diff > 0:
                 obody.update["uri"] = self.conf["rendezvous.server.update_uri"]
                 obody.update["version"] = version
@@ -108,7 +109,7 @@ class ServerRendezvous(ServerHTTP):
         #
         server = self.conf.get("rendezvous.server.default",
                                "master.neubot.org")
-        LOG.debug("* default test server: %s" % server)
+        logging.debug("* default test server: %s", server)
 
         #
         # Backward compatibility: the variable name changed from
@@ -128,16 +129,16 @@ class ServerRendezvous(ServerHTTP):
                 servers = table_geoloc.lookup_servers(DATABASE.connection(),
                                                       country)
                 if not servers:
-                    LOG.info("* learning new country: %s" % country)
+                    logging.info("* learning new country: %s", country)
                     table_geoloc.insert_server(DATABASE.connection(),
                                                country, server)
                     servers = [server]
                 server = random.choice(servers)
-                LOG.info("rendezvous_server: %s[%s] -> %s", agent_address,
+                logging.info("rendezvous_server: %s[%s] -> %s", agent_address,
                          country, server)
 
         else:
-            LOG.warning('rendezvous_server: cannot redirect to M-Lab: %s',
+            logging.warning('rendezvous_server: cannot redirect to M-Lab: %s',
                         request_body)
 
         #
@@ -190,8 +191,8 @@ def run():
     """ Load MaxMind database and register our child server """
 
     GEOLOCATOR.open_or_die()
-    LOG.info("This product includes GeoLite data created by MaxMind, "
-             "available from <http://www.maxmind.com/>.")
+    logging.info("This product includes GeoLite data created by MaxMind, "
+                 "available from <http://www.maxmind.com/>.")
 
     server = ServerRendezvous(None)
     server.configure(CONFIG)
@@ -226,7 +227,7 @@ def main(args):
         system.go_background()
         LOG.redirect()
 
-    system.drop_privileges(LOG.error)
+    system.drop_privileges(logging.error)
     POLLER.loop()
 
 if __name__ == "__main__":

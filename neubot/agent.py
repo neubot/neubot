@@ -21,6 +21,7 @@
 #
 
 import sys
+import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -47,7 +48,7 @@ def main(args):
 
     if conf["agent.api"]:
         server = HTTP_SERVER
-        LOG.debug("* API server root directory: %s" % WWW)
+        logging.debug("* API server root directory: %s", WWW)
         conf["http.server.rootdir"] = WWW
         conf["http.server.ssi"] = True
         conf["http.server.bind_or_die"] = True
@@ -65,7 +66,7 @@ def main(args):
     if conf["agent.use_syslog"]:
         LOG.redirect()
 
-    system.drop_privileges(LOG.error)
+    system.drop_privileges(logging.error)
 
     #
     # When we run as an agent we also save logs into

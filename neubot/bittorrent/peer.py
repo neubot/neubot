@@ -44,7 +44,6 @@ from neubot.net.stream import StreamHandler
 from neubot.bittorrent import config
 from neubot.config import CONFIG
 from neubot.state import STATE
-from neubot.log import LOG
 
 from neubot import utils
 from neubot import utils_net
@@ -488,7 +487,7 @@ def main(args):
         elif name == '-O':
             settings.append(value)
         elif name == '-v':
-            LOG.verbose()
+            logging.getLogger('').setLevel(logging.DEBUG)
 
     settings = utils_rc.parse_safe(iterable=settings)
 

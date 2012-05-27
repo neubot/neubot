@@ -3,6 +3,7 @@
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012 Marco Scopesi <marco.scopesi@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -60,6 +61,67 @@ INTERVAL = 120
 #
 DAYS_AGO = 7
 
+class StreamLogger(object):
+
+    ''' Stream logging object '''
+
+    def __init__(self):
+        self.streams = set()
+
+    def start_streaming(self, stream):
+        ''' Attach stream to log messages '''
+        self.streams.add(stream)
+
+    def stop_streaming(self):
+        ''' Close all attached streams '''
+        for stream in self.streams:
+            stream.poller.close(stream)
+        self.streams.clear()
+
+    def log(self, severity, message, args, exc_info):
+        ''' Really log a message (without any *magic) '''
+
+        # No point in logging empty lines
+        if not message:
+            return
+
+        #
+        # Streaming allows consumers to register with the log
+        # object and follow the events that happen during a
+        # test as if they were running the test in their local
+        # context.  When the test is done, the runner of the
+        # test will automatically disconnected all the attached
+        # streams.
+        # Log streaming makes this function less efficient
+        # because lazy processing of log records can't be
+        # performed.  We must pass the client all the logs
+        # and it will decide whether to be verbose.
+        # Err, of course passing ACCESS logs down the stream
+        # is pointless for a client that wants to follow a
+        # remote test.
+        #
+        if self.streams:
+            # "Lazy" processing
+            if args:
+                message = message % args
+                args = ()
+            if exc_info:
+                message = "%s: %s\n" % (message, str(exc_info[1]))
+                # Ensure we do not accidentaly keep the exception alive
+                exc_info = None
+            message = message.rstrip()
+            try:
+                if severity != 'ACCESS':
+                    logline = "%s %s\r\n" % (severity, message)
+                    logline = logline.encode("utf-8")
+                    for stream in self.streams:
+                        stream.start_send(logline)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                pass
+
+
 class Logger(object):
 
     """Logging object.  Usually there should be just one instance
@@ -69,7 +131,6 @@ class Logger(object):
 
     def __init__(self):
         self.logger = stderr_logger
-        self.noisy = False
         self.message = None
         self.ticks = 0
 
@@ -77,7 +138,6 @@ class Logger(object):
         self._use_database = False
         self._queue = []
 
-        self.streams = set()
 
     #
     # Better not to touch the database when a test is in
@@ -101,31 +161,15 @@ class Logger(object):
         POLLER.sched(INTERVAL, self._maintain_database)
         self._use_database = True
 
-    def verbose(self):
-        self.noisy = True
-
-    def quiet(self):
-        self.noisy = False
-
     def redirect(self):
         self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
-
-    def start_streaming(self, stream):
-        ''' Attach stream to log messages '''
-        self.streams.add(stream)
-
-    def stop_streaming(self):
-        ''' Close all attached streams '''
-        for stream in self.streams:
-            stream.poller.close(stream)
-        self.streams.clear()
 
     # Log functions
 
     def exception(self, message="", func=None):
         if not func:
-            func = self.error
+            func = logging.error
         if message:
             func("EXCEPT: " + message + " (traceback follows)")
         for line in traceback.format_exc().split("\n"):
@@ -133,23 +177,11 @@ class Logger(object):
 
     def oops(self, message="", func=None):
         if not func:
-            func = self.error
+            func = logging.error
         if message:
             func("OOPS: " + message + " (traceback follows)")
         for line in traceback.format_stack()[:-1]:
             func(line)
-
-    def error(self, message, *args):
-        self.log("ERROR", message, *args)
-
-    def warning(self, message, *args):
-        self.log("WARNING", message, *args)
-
-    def info(self, message, *args):
-        self.log("INFO", message, *args)
-
-    def debug(self, message, *args):
-        self.log("DEBUG", message, *args)
 
     def log_access(self, message, *args):
         #
@@ -160,7 +192,7 @@ class Logger(object):
         # cause a new "logwritten" event.  And the result is
         # something like a Comet storm.
         #
-        self.log("ACCESS", message, *args)
+        self.log("ACCESS", message, args, None)
 
     def __writeback(self):
         """Really commit pending log records into the database"""
@@ -190,51 +222,11 @@ class Logger(object):
         # Purge the queue in any case
         del self._queue[:]
 
-    def log(self, severity, message, *args):
-        ''' Really log a message '''
-        self.log_tuple(severity, message, args, None)
-
-    def log_tuple(self, severity, message, args, exc_info):
+    def log(self, severity, message, args, exc_info):
         ''' Really log a message (without any *magic) '''
 
         # No point in logging empty lines
         if not message:
-            return
-
-        #
-        # Streaming allows consumers to register with the log
-        # object and follow the events that happen during a
-        # test as if they were running the test in their local
-        # context.  When the test is done, the runner of the
-        # test will automatically disconnected all the attached
-        # streams.
-        # Log streaming makes this function less efficient
-        # because lazy processing of log records can't be
-        # performed.  We must pass the client all the logs
-        # and it will decide whether to be verbose.
-        # Err, of course passing ACCESS logs down the stream
-        # is pointless for a client that wants to follow a
-        # remote test.
-        #
-        if self.streams:
-            # "Lazy" processing
-            if args:
-                message = message % args
-                args = ()
-            message = message.rstrip()
-            try:
-                if severity != 'ACCESS':
-                    logline = "%s %s\r\n" % (severity, message)
-                    logline = logline.encode("utf-8")
-                    for stream in self.streams:
-                        stream.start_send(logline)
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                pass
-
-        # Not verbose?  Stop processing the log record here
-        if not self.noisy and severity == 'DEBUG':
             return
 
         # Lazy processing
@@ -307,9 +299,23 @@ class LogWrapper(logging.Handler):
         args = record.args
         level = record.levelname
         exc_info = record.exc_info
-        LOG.log_tuple(level, msg, args, exc_info)
+        LOG.log(level, msg, args, exc_info)
+
+STREAM_LOG = StreamLogger()
+
+class StreamLogWrapper(logging.Handler):
+
+    """Wrapper between stdlib logging and StreamLogger"""
+
+    def emit(self, record):
+        msg = record.msg
+        args = record.args
+        level = record.levelname
+        exc_info = record.exc_info
+        STREAM_LOG.log(level, msg, args, exc_info)
 
 ROOT = logging.getLogger()
 ROOT.handlers = []
 ROOT.addHandler(LogWrapper())
-ROOT.setLevel(logging.DEBUG)
+ROOT.addHandler(StreamLogWrapper(level=logging.DEBUG))
+ROOT.setLevel(logging.INFO)

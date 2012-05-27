@@ -32,6 +32,7 @@ import asyncore
 import collections
 import getopt
 import sys
+import logging
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
@@ -40,7 +41,7 @@ from neubot.net.poller import POLLER
 from neubot.speedtest.client import ClientSpeedtest
 from neubot.config import CONFIG
 from neubot.database import DATABASE
-from neubot.log import LOG
+from neubot.log import STREAM_LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_dload import RunnerDload
@@ -73,7 +74,7 @@ class RunnerCore(object):
         #
         if (auto_rendezvous and test != 'rendezvous' and
             len(RUNNER_TESTS.get_test_names()) == 0):
-            LOG.info('runner_core: Need to rendezvous first...')
+            logging.info('runner_core: Need to rendezvous first...')
             self.queue.append(('rendezvous', lambda: None, None))
 
         self.queue.append((test, callback, ctx))
@@ -108,7 +109,7 @@ class RunnerCore(object):
         except:
             exc = asyncore.compact_traceback()
             error = str(exc)
-            LOG.error('runner_core: catched exception: %s' % error)
+            logging.error('runner_core: catched exception: %s', error)
             NOTIFIER.publish('testdone')
 
     def _do_run_queue(self):
@@ -173,7 +174,7 @@ class RunnerCore(object):
         # somewhat internal 'rendezvous' test.
         #
         if self.queue[0][0] != 'rendezvous':
-            POLLER.sched(2, LOG.stop_streaming)
+            POLLER.sched(2, STREAM_LOG.stop_streaming)
 
         # Paranoid
         if baton[0] != 'testdone':
@@ -191,7 +192,7 @@ class RunnerCore(object):
         except:
             exc = asyncore.compact_traceback()
             error = str(exc)
-            LOG.error('runner_core: catched exception: %s' % error)
+            logging.error('runner_core: catched exception: %s', error)
 
         #
         # Allow for more tests
