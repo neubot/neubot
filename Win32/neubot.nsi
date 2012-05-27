@@ -24,8 +24,8 @@
 outfile "uninstaller-generator.exe"
 !else
 
-name "neubot 0.4.12-rc4"
-outfile "neubot-0.4.12-rc4-setup.exe"
+name "neubot 0.4.12-rc5"
+outfile "neubot-0.4.12-rc5-setup.exe"
 
 #
 # The right place where to install is $LOCALAPPDATA, which is the
@@ -33,7 +33,7 @@ outfile "neubot-0.4.12-rc4-setup.exe"
 # $APPDATA, should not be used because it is for stuff that must
 # migrate with the user profile.
 #
-installdir "$LOCALAPPDATA\Neubot\0.004012004"
+installdir "$LOCALAPPDATA\Neubot\0.004012005"
 
 !endif
 
@@ -94,7 +94,7 @@ section
 
     WriteRegStr HKCU                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
-      "DisplayName" "Neubot 0.4.12-rc4"
+      "DisplayName" "Neubot 0.4.12-rc5"
     WriteRegStr HKCU                                                    \
       "Software\Microsoft\Windows\CurrentVersion\Uninstall\Neubot"      \
       "UninstallString" "$INSTDIR\uninstall.exe"
