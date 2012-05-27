@@ -33,6 +33,9 @@ if __name__ == '__main__':
 if os.name == 'nt':
     from neubot import browser_nt
     BROWSER_DRIVER = browser_nt
+elif os.name == 'posix' and sys.platform == 'darwin':
+    from neubot import browser_macos
+    BROWSER_DRIVER = browser_macos
 else:
     from neubot import browser_null
     BROWSER_DRIVER = browser_null
