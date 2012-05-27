@@ -22,13 +22,13 @@
 
 import os.path
 
+from neubot import utils_sysdirs
+
 def change_dir():
     pass
 
 def _get_profile_dir():
-    appdata = os.environ["APPDATA"]
-    datadir = os.sep.join([appdata, "neubot"])
-    return datadir
+    return utils_sysdirs.LOCALSTATEDIR
 
 def _want_rwx_dir(p, perror=None):
     if not os.path.isdir(p):
