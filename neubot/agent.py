@@ -80,5 +80,11 @@ def main(args):
 
     POLLER.loop()
 
+    #
+    # Make sure that we do not leave the database
+    # in an inconsistent state.
+    #
+    DATABASE.close()
+
 if __name__ == "__main__":
     main(sys.argv)

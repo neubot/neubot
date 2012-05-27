@@ -79,4 +79,9 @@ class DatabaseManager(object):
 
         return self.dbc
 
+    def close(self):
+        if self.dbc:
+            self.dbc.close()
+            self.dbc = None
+
 DATABASE = DatabaseManager()
