@@ -62,6 +62,44 @@ else:
 #
 BASEDIR = os.path.dirname(ROOTDIR)
 
+#
+# SYSCONFDIR is the directory that contains Neubot configuration
+# files (if needed for the system).  At the moment of writing
+# this comment, configuration files are needed under MacOS only.
+# But we always define it to keep the code plain and uniform.
+#
+if os.name == 'posix':
+    SYSCONFDIR = '/etc/neubot'
+elif os.name == 'nt':
+    SYSCONFDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
+else:
+    raise RuntimeError('system not configured')
+
+#
+# LOCALSTATEDIR is the directory that contains Neubot database.
+# We use a directory and not just a file because sqlite3 must
+# be able to create -journal files when writing into the database.
+# Hence, the directory must be writable by the Neubot user.
+#
+# On POSIX systems, we follow BSD convention and put database in
+# ``/var/neubot``.  Unless we're on a Linux system, where FHS
+# mandates to create that kind of directories under ``/var/lib``.
+#
+# On Windows, we put the database in the roaming application data
+# folder.  The exact location varies depending on the version of
+# Windows and is ``C:\Users\foo\AppData\Roaming`` on Windows 7 for
+# user ``foo``.
+#
+if os.name == 'posix':
+    if sys.platform.startswith('linux'):
+        LOCALSTATEDIR = '/var/lib/neubot'
+    else:
+        LOCALSTATEDIR = '/var/neubot'
+elif os.name == 'nt':
+    LOCALSTATEDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
+else:
+    raise RuntimeError('system not configured')
+
 def main(args):
     ''' Main function '''
 
@@ -69,9 +107,11 @@ def main(args):
         sys.exit('usage: neubot utils_sysdirs')
 
     sys.stdout.write('''\
-ROOTDIR : "%(ROOTDIR)s"
-WWW     : "%(WWW)s"
-BASEDIR : "%(BASEDIR)s"
+BASEDIR       : "%(BASEDIR)s"
+LOCALSTATEDIR : "%(LOCALSTATEDIR)s"
+ROOTDIR       : "%(ROOTDIR)s"
+SYSCONFDIR    : "%(SYSCONFDIR)s"
+WWW           : "%(WWW)s"
 ''' % globals())
 
 if __name__ == "__main__":
