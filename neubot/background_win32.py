@@ -34,19 +34,16 @@ from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.log import LOG
 from neubot.poller import POLLER
-from neubot.rootdir import ROOTDIR
 from neubot.updater_win32 import UpdaterWin32
 
 from neubot import background_api
 from neubot import privacy
-
-# We will install new versions in this directory
-BASEDIR = os.path.dirname(ROOTDIR)
+from neubot import utils_sysdirs
 
 def __start_updater():
     ''' Start updater '''
     channel = CONFIG['win32_updater_channel']
-    updater = UpdaterWin32('win32', BASEDIR, channel)
+    updater = UpdaterWin32('win32', utils_sysdirs.BASEDIR, channel)
     updater.start()
 
 def main(args):

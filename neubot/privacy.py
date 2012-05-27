@@ -37,7 +37,8 @@ from neubot.config import CONFIG
 from neubot.config import ConfigError
 from neubot.database import table_config
 from neubot.database import DATABASE
-from neubot import rootdir
+
+from neubot import utils_sysdirs
 from neubot import system
 from neubot import utils
 
@@ -118,7 +119,7 @@ address.  We need to ask you (i), (ii) and (iii) explicitly to comply
 with European Union privacy laws.
 '''
 
-POLICY = os.sep.join([rootdir.WWW, 'privacy.html'])
+POLICY = os.sep.join([utils_sysdirs.WWWDIR, 'privacy.html'])
 
 def main(args):
 
