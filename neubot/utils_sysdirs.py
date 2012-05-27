@@ -1,4 +1,4 @@
-# neubot/rootdir.py
+# neubot/utils_sysdirs.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -20,11 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' This module tells you where the web pages are '''
+''' Location of system-dependent directories '''
 
 import os.path
 
-# $ROOTDIR/neubot/rootdir.py -> $ROOTDIR
+# $ROOTDIR/neubot/utils_sysdirs.py -> $ROOTDIR
 ROOTDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #
@@ -38,6 +38,8 @@ if ROOTDIR.endswith('library.zip') and os.path.isfile(ROOTDIR):
     WWW = os.sep.join([ROOTDIR, 'www'])
 else:
     WWW = os.sep.join([ROOTDIR, 'neubot/www'])
+
+BASEDIR= os.path.dirname(ROOTDIR)
 
 if __name__ == "__main__":
     print(WWW)

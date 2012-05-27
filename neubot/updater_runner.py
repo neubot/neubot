@@ -38,10 +38,10 @@ if __name__ == '__main__':
 from neubot.config import CONFIG
 from neubot.log import LOG
 from neubot.poller import POLLER
-from neubot.rootdir import ROOTDIR
 from neubot.runner_core import RUNNER_CORE
 
 from neubot import updater_utils
+from neubot import utils_sysdirs
 
 class UpdaterRunner(object):
 
@@ -188,7 +188,7 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    updater = UpdaterRunner('win32', os.path.dirname(ROOTDIR), channel)
+    updater = UpdaterRunner('win32', utils_sysdirs.BASEDIR, channel)
 
     if arguments:
         updater.retrieve_files(arguments[0])
