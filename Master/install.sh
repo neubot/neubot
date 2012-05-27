@@ -28,7 +28,7 @@
 
 APTGET=/usr/bin/apt-get
 DEBUG=
-GUNZIP=/usr/bin/gunzip
+GUNZIP=/bin/gunzip
 INSTALL="/usr/bin/install -o 0 -g 0"
 RM=/bin/rm
 SUDO=/usr/bin/sudo
