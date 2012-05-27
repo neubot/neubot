@@ -187,6 +187,7 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
+    channel = CONFIG['win32_updater_channel']
     updater = UpdaterRunner('win32', utils_sysdirs.BASEDIR, channel)
 
     if arguments:
