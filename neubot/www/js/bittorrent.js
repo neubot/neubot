@@ -44,7 +44,7 @@ var bittorrent = (function() {
             since = 0;
         }
         since_s = Math.ceil(since / 1000);
-        var url = "/api/results?test=bittorrent&since=" + since_s;
+        var url = "/api/data?test=bittorrent&since=" + since_s;
         if (until != undefined) {
             until_s = Math.ceil(until / 1000);
             url += "&until=" + until_s;
