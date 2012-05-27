@@ -47,9 +47,9 @@ class FakeSocket(object):
     def fileno(self):
         return -1
     def getsockname(self):
-        return ""
+        return ('127.0.0.1', 8080)
     def getpeername(self):
-        return ""
+        return ('127.0.0.1', 8080)
 
     def close(self):
         raise RuntimeError

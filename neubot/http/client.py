@@ -38,6 +38,7 @@ from neubot.http.stream import nextstate
 from neubot.http.message import Message
 from neubot.net.poller import POLLER
 from neubot import utils
+from neubot import utils_net
 from neubot.main import common
 
 class ClientStream(StreamHTTP):
@@ -126,6 +127,7 @@ class ClientHTTP(StreamHandler):
             if message.scheme == "https":
                 self.conf["net.stream.secure"] = True
             endpoint = (message.address, int(message.port))
+            self.host_header = utils_net.format_epnt(endpoint)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception, why:
@@ -148,7 +150,9 @@ class ClientHTTP(StreamHandler):
         if rtt:
             logging.debug("ClientHTTP: latency: %s", utils.time_formatter(rtt))
             self.rtt = rtt
-        self.host_header = "%s:%s" % (endpoint[0], endpoint[1])
+        # XXX If we didn't connect via connect_uri()...
+        if not self.host_header:
+            self.host_header = utils_net.format_epnt(endpoint)
         stream = ClientStream(self.poller)
         stream.attach(self, sock, self.conf)
         self.connection_ready(stream)

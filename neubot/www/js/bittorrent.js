@@ -105,6 +105,9 @@ var bittorrent = (function() {
         var uploadLabels = [];
         var connectLabels = [];
 
+        var timestamps = [];
+        var minx = 0;
+
         for (i = 0; i < data.length; i++) {
             var result = data[i];
             var address = result["real_address"];
@@ -154,12 +157,21 @@ var bittorrent = (function() {
             downloadData[counter].push([timestamp, download]);
             uploadData[counter].push([timestamp, upload]);
             connectData[counter].push([timestamp, connect]);
+
+            timestamps.push(timestamp);
         }
 
+        // Do not waste plot estate without a good reason
+        if (timestamps.length)
+            minx = Math.min.apply(null, timestamps) - 300000;
+        else
+            minx = since;
+
         var xaxis = {
+            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
             renderer: jQuery.jqplot.DateAxisRenderer,
             showTickMarks: true,
-            min: since
+            min: minx
         };
 
         var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
@@ -189,6 +201,7 @@ var bittorrent = (function() {
               axes: {
                 xaxis: xaxis,
                 yaxis: {
+                  labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
                   label: "Mbit/s",
                   min: 0
                 }
@@ -227,6 +240,7 @@ var bittorrent = (function() {
               axes: {
                 xaxis: xaxis,
                 yaxis: {
+                  labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
                   label: "ms",
                   min: 0
                 }

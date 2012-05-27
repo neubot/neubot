@@ -45,7 +45,8 @@ BASEDIR = os.path.dirname(ROOTDIR)
 
 def __start_updater():
     ''' Start updater '''
-    updater = UpdaterWin32('win32', BASEDIR)
+    channel = CONFIG['win32_updater_channel']
+    updater = UpdaterWin32('win32', BASEDIR, channel)
     updater.start()
 
 def main(args):
@@ -76,6 +77,12 @@ def main(args):
     __start_updater()
 
     POLLER.loop()
+
+    #
+    # Make sure that we do not leave the database
+    # in an inconsistent state.
+    #
+    DATABASE.close()
 
 if __name__ == '__main__':
     main(sys.argv)

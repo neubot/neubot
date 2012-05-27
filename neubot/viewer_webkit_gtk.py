@@ -1,4 +1,4 @@
-# neubot/viewer/unix.py
+# neubot/viewer_webkit_gtk.py
 
 #
 # Copyright (c) 2011 Marco Scopesi <marco.scopesi@gmail.com>,
@@ -43,6 +43,7 @@ except ImportError:
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import utils_net
 from neubot import utils_rc
 from neubot import utils_ctl
 
@@ -72,7 +73,7 @@ class WebkitGUI(gtk.Window):
         if ICON:
             self.set_icon_from_file(ICON)
 
-        self.set_title('Neubot 0.4.12-rc3')
+        self.set_title('Neubot 0.4.12-rc6')
         self.connect('destroy', gtk.main_quit)
         self.maximize()
         self._open_web_page(uri)
@@ -117,7 +118,7 @@ def main(args):
 
     uri = STATIC_PAGE
     if utils_ctl.is_running(address, port):
-        uri = 'http://%s:%s/' % (address, port)
+        uri = 'http://%s/' % utils_net.format_epnt((address, port))
 
     if not 'DISPLAY' in os.environ:
         sys.exit('No DISPLAY available')

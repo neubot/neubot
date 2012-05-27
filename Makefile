@@ -24,7 +24,7 @@
 # The scripts/release script will automatically update the
 # version number each time we tag with a new release.
 #
-VERSION	= 0.4.12-rc3
+VERSION	= 0.4.12-rc6
 
 #
 # The list of .PHONY targets.  This is also used to build the
@@ -195,7 +195,7 @@ _install:
 	        $(DESTDIR)$(BINDIR)/neubot \
 	        $(DESTDIR)$(DATADIR)/applications/neubot.desktop \
 	        $(DESTDIR)$(DATADIR)/neubot/notifier/unix.py \
-	        $(DESTDIR)$(DATADIR)/neubot/viewer/unix.py \
+	        $(DESTDIR)$(DATADIR)/neubot/viewer_webkit_gtk.py \
 	        $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop; \
 	    test $$? || exit 1; \
 	done

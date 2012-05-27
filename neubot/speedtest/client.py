@@ -221,7 +221,7 @@ class ClientCollect(ClientHTTP):
         m1.privacy_can_collect = self.conf.get("privacy.can_collect", 0)
         m1.privacy_can_share = self.conf.get("privacy.can_publish", 0)  # XXX
 
-        m1.neubot_version = utils_version.to_numeric("0.4.12-rc3")
+        m1.neubot_version = utils_version.to_numeric("0.4.12-rc6")
         m1.platform = sys.platform
 
         m1.connectTime = sum(self.rtts) / len(self.rtts)
@@ -512,5 +512,16 @@ def main(args):
 
     client = ClientSpeedtest(POLLER)
     client.configure(conf)
-    client.connect_uri()
+
+    #
+    # XXX Quick and dirty fix such that `neubot speedtest` when
+    # there is no daemon running considers both the master and
+    # the backup master server.  At the same time, respect user
+    # choices if she overrides the default URI.
+    #
+    if CONFIG['speedtest.client.uri'] == 'http://master.neubot.org/':
+        client.connect(('master.neubot.org master2.neubot.org', 8080))
+    else:
+        client.connect_uri()
+
     POLLER.loop()

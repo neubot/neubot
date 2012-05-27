@@ -62,6 +62,13 @@ def __runner_client(address, port, verbosity, test, hint):
         in progress '''
 
     #
+    # FIXME When multiple addresses are specified, just
+    # consider the first one.
+    #
+    if ' ' in address:
+        address = address.split()[0]
+
+    #
     # Before we make the request, make sure we're really
     # talking with the Neubot and otherwise suggest the
     # caller to try to run the test directly and non into
@@ -77,7 +84,7 @@ def __runner_client(address, port, verbosity, test, hint):
     if response.status != 200:
         raise RuntimeError('Not speaking with a Neubot daemon')
     body = response.read()
-    if body != "0.4.12-rc3":
+    if body != "0.4.12-rc6":
         raise RuntimeError('Bad Neubot daemon version')
 
     #
