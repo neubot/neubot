@@ -34,7 +34,7 @@ import sys
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.log import LOG
+from neubot.log import LOG, oops
 from neubot import compat
 
 if __name__ == "__main__":
@@ -48,15 +48,17 @@ if __name__ == "__main__":
 
     print compat.json.dumps(LOG.listify())
 
+    access_logger = logging.getLogger('access')
+    access_logger.info('Test access logger')
+
     try:
-        raise Exception("Testing LOG.exception")
+        raise Exception("Testing exc_info")
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
-        LOG.exception()
-        LOG.exception(func=logging.warning)
+        logging.error('EXCEPTION', exc_info=1)
 
-    LOG.oops("Testing the new oops feature")
+    oops("Testing the new oops feature")
 
     # Testing variadic args
     logging.warning("WARNING %s", "variadic warning")

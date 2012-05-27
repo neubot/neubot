@@ -31,6 +31,7 @@
 
 import os.path
 import sys
+import logging
 
 if __name__ == "__main__":
     # Magic!
@@ -158,8 +159,7 @@ def main(argv):
             except (SystemExit, KeyboardInterrupt):
                 raise
             except:
-                from neubot.log import LOG
-                LOG.exception()
+                logging.error('Exception', exc_info=1)
                 sys.exit(1)
 
         # start / webbrowser

@@ -24,11 +24,10 @@
 ''' Run a subcommand's main() '''
 
 import sys
+import logging
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
-
-from neubot.log import LOG
 
 def main(args):
     ''' Run a subcommand's main() '''
@@ -54,7 +53,7 @@ def main(args):
     except SystemExit:
         raise
     except:
-        LOG.exception()
+        logging.error('Exception', exc_info=1)
         sys.exit(1)
 
 if __name__ == "__main__":

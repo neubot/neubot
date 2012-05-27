@@ -30,7 +30,7 @@ import socket
 import os
 import logging
 
-from neubot.log import LOG
+from neubot.log import LOG, oops
 
 from neubot import compat
 from neubot import utils
@@ -224,7 +224,7 @@ class Message(object):
                 #
                 self["host"] = kwargs.get("host", "")
                 if not self["host"]:
-                    LOG.oops("Missing host header")
+                    oops("Missing host header")
 
         self.code = kwargs.get("code", "")
         self.reason = kwargs.get("reason", "")
@@ -251,7 +251,7 @@ class Message(object):
         #
         if kwargs.get("up_to_eof", False):
             if not "mimetype" in kwargs:
-                LOG.oops("up_to_eof without mimetype")
+                oops("up_to_eof without mimetype")
             self["content-type"] = kwargs.get("mimetype",
                                        "text/plain")
 
