@@ -52,6 +52,17 @@ TEMPLATE = {
     "test_version": 1,
 }
 
+# List the visible fields only
+PRETTY_TEMPLATE = {
+    'timestamp': 'Timestamp',
+    'internal_address': 'Internal address',
+    'real_address': 'Real address',
+    'remote_address': 'Remote address',
+    'connect_time': 'Connect time',
+    'download_speed': 'Download speed',
+    'upload_speed': 'Upload speed'
+}
+
 CREATE_TABLE = _table_utils.make_create_table("bittorrent", TEMPLATE)
 INSERT_INTO = _table_utils.make_insert_into("bittorrent", TEMPLATE)
 

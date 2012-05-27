@@ -53,6 +53,7 @@ from neubot import log_api
 from neubot import runner_api
 from neubot import utils
 from neubot import api_data
+from neubot import api_results
 
 class ServerAPI(ServerHTTP):
 
@@ -67,6 +68,7 @@ class ServerAPI(ServerHTTP):
             "/api/index": self._api_index,
             "/api/exit": self._api_exit,
             "/api/log": log_api.log_api,
+            "/api/results": api_results.api_results,
             "/api/runner": runner_api.runner_api,
             "/api/state": self._api_state,
             "/api/version": self._api_version,
