@@ -26,9 +26,10 @@
 # Adapted from M-Lab/install.sh
 #
 
+APTGET=/usr/bin/apt-get
 DEBUG=
 GUNZIP=/usr/bin/gunzip
-INSTALL="install -o 0 -g 0"
+INSTALL="/usr/bin/install -o 0 -g 0"
 RM=/bin/rm
 SUDO=/usr/bin/sudo
 URIBASE=http://geolite.maxmind.com
@@ -36,10 +37,10 @@ URIPATH=/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
 WGET=/usr/bin/wget
 
 $DEBUG cd $(dirname $0)
-$DEBUG apt-get install sqlite3 python-geoip wget
+$DEBUG $APTGET install sqlite3 python-geoip wget
 $DEBUG $INSTALL rc.local /etc/rc.local
-$DEBUG grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
-$DEBUG grep -q ^_neubot /etc/passwd || \
+$DEBUG /bin/grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
+$DEBUG /bin/grep -q ^_neubot /etc/passwd || \
        $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
 $DEBUG $INSTALL -d /var/neubot
 
