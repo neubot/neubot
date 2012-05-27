@@ -116,7 +116,7 @@ VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
 BASEDIR = os.path.dirname(VERSIONDIR)
 
 # Version number in numeric representation
-VERSION = "0.004012005"
+VERSION = "0.004012006"
 
 # Configuration
 CONFIG = {
@@ -546,7 +546,7 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 connection = __lib_http.HTTPSConnection(address)
             else:
                 connection = __lib_http.HTTPConnection(address)
-            headers = {'User-Agent': 'Neubot/0.4.12-rc5'}
+            headers = {'User-Agent': 'Neubot/0.4.12-rc6'}
             connection.request("GET", rpath, None, headers)
 
             # Recv HTTP response
