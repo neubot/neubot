@@ -27,6 +27,7 @@ import pprint
 import re
 import urllib
 import urlparse
+import sys
 
 from neubot.main.common import VERSION
 from neubot.compat import json
@@ -54,6 +55,8 @@ from neubot import runner_api
 from neubot import utils
 from neubot import api_data
 from neubot import api_results
+
+from neubot.utils_api import NotImplementedTest
 
 class ServerAPI(ServerHTTP):
 
@@ -87,7 +90,8 @@ class ServerAPI(ServerHTTP):
         stream.created = utils.ticks()
         try:
             self._serve_request(stream, request)
-        except ConfigError, error:
+        except (ConfigError, NotImplementedTest):
+            error = sys.exc_info()[1]
             reason = re.sub(r"[\0-\31]", "", str(error))
             reason = re.sub(r"[\x7f-\xff]", "", reason)
             LOG.exception(func=LOG.info)
