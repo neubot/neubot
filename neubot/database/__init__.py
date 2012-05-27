@@ -31,6 +31,7 @@ from neubot.database import table_bittorrent
 from neubot.database import migrate
 from neubot.database import migrate2
 
+from neubot import database_xxx
 from neubot import system
 
 class DatabaseManager(object):
@@ -46,6 +47,7 @@ class DatabaseManager(object):
 
     def connection(self):
         if not self.dbc:
+            database_xxx.linux_fixup_databasedir()
             if self.path != ":memory:":
                 self.path = system.check_database_path(self.path, logging.error)
             logging.debug("* Database: %s", self.path)
