@@ -102,7 +102,7 @@ section
       "Software\Microsoft\Windows\CurrentVersion\Run"			\
       "Neubot" '"$INSTDIR\neubotw.exe" start'
 
-    exec '"$INSTDIR\neubotw.exe" start'
+    exec '"$INSTDIR\neubotw.exe" start -k'
 
 !endif
 sectionend
