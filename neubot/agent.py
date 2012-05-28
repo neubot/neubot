@@ -31,6 +31,7 @@ from neubot.rendezvous.client import ClientRendezvous
 from neubot.net.poller import POLLER
 
 from neubot.config import CONFIG
+from neubot.database import DATABASE
 from neubot.log import LOG
 from neubot.main import common
 from neubot.rootdir import WWW
