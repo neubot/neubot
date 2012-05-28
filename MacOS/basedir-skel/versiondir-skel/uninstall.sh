@@ -26,7 +26,7 @@
 launchctl stop org.neubot
 launchctl unload /Library/LaunchDaemons/org.neubot.plist
 
-# TODO Verify whether this works if run w/ root privileges
+# Commented-out because it's meaningful for logged users only
 #launchctl stop org.neubot.notifier
 #launchctl unload /Library/LaunchAgents/org.neubot.notifier.plist
 
