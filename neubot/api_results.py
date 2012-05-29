@@ -50,11 +50,11 @@ AXIS_LABELS = {
 
 DATASETS = {
     'bittorrent': [
-        [{'download_speed': 'Dload'}, {'upload_speed': 'Upload'}],
+        [{'download_speed': 'Dload', 'upload_speed': 'Upload'}],
         [{'connect_time': 'Connect time'}]
     ],
     'speedtest': [
-        [{'download_speed': 'Dload'}, {'upload_speed': 'Upload'}],
+        [{'download_speed': 'Dload', 'upload_speed': 'Upload'}],
         [{'connect_time': 'Connect time', 'latency': 'Appl. latency'}]
     ]
 }
