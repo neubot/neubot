@@ -280,6 +280,16 @@ class LogWrapper(logging.Handler):
         exc_info = record.exc_info
         LOG.log(level, msg, args, exc_info)
 
+class AccessLogWrapper(logging.Handler):
+
+    """Wrapper for stdlib logging."""
+
+    def emit(self, record):
+        msg = record.msg
+        args = record.args
+        exc_info = record.exc_info
+        LOG.log('ACCESS', msg, args, exc_info)
+
 STREAM_LOG = StreamLogger()
 
 class StreamLogWrapper(logging.Handler):
@@ -301,8 +311,6 @@ ROOT.setLevel(logging.INFO)
 # Create 'access' logger
 ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
-__ACCESS_HANDLER = logging.StreamHandler()
-__ACCESS_HANDLER.setFormatter(logging.Formatter(fmt='ACCESS: %(message)s'))
-ACCESS_LOGGER.addHandler(__ACCESS_HANDLER)
+ACCESS_LOGGER.addHandler(AccessLogWrapper())
 # Avoid passing log messages to the ROOT logger
 ACCESS_LOGGER.propagate = False
