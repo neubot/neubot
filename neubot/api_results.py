@@ -32,10 +32,10 @@ from neubot.utils_api import NotImplementedTest
 
 from neubot import utils
 
-REGISTERED_TESTS = [
-    'bittorrent',
-    'speedtest'
-]
+AVAILABLE_TESTS = {
+    'bittorrent': 'BitTorrent',
+    'speedtest': 'Speedtest'
+}
 
 AXIS_LABELS = {
     'bittorrent': [
@@ -112,11 +112,11 @@ def api_results(stream, request, query):
     if dictionary.has_key('test'):
         test = str(dictionary['test'][0])
 
-    if not test in REGISTERED_TESTS:
+    if not test in AVAILABLE_TESTS:
         raise NotImplementedTest('Test "%s" is not implemented' % test)
 
     response_body = {
-        'registered_tests': REGISTERED_TESTS,
+        'available_tests': AVAILABLE_TESTS,
         'selected_test': test,
         'axis_labels': AXIS_LABELS[test],
         'datasets': DATASETS[test],
