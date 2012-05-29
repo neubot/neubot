@@ -130,11 +130,11 @@ def api_results(stream, request, query):
         'title': TITLE[test]
     }
 
-    indent, mimetype, sort_keys = None, 'application/json', False
+    indent, mimetype = None, 'application/json'
     if 'debug' in dictionary and utils.intify(dictionary['debug'][0]):
-        indent, mimetype, sort_keys = 4, 'text/plain', True
+        indent, mimetype = 4, 'text/plain'
 
     response = Message()
-    body = json.dumps(response_body, indent=indent, sort_keys=sort_keys)
+    body = json.dumps(response_body, indent=indent)
     response.compose(code='200', reason='Ok', body=body, mimetype=mimetype)
     stream.send_response(request, response)
