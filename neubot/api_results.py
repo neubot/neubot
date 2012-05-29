@@ -103,6 +103,11 @@ DESCRIPTION = {
 '''
 }
 
+TITLE = {
+    'bittorrent': 'Your recent BitTorrent results',
+    'speedtest': 'Your recent Speedtest results'
+}
+
 def api_results(stream, request, query):
     ''' Populate results.html page '''
 
@@ -121,7 +126,8 @@ def api_results(stream, request, query):
         'axis_labels': AXIS_LABELS[test],
         'datasets': DATASETS[test],
         'table_fields': TABLE_FIELDS[test],
-        'description': DESCRIPTION[test]
+        'description': DESCRIPTION[test],
+        'title': TITLE[test]
     }
 
     indent, mimetype, sort_keys = None, 'application/json', False
