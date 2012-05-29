@@ -64,6 +64,13 @@ PRETTY_TEMPLATE = OrderedDict((
     ('upload_speed', 'Upload speed')
 ))
 
+JS_TYPES = {
+    'timestamp': 'datetime',
+    'connect_time': 'ms',
+    'download_speed': 'mbits',
+    'upload_speed': 'mbits'
+}
+
 CREATE_TABLE = _table_utils.make_create_table("bittorrent", TEMPLATE)
 INSERT_INTO = _table_utils.make_insert_into("bittorrent", TEMPLATE)
 

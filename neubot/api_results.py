@@ -64,6 +64,11 @@ TABLE_FIELDS = {
     'speedtest': table_speedtest.PRETTY_TEMPLATE,
 }
 
+TABLE_TYPES = {
+    'bittorrent': table_bittorrent.JS_TYPES,
+    'speedtest': table_speedtest.JS_TYPES,
+}
+
 DESCRIPTION = {
     'bittorrent': '''\
           <p class="i18n i18n_bittorrent_explanation">
@@ -127,7 +132,8 @@ def api_results(stream, request, query):
         'datasets': DATASETS[test],
         'table_fields': TABLE_FIELDS[test],
         'description': DESCRIPTION[test],
-        'title': TITLE[test]
+        'title': TITLE[test],
+        'table_types': TABLE_TYPES[test]
     }
 
     indent, mimetype = None, 'application/json'
