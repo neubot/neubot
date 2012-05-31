@@ -1,3 +1,186 @@
+Neubot 0.4.12 [2012-05-31]
+	* Makefile: use ./scripts/faq to autogen faq files
+	* Win32/setup.py: zap added-by-mistake empty line
+	* background_win32: bring comment uptodate
+	* Merge nits spotted while reviewing release patch
+	* scripts/collect.sh: prepare: skip dirs w/o any data
+	* ChangeLog: forgot to update changelog for 0.4.11
+	* bittorrent/stream.py: forward send_complete to peer.py
+	* bittorrent/peer.py: allow to control duration at the uploader
+	* bittorrent/peer.py: add simple main()
+	* bittorrent/peer.py: add code to behave strictly as a bittorrent peer
+	* bittorrent/peer.py: repair version 3 of bittorrent test
+	* bittorrent/peer.py: change the scope of the comment
+	* bittorrent/client.py: negotiate version-2 test
+	* bittorrent server: Cope with version-1 and version-2 tests
+	* bittorrent/peer.py: log test version
+	* add bytegen_speedtest.py: random bytes generator for speedtest
+	* speedtest/client.py: control test duration at the sender
+	* speedtest/server.py: control test duration at the sender
+	* doc/FAQ.rst: bring sect. 4.3 up to date
+	* doc/FAQ.rst: bring sect. 4.3 up to date
+	* doc: regen FAQ html files
+	* doc: FAQ.rst FAQ-it.rst: fix spacing
+	* doc: regen FAQs
+	* log: Added a wrapper for stdlib logging
+	* Globally replace LOG with logging where feasible.
+	* Globally remove % operator when logging.
+	* Revert "Globally remove % operator when logging."
+	* Globally remove % operator when logging.
+	* log: fixed two pylint warnings.
+	* log.py: avoid LogWrapper.emit() pylint warning
+	* log.py: strip newlines from args.
+	* regress/neubot/log.py: purge _log_info references
+	* log.py: deleted progress() method
+	* log.py: ditch progress()-related comment as well
+	* log.py: purge unused args in _maintain_database
+	* Move utils/version.py to utils_version.py and update references
+	* Update references to utils_version.py in comments, too
+	* Merge branches 'pu-marco', 'pu-evfire', 'sender-controlled-bittorrent' and 'sender-controlled-speedtest'
+	* regress: revert b52e7be50a hunk we committed too early
+	* regress/neubot/log.py: purged in-progress test
+	* neubot/bittorrent/peer.py: use logging
+	* neubot/bittorrent/client.py: use logging
+	* neubot/speedtest/client.py: use logging
+	* neubot/log.py: purged in-progress feature
+	* neubot/bittorrent/peer.py: add missing import
+	* update.html: mention automatic updates
+	* www/update.html: tweak previous
+	* regress: neubot/log.py: prune unneeded tests
+	* jqplot: update to 1.0.0b2_r1012
+	* utils_net.py: IPv6 enabled listen() and connect()
+	* net/stream.py: use utils_net.py to connect(), listen()
+	* http/server.py: update bind_failed() signature
+	* Globally stop using DNS cache
+	* Move net/dns.py into the Attic
+	* net/stream.py: remove unused net.stream.ipv6 key
+	* net/stream.py: remove unused net.stream.key key
+	* net/stream.py: garbage collect net.stream.{rcv,snd}buf keys
+	* utils_net.py: IPv6 enabled listen() and connect()
+	* net/stream.py: use utils_net.py to connect(), listen()
+	* http/server.py: update bind_failed() signature
+	* Globally stop using DNS cache
+	* Move net/dns.py into the Attic
+	* net/stream.py: remove unused net.stream.ipv6 key
+	* net/stream.py: remove unused net.stream.key key
+	* net/stream.py: garbage collect net.stream.{rcv,snd}buf keys
+	* Remove LibVersion and use functions instead
+	* Update regression test for utils_version.py
+	* Merge branches 'IPv6_v2', 'pu-alessio', 'pu-marco_v2' and 'pu-roberto'
+	* neubot/api_results.py: new file
+	* neubot/www/js/bittorrent.js: refactor query
+	* neubot/www/js/speedtest.js: refactor query
+	* neubot/api/server.py: garbage collect
+	* neubot/api_results.py: adjust copyright assignment
+	* neubot/api_results.py: provide missing docstrings
+	* neubot/api_results.py: add exception message
+	* neubot/api_results.py: purge StringIO
+	* neubot/api_results.py: silence a pylint's complaint
+	* js: speedtest.js bittorrent.js: make sure hours is defined
+	* js: workaround jqplot dateAxisRenderer bug
+	* www: print 'no result' when there is nothing to plot
+	* database/migrate2.py: info -> debug
+	* Make test version configurable and default to 1
+	* log.py: logging.DEBUG was not 'DEBUG' in python 2.6
+	* ArchLinux support
+	* viewer: move files to top directory
+	* viewer.py: repair import
+	* viewer_webkit_gtk.py: use config file, not database
+	* viewer_webkit_gtk.py: add -O setting option
+	* doc man: update viewer documentation
+	* viewer_webkit_gtk.py: use utils_ctl.is_running()
+	* utils_ctl: deploy some logging to is_running()
+	* log.py: implement logging exc_info keyword argument
+	* http/server.py: do not send "close" token twice
+	* Move utils/blocks.py to utils_random.py and update references
+	* Change installation path and update dependencies on ArchLinux package
+	* Merge remote-tracking branch 'github/pu-felipe' into pu-felipe
+	* Merge branches 'pu-evfiresh', 'pu-simone', 'viewer_no_db_v4', 'pu-davide', 'IPv6', 'pu-alessio', 'pu-marco' and 'pu-felipe'
+	* scripts/release: fallback after utils/version.py -> utils_version.py
+	* Neubot/0.4.12-rc1 released
+	* utils_net.py: allow to listen() a list of addresses
+	* net/stream.py: first-success connect() on a list of addresses
+	* Use spaces, not commas, for multiple connect(), listen()
+	* Listen to both IPv4 and IPv6 localhost address
+	* http/message.py: properly quote IPv6 addresses
+	* Allow to prefer IPv6 over IPv4 in getaddrinfo()
+	* utils_net.py: avoid string interpolation w/ logging funcs
+	* Merge some IPv6 patches I forgot to merge yesterday
+	* utils_net.py: debug-print getaddrinfo() return value
+	* net/stream.py: timeout connect() after 10 seconds
+	* net/stream.py: remove from write-list really-existing socks only
+	* net/stream.py: move bernstein isconnected() to utils_net.py
+	* getaddrinfo(): let DNS server decide, prefer neither IPv4 not IPv6
+	* utils_net.py: listen(): cope with epnt[0] being None
+	* By default bind() both IPv4 and IPv6 any-address
+	* FAQ.rst: update 2.2
+	* doc/FAQ.rst: provide instruction re installing on FreeBSD
+	* Merge branches 'IPv6' and 'FAQ'
+	* Neubot/0.4.12-rc2 released
+	* utils_net.py: isconnected(): fix exception type check
+	* config.py: switch to version 2 of the test
+	* Neubot/0.4.12-rc3 released
+	* Pass to connection_made() connected or listening endpoint
+	* StreamHandler: connection_made(): stop providing default rtt
+	* http/client.py: compute host header when we know real endpoint
+	* Pass runner_rendezvous address to connect to, not URI
+	* config.py: add fallback master server
+	* Merge code that allow to specify a list of master servers
+	* updater_runner.py: wait 1800 seconds between each check
+	* MacOS: uninstall.sh: remember to zap notifier plist
+	* Prefer IPv4 unless the user forces IPv6
+	* IPv6: deal with IPv4-mapped IPv4-compatible IPv6 addresses
+	* database: add test_version column for speedtest, bittorrent
+	* config.py: reset both test versions to 1
+	* utils_net.py: make sure we really prefer IPv4
+	* server mode: make sure we try with IPv6 first
+	* MacOS: move autoupdates to .../updates/macos
+	* http: Make sure we quote/unquote IPv6 addresses in URIs
+	* Neubot/0.4.12-rc4 released
+	* updater_runner updater_utils: channel -> system
+	* Win32 updater: allow to specify channel
+	* neubot/config.py: add 'win32_updater_channel' to CONFIG
+	* neubot/background_win32.py: use CONFIG['win32_updater_channel']
+	* neubot/updater_runner.py: use CONFIG['win32_updater_channel']
+	* neubot/updater_win32.py: use CONFIG['win32_updater_channel']
+	* Merge code to specify alternative Win32 updater channels
+	* updater_runner.py: use -C channel to override channel
+	* add Master: scripts to manage master server
+	* speedtest/client.py: hack support for backup master server
+	* bittorrent/config.py: support for backup master server
+	* runner_clnt.py: workaround a list of addresses for local neubot
+	* regress: repair neubot/bittorrent/config.py test
+	* Makefile: viewer/unix.py -> viewer_webkit_gtk.py
+	* viewer_webkit_gtk.py: adjust first line
+	* regress/Makefile: update expected list of files
+	* regress: repair net/stream.py regression test
+	* M-Lab/ip_addr.dat: update
+	* M-Lab/redir_table.sh: update
+	* js: do not waste plot estate without a good reason
+	* Merge branch 'master' of github.com:neubot/neubot
+	* www js: beautify y axis label
+	* agent background_win32: close() database when out of poller loop
+	* Neubot/0.4.12-rc5 released
+	* Master/install.sh: attempt to auto-update GeoIP
+	* Master/install.sh: always specify absolute paths
+	* Master/install.sh: oops in debian gunzip is /bin/gunzip
+	* Win32/neubot.nsi: start -k so we replace next version (if any)
+	* Neubot/0.4.12-rc6 released
+	* Merge branch 'master' of github.com:neubot/neubot
+	* scripts/publish: back-compat for Neubot-for-MacOS < 0.4.12
+	* Win32: do not put/search installer in win32 subfolder
+	* Neubot/0.4.12-rc7 released
+	* FAQ: regen
+	* FAQ-it.rst edited in 2.2 entry to reflect english FAQ
+	* FAQ-it.rst added FreeBSD installation entry
+	* FAQ-it.rst: repair link
+	* FAQ-it.html: regen
+	* agent.py: remember to import DATABASE
+	* MacOS: prerun.sh: comment out notifier plist
+	* UNIX: neubot.1: fix incorrect manpage header
+	* ArchLinux: make sure we pass neubot "start" on startup
+	* Neubot/0.4.12 released
+
 Neubot 0.4.11 [2012-04-24]
 	* rename_column(): factor out code to create ntemplate
 	* database: Fix column migration bug
