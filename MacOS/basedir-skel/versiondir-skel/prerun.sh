@@ -67,8 +67,10 @@ else
     # Notifier
     logger -p daemon.info -t $0 'Installing notifier'
     install -m644 $VERSIONDIR/org.neubot.notifier.plist /Library/LaunchAgents
-    launchctl unload /Library/LaunchAgents/org.neubot.notifier.plist || true
-    launchctl load /Library/LaunchAgents/org.neubot.notifier.plist
+
+    # Comment-out because they are meaningful for logged users only
+    #launchctl unload /Library/LaunchAgents/org.neubot.notifier.plist || true
+    #launchctl load /Library/LaunchAgents/org.neubot.notifier.plist
 
     #
     # Group `_neubot`
