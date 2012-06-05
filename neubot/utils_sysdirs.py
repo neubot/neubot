@@ -63,6 +63,40 @@ else:
 BASEDIR = os.path.dirname(ROOTDIR)
 
 #
+# VERSIONDIR is meaningful only when Neubot perform autoupdates,
+# namely on MacOS and Win32.  It is equal to ROOTDIR, but we
+# define it as a separate name for clarity.  In particular, ROOTDIR
+# is meant to be used always, while VERSIONDIR is meant to be used
+# only in the context of autoupdates.
+#
+VERSIONDIR = ROOTDIR
+
+#
+# OPENSSL is the path to openssl executable in the current
+# system.  Under UNIX we search for openssl in the usual
+# locations (/bin, /usr/bin).  Under Win32 the executable
+# must be in VERSIONDIR.
+# Note that this variable is interesting only when we need
+# to invoke OpenSSL in order to verify an autoupdate digital
+# signature.  I.e. on MacOS and Win32.
+# When we cannot find OPENSSL we simply set it to None and
+# who needs to use this variable must deal with that.
+#
+if os.name == 'posix':
+    if os.access('/bin/openssl', os.R_OK|os.X_OK):
+        OPENSSL = '/bin/openssl'
+    elif os.access('/usr/bin/openssl', os.R_OK|os.X_OK):
+        OPENSSL = '/usr/bin/openssl'
+    else:
+        OPENSSL = None
+elif os.name == 'nt':
+    OPENSSL = os.sep.join([VERSIONDIR, 'openssl.exe'])
+    if not os.access(OPENSSL, os.R_OK|os.X_OK):
+        OPENSSL = None
+else:
+    raise RuntimeError('system not configured')
+
+#
 # SYSCONFDIR is the directory that contains Neubot configuration
 # files (if needed for the system).  At the moment of writing
 # this comment, configuration files are needed under MacOS only.
@@ -109,8 +143,10 @@ def main(args):
     sys.stdout.write('''\
 BASEDIR       : "%(BASEDIR)s"
 LOCALSTATEDIR : "%(LOCALSTATEDIR)s"
+OPENSSL       : "%(OPENSSL)s"
 ROOTDIR       : "%(ROOTDIR)s"
 SYSCONFDIR    : "%(SYSCONFDIR)s"
+VERDSIONDIR   : "%(VERSIONDIR)s"
 WWWDIR        : "%(WWWDIR)s"
 ''' % globals())
 
