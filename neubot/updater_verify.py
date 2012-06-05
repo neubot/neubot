@@ -61,7 +61,7 @@ def verify_rsa(signature, tarball, key=None):
     if not utils_sysdirs.OPENSSL:
         raise RuntimeError('updater_verify: No OPENSSL defined')
     if not key:
-        key = '%s/pubkey.pem' % utils_sysdirs.VERSIONDIR
+        key = os.sep.join([utils_sysdirs.VERSIONDIR, 'pubkey.pem'])
 
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
