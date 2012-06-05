@@ -72,6 +72,14 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
+        #
+        # Fetch again parameters, just in case the user
+        # has changed them via web user interface.  With
+        # this fix, one does not need to restart Neubot
+        # after the channel is changed.
+        #
+        self.channel = CONFIG['win32_updater_channel']
+
         ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system,
                                                          self.channel) }
         RUNNER_CORE.run('dload', self._process_versioninfo, False, ctx)
