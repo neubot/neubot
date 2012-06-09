@@ -305,8 +305,8 @@ class StreamLogWrapper(logging.Handler):
 ROOT_LOGGER = logging.getLogger()
 ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
-ROOT_LOGGER.addHandler(StreamLogWrapper(level=logging.DEBUG))
-ROOT_LOGGER.setLevel(logging.INFO)
+ROOT_LOGGER.addHandler(StreamLogWrapper())
+ROOT_LOGGER.setLevel(logging.DEBUG)
 # Create 'access' logger
 ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
