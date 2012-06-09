@@ -27,6 +27,7 @@ import traceback
 
 from neubot.net.poller import POLLER
 
+from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_log
 from neubot.notify import NOTIFIER
@@ -197,6 +198,15 @@ class Logger(object):
 
         # No point in logging empty lines
         if not message:
+            return
+
+        #
+        # Honor verbose.  We cannot leave this choice to the
+        # "root" logger because all messages must be passed
+        # to the streaming feature.  Hence the "root" logger
+        # must always be configured to be vebose.
+        #
+        if not CONFIG['verbose'] and severity == 'DEBUG':
             return
 
         # Lazy processing
