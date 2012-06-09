@@ -114,6 +114,9 @@ class Config(object):
     def __getitem__(self, key):
         return self.conf[key]
 
+    def __setitem__(self, key, value):
+        self.conf[key] = value
+
     def register_property(self, prop, module=""):
         if module and not prop.startswith(module):
             prop = "%s.%s" % (module, prop)
