@@ -302,11 +302,11 @@ class StreamLogWrapper(logging.Handler):
         exc_info = record.exc_info
         STREAM_LOG.log(level, msg, args, exc_info)
 
-ROOT = logging.getLogger()
-ROOT.handlers = []
-ROOT.addHandler(LogWrapper())
-ROOT.addHandler(StreamLogWrapper(level=logging.DEBUG))
-ROOT.setLevel(logging.INFO)
+ROOT_LOGGER = logging.getLogger()
+ROOT_LOGGER.handlers = []
+ROOT_LOGGER.addHandler(LogWrapper())
+ROOT_LOGGER.addHandler(StreamLogWrapper(level=logging.DEBUG))
+ROOT_LOGGER.setLevel(logging.INFO)
 # Create 'access' logger
 ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
