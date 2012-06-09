@@ -74,7 +74,7 @@ def main(args):
         if name == '-O':
             settings.append(value)
         elif name == '-v':
-            logging.getLogger('').setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
 
     settings = utils_rc.parse_safe(iterable=settings)
     if not 'address' in settings:

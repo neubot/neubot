@@ -161,7 +161,7 @@ def main(args):
         if (utils.intify(conf['runner.enabled']) and
             runner_clnt.runner_client(conf["agent.api.address"],
                                    conf["agent.api.port"],
-                                   logging.getLogger('').level == logging.DEBUG,
+                                   True,
                                    "bittorrent")):
             sys.exit(0)
 
