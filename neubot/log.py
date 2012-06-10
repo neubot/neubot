@@ -64,7 +64,45 @@ DAYS_AGO = 7
 
 class StreamingLogger(object):
 
-    ''' Streaming logging object '''
+    '''
+     Streaming logging feature.
+
+     When a test is invoked from command line, neubot attempts to ask
+     the background daemon to run the test.  If that fails, it falls
+     back to running the test itself.  When the background daemon runs
+     the test, there are a number of advantages.  Including that it
+     knows the FQDN of the closest server, and that the test will not
+     be run if another test is already in progress.
+
+     In this context, there is the need for a mechanism to pass the
+     daemon logs to the client.  Such that the user that invoked the
+     command can see the output of the test on the console.
+
+     This need is addressed precisely by the streaming log feature,
+     which is implemented by this class.
+    '''
+
+    #
+    # The streaming feature allows to register a stream such
+    # that it receives a copy of all log events.  Effectively
+    # allowing for "streaming" of the damons log to interested
+    # parties.  As pointed out in the docstring, this is used
+    # mainly to implement remote execution of tests.
+    #
+    # Typically, when a remote test is started, log streaming
+    # is automatically set up.  And, when the test is over,
+    # the runner automatically schedules for stopping streaming
+    # in some seconds.  However, the exact details of how this
+    # class is used may change, and you are encouraged to check
+    # updater_runner.py implementation for more fresh info.
+    #
+    # Note that log streaming must pass the client all logs,
+    # including DEBUG messages.  And this must work also when
+    # the daemon is running in quiet mode.  This means that
+    # we cannot rely on the root logger to filter logging
+    # events.  Since we must guarantee that all messages will
+    # arrive to this class.
+    #
 
     def __init__(self):
         self.streams = set()
@@ -86,22 +124,8 @@ class StreamingLogger(object):
         if not message:
             return
 
-        #
-        # Streaming allows consumers to register with the log
-        # object and follow the events that happen during a
-        # test as if they were running the test in their local
-        # context.  When the test is done, the runner of the
-        # test will automatically disconnected all the attached
-        # streams.
-        # Log streaming makes this function less efficient
-        # because lazy processing of log records can't be
-        # performed.  We must pass the client all the logs
-        # and it will decide whether to be verbose.
-        # Err, of course passing ACCESS logs down the stream
-        # is pointless for a client that wants to follow a
-        # remote test.
-        #
         if self.streams:
+
             # "Lazy" processing
             if args:
                 message = message % args
@@ -111,12 +135,15 @@ class StreamingLogger(object):
                 # Ensure we do not accidentaly keep the exception alive
                 exc_info = None
             message = message.rstrip()
+
             try:
+
                 if severity != 'ACCESS':
                     logline = "%s %s\r\n" % (severity, message)
                     logline = logline.encode("utf-8")
                     for stream in self.streams:
                         stream.start_send(logline)
+
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
