@@ -136,7 +136,6 @@ class StreamingLogger(object):
             # "Lazy" processing
             if args:
                 message = message % args
-                args = ()
             if exc_info:
                 message = "%s: %s\n" % (message, str(exc_info[1]))
             message = message.rstrip()
@@ -243,7 +242,6 @@ class Logger(object):
         # Lazy processing
         if args:
             message = message % args
-            args = ()
         if exc_info:
             message = "%s: %s\n" % (message, str(exc_info[1]))
         message = message.rstrip()
