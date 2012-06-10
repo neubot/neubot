@@ -139,8 +139,6 @@ class StreamingLogger(object):
                 args = ()
             if exc_info:
                 message = "%s: %s\n" % (message, str(exc_info[1]))
-                # Ensure we do not accidentaly keep the exception alive
-                exc_info = None
             message = message.rstrip()
 
             try:
@@ -248,8 +246,6 @@ class Logger(object):
             args = ()
         if exc_info:
             message = "%s: %s\n" % (message, str(exc_info[1]))
-            # Ensure we do not accidentaly keep the exception alive
-            exc_info = None
         message = message.rstrip()
 
         # Write log into the database
