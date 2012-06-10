@@ -125,7 +125,7 @@ class StreamingLogger(object):
         self.streams.clear()
 
     def log(self, severity, message, args, exc_info):
-        ''' Really log a message (without any *magic) '''
+        ''' Really log a message '''
 
         # No point in logging empty lines
         if not message:
@@ -225,7 +225,7 @@ class Logger(object):
         del self._queue[:]
 
     def log(self, severity, message, args, exc_info):
-        ''' Really log a message (without any *magic) '''
+        ''' Really log a message '''
 
         # No point in logging empty lines
         if not message:
