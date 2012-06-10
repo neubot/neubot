@@ -62,9 +62,9 @@ INTERVAL = 120
 #
 DAYS_AGO = 7
 
-class StreamLogger(object):
+class StreamingLogger(object):
 
-    ''' Stream logging object '''
+    ''' Streaming logging object '''
 
     def __init__(self):
         self.streams = set()
@@ -299,23 +299,23 @@ class AccessLogWrapper(logging.Handler):
         exc_info = record.exc_info
         LOG.log('ACCESS', msg, args, exc_info)
 
-STREAM_LOG = StreamLogger()
+STREAMING_LOG = StreamingLogger()
 
-class StreamLogWrapper(logging.Handler):
+class StreamingLogWrapper(logging.Handler):
 
-    """Wrapper between stdlib logging and StreamLogger"""
+    """Wrapper between stdlib logging and StreamingLogger"""
 
     def emit(self, record):
         msg = record.msg
         args = record.args
         level = record.levelname
         exc_info = record.exc_info
-        STREAM_LOG.log(level, msg, args, exc_info)
+        STREAMING_LOG.log(level, msg, args, exc_info)
 
 ROOT_LOGGER = logging.getLogger()
 ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
-ROOT_LOGGER.addHandler(StreamLogWrapper())
+ROOT_LOGGER.addHandler(StreamingLogWrapper())
 ROOT_LOGGER.setLevel(logging.DEBUG)
 # Create 'access' logger
 ACCESS_LOGGER = logging.getLogger('access')
