@@ -30,7 +30,6 @@
 
 import getopt
 import sys
-import logging
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -71,6 +70,8 @@ def main(name, descr, args):
         write_help(sys.stderr, name, descr)
         sys.exit(1)
 
+    verbose = 0
+
     for key, value in options:
         if key == "-D":
             # No shortcuts because it grows too confusing
@@ -88,7 +89,7 @@ def main(name, descr, args):
             sys.stdout.write(VERSION + "\n")
             sys.exit(0)
         elif key == "-v":
-            logging.getLogger('').setLevel(logging.DEBUG)
+            verbose = 1
 
     DATABASE.connect()
 
@@ -96,6 +97,9 @@ def main(name, descr, args):
     if not Eflag:
         CONFIG.merge_environ()
     CONFIG.merge_properties()
+
+    if verbose:
+        CONFIG['verbose'] = 1
 
     if lflag:
         CONFIG.print_descriptions(sys.stdout)

@@ -97,8 +97,7 @@ def default_callback(ctx):
 def main(args):
     ''' main() function '''
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    CONFIG['verbose'] = 1
 
     ctx = {'uri': args[1]}
     RunnerDload(ctx)

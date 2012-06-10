@@ -122,7 +122,7 @@ def main(args):
         elif name == '-t':
             sleeptime = int(value)
         elif name == '-v':
-            logging.getLogger('').setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
 
     CONFIG.merge_properties()
 

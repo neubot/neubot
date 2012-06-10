@@ -530,7 +530,6 @@ def main(args):
     ''' main function '''
 
     arguments = args[1:]
-    logging.getLogger().setLevel(logging.DEBUG)
 
     if not arguments:
         maxkey = max(MIGRATORS.keys())

@@ -300,7 +300,6 @@ def migrate(connection):
 
 def main(args):
     ''' main function '''
-    logging.getLogger().setLevel(logging.DEBUG)
     for path in args[1:]:
         connection = sqlite3.connect(path)
         migrate(connection)

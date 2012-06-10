@@ -177,7 +177,7 @@ def main(args):
         if tpl[0] == '-C':
             channel = tpl[1]
         elif tpl[0] == '-v':
-            logging.getLogger('').setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
         elif tpl[0] == '-y':
             privacy = True
 
