@@ -160,9 +160,9 @@ def main(args):
         #
         if (utils.intify(conf['runner.enabled']) and
             runner_clnt.runner_client(conf["agent.api.address"],
-                                   conf["agent.api.port"],
-                                   True,
-                                   "bittorrent")):
+                                      conf["agent.api.port"],
+                                      CONFIG['verbose'],
+                                      "bittorrent")):
             sys.exit(0)
 
         logging.info('Will run the test in the local context...')

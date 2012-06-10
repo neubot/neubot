@@ -500,7 +500,7 @@ def main(args):
     if (utils.intify(conf['runner.enabled']) and
         runner_clnt.runner_client(conf["agent.api.address"],
                                   conf["agent.api.port"],
-                                  True,
+                                  CONFIG['verbose'],
                                   "speedtest")):
         sys.exit(0)
 
