@@ -103,6 +103,13 @@ class StreamingLogger(object):
     # events.  Since we must guarantee that all messages will
     # arrive to this class.
     #
+    # NOTE The discussion whether passing all the logs along
+    # causes slowdowns is open.  So far, I don't think so and
+    # don't have observed slowdowns for typical network
+    # connections (e.g. 10-100 Mbit/s).  However, that may
+    # become a problem for faster connections, so I am
+    # deploying this piece of warning.
+    #
 
     def __init__(self):
         self.streams = set()
@@ -138,11 +145,10 @@ class StreamingLogger(object):
 
             try:
 
-                if severity != 'ACCESS':
-                    logline = "%s %s\r\n" % (severity, message)
-                    logline = logline.encode("utf-8")
-                    for stream in self.streams:
-                        stream.start_send(logline)
+                logline = "%s %s\r\n" % (severity, message)
+                logline = logline.encode("utf-8")
+                for stream in self.streams:
+                    stream.start_send(logline)
 
             except (KeyboardInterrupt, SystemExit):
                 raise

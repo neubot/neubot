@@ -118,6 +118,8 @@ def __runner_client(address, port, verbosity, test, hint):
         line = response.fp.readline()
         if not line:
             break
+        if line.startswith('ACCESS'):
+            continue
         if line.startswith('DEBUG') and not verbosity:
             continue
         sys.stdout.write(line)
