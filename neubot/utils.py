@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Miscellaneous utility functions '''
+
 import sys
 import os
 import types
