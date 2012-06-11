@@ -339,20 +339,14 @@ def main(args):
     common.main("http.server", "Neubot simple HTTP server", args)
     conf = CONFIG.copy()
 
-    if conf["http.server.class"]:
-        make_child = utils.import_class(conf["http.server.class"])
-        server = make_child(POLLER)
-    else:
-        server = HTTP_SERVER
-
-    server.configure(conf)
+    HTTP_SERVER.configure(conf)
 
     if conf["http.server.rootdir"] == ".":
         conf["http.server.rootdir"] = os.path.abspath(".")
 
     for port in conf["http.server.ports"].split(","):
         if port:
-            server.listen((conf["http.server.address"], int(port)))
+            HTTP_SERVER.listen((conf["http.server.address"], int(port)))
 
     if conf["http.server.daemonize"]:
         system.change_dir()

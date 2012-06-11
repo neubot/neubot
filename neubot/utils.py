@@ -176,15 +176,6 @@ def ticks():
 #
 T = lambda: int(1000000 * ticks())
 
-def import_class(name):
-    ''' Imports a given class at runtime '''
-    if not name.startswith("neubot"):
-        name = "neubot." + name
-    index = name.rfind(".")
-    module, ctor = name[:index], name[index+1:]
-    ctx = __import__(module, globals(), locals(), [ctor])
-    return ctx.__dict__[ctor]
-
 def get_uuid():
     ''' Returns per client random unique identifier '''
     return str(uuid.uuid4())
