@@ -166,19 +166,26 @@ def smart_cast(value):
     else:
         raise TypeError("No such cast for this type")
 
-#
-# The various definitions of time available in Neubot.
-#
-# timestamp()
-#   Returns an integer representing the number of seconds elapsed
-#   since the EPOCH in UTC.
-#
-# ticks()
-#   Returns a real representing the most precise clock available
-#   on the current platform.  Note that, depending on the platform,
-#   the returned value MIGHT NOT be a timestamp.  So, you MUST
-#   use this clock to calculate the time elapsed between two events
-#   ONLY.
+def timestamp():
+    ''' Returns an integer representing the number of seconds elapsed
+        since the EPOCH in UTC '''
+    return int(time.time())
+
+if os.name == 'nt':
+    __TICKS = time.clock
+elif os.name == 'posix':
+    __TICKS = time.time
+else:
+    raise ImportError("Please, provide a definition of ticks()")
+
+def ticks():
+    ''' Returns a real representing the most precise clock available
+        on the current platform.  Note that, depending on the platform,
+        the returned value MIGHT NOT be a timestamp.  So, you MUST
+        use this clock to calculate the time elapsed between two events
+        ONLY. '''
+    return __TICKS()
+
 #
 # T()
 #   Returns the opaque time, i.e. the time used to identify
@@ -187,16 +194,6 @@ def smart_cast(value):
 #   the same caveat regarding ticks() also applies to this
 #   function.
 #
-
-timestamp = lambda: int(time.time())
-
-if os.name == 'nt':
-    ticks = time.clock
-elif os.name == 'posix':
-    ticks = time.time
-else:
-    raise ImportError("Please, provide a definition of ticks()")
-
 T = lambda: int(1000000 * ticks())
 
 def import_class(name):
