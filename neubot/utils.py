@@ -199,9 +199,8 @@ else:
 
 T = lambda: int(1000000 * ticks())
 
-# dynamic loader
-
 def import_class(name):
+    ''' Imports a given class at runtime '''
     if not name.startswith("neubot"):
         name = "neubot." + name
     index = name.rfind(".")
@@ -209,7 +208,6 @@ def import_class(name):
     ctx = __import__(module, globals(), locals(), [ctor])
     return ctx.__dict__[ctor]
 
-# per-client random unique identifier
-
 def get_uuid():
+    ''' Returns per client random unique identifier '''
     return str(uuid.uuid4())
