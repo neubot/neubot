@@ -95,24 +95,26 @@ def unit_formatter(number, base10=False, unit=""):
     else:
         return _unit_formatter(number, [GIBI, MEBI, KIBI], unit)
 
-def speed_formatter(speed, base10=True, bytes=False):
+def speed_formatter(speed, base10=True, bytez=False):
+    ''' Speed formatter '''
     unit = "Byte/s"
-    if not bytes:
+    if not bytez:
         speed = speed * 8
         unit = "bit/s"
     return unit_formatter(speed, base10, unit)
 
-def time_formatter(n):
-    if n >= 1.0:
-        return "%.1f s" % n
-    elif n >= 0.001:
-        n *= 1000
-        return "%.1f ms" % n
-    elif n >= 0.000001:
-        n *= 1000000
-        return "%.1f us" % n
+def time_formatter(number):
+    ''' Time formatter '''
+    if number >= 1.0:
+        return "%.1f s" % number
+    elif number >= 0.001:
+        number *= 1000
+        return "%.1f ms" % number
+    elif number >= 0.000001:
+        number *= 1000000
+        return "%.1f us" % number
     else:
-        return "%f" % n
+        return "%f" % number
 
 # Coerce types
 
