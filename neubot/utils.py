@@ -28,32 +28,39 @@ import types
 import time
 import uuid
 
-#
-# When stdin, stdout, stderr are attached to console, seek(0)
-# fails because it's not possible to rewind a console device.
-# So, do not re-raise the Exception if the offending file was
-# one of stdin, stdout, stderr.
-#
-
 def safe_seek(afile, offset, whence=os.SEEK_SET):
+
+    ''' Seek() implementation that does not throw IOError when
+        @afile is a console device. '''
+
+    #
+    # When stdin, stdout, stderr are attached to console, seek(0)
+    # fails because it's not possible to rewind a console device.
+    # So, do not re-raise the Exception if the offending file was
+    # one of stdin, stdout, stderr.
+    #
+
     try:
         afile.seek(offset, whence)
     except IOError:
         if afile not in [sys.stdin, sys.stdout, sys.stderr]:
             raise
 
-#
-# Here we don't use safe_seek() because safe_seek() makes sense
-# when you want to rewind the body of an HTTP message because the
-# user might want to read such body from the beginning.
-# Instead, it would be wrong to safe_seek() when calculating file
-# length, because if we pass one of (stdin, stdout, stderr) to this
-# function we want the function to fail and not to return some
-# non-sense file length (tell() does not fail for these files and
-# just returns a long integer).
-#
-
 def file_length(afile):
+
+    ''' Computes the lenght of a file '''
+
+    #
+    # Here we don't use safe_seek() because safe_seek() makes sense
+    # when you want to rewind the body of an HTTP message because the
+    # user might want to read such body from the beginning.
+    # Instead, it would be wrong to safe_seek() when calculating file
+    # length, because if we pass one of (stdin, stdout, stderr) to this
+    # function we want the function to fail and not to return some
+    # non-sense file length (tell() does not fail for these files and
+    # just returns a long integer).
+    #
+
     afile.seek(0, os.SEEK_END)
     length = afile.tell()
     afile.seek(0, os.SEEK_SET)
