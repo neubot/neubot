@@ -118,10 +118,12 @@ def time_formatter(number):
 
 # Coerce types
 
-def asciiify(s):
-    return s.encode("ascii")
+def asciiify(string):
+    ''' Convert something to ASCII string '''
+    return string.encode("ascii")
 
 def stringify(value):
+    ''' Convert something to string '''
     if type(value) == types.UnicodeType:
         return value.encode("utf-8")
     elif type(value) == types.StringType:
@@ -130,6 +132,7 @@ def stringify(value):
         return str(value)
 
 def unicodize(value):
+    ''' Convert something to unicode '''
     if type(value) == types.UnicodeType:
         return value
     elif type(value) == types.StringType:
@@ -137,15 +140,17 @@ def unicodize(value):
     else:
         return unicode(value)
 
-def intify(s):
-    if type(s) == types.StringType or type(s) == types.UnicodeType:
-        if s.lower() in ("off", "false", "no"):
+def intify(string):
+    ''' Convert something to integer '''
+    if type(string) == types.StringType or type(string) == types.UnicodeType:
+        if string.lower() in ("off", "false", "no"):
             return 0
-        elif s.lower() in ("on", "true", "yes"):
+        elif string.lower() in ("on", "true", "yes"):
             return 1
-    return int(s)
+    return int(string)
 
 def smart_cast(value):
+    ''' Return the proper cast depending on value '''
     if type(value) == types.StringType:
         return stringify
     elif type(value) == types.UnicodeType:
