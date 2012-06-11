@@ -81,6 +81,7 @@ GIGA = (1000000000.0, "G")
 MEGA = (1000000.0, "M")
 
 def _unit_formatter(n, v, unit):
+    ''' Internal unit formatter '''
     for k, s in v:
         if n >= k:
             n /= k
@@ -88,10 +89,11 @@ def _unit_formatter(n, v, unit):
     return "%.1f %s" % (n, unit)
 
 def unit_formatter(n, base10=False, unit=""):
+    ''' Unit formatter '''
     if base10:
-        return _unit_formatter(n, [GIGA,MEGA,KILO], unit)
+        return _unit_formatter(n, [GIGA, MEGA, KILO], unit)
     else:
-        return _unit_formatter(n, [GIBI,MEBI,KIBI], unit)
+        return _unit_formatter(n, [GIBI, MEBI, KIBI], unit)
 
 def speed_formatter(speed, base10=True, bytes=False):
     unit = "Byte/s"
