@@ -46,26 +46,6 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
         if afile not in [sys.stdin, sys.stdout, sys.stderr]:
             raise
 
-def file_length(afile):
-
-    ''' Computes the lenght of a file '''
-
-    #
-    # Here we don't use safe_seek() because safe_seek() makes sense
-    # when you want to rewind the body of an HTTP message because the
-    # user might want to read such body from the beginning.
-    # Instead, it would be wrong to safe_seek() when calculating file
-    # length, because if we pass one of (stdin, stdout, stderr) to this
-    # function we want the function to fail and not to return some
-    # non-sense file length (tell() does not fail for these files and
-    # just returns a long integer).
-    #
-
-    afile.seek(0, os.SEEK_END)
-    length = afile.tell()
-    afile.seek(0, os.SEEK_SET)
-    return length
-
 #
 # Unit formatter
 #
