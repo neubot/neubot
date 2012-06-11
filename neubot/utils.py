@@ -80,20 +80,20 @@ KILO = (1000.0, "K")
 GIGA = (1000000000.0, "G")
 MEGA = (1000000.0, "M")
 
-def _unit_formatter(n, v, unit):
+def _unit_formatter(number, unit_info, unit_name):
     ''' Internal unit formatter '''
-    for k, s in v:
-        if n >= k:
-            n /= k
-            return "%.1f %s%s" % (n, s, unit)
-    return "%.1f %s" % (n, unit)
+    for scale, suffix in unit_info:
+        if number >= scale:
+            number /= scale
+            return "%.1f %s%s" % (number, suffix, unit_name)
+    return "%.1f %s" % (number, unit_name)
 
-def unit_formatter(n, base10=False, unit=""):
+def unit_formatter(number, base10=False, unit=""):
     ''' Unit formatter '''
     if base10:
-        return _unit_formatter(n, [GIGA, MEGA, KILO], unit)
+        return _unit_formatter(number, [GIGA, MEGA, KILO], unit)
     else:
-        return _unit_formatter(n, [GIBI, MEBI, KIBI], unit)
+        return _unit_formatter(number, [GIBI, MEBI, KIBI], unit)
 
 def speed_formatter(speed, base10=True, bytes=False):
     unit = "Byte/s"
