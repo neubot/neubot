@@ -1,0 +1,41 @@
+        <!--#include virtual="header.html"-->
+
+        <script type="text/javascript" src="js/results.js"></script>
+
+        <div class="entry-content">
+            <div id="results_type">
+                <p class='box-title'>
+                 <span class="i18n i18n_result_type">Test:</span>
+                  <select id="res_type_value" size="1">
+                   <option value="speedtest" selected="selected">Speedtest</option>
+                   <option value="bittorrent">BitTorrent</option>
+                  </select>
+                  <input id="res_type_submit" type="button" value="Go" />
+                </p>
+            </div>
+
+          <h4 id="results_title" class="i18n i18n_title"></h4>
+
+          <div id="results_description">Prova</div>
+          <div id="results_interval">
+              <p class='box-title'>
+               <span class="i18n i18n_speedtest_see_last">View last</span> <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
+                <select id="res_unit" size="1">
+                 <option value="d" selected="selected" class="i18n i18n_speedtest_see_last_days">day</option>
+                 <option value="h" class="i18n i18n_speedtest_see_last_hours">hour</option>
+                </select>
+                <input id="res_submit" type="button" value="Go" />
+              </p>
+          </div>
+          <!-- XXX Do NOT move plots here or they will suck alot. -->
+
+        </div>
+
+        <div id="chartdiv1"></div>
+        <div id="chartdiv2"></div>
+
+        <div id="results">
+          <!-- nothing -->
+        </div>
+
+        <!--#include virtual="footer.html"-->
