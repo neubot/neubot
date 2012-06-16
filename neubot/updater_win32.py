@@ -59,9 +59,6 @@ class UpdaterWin32(UpdaterRunner):
     def install(self, ctx, body):
         ''' Install new version on Windows '''
 
-        # Save tarball
-        updater_utils.tarball_save(self.basedir, ctx['vinfo'], body)
-
         # Extract from tarball
         updater_install.install(self.basedir, ctx['vinfo'])
 

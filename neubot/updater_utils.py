@@ -89,6 +89,19 @@ def tarball_get_uri(system, vinfo):
     return 'http://releases.neubot.org/updates/%s/%s.tar.gz' % (
              system, vinfo)
 
+def signature_path(basedir, vinfo):
+    ''' Return signature path '''
+    name = '.'.join([vinfo, 'tar', 'gz', 'sig'])
+    path = utils_path.append(basedir, name)
+    return path
+
+def signature_save(basedir, vinfo, signature):
+    ''' Save signature on filesystem '''
+    path = signature_path(basedir, vinfo)
+    filep = open(path, 'wb')
+    filep.write(signature)
+    filep.close()
+
 def signature_get_uri(system, vinfo):
     ''' Return URI for signature '''
     return 'http://releases.neubot.org/updates/%s/%s.tar.gz.sig' % (

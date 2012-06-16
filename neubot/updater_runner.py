@@ -39,6 +39,7 @@ from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
 
 from neubot import updater_utils
+from neubot import updater_verify
 from neubot import utils_sysdirs
 
 class UpdaterRunner(object):
@@ -183,6 +184,23 @@ class UpdaterRunner(object):
             return
         if not updater_utils.sha256sum_verify(ctx['sha256'], body):
             logging.error('updater_runner: sha256 mismatch')
+            self._schedule()
+            return
+
+        # Save tarball and signature on disk
+        updater_utils.tarball_save(self.basedir, ctx['vinfo'], body)
+        updater_utils.signature_save(self.basedir, ctx['vinfo'],
+                                     ctx['signature'])
+
+        # Verify signature using OpenSSL
+        # TODO once we deal with exceptions in the runner, remove
+        # this try...catch clause
+        try:
+            updater_verify.verify_rsa(updater_utils.signature_path(
+              self.basedir, ctx['vinfo']), updater_utils.tarball_path(
+              self.basedir, ctx['vinfo']))
+        except:
+            logging.error('updater_runner: invalid signature')
             self._schedule()
             return
 
