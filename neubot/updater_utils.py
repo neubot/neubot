@@ -88,3 +88,8 @@ def tarball_get_uri(system, vinfo):
     ''' Return URI for tarball '''
     return 'http://releases.neubot.org/updates/%s/%s.tar.gz' % (
              system, vinfo)
+
+def signature_get_uri(system, vinfo):
+    ''' Return URI for signature '''
+    return 'http://releases.neubot.org/updates/%s/%s.tar.gz.sig' % (
+             system, vinfo)
