@@ -8,7 +8,9 @@ ARGS=start
 
 [ -r /etc/conf.d/$DAEMON ] && . /etc/conf.d/$DAEMON
 
-PID=$(get_pid $DAEMON)
+# Note: cannot use pidof because neubot is running as "python2 neubot..."
+PID=$(cat /var/run/neubot.pid)
+
 
 case "$1" in
  start)
