@@ -39,6 +39,7 @@ from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
 
 from neubot import updater_utils
+from neubot import updater_verify
 from neubot import utils_sysdirs
 
 class UpdaterRunner(object):
@@ -70,6 +71,14 @@ class UpdaterRunner(object):
         if not CONFIG['win32_updater']:
             self._schedule()
             return
+
+        #
+        # Fetch again parameters, just in case the user
+        # has changed them via web user interface.  With
+        # this fix, one does not need to restart Neubot
+        # after the channel is changed.
+        #
+        self.channel = CONFIG['win32_updater_channel']
 
         ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system,
                                                          self.channel) }
@@ -107,10 +116,10 @@ class UpdaterRunner(object):
         # Note: this is a separate function for testability
         uri = updater_utils.sha256sum_get_uri(self.system, vinfo)
         ctx = {'vinfo': vinfo, 'uri': uri}
-        RUNNER_CORE.run('dload', self._retrieve_tarball, False, ctx)
+        RUNNER_CORE.run('dload', self._retrieve_signature, False, ctx)
 
-    def _retrieve_tarball(self, ctx):
-        ''' Retrieve tarball for a given version '''
+    def _retrieve_signature(self, ctx):
+        ''' Retrieve signature for a given version '''
 
         # TODO make this function more robust wrt unexpected errors
 
@@ -132,6 +141,28 @@ class UpdaterRunner(object):
 
         # XXX We should not reuse the same CTX here
         ctx['sha256'] = sha256
+        ctx['uri'] = updater_utils.signature_get_uri(self.system, ctx['vinfo'])
+
+        RUNNER_CORE.run('dload', self._retrieve_tarball, False, ctx)
+
+    def _retrieve_tarball(self, ctx):
+        ''' Retrieve tarball for a given version '''
+
+        # TODO make this function more robust wrt unexpected errors
+
+        if not 'result' in ctx:
+            logging.error('updater_runner: no result')
+            self._schedule()
+            return
+
+        length, body, error = ctx.pop('result')
+        if length == -1:
+            logging.error('updater_runner: error: %s', str(error))
+            self._schedule()
+            return
+
+        # XXX We should not reuse the same CTX here
+        ctx['signature'] = body
         ctx['uri'] = updater_utils.tarball_get_uri(self.system, ctx['vinfo'])
 
         RUNNER_CORE.run('dload', self._process_files, False, ctx)
@@ -156,26 +187,48 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
+        # Save tarball and signature on disk
+        updater_utils.tarball_save(self.basedir, ctx['vinfo'], body)
+        updater_utils.signature_save(self.basedir, ctx['vinfo'],
+                                     ctx['signature'])
+
+        # Verify signature using OpenSSL
+        # TODO once we deal with exceptions in the runner, remove
+        # this try...catch clause
+        try:
+            updater_verify.verify_rsa(updater_utils.signature_path(
+              self.basedir, ctx['vinfo']), updater_utils.tarball_path(
+              self.basedir, ctx['vinfo']))
+        except:
+            logging.error('updater_runner: invalid signature')
+            self._schedule()
+            return
+
         self.install(ctx, body)
 
     def install(self, ctx, body):
         ''' Install and run the new version '''
 
+USAGE = 'neubot updater_runner [-vy] [-C channel] [-O system] [version]'
+
 def main(args):
     ''' main() function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'C:vy')
+        options, arguments = getopt.getopt(args[1:], 'C:O:vy')
     except getopt.error:
-        sys.exit('neubot updater_runner [-vy] [-C channel] [version]')
+        sys.exit(USAGE)
     if len(arguments) > 1:
-        sys.exit('neubot updater_runner [-vy] [-C channel] [version]')
+        sys.exit(USAGE)
 
+    sysname = 'win32'
     channel = CONFIG['win32_updater_channel']
     privacy = False
     for tpl in options:
         if tpl[0] == '-C':
             channel = tpl[1]
+        elif tpl[0] == '-O':
+            sysname = tpl[1]
         elif tpl[0] == '-v':
             CONFIG['verbose'] = 1
         elif tpl[0] == '-y':
@@ -187,7 +240,7 @@ def main(args):
                             'privacy.can_publish': 1})
 
     channel = CONFIG['win32_updater_channel']
-    updater = UpdaterRunner('win32', utils_sysdirs.BASEDIR, channel)
+    updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR, channel)
 
     if arguments:
         updater.retrieve_files(arguments[0])
