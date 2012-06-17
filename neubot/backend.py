@@ -52,6 +52,8 @@ from neubot.backend_mlab import BackendMLab
 from neubot.backend_neubot import BackendNeubot
 from neubot.backend_null import BackendNull
 
+from neubot.config import CONFIG
+
 class BackendProxy(object):
     ''' Proxy for the real backend '''
 
@@ -148,7 +150,7 @@ def main(args):
         elif name == '-t':
             timestamp = float(value)
         elif name == '-v':
-            logging.getLogger().setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
 
     if bcknd:
         BACKEND.use_backend(bcknd)

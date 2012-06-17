@@ -114,7 +114,7 @@ def main(args):
 
     for tpl in options:
         if tpl[0] == '-v':
-            logging.getLogger('').setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
         elif tpl[0] == '-y':
             CONFIG.conf.update({
                                 'privacy.informed': 1,

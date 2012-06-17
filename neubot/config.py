@@ -114,6 +114,9 @@ class Config(object):
     def __getitem__(self, key):
         return self.conf[key]
 
+    def __setitem__(self, key, value):
+        self.conf[key] = value
+
     def register_property(self, prop, module=""):
         if module and not prop.startswith(module):
             prop = "%s.%s" % (module, prop)
@@ -201,6 +204,7 @@ CONFIG.register_defaults({
     "agent.use_syslog": False,
     "bittorrent_test_version": 1,
     "enabled": True,
+    'verbose': 0,
     "notifier_browser.min_interval": 86400,
     "notifier_browser.honor_enabled": False,
     "prefer_ipv6": 0,
@@ -226,6 +230,7 @@ CONFIG.register_descriptions({
     "agent.use_syslog": "Force syslog usage in any case",
     "bittorrent_test_version": "Version 1 is the old one, version 2 controls duration at the sender",
     "enabled": "Enable Neubot to perform automatic transmission tests",
+    'verbose': 'Set to 1 to get more log messages',
     "notifier_browser.min_interval": "Minimum interval between each browser notification",
     "notifier_browser.honor_enabled": "Set to 1 to suppress notifications when Neubot is disabled",
     "prefer_ipv6": "Prefer IPv6 over IPv4 when resolving domain names",

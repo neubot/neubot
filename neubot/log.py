@@ -27,6 +27,7 @@ import traceback
 
 from neubot.net.poller import POLLER
 
+from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.database import table_log
 from neubot.notify import NOTIFIER
@@ -61,9 +62,54 @@ INTERVAL = 120
 #
 DAYS_AGO = 7
 
-class StreamLogger(object):
+class StreamingLogger(object):
 
-    ''' Stream logging object '''
+    '''
+     Streaming logging feature.
+
+     When a test is invoked from command line, neubot attempts to ask
+     the background daemon to run the test.  If that fails, it falls
+     back to running the test itself.  When the background daemon runs
+     the test, there are a number of advantages.  Including that it
+     knows the FQDN of the closest server, and that the test will not
+     be run if another test is already in progress.
+
+     In this context, there is the need for a mechanism to pass the
+     daemon logs to the client.  Such that the user that invoked the
+     command can see the output of the test on the console.
+
+     This need is addressed precisely by the streaming log feature,
+     which is implemented by this class.
+    '''
+
+    #
+    # The streaming feature allows to register a stream such
+    # that it receives a copy of all log events.  Effectively
+    # allowing for "streaming" of the damons log to interested
+    # parties.  As pointed out in the docstring, this is used
+    # mainly to implement remote execution of tests.
+    #
+    # Typically, when a remote test is started, log streaming
+    # is automatically set up.  And, when the test is over,
+    # the runner automatically schedules for stopping streaming
+    # in some seconds.  However, the exact details of how this
+    # class is used may change, and you are encouraged to check
+    # updater_runner.py implementation for more fresh info.
+    #
+    # Note that log streaming must pass the client all logs,
+    # including DEBUG messages.  And this must work also when
+    # the daemon is running in quiet mode.  This means that
+    # we cannot rely on the root logger to filter logging
+    # events.  Since we must guarantee that all messages will
+    # arrive to this class.
+    #
+    # NOTE The discussion whether passing all the logs along
+    # causes slowdowns is open.  So far, I don't think so and
+    # don't have observed slowdowns for typical network
+    # connections (e.g. 10-100 Mbit/s).  However, that may
+    # become a problem for faster connections, so I am
+    # deploying this piece of warning.
+    #
 
     def __init__(self):
         self.streams = set()
@@ -79,43 +125,29 @@ class StreamLogger(object):
         self.streams.clear()
 
     def log(self, severity, message, args, exc_info):
-        ''' Really log a message (without any *magic) '''
+        ''' Really log a message '''
 
         # No point in logging empty lines
         if not message:
             return
 
-        #
-        # Streaming allows consumers to register with the log
-        # object and follow the events that happen during a
-        # test as if they were running the test in their local
-        # context.  When the test is done, the runner of the
-        # test will automatically disconnected all the attached
-        # streams.
-        # Log streaming makes this function less efficient
-        # because lazy processing of log records can't be
-        # performed.  We must pass the client all the logs
-        # and it will decide whether to be verbose.
-        # Err, of course passing ACCESS logs down the stream
-        # is pointless for a client that wants to follow a
-        # remote test.
-        #
         if self.streams:
+
             # "Lazy" processing
             if args:
                 message = message % args
-                args = ()
             if exc_info:
                 message = "%s: %s\n" % (message, str(exc_info[1]))
-                # Ensure we do not accidentaly keep the exception alive
-                exc_info = None
             message = message.rstrip()
+
             try:
-                if severity != 'ACCESS':
-                    logline = "%s %s\r\n" % (severity, message)
-                    logline = logline.encode("utf-8")
-                    for stream in self.streams:
-                        stream.start_send(logline)
+
+                logline = "%s %s\r\n" % (severity, message)
+                # UTF-8 encoding avoids an oops() in stream.py
+                logline = logline.encode("utf-8")
+                for stream in self.streams:
+                    stream.start_send(logline)
+
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
@@ -137,7 +169,6 @@ class Logger(object):
         self._nocommit = NOCOMMIT
         self._use_database = False
         self._queue = []
-
 
     #
     # Better not to touch the database when a test is in
@@ -194,20 +225,26 @@ class Logger(object):
         del self._queue[:]
 
     def log(self, severity, message, args, exc_info):
-        ''' Really log a message (without any *magic) '''
+        ''' Really log a message '''
 
         # No point in logging empty lines
         if not message:
             return
 
+        #
+        # Honor verbose.  We cannot leave this choice to the
+        # "root" logger because all messages must be passed
+        # to the streaming feature.  Hence the "root" logger
+        # must always be configured to be vebose.
+        #
+        if not CONFIG['verbose'] and severity == 'DEBUG':
+            return
+
         # Lazy processing
         if args:
             message = message % args
-            args = ()
         if exc_info:
             message = "%s: %s\n" % (message, str(exc_info[1]))
-            # Ensure we do not accidentaly keep the exception alive
-            exc_info = None
         message = message.rstrip()
 
         # Write log into the database
@@ -290,24 +327,24 @@ class AccessLogWrapper(logging.Handler):
         exc_info = record.exc_info
         LOG.log('ACCESS', msg, args, exc_info)
 
-STREAM_LOG = StreamLogger()
+STREAMING_LOG = StreamingLogger()
 
-class StreamLogWrapper(logging.Handler):
+class StreamingLogWrapper(logging.Handler):
 
-    """Wrapper between stdlib logging and StreamLogger"""
+    """Wrapper between stdlib logging and StreamingLogger"""
 
     def emit(self, record):
         msg = record.msg
         args = record.args
         level = record.levelname
         exc_info = record.exc_info
-        STREAM_LOG.log(level, msg, args, exc_info)
+        STREAMING_LOG.log(level, msg, args, exc_info)
 
-ROOT = logging.getLogger()
-ROOT.handlers = []
-ROOT.addHandler(LogWrapper())
-ROOT.addHandler(StreamLogWrapper(level=logging.DEBUG))
-ROOT.setLevel(logging.INFO)
+ROOT_LOGGER = logging.getLogger()
+ROOT_LOGGER.handlers = []
+ROOT_LOGGER.addHandler(LogWrapper())
+ROOT_LOGGER.addHandler(StreamingLogWrapper())
+ROOT_LOGGER.setLevel(logging.DEBUG)
 # Create 'access' logger
 ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)

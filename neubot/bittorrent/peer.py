@@ -487,7 +487,7 @@ def main(args):
         elif name == '-O':
             settings.append(value)
         elif name == '-v':
-            logging.getLogger('').setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
 
     settings = utils_rc.parse_safe(iterable=settings)
 

@@ -29,6 +29,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot.config import CONFIG
 from neubot import utils_posix
 from neubot import utils_path
 
@@ -85,7 +86,7 @@ class FileSystemPOSIX(object):
             utils_posix.touch_idempotent(curpath, self.passwd.pw_uid,
                                          self.passwd.pw_gid)
 
-USAGE = 'Usage: filesys_posix.py [-d datadir] [-u user] component...'
+USAGE = 'Usage: filesys_posix.py [-v] [-d datadir] [-u user] component...'
 
 def main(args):
     ''' main function '''
@@ -105,7 +106,7 @@ def main(args):
         elif name == '-u':
             uname = value
         elif name == '-v':
-            logging.getLogger().setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
 
     filesys = FileSystemPOSIX()
     filesys.datadir_init(uname, datadir)

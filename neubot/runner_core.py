@@ -41,7 +41,7 @@ from neubot.net.poller import POLLER
 from neubot.speedtest.client import ClientSpeedtest
 from neubot.config import CONFIG
 from neubot.database import DATABASE
-from neubot.log import STREAM_LOG
+from neubot.log import STREAMING_LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_dload import RunnerDload
@@ -174,7 +174,7 @@ class RunnerCore(object):
         # somewhat internal 'rendezvous' test.
         #
         if self.queue[0][0] != 'rendezvous':
-            POLLER.sched(2, STREAM_LOG.stop_streaming)
+            POLLER.sched(2, STREAMING_LOG.stop_streaming)
 
         # Paranoid
         if baton[0] != 'testdone':
