@@ -42,8 +42,11 @@ var results = (function() {
     self.init = function(request) {
         self.request = request;
 
-        jQuery("#results_title").html(self.request.title);
-        jQuery("#results_description").html(self.request.description);
+        jQuery("#results_title").html(i18n.get(self.request.title));
+        jQuery("#results_description").html(i18n.get(self.request.description));
+
+        self.result_fields = [];
+        self.result_titles = [];
 
         jQuery.each(request.table_fields, function(i, v) {
             self.result_fields.push(i);
@@ -231,7 +234,11 @@ var results = (function() {
             // xaxis.tickInterval = '1 day';
         }
 
+        jQuery("#charts").html("");
+
         for (var i = 0; i < num_of_plots; i++) {
+            jQuery("#charts").append("<div class='chartdiv' id='chartdiv" + (i + 1) + "'></div>");
+
             if (myData[dataType_no[i][1]]) {
                 mydata = myData[dataType_no[i][0]].concat(myData[dataType_no[i][1]]);
             }
@@ -275,7 +282,7 @@ var results = (function() {
                 plot.replot();
             }
             else {
-                jQuery("#chartdiv" + (i + 1)).html("<span>No results</span>");
+                jQuery("#chartdiv" + (i + 1)).html("<span>" + i18n.get("No results") + "</span>");
             }
         }
 
@@ -291,18 +298,9 @@ function results_init() {
 
     jQuery.jqplot.config.enablePlugins = true;
 
-    jQuery.ajax({
-        url: "/api/results",
-        dataType: 'json',
-        success: function(myrequest) {
-            results.init(myrequest);
-            results.get_recent([results.formatter_table, results.formatter_plot]);
-            // results.get_recent([results.formatter_table]);
-        }
-    });
-
     var confirm_test = function() {
         var testname = jQuery("#res_type_value").val();
+
         jQuery.ajax({
             url: "/api/results",
             data: {
@@ -311,42 +309,41 @@ function results_init() {
             dataType: 'json',
             success: function(myrequest) {
                 results.init(myrequest);
-                results.get_recent([results.formatter_table, results.formatter_plot]);
+
+                var n = Number(jQuery("#res_value").val());
+                if (n == NaN) {
+                    alert(i18n.get("Please insert a valid number"));
+                    return false;
+                }
+                var since = 0;
+                switch (jQuery("#res_unit").val()) {
+                case "d":
+                    var one_day_in_ms = 24 * 60 * 60 * 1000;
+                    since = utils.getNow() - one_day_in_ms * n;
+                    break;
+
+                case "h":
+                    var one_hour_in_ms = 60 * 60 * 1000;
+                    since = utils.getNow() - one_hour_in_ms * n;
+                    break;
+                }
+
+                results.get_results([results.formatter_table, results.formatter_plot], since);
+
+                // results.get_recent([results.formatter_table, results.formatter_plot]);
                 // results.get_recent([results.formatter_table]);
             }
         });
     }
 
-    var confirm_data = function() {
-        var n = Number(jQuery("#res_value").val());
-        if (n == NaN) {
-            alert("Please insert a valid number");
-            return false;
-        }
-        var since = 0;
-        switch (jQuery("#res_unit").val()) {
-        case "d":
-            var one_day_in_ms = 24 * 60 * 60 * 1000;
-            since = utils.getNow() - one_day_in_ms * n;
-            break;
-
-        case "h":
-            var one_hour_in_ms = 60 * 60 * 1000;
-            since = utils.getNow() - one_hour_in_ms * n;
-            break;
-        }
-
-        results.get_results([results.formatter_table, results.formatter_plot], since);
-        return false;
-    };
-
     jQuery("#res_value").keydown(function(event) {
         if (event.keyCode == 13) {
-            return confirm();
+            return confirm_test();
         }
     });
-    jQuery("#res_submit").click(confirm_data);
+    // jQuery("#res_submit").click(confirm_data);
     jQuery("#res_type_submit").click(confirm_test);
+    confirm_test();
 
     tracker = state.tracker();
     tracker.start();

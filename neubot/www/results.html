@@ -10,13 +10,20 @@
                    <option value="speedtest" selected="selected">Speedtest</option>
                    <option value="bittorrent">BitTorrent</option>
                   </select>
+                  <span class="i18n i18n_speedtest_see_last">View last</span> <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
+                  <select id="res_unit" size="1">
+                   <option value="d" selected="selected" class="i18n i18n_speedtest_see_last_days">day</option>
+                   <option value="h" class="i18n i18n_speedtest_see_last_hours">hour</option>
+                  </select>
                   <input id="res_type_submit" type="button" value="Go" />
                 </p>
             </div>
 
           <h4 id="results_title" class="i18n i18n_title"></h4>
 
-          <div id="results_description">Prova</div>
+          <div id="results_description"></div>
+
+          <!--
           <div id="results_interval">
               <p class='box-title'>
                <span class="i18n i18n_speedtest_see_last">View last</span> <input id="res_value" type="text" value="1" size="2" style="vertical-align: center"/>
@@ -26,16 +33,17 @@
                 </select>
                 <input id="res_submit" type="button" value="Go" />
               </p>
-          </div>
+          </div>-->
           <!-- XXX Do NOT move plots here or they will suck alot. -->
 
         </div>
 
-        <div id="chartdiv1"></div>
-        <div id="chartdiv2"></div>
+        <!--<div id="chartdiv1"></div>
+        <div id="chartdiv2"></div>-->
+
+        <div id="charts"></div>
 
         <div id="results">
-          <!-- nothing -->
         </div>
 
         <!--#include virtual="footer.html"-->
