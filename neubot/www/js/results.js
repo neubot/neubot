@@ -28,17 +28,6 @@ var results = (function() {
     self.result_fields = [];
     self.result_titles = [];
 
-    /*
-    self.result_fields = ["timestamp", "internalAddress", "realAddress",
-     "remoteAddress", "connectTime", "latency", "downloadSpeed", "uploadSpeed"];
-
-    self.result_titles = ["Timestamp", "Internal Address", "Real Address",
-     "Remote Address", "Connect Time", "Latency", "Download Speed",
-     "Upload Speed"];
-    */
-
-    // walk through results
-
     self.init = function(request) {
         self.request = request;
 
@@ -52,12 +41,6 @@ var results = (function() {
             self.result_fields.push(i);
             self.result_titles.push(v);
         });
-    }
-
-    self.get_recent = function(callbacks) {
-        var one_day_in_ms = 24 * 60 * 60 * 1000;
-        var since = utils.getNow() - one_day_in_ms;
-        return self.get_results(callbacks, since);
     }
 
     self.get_results = function(callbacks, since, unit, until) {
@@ -225,13 +208,11 @@ var results = (function() {
             xaxis.tickOptions = {
               formatString:'%b %#d, h %H'
             };
-            // xaxis.tickInterval = '8 hours';
         }
         else {
             xaxis.tickOptions = {
               formatString:'%b %#d'
             };
-            // xaxis.tickInterval = '1 day';
         }
 
         jQuery("#charts").html("");
@@ -329,9 +310,6 @@ function results_init() {
                 }
 
                 results.get_results([results.formatter_table, results.formatter_plot], since);
-
-                // results.get_recent([results.formatter_table, results.formatter_plot]);
-                // results.get_recent([results.formatter_table]);
             }
         });
     }
@@ -341,7 +319,6 @@ function results_init() {
             return confirm_test();
         }
     });
-    // jQuery("#res_submit").click(confirm_data);
     jQuery("#res_type_submit").click(confirm_test);
     confirm_test();
 
