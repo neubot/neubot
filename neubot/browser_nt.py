@@ -38,6 +38,17 @@ def open_browser(uri):
     # which a handler for HTML is not installed.
     #
 
+    #
+    # The check whether the URI actually looks like a URI is
+    # performed in browser.py.  As an extra check, ensure that
+    # we don't call startfile() when a file with that name exists
+    # on the system.  I don't know the internals of startfile()
+    # and I prefer to be paranoid.
+    #
+    if os.path.exists(uri):
+        sys.stderr.write('ERROR: there is a file named like the URI\n')
+        return False
+
     try:
         os.startfile(uri)
     except WindowsError:

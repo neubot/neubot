@@ -23,10 +23,11 @@
 ''' MacOS open browser driver '''
 
 import subprocess
+import os
 import sys
 
 def open_browser(uri):
-    ''' Open browser on Windows NT '''
+    ''' Open browser on MacOSX '''
 
     #
     # Use the best tool available on the platform to load Neubot
@@ -39,6 +40,17 @@ def open_browser(uri):
     # fix here is to create a Cocoa application that uses the WebView
     # class to load the proper page.
     #
+
+    #
+    # The check whether the URI actually looks like a URI is
+    # performed in browser.py.  As an extra check, ensure that
+    # we don't call open(1) when a file with that name exists
+    # on the system.  I don't know the internals of open(1) and
+    # I prefer to be paranoid.
+    #
+    if os.path.exists(uri):
+        sys.stderr.write('ERROR: there is a file named like the URI\n')
+        return False
 
     verbose = 0
     cmdline = ['/usr/bin/open', uri]
