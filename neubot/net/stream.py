@@ -449,7 +449,7 @@ class Connector(Pollable):
 
         # Connect first address in a list
         if ' ' in endpoint[0]:
-            logging.debug('* Connecting to %s' % str(endpoint))
+            logging.debug('* Connecting to %s', str(endpoint))
             for address in endpoint[0].split():
                 epnt = (address.strip(), endpoint[1])
                 self.epnts.append(epnt)
