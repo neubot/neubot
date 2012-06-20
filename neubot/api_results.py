@@ -119,7 +119,7 @@ def api_results(stream, request, query):
     test = 'speedtest'
 
     dictionary = cgi.parse_qs(query)
-    if dictionary.has_key('test'):
+    if 'test' in dictionary:
         test = str(dictionary['test'][0])
 
     if not test in AVAILABLE_TESTS:
