@@ -23,6 +23,12 @@
 
 ''' API to fetch data '''
 
+#
+# Formerly api_results.py, then moved to api_data.py, since
+# we needed to use api_results.py for the API that helps
+# to build results.html dynamically.
+#
+
 import cgi
 
 from neubot.compat import json
