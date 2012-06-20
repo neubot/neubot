@@ -30,7 +30,7 @@ import socket
 import os
 import logging
 
-from neubot.log import LOG, oops
+from neubot.log import oops
 
 from neubot import compat
 from neubot import utils
