@@ -42,7 +42,7 @@ def linux_fixup_databasedir():
 
     logging.debug('database_xxx: /var/neubot -> /var/lib/neubot...')
 
-    # Delayed
+    # Lazy import
     from neubot import utils_posix
 
     utils_posix.mkdir_idempotent('/var/lib/neubot')
