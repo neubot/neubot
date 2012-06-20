@@ -48,11 +48,11 @@ def api_data(stream, request, query):
 
     dictionary = cgi.parse_qs(query)
 
-    if dictionary.has_key("test"):
+    if "test" in dictionary:
         test = str(dictionary["test"][0])
-    if dictionary.has_key("since"):
+    if "since" in dictionary:
         since = int(dictionary["since"][0])
-    if dictionary.has_key("until"):
+    if "until" in dictionary:
         until = int(dictionary["until"][0])
 
     if test == 'bittorrent':
