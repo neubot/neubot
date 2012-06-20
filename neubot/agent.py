@@ -49,7 +49,7 @@ def main(args):
 
     if conf["agent.api"]:
         server = HTTP_SERVER
-        logging.debug("* API server root directory: %s" % utils_sysdirs.WWWDIR)
+        logging.debug("* API server root directory: %s", utils_sysdirs.WWWDIR)
         conf["http.server.rootdir"] = utils_sysdirs.WWWDIR
         conf["http.server.ssi"] = True
         conf["http.server.bind_or_die"] = True
