@@ -136,6 +136,7 @@ def api_results(stream, request, query):
         'table_types': TABLE_TYPES[test]
     }
 
+    # Note: DO NOT sort keys here: order must be preserved
     indent, mimetype = None, 'application/json'
     if 'debug' in dictionary and utils.intify(dictionary['debug'][0]):
         indent, mimetype = 4, 'text/plain'
