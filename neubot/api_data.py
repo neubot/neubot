@@ -60,7 +60,7 @@ def api_data(stream, request, query):
     elif test == 'speedtest':
         table = table_speedtest
     else:
-        raise NotImplementedTest("Test '%s' is not implemented" % test)
+        raise NotImplementedTest("Test not implemented")
 
     indent, mimetype, sort_keys = None, "application/json", False
     if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
