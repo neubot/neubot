@@ -47,6 +47,12 @@ def linux_fixup_databasedir():
     # Lazy import
     from neubot import utils_posix
 
+    #
+    # Here we create the new link as root, and we assume that
+    # the caller will fix permissions afterwards.  This should
+    # happen as long as we are invoked before the database
+    # function that checks database path.
+    #
     utils_posix.mkdir_idempotent('/var/lib/neubot')
     os.link('/var/neubot/database.sqlite3', '/var/lib/neubot/database.sqlite3')
     os.unlink('/var/neubot/database.sqlite3')
