@@ -39,6 +39,8 @@ def linux_fixup_databasedir():
 
     if not os.path.isfile('/var/neubot/database.sqlite3'):
         return
+    if os.path.exists('/var/lib/neubot/database.sqlite3'):
+        return
 
     logging.debug('database_xxx: /var/neubot -> /var/lib/neubot...')
 
