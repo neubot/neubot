@@ -34,6 +34,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import utils_sysdirs
+from neubot.config import CONFIG
 
 if os.name == 'posix':
     import syslog
@@ -90,7 +91,7 @@ def main(args):
         elif name == '-s':
             sign = 1
         elif name == '-v':
-            logging.getLogger('').setLevel(logging.DEBUG)
+            CONFIG['verbose'] = 1
 
     tarball = arguments[0]
     signature = tarball + '.sig'

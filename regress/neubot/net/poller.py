@@ -22,7 +22,6 @@
 
 ''' Regression test for neubot/net/poller.py '''
 
-import logging
 import sys
 import unittest
 
@@ -112,8 +111,4 @@ class TestCheckTimeout(unittest.TestCase):
         self.assertEqual(sorted(poller.writeset), range(16, 128, 2))
 
 if __name__ == '__main__':
-    # Suppress annoying warnings
-    logging.getLogger().setLevel(logging.ERROR)
-
-    # Run tests
     unittest.main()
