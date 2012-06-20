@@ -123,7 +123,7 @@ def api_results(stream, request, query):
         test = str(dictionary['test'][0])
 
     if not test in AVAILABLE_TESTS:
-        raise NotImplementedTest('Test "%s" is not implemented' % test)
+        raise NotImplementedTest('Test not implemented')
 
     response_body = {
         'available_tests': AVAILABLE_TESTS,
