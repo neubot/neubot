@@ -39,12 +39,12 @@ AVAILABLE_TESTS = {
 
 AXIS_LABELS = {
     'bittorrent': [
-        ['Time (s)', 'Goodput (Mbit/s)'],
-        ['Time (s)', 'Delay (ms)']
+        ['Date', 'Goodput (Mbit/s)'],
+        ['Date', 'Delay (ms)']
     ],
     'speedtest': [
-        ['Time (s)', 'Goodput (Mbit/s)'],
-        ['Time (s)', 'Delay (ms)']
+        ['Date', 'Goodput (Mbit/s)'],
+        ['Date', 'Delay (ms)']
     ]
 }
 
