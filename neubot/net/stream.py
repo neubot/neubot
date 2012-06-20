@@ -509,7 +509,7 @@ class Listener(Pollable):
     #
     def handle_read(self):
         try:
-            sock, sockaddr = self.lsock.accept()
+            sock = self.lsock.accept()[0]
             sock.setblocking(False)
             self.parent.connection_made(sock, self.endpoint, 0)
         except (KeyboardInterrupt, SystemExit):
