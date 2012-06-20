@@ -29,7 +29,6 @@
 
 import collections
 import errno
-import os
 import socket
 import sys
 import types
