@@ -143,7 +143,7 @@ class StreamingLogger(object):
             try:
 
                 logline = "%s %s\r\n" % (severity, message)
-                # UTF-8 encoding avoids an oops() in stream.py
+                # UTF-8 encoding to avoid supplying unicode to stream.py
                 logline = logline.encode("utf-8")
                 for stream in self.streams:
                     stream.start_send(logline)
