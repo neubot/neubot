@@ -121,7 +121,7 @@ class StreamingLogger(object):
     def stop_streaming(self):
         ''' Close all attached streams '''
         for stream in self.streams:
-            stream.poller.close(stream)
+            POLLER.close(stream)
         self.streams.clear()
 
     def log(self, severity, message, args, exc_info):
@@ -133,7 +133,7 @@ class StreamingLogger(object):
 
         if self.streams:
 
-            # "Lazy" processing
+            # Lazy processing
             if args:
                 message = message % args
             if exc_info:
@@ -143,7 +143,7 @@ class StreamingLogger(object):
             try:
 
                 logline = "%s %s\r\n" % (severity, message)
-                # UTF-8 encoding avoids an oops() in stream.py
+                # UTF-8 encoding to avoid supplying unicode to stream.py
                 logline = logline.encode("utf-8")
                 for stream in self.streams:
                     stream.start_send(logline)
@@ -319,7 +319,7 @@ class LogWrapper(logging.Handler):
 
 class AccessLogWrapper(logging.Handler):
 
-    """Wrapper for stdlib logging."""
+    """Glue between stdlib logging and access logger"""
 
     def emit(self, record):
         msg = record.msg
@@ -331,7 +331,7 @@ STREAMING_LOG = StreamingLogger()
 
 class StreamingLogWrapper(logging.Handler):
 
-    """Wrapper between stdlib logging and StreamingLogger"""
+    """Glue between stdlib logging and StreamingLogger"""
 
     def emit(self, record):
         msg = record.msg
@@ -345,9 +345,16 @@ ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
 ROOT_LOGGER.addHandler(StreamingLogWrapper())
 ROOT_LOGGER.setLevel(logging.DEBUG)
+
+#
 # Create 'access' logger
+# XXX Probably it should be more tidy to make sure this
+# code always runs before http_server.py, to avoid all
+# possible race conditions.
+#
 ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
 ACCESS_LOGGER.addHandler(AccessLogWrapper())
+
 # Avoid passing log messages to the ROOT logger
 ACCESS_LOGGER.propagate = False
