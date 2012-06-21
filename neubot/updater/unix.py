@@ -79,7 +79,6 @@
 import asyncore
 import collections
 import getopt
-import compileall
 import errno
 import syslog
 import signal
@@ -90,7 +89,6 @@ import os.path
 import sys
 import time
 import fcntl
-import tarfile
 import stat
 import subprocess
 import decimal
