@@ -541,6 +541,17 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
             # Become unprivileged as soon as possible
             __change_user(passwd)
 
+            # Close all unneeded file descriptors
+            for tmpdesc in range(64):
+                if tmpdesc == lfdesc or tmpdesc == fdout:
+                    continue
+                try:
+                    os.close(tmpdesc)
+                except OSError:
+                    pass
+                except:
+                    pass
+
             # Send HTTP request
             if https:
                 connection = __lib_http.HTTPSConnection(address)
