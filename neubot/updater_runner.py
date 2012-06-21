@@ -196,7 +196,7 @@ class UpdaterRunner(object):
         # TODO once we deal with exceptions in the runner, remove
         # this try...catch clause
         try:
-            updater_verify.verify_rsa(updater_utils.signature_path(
+            updater_verify.dgst_verify(updater_utils.signature_path(
               self.basedir, ctx['vinfo']), updater_utils.tarball_path(
               self.basedir, ctx['vinfo']))
         except:

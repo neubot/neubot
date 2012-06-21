@@ -51,7 +51,7 @@ def __logging_info(message, args):
     else:
         logging.info(message, args)
 
-def verify_rsa(signature, tarball, key=None):
+def dgst_verify(signature, tarball, key=None):
 
     '''
      Call OpenSSL to verify the signature.  The public key
@@ -121,7 +121,7 @@ def main(args):
         dgst_sign(signature, tarball, key)
         sys.exit(0)
 
-    verify_rsa(signature, tarball, key)
+    dgst_verify(signature, tarball, key)
 
 if __name__ == '__main__':
     main(sys.argv)
