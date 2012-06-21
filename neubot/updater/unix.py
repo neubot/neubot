@@ -711,9 +711,23 @@ def __start_neubot_agent():
         from neubot.net.poller import POLLER
         from neubot import agent
 
-        # XXX Redundant?
-        # Because we're already in background
+        #
+        # Redirect logger to syslog now, so early errors in
+        # agent.py:main() are logged.
+        #
         LOG.redirect()
+
+        #
+        # Close all unneeded file descriptors, but save stdio,
+        # which has just been redirected.
+        #
+        for tmpdesc in range(3, 64):
+            try:
+                os.close(tmpdesc)
+            except OSError:
+                pass
+            except:
+                pass
 
         # Handle SIGTERM gracefully
         sigterm_handler = lambda signo, frame: POLLER.break_loop()
