@@ -211,15 +211,11 @@ def main(args):
     common.main("http.client", "Simple Neubot HTTP client", args)
     conf = CONFIG.copy()
 
-    make_client = TestClient
-    if conf["http.client.class"]:
-        make_client = utils.import_class(conf["http.client.class"])
-
     if not conf["http.client.uri"]:
         sys.stdout.write("Please, specify URI via -D http.client.uri=URI\n")
         sys.exit(0)
 
-    client = make_client(POLLER)
+    client = TestClient(POLLER)
     client.configure(conf)
     client.connect_uri(conf["http.client.uri"])
 
