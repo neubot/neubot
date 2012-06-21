@@ -319,7 +319,7 @@ class LogWrapper(logging.Handler):
 
 class AccessLogWrapper(logging.Handler):
 
-    """Wrapper for stdlib logging."""
+    """Glue between stdlib logging and access logger"""
 
     def emit(self, record):
         msg = record.msg
@@ -331,7 +331,7 @@ STREAMING_LOG = StreamingLogger()
 
 class StreamingLogWrapper(logging.Handler):
 
-    """Wrapper between stdlib logging and StreamingLogger"""
+    """Glue between stdlib logging and StreamingLogger"""
 
     def emit(self, record):
         msg = record.msg
