@@ -79,6 +79,12 @@ def main(argv):
             import gc
             gc.set_debug(gc.DEBUG_LEAK)
 
+    # Hook for Neubot for MacOSX
+    if os.name == 'posix' and sys.platform == 'darwin':
+        from neubot import main_macos
+        main_macos.main(argv)
+        return
+
     # Quick argv classification
 
     if len(argv) == 1:
