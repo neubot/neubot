@@ -62,3 +62,8 @@ if __name__ == "__main__":
     logging.warning("WARNING %s", "variadic warning")
 
     LOG.redirect()
+
+    logging.info("INFO w/ logging.info")
+    logging.debug("DEBUG w/ logging.debug")
+    logging.warning("WARNING w/ logging.warning")
+    logging.error("ERROR w/ logging.error")
