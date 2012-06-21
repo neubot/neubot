@@ -133,7 +133,7 @@ class StreamingLogger(object):
 
         if self.streams:
 
-            # "Lazy" processing
+            # Lazy processing
             if args:
                 message = message % args
             if exc_info:
