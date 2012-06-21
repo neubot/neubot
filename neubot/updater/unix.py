@@ -32,10 +32,8 @@
 #
 # Like neubot/main/__init__.py this file is a Neubot entry point
 # and so we must keep its name constant over time.
-# I'm sorry that this file is so huge, but there is a valid reason
-# to do that: It must be Python3 safe.  So that we're safe if the
-# system migrates to Python3 because the updater can still download
-# an updated version -- which hopefully is Python3 ready.
+# This file contains too much code, but we're gradually moving
+# such code into smaller files.
 #
 
 import asyncore
