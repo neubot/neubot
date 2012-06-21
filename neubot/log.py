@@ -345,9 +345,16 @@ ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
 ROOT_LOGGER.addHandler(StreamingLogWrapper())
 ROOT_LOGGER.setLevel(logging.DEBUG)
+
+#
 # Create 'access' logger
+# XXX Probably it should be more tidy to make sure this
+# code always runs before http_server.py, to avoid all
+# possible race conditions.
+#
 ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
 ACCESS_LOGGER.addHandler(AccessLogWrapper())
+
 # Avoid passing log messages to the ROOT logger
 ACCESS_LOGGER.propagate = False
