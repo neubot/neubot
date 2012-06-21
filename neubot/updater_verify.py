@@ -34,6 +34,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import utils_sysdirs
+from neubot import utils_path
 from neubot.config import CONFIG
 
 if os.name == 'posix':
@@ -51,7 +52,7 @@ def __logging_info(message, args):
     else:
         logging.info(message, args)
 
-def verify_rsa(signature, tarball, key=None):
+def dgst_verify(signature, tarball, key=None):
 
     '''
      Call OpenSSL to verify the signature.  The public key
@@ -64,6 +65,18 @@ def verify_rsa(signature, tarball, key=None):
     if not key:
         key = os.sep.join([utils_sysdirs.VERSIONDIR, 'pubkey.pem'])
 
+    #
+    # By default subprocess.call() does not invoke the shell and
+    # passes the command line to execve().  We set the command to
+    # invoke and many arguments, still the caller controls some
+    # other arguments.  For additional correctness, make sure it
+    # receives file names below BASEDIR.
+    #
+    for path in (signature, tarball, key):
+        path = utils_path.normalize(path)
+        if not path.startswith(utils_sysdirs.BASEDIR):
+            raise RuntimeError('Passed path outside of BASEDIR')
+
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
 
@@ -73,6 +86,27 @@ def verify_rsa(signature, tarball, key=None):
 
     if retval != 0:
         raise RuntimeError('Signature does not match')
+
+def __dgst_sign(signature, tarball, key):
+
+    '''
+     Call OpenSSL to create the signature.  The private key
+     must be supplied, i.e. there is no default key.  We use
+     the SHA256 algorithm.
+    '''
+
+    if not utils_sysdirs.OPENSSL:
+        raise RuntimeError('updater_verify: No OPENSSL defined')
+
+    cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-sign', key,
+               '-out', signature, tarball]
+
+    __logging_info('Cmdline: %s', str(cmdline))
+
+    retval = subprocess.call(cmdline)
+
+    if retval != 0:
+        raise RuntimeError('Cannot create signature')
 
 def main(args):
     ''' Main function '''
@@ -96,7 +130,11 @@ def main(args):
     tarball = arguments[0]
     signature = tarball + '.sig'
 
-    verify_rsa(signature, tarball, key)
+    if sign:
+        __dgst_sign(signature, tarball, key)
+        sys.exit(0)
+
+    dgst_verify(signature, tarball, key)
 
 if __name__ == '__main__':
     main(sys.argv)
