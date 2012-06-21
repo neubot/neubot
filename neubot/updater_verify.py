@@ -74,6 +74,27 @@ def verify_rsa(signature, tarball, key=None):
     if retval != 0:
         raise RuntimeError('Signature does not match')
 
+def dgst_sign(signature, tarball, key):
+
+    '''
+     Call OpenSSL to create the signature.  The private key
+     must be supplied, i.e. there is no default key.  We use
+     the SHA256 algorithm.
+    '''
+
+    if not utils_sysdirs.OPENSSL:
+        raise RuntimeError('updater_verify: No OPENSSL defined')
+
+    cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-sign', key,
+               '-out', signature, tarball]
+
+    __logging_info('Cmdline: %s', str(cmdline))
+
+    retval = subprocess.call(cmdline)
+
+    if retval != 0:
+        raise RuntimeError('Cannot create signature')
+
 def main(args):
     ''' Main function '''
     try:
@@ -95,6 +116,10 @@ def main(args):
 
     tarball = arguments[0]
     signature = tarball + '.sig'
+
+    if sign:
+        dgst_sign(signature, tarball, key)
+        sys.exit(0)
 
     verify_rsa(signature, tarball, key)
 
