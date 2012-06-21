@@ -34,6 +34,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import utils_sysdirs
+from neubot import utils_path
 from neubot.config import CONFIG
 
 if os.name == 'posix':
@@ -64,6 +65,18 @@ def dgst_verify(signature, tarball, key=None):
     if not key:
         key = os.sep.join([utils_sysdirs.VERSIONDIR, 'pubkey.pem'])
 
+    #
+    # By default subprocess.call() does not invoke the shell and
+    # passes the command line to execve().  We set the command to
+    # invoke and many arguments, still the caller controls some
+    # other arguments.  For additional correctness, make sure it
+    # receives file names below BASEDIR.
+    #
+    for path in (signature, tarball, key):
+        path = utils_path.normalize(path)
+        if not path.startswith(utils_sysdirs.BASEDIR):
+            raise RuntimeError('Passed path outside of BASEDIR')
+
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
 
@@ -74,7 +87,7 @@ def dgst_verify(signature, tarball, key=None):
     if retval != 0:
         raise RuntimeError('Signature does not match')
 
-def dgst_sign(signature, tarball, key):
+def __dgst_sign(signature, tarball, key):
 
     '''
      Call OpenSSL to create the signature.  The private key
@@ -118,7 +131,7 @@ def main(args):
     signature = tarball + '.sig'
 
     if sign:
-        dgst_sign(signature, tarball, key)
+        __dgst_sign(signature, tarball, key)
         sys.exit(0)
 
     dgst_verify(signature, tarball, key)
