@@ -121,7 +121,7 @@ class StreamingLogger(object):
     def stop_streaming(self):
         ''' Close all attached streams '''
         for stream in self.streams:
-            stream.poller.close(stream)
+            POLLER.close(stream)
         self.streams.clear()
 
     def log(self, severity, message, args, exc_info):
