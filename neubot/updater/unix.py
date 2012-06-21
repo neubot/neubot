@@ -415,6 +415,9 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                     pass
                 except:
                     pass
+            # Ensure stdio point to something
+            for _ in range(3):
+                os.open('/dev/null', os.O_RDWR)
 
             # Send HTTP request
             if https:
