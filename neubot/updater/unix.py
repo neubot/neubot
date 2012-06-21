@@ -125,6 +125,10 @@ CONFIG = {
 # Common
 #
 
+def __exit(code):
+    ''' Invoke exit(2) '''
+    os._exit(code)
+
 def __waitpid(pid, timeo=-1):
     ''' Wait up to @timeo seconds for @pid to exit() '''
 
@@ -375,14 +379,14 @@ def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
 
     # detach from the shell
     if os.fork() > 0:
-        os._exit(0)
+        __exit(0)
 
     # create new session
     os.setsid()
 
     # detach from the session
     if os.fork() > 0:
-        os._exit(0)
+        __exit(0)
 
     # redirect stdio to /dev/null
     for fdesc in range(3):
@@ -611,9 +615,9 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 os.write(fdout, 'ERROR %s\n' % str(why))
             except:
                 pass
-            os._exit(1)
+            __exit(1)
         else:
-            os._exit(0)
+            __exit(0)
 
 def __download_version_info(address, channel):
     '''
@@ -860,10 +864,10 @@ def __start_neubot_agent():
                     '-D agent.use_syslog=ON'])
 
     #
-    # We must employ os._exit() instead of sys.exit() because
+    # We must employ __exit() instead of sys.exit() because
     # the latter is catched below by our catch-all clauses and
     # the child process will start running the parent code.
-    # OTOH os._exit() exits immediately.
+    # OTOH __exit() exits immediately.
     #
     except:
         try:
@@ -873,9 +877,9 @@ def __start_neubot_agent():
                           str(why))
         except:
             pass
-        os._exit(1)
+        __exit(1)
     else:
-        os._exit(0)
+        __exit(0)
 
 def __stop_neubot_agent(pid):
     ''' Stop a running Neubot agent '''
