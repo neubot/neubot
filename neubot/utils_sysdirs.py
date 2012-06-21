@@ -32,9 +32,9 @@ import sys
 # which, in turn, contains all Neubot sources.  When Neubot is
 # a py2exe executable, ROOTDIR is `$ROOTDIR\\library.zip` so we
 # need to trim it.  Note that frozen is an attribute of system
-# if and only if we're a py2exe executable.
+# when we are a py2exe executable only.
 #
-# The following is magic to comput the absolute root directory
+# The following is magic to compute the absolute root directory
 # and has been suggested by Alessio Palmero.  Here is how it
 # works::
 #     __file__ -> $ROOTDIR/neubot/__file__.py -> $ROOTDIR
