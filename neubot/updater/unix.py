@@ -79,6 +79,11 @@ CONFIG = {
     'channel': 'latest',
 }
 
+# State
+STATE = {
+    'lastcheck': 0,
+}
+
 #
 # Common
 #
@@ -792,6 +797,12 @@ def __stop_neubot_agent(pid):
 # Main
 #
 
+def __sigusr1_handler(*args):
+    ''' Handler for USR1 signal '''
+    if args[0] != signal.SIGUSR1:
+        raise RuntimeError('Invoked for the wrong signal')
+    STATE['lastcheck'] = 0
+
 def __main():
     ''' Neubot auto-updater process '''
 
@@ -833,9 +844,10 @@ def __main():
     # gracefully.
     #
 
-    lastcheck = time.time()
     firstrun = True
     pid = -1
+
+    signal.signal(signal.SIGUSR1, __sigusr1_handler)
 
     #
     # Loop forever, catch and just log all exceptions.
@@ -862,8 +874,8 @@ def __main():
 
             # Check for updates
             now = time.time()
-            if now - lastcheck > 1800:
-                lastcheck = now
+            if now - STATE['lastcheck'] > 1800:
+                STATE['lastcheck'] = now
                 nversion = _download_and_verify_update()
                 if nversion:
                     if pid > 0:
