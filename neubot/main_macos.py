@@ -30,6 +30,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import log
 from neubot import utils_ctl
 
 def subcommand_start(args):
@@ -45,6 +46,7 @@ def subcommand_start(args):
     verbose = 0
     for opt in options:
         if opt[0] == '-v':
+            log.set_verbose()
             verbose = 1
 
     if os.getuid() != 0 and os.geteuid() != 0:
@@ -71,6 +73,7 @@ def subcommand_status(args):
     verbose = 0
     for opt in options:
         if opt[0] == '-v':
+            log.set_verbose()
             verbose = 1
 
     running = utils_ctl.is_running('127.0.0.1', '9774', verbose)
@@ -90,6 +93,7 @@ def subcommand_stop(args):
     verbose = 0
     for opt in options:
         if opt[0] == '-v':
+            log.set_verbose()
             verbose = 1
 
     if os.getuid() != 0 and os.geteuid() != 0:
