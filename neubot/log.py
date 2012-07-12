@@ -362,3 +362,7 @@ ACCESS_LOGGER.propagate = False
 def set_verbose():
     ''' Make logger verbose '''
     CONFIG['verbose'] = 1
+
+def is_verbose():
+    ''' Is the logger verbose? '''
+    return CONFIG['verbose']
