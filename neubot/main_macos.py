@@ -23,6 +23,7 @@
 ''' MacOS main() '''
 
 import getopt
+import logging
 import os
 import subprocess
 import sys
@@ -43,21 +44,17 @@ def subcommand_start(args):
     if arguments:
         sys.exit('usage: neubot start [-v]')
 
-    verbose = 0
     for opt in options:
         if opt[0] == '-v':
             log.set_verbose()
-            verbose = 1
 
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('ERROR: must be root')
 
     cmdline = ['/bin/launchctl', 'start', 'org.neubot']
-    if verbose:
-        sys.stderr.write('DEBUG: about to exec: %s\n' % str(cmdline))
+    logging.debug('main_macos: about to exec: %s', str(cmdline))
     retval = subprocess.call(cmdline)
-    if verbose:
-        sys.stderr.write('DEBUG: return value: %d\n' % retval)
+    logging.debug('main_macos: return value: %d', retval)
     sys.exit(retval)
 
 def subcommand_status(args):
@@ -70,13 +67,11 @@ def subcommand_status(args):
     if arguments:
         sys.exit('usage: neubot status [-v]')
 
-    verbose = 0
     for opt in options:
         if opt[0] == '-v':
             log.set_verbose()
-            verbose = 1
 
-    running = utils_ctl.is_running('127.0.0.1', '9774', verbose)
+    running = utils_ctl.is_running('127.0.0.1', '9774', log.is_verbose())
     if not running:
         sys.exit('ERROR: neubot is not running')
 
@@ -90,21 +85,17 @@ def subcommand_stop(args):
     if arguments:
         sys.exit('usage: neubot stop [-v]')
 
-    verbose = 0
     for opt in options:
         if opt[0] == '-v':
             log.set_verbose()
-            verbose = 1
 
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('ERROR: must be root')
 
     cmdline = ['/bin/launchctl', 'stop', 'org.neubot']
-    if verbose:
-        sys.stderr.write('DEBUG: about to exec: %s\n' % str(cmdline))
+    logging.debug('main_macos: about to exec: %s', str(cmdline))
     retval = subprocess.call(cmdline)
-    if verbose:
-        sys.stderr.write('DEBUG: return value: %d\n' % retval)
+    logging.debug('main_macos: return value: %d', retval)
     sys.exit(retval)
 
 USAGE = '''\
