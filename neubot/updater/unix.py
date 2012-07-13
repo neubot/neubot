@@ -19,44 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
-# ==============================================================
-# The implementation of chroot in this file is loosely inspired
-# to the one of OpenSSH session.c, revision 1.258, which is avail
-# under the following license:
-#
-# Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
-#                    All rights reserved
-#
-# As far as I am concerned, the code I have written for this software
-# can be used freely for any purpose.  Any derived versions of this
-# software must be clearly marked as such, and if the derived work is
-# incompatible with the protocol description in the RFC file, it must be
-# called by a name other than "ssh" or "Secure Shell".
-#
-# SSH2 support by Markus Friedl.
-# Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# ==============================================================
-#
 
 '''
  This is the privilege separated Neubot updater daemon.  It is
@@ -70,16 +32,12 @@
 #
 # Like neubot/main/__init__.py this file is a Neubot entry point
 # and so we must keep its name constant over time.
-# I'm sorry that this file is so huge, but there is a valid reason
-# to do that: It must be Python3 safe.  So that we're safe if the
-# system migrates to Python3 because the updater can still download
-# an updated version -- which hopefully is Python3 ready.
+# This file contains too much code, but we're gradually moving
+# such code into smaller files.
 #
 
 import asyncore
-import collections
 import getopt
-import compileall
 import errno
 import syslog
 import signal
@@ -90,8 +48,6 @@ import os.path
 import sys
 import time
 import fcntl
-import tarfile
-import stat
 import subprocess
 import decimal
 import shutil
@@ -123,9 +79,18 @@ CONFIG = {
     'channel': 'latest',
 }
 
+# State
+STATE = {
+    'lastcheck': 0,
+}
+
 #
 # Common
 #
+
+def __exit(code):
+    ''' Invoke exit(2) '''
+    os._exit(code)
 
 def __waitpid(pid, timeo=-1):
     ''' Wait up to @timeo seconds for @pid to exit() '''
@@ -169,7 +134,7 @@ def __lookup_user_info(uname):
     '''
      Lookup and return the specified user's uid and gid.
      This function is not part of __change_user() because
-     you may want to __chroot() once you have user info
+     you may want to chroot() once you have user info
      and before you drop root privileges.
     '''
 
@@ -198,7 +163,7 @@ def __change_user(passwd):
 
      5. purify environment.
 
-     Optionally, you might want to invoke __chroot() before
+     Optionally, you might want to invoke chroot() before
      invoking this function.
     '''
 
@@ -253,94 +218,6 @@ def __change_user(passwd):
                   "USER": passwd.pw_name,
                  }
 
-def __chroot(directory):
-
-    '''
-     Make sure that it's safe to chroot to @directory -- i.e.
-     that all path components are owned by root and that permissions
-     are safe -- then chroot to @directory.
-    '''
-
-    #
-    # This function is an attempt to translate into
-    # Python the checks OpenSSH performs in safely_chroot()
-    # of session.c.
-    #
-
-    if not directory.startswith('/'):
-        raise RuntimeError('chroot directory must start with /')
-
-    syslog.syslog(syslog.LOG_INFO, 'Checking "%s" for safety' % directory)
-
-    components = collections.deque(os.path.split(directory))
-
-    curdir = '/'
-    while components:
-
-        # stat(2) curdir
-        statbuf = os.stat(curdir)
-
-        # Is it a directory?
-        if (not stat.S_ISDIR(statbuf.st_mode)):
-            raise RuntimeError('Not a directory: "%s"' % curdir)
-
-        # Are permissions safe? (18 == 0022)
-        if (stat.S_IMODE(statbuf.st_mode) & 18) != 0:
-            raise RuntimeError('Unsafe permissions: "%s"' % curdir)
-
-        # Is the owner root?
-        if statbuf.st_uid != 0:
-            raise RuntimeError('Not owned by root: "%s"' % curdir)
-
-        # Add next component
-        if curdir != '/':
-            curdir = '/'.join(curdir, components.popleft())
-        else:
-            curdir = ''.join(curdir, components.popleft())
-
-    # Switch rootdir
-    os.chdir(directory)
-    os.chroot(directory)
-    os.chdir("/")
-
-def __chroot_naive(directory):
-
-    '''
-     Change the current working directory and the root to
-     @directory and then change the current directory to
-     the root directory.
-    '''
-
-    #
-    # XXX Under MacOSX the ownership of / is unsafe per the
-    # algorithm used by __chroot().  So here's this function
-    # that performs the chroot dance and performs just a
-    # simplified check.
-    #
-
-    if not directory.startswith('/'):
-        raise RuntimeError('chroot directory must start with /')
-
-    # stat(2) curdir
-    statbuf = os.stat(directory)
-
-    # Is it a directory?
-    if (not stat.S_ISDIR(statbuf.st_mode)):
-        raise RuntimeError('Not a directory: "%s"' % directory)
-
-    # Are permissions safe? (18 == 0022)
-    if (stat.S_IMODE(statbuf.st_mode) & 18) != 0:
-        raise RuntimeError('Unsafe permissions: "%s"' % directory)
-
-    # Is the owner root?
-    if statbuf.st_uid != 0:
-        raise RuntimeError('Not owned by root: "%s"' % directory)
-
-    # Switch rootdir
-    os.chdir(directory)
-    os.chroot(directory)
-    os.chdir("/")
-
 def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
 
     '''
@@ -377,14 +254,14 @@ def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
 
     # detach from the shell
     if os.fork() > 0:
-        os._exit(0)
+        __exit(0)
 
     # create new session
     os.setsid()
 
     # detach from the session
     if os.fork() > 0:
-        os._exit(0)
+        __exit(0)
 
     # redirect stdio to /dev/null
     for fdesc in range(3):
@@ -530,16 +407,22 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
             # Lookup unprivileged user info
             passwd = __lookup_user_info('_neubot_update')
 
-            #
-            # Disable chroot for 0.4.2 because it breaks a lot
-            # of things such as encodings and DNS lookups and it
-            # requires some effort to understand all and take
-            # the proper decisions.
-            #
-            #__chroot_naive('/var/empty')
-
             # Become unprivileged as soon as possible
             __change_user(passwd)
+
+            # Close all unneeded file descriptors
+            for tmpdesc in range(64):
+                if tmpdesc == lfdesc or tmpdesc == fdout:
+                    continue
+                try:
+                    os.close(tmpdesc)
+                except OSError:
+                    pass
+                except:
+                    pass
+            # Ensure stdio point to something
+            for _ in range(3):
+                os.open('/dev/null', os.O_RDWR)
 
             # Send HTTP request
             if https:
@@ -602,9 +485,9 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 os.write(fdout, 'ERROR %s\n' % str(why))
             except:
                 pass
-            os._exit(1)
+            __exit(1)
         else:
-            os._exit(0)
+            __exit(0)
 
 def __download_version_info(address, channel):
     '''
@@ -833,9 +716,23 @@ def __start_neubot_agent():
         from neubot.net.poller import POLLER
         from neubot import agent
 
-        # XXX Redundant?
-        # Because we're already in background
+        #
+        # Redirect logger to syslog now, so early errors in
+        # agent.py:main() are logged.
+        #
         LOG.redirect()
+
+        #
+        # Close all unneeded file descriptors, but save stdio,
+        # which has just been redirected.
+        #
+        for tmpdesc in range(3, 64):
+            try:
+                os.close(tmpdesc)
+            except OSError:
+                pass
+            except:
+                pass
 
         # Handle SIGTERM gracefully
         sigterm_handler = lambda signo, frame: POLLER.break_loop()
@@ -851,10 +748,10 @@ def __start_neubot_agent():
                     '-D agent.use_syslog=ON'])
 
     #
-    # We must employ os._exit() instead of sys.exit() because
+    # We must employ __exit() instead of sys.exit() because
     # the latter is catched below by our catch-all clauses and
     # the child process will start running the parent code.
-    # OTOH os._exit() exits immediately.
+    # OTOH __exit() exits immediately.
     #
     except:
         try:
@@ -864,9 +761,9 @@ def __start_neubot_agent():
                           str(why))
         except:
             pass
-        os._exit(1)
+        __exit(1)
     else:
-        os._exit(0)
+        __exit(0)
 
 def __stop_neubot_agent(pid):
     ''' Stop a running Neubot agent '''
@@ -899,6 +796,12 @@ def __stop_neubot_agent(pid):
 #
 # Main
 #
+
+def __sigusr1_handler(*args):
+    ''' Handler for USR1 signal '''
+    if args[0] != signal.SIGUSR1:
+        raise RuntimeError('Invoked for the wrong signal')
+    STATE['lastcheck'] = 0
 
 def __main():
     ''' Neubot auto-updater process '''
@@ -941,9 +844,10 @@ def __main():
     # gracefully.
     #
 
-    lastcheck = time.time()
     firstrun = True
     pid = -1
+
+    signal.signal(signal.SIGUSR1, __sigusr1_handler)
 
     #
     # Loop forever, catch and just log all exceptions.
@@ -970,8 +874,8 @@ def __main():
 
             # Check for updates
             now = time.time()
-            if now - lastcheck > 1800:
-                lastcheck = now
+            if now - STATE['lastcheck'] > 1800:
+                STATE['lastcheck'] = now
                 nversion = _download_and_verify_update()
                 if nversion:
                     if pid > 0:
