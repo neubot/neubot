@@ -288,7 +288,8 @@ var results = (function() {
             }
             else {
                 jQuery("#chartdiv" + (i + 1)).html("<span>" +
-                  i18n.get("No results") + "</span>");
+                  i18n.get("No results")
+                  + "</span>");  /* must be on a separate line */
             }
         }
 
