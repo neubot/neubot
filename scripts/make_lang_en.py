@@ -113,23 +113,28 @@ def _scan_javascript(dictionary):
 def _scan_html(dictionary, fperr=sys.stderr):
     """ Scan neubot htmls for class="i18n i18n_foo" tags """
     for html in glob.glob("neubot/www/*.html"):
-        if os.path.isfile(html):
+        _scan_html_file(dictionary, html, fperr)
+    for html in glob.glob("neubot/www/descr/*.html"):
+        _scan_html_file(dictionary, html, fperr)
 
-            # Skip header and footer that aren't of course well formed
-            if html in ("neubot/www/header.html", "neubot/www/footer.html"):
-                continue
+def _scan_html_file(dictionary, html, fperr=sys.stderr):
+    ''' Scan a single html file for class="i18n i18n_foo" tags '''
+    if os.path.isfile(html):
+        # Skip header and footer that aren't of course well formed
+        if html in ("neubot/www/header.html", "neubot/www/footer.html"):
+            return
 
-            # Open file and perform SSI substitution
-            filep = open(html, "r")
-            content = ssi.ssi_replace("neubot/www", filep)
+        # Open file and perform SSI substitution
+        filep = open(html, "r")
+        content = ssi.ssi_replace("neubot/www", filep)
 
-            # Build DOM or fail if the file's not well formed
-            fperr.write("XML: parsing %s... " % html)
-            document = xml.dom.minidom.parseString(content)
-            fperr.write("done\n")
+        # Build DOM or fail if the file's not well formed
+        fperr.write("XML: parsing %s... " % html)
+        document = xml.dom.minidom.parseString(content)
+        fperr.write("done\n")
 
-            # Seek of i18n class in DOM
-            __process_dom(dictionary, document.documentElement)
+        # Seek of i18n class in DOM
+        __process_dom(dictionary, document.documentElement)
 
 def __process_dom(dictionary, root, fperr=sys.stderr):
     """ Given a DOM process all the tags in the i18n class """
