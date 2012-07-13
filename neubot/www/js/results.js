@@ -37,7 +37,18 @@ var results = (function() {
         self.request = request;
 
         jQuery("#results_title").html(i18n.get(self.request.title));
-        jQuery("#results_description").html(i18n.get(self.request.description));
+
+        //
+        // Emulate what happens when we load the page,
+        // except that when we load the page the initial
+        // HTML is already there.  Now, instead, we put
+        // it in the right place and then we kick the
+        // i18n engine.
+        //
+        jQuery(".i18n").css("visibility", "hidden");
+        jQuery("#results_description").html(self.request.description);
+        i18n.translate_page(self.request.description)
+        jQuery(".i18n").css("visibility", "visible");
 
         self.result_fields = [];
         self.result_titles = [];
