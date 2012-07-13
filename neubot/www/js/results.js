@@ -93,13 +93,13 @@ var results = (function() {
             jQuery.each(self.request.table_fields, function(i, v) {
                 var formatted = result[i];
                 switch (self.request.table_types[i]) {
-                    case "ms":
+                case "ms":
                     formatted = utils.toMs(formatted);
                     break;
-                    case "mbits":
+                case "mbits":
                     formatted = utils.toMbitsPerSecond(formatted);
                     break;
-                    case "datetime":
+                case "datetime":
                     formatted = utils.getTimeFromSeconds(formatted, true);
                     break;
                 }
