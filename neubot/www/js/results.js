@@ -181,11 +181,14 @@ var results = (function() {
 
             for (var j = 0; j < dataType.length; j++) {
                 switch (self.request.table_types[dataType[j]]) {
-                    case "mbits":
-                    myData[dataType[j]][counter].push([timestamp, Number(utils.toMbitsPerSecondNumber(result[dataType[j]]))]);
+                case "mbits":
+                    myData[dataType[j]][counter].push([timestamp,
+                      Number(utils.toMbitsPerSecondNumber(
+                      result[dataType[j]]))]);
                     break;
-                    case "ms":
-                    myData[dataType[j]][counter].push([timestamp, 1000 * result[dataType[j]]]);
+                case "ms":
+                    myData[dataType[j]][counter].push([timestamp,
+                      1000 * result[dataType[j]]]);
                     break;
                 }
             }
