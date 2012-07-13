@@ -211,7 +211,8 @@ var results = (function() {
             min: minx
         };
 
-        var hours = Math.abs(Math.round((since - utils.getNow()) / (1000 * 60 * 60)));
+        var hours = Math.abs(Math.round((since - utils.getNow()) /
+                      (1000 * 60 * 60)));
 
         if (hours <= 120) {
             xaxis.tickOptions = {
