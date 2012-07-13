@@ -228,10 +228,12 @@ var results = (function() {
         jQuery("#charts").html("");
 
         for (var i = 0; i < num_of_plots; i++) {
-            jQuery("#charts").append("<div class='chartdiv' id='chartdiv" + (i + 1) + "'></div>");
+            jQuery("#charts").append("<div class='chartdiv' id='chartdiv" +
+                                       (i + 1) + "'></div>");
 
             if (myData[dataType_no[i][1]]) {
-                mydata = myData[dataType_no[i][0]].concat(myData[dataType_no[i][1]]);
+                mydata = myData[dataType_no[i][0]].concat(
+                           myData[dataType_no[i][1]]);
             }
             else {
                 mydata = myData[dataType_no[i][0]];
@@ -267,13 +269,15 @@ var results = (function() {
                   highlighter: {
                     show: false
                   },
-                  series: labels[dataType_no[i][0]].concat(labels[dataType_no[i][1]])
+                  series: labels[dataType_no[i][0]].concat(
+                             labels[dataType_no[i][1]])
                 });
 
                 plot.replot();
             }
             else {
-                jQuery("#chartdiv" + (i + 1)).html("<span>" + i18n.get("No results") + "</span>");
+                jQuery("#chartdiv" + (i + 1)).html("<span>" +
+                  i18n.get("No results") + "</span>");
             }
         }
 
@@ -319,7 +323,8 @@ function results_init() {
                     break;
                 }
 
-                results.get_results([results.formatter_table, results.formatter_plot], since);
+                results.get_results([results.formatter_table,
+                    results.formatter_plot], since);
             }
         });
     }
