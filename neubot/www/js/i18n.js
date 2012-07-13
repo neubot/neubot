@@ -58,6 +58,25 @@ var i18n = {
         return lang;
     },
 
+    translate_page: function(data) {
+        jQuery(".i18n").each(function(index, element) {
+            var classList = jQuery(element).attr('class').split(/\s+/);
+            jQuery.each(classList, function(i, v) {
+                var patt = /^(i18n_.*)$/i;
+                if ((result = patt.exec(v)) && LANG[result[1]]) {
+                    switch (element.tagName.toLowerCase()) {
+                    case "textarea":
+                        jQuery(element).text(LANG[result[1]]);
+                        break;
+                    default:
+                        jQuery(element).html(LANG[result[1]]);
+                        break;
+                    }
+                }
+            });
+        });
+    },
+
     translate: function(init_caller) {
         var lang = this.getLanguageInUse();
         if (!lang || !this.languages[lang]) {
@@ -69,23 +88,9 @@ var i18n = {
         jQuery.ajax({
             url: "lang/" + lang + ".js",
             dataType: 'script',
+            context: this,
             success: function(data) {
-                jQuery(".i18n").each(function(index, element) {
-                    var classList = jQuery(element).attr('class').split(/\s+/);
-                    jQuery.each(classList, function(i, v) {
-                        var patt = /^(i18n_.*)$/i;
-                        if ((result = patt.exec(v)) && LANG[result[1]]) {
-                            switch (element.tagName.toLowerCase()) {
-                            case "textarea":
-                                jQuery(element).text(LANG[result[1]]);
-                                break;
-                            default:
-                                jQuery(element).html(LANG[result[1]]);
-                                break;
-                            }
-                        }
-                    });
-                });
+                this.translate_page(data);
                 jQuery(".i18n").css("visibility", "visible");
                 init_caller();
             }

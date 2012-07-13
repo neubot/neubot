@@ -140,7 +140,7 @@ lo stato corrente.",
   e <code>agent.api.port</code>, hanno effetto solo al successivo\
   restart di Neubot.',
 
-    // neubot/www/bittorrent.html
+    // neubot/www/descr/bittorrent.html
 
     "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\
         di un certo numero di bytes da un server remoto, utilizzando il\
@@ -160,7 +160,7 @@ lo stato corrente.",
 
     'i18n_bittorrent_title': 'Risultati del test bittorrent',
 
-    // neubot/www/speedtest.html
+    // neubot/www/descr/speedtest.html
 
     "i18n_speedtest_title": "Risultati dello speedtest",
 
@@ -170,9 +170,13 @@ Internet, facendo download e upload di dati casuali a/da un server \
 remoto, e riportando le velocità medie. Il test stima anche (per \
 eccesso) il round-trip time tra te e il server remoto.  Per maggiori \
 informazioni, vedi le \
-<a href='http://www.neubot.org/faq#what-does-speedtest-test-measures'>FAQ</a>.",
+<a href='http://www.neubot.org/faq#what-does-measuring-goodput-mean'>FAQ</a>.",
 
-    "i18n_speedtest_explanation_2": "Per contestualizzare i risultati \
+    "i18n_speedtest_explanation_2": "I risultati di Neubot sono correlati \
+alla qualità della tua connessione broadband (e anche ad altri fattori \
+di confusione, come spiegato nelle \
+<a href='http://www.neubot.org/faq#what-does-measuring-goodput-mean'>FAQ</a>).\
+ Di conseguenza, per contestualizzare i risultati \
 di questo test rispetto alla velocità media disponibile nel \
 tuo paese puoi far riferimento alle statistiche disponibili sul \
 <a href='http://www.oecd.org/sti/ict/broadband'>Portale Banda larga \
