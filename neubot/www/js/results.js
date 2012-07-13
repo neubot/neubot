@@ -1,4 +1,4 @@
-/* neubot/www/js/speedtest.js */
+/* neubot/www/js/results.js */
 /*
  * Copyright (c) 2011-2012 Alessio Palmero Aprosio <alessio@apnetwork.it>,
  *  Universita` degli Studi di Milano
