@@ -24,8 +24,11 @@
 
 ''' Helpers to control Neubot daemon '''
 
+import errno
 import httplib
 import logging
+import socket
+import sys
 import time
 
 def is_running(address, port, verbose=0):
@@ -59,6 +62,12 @@ def is_running(address, port, verbose=0):
 
         except (SystemExit, KeyboardInterrupt):
             raise
+        except socket.error:
+            if sys.exc_info()[1][0] == errno.ECONNREFUSED:
+                logging.warning('cannot contact neubot daemon: %s',
+                                'connection refused')
+            else:
+                logging.warning('cannot contact neubot daemon', exc_info=1)
         except:
             logging.warning('cannot contact neubot daemon', exc_info=1)
 

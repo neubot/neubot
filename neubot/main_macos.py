@@ -23,6 +23,7 @@
 ''' MacOS main() '''
 
 import getopt
+import logging
 import os
 import subprocess
 import sys
@@ -30,32 +31,38 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import log
 from neubot import utils_ctl
 
 def subcommand_start(args):
     ''' Start subcommand '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'v')
+        options, arguments = getopt.getopt(args[1:], 'dv')
     except getopt.error:
-        sys.exit('usage: neubot start [-v]')
+        sys.exit('usage: neubot start [-dv]')
     if arguments:
-        sys.exit('usage: neubot start [-v]')
+        sys.exit('usage: neubot start [-dv]')
 
-    verbose = 0
+    debug = 0
     for opt in options:
-        if opt[0] == '-v':
-            verbose = 1
+        if opt[0] == '-d':
+            debug = 1
+        elif opt[0] == '-v':
+            log.set_verbose()
 
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('ERROR: must be root')
 
+    if debug:
+        import neubot.updater.unix
+        sys.argv = ['neubot updater_unix', '-dD']
+        neubot.updater.unix.main()
+
     cmdline = ['/bin/launchctl', 'start', 'org.neubot']
-    if verbose:
-        sys.stderr.write('DEBUG: about to exec: %s\n' % str(cmdline))
+    logging.debug('main_macos: about to exec: %s', str(cmdline))
     retval = subprocess.call(cmdline)
-    if verbose:
-        sys.stderr.write('DEBUG: return value: %d\n' % retval)
+    logging.debug('main_macos: return value: %d', retval)
     sys.exit(retval)
 
 def subcommand_status(args):
@@ -68,12 +75,11 @@ def subcommand_status(args):
     if arguments:
         sys.exit('usage: neubot status [-v]')
 
-    verbose = 0
     for opt in options:
         if opt[0] == '-v':
-            verbose = 1
+            log.set_verbose()
 
-    running = utils_ctl.is_running('127.0.0.1', '9774', verbose)
+    running = utils_ctl.is_running('127.0.0.1', '9774', log.is_verbose())
     if not running:
         sys.exit('ERROR: neubot is not running')
 
@@ -87,26 +93,23 @@ def subcommand_stop(args):
     if arguments:
         sys.exit('usage: neubot stop [-v]')
 
-    verbose = 0
     for opt in options:
         if opt[0] == '-v':
-            verbose = 1
+            log.set_verbose()
 
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('ERROR: must be root')
 
     cmdline = ['/bin/launchctl', 'stop', 'org.neubot']
-    if verbose:
-        sys.stderr.write('DEBUG: about to exec: %s\n' % str(cmdline))
+    logging.debug('main_macos: about to exec: %s', str(cmdline))
     retval = subprocess.call(cmdline)
-    if verbose:
-        sys.stderr.write('DEBUG: return value: %d\n' % retval)
+    logging.debug('main_macos: return value: %d', retval)
     sys.exit(retval)
 
 USAGE = '''\
 usage: neubot -h|--help
        neubot -V
-       neubot start [-v]
+       neubot start [-dv]
        neubot status [-v]
        neubot stop [-v]
        neubot subcommand [option]... [argument]...
