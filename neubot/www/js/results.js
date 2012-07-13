@@ -243,7 +243,7 @@ var results = (function() {
                 xaxis.label = self.request.axis_labels[i][0];
                 var plot = jQuery.jqplot("chartdiv" + (i + 1), mydata, {
                   title: {
-                    text: i18n.get("Your speedtest download and upload speed"),
+                    text: i18n.get(self.request.plot_titles[i]),
                     fontSize: "16pt"
                   },
                   axes: {

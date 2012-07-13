@@ -108,6 +108,17 @@ DESCRIPTION = {
 '''
 }
 
+PLOT_TITLES = {
+    'bittorrent': (
+        'Download and upload speed',
+        'Connect time',
+    ),
+    'speedtest': (
+        'Download and upload speed',
+        'Connect time and latency',
+    ),
+}
+
 TITLE = {
     'bittorrent': 'Your recent BitTorrent results',
     'speedtest': 'Your recent Speedtest results'
@@ -132,6 +143,7 @@ def api_results(stream, request, query):
         'datasets': DATASETS[test],
         'table_fields': TABLE_FIELDS[test],
         'description': DESCRIPTION[test],
+        'plot_titles': PLOT_TITLES[test],
         'title': TITLE[test],
         'table_types': TABLE_TYPES[test]
     }
