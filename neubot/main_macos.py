@@ -32,6 +32,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import log
+from neubot import main_common
 from neubot import utils_ctl
 
 def subcommand_start(args):
@@ -120,6 +121,7 @@ def main(args):
 
     if len(args) == 1:
         sys.stdout.write(USAGE)
+        main_common.print_subcommands(sys.stdout)
         sys.exit(0)
 
     del args[0]
@@ -127,6 +129,7 @@ def main(args):
 
     if subcommand == '--help' or subcommand == '-h':
         sys.stdout.write(USAGE)
+        main_common.print_subcommands(sys.stdout)
         sys.exit(0)
 
     if subcommand == '-V':
@@ -145,16 +148,7 @@ def main(args):
         subcommand_stop(args)
         sys.exit(0)
 
-    # Special case
-    if subcommand == 'database':
-        # Lazy import
-        import neubot.database.main
-        neubot.database.main.main(args)
-        sys.exit(0)
-
-    # Lazy import
-    from neubot import utils_module
-    utils_module.main(args)
+    main_common.main(subcommand, args)
 
 if __name__ == '__main__':
     main(sys.argv)
