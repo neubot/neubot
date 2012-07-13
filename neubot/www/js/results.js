@@ -47,7 +47,7 @@ var results = (function() {
         //
         jQuery(".i18n").css("visibility", "hidden");
         jQuery("#results_description").html(self.request.description);
-        i18n.translate_page(self.request.description)
+        i18n.translate_page(self.request.description, /^(i18n_results.*)$/i)
         jQuery(".i18n").css("visibility", "visible");
 
         self.result_fields = [];

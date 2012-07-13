@@ -142,13 +142,14 @@ lo stato corrente.",
 
     // neubot/www/descr/bittorrent.html
 
-    "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\
+    "i18n_results_bittorrent_explanation": "Questo test fa il download e \
+        l'upload\
         di un certo numero di bytes da un server remoto, utilizzando il\
         protocollo BitTorrent.  Il test stima la velocità media di download\
         e upload così come il tempo richiesto per connettersi al server\
         remoto, che approssima il round-trip time.",
 
-    "i18n_bittorrent_explanation_2": "Nota che questo test è abbastanza\
+    "i18n_results_bittorrent_explanation_2": "Nota che questo test è abbastanza\
         differente dal test <em>Speedtest</em>, quindi ci sono casi in cui\
         i due non sono comparabili.  Stiamo lavorando a un test HTTP\
         che sia più simile a quest'ultimo, così che sia sempre possibile\
@@ -164,7 +165,7 @@ lo stato corrente.",
 
     "i18n_speedtest_title": "Risultati dello speedtest",
 
-    "i18n_speedtest_explanation_1": "Speedtest é un test che \
+    "i18n_results_speedtest_explanation_1": "Speedtest é un test che \
 getta un po' di luce sulla qualità della tua connessione a \
 Internet, facendo download e upload di dati casuali a/da un server \
 remoto, e riportando le velocità medie. Il test stima anche (per \
@@ -172,7 +173,8 @@ eccesso) il round-trip time tra te e il server remoto.  Per maggiori \
 informazioni, vedi le \
 <a href='http://www.neubot.org/faq#what-does-measuring-goodput-mean'>FAQ</a>.",
 
-    "i18n_speedtest_explanation_2": "I risultati di Neubot sono correlati \
+    "i18n_results_speedtest_explanation_2": "I risultati di Neubot sono \
+correlati \
 alla qualità della tua connessione broadband (e anche ad altri fattori \
 di confusione, come spiegato nelle \
 <a href='http://www.neubot.org/faq#what-does-measuring-goodput-mean'>FAQ</a>).\

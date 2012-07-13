@@ -58,11 +58,10 @@ var i18n = {
         return lang;
     },
 
-    translate_page: function(data) {
+    translate_page: function(data, patt) {
         jQuery(".i18n").each(function(index, element) {
             var classList = jQuery(element).attr('class').split(/\s+/);
             jQuery.each(classList, function(i, v) {
-                var patt = /^(i18n_.*)$/i;
                 if ((result = patt.exec(v)) && LANG[result[1]]) {
                     switch (element.tagName.toLowerCase()) {
                     case "textarea":
@@ -90,7 +89,7 @@ var i18n = {
             dataType: 'script',
             context: this,
             success: function(data) {
-                this.translate_page(data);
+                this.translate_page(data, /^(i18n_.*)$/i);
                 jQuery(".i18n").css("visibility", "visible");
                 init_caller();
             }
