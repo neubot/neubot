@@ -93,11 +93,15 @@ DESCRIPTION = {
            to/from a remote server, and reporting the average speeds.  The
            test also yields an over-estimate of the round-trip latency between
            you and such remote server.  For more information, see the
-<a href="http://www.neubot.org/faq#what-does-speedtest-test-measures">FAQ</a>.
+<a href="http://www.neubot.org/faq#what-does-measuring-goodput-mean">FAQ</a>.
           </p>
 
           <p class="i18n i18n_speedtest_explanation_2">
-           To put the results of this test in the context of the
+           Neubot results are correlated with the quality of your
+           broadband connection (and with other confounding factors,
+           as explained in the
+<a href="http://www.neubot.org/faq#what-does-measuring-goodput-mean">FAQ</a>).
+           So, to put them in the context of the
            average broadband speed available in your country you
            might want to check the statistics available at the <a
            href="http://www.oecd.org/sti/ict/broadband">OECD Broadband
