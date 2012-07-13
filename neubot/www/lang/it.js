@@ -140,7 +140,7 @@ lo stato corrente.",
   e <code>agent.api.port</code>, hanno effetto solo al successivo\
   restart di Neubot.',
 
-    // neubot/www/bittorrent.html
+    // neubot/www/descr/bittorrent.html
 
     "i18n_bittorrent_explanation": "Questo test fa il download e l'upload\
         di un certo numero di bytes da un server remoto, utilizzando il\
@@ -160,7 +160,7 @@ lo stato corrente.",
 
     'i18n_bittorrent_title': 'Risultati del test bittorrent',
 
-    // neubot/www/speedtest.html
+    // neubot/www/descr/speedtest.html
 
     "i18n_speedtest_title": "Risultati dello speedtest",
 
