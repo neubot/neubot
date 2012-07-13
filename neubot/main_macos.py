@@ -38,18 +38,26 @@ def subcommand_start(args):
     ''' Start subcommand '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'v')
+        options, arguments = getopt.getopt(args[1:], 'dv')
     except getopt.error:
-        sys.exit('usage: neubot start [-v]')
+        sys.exit('usage: neubot start [-dv]')
     if arguments:
-        sys.exit('usage: neubot start [-v]')
+        sys.exit('usage: neubot start [-dv]')
 
+    debug = 0
     for opt in options:
-        if opt[0] == '-v':
+        if opt[0] == '-d':
+            debug = 1
+        elif opt[0] == '-v':
             log.set_verbose()
 
     if os.getuid() != 0 and os.geteuid() != 0:
         sys.exit('ERROR: must be root')
+
+    if debug:
+        import neubot.updater.unix
+        sys.argv = ['neubot updater_unix', '-dD']
+        neubot.updater.unix.main()
 
     cmdline = ['/bin/launchctl', 'start', 'org.neubot']
     logging.debug('main_macos: about to exec: %s', str(cmdline))
@@ -101,7 +109,7 @@ def subcommand_stop(args):
 USAGE = '''\
 usage: neubot -h|--help
        neubot -V
-       neubot start [-v]
+       neubot start [-dv]
        neubot status [-v]
        neubot stop [-v]
        neubot subcommand [option]... [argument]...
