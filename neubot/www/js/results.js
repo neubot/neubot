@@ -1,6 +1,6 @@
 /* neubot/www/js/speedtest.js */
 /*
- * Copyright (c) 2011 Alessio Palmero Aprosio <alessio@apnetwork.it>,
+ * Copyright (c) 2011-2012 Alessio Palmero Aprosio <alessio@apnetwork.it>,
  *  Universita` degli Studi di Milano
  * Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
  *  NEXA Center for Internet & Society at Politecnico di Torino
