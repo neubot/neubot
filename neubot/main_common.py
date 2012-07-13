@@ -1,8 +1,8 @@
-# neubot/utils_main.py
+# neubot/main_common.py
 
 #
 # Copyright (c) 2011 Roberto D'Auria <everlastingfire@autistici.org>
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -21,7 +21,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Run a subcommand's main() '''
+''' Common main() code for running subcommands '''
 
 import sys
 import logging
@@ -29,18 +29,30 @@ import logging
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-def main(args):
+SUBCOMMANDS = {
+    'bittorrent': 'neubot.bittorrent',
+    'database': 'neubot.database.main',
+    'notifier': 'neubot.notifier',
+    'privacy': 'neubot.privacy',
+    'server': 'neubot.server',
+    'speedtest': 'neubot.speedtest.client',
+    'viewer': 'neubot.viewer',
+}
+
+def main(subcommand, args):
     ''' Run a subcommand's main() '''
 
-    # Args[0] must be the subcommand name
-    subcommand = args[0]
+    if not subcommand in SUBCOMMANDS:
+        sys.stderr.write('Invalid subcommand: %s\n' % subcommand)
+        print_subcommands(sys.stderr)
+        sys.exit(1)
 
-    # Users are not supposed to prefix commands with 'neubot.'
-    subcommand = 'neubot.' + subcommand
+    # Map subcommand to module
+    module = SUBCOMMANDS[subcommand]
 
     # Dinamically load the selected subcommand's main() at runtime
-    __import__(subcommand)
-    mainfunc = sys.modules[subcommand].main
+    __import__(module)
+    mainfunc = sys.modules[module].main
 
     # Fix args[0]
     args[0] = 'neubot ' + subcommand
@@ -56,7 +68,14 @@ def main(args):
         logging.error('Exception', exc_info=1)
         sys.exit(1)
 
-if __name__ == "__main__":
+def print_subcommands(filep):
+    ''' Print list of available subcommands '''
+    filep.write('subcommands:')
+    for subcommand in sorted(SUBCOMMANDS):
+        filep.write(' %s' % subcommand)
+    filep.write('\n')
+
+if __name__ == '__main__':
     # First argument must be module name
     del sys.argv[0]
-    main(sys.argv)
+    main(sys.argv[0], sys.argv)
