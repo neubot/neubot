@@ -23,6 +23,7 @@
 ''' API to populate results.html page '''
 
 import cgi
+import os
 
 from neubot.compat import json
 from neubot.database import table_bittorrent
@@ -30,6 +31,7 @@ from neubot.database import table_speedtest
 from neubot.http.message import Message
 from neubot.utils_api import NotImplementedTest
 
+from neubot import utils_sysdirs
 from neubot import utils
 
 AVAILABLE_TESTS = {
@@ -69,48 +71,7 @@ TABLE_TYPES = {
     'speedtest': table_speedtest.JS_TYPES,
 }
 
-DESCRIPTION = {
-    'bittorrent': '''\
-          <p class="i18n i18n_bittorrent_explanation">
-           This tests downloads and uploads a given number of bytes from
-           a remote server using the BitTorrent protocol.  It reports the
-           average download and upload speed measured during the test as
-           well as the time required to connect to the remote server,
-           which approximates the round-trip time latency.
-          </p>
-
-          <p class="i18n i18n_bittorrent_explanation_2">
-           Please, note that this test is quite different from the speedtest
-           one, so there are cases where the comparison between the two is not
-           feasible.  We're working to deploy an HTTP test that mimics the
-           behavior of this one, so that it's always possible to compare them.
-	  </p>
-''',
-    'speedtest': '''\
-          <p class="i18n i18n_speedtest_explanation_1">
-           Speedtest is a test that sheds some light on the quality
-           of your broadband connection, by downloading/uploading random data
-           to/from a remote server, and reporting the average speeds.  The
-           test also yields an over-estimate of the round-trip latency between
-           you and such remote server.  For more information, see the
-<a href="http://www.neubot.org/faq#what-does-measuring-goodput-mean">FAQ</a>.
-          </p>
-
-          <p class="i18n i18n_speedtest_explanation_2">
-           Neubot results are correlated with the quality of your
-           broadband connection (and with other confounding factors,
-           as explained in the
-<a href="http://www.neubot.org/faq#what-does-measuring-goodput-mean">FAQ</a>).
-           So, to put them in the context of the
-           average broadband speed available in your country you
-           might want to check the statistics available at the <a
-           href="http://www.oecd.org/sti/ict/broadband">OECD Broadband
-           Portal</a>.  In particular, it might be interesting to read <a
-           href="http://www.oecd.org/dataoecd/10/53/39575086.xls">"Average
-           advertised download speeds, by country"</a> (in XLS format).
-          </p>
-'''
-}
+DESCRIPTION = {}
 
 PLOT_TITLES = {
     'bittorrent': (
@@ -128,6 +89,14 @@ TITLE = {
     'speedtest': 'Your recent Speedtest results'
 }
 
+def __load_descriptions():
+    ''' Load tests descriptions '''
+    for test in AVAILABLE_TESTS:
+        path = os.sep.join([utils_sysdirs.WWWDIR, 'descr', test + '.html'])
+        filep = open(path, 'r')
+        DESCRIPTION[test] = filep.read()
+        filep.close()
+
 def api_results(stream, request, query):
     ''' Populate results.html page '''
 
@@ -139,6 +108,9 @@ def api_results(stream, request, query):
 
     if not test in AVAILABLE_TESTS:
         raise NotImplementedTest('Test not implemented')
+
+    if not DESCRIPTION:
+        __load_descriptions()
 
     response_body = {
         'available_tests': AVAILABLE_TESTS,
