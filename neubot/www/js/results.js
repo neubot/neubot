@@ -21,6 +21,11 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * This file is the fusion of bittorrent.js
+ * and speedtest.js.
+ */
+
 var results = (function() {
     var self = {};
     self.request = {};
