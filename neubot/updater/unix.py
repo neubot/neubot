@@ -895,7 +895,6 @@ def __main():
                     __clear_base_directory()
 
             # Monitor the agent
-            syslog.syslog(syslog.LOG_INFO, 'Monitoring the agent')
             rpid, status = __waitpid(pid, 0)
 
             if rpid == pid:
