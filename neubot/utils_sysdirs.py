@@ -56,7 +56,7 @@ else:
 
 #
 # BASEDIR is the directory that contains ROOTDIR.  This directory
-# is interesting for system where Neubot perform autoupdates, namely
+# is interesting for systems where Neubot performs autoupdates, namely
 # MacOS and Win32.  In those systems, ROOTDIR is a directory named
 # after the current version number in numeric representation (see
 # utils_version.py for more info).  While BASEDIR is typically named
