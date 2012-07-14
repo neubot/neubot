@@ -1,4 +1,4 @@
-# neubot/system/linux.py
+# neubot/resmon_linux.py
 
 #
 # Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+# Monitor resources with Linux (this file is currently unused)
 
 import os.path
 
