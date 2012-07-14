@@ -55,8 +55,8 @@ def write_pidfile():
 def get_default_database_path():
     return os.sep.join([ _get_profile_dir(), "database.sqlite3" ])
 
-def check_database_path(p, perror=None):
+def check_database_path(p):
     p = os.path.abspath(p)
-    _want_rwx_dir(os.path.dirname(p), perror)
-    _want_rw_file(p, perror)
+    _want_rwx_dir(os.path.dirname(p))
+    _want_rw_file(p)
     return p

@@ -354,7 +354,7 @@ def main(args):
         system.write_pidfile()
         LOG.redirect()
 
-    system.drop_privileges(logging.error)
+    system.drop_privileges()
 
     POLLER.loop()
 

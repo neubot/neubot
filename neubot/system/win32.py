@@ -30,20 +30,20 @@ def change_dir():
 def _get_profile_dir():
     return utils_sysdirs.LOCALSTATEDIR
 
-def _want_rwx_dir(p, perror=None):
+def _want_rwx_dir(p):
     if not os.path.isdir(p):
         os.mkdir(p, 0755)
 
 def go_background():
     pass
 
-def drop_privileges(perror=None):
+def drop_privileges():
     pass
 
 def redirect_to_dev_null():
     pass
 
-def _want_rw_file(path, perror=None):
+def _want_rw_file(path):
     # XXX: PyPy doesn't work with this
     open(path, "ab+").close()
 
