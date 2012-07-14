@@ -59,6 +59,7 @@ def subcommand_start(args):
         import neubot.updater.unix
         sys.argv = ['neubot updater_unix', '-dD']
         neubot.updater.unix.main()
+        sys.exit(1)  # should not happen
 
     cmdline = ['/bin/launchctl', 'start', 'org.neubot']
     logging.debug('main_macos: about to exec: %s', str(cmdline))
