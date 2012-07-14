@@ -124,6 +124,7 @@ if [ -f $1/neubot-$VER-setup.exe ]; then
     $ssh $server "install -d $remotedir/updates/win32/"
     doscp $1/win32/$NVER.tar.gz $remote/updates/win32
     doscp $1/win32/$NVER.tar.gz.sha256 $remote/updates/win32
+    doscp $1/win32/$NVER.tar.gz.sig $remote/updates/win32
 
     if [ $candidate = 1 ]; then
         $ssh $server "echo $NVER > $remotedir/updates/win32/testing"
