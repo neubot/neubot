@@ -20,7 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import StringIO
+''' Implements API server '''
+
 import cgi
 import gc
 import pprint
@@ -33,14 +34,9 @@ import sys
 from neubot.main.common import VERSION
 from neubot.compat import json
 from neubot.config import ConfigError
-from neubot.config import CONFIG
-from neubot.database import DATABASE
-from neubot.database import table_bittorrent
-from neubot.database import table_speedtest
 from neubot.debug import objgraph
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
-from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATECHANGE
@@ -59,6 +55,8 @@ from neubot import utils_sysdirs
 from neubot.utils_api import NotImplementedTest
 
 class ServerAPI(ServerHTTP):
+
+    ''' Server for API '''
 
     def __init__(self, poller):
         ServerHTTP.__init__(self, poller)
@@ -87,6 +85,7 @@ class ServerAPI(ServerHTTP):
     # exception.
     #
     def process_request(self, stream, request):
+        ''' Process incoming request '''
         stream.created = utils.ticks()
         try:
             self._serve_request(stream, request)
@@ -97,10 +96,11 @@ class ServerAPI(ServerHTTP):
             logging.info('Exception', exc_info=1)
             response = Message()
             response.compose(code="500", reason=reason,
-                    body=StringIO.StringIO(reason))
+                    body=reason)
             stream.send_response(request, response)
 
     def _serve_request(self, stream, request):
+        ''' Serve incoming request '''
         request_uri = urllib.unquote(request.uri)
         path, query = urlparse.urlsplit(request_uri)[2:4]
         if path in self._dispatch:
@@ -108,16 +108,19 @@ class ServerAPI(ServerHTTP):
         else:
             response = Message()
             response.compose(code="404", reason="Not Found",
-                    body=StringIO.StringIO("404 Not Found"))
+                    body="404 Not Found")
             stream.send_response(request, response)
 
     def _api(self, stream, request, query):
+        ''' Implements /api URI '''
         response = Message()
-        response.compose(code="200", reason="Ok", body=StringIO.StringIO(
-          json.dumps(sorted(self._dispatch.keys()), indent=4)))
+        response.compose(code="200", reason="Ok",
+          body=json.dumps(sorted(self._dispatch.keys()), indent=4))
         stream.send_response(request, response)
 
-    def _api_debug(self, stream, request, query):
+    @staticmethod
+    def _api_debug(stream, request, query):
+        ''' Implements /api/debug URI '''
         response = Message()
         debuginfo = {}
         NOTIFIER.snap(debuginfo)
@@ -126,14 +129,13 @@ class ServerAPI(ServerHTTP):
         debuginfo["WWWDIR"] = utils_sysdirs.WWWDIR
         gc.collect()
         debuginfo['typestats'] = objgraph.typestats()
-        stringio = StringIO.StringIO()
-        pprint.pprint(debuginfo, stringio)
-        stringio.seek(0)
-        response.compose(code="200", reason="Ok", body=stringio,
+        body = pprint.pformat(debuginfo)
+        response.compose(code="200", reason="Ok", body=body,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def _api_index(self, stream, request, query):
+    @staticmethod
+    def _api_index(stream, request, query):
         '''
          Redirect either to /index.html or /privacy.html depending on
          whether the user has already set privacy permissions or not
@@ -146,21 +148,24 @@ class ServerAPI(ServerHTTP):
         stream.send_response(request, response)
 
     def _api_state(self, stream, request, query):
+        ''' Implements /api/state URI '''
         dictionary = cgi.parse_qs(query)
 
-        t = None
-        if dictionary.has_key("t"):
-            t = dictionary["t"][0]
-            stale = NOTIFIER.needs_publish(STATECHANGE, t)
+        otime = None
+        if "t" in dictionary:
+            otime = dictionary["t"][0]
+            stale = NOTIFIER.needs_publish(STATECHANGE, otime)
             if not stale:
                 NOTIFIER.subscribe(STATECHANGE, self._api_state_complete,
-                                   (stream, request, query, t), True)
+                                   (stream, request, query, otime), True)
                 return
 
-        self._api_state_complete(STATECHANGE, (stream, request, query, t))
+        self._api_state_complete(STATECHANGE, (stream, request, query, otime))
 
-    def _api_state_complete(self, event, context):
-        stream, request, query, t = context
+    @staticmethod
+    def _api_state_complete(event, context):
+        ''' Callback invoked when the /api/state has changed '''
+        stream, request, query, otime = context
 
         indent, mimetype = None, "application/json"
         dictionary = cgi.parse_qs(query)
@@ -169,19 +174,21 @@ class ServerAPI(ServerHTTP):
 
         dictionary = STATE.dictionarize()
         octets = json.dumps(dictionary, indent=indent)
-        stringio = StringIO.StringIO(octets)
         response = Message()
-        response.compose(code="200", reason="Ok", body=stringio,
+        response.compose(code="200", reason="Ok", body=octets,
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def _api_version(self, stream, request, query):
+    @staticmethod
+    def _api_version(stream, request, query):
+        ''' Implements /api/version URI '''
         response = Message()
-        stringio = StringIO.StringIO(VERSION)
-        response.compose(code="200", reason="Ok", body=stringio,
+        response.compose(code="200", reason="Ok", body=VERSION,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def _api_exit(self, stream, request, query):
+    @staticmethod
+    def _api_exit(stream, request, query):
+        ''' Implements /api/exit URI '''
         # Break out of the loop immediately
         POLLER.break_loop()
