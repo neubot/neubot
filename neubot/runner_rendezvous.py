@@ -66,7 +66,7 @@ class RunnerRendezvous(ClientHTTP):
 
         message = {
                    'accept': ['speedtest', 'bittorrent'],
-                   'version': '0.4.13-rc2',
+                   'version': '0.4.13-rc3',
                    'privacy_informed': CONFIG['privacy.informed'],
                    'privacy_can_collect': CONFIG['privacy.can_collect'],
                    # Using the old name for backward compatibility

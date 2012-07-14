@@ -30,7 +30,7 @@ import re
 
 from neubot import utils_path
 
-VERSION = '0.004013002'
+VERSION = '0.004013003'
 
 def versioninfo_extract(content):
     ''' Extract version info '''

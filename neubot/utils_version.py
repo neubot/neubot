@@ -164,4 +164,4 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         print(to_numeric(sys.argv[1]))
     else:
-        print(to_numeric('0.4.13-rc2'))
+        print(to_numeric('0.4.13-rc3'))
