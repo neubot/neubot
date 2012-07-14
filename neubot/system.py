@@ -47,7 +47,7 @@ elif os.name == "posix":
     from neubot.system_posix import _want_rw_file
     from neubot.system_posix import get_background_logger
 else:
-    raise ImportError("Your system is not supported")
+    raise RuntimeError("Your system is not supported")
 
 def write_pidfile():
     ''' Write pidfile '''
