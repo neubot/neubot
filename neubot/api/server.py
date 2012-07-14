@@ -118,7 +118,8 @@ class ServerAPI(ServerHTTP):
           body=json.dumps(sorted(self._dispatch.keys()), indent=4))
         stream.send_response(request, response)
 
-    def _api_debug(self, stream, request, query):
+    @staticmethod
+    def _api_debug(stream, request, query):
         ''' Implements /api/debug URI '''
         response = Message()
         debuginfo = {}
@@ -133,7 +134,8 @@ class ServerAPI(ServerHTTP):
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def _api_index(self, stream, request, query):
+    @staticmethod
+    def _api_index(stream, request, query):
         '''
          Redirect either to /index.html or /privacy.html depending on
          whether the user has already set privacy permissions or not
@@ -160,7 +162,8 @@ class ServerAPI(ServerHTTP):
 
         self._api_state_complete(STATECHANGE, (stream, request, query, t))
 
-    def _api_state_complete(self, event, context):
+    @staticmethod
+    def _api_state_complete(event, context):
         ''' Callback invoked when the /api/state has changed '''
         stream, request, query, t = context
 
@@ -176,14 +179,16 @@ class ServerAPI(ServerHTTP):
                          mimetype=mimetype)
         stream.send_response(request, response)
 
-    def _api_version(self, stream, request, query):
+    @staticmethod
+    def _api_version(stream, request, query):
         ''' Implements /api/version URI '''
         response = Message()
         response.compose(code="200", reason="Ok", body=VERSION,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
-    def _api_exit(self, stream, request, query):
+    @staticmethod
+    def _api_exit(stream, request, query):
         ''' Implements /api/exit URI '''
         # Break out of the loop immediately
         POLLER.break_loop()
