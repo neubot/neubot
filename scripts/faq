@@ -29,7 +29,7 @@ if [ -z $rst2html ]; then
 fi
 
 faq_filter() {
-    ./scripts/faq_filter "$(date)" "$(git describe --tags)"
+    ./scripts/faq_filter "$(date)"
 }
 
 for file in doc/FAQ.rst doc/FAQ-it.rst; do
