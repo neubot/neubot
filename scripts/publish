@@ -84,100 +84,75 @@ doscp()
 VER=0.4.13-rc3
 NVER=0.004013003
 
-#
-# If we have a MacOSX release, publish it.  We now install in updates/macos/
-# but, for backwards compatibility, we also install in updates/ alone.
-#
+if [ "$dry" = "1" ]; then
+    echo "#"
+    echo "# Harmless copies"
+    echo "#"
+fi
+
 if [ -f $1/macos/$NVER.tar.gz ]; then
     doscp $1/neubot-$VER.pkg.tgz $remote/_packages/
-
     $ssh $server "install -d $remotedir/updates/macos/"
     for ext in "" .sha256 .sig; do
         doscp $1/macos/$NVER.tar.gz$ext $remote/updates/macos/
+        # Backward compatibility
         doscp $1/macos/$NVER.tar.gz$ext $remote/updates/
     done
-
-    if [ $candidate = 1 ]; then
-        $ssh $server "echo $NVER > $remotedir/updates/macos/testing"
-        $ssh $server "echo $NVER > $remotedir/updates/testing"
-    fi
-
-    #
-    # The default channel name is `latest` and it tracks
-    # stable releases.
-    #
-    if [ $stable = 1 ]; then
-        $ssh $server "echo $NVER > $remotedir/updates/macos/latest"
-        $ssh $server "echo $NVER > $remotedir/updates/latest"
-    fi
-
 fi
 
-#
-# If we have a Win32 release, publish it
-#
 if [ -f $1/neubot-$VER-setup.exe ]; then
-
     doscp $1/neubot-$VER-setup.exe $remote/_packages/
-
-    # Autoupdates stuff
     $ssh $server "install -d $remotedir/updates/win32/"
-    doscp $1/win32/$NVER.tar.gz $remote/updates/win32
-    doscp $1/win32/$NVER.tar.gz.sha256 $remote/updates/win32
-    doscp $1/win32/$NVER.tar.gz.sig $remote/updates/win32
-
-    if [ $candidate = 1 ]; then
-        $ssh $server "echo $NVER > $remotedir/updates/win32/testing"
-    fi
-
-    #
-    # The default channel name is `latest` and it tracks
-    # stable releases.
-    #
-    if [ $stable = 1 ]; then
-        $ssh $server "echo $NVER > $remotedir/updates/win32/latest"
-    fi
-
+    for ext in "" .sha256 .sig; do
+        doscp $1/win32/$NVER.tar.gz$ext $remote/updates/win32/
+    done
 fi
 
-#
-# If we have a source release, publish it
-#
 if [ -f $1/neubot-$VER.tar.gz ]; then
-
     for ext in .tar.gz .zip; do
         doscp $1/neubot-$VER$ext $remote/_packages/
     done
-
 fi
 
-#
-# If we have a Debian release, publish it
-#
 if [ -f $1/neubot-$VER-1_all.deb ]; then
-
     for pkg in neubot neubot-nox; do
         doscp $1/$pkg-$VER-1_all.deb $remote/_packages/
     done
+fi
 
-    if [ $candidate = 1 ]; then
-        for pkg in neubot-$VER neubot-nox-$VER; do
-            $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir/rc
-        done
-        doscp $1/Release $remote/rc/
-        doscp $1/Release.gpg $remote/rc/
-        doscp $1/Packages $remote/rc/
-        doscp $1/Packages.gz $remote/rc/
-    fi
+if [ "$dry" = "1" ]; then
+    echo ""
+    echo "#"
+    echo "# Dangerous operations"
+    echo "#"
+fi
 
-    if [ $stable = 1 ]; then
-        for pkg in neubot-$VER neubot-nox-$VER; do
-            $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir
-        done
-        doscp $1/Release $remote/
-        doscp $1/Release.gpg $remote/
-        doscp $1/Packages $remote/
-        doscp $1/Packages.gz $remote/
-    fi
+if [ $candidate = 1 ]; then
+    $ssh $server "echo $NVER > $remotedir/updates/macos/testing"
+    $ssh $server "echo $NVER > $remotedir/updates/testing"
+    $ssh $server "echo $NVER > $remotedir/updates/win32/testing"
+    for pkg in neubot-$VER neubot-nox-$VER; do
+        $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir/rc
+    done
+    doscp $1/Release $remote/rc/
+    doscp $1/Release.gpg $remote/rc/
+    doscp $1/Packages $remote/rc/
+    doscp $1/Packages.gz $remote/rc/
+fi
 
+#
+# The default channel name is `latest` and it tracks
+# stable releases.
+#
+if [ $stable = 1 ]; then
+    $ssh $server "echo $NVER > $remotedir/updates/macos/latest"
+    $ssh $server "echo $NVER > $remotedir/updates/latest"
+    $ssh $server "echo $NVER > $remotedir/updates/win32/latest"
+    for pkg in neubot-$VER neubot-nox-$VER; do
+        $ssh $server ln -f $remotedir/_packages/$pkg-1_all.deb $remotedir
+    done
+    doscp $1/Release $remote/
+    doscp $1/Release.gpg $remote/
+    doscp $1/Packages $remote/
+    doscp $1/Packages.gz $remote/
 fi
