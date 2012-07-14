@@ -151,21 +151,21 @@ class ServerAPI(ServerHTTP):
         ''' Implements /api/state URI '''
         dictionary = cgi.parse_qs(query)
 
-        t = None
+        otime = None
         if "t" in dictionary:
-            t = dictionary["t"][0]
-            stale = NOTIFIER.needs_publish(STATECHANGE, t)
+            otime = dictionary["t"][0]
+            stale = NOTIFIER.needs_publish(STATECHANGE, otime)
             if not stale:
                 NOTIFIER.subscribe(STATECHANGE, self._api_state_complete,
-                                   (stream, request, query, t), True)
+                                   (stream, request, query, otime), True)
                 return
 
-        self._api_state_complete(STATECHANGE, (stream, request, query, t))
+        self._api_state_complete(STATECHANGE, (stream, request, query, otime))
 
     @staticmethod
     def _api_state_complete(event, context):
         ''' Callback invoked when the /api/state has changed '''
-        stream, request, query, t = context
+        stream, request, query, otime = context
 
         indent, mimetype = None, "application/json"
         dictionary = cgi.parse_qs(query)
