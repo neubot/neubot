@@ -92,7 +92,7 @@ class ServerAPI(ServerHTTP):
             logging.info('Exception', exc_info=1)
             response = Message()
             response.compose(code="500", reason=reason,
-                    body=StringIO.StringIO(reason))
+                    body=reason)
             stream.send_response(request, response)
 
     def _serve_request(self, stream, request):
@@ -103,13 +103,13 @@ class ServerAPI(ServerHTTP):
         else:
             response = Message()
             response.compose(code="404", reason="Not Found",
-                    body=StringIO.StringIO("404 Not Found"))
+                    body="404 Not Found")
             stream.send_response(request, response)
 
     def _api(self, stream, request, query):
         response = Message()
-        response.compose(code="200", reason="Ok", body=StringIO.StringIO(
-          json.dumps(sorted(self._dispatch.keys()), indent=4)))
+        response.compose(code="200", reason="Ok",
+          body=json.dumps(sorted(self._dispatch.keys()), indent=4))
         stream.send_response(request, response)
 
     def _api_debug(self, stream, request, query):
@@ -164,16 +164,14 @@ class ServerAPI(ServerHTTP):
 
         dictionary = STATE.dictionarize()
         octets = json.dumps(dictionary, indent=indent)
-        stringio = StringIO.StringIO(octets)
         response = Message()
-        response.compose(code="200", reason="Ok", body=stringio,
+        response.compose(code="200", reason="Ok", body=octets,
                          mimetype=mimetype)
         stream.send_response(request, response)
 
     def _api_version(self, stream, request, query):
         response = Message()
-        stringio = StringIO.StringIO(VERSION)
-        response.compose(code="200", reason="Ok", body=stringio,
+        response.compose(code="200", reason="Ok", body=VERSION,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
