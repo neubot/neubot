@@ -54,12 +54,14 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
+VER=0.4.13-rc2
+
 echo 'BEGIN: Create debian package...'
-test -f dist/neubot-0.4.13-rc2-1_all.deb || { make clean; make deb; }
+test -f dist/neubot-$VER-1_all.deb || { make clean; make deb; }
 echo 'END: Create debian package (OK)'
 
 echo 'BEGIN: Install debian package...'
-dpkg -i dist/neubot-0.4.13-rc2-1_all.deb
+dpkg -i dist/neubot-$VER-1_all.deb
 echo 'END: Install debian package (OK)'
 
 echo '*** Please close the window that asks to update privacy settings...'
@@ -84,7 +86,7 @@ echo 'END: Start the viewer and the notifier... (OK)'
 sleep 3
 
 echo 'BEGIN: Reinstall debian package...'
-dpkg -i dist/neubot-0.4.13-rc2-1_all.deb
+dpkg -i dist/neubot-$VER-1_all.deb
 echo 'END: Reinstall debian package (OK)'
 
 sleep 3
