@@ -51,19 +51,20 @@ else:
 
 def write_pidfile():
     ''' Write pidfile '''
-    d = _get_pidfile_dir()
-    if d:
-        p = os.sep.join([ d, "neubot.pid" ])
-        fp = open(p, "w")
-        fp.write("%d\n" % os.getpid())
+    dirname = _get_pidfile_dir()
+    if dirname:
+        pathname = os.sep.join([ dirname, "neubot.pid" ])
+        filep = open(pathname, "w")
+        filep.write("%d\n" % os.getpid())
+        filep.close()
 
 def get_default_database_path():
     ''' Get default database path '''
     return os.sep.join([ _get_profile_dir(), "database.sqlite3" ])
 
-def check_database_path(p):
+def check_database_path(pathname):
     ''' Make sure database path is OK '''
-    p = os.path.abspath(p)
-    _want_rwx_dir(os.path.dirname(p))
-    _want_rw_file(p)
-    return p
+    pathname = os.path.abspath(pathname)
+    _want_rwx_dir(os.path.dirname(pathname))
+    _want_rw_file(pathname)
+    return pathname
