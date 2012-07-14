@@ -153,7 +153,7 @@ class Message(object):
             vector.append(": ")
             vector.append(value)
 
-            logging.debug("> %s: %s" , key, value)
+            logging.debug("> %s: %s", key, value)
             vector.append("\r\n")
 
         logging.debug(">")
