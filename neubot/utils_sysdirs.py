@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Location of system-dependent directories '''
+''' Location of system-dependent directories and files '''
 
 # Formerly neubot/rootdir.py
 
