@@ -20,6 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' System dependent routines '''
+
+# NB: This code is currently being refactored.
+
 import os
 
 if os.name == "nt":
@@ -46,6 +50,7 @@ else:
     raise ImportError("Your system is not supported")
 
 def write_pidfile():
+    ''' Write pidfile '''
     d = _get_pidfile_dir()
     if d:
         p = os.sep.join([ d, "neubot.pid" ])
@@ -53,9 +58,11 @@ def write_pidfile():
         fp.write("%d\n" % os.getpid())
 
 def get_default_database_path():
+    ''' Get default database path '''
     return os.sep.join([ _get_profile_dir(), "database.sqlite3" ])
 
 def check_database_path(p):
+    ''' Make sure database path is OK '''
     p = os.path.abspath(p)
     _want_rwx_dir(os.path.dirname(p))
     _want_rw_file(p)
