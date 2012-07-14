@@ -13,7 +13,7 @@
   <key>ProgramArguments</key>
   <array>
     <string>/usr/bin/python</string>
-    <string>/usr/local/share/neubot/0.004013001/neubot/main/__init__.py</string>
+    <string>/usr/local/share/neubot/0.004013002/neubot/main/__init__.py</string>
     <string>notifier</string>
   </array>
 
