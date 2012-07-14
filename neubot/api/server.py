@@ -141,7 +141,7 @@ class ServerAPI(ServerHTTP):
         dictionary = cgi.parse_qs(query)
 
         t = None
-        if dictionary.has_key("t"):
+        if "t" in dictionary:
             t = dictionary["t"][0]
             stale = NOTIFIER.needs_publish(STATECHANGE, t)
             if not stale:
