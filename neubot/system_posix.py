@@ -34,7 +34,6 @@ import pwd
 import os.path
 import signal
 import syslog
-import sys
 
 from neubot import utils_sysdirs
 
