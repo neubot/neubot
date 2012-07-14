@@ -20,35 +20,42 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Win32 system routines '''
+
+# NB: This code is currently being refactored.
+
 import os.path
 
 from neubot import utils_sysdirs
 
 def change_dir():
-    pass
+    ''' Change directory '''
 
 def _get_profile_dir():
+    ''' Get database directory '''
     return utils_sysdirs.LOCALSTATEDIR
 
-def _want_rwx_dir(p):
-    if not os.path.isdir(p):
-        os.mkdir(p, 0755)
+def _want_rwx_dir(pathname):
+    ''' Ensure the directory has RWX perms '''
+    if not os.path.isdir(pathname):
+        os.mkdir(pathname, 0755)
 
 def go_background():
-    pass
+    ''' Run in background '''
 
 def drop_privileges():
-    pass
+    ''' Drop root privileges '''
 
 def redirect_to_dev_null():
-    pass
+    ''' Redirect stdio to /dev/null '''
 
 def _want_rw_file(path):
+    ''' Ensure the file has RW perms '''
     filep = open(path, "ab+")
     filep.close()
 
 def _get_pidfile_dir():
-    return None
+    ''' Return directory where to write pidfile '''
 
 #
 # We tried NT Event Logger but it is not as friendly as
@@ -56,7 +63,8 @@ def _get_pidfile_dir():
 # database only for Windows.
 #
 def __logger(severity, message):
-    pass
+    ''' Pretend to log a message '''
 
 def get_background_logger():
+    ''' Return the background logger '''
     return __logger
