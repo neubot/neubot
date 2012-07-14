@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Implements API server '''
+
 import cgi
 import gc
 import pprint
@@ -54,6 +56,8 @@ from neubot.utils_api import NotImplementedTest
 
 class ServerAPI(ServerHTTP):
 
+    ''' Server for API '''
+
     def __init__(self, poller):
         ServerHTTP.__init__(self, poller)
         self._dispatch = {
@@ -81,6 +85,7 @@ class ServerAPI(ServerHTTP):
     # exception.
     #
     def process_request(self, stream, request):
+        ''' Process incoming request '''
         stream.created = utils.ticks()
         try:
             self._serve_request(stream, request)
@@ -95,6 +100,7 @@ class ServerAPI(ServerHTTP):
             stream.send_response(request, response)
 
     def _serve_request(self, stream, request):
+        ''' Serve incoming request '''
         request_uri = urllib.unquote(request.uri)
         path, query = urlparse.urlsplit(request_uri)[2:4]
         if path in self._dispatch:
@@ -106,12 +112,14 @@ class ServerAPI(ServerHTTP):
             stream.send_response(request, response)
 
     def _api(self, stream, request, query):
+        ''' Implements /api URI '''
         response = Message()
         response.compose(code="200", reason="Ok",
           body=json.dumps(sorted(self._dispatch.keys()), indent=4))
         stream.send_response(request, response)
 
     def _api_debug(self, stream, request, query):
+        ''' Implements /api/debug URI '''
         response = Message()
         debuginfo = {}
         NOTIFIER.snap(debuginfo)
@@ -138,6 +146,7 @@ class ServerAPI(ServerHTTP):
         stream.send_response(request, response)
 
     def _api_state(self, stream, request, query):
+        ''' Implements /api/state URI '''
         dictionary = cgi.parse_qs(query)
 
         t = None
@@ -152,6 +161,7 @@ class ServerAPI(ServerHTTP):
         self._api_state_complete(STATECHANGE, (stream, request, query, t))
 
     def _api_state_complete(self, event, context):
+        ''' Callback invoked when the /api/state has changed '''
         stream, request, query, t = context
 
         indent, mimetype = None, "application/json"
@@ -167,11 +177,13 @@ class ServerAPI(ServerHTTP):
         stream.send_response(request, response)
 
     def _api_version(self, stream, request, query):
+        ''' Implements /api/version URI '''
         response = Message()
         response.compose(code="200", reason="Ok", body=VERSION,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
     def _api_exit(self, stream, request, query):
+        ''' Implements /api/exit URI '''
         # Break out of the loop immediately
         POLLER.break_loop()
