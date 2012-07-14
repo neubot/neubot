@@ -31,6 +31,7 @@ if __name__ == '__main__':
 
 SUBCOMMANDS = {
     'bittorrent': 'neubot.bittorrent',
+    'browser': 'neubot.browser',
     'database': 'neubot.database.main',
     'notifier': 'neubot.notifier',
     'privacy': 'neubot.privacy',
