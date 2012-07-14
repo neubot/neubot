@@ -20,6 +20,15 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Agent command '''
+
+#
+# This module is being decommissioned, and will be replaced by
+# the family of background_foo.py modules.  At the moment
+# just Neubot for win32 is using background_win32.py and this
+# module is still being used on MacOSX and POSIX.
+#
+
 import sys
 import logging
 
@@ -41,6 +50,8 @@ from neubot import system
 from neubot import utils_sysdirs
 
 def main(args):
+    """ Main function """
+
     common.main("agent", "Run in background, periodically run tests", args)
 
     conf = CONFIG.copy()
