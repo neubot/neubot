@@ -20,7 +20,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import StringIO
 import cgi
 import gc
 import pprint
@@ -121,10 +120,8 @@ class ServerAPI(ServerHTTP):
         debuginfo["WWWDIR"] = utils_sysdirs.WWWDIR
         gc.collect()
         debuginfo['typestats'] = objgraph.typestats()
-        stringio = StringIO.StringIO()
-        pprint.pprint(debuginfo, stringio)
-        stringio.seek(0)
-        response.compose(code="200", reason="Ok", body=stringio,
+        body = pprint.pformat(debuginfo)
+        response.compose(code="200", reason="Ok", body=body,
                          mimetype="text/plain")
         stream.send_response(request, response)
 
