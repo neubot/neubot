@@ -33,14 +33,9 @@ import sys
 from neubot.main.common import VERSION
 from neubot.compat import json
 from neubot.config import ConfigError
-from neubot.config import CONFIG
-from neubot.database import DATABASE
-from neubot.database import table_bittorrent
-from neubot.database import table_speedtest
 from neubot.debug import objgraph
 from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
-from neubot.marshal import qs_to_dictionary
 from neubot.net.poller import POLLER
 from neubot.notify import NOTIFIER
 from neubot.state import STATECHANGE
