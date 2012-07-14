@@ -34,7 +34,6 @@ import pwd
 import os.path
 import signal
 import syslog
-import sys
 
 from neubot import utils_sysdirs
 
@@ -95,7 +94,7 @@ def change_dir():
     ''' Switch from current directory to root directory '''
     os.chdir("/")
 
-def _want_rwx_dir(datadir, perror=None):
+def _want_rwx_dir(datadir):
 
     '''
      This function ensures that the user ``_neubot`` is the
@@ -132,7 +131,7 @@ def go_background():
     if os.fork() > 0:
         os._exit(0)
 
-def drop_privileges(perror=None):
+def drop_privileges():
 
     '''
      Drop root privileges and run on behalf of the ``_neubot``
@@ -156,7 +155,7 @@ def redirect_to_dev_null():
     for _ in range(3):
         os.open("/dev/null", os.O_RDWR)
 
-def _want_rw_file(path, perror=None):
+def _want_rw_file(path):
 
     '''
      Ensure that the given file is readable and writable

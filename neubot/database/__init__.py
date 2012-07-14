@@ -49,7 +49,7 @@ class DatabaseManager(object):
         if not self.dbc:
             database_xxx.linux_fixup_databasedir()
             if self.path != ":memory:":
-                self.path = system.check_database_path(self.path, logging.error)
+                self.path = system.check_database_path(self.path)
             logging.debug("* Database: %s", self.path)
             self.dbc = sqlite3.connect(self.path)
 
