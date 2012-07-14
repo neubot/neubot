@@ -97,8 +97,8 @@ var results = (function() {
         html += "</tr></thead>";
         html += "<tbody>";
 
-        for (i = 0; i < data.length; i++) {
-            var result = data[i];
+        for (j = 0; j < data.length; j++) {
+            var result = data[j];
 
             html += "<tr>";
             jQuery.each(self.request.table_fields, function(i, v) {
