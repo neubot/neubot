@@ -25,5 +25,5 @@ set -e
 update-rc.d -f neubot remove
 
 if [ "$1"x = "purge"x ]; then
-	rm -rf /var/neubot
+	rm -rf /var/neubot /var/lib/neubot
 fi
