@@ -58,11 +58,13 @@ var state = (function() {
                 }
             }
 
-            // Honor information on available updates
-            if (data.events.update && data.events.update.uri
-              && data.events.update.version) {
-                jQuery("#updateUrl").attr("href", data.events.update.uri);
-                jQuery("#updateUrl").text(data.events.update.uri);
+            //
+            // Honor information on available updates.
+            // Note that we DON'T trust URI information sent
+            // by the server, since it's not signed (yes,
+            // today I'm "paranoid mode ON").
+            //
+            if (data.events.update && data.events.update.version) {
                 jQuery("#updateVersion").text(data.events.update.version);
 
                 // Show update information nicely

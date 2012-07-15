@@ -91,7 +91,7 @@ class ServerRendezvous(ServerHTTP):
             logging.debug('rendezvous: version=%s ibody.version=%s diff=%f', 
                       version, ibody.version, diff)
             if diff > 0:
-                obody.update["uri"] = self.conf["rendezvous.server.update_uri"]
+                obody.update["uri"] = 'http://neubot.org/'
                 obody.update["version"] = version
 
         #
@@ -180,7 +180,6 @@ CONFIG.register_defaults({
     "rendezvous.server.address": "",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.update_uri": "http://www.neubot.org/download",
     "rendezvous.server.update_version": '',
     "rendezvous.geoip_wrapper.country_database":                        \
         "/usr/local/share/GeoIP/GeoIP.dat",
@@ -205,7 +204,6 @@ def main(args):
         "rendezvous.server.address": "Set rendezvous server address",
         "rendezvous.server.daemonize": "Enable daemon behavior",
         "rendezvous.server.ports": "List of rendezvous server ports",
-        "rendezvous.server.update_uri": "Where to download updates from",
         "rendezvous.server.update_version": "Update Neubot version number",
         "rendezvous.geoip_wrapper.country_database":                    \
           "Path of the GeoIP country database",
