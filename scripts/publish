@@ -81,8 +81,8 @@ doscp()
     fi
 }
 
-VER=0.4.13-rc3
-NVER=0.004013003
+VER=0.4.13-rc4
+NVER=0.004013004
 
 if [ "$dry" = "1" ]; then
     echo "#"
