@@ -23,7 +23,6 @@
 ''' Win32 updater '''
 
 import getopt
-import os
 import subprocess
 import sys
 import logging
@@ -43,7 +42,6 @@ from neubot.poller import POLLER
 from neubot.updater_runner import UpdaterRunner
 
 from neubot import updater_install
-from neubot import updater_utils
 from neubot import utils_path
 from neubot import utils_sysdirs
 
