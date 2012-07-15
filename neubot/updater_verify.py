@@ -80,7 +80,7 @@ def dgst_verify(signature, tarball, key=None):
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
 
-    __logging_info('Cmdline: %s', str(cmdline))
+    __logging_info('updater_verify: exec: %s', str(cmdline))
 
     retval = subprocess.call(cmdline)
 
@@ -101,7 +101,7 @@ def __dgst_sign(signature, tarball, key):
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-sign', key,
                '-out', signature, tarball]
 
-    __logging_info('Cmdline: %s', str(cmdline))
+    __logging_info('updater_verify: exec: %s', str(cmdline))
 
     retval = subprocess.call(cmdline)
 

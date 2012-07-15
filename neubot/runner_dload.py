@@ -50,7 +50,7 @@ class RunnerDload(ClientHTTP):
         self.ctx = ctx
         ClientHTTP.__init__(self, POLLER)
         self.configure(CONFIG.copy())
-        logging.info('runner_dload: connecting to %s', self.ctx['uri'])
+        logging.debug('runner_dload: connecting to %s', self.ctx['uri'])
         self.connect_uri(self.ctx['uri'])
 
     def connection_failed(self, connector, exception):
@@ -74,13 +74,13 @@ class RunnerDload(ClientHTTP):
         ''' Invoked when the response is received '''
 
         if response.code != '200':
-            logging.info('runner_dload: bad response')
+            logging.error('runner_dload: bad response')
             self.ctx['result'] = (-1, None, 'Bad response')
             stream.close()
             return
 
         body = response.body.read()
-        logging.info('runner_dload: dload complete and OK')
+        logging.debug('runner_dload: dload complete and OK')
         self.ctx['result'] = (len(body), body, None)
 
         stream.close()
