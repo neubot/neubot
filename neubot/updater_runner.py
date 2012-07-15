@@ -109,6 +109,7 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
+        logging.info('updater_runner: %s -> %s', '0.004013003', vinfo)
         self.retrieve_files(vinfo)
 
     def retrieve_files(self, vinfo):
@@ -116,6 +117,7 @@ class UpdaterRunner(object):
         # Note: this is a separate function for testability
         uri = updater_utils.sha256sum_get_uri(self.system, vinfo)
         ctx = {'vinfo': vinfo, 'uri': uri}
+        logging.info('updater_runner: GET %s', uri)
         RUNNER_CORE.run('dload', self._retrieve_signature, False, ctx)
 
     def _retrieve_signature(self, ctx):
@@ -139,9 +141,13 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
+        logging.info('updater_runner: %s', sha256)
+
         # XXX We should not reuse the same CTX here
         ctx['sha256'] = sha256
         ctx['uri'] = updater_utils.signature_get_uri(self.system, ctx['vinfo'])
+
+        logging.info('updater_runner: GET %s', ctx['uri'])
 
         RUNNER_CORE.run('dload', self._retrieve_tarball, False, ctx)
 
@@ -161,9 +167,13 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
+        logging.info('updater_runner: <signature>')
+
         # XXX We should not reuse the same CTX here
         ctx['signature'] = body
         ctx['uri'] = updater_utils.tarball_get_uri(self.system, ctx['vinfo'])
+
+        logging.info('updater_runner: GET %s', ctx['uri'])
 
         RUNNER_CORE.run('dload', self._process_files, False, ctx)
 
@@ -182,10 +192,15 @@ class UpdaterRunner(object):
             logging.error('updater_runner: error: %s', str(error))
             self._schedule()
             return
+
+        logging.info('updater_runner: <tarball>')
+
         if not updater_utils.sha256sum_verify(ctx['sha256'], body):
             logging.error('updater_runner: sha256 mismatch')
             self._schedule()
             return
+
+        logging.info('updater_runner: sha256 OK')
 
         # Save tarball and signature on disk
         updater_utils.tarball_save(self.basedir, ctx['vinfo'], body)
@@ -203,6 +218,8 @@ class UpdaterRunner(object):
             logging.error('updater_runner: invalid signature')
             self._schedule()
             return
+
+        logging.info('updater_runner: signature OK')
 
         self.install(ctx, body)
 

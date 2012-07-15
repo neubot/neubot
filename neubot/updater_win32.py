@@ -61,6 +61,7 @@ class UpdaterWin32(UpdaterRunner):
 
         # Extract from tarball
         updater_install.install(self.basedir, ctx['vinfo'])
+        logging.info('updater_win32: extracted tarball')
 
         # Make file names
         versiondir = utils_path.join(self.basedir, ctx['vinfo'])
@@ -89,11 +90,14 @@ class UpdaterWin32(UpdaterRunner):
           uninst)
         _winreg.CloseKey(regkey)
 
+        logging.info('updater_win32: updated win32 registry')
+
         #
         # Run the new version of Neubot and tell it that this
         # version should be stopped before proceeding with normal
         # startup.
         #
+        logging.info('updater_win32: about to exec: %s', cmdline_k)
         subprocess.Popen(cmdline_k, close_fds=True)
 
 def main(args):
