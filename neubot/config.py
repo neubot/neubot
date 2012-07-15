@@ -215,7 +215,7 @@ CONFIG.register_defaults({
     "speedtest_test_version": 1,
     "uuid": "",
     "version": "",
-    'win32_updater': 0,
+    'win32_updater': 1,
     "www.lang": "default",
     "win32_updater_channel": "latest",
 })
