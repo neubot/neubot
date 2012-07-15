@@ -184,7 +184,17 @@ def _make_auto_update():
     filep.close()
 
     # Make digital signature
-    privkey = raw_input('Enter privkey location: ')
+    try:
+        filenam = os.sep.join([os.environ['HOME'], '.neubot-macos'])
+        filep = open(filenam, 'r')
+        privkey = filep.read().strip()
+        filep.close()
+    except (SystemExit, KeyboardInterrupt):
+        raise
+    except:
+        privkey = None
+    if not privkey:
+        privkey = raw_input('Enter privkey location: ')
     if privkey:
         os.chdir('../dist/macos')
         __call('openssl dgst -sha256 -sign %s -out %s %s' %
