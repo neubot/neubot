@@ -36,7 +36,7 @@ from neubot import system
 from neubot import utils
 
 def stderr_logger(severity, message):
-    if severity != 'INFO':
+    if severity not in ('INFO', 'ACCESS'):
         sys.stderr.write('%s: %s\n' % (severity, message))
     else:
         sys.stderr.write('%s\n' % message)
