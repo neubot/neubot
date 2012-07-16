@@ -31,6 +31,11 @@ if __name__ == '__main__':
 from neubot import main_common
 from neubot import utils_ctl
 
+# Reference viewer and notifier so py2exe includes 'em
+if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
+    from neubot import notifier
+    from neubot import viewer
+
 def subcommand_start(args):
     ''' Start subcommand '''
 
