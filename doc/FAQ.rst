@@ -557,9 +557,8 @@ Both keys are removed by the uninstall process.
 4.4. What is the path of Neubot database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Under UNIX, if you run Neubot as root the database path is
-``/var/neubot/database.sqlite3``. Otherwise, if you run Neubot as an
-ordinary user, the database path is ``$HOME/.neubot/database.sqlite3``.
+Under Linux the database path is ``/var/lib/neubot/database.sqlite3``,
+while on other UNIX systems it is ``/var/neubot/database.sqlite3``.
 
 Under Windows, the database path is always
 ``%APPDATA%\neubot\database.sqlite3``.
@@ -571,7 +570,11 @@ the ``neubot database info`` command, for example::
     /home/simone/.neubot/database.sqlite3
 
     # neubot database info
-    /var/neubot/database.sqlite3
+    /var/lib/neubot/database.sqlite3
+
+Until Neubot 0.4.12, when Neubot was run by an ordinary user, the
+database was searched on ``$HOME/.neubot/database.sqlite``, but
+this is not supported anymore.
 
 4.5. How can I dump the content of the database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
