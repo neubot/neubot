@@ -77,18 +77,8 @@ def lookup_user_info(uname):
         os._exit(1)
 
 def _get_profile_dir():
-
-    '''
-     If we're running as an ordinary user, the profile directory
-     is ``$HOME/.neubot``, otherwise it is ``/var/neubot``.
-    '''
-
-    if os.getuid() != 0:
-        homedir = os.environ["HOME"]
-        profiledir = os.sep.join([homedir, ".neubot"])
-    else:
-        profiledir = utils_sysdirs.LOCALSTATEDIR
-    return profiledir
+    ''' The profile directory is always LOCALSTATEDIR '''
+    return utils_sysdirs.LOCALSTATEDIR
 
 def change_dir():
     ''' Switch from current directory to root directory '''

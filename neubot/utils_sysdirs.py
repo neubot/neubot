@@ -136,14 +136,21 @@ elif os.name == 'nt':
 else:
     raise RuntimeError('system not configured')
 
+# Path to Neubot database
+DATABASEPATH = os.sep.join([LOCALSTATEDIR, 'database.sqlite3'])
+
 def main(args):
     ''' Main function '''
 
-    if len(args) > 1:
-        sys.exit('usage: neubot utils_sysdirs')
+    if len(args) == 2:
+        sys.stdout.write('%s\n' % globals()[args[1]])
+        sys.exit(0)
+    elif len(args) > 2:
+        sys.exit('usage: neubot utils_sysdirs [VARIABLE]')
 
     sys.stdout.write('''\
 BASEDIR       : "%(BASEDIR)s"
+DATABASEPATH  : "%(DATABASEPATH)s"
 LOCALSTATEDIR : "%(LOCALSTATEDIR)s"
 OPENSSL       : "%(OPENSSL)s"
 ROOTDIR       : "%(ROOTDIR)s"

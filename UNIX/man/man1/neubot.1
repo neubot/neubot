@@ -1,6 +1,6 @@
 .\" Man page generated from reStructeredText.
 .
-.TH NEUBOT 1 "2012-05-31" "Neubot 0.4.13-rc5" "Neubot manual"
+.TH NEUBOT 1 "2012-07-19" "Neubot 0.4.13-rc5" "Neubot manual"
 .SH NAME
 neubot \- The network neutrality bot
 .
@@ -110,7 +110,6 @@ used subcommands.
 .INDENT 0.0
 .TP
 .B neubot bittorrent [\-v] [\-D setting]
-.
 Sends a Web API request (by default to \fI127.0.0.1:9774\fP) to the local
 instance of \fBneubot\fP running in the background, asking to run a
 bittorrent test immediately.  If it is not possible to communicate
@@ -124,17 +123,14 @@ settings, where the indicated value is the default one:
 .INDENT 0.0
 .TP
 .B agent.api.address=127.0.0.1
-.
 Address where the local \fBneubot\fP instance is supposed to
 be listening.
 .TP
 .B agent.api.port=9774
-.
 Port where the local \fBneubot\fP instance is supposed to be
 listening.
 .TP
 .B bittorrent.address=""
-.
 Address to connect to in order to perform the test (client mode)
 or address to listen to (server mode).  When the value equals \fI""\fP,
 the subcommand uses \fImaster.neubot.org\fP (client mode) or \fI0.0.0.0\fP
@@ -144,7 +140,6 @@ When running in client mode, this setting is only effective if
 the test is run in the process context of the subcommand itself.
 .TP
 .B bittorrent.daemonize=0
-.
 When on (\fInonzero\fP) the subcommand will detach from the current
 shell and become a daemon.  When off (\fI0\fP) the subcommand will
 run in the context of the current shell.
@@ -153,11 +148,9 @@ When running in client mode, this setting is only effective if
 the test is run in the process context of the subcommand itself.
 .TP
 .B bittorrent.listen=0
-.
 Run in client (\fI0\fP) or in server (\fInonzero\fP) mode.
 .TP
 .B bittorrent.negotiate=1
-.
 Turn off (\fI0\fP) or on (\fInonzero\fP) negotiation.  Negotiation is the
 procedure that ensures that client and server agree on the test
 parameters, and that keeps the server load under control, by
@@ -171,7 +164,6 @@ You typically want this setting to be on, unless you are testing
 the bittorrent client and server.
 .TP
 .B bittorrent.negotiate.port=80
-.
 The port to be used for negotiation, both for client and for
 server mode.
 .sp
@@ -179,7 +171,6 @@ When running in client mode, this setting is only effective if
 the test is run in the process context of the subcommand itself.
 .TP
 .B bittorrent.port=6881
-.
 Port to connect to in order to perform the test (client mode)
 or Port to listen to (server mode).
 .sp
@@ -187,7 +178,6 @@ When running in client mode, this setting is only effective if
 the test is run in the process context of the subcommand itself.
 .TP
 .B runner.enabled=1
-.
 When this setting is on (\fInonzero\fP) the subcommand will try to run
 the test in the context of the local instance of \fBneubot\fP first,
 and then it will fallback to running the test on its own process
@@ -200,7 +190,6 @@ the test in its own process context.
 .UNINDENT
 .TP
 .B neubot database [\-\-help] [\-f database] [action]
-.
 Perform low level actions on the database or print the database name
 if no action was specified.  The following options are accepted:
 .INDENT 7.0
@@ -208,11 +197,9 @@ if no action was specified.  The following options are accepted:
 .INDENT 0.0
 .TP
 .B \-\-help
-.
 Prints an help message on the standard output and exits.
 .TP
 .BI \-f \ database
-.
 Force to use the database at \fIdatabase\fP instead of using the
 default one (see \fI\%FILES\fP section for more info).
 .UNINDENT
@@ -225,36 +212,29 @@ The following actions are implemented:
 .INDENT 0.0
 .TP
 .B info
-.
 Print the database path.
 .TP
 .B delete_all
-.
 Delete all results in the database.
 .TP
 .B dump
-.
 Dump to stdout the content of the database in JSON format.
 .TP
 .B prune
-.
 Remove results older than one year from the database.
 .TP
 .B regen_uuid
-.
 Each \fBneubot\fP has its own random unique identifier that is sent
 with results and allows to perform time serie anlysis.  This action
 generates a fresh new random unique identifier.
 .TP
 .B show
-.
 Like \fIdump\fP, but pretty\-prints database content.
 .UNINDENT
 .UNINDENT
 .UNINDENT
 .TP
 .B neubot privacy [\-Pt] [\-D setting] [\-f database]
-.
 Allows to read privacy policy, test and set privacy settings.  For
 more information on privacy see the \fI\%PRIVACY\fP section.  This subcommand
 accepts the following command line options:
@@ -263,7 +243,6 @@ accepts the following command line options:
 .INDENT 0.0
 .TP
 .BI \-D \ setting
-.
 Allow to set privacy settings in the database.  The following
 privacy settings are defined, along with their default value:
 .INDENT 7.0
@@ -271,19 +250,16 @@ privacy settings are defined, along with their default value:
 .INDENT 0.0
 .TP
 .B privacy.informed=""
-.
 Turns on (\fInonzero\fP) or off (\fI0\fP) the corresponding privacy
 setting in the database, unless the setting is unspecified
 (\fI""\fP).
 .TP
 .B privacy.can_collect=""
-.
 Turns on (\fInonzero\fP) or off (\fI0\fP) the corresponding privacy
 setting in the database, unless the setting is unspecified
 (\fI""\fP).
 .TP
 .B privacy.can_publish=""
-.
 Turns on (\fInonzero\fP) or off (\fI0\fP) the corresponding privacy
 setting in the database, unless the setting is unspecified
 (\fI""\fP).
@@ -298,16 +274,13 @@ Note that this command changes the database, but changes are not
 propagated to the \fBneubot\fP instance running in background.
 .TP
 .BI \-f \ database
-.
 Force to use the database at \fIdatabase\fP instead of using the
 default one (see \fI\%FILES\fP section for more info).
 .TP
 .B \-P
-.
 Prints privacy policy on the standard output.
 .TP
 .B \-t
-.
 Test mode.  Exits with success (exit value \fI0\fP) if privacy
 settings allow to run periodic tests.  Exits with failure (exit
 value \fInonzero\fP) otherwise.
@@ -316,7 +289,6 @@ value \fInonzero\fP) otherwise.
 .UNINDENT
 .TP
 .B neubot speedtest [\-v] [\-D setting]
-.
 Sends a Web API request (by default to \fI127.0.0.1:9774\fP) to the local
 instance of \fBneubot\fP running in the background, asking to run a
 speedtest test immediately.  If it is not possible to communicate
@@ -330,17 +302,14 @@ settings, where the indicated value is the default one:
 .INDENT 0.0
 .TP
 .B agent.api.address=127.0.0.1
-.
 Address where the local \fBneubot\fP instance is supposed to
 be listening.
 .TP
 .B agent.api.port=9774
-.
 Port where the local \fBneubot\fP instance is supposed to be
 listening.
 .TP
 .B runner.enabled=1
-.
 When this setting is on (\fInonzero\fP) the subcommand will try to run
 the test in the context of the local instance of \fBneubot\fP first,
 and then it will fallback to running the test on its own process
@@ -350,14 +319,12 @@ When this setting is off (\fIzero\fP) the subcommand will always run
 the test in its own process context.
 .TP
 .B speedtest.uri=uri
-.
 URI of the negotiate server to perform the negotiation with.
 .UNINDENT
 .UNINDENT
 .UNINDENT
 .TP
 .B neubot start
-.
 Starts \fBneubot\fP in the background.  The program will daemonize,
 drop privileges (if needed), \fIlisten()\fP for Web API requests (by
 default at \fI127.0.0.1:9774\fP), and run periodic tests, if the user has
@@ -365,7 +332,6 @@ given her consent.  Typically, this form of the command is invoked by
 startup scripts and the user should not need to run it directly.
 .TP
 .B neubot status
-.
 Issues a Web API request (by default to \fI127.0.0.1:9774\fP) to check
 whether \fBneubot\fP is running, and prints the result on the standard
 output.  When the result is is "not running", it means that either
@@ -373,12 +339,10 @@ output.  When the result is is "not running", it means that either
 there isn\(aqt a \fBneubot\fP process listening on that address and port).
 .TP
 .B neubot stop
-.
 Issues a Web API command (by default to \fI127.0.0.1:9774\fP) that forces
 \fBneubot\fP to exit.
 .TP
 .B neubot viewer [\-f file] [\-O option]
-.
 Starts a viewer application that embeds the Web User Interface, if
 the dependencies are installed.  By default, the viewer connects to
 \fI127.0.0.1:9774\fP, but that can be changed specifying an alternate
@@ -390,7 +354,6 @@ Accepts the following command line options:
 .INDENT 0.0
 .TP
 .BI \-f \ file
-.
 Forces to read settings from \fIfile\fP, instead of using the default
 configuration file \fB/etc/neubot/api\fP.  If the file does not
 exist or contains errors, this subcommand will ignore it and will
@@ -403,18 +366,15 @@ represented together with their default values):
 .INDENT 0.0
 .TP
 .B address 127.0.0.1
-.
 Address where the Web API is supposed to be listening.
 .TP
 .B port 9774
-.
 Port where the Web API is supposed to be listening.
 .UNINDENT
 .UNINDENT
 .UNINDENT
 .TP
 .BI \-O \ option
-.
 Overrides configuration file option from the command line,
 see description of \fB\-f\fP flag for the list of available
 options.
@@ -476,16 +436,12 @@ write to <\fI\%privacy@neubot.org\fP> or to "NEXA Center for Internet & Society,
 Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
 degli Abruzzi 24, 10129 Turin, ITALY."
 .IP [1] 5
-.
 \fI\%http://www.measurementlab.net/about\fP
 .IP [2] 5
-.
 \fI\%http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248\fP
 .IP [3] 5
-.
 \fI\%http://nexa.polito.it/\fP
 .IP [4] 5
-.
 \fI\%http://127.0.0.1:9774/privacy.html\fP
 .SH EXAMPLES
 .sp
@@ -573,36 +529,27 @@ we assume that it has been installed below \fB/usr/local\fP:
 .INDENT 0.0
 .TP
 .B /usr/local/bin/neubot
-.
 The neubot program, a simple python script that imports neubot and passes
 the control to \fBneubot.main\fP module.
 .TP
 .B /usr/local/share/neubot/*
-.
 Location where neubot python modules are installed.
 .TP
 .B /usr/local/share/neubot/main/__init__.py
-.
 Well\-known location of the real main() of Neubot.  This is the
 standard entry point to Neubot.
 .TP
 .B /usr/local/share/neubot/updater/unix.py
-.
 Well\-known location of the updater daemon for Unix.  This is an
 alternative entry point to Neubot.
 .TP
 .B /var/neubot/database.sqlite3
-.
-System\-wide results database, created when the neubot daemon starts
-for the first time.
-.UNINDENT
-.sp
-In addition, if you run neubot as an unprivileged user:
-.INDENT 0.0
+System\-wide results database for UNIX systems (except Linux),
+created when the neubot daemon starts for the first time.
 .TP
-.B $HOME/.neubot/database.sqlite3
-.
-User\-specific results database.
+.B /var/lib/neubot/database.sqlite3
+System\-wide results database for Linux systems, created when the
+neubot daemon starts for the first time.
 .UNINDENT
 .SH BUGS
 .sp

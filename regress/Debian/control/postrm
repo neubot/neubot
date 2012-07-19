@@ -39,7 +39,7 @@ cleanup() {
     echo 'BEGIN: cleanup'
     update-rc.d -f neubot remove || true
     rm -f /etc/init.d/neubot
-    rm -rf /var/neubot
+    rm -rf /var/lib/neubot
     echo 'END: cleanup'
 }
 
@@ -49,7 +49,7 @@ init() {
     echo 'BEGIN: Initialize...'
     install /dev/null /etc/init.d/neubot
     update-rc.d neubot defaults 99
-    install -d /var/neubot
+    install -d /var/lib/neubot
     echo 'END: Initialize (OK)'
 }
 
@@ -62,10 +62,10 @@ echo 'END: Make sure that it removes /etc/rcN.d symlinks (OK)'
 
 init
 
-echo 'BEGIN: Make sure it ALSO removes /var/neubot on purge...'
+echo 'BEGIN: Make sure it ALSO removes /var/lib/neubot on purge...'
 ./Debian/control/postrm purge
 test -f /etc/rc2.d/S99nebot && exit 1
-test -d /var/neubot && exit 1
-echo 'END: Make sure it ALSO removes /var/neubot on purge (OK)'
+test -d /var/lib/neubot && exit 1
+echo 'END: Make sure it ALSO removes /var/lib/neubot on purge (OK)'
 
 cleanup

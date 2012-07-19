@@ -426,13 +426,12 @@ we assume that it has been installed below **/usr/local**:
   alternative entry point to Neubot.
 
 /var/neubot/database.sqlite3
-  System-wide results database, created when the neubot daemon starts
-  for the first time.
+  System-wide results database for UNIX systems (except Linux),
+  created when the neubot daemon starts for the first time.
 
-In addition, if you run neubot as an unprivileged user:
-
-$HOME/.neubot/database.sqlite3
-  User-specific results database.
+/var/lib/neubot/database.sqlite3
+  System-wide results database for Linux systems, created when the
+  neubot daemon starts for the first time.
 
 BUGS
 ````

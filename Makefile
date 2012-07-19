@@ -139,7 +139,7 @@ PYTHON = python
 #
 DESTDIR =
 SYSCONFDIR = /etc
-LOCALSTATEDIR = /var/neubot
+LOCALSTATEDIR = $(python neubot/utils_sysdirs.py LOCALSTATEDIR)
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
@@ -268,8 +268,6 @@ _deb_control:
 # total size.
 # Fakeroot will guarantee that we don't ship a debian
 # package with ordinary user ownership.
-# For now we do not fail if lintian fails because there
-# is the nonstandard /var/neubot issue pending.
 #
 _deb:
 	make -f Makefile _deb_data
@@ -294,7 +292,8 @@ _deb:
 
 deb:
 	fakeroot make -f Makefile _deb
-	lintian $(DEB_PACKAGE) || true
+	lintian $(DEB_PACKAGE)
+        # This still fails because of /usr/share/doc/neubot...
 	lintian $(DEB_PACKAGE_NOX) || true
 
 #           _

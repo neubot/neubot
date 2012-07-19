@@ -42,7 +42,7 @@ $DEBUG $INSTALL rc.local /etc/rc.local
 $DEBUG /bin/grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
 $DEBUG /bin/grep -q ^_neubot /etc/passwd || \
        $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
-$DEBUG $INSTALL -d /var/neubot
+$DEBUG $INSTALL -d /var/lib/neubot
 
 $DEBUG $INSTALL -d /usr/local/share/GeoIP
 $DEBUG $SUDO -u _neubot $WGET -O- $URIBASE$URIPATH|$GUNZIP > GeoIP.dat

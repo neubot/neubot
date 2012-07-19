@@ -40,6 +40,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import privacy
+from neubot import utils_sysdirs
 from neubot import utils_net
 
 def __should_adjust_privacy(database_path):
@@ -115,7 +116,7 @@ def main(args):
     if arguments:
         sys.exit('Usage: neubot notifier [-f database]\n')
 
-    database = '/var/neubot/database.sqlite3'
+    database = utils_sysdirs.DATABASEPATH
     for name, value in options:
         if name == '-f':
             database = value

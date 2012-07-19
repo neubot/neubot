@@ -55,7 +55,7 @@ echo 'BEGIN: Try to install -nox package (OK)'
 
 echo 'BEGIN: Cleanup...'
 dpkg --purge neubot
-test -f /var/neubot/database.sqlite3 && exit 1
+test -f /var/lib/neubot/database.sqlite3 && exit 1
 echo 'END: Cleanup (OK)'
 
 echo 'BEGIN: Install the -nox package...'
@@ -71,5 +71,5 @@ echo 'BEGIN: Try to install the normal package (OK)'
 
 echo 'BEGIN: Cleanup...'
 dpkg --purge neubot-nox
-test -f /var/neubot/database.sqlite3 && exit 1
+test -f /var/lib/neubot/database.sqlite3 && exit 1
 echo 'END: Cleanup (OK)'
