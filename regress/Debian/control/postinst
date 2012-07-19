@@ -72,7 +72,7 @@ cleanup() {
     apt-key list | grep -q F68D1AAD && apt-key del F68D1AAD
     rm -rf /tmp/etc-init.d-neubot
     rm -rf /tmp/usr-bin-neubot
-    rm -rf /var/neubot
+    rm -rf /var/lib/neubot
     rm -rf /var/lib/update-notifier/user.d/neubot
     rm -rf /usr/bin/neubot
 }
@@ -87,26 +87,26 @@ if [ "$1" = "-" -a "$2" = "-" -a "$3" = "-" ]; then
     : # nothing
 elif [ "$1" = "1" -a "$2" = "1" -a "$3" = "1" ]; then
     echo -n 'Create database with good privacy... '
-    install -d /var/neubot
-    sqlite3 /var/neubot/database.sqlite3 \
+    install -d /var/lib/neubot
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      'CREATE TABLE config(name TEXT PRIMARY KEY, value TEXT);'
-    sqlite3 /var/neubot/database.sqlite3 \
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      'INSERT INTO config VALUES("privacy.informed", 1);'
-    sqlite3 /var/neubot/database.sqlite3 \
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      'INSERT INTO config VALUES("privacy.can_collect", 1);'
-    sqlite3 /var/neubot/database.sqlite3 \
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      'INSERT INTO config VALUES("privacy.can_publish", 1);'
     echo 'OK'
 else
     echo -n 'Create database with bad privacy... '
-    install -d /var/neubot
-    sqlite3 /var/neubot/database.sqlite3 \
+    install -d /var/lib/neubot
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      'CREATE TABLE config(name TEXT PRIMARY KEY, value TEXT);'
-    sqlite3 /var/neubot/database.sqlite3 \
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      "INSERT INTO config VALUES('privacy.informed', $1);"
-    sqlite3 /var/neubot/database.sqlite3 \
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      "INSERT INTO config VALUES('privacy.can_collect', $2);"
-    sqlite3 /var/neubot/database.sqlite3 \
+    sqlite3 /var/lib/neubot/database.sqlite3 \
      "INSERT INTO config VALUES('privacy.can_publish', $3);"
     echo 'OK'
 fi

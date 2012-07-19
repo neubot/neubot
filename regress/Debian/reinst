@@ -93,5 +93,5 @@ sleep 3
 
 echo 'BEGIN: Cleanup...'
 dpkg --purge neubot
-test -f /var/neubot/database.sqlite3 && exit 1
+test -f /var/lib/neubot/database.sqlite3 && exit 1
 echo 'END: Cleanup (OK)'
