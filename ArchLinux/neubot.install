@@ -57,7 +57,7 @@ set -e
 
 echo
 echo "<--------------------------------------------------------->"
-echo "Remove /var/neubot/ content to purge neubot"
+echo "Remove /var/lib/neubot/ content to purge neubot"
 echo "Remember to remove neubot from your daemons array in /etc/rc.conf"
 echo "<--------------------------------------------------------->"
 echo
