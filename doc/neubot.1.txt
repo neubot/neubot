@@ -433,11 +433,6 @@ we assume that it has been installed below **/usr/local**:
   System-wide results database for Linux systems, created when the
   neubot daemon starts for the first time.
 
-In addition, if you run neubot as an unprivileged user:
-
-$HOME/.neubot/database.sqlite3
-  User-specific results database.
-
 BUGS
 ````
 
