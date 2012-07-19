@@ -34,7 +34,7 @@ PYTHON=/usr/bin/python
 $DEBUG $INSTDIR/Master/stop.sh
 $DEBUG /bin/sh $INSTDIR/M-Lab/redir_table.sh
 
-$DEBUG sqlite3 /var/neubot/database.sqlite3 'select * from geoloc';
+$DEBUG sqlite3 /var/lib/neubot/database.sqlite3 'select * from geoloc';
 $DEBUG echo 'If the GEOLOC table looks ugly, hit ^C NOW!'
 $DEBUG sleep 3
 
