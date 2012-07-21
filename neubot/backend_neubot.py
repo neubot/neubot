@@ -28,6 +28,8 @@
 # and with comments and feedback from Roberto D'Auria.
 #
 
+import logging
+
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
@@ -39,8 +41,14 @@ class BackendNeubot(BackendNull):
 
     def bittorrent_store(self, message):
         ''' Saves the results of a bittorrent test '''
+        if DATABASE.readonly:
+            logging.warning('backend_neubot: readonly database')
+            return
         table_bittorrent.insert(DATABASE.connection(), message)
 
     def speedtest_store(self, message):
         ''' Saves the results of a speedtest test '''
+        if DATABASE.readonly:
+            logging.warning('backend_neubot: readonly database')
+            return
         table_speedtest.insert(DATABASE.connection(), message)

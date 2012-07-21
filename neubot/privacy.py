@@ -236,6 +236,8 @@ def __main(args):
         sys.exit(test_settings(connection))
 
     if settings:
+        if DATABASE.readonly:
+            sys.exit('ERROR: readonly database')
         sys.exit(update_settings(connection, settings))
 
     sys.exit(print_settings(connection, database_path))

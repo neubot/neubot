@@ -198,7 +198,10 @@ class BitTorrentClient(ClientHTTP):
             logging.info('BitTorrent: upload speed: %s', upload)
 
             if privacy.collect_allowed(self.my_side):
-                table_bittorrent.insert(DATABASE.connection(), self.my_side)
+                if DATABASE.readonly:
+                    logging.warning('bittorrent_client: readonly database')
+                else:
+                    table_bittorrent.insert(DATABASE.connection(), self.my_side)
 
             # Update the upstream channel estimate
             target_bytes = int(m["target_bytes"])

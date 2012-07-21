@@ -236,7 +236,10 @@ class ClientCollect(ClientHTTP):
         # anymore an object
         #
         if privacy.collect_allowed(m1.__dict__):
-            insertxxx(DATABASE.connection(), m1)
+            if DATABASE.readonly:
+                logging.warning('speedtest: readonly database')
+            else:
+                insertxxx(DATABASE.connection(), m1)
 
         request = Message()
         request.compose(method="POST", pathquery="/speedtest/collect",

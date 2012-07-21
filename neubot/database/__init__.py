@@ -37,6 +37,7 @@ from neubot import system
 class DatabaseManager(object):
     def __init__(self):
         self.path = system.get_default_database_path()
+        self.readonly = False
         self.dbc = None
 
     def set_path(self, path):
@@ -50,6 +51,7 @@ class DatabaseManager(object):
             database_xxx.linux_fixup_databasedir()
             if self.path != ":memory:":
                 self.path = system.check_database_path(self.path)
+
             logging.debug("* Database: %s", self.path)
             self.dbc = sqlite3.connect(self.path)
 
@@ -59,6 +61,19 @@ class DatabaseManager(object):
             # prone as driving drunk.
             #
             self.dbc.row_factory = sqlite3.Row
+
+            #
+            # If we're not running as root set a flag
+            # that prevents any modification to the
+            # database, since they're all going to fail
+            # because we're not permitted to to that.
+            # Of course, don't even attempt to initialize
+            # the database in this case.
+            #
+            if not system.running_as_root():
+                logging.warning('database: opening database in readonly mode')
+                self.readonly = True
+                return self.dbc
 
             #
             # Migrate MUST be before table creation.  This

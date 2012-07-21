@@ -68,3 +68,7 @@ def __logger(severity, message):
 def get_background_logger():
     ''' Return the background logger '''
     return __logger
+
+def running_as_root():
+    ''' Returns true if this process is running as root '''
+    return False

@@ -62,16 +62,25 @@ def main(args):
     DATABASE.connect()
 
     if not arguments or arguments[0] == "info":
-        print DATABASE.path
+        sys.stdout.write('%s\n' % DATABASE.path)
 
     elif arguments[0] == "regen_uuid":
+        if DATABASE.readonly:
+            sys.exit('ERROR: readonly database')
+
         table_config.update(DATABASE.connection(),
           {"uuid": utils.get_uuid()}.iteritems())
 
     elif arguments[0] == "prune":
+        if DATABASE.readonly:
+            sys.exit('ERROR: readonly database')
+
         table_speedtest.prune(DATABASE.connection())
 
     elif arguments[0] == "delete_all":
+        if DATABASE.readonly:
+            sys.exit('ERROR: readonly database')
+
         table_speedtest.prune(DATABASE.connection(), until=utils.timestamp())
         DATABASE.connection().execute("VACUUM;")
 

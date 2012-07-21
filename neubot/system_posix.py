@@ -176,3 +176,7 @@ def _get_pidfile_dir():
         return "/var/run"
     else:
         return None
+
+def running_as_root():
+    ''' Returns true if this process is running as root '''
+    return os.getuid() == 0
