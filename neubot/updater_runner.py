@@ -167,7 +167,7 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        logging.info('updater_runner: <signature>')
+        logging.info('updater_runner: (signature)')
 
         # XXX We should not reuse the same CTX here
         ctx['signature'] = body
@@ -193,7 +193,7 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        logging.info('updater_runner: <tarball>')
+        logging.info('updater_runner: (tarball)')
 
         if not updater_utils.sha256sum_verify(ctx['sha256'], body):
             logging.error('updater_runner: sha256 mismatch')
