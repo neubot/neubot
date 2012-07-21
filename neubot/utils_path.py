@@ -58,11 +58,20 @@ def append(prefix, path):
     # raise an error if path contains any reference to the upper
     # level.  Moreover, prefix must be absolute because it is a bit
     # confusing to have relative prefixes.
-    # The final normalize() step is to collapse eventual consecutive
-    # slashes added by the join(), which happens when path isabs().
+    # Then there's normalize() step is to collapse eventual consecutive
+    # slashes added by the join(), which happens when path isabs(),
+    # and, finally, just for correctness we force the result to be ASCII,
+    # since in some cases normalize() returns a unicode object.
     #
-    return normalize(join(must_be_absolute(normalize(must_be_ascii(prefix))),
-                          must_not_be_upref(normalize(must_be_ascii(path)))))
+    return                     must_be_ascii(
+                                normalize(
+                                   join(
+                 must_be_absolute(
+           normalize(
+   must_be_ascii(prefix))),
+                                          must_not_be_upref(
+                                               normalize(
+                                                   must_be_ascii(path))))))
 
 #
 # Define constant to make must_be_ascii() portable, we use
