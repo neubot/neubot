@@ -37,9 +37,9 @@ def log_api(stream, request, query):
     # CAVEAT Currently Neubot do not update logs "in real
     # time" using AJAX.  If it did we would run in trouble
     # because each request for /api/log would generate a
-    # new access log record.  A new access log record will
-    # cause a new "logwritten" event.  And the result is
-    # something like a Comet storm.
+    # new access log record.  In turn, a new access log
+    # record will cause a new "logwritten" event, leading
+    # to a log-caused Comet storm.
     #
 
     # Get logs and options
