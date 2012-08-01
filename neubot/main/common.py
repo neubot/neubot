@@ -98,6 +98,7 @@ def main(name, descr, args):
         CONFIG.merge_environ()
     CONFIG.merge_properties()
 
+    # Apply the setting after we've read database and environment
     if verbose:
         CONFIG['verbose'] = 1
 
