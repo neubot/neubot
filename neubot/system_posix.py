@@ -24,6 +24,8 @@
  Code for UNIX
 '''
 
+# NB: This code is currently being refactored.
+
 #
 # When we MUST exit better to use os._exit() rather than
 # sys.exit() because the former cannot be catched while
