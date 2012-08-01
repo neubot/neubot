@@ -357,7 +357,7 @@ ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
 ACCESS_LOGGER.addHandler(AccessLogWrapper())
 
-# Avoid passing log messages to the ROOT logger
+# Avoid passing access-log messages to the ROOT logger
 ACCESS_LOGGER.propagate = False
 
 def set_verbose():
