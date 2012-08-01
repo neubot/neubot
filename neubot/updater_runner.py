@@ -109,7 +109,7 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        logging.info('updater_runner: %s -> %s', '0.004013006', vinfo)
+        logging.info('updater_runner: %s -> %s', '0.004013007', vinfo)
         self.retrieve_files(vinfo)
 
     def retrieve_files(self, vinfo):

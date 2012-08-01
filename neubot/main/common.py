@@ -37,7 +37,7 @@ if __name__ == "__main__":
 from neubot.config import CONFIG
 from neubot.database import DATABASE
 
-VERSION = "0.4.13-rc6"
+VERSION = "0.4.13-rc7"
 
 def write_help(fp, name, descr):
     fp.write('''\
