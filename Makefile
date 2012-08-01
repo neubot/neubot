@@ -293,7 +293,7 @@ _deb:
 deb:
 	fakeroot make -f Makefile _deb
 	lintian $(DEB_PACKAGE)
-        # This still fails because of /usr/share/doc/neubot...
+	# This still fails because of /usr/share/doc/neubot...
 	lintian $(DEB_PACKAGE_NOX) || true
 
 #           _
