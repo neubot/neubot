@@ -341,6 +341,7 @@ class StreamingLogWrapper(logging.Handler):
         STREAMING_LOG.log(level, msg, args, exc_info)
 
 ROOT_LOGGER = logging.getLogger()
+# Make sure all previously registered handlers go away
 ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
 ROOT_LOGGER.addHandler(StreamingLogWrapper())
