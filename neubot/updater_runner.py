@@ -26,6 +26,10 @@
 # This is basically the portable part of Win32 updater and has
 # been separated from it for cross-platform testability.
 #
+# TODO The plan is to modify MacOSX updater to use the code
+# in this file as well.  But, currently, MacOSX updater runs
+# the code located in ``updater/unix.py``.
+#
 
 import getopt
 import logging
