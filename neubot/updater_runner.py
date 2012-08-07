@@ -46,6 +46,14 @@ class UpdaterRunner(object):
 
     ''' An updater that uses the runner '''
 
+    #
+    # TODO The updater fetches both the checksum and the digital
+    # signature, which seems to be redundant.  When the signature
+    # is good, we also know that the file checksum is good, by
+    # definition of digital signature.  So, we can save the step
+    # where we download the SHA256 checksum.
+    #
+
     def __init__(self, system, basedir, channel):
         ''' Initializer '''
         #
