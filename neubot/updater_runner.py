@@ -48,6 +48,11 @@ class UpdaterRunner(object):
 
     def __init__(self, system, basedir, channel):
         ''' Initializer '''
+        #
+        # TODO There's no point in passing the updater channel
+        # to the initializer, since we re-read it before each
+        # check for updates.
+        #
         self.system = system
         self.basedir = basedir
         self.channel = channel
