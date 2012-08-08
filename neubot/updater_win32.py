@@ -57,7 +57,12 @@ class UpdaterWin32(UpdaterRunner):
     def install(self, ctx, body):
         ''' Install new version on Windows '''
 
+        #
         # Extract from tarball
+        #
+        # TODO This step is general and should be moved into
+        # updater_runner.py instead.
+        #
         updater_install.install(self.basedir, ctx['vinfo'])
         logging.info('updater_win32: extracted tarball')
 
