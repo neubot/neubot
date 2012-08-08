@@ -78,7 +78,7 @@ def dgst_verify(signature, tarball, key=None):
     for path in (signature, tarball, key):
         path = utils_path.normalize(path)
         if not path.startswith(utils_sysdirs.BASEDIR):
-            raise RuntimeError('Passed path outside of BASEDIR')
+            raise RuntimeError('updater_verify: passed path outside of BASEDIR')
 
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
@@ -88,7 +88,7 @@ def dgst_verify(signature, tarball, key=None):
     retval = subprocess.call(cmdline)
 
     if retval != 0:
-        raise RuntimeError('Signature does not match')
+        raise RuntimeError('updater_verify: signature does not match')
 
 def __dgst_sign(signature, tarball, key):
 
@@ -109,7 +109,7 @@ def __dgst_sign(signature, tarball, key):
     retval = subprocess.call(cmdline)
 
     if retval != 0:
-        raise RuntimeError('Cannot create signature')
+        raise RuntimeError('updater_verify: cannot create signature')
 
 def main(args):
     ''' Main function '''
