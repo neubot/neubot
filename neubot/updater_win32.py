@@ -100,6 +100,16 @@ class UpdaterWin32(UpdaterRunner):
         # version should be stopped before proceeding with normal
         # startup.
         #
+        # We need to close_fds, because the child process must
+        # not inherit the parent handles.  If it did, the listening
+        # socket is inherited, and the child process cannot open
+        # its own listening socket.  The ``-k`` argument on the
+        # command line instructs the child process to request this
+        # process to exit.  Of course the child does that before
+        # attempting to listen a new socket.  Still, there is a
+        # potential race, which means that the child process has
+        # to wait until this process' socket is closed.
+        #
         logging.info('updater_win32: about to exec: %s', cmdline_k)
         subprocess.Popen(cmdline_k, close_fds=True)
 
