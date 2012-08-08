@@ -69,9 +69,11 @@ def dgst_verify(signature, tarball, key=None):
     #
     # By default subprocess.call() does not invoke the shell and
     # passes the command line to execve().  We set the command to
-    # invoke and many arguments, still the caller controls some
-    # other arguments.  For additional correctness, make sure it
-    # receives file names below BASEDIR.
+    # invoke and many arguments, but the caller "controls" some
+    # other arguments.  In the common case, when we're invoked by
+    # updater_runner.py, arguments are verified.  Still, for
+    # additional correctness, here we also make sure we receive
+    # file names below BASEDIR.
     #
     for path in (signature, tarball, key):
         path = utils_path.normalize(path)
