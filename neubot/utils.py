@@ -71,9 +71,9 @@ def _unit_formatter(number, unit_info, unit_name):
 def unit_formatter(number, base10=False, unit=""):
     ''' Unit formatter '''
     if base10:
-        return _unit_formatter(number, [GIGA, MEGA, KILO], unit)
+        return _unit_formatter(number, (GIGA, MEGA, KILO), unit)
     else:
-        return _unit_formatter(number, [GIBI, MEBI, KIBI], unit)
+        return _unit_formatter(number, (GIBI, MEBI, KIBI), unit)
 
 def speed_formatter(speed, base10=True, bytez=False):
     ''' Speed formatter '''
