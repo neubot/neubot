@@ -112,6 +112,12 @@ def __dgst_sign(signature, tarball, key):
      the SHA256 algorithm.
     '''
 
+    #
+    # This function is private because it's designed just for
+    # this module's main(), and it does not have the set of
+    # correctness checks that the verify function implements.
+    #
+
     if not utils_sysdirs.OPENSSL:
         raise RuntimeError('updater_verify: No OPENSSL defined')
 
