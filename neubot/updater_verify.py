@@ -33,9 +33,10 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot.config import CONFIG
+
 from neubot import utils_sysdirs
 from neubot import utils_path
-from neubot.config import CONFIG
 
 if os.name == 'posix':
     import syslog
