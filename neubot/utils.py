@@ -43,7 +43,7 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
     try:
         afile.seek(offset, whence)
     except IOError:
-        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
+        if afile not in (sys.stdin, sys.stdout, sys.stderr):
             raise
 
 #
