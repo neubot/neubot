@@ -88,7 +88,7 @@ def dgst_verify(signature, tarball, key=None):
     #
     # We control the file names, typically.  If they're not controlled,
     # above there is code that restricts them inside BASEDIR.  Note that
-    # the ``-verify`` switch should ensure that files are just checked,
+    # the ``-verify`` switch should ensure that files are read and checked,
     # and not written.  Still, files we are going to verify may have
     # been crafted to crash openssl and run arbitratry code.  For this
     # reason, I wonder whether it makes sense to run the openssl subpro-
