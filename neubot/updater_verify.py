@@ -75,11 +75,25 @@ def dgst_verify(signature, tarball, key=None):
     # additional correctness, here we also make sure we receive
     # file names below BASEDIR.
     #
+    # TODO Here we can be even more paranoid^H^H obsessed by
+    # correctness, and we can check (a) that we have received
+    # normalized paths and (b) that signature, tarball, and
+    # key follow certain patterns.
+    #
     for path in (signature, tarball, key):
         path = utils_path.normalize(path)
         if not path.startswith(utils_sysdirs.BASEDIR):
             raise RuntimeError('updater_verify: passed path outside of BASEDIR')
 
+    #
+    # We control the file names, typically.  If they're not controlled,
+    # above there is code that restricts them inside BASEDIR.  Note that
+    # the ``-verify`` switch should ensure that files are just checked,
+    # and not written.  Still, files we are going to verify may have
+    # been crafted to crash openssl and run arbitratry code.  For this
+    # reason, I wonder whether it makes sense to run the openssl subpro-
+    # cess with reduced privileges.
+    #
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
 
