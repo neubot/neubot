@@ -52,13 +52,13 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
 
 # base 2
 KIBI = (1024.0, "Ki")
-GIBI = (1073741824.0, "Gi")
 MEBI = (1048576.0, "Mi")
+GIBI = (1073741824.0, "Gi")
 
 # base 10
 KILO = (1000.0, "K")
-GIGA = (1000000000.0, "G")
 MEGA = (1000000.0, "M")
+GIGA = (1000000000.0, "G")
 
 def _unit_formatter(number, unit_info, unit_name):
     ''' Internal unit formatter '''
