@@ -178,5 +178,8 @@ def ticks():
 T = lambda: int(1000000 * ticks())
 
 def get_uuid():
-    ''' Returns per client random unique identifier '''
+    ''' Returns per-Neubot random unique identifier.
+
+        Each Neubot is identified by an anonymous unique random ID,
+        which allows to perform time series analysis. '''
     return str(uuid.uuid4())
