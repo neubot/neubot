@@ -78,9 +78,11 @@ VERSIONDIR = ROOTDIR
 # system.  Under UNIX we search for openssl in the usual
 # locations (/bin, /usr/bin).  Under Win32 the executable
 # must be in VERSIONDIR.
+#
 # Note that this variable is interesting only when we need
 # to invoke OpenSSL in order to verify an autoupdate digital
 # signature.  I.e. on MacOS and Win32.
+#
 # When we cannot find OPENSSL we simply set it to None and
 # who needs to use this variable must deal with that.
 #
