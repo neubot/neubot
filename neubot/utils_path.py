@@ -68,10 +68,12 @@ def append(prefix, path):
                                    join(
                  must_be_absolute(
            normalize(
-   must_be_ascii(prefix))),
+   must_be_ascii(
+     prefix))),
                                           must_not_be_upref(
                                                normalize(
-                                                   must_be_ascii(path))))))
+                                                   must_be_ascii(
+                                                       path))))))
 
 #
 # Define constant to make must_be_ascii() portable, we use
