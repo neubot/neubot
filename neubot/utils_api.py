@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Share utils for the API '''
+''' Shared utils for the API '''
 
 class NotImplementedTest(Exception):
     ''' Raised when a test is not implemented '''
