@@ -157,7 +157,7 @@ if os.name == 'nt':
 elif os.name == 'posix':
     __TICKS = time.time
 else:
-    raise ImportError("Please, provide a definition of ticks()")
+    raise RuntimeError("Operating system not supported")
 
 def ticks():
     ''' Returns a real representing the most precise clock available
