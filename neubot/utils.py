@@ -94,7 +94,8 @@ def time_formatter(number):
         number *= 1000000
         return "%.1f us" % number
     else:
-        return "%f" % number
+        number *= 1000000
+        return "%e us" % number
 
 # Coerce types
 
