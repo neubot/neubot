@@ -49,19 +49,32 @@ def depth_visit(prefix, components, visit):
 def append(prefix, path):
     ''' Safely append path to prefix '''
     #
-    # To avoid surprises with unicode characters, we ensure that we
-    # pass normalize() 'ascii'-only path and prefix.
-    # The return value of normalize() is either an absolute path or
-    # a relative path, possibly starting with one or more up-level
-    # references, i.e. '../' or '..\\'.
-    # To guarantee that the join() result is always below prefix we
-    # raise an error if path contains any reference to the upper
-    # level.  Moreover, prefix must be absolute because it is a bit
-    # confusing to have relative prefixes.
-    # Then there's a normalize() step, to collapse eventual consecutive
-    # slashes added by the join(), which happens when path isabs(),
-    # and, finally, just for correctness we force the result to be ASCII,
-    # since in some cases normalize() returns a unicode object.
+    # The code below is formatted as a tree, to show visually what
+    # happens to each component of the path.  In turn, this comment
+    # try to explan the rationale of each step, starting from the
+    # leaves and going to the root:
+    #
+    # 1. to avoid surprises with unicode characters, we ensure that we
+    #    pass normalize() ascii-only path and prefix;
+    #
+    # 2. the return value of normalize() is either an absolute path or
+    #    a relative path, possibly starting with one or more up-level
+    #    references, i.e. '../' or '..\\'.
+    #
+    # 3. to guarantee that the join() result is always below prefix we
+    #    raise an error if path contains any reference to the upper
+    #    level.
+    #
+    #    Moreover, prefix must be absolute because it is a bit
+    #    confusing to have relative prefixes;
+    #
+    # 4. then we join();
+    #
+    # 5. then there's a normalize() step, to collapse eventual consecutive
+    #    slashes added by the join(), which happens when path isabs();
+    #
+    # 6. finally, just for correctness we force the result to be ASCII,
+    #    since in some cases normalize() returns a unicode object.
     #
     return                     must_be_ascii(
                                 normalize(
