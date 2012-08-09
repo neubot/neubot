@@ -98,7 +98,7 @@ elif os.name == 'nt':
     if not os.access(OPENSSL, os.R_OK|os.X_OK):
         OPENSSL = None
 else:
-    raise RuntimeError('system not configured')
+    raise RuntimeError('system not supported')
 
 #
 # SYSCONFDIR is the directory that contains Neubot configuration
@@ -111,7 +111,7 @@ if os.name == 'posix':
 elif os.name == 'nt':
     SYSCONFDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
 else:
-    raise RuntimeError('system not configured')
+    raise RuntimeError('system not supported')
 
 #
 # LOCALSTATEDIR is the directory that contains Neubot database.
@@ -136,7 +136,7 @@ if os.name == 'posix':
 elif os.name == 'nt':
     LOCALSTATEDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
 else:
-    raise RuntimeError('system not configured')
+    raise RuntimeError('system not supported')
 
 # Path to Neubot database
 DATABASEPATH = os.sep.join([LOCALSTATEDIR, 'database.sqlite3'])
