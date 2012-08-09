@@ -164,7 +164,7 @@ def ticks():
         on the current platform.  Note that, depending on the platform,
         the returned value MIGHT NOT be a timestamp.  So, you MUST
         use this clock to calculate the time elapsed between two events
-        ONLY. '''
+        ONLY, and you must not use it with timestamp semantics. '''
     return __TICKS()
 
 #
