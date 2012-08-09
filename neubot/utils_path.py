@@ -73,7 +73,7 @@ def append(prefix, path):
     # 5. then there's a normalize() step, to collapse eventual consecutive
     #    slashes added by the join(), which happens when path isabs();
     #
-    # 6. finally, just for correctness we force the result to be ASCII,
+    # 6. finally, just for correctness, we force the result to be ASCII,
     #    since in some cases normalize() returns a unicode object.
     #
     return                     must_be_ascii(
