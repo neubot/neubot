@@ -22,6 +22,9 @@
 
 ''' Location of system-dependent directories and files '''
 
+# TODO Since it contains both directories and files, this file would
+# be better named utils_syshier.py.
+
 # Formerly neubot/rootdir.py
 
 import os
