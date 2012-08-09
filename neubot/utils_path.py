@@ -58,7 +58,7 @@ def append(prefix, path):
     # raise an error if path contains any reference to the upper
     # level.  Moreover, prefix must be absolute because it is a bit
     # confusing to have relative prefixes.
-    # Then there's normalize() step is to collapse eventual consecutive
+    # Then there's a normalize() step, to collapse eventual consecutive
     # slashes added by the join(), which happens when path isabs(),
     # and, finally, just for correctness we force the result to be ASCII,
     # since in some cases normalize() returns a unicode object.
