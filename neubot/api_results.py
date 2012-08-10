@@ -91,6 +91,8 @@ TITLE = {
 
 def __load_descriptions():
     ''' Load tests descriptions '''
+    # XXX It would be much better if descriptions were loaded once
+    # and forever, instead of just once on startup.
     for test in AVAILABLE_TESTS:
         path = os.sep.join([utils_sysdirs.WWWDIR, 'descr', test + '.html'])
         filep = open(path, 'r')
