@@ -43,7 +43,7 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
     try:
         afile.seek(offset, whence)
     except IOError:
-        if afile not in [sys.stdin, sys.stdout, sys.stderr]:
+        if afile not in (sys.stdin, sys.stdout, sys.stderr):
             raise
 
 #
@@ -52,13 +52,13 @@ def safe_seek(afile, offset, whence=os.SEEK_SET):
 
 # base 2
 KIBI = (1024.0, "Ki")
-GIBI = (1073741824.0, "Gi")
 MEBI = (1048576.0, "Mi")
+GIBI = (1073741824.0, "Gi")
 
 # base 10
 KILO = (1000.0, "K")
-GIGA = (1000000000.0, "G")
 MEGA = (1000000.0, "M")
+GIGA = (1000000000.0, "G")
 
 def _unit_formatter(number, unit_info, unit_name):
     ''' Internal unit formatter '''
@@ -71,9 +71,9 @@ def _unit_formatter(number, unit_info, unit_name):
 def unit_formatter(number, base10=False, unit=""):
     ''' Unit formatter '''
     if base10:
-        return _unit_formatter(number, [GIGA, MEGA, KILO], unit)
+        return _unit_formatter(number, (GIGA, MEGA, KILO), unit)
     else:
-        return _unit_formatter(number, [GIBI, MEBI, KIBI], unit)
+        return _unit_formatter(number, (GIBI, MEBI, KIBI), unit)
 
 def speed_formatter(speed, base10=True, bytez=False):
     ''' Speed formatter '''
@@ -94,7 +94,8 @@ def time_formatter(number):
         number *= 1000000
         return "%.1f us" % number
     else:
-        return "%f" % number
+        number *= 1000000
+        return "%e us" % number
 
 # Coerce types
 
@@ -156,14 +157,14 @@ if os.name == 'nt':
 elif os.name == 'posix':
     __TICKS = time.time
 else:
-    raise ImportError("Please, provide a definition of ticks()")
+    raise RuntimeError("Operating system not supported")
 
 def ticks():
     ''' Returns a real representing the most precise clock available
         on the current platform.  Note that, depending on the platform,
         the returned value MIGHT NOT be a timestamp.  So, you MUST
         use this clock to calculate the time elapsed between two events
-        ONLY. '''
+        ONLY, and you must not use it with timestamp semantics. '''
     return __TICKS()
 
 #
@@ -177,5 +178,8 @@ def ticks():
 T = lambda: int(1000000 * ticks())
 
 def get_uuid():
-    ''' Returns per client random unique identifier '''
+    ''' Returns per-Neubot random unique identifier.
+
+        Each Neubot is identified by an anonymous unique random ID,
+        which allows to perform time series analysis. '''
     return str(uuid.uuid4())

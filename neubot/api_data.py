@@ -40,7 +40,6 @@ from neubot.utils_api import NotImplementedTest
 
 from neubot import utils
 
-
 def api_data(stream, request, query):
     ''' Get data stored on the local database '''
     since, until = -1, -1

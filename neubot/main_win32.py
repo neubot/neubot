@@ -51,6 +51,13 @@ def subcommand_start(args):
         if tpl[0] == '-k':
             kill = True
 
+    #
+    # TODO When ``-k``, we must not proceed until the parent
+    # is exited and has released the listening socket.  At the
+    # moment, this works but there is a race between the parent
+    # process closing, and the child process listening on the
+    # new socket.
+    #
     if kill:
         running = utils_ctl.is_running('127.0.0.1', '9774')
         if running:

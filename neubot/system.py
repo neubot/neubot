@@ -37,6 +37,7 @@ if os.name == "nt":
     from neubot.system_win32 import _want_rw_file
     from neubot.system_win32 import get_background_logger
     from neubot.system_win32 import running_as_root
+
 elif os.name == "posix":
     from neubot.system_posix import change_dir
     from neubot.system_posix import go_background
@@ -48,6 +49,7 @@ elif os.name == "posix":
     from neubot.system_posix import _want_rw_file
     from neubot.system_posix import get_background_logger
     from neubot.system_posix import running_as_root
+
 else:
     raise RuntimeError("Your system is not supported")
 
@@ -66,9 +68,12 @@ def get_default_database_path():
 
 def check_database_path(pathname):
     ''' Make sure database path is OK '''
+
     pathname = os.path.abspath(pathname)
+
     if not running_as_root():
         return pathname
+
     _want_rwx_dir(os.path.dirname(pathname))
     _want_rw_file(pathname)
     return pathname

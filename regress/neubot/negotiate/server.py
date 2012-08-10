@@ -34,7 +34,6 @@ from neubot.negotiate.server import NegotiateServerModule
 from neubot.negotiate.server import NegotiateServer
 
 from neubot.compat import json
-from neubot.log import LOG
 
 class MinimalHttpStream:
     ''' Minimal HTTP stream '''

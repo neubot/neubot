@@ -33,7 +33,9 @@ var results = (function() {
     self.result_fields = [];
     self.result_titles = [];
 
+    // Initialize global variables, e.g. result_fields, request
     self.init = function(request) {
+
         self.request = request;
 
         jQuery("#results_title").html(i18n.get(self.request.title));
@@ -53,12 +55,16 @@ var results = (function() {
         self.result_fields = [];
         self.result_titles = [];
 
+        // Table fields is a mapping that binds the name of each field, e.g.
+        // 'timestamp', with the related display name, e.g. 'Timestamp'.
         jQuery.each(request.table_fields, function(i, v) {
             self.result_fields.push(i);
             self.result_titles.push(v);
         });
     }
 
+    // Request the Neubot daemon raw data
+    // TODO This function should be renamed get_data()
     self.get_results = function(callbacks, since, unit, until) {
         var res = new Array();
         if (!since) {
@@ -83,8 +89,7 @@ var results = (function() {
         jQuery.ajax(params);
     }
 
-    // results formatter
-
+    // Process raw data to format results table
     self.formatter_table = function(data, since, unit, until) {
         var i;
         var html = "";
@@ -99,6 +104,9 @@ var results = (function() {
 
         for (j = 0; j < data.length; j++) {
             var result = data[j];
+
+            // Table_fields maps field names to pretty field names,
+            // and table_types maps field names to their type
 
             html += "<tr>";
             jQuery.each(self.request.table_fields, function(i, v) {
@@ -125,7 +133,11 @@ var results = (function() {
         return html;
     };
 
+    // Process raw data to produce plots
     self.formatter_plot = function(data, since, unit, until) {
+
+        // Axis_labels is a vector that contains the x-axis and y-axis
+        // labels of each plot we want
 
         var num_of_plots = self.request.axis_labels.length;
 
@@ -142,7 +154,7 @@ var results = (function() {
                 dataType.push(index);
                 dataTypeLabels.push(value);
 
-                // Not good!
+                // XXX this does not scale well with the number of plots
                 if (++j % 2) {
                     dataTypeShape.push("square");
                 }
@@ -300,11 +312,14 @@ var results = (function() {
     return self;
 })();
 
+// Initialize the results tab
+// TODO This function should be moved inside the above namespace
 function results_init() {
     utils.setActiveTab("results");
 
     jQuery.jqplot.config.enablePlugins = true;
 
+    // Invoked when we need to update the page content
     var confirm_test = function() {
         var testname = jQuery("#res_type_value").val();
 
@@ -315,8 +330,10 @@ function results_init() {
             },
             dataType: 'json',
             success: function(myrequest) {
+
                 results.init(myrequest);
 
+                // XXX I'd move these checks before the ajax() call
                 var n = Number(jQuery("#res_value").val());
                 if (n == NaN) {
                     alert(i18n.get("Please insert a valid number"));
@@ -341,14 +358,22 @@ function results_init() {
         });
     }
 
+    // Update plots when the user presses enter when editing the number
+    // of days or months to show
     jQuery("#res_value").keydown(function(event) {
         if (event.keyCode == 13) {
             return confirm_test();
         }
     });
+
+    // Update plots when the user presses the "Go" button
     jQuery("#res_type_submit").click(confirm_test);
+
+    // Invoke one first time to fill the page and fetch the results
+    // of the default test, which currently is speedtest
     confirm_test();
 
+    // Track the state of the Neubot daemon
     tracker = state.tracker();
     tracker.start();
 };

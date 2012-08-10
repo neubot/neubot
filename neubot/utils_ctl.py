@@ -63,6 +63,15 @@ def is_running(address, port, verbose=0):
         except (SystemExit, KeyboardInterrupt):
             raise
         except socket.error:
+            #
+            # This is a really common error, so it make sense to spit
+            # out an explanatory message rather than just a trace.
+            #
+            # XXX Note that socket.error is either a string or a
+            # (errno, strerror) tuple.  In both cases, taking the
+            # first element is valid, i.e. is not going to raise
+            # exceptions.
+            #
             if sys.exc_info()[1][0] == errno.ECONNREFUSED:
                 logging.warning('cannot contact neubot daemon: %s',
                                 'connection refused')

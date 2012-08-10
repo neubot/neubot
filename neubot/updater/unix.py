@@ -81,7 +81,14 @@ CONFIG = {
 
 # State
 STATE = {
-    'lastcheck': 0,
+    #
+    # TODO By setting 'lastcheck' to the current time, we
+    # delay the first check for updates of 30 minutes.
+    # I'm not sure this is a great idea, because, ideally,
+    # Neubot should update and then run tests, not the
+    # other way round.
+    #
+    'lastcheck': time.time(),
 }
 
 #

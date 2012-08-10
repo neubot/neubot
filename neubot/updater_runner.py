@@ -26,6 +26,10 @@
 # This is basically the portable part of Win32 updater and has
 # been separated from it for cross-platform testability.
 #
+# TODO The plan is to modify MacOSX updater to use the code
+# in this file as well.  But, currently, MacOSX updater runs
+# the code located in ``updater/unix.py``.
+#
 
 import getopt
 import logging
@@ -46,8 +50,21 @@ class UpdaterRunner(object):
 
     ''' An updater that uses the runner '''
 
+    #
+    # TODO The updater fetches both the checksum and the digital
+    # signature, which seems to be redundant.  When the signature
+    # is good, we also know that the file checksum is good, by
+    # definition of digital signature.  So, we can save the step
+    # where we download the SHA256 checksum.
+    #
+
     def __init__(self, system, basedir, channel):
         ''' Initializer '''
+        #
+        # TODO There's no point in passing the updater channel
+        # to the initializer, since we re-read it before each
+        # check for updates.
+        #
         self.system = system
         self.basedir = basedir
         self.channel = channel

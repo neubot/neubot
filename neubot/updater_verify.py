@@ -33,9 +33,10 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot.config import CONFIG
+
 from neubot import utils_sysdirs
 from neubot import utils_path
-from neubot.config import CONFIG
 
 if os.name == 'posix':
     import syslog
@@ -68,15 +69,31 @@ def dgst_verify(signature, tarball, key=None):
     #
     # By default subprocess.call() does not invoke the shell and
     # passes the command line to execve().  We set the command to
-    # invoke and many arguments, still the caller controls some
-    # other arguments.  For additional correctness, make sure it
-    # receives file names below BASEDIR.
+    # invoke and many arguments, but the caller "controls" some
+    # other arguments.  In the common case, when we're invoked by
+    # updater_runner.py, arguments are verified.  Still, for
+    # additional correctness, here we also make sure we receive
+    # file names below BASEDIR.
+    #
+    # TODO Here we can be even more paranoid^H^H obsessed by
+    # correctness, and we can check (a) that we have received
+    # normalized paths and (b) that signature, tarball, and
+    # key follow certain patterns.
     #
     for path in (signature, tarball, key):
         path = utils_path.normalize(path)
         if not path.startswith(utils_sysdirs.BASEDIR):
-            raise RuntimeError('Passed path outside of BASEDIR')
+            raise RuntimeError('updater_verify: passed path outside of BASEDIR')
 
+    #
+    # We control the file names, typically.  If they're not controlled,
+    # above there is code that restricts them inside BASEDIR.  Note that
+    # the ``-verify`` switch should ensure that files are read and checked,
+    # and not written.  Still, files we are going to verify may have
+    # been crafted to crash openssl and run arbitratry code.  For this
+    # reason, I wonder whether it makes sense to run the openssl subpro-
+    # cess with reduced privileges.
+    #
     cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
 
@@ -85,7 +102,7 @@ def dgst_verify(signature, tarball, key=None):
     retval = subprocess.call(cmdline)
 
     if retval != 0:
-        raise RuntimeError('Signature does not match')
+        raise RuntimeError('updater_verify: signature does not match')
 
 def __dgst_sign(signature, tarball, key):
 
@@ -94,6 +111,12 @@ def __dgst_sign(signature, tarball, key):
      must be supplied, i.e. there is no default key.  We use
      the SHA256 algorithm.
     '''
+
+    #
+    # This function is private because it's designed just for
+    # this module's main(), and it does not have the set of
+    # correctness checks that the verify function implements.
+    #
 
     if not utils_sysdirs.OPENSSL:
         raise RuntimeError('updater_verify: No OPENSSL defined')
@@ -106,7 +129,7 @@ def __dgst_sign(signature, tarball, key):
     retval = subprocess.call(cmdline)
 
     if retval != 0:
-        raise RuntimeError('Cannot create signature')
+        raise RuntimeError('updater_verify: cannot create signature')
 
 def main(args):
     ''' Main function '''

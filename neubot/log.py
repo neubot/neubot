@@ -341,6 +341,7 @@ class StreamingLogWrapper(logging.Handler):
         STREAMING_LOG.log(level, msg, args, exc_info)
 
 ROOT_LOGGER = logging.getLogger()
+# Make sure all previously registered handlers go away
 ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
 ROOT_LOGGER.addHandler(StreamingLogWrapper())
@@ -356,7 +357,7 @@ ACCESS_LOGGER = logging.getLogger('access')
 ACCESS_LOGGER.setLevel(logging.INFO)
 ACCESS_LOGGER.addHandler(AccessLogWrapper())
 
-# Avoid passing log messages to the ROOT logger
+# Avoid passing access-log messages to the ROOT logger
 ACCESS_LOGGER.propagate = False
 
 def set_verbose():

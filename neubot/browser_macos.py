@@ -32,13 +32,8 @@ def open_browser(uri):
     #
     # Use the best tool available on the platform to load Neubot
     # web user interface in the default browser.
-    # FIXME As suggested by Vittorio Bertola and Simone Caldana this
-    # app does not behave as the user expects because it just opens the
-    # browser and then exits.  (Please, note that open -W would not
-    # help to fix this issue because the icon will keep jumping in the
-    # dashboard and that is even more confusing.)  I think the right
-    # fix here is to create a Cocoa application that uses the WebView
-    # class to load the proper page.
+    # It would be much better to have a PyCocoa interface and
+    # sooner or later we'll have it.
     #
 
     #
