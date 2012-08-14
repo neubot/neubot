@@ -1,4 +1,4 @@
-# neubot/system/unix.py
+# neubot/system/posix.py
 
 #
 # Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
