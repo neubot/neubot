@@ -133,7 +133,7 @@ for HOST in $HOSTS; do
         #
         echo "$HOST: make sure we've bind all ports"
         $SSH $HOST netstat -a --tcp -n | grep LISTEN \
-               | awk '{print $4}' > M-Lab/ports.new
+               | awk '{print $4}' | sort > M-Lab/ports.new
         diff -u M-Lab/ports.txt M-Lab/ports.new
 
     #
