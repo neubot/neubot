@@ -741,29 +741,28 @@ Per maggiori informazioni, fai riferimento alla `privacy policy`_.
 6.1. Dove sono pubblicati i dati?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-I dati sono automaticamente raccolti e pubblicati da Measurement Lab,
-come spiegato qui:
+I dati sono automaticamente raccolti e pubblicati da Measurement Lab:
 
-    http://www.measurementlab.net/data
+    http://measurementlab.net/data
 
 Il link diretto per accedere ai dati di Neubot e':
 
     https://sandbox.google.com/storage/m-lab/neubot
 
 Il progetto Neubot pubblica i dati vecchi (raccolti prima di entrare a
-far parte dei progetti di Measurement Lab) e ha intenzione, in futuro, di
-hostare i risultati piu` recenti raccolti da Measurement Lab al seguente
+far parte dei progetti di Measurement Lab) e mantiene un mirror dei
+risultati piu` recenti raccolti da Measurement Lab al seguente
 indirizzo:
 
-    http://www.neubot.org/data
+    http://neubot.org/data
 
 6.2. Con quale licenza sono rilasciati i dati?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 I dati raccolti dal software Neubot sono disponibili con licenza
-Creative Commons Zero, come spiegato qui:
+Creative Commons Zero:
 
-    https://github.com/neubot/neubot/blob/master/data/LICENSE
+    http://data.neubot.org/mlab_mirror/LICENSE
 
 6.3. Qual e' il formato dei dati?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -773,12 +772,12 @@ contiene i risultati salvati in un intero giorno da un server di
 test.  Ogni risultato e' un file di testo che contiene un dizionario
 codificato usando JSON, come descritto qui:
 
-    https://github.com/neubot/neubot/blob/master/data/README
+    http://data.neubot.org/mlab_mirror/README
 
 I dati raccolti prima del 27 Gennaio 2011 sono pubblicati in un
-formato differente e questo e' spiegato meglio qui:
+formato differente:
 
-    http://www.neubot.org/data
+    http://data.neubot.org/master.neubot.org/odata/README
 
 ------------------------------------------------------------------------
 

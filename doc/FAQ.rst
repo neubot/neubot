@@ -699,25 +699,25 @@ For more information, please refer to the `privacy policy`_.
 Data is automatically harvested and published by Measurement Lab, as
 explained here:
 
-    http://www.measurementlab.net/data
+    http://measurementlab.net/data
 
 The direct link to access Neubot data is:
 
     https://sandbox.google.com/storage/m-lab/neubot
 
 The Neubot project publishes old data (collected before being accepted
-into Measurement Lab) and plans to host recent Neubot results collected
-by Measurement Lab at:
+into Measurement Lab) and mirrors recent results collected by Measurement
+Lab at:
 
-    http://www.neubot.org/data
+    http://neubot.org/data
 
 6.2. Is there any license attached to data?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot data is available under the terms and provisions of Creative
-Commons Zero license as explained here:
+Commons Zero license:
 
-    https://github.com/neubot/neubot/blob/master/data/LICENSE
+    http://data.neubot.org/mlab_mirror/LICENSE
 
 6.3. What is data format?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -727,12 +727,12 @@ all the results collected during a day by a test server.  Each result
 is a text file that contains JSON-encoded dictionary, which is described
 here:
 
-    https://github.com/neubot/neubot/blob/master/data/README
+    http://data.neubot.org/mlab_mirror/README
 
 Data published before the 27th January 2011 is published in different
-format and this is explained better here:
+format:
 
-    http://www.neubot.org/data
+    http://data.neubot.org/master.neubot.org/odata/README
 
 ------------------------------------------------------------------------
 
