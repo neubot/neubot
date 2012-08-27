@@ -43,8 +43,8 @@ TOPDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MACOSDIR = os.sep.join([TOPDIR, 'MacOS'])
 os.chdir(MACOSDIR)
 
-VERSION = '0.4.13-rc8'
-NUMERIC_VERSION = '0.004013008'
+VERSION = '0.4.13'
+NUMERIC_VERSION = '0.004013999'
 
 IGNORER = shutil.ignore_patterns('.DS_Store')
 

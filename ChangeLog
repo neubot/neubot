@@ -1,3 +1,319 @@
+Neubot 0.4.13 [2012-08-27]
+	* utils_ctl.py: implement verbose
+	* Implement MacOS browser
+	* main_macos.py: implement main for MacOS
+	* neubot/updater/unix.py: fix typo
+	* neubot/log.py: adjust copyright assignment
+	* neubot/log.py: new class StreamLogger
+	* neubot/runner_api.py: use STREAM_LOG.start_streaming
+	* regress/neubot/runner_api.py: use STREAM_LOG.start_streaming
+	* neubot/runner_core.py: use STREAM_LOG.stop_streaming
+	* neubot/log.py: log_tuple() renamed to log()
+	* Change LOG.info() to logging.info()
+	* Change LOG.debug() to logging.debug()
+	* Change LOG.error() to logging.error()
+	* Change LOG.warning() to logging.warning()
+	* regress/neubot/log.py: purge deprecated calls
+	* neubot/log.py: purge unused methods in Logger
+	* Purge LOG.verbose()
+	* Purge LOG.noisy
+	* neubot/log.py: purge noisy, verbose, quiet
+	* Forward port to StreamLogger of commit 3ac425cac4
+	* neubot/log.py: call log() with exc_info argument in log_access()
+	* neubot/updater/unix.py: autoupdater can handle channel change
+	* FAQ-it.rst edited in 2.2 entry to reflect english FAQ
+	* FAQ-it.rst added FreeBSD installation entry
+	* Merge branches 'next-logger-cleanup' and 'pu' into next
+	* runner_core.py: dispose of unused import
+	* add Win32/openssl.exe: OpenSSL 1.0.1c compiled with MinGW
+	* Win32/setup.py: distribute also openssl.exe
+	* add Win32/LICENSE.OpenSSL.txt: add a copy of OpenSSL license
+	* Move utils/__init__.py -> utils.py
+	* neubot/log.py: create 'access' logger
+	* neubot/log.py: test 'access' logger
+	* neubot/http/server.py: use 'access' logger
+	* neubot/log.py: Logger.oops() is now a module function
+	* neubot/log.py: purge Logger.exception()
+	* updater_runner updater_utils: channel -> system
+	* Win32 updater: allow to specify channel
+	* neubot/config.py: add 'win32_updater_channel' to CONFIG
+	* neubot/background_win32.py: use CONFIG['win32_updater_channel']
+	* neubot/updater_runner.py: use CONFIG['win32_updater_channel']
+	* neubot/updater_win32.py: use CONFIG['win32_updater_channel']
+	* Merge branches 'logger-next' and 'win32_updater_select_channel' into pu-20120522
+	* Move system dependent dirs definitions in utils_sysdirs.py
+	* utils_sysdirs.py: rewrite in a more robust way
+	* utils_sysdirs.py: add SYSCONFDIR LOCALSTATEDIR
+	* WWW -> WWWDIR and update all references
+	* system/unix.py: use LOCALSTATEDIR from utils_sysdirs
+	* system/win32.py: use LOCALSTATEDIR from utils_sysdirs
+	* add database_xxx.py: database quirks
+	* database/__init__.py: fixup database path under Linux
+	* /api/results -> /api/data
+	* Move NotImplementedTest from api_data.py to utils_api.py
+	* add /api/results: helper to construct results.html page
+	* api/server.py: make NotImplementedTest a soft error
+	* Merge branch 'next' into master_
+	* Merge branch 'apidata' into next_
+	* Merge branch 'varlibneubot' into next_
+	* Merge branch 'logger-next' into next_
+	* Merge branch 'pu-20120522' into next_
+	* Merge branch 'win32-signed-update' into next_
+	* Merge branch 'macos_main' into next_
+	* net/stream.py: LOG -> logging
+	* api_results.py: registered -> available
+	* api_results.py: each dataset vector must be a unique dictionary
+	* api_results.py: pass title to web gui
+	* api_results.py: make sure we return table_fields in order
+	* api_results.py: pass the web gui table_types too
+	* neubot/log.py: fix 'access' logger not being able to log in background
+	* Backport master changes to next
+	* updater_runner.py: reload win32_updater_channel each time
+	* updater_runner.py: deal with recent bigmerge fallbacks
+	* updater_runner.py: remove unused import
+	* add updater_verify.py: verify autoupdater tarball via openssl
+	* updater_verify.py: portably join paths
+	* updater_runner.py: replace LOG.verbose() with usual logging dance
+	* updater_runner.py: remove unused import
+	* MD5 changes in PKGBUILD
+	* log.py: remove extra blank line
+	* log.py: ROOT -> ROOT_LOGGER for consistency
+	* log.py: stop passing useless DEBUG flag to StreamLogger
+	* log.py config.py: preparatory work to repair verbose feature
+	* config.py: implement __setitem__()
+	* Repair -v: part 1
+	* MD5 changes in PKGBUILD
+	* Fixed Archlinux rc.d file
+	* Repair -v: part 2
+	* Repair -v: don't always invoke runner client in verbose mode
+	* log: stream -> streaming for clarity
+	* log.py: document extensively the streaming feature
+	* streaming log: filter ACCESS logs in runner client
+	* log.py: remove ultra-paranoid code
+	* log.py: don't clear args after lazy string interpolation
+	* log.py: streaming feature: explain why we UTF8-encode log lines
+	* log.py: trim old docstrings
+	* utils.py: add docstring
+	* utils.py: document safe_seek() and file_length()
+	* utils.py: deal with simple unit_formatter pylint warnings
+	* utils: speed_formatter(): use longer variable names
+	* utils.py: avoid speed_formatter() and time_formatter() warnings
+	* utils.py: no more warnings in smart_cast() and friends
+	* utils.py: document import_class() and get_uuid()
+	* utils.py: no more pylint warnings in utils.py
+	* utils.py: dispose of unused file_length()
+	* utils: get rid of import_class() and propagate changes
+	* http/server.py: avoid logging-related pylint warning
+	* Win32: deploy public key in versiondir
+	* updater_runner: also download signature
+	* updater_win32: implement signature verification
+	* Merge bugfixes for the logger
+	* Merge branch 'win32-updater' into next
+	* Merge branch 'master' into next
+	* agent.py: defer string interpolation with logging functions
+	* api_data.py: add history
+	* api_data.py: write python3 compatible code
+	* api_data.py: don't print user-supplied string into exception string
+	* api_results.py: fix axis labels
+	* api_results.py: write python3-compatible code
+	* api_results.py: don't print user supplied string in exception string
+	* api_results.py: deploy warning against sort keys
+	* Cope with verbosity now controlled using CONFIG
+	* browser_{macos,nt}.py: deploy some paranoia
+	* database_xxx.py: better comment
+	* database_xxx.py: more robustness
+	* database_xxx.py: explain why we don't bother with _neubot uid,gid
+	* http/message.py: remove unused import
+	* http/server.py: defer string interpolation with logging funcs
+	* net/stream.py: delay string interpolation with logging funcs
+	* net/stream.py: remove unused import
+	* net/stream.py: avoid pylint warning re unused variable
+	* updater_verify.py: implement sign
+	* updater_verify: verify_rsa -> dgst_verify
+	* updater_verify: check dgst_verify() arguments
+	* Merge some updater_verify.py enhancements
+	* regress/neubot/log.py: restore test of background logging
+	* log.py: don't assume stream.poller is valid
+	* log.py: it's not "lazy" it's really lazy
+	* log.py: clarify comment
+	* log_api.py: make sure we don't loose caveat re logs and comet
+	* log.py: improve two docstrings
+	* log.py: note there is still a small access logger race
+	* Merge fixes for logger
+	* main/__init__.py: add hook for main_macos
+	* main_macos.py: correct version number
+	* utils_sysdirs.py: bump copyright, add history
+	* utils_sysdirs.py: clarify comments
+	* Merge remote-tracking branch 'bassosimone/utils-love' into next
+	* updater/unix.py: close unneeded file descriptors in the child
+	* updater/unix.py: remove two unused imports
+	* updater/unix.py: provide wrapper for os._exit()
+	* updater/unix.py: remove unused chroot code
+	* updater/unix.py: stop spreading lies in comment
+	* updater/unix.py: OK to close all descs but stdio must work
+	* updater/unix.py: close all filedescs in neubot child too
+	* updater/unix.py: let SIGUSR1 force update check
+	* utils_ctl.py: human readable error when we cannot connect
+	* log.py: add shortcut to make logger verbose
+	* main_macos.py: leverage log.set_verbose()
+	* log.py: add function that tells whether logger is verbose
+	* main_macos.py: simplify handling of -v
+	* main_macos.py: implement start -d
+	* Replace utils_module.py with main_common.py
+	* Merge branch 'updater-unix-love_v2' into next
+	* Merge branch 'more-updater-unix-love' into next
+	* Merge branch 'better-cmd-solution' into next
+	* Abstraction layer for results
+	* www: finish work with results.html
+	* www: cleanup
+	* results.js: update Alessio's copyright
+	* results.js: add a bit of history
+	* results.js: wrap long line
+	* results.js: correct initial comment
+	* results.js: style
+	* results.js: more style
+	* results.js: wrap long line
+	* results.js: make sure no more too-long lines
+	* results.html: repair plots title
+	* results.html: translate test description
+	* speedtest results: clarify that it's correlation, not causation
+	* results.html: move test descriptions in separate html files
+	* Modify make_lang_en.py to load test descriptions from www/descr
+	* www/update.html: make the file xml compliant
+	* Garbage collect speedtest.{html,js} bittorrent.{html,js}
+	* Update english internationalization
+	* Merge branch 'www-results_v2' into next
+	* results.html: only translate the portion that changed
+	* updater/unix.py: suppress annoying log message
+	* Neubot/0.4.13-rc1 released
+	* Bare documentation for agent.py
+	* api/server.py: remove unused imports
+	* api/server.py: avoid using StringIO when not needed
+	* api/server.py: get rid of StringIO
+	* api/server.py: improve compatibility with python3
+	* api/server.py: deploy docstrings
+	* api/server.py: make some methods static
+	* api/server.py: t  -> otime to respect pylint conventions
+	* Merge branch 'api-server-love'
+	* main_common.py: remember to add browser subcommand
+	* http/message.py: garbage collect extra space
+	* main_macos.py: just in case updater main returns
+	* utils_sysdirs.py: more precise docstring
+	* utils_sysdirs.py: grammar
+	* results.js: avoid confusion with index names
+	* Neubot/0.4.13-rc2 released
+	* Reduce noise in after-release diff
+	* Stop adding version number in FAQs
+	* Upgrade to simplejson 2.6.0
+	* doc: Move all OpenSSL doc into doc/OpenSSL
+	* Stop passing (unused) logging function to system functions
+	* Move system code up one level
+	* Rename (unused) system/linux.py resmon_linux.py
+	* system.py: add docstrings
+	* system.py: use longer variable names
+	* system_win32.py: rewrite quirky piece of code
+	* system_win32.py: improve code quality
+	* system_posix.py: remove unused import
+	* Merge branch 'system-love'
+	* system.py: ImportError -> RuntimeError
+	* style.css: restore default visibility hidden for i18n class
+	* Neubot/0.4.13-rc3 released
+	* scripts/publish: remember to publish win32 signature
+	* scripts/publish: divide copies and dangerous operations
+	* Debian: control/postrm: dispose of /var/lib/neubot on prune
+	* MacOS/makepkg.py: tired of typing the privkey path every time
+	* More verbose win32 update process
+	* updater_win32.py: remove unused imports
+	* runner_dload.py: use better logging priorities
+	* updater_verify.py: better log messages
+	* Merge branch 'win32-updater-tuning'
+	* Neubot/0.4.13-rc4 released
+	* Enable win32 autoupdater by default
+	* header.html: while there bump copyright for me and Alessio
+	* Do not trust server-provided update URI
+	* rendezvous/server.py: always provide neubot.org URI
+	* Merge branch 'more-updater-changes'
+	* footer.html: use the right i18n class
+	* lang/en.js: regen
+	* Merge branch 'more-updater-changes'
+	* main_common.py: don't advertise the server command
+	* net/poller.py: show scheduled tasks
+	* main_win32.py: make sure viewer and notifier exist
+	* log.py: don't prefix ACCESS such that CLF is preserved
+	* Merge remote-tracking branch 'origin/master'
+	* Neubot/0.4.13-rc5 released
+	* regress: repair a couple of regression tests
+	* Make sure we use LOCALSTATEDIR not /var/neubot
+	* regress/Debian: /var/neubot -> /var/lib/neubot
+	* M-Lab/redir_table.py: /var/neubot -> /var/lib/neubot
+	* ArchLinux/neubot.install: /var/neubot -> /var/lib/neubot
+	* Master: install.sh start.sh: /var/neubot -> /var/lib/neubot
+	* FAQ FAQ-it: explain /var/lib/neubot vs. /var/neubot
+	* doc man: explain /var/neubot vs. /var/lib/neubot
+	* M-Lab/redir_table.py: do not repeat database path for each line
+	* M-Lab/redir_table.sh: regen w/o repeating /var/neubot... for each line
+	* Makefile: fetch LOCALSTATEDIR from utils_sysdirs.py
+	* manpage: don't mention user-wide database
+	* Merge branch 'LOCALSTATEDIR'
+	* Neubot/0.4.13-rc6 released
+	* updater_runner.py: angular brackets confuse the browser
+	* utils_path.py: append() result must_be_ascii()
+	* Deal gracefully with database not being writable
+	* Neubot/0.4.13-rc7 released
+	* Makefile: 8 spaces -> tab
+	* api_data.py: kill extra empty line
+	* browser_macos.py: adapt copied-n-pasted comment to context
+	* log.py: explain why we empty handles list
+	* log.py: be more precise in comment
+	* log_api.py: honor understandable english in comment
+	* main/common.py: clarify
+	* system.py: deploy some blank lines
+	* system_posix.py: warn that file is being refactored
+	* updater/unix.py: avoid update check just after startup
+	* updater_runner.py: note it's pointless to pass __init__ the channel
+	* updater_runner.py: note we don't need to fetch the checksum
+	* updater_runner.py: add pointer to MacOSX updater code
+	* updater_verify.py: correctly sort imports
+	* updater_verify.py: clarify comment
+	* updater_verify: add module name to string passed to RuntimeError
+	* updater_verify.py: note we can be even more paranoid
+	* updater_verify: explain with __dgst_sign() is private
+	* updater_win32.py: tarball extraction should not live here
+	* updater_win32.py: explain why we close_fds
+	* main_win32.py: document a potential race when -k
+	* utils.py: use a tuple instead of a list
+	* utils.py: sort units in ascending order
+	* utils.py: again, prefer tuples to lists
+	* updater_verify.py: clarify comment
+	* time_formatter(): print unit with times lower than 1 us
+	* utils.py: __TICKS: raise RuntimeError, not ImportError
+	* utils.py: make docstring even more clear
+	* utils.py: get_uuid(): better docstring
+	* utils_api.py: grammar
+	* utils_ctl.py: add explanatory comment to explanatory log message
+	* utils_ctl.py: flag a nonclean bit of code with XXX
+	* utils_path.py: grammar in comment
+	* utils_path.py: make the tree even more clear
+	* utils_path.py: rewrite and clarify append() comment
+	* utils_sysdirs.py: deploy blank lines in comment
+	* utils_sysdirs.py: better RuntimeError() message
+	* utils_sysdirs.py: note that the name is not perfect
+	* utils_path.py: grammar
+	* Point uses to FAQ to better undestand what test measures
+	* lang/en.js: regen
+	* api_results.py: point out I don't like we load descrs at startup
+	* regress: negotiate/server.py: remove unused import
+	* results.html: wrap long lines
+	* results.js: code review, pass 1
+	* Merge branch 'code-review'
+	* Neubot/0.4.13-rc8 released
+	* bittorrent/peer.py: correct documentation path
+	* system_posix: correct comment at the beginning of the file
+	* M-Lab: deploy.sh ports.txt: sort port numbers
+	* doc: update FAQ to reflect new data.neubot.org site
+	* The data folder is no longer needed
+	* Neubot/0.4.13 released
+
 Neubot 0.4.12 [2012-05-31]
 	* Makefile: use ./scripts/faq to autogen faq files
 	* Win32/setup.py: zap added-by-mistake empty line
