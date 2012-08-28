@@ -25,8 +25,8 @@
 #
 
 DEBUG=
+DEPLOY=1
 FORCE=0
-SKIP=0
 
 # Wrappers for ssh, scp
 SCP="$DEBUG $HOME/bin/mlab_scp"
@@ -35,7 +35,7 @@ SSH="$DEBUG $HOME/bin/mlab_ssh"
 # Command line
 args=$(getopt fn $*) || {
     echo "Usage: $0 [-nf] [host... ]" 1>&2
-    echo "  -n : Do not complain if M-Lab/neubot.tgz already exists" 1>&2
+    echo "  -n : generate the update tarball and exit" 1>&2
     echo "  -f : Force deployment when it is already deployed" 1>&2
     exit 1
 }
@@ -45,7 +45,7 @@ while [ $# -gt 0 ]; do
         FORCE=1
         shift
     elif [ "$1" = "-n" ]; then
-        SKIP=1
+        DEPLOY=0
         shift
     elif [ "$1" = "--" ]; then
         shift
@@ -53,17 +53,19 @@ while [ $# -gt 0 ]; do
     fi
 done
 
-if [ "$SKIP" = "0" ]; then
-    if [ -f M-Lab/neubot.tar.gz ]; then
-        echo "error: Working directory not clean" 1>&2
-        exit 1
-    fi
+tarball=dist/mlab/neubot.tar.gz
+version=dist/mlab/version
+
+rm -rf -- dist/mlab
+mkdir -p dist/mlab
+
+if [ ! -f $tarball ]; then
+    $DEBUG git archive --format=tar --prefix=neubot/ HEAD|gzip -9 > $tarball
+    $DEBUG git describe --tags > $version
 fi
 
-if [ ! -f M-Lab/neubot.tar.gz ]; then
-    $DEBUG git archive --format=tar --prefix=neubot/ -o M-Lab/neubot.tar HEAD
-    $DEBUG gzip -9 M-Lab/neubot.tar
-    $DEBUG git describe --tags > M-Lab/version
+if [ "$DEPLOY" = "0" ]; then
+    exit 0
 fi
 
 if [ $# -eq 0 ]; then
@@ -109,8 +111,8 @@ for HOST in $HOSTS; do
             $SSH $HOST rm -rf neubot
 
             echo "$HOST: copy files"
-            $SCP M-Lab/neubot.tar.gz $HOST:
-            $SCP M-Lab/version $HOST:
+            $SCP $tarball $HOST:
+            $SCP $version $HOST:
 
             echo "$HOST: install new neubot"
             $SSH $HOST tar -xzf neubot.tar.gz

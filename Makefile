@@ -314,5 +314,8 @@ release:
 	make clean
 	make deb
 	make archive
+	./M-Lab/deploy.sh -n
+	./scripts/sign_all
 	./scripts/update_apt
-	cd dist && chmod 644 *
+	cd dist && find -type f -exec chmod 644 {} \;
+	cd dist && find -type d -exec chmod 755 {} \;
