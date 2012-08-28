@@ -107,7 +107,7 @@ def realmain():
     for country, addresses in redir_table.items():
         for address in addresses:
             sys.stdout.write("%s 'INSERT INTO geoloc (id, country, address) "
-                             "VALUES (NULL, \"%s\", \"%s:9773\");'\n" %
+                             "VALUES (NULL, \"%s\", \"%s:8080\");'\n" %
                                  (prefix, country, address))
 
 def main():
