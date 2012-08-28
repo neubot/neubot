@@ -90,6 +90,14 @@ if [ "$dry" = "1" ]; then
     echo "#"
 fi
 
+if [ -f $1/mlab/neubot.tar.gz ]; then
+    $ssh $server "install -d $remotedir/mlab/"
+    for ext in "" .sig; do
+        doscp $1/mlab/neubot.tar.gz$ext $remote/mlab/
+        doscp $1/mlab/version$ext $remote/mlab/
+    done
+fi
+
 if [ -f $1/macos/$NVER.tar.gz ]; then
     doscp $1/neubot-$VER.pkg.tgz $remote/_packages/
     $ssh $server "install -d $remotedir/updates/macos/"
