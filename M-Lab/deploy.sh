@@ -58,11 +58,8 @@ version=dist/mlab/version
 
 rm -rf -- dist/mlab
 mkdir -p dist/mlab
-
-if [ ! -f $tarball ]; then
-    $DEBUG git archive --format=tar --prefix=neubot/ HEAD|gzip -9 > $tarball
-    $DEBUG git describe --tags > $version
-fi
+$DEBUG git archive --format=tar --prefix=neubot/ HEAD|gzip -9 > $tarball
+$DEBUG git describe --tags > $version
 
 if [ "$DEPLOY" = "0" ]; then
     exit 0
