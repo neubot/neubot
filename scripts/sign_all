@@ -33,5 +33,12 @@ openssl_sign() {
     /usr/bin/openssl dgst -sha256 -sign $PRIVKEY -out $1.sig $1
 }
 
-openssl_sign dist/mlab/neubot.tar.gz
-openssl_sign dist/mlab/version
+if [ $# -eq 0 ]; then
+    $0 dist/mlab/neubot.tar.gz dist/mlab/version
+    exit 0
+fi
+
+while [ $# -gt 0 ]; do
+    openssl_sign $1
+    shift
+done 
