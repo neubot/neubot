@@ -1,3 +1,15 @@
+Neubot 0.4.14 [2012-09-06]
+	* M-Lab: update list of servers
+	* M-Lab/ip_addr.dat: update
+	* M-Lab/redir_table.py: use port 8080, not 9773
+	* M-Lab/redir_table.sh: regen
+	* Keep one single copy of the public key around
+	* Let make release generate and sign mlab autoupdate
+	* scripts/publish: remember to publish mlab autoupdate
+	* M-Lab/deploy.sh: remove redundant if
+	* database/__init__.py: readonly check is meaningful on posix only
+	* Neubot/0.4.14 released
+
 Neubot 0.4.13 [2012-08-27]
 	* utils_ctl.py: implement verbose
 	* Implement MacOS browser
