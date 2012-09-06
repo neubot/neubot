@@ -45,11 +45,11 @@ from neubot.state import STATE
 class RunnerRendezvous(ClientHTTP):
     ''' Rendezvous client '''
 
-    def start_rendezvous(self, address):
+    def start_rendezvous(self, address, port):
         ''' Starts a rendezvous '''
-        logging.info('runner_rendezvous: connecting to: "%s"', address)
+        logging.info('runner_rendezvous: connecting to: "%s:%s"', address, port)
         STATE.update('rendezvous')
-        self.connect((address, '9773'))
+        self.connect((address, port))
 
     def connection_failed(self, connector, exception):
         ''' Invoked when the connection fails '''
@@ -96,11 +96,11 @@ class RunnerRendezvous(ClientHTTP):
         logging.info('runner_rendezvous: rendezvous complete')
         stream.close()
 
-def run(uri):
+def run(address, port):
     ''' Rendezvous at URI '''
     client = RunnerRendezvous(POLLER)
     client.configure(CONFIG.copy())
-    client.start_rendezvous(uri)
+    client.start_rendezvous(address, port)
 
 def main(args):
     ''' main() function '''
@@ -108,9 +108,9 @@ def main(args):
     try:
         options, arguments = getopt.getopt(args[1:], 'vy')
     except getopt.error:
-        sys.exit('usage: neubot runner_rendezvous [-vy] uri')
-    if len(arguments) != 1:
-        sys.exit('usage: neubot runner_rendezvous [-vy] uri')
+        sys.exit('usage: neubot runner_rendezvous [-vy] address port')
+    if len(arguments) != 2:
+        sys.exit('usage: neubot runner_rendezvous [-vy] address port')
 
     for tpl in options:
         if tpl[0] == '-v':
@@ -122,7 +122,7 @@ def main(args):
                                 'privacy.can_publish': 1
                                })
 
-    run(arguments[0])
+    run(arguments[0], arguments[1])
     POLLER.loop()
 
 if __name__ == '__main__':

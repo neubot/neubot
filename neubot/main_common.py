@@ -42,13 +42,19 @@ SUBCOMMANDS = {
 def main(subcommand, args):
     ''' Run a subcommand's main() '''
 
-    if not subcommand in SUBCOMMANDS:
+    #
+    # Map subcommand to module.  The possiblity of running internal subcommands
+    # by prefixing 'neubot.' to the module name is (for now) undocumented, but
+    # is here because it is helpful for debugging.
+    #
+    if subcommand.startswith('neubot.'):
+        module = subcommand
+    elif not subcommand in SUBCOMMANDS:
         sys.stderr.write('Invalid subcommand: %s\n' % subcommand)
         print_subcommands(sys.stderr)
         sys.exit(1)
-
-    # Map subcommand to module
-    module = SUBCOMMANDS[subcommand]
+    else:
+        module = SUBCOMMANDS[subcommand]
 
     # Dinamically load the selected subcommand's main() at runtime
     __import__(module)

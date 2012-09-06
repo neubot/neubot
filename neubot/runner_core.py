@@ -125,7 +125,7 @@ class RunnerCore(object):
 
         # Run rendezvous
         elif self.queue[0][0] == 'rendezvous':
-            runner_rendezvous.run(conf['agent.master'])
+            runner_rendezvous.run(conf['agent.master'], '9773')
 
         # Run speedtest
         elif self.queue[0][0] == 'speedtest':
