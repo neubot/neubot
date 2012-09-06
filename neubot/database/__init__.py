@@ -21,6 +21,7 @@
 #
 
 import logging
+import os
 import sqlite3
 
 from neubot.database import table_config
@@ -63,14 +64,13 @@ class DatabaseManager(object):
             self.dbc.row_factory = sqlite3.Row
 
             #
-            # If we're not running as root set a flag
-            # that prevents any modification to the
-            # database, since they're all going to fail
-            # because we're not permitted to to that.
-            # Of course, don't even attempt to initialize
-            # the database in this case.
+            # On POSIX systems, neubot (initially) runs as root, to ensure that
+            # database location, ownership and permissions are OK (as well as
+            # to bind privileged ports).  But neubot can also be started by
+            # normal users.  In this case, mark the database as readonly since
+            # write operation are going to raise exceptions.
             #
-            if not system.running_as_root():
+            if os.name == 'posix' and not system.running_as_root():
                 logging.warning('database: opening database in readonly mode')
                 self.readonly = True
                 return self.dbc
