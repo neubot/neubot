@@ -41,7 +41,6 @@ from neubot.config import CONFIG
 from neubot.poller import POLLER
 from neubot.updater_runner import UpdaterRunner
 
-from neubot import updater_install
 from neubot import utils_path
 from neubot import utils_sysdirs
 
@@ -56,15 +55,6 @@ class UpdaterWin32(UpdaterRunner):
 
     def install(self, ctx, body):
         ''' Install new version on Windows '''
-
-        #
-        # Extract from tarball
-        #
-        # TODO This step is general and should be moved into
-        # updater_runner.py instead.
-        #
-        updater_install.install(self.basedir, ctx['vinfo'])
-        logging.info('updater_win32: extracted tarball')
 
         # Make file names
         versiondir = utils_path.join(self.basedir, ctx['vinfo'])
@@ -113,19 +103,27 @@ class UpdaterWin32(UpdaterRunner):
         logging.info('updater_win32: about to exec: %s', cmdline_k)
         subprocess.Popen(cmdline_k, close_fds=True)
 
+USAGE = 'neubot updater_win32 [-vy] [-C channel] [-O system] [version]'
+
 def main(args):
     ''' main() function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'vy')
+        options, arguments = getopt.getopt(args[1:], 'C:O:vy')
     except getopt.error:
-        sys.exit('neubot updater_win32 [-vy] [version]')
+        sys.exit(USAGE)
     if len(arguments) > 1:
-        sys.exit('neubot updater_win32 [-vy] [version]')
+        sys.exit(USAGE)
 
+    sysname = 'win32'
+    channel = CONFIG['win32_updater_channel']
     privacy = False
     for tpl in options:
-        if tpl[0] == '-v':
+        if tpl[0] == '-C':
+            channel = tpl[1]
+        elif tpl[0] == '-O':
+            sysname = tpl[1]
+        elif tpl[0] == '-v':
             CONFIG['verbose'] = 1
         elif tpl[0] == '-y':
             privacy = True
@@ -135,8 +133,8 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    channel = CONFIG['win32_updater_channel']
-    updater = UpdaterWin32('win32', utils_sysdirs.BASEDIR, channel)
+    CONFIG['win32_updater_channel'] = channel
+    updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR)
 
     if arguments:
         updater.retrieve_files(arguments[0])

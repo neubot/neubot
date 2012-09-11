@@ -50,7 +50,7 @@ class RunnerDload(ClientHTTP):
         self.ctx = ctx
         ClientHTTP.__init__(self, POLLER)
         self.configure(CONFIG.copy())
-        logging.debug('runner_dload: connecting to %s', self.ctx['uri'])
+        logging.debug('runner_dload: GET %s', self.ctx['uri'])
         self.connect_uri(self.ctx['uri'])
 
     def connection_failed(self, connector, exception):

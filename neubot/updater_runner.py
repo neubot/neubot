@@ -31,6 +31,7 @@
 # the code located in ``updater/unix.py``.
 #
 
+import base64
 import getopt
 import logging
 import sys
@@ -43,6 +44,7 @@ from neubot.defer import Deferred
 from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
 
+from neubot import updater_install
 from neubot import updater_utils
 from neubot import updater_verify
 from neubot import utils_sysdirs
@@ -51,24 +53,10 @@ class UpdaterRunner(object):
 
     ''' An updater that uses the runner '''
 
-    #
-    # TODO The updater fetches both the checksum and the digital
-    # signature, which seems to be redundant.  When the signature
-    # is good, we also know that the file checksum is good, by
-    # definition of digital signature.  So, we can save the step
-    # where we download the SHA256 checksum.
-    #
-
-    def __init__(self, system, basedir, channel):
+    def __init__(self, system, basedir):
         ''' Initializer '''
-        #
-        # TODO There's no point in passing the updater channel
-        # to the initializer, since we re-read it before each
-        # check for updates.
-        #
         self.system = system
         self.basedir = basedir
-        self.channel = channel
 
     def _handle_failure(self, argument):
         ''' Handle callback failure '''
@@ -81,8 +69,10 @@ class UpdaterRunner(object):
 
     def _schedule(self):
         ''' Schedule next check for updates '''
-        POLLER.sched(CONFIG['win32_updater_interval'],
-                     self.retrieve_versioninfo)
+        interval = CONFIG['win32_updater_interval']
+        logging.debug('updater_runner: next check in %d seconds',
+                      interval)
+        POLLER.sched(interval, self.retrieve_versioninfo)
 
     def retrieve_versioninfo(self):
         ''' Retrieve version information '''
@@ -96,16 +86,9 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        #
-        # Fetch again parameters, just in case the user
-        # has changed them via web user interface.  With
-        # this fix, one does not need to restart Neubot
-        # after the channel is changed.
-        #
-        self.channel = CONFIG['win32_updater_channel']
-
+        channel = CONFIG['win32_updater_channel']
         ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system,
-                                                         self.channel) }
+                                                         channel) }
 
         deferred = Deferred()
         deferred.add_callback(self._process_versioninfo)
@@ -143,42 +126,9 @@ class UpdaterRunner(object):
         ''' Retrieve files for a given version '''
         # Note: this is a separate function for testability
 
-        uri = updater_utils.sha256sum_get_uri(self.system, vinfo)
+        uri = updater_utils.signature_get_uri(self.system, vinfo)
         ctx = {'vinfo': vinfo, 'uri': uri}
         logging.info('updater_runner: GET %s', uri)
-
-        deferred = Deferred()
-        deferred.add_callback(self._retrieve_signature)
-        deferred.add_errback(self._handle_failure)
-
-        RUNNER_CORE.run('dload', deferred, False, ctx)
-
-    def _retrieve_signature(self, ctx):
-        ''' Retrieve signature for a given version '''
-
-        if not 'result' in ctx:
-            logging.error('updater_runner: no result')
-            self._schedule()
-            return
-
-        length, body, error = ctx.pop('result')
-        if length == -1:
-            logging.error('updater_runner: error: %s', str(error))
-            self._schedule()
-            return
-        sha256 = updater_utils.sha256sum_extract(ctx['vinfo'], body)
-        if not sha256:
-            logging.error('updater_runner: invalid sha256')
-            self._schedule()
-            return
-
-        logging.info('updater_runner: %s', sha256)
-
-        # XXX We should not reuse the same CTX here
-        ctx['sha256'] = sha256
-        ctx['uri'] = updater_utils.signature_get_uri(self.system, ctx['vinfo'])
-
-        logging.info('updater_runner: GET %s', ctx['uri'])
 
         deferred = Deferred()
         deferred.add_callback(self._retrieve_tarball)
@@ -200,7 +150,8 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        logging.info('updater_runner: (signature)')
+        logging.info('updater_runner: signature (base64): %s',
+                     base64.b64encode(body))
 
         # XXX We should not reuse the same CTX here
         ctx['signature'] = body
@@ -228,14 +179,7 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        logging.info('updater_runner: (tarball)')
-
-        if not updater_utils.sha256sum_verify(ctx['sha256'], body):
-            logging.error('updater_runner: sha256 mismatch')
-            self._schedule()
-            return
-
-        logging.info('updater_runner: sha256 OK')
+        logging.info('updater_runner: %d-bytes tarball', len(body))
 
         # Save tarball and signature on disk
         updater_utils.tarball_save(self.basedir, ctx['vinfo'], body)
@@ -246,8 +190,10 @@ class UpdaterRunner(object):
         updater_verify.dgst_verify(updater_utils.signature_path(
           self.basedir, ctx['vinfo']), updater_utils.tarball_path(
           self.basedir, ctx['vinfo']))
-
         logging.info('updater_runner: signature OK')
+
+        updater_install.install(self.basedir, ctx['vinfo'])
+        logging.info('updater_win32: extracted tarball')
 
         self.install(ctx, body)
 
@@ -284,8 +230,8 @@ def main(args):
         CONFIG.conf.update({'privacy.informed': 1, 'privacy.can_collect': 1,
                             'privacy.can_publish': 1})
 
-    channel = CONFIG['win32_updater_channel']
-    updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR, channel)
+    CONFIG['win32_updater_channel'] = channel
+    updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR)
 
     if arguments:
         updater.retrieve_files(arguments[0])

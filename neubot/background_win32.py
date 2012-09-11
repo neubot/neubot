@@ -42,8 +42,7 @@ from neubot import utils_sysdirs
 
 def __start_updater():
     ''' Start updater '''
-    channel = CONFIG['win32_updater_channel']
-    updater = UpdaterWin32('win32', utils_sysdirs.BASEDIR, channel)
+    updater = UpdaterWin32('win32', utils_sysdirs.BASEDIR)
     updater.start()
 
 def main(args):
