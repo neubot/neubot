@@ -75,7 +75,8 @@ class UpdaterRunner(object):
 
     def _schedule(self):
         ''' Schedule next check for updates '''
-        POLLER.sched(1800, self.retrieve_versioninfo)
+        POLLER.sched(CONFIG['win32_updater_interval'],
+                     self.retrieve_versioninfo)
 
     def retrieve_versioninfo(self):
         ''' Retrieve version information '''
