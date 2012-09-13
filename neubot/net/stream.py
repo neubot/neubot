@@ -56,7 +56,7 @@ from neubot import utils_net
 from neubot.main import common
 
 # States returned by the socket model
-STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE] = range(4)
+STATES = [SUCCESS, ERROR, WANT_READ, WANT_WRITE, CONNRESET] = range(5)
 
 # Maximum amount of bytes we read from a socket
 MAXBUF = 1 << 18
@@ -116,6 +116,8 @@ class SocketWrapper(object):
         except socket.error, exception:
             if exception[0] in SOFT_ERRORS:
                 return WANT_READ, ""
+            elif exception[0] == errno.ECONNRESET:
+                return CONNRESET, ""
             else:
                 return ERROR, exception
 
@@ -126,6 +128,8 @@ class SocketWrapper(object):
         except socket.error, exception:
             if exception[0] in SOFT_ERRORS:
                 return WANT_WRITE, 0
+            elif exception[0] == errno.ECONNRESET:
+                return CONNRESET, 0
             else:
                 return ERROR, exception
 
@@ -142,6 +146,7 @@ class Stream(Pollable):
         self.peername = None
         self.logname = None
         self.eof = False
+        self.rst = False
 
         self.close_complete = False
         self.close_pending = False
@@ -303,6 +308,11 @@ class Stream(Pollable):
             self.send_blocked = True
             return
 
+        if status == CONNRESET and not octets:
+            self.rst = True
+            self.poller.close(self)
+            return
+
         if status == SUCCESS and not octets:
             self.eof = True
             self.poller.close(self)
@@ -409,6 +419,11 @@ class Stream(Pollable):
         if status == ERROR:
             # Here count is the exception that occurred
             raise count
+
+        if status == CONNRESET and count == 0:
+            self.rst = True
+            self.poller.close(self)
+            return
 
         if status == SUCCESS and count == 0:
             self.eof = True
