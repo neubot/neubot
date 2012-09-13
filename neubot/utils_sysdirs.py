@@ -53,7 +53,7 @@ if hasattr(sys, 'frozen'):
 # a folder called ``www``.
 #
 if not hasattr(sys, 'frozen'):
-    WWWDIR = os.sep.join([ROOTDIR, 'neubot/www'])
+    WWWDIR = os.sep.join([ROOTDIR, 'neubot', 'www'])
 else:
     WWWDIR = os.sep.join([ROOTDIR, 'www'])
 
