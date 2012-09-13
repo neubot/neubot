@@ -104,14 +104,17 @@ def stop(address, port, verbose=0):
         connection.set_debuglevel(verbose)
         connection.request('POST', '/api/exit')
 
-        # New /api/exit does not send any response
-        #response = connection.getresponse()
-        #response.read()
+        #
+        # New /api/exit does not send any response, therefore the piece
+        # of code below is going to fail.  Anyway, it's not a big deal
+        # because the whole function is wrapped by a blanket try..except.
+        #
+        response = connection.getresponse()
+        response.read()
 
         connection.close()
-        return True
 
     except (SystemExit, KeyboardInterrupt):
         raise
     except:
-        return False
+        pass
