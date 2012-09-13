@@ -31,7 +31,7 @@ import socket
 import sys
 import time
 
-def is_running(address, port, verbose=0):
+def is_running(address, port, verbose=0, quick=0):
 
     ''' Returns True if Neubot is running '''
 
@@ -83,6 +83,9 @@ def is_running(address, port, verbose=0):
         if running:
             logging.debug('checking whether neubot daemon is running... YES')
             return True
+
+        if quick:
+            break
 
         logging.debug('daemon not running... retrying in one second...')
         time.sleep(1)

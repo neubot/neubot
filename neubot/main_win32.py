@@ -53,16 +53,18 @@ def subcommand_start(args):
             kill = True
 
     #
-    # TODO When ``-k``, we must not proceed until the parent
-    # is exited and has released the listening socket.  At the
-    # moment, this works but there is a race between the parent
-    # process closing, and the child process listening on the
-    # new socket.
+    # Wait for the parent to die, so that it closes the listening
+    # socket and we can successfully bind() it.
     #
-    if kill:
-        running = utils_ctl.is_running('127.0.0.1', '9774')
-        if running:
-            utils_ctl.stop('127.0.0.1', '9774')
+    count = 0
+    while kill:
+        running = utils_ctl.is_running('127.0.0.1', '9774', quick=1)
+        if not running:
+            break
+        utils_ctl.stop('127.0.0.1', '9774')
+        count += 1
+        if count > 512:
+            sys.exit('FATAL: cannot stop neubot daemon')
 
     # Lazy import
     from neubot import background_win32

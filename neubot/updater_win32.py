@@ -96,9 +96,7 @@ class UpdaterWin32(UpdaterRunner):
         # its own listening socket.  The ``-k`` argument on the
         # command line instructs the child process to request this
         # process to exit.  Of course the child does that before
-        # attempting to listen a new socket.  Still, there is a
-        # potential race, which means that the child process has
-        # to wait until this process' socket is closed.
+        # attempting to listen a new socket.
         #
         logging.info('updater_win32: about to exec: %s', cmdline_k)
         subprocess.Popen(cmdline_k, close_fds=True)
