@@ -126,6 +126,15 @@ class StreamingLogger(object):
 
     def log(self, severity, message, args, exc_info):
         ''' Really log a message '''
+        try:
+            self._log(severity, message, args, exc_info)
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except:
+            pass
+
+    def _log(self, severity, message, args, exc_info):
+        ''' Really log a message '''
 
         # No point in logging empty lines
         if not message:
@@ -137,7 +146,14 @@ class StreamingLogger(object):
             if args:
                 message = message % args
             if exc_info:
-                message = "%s: %s\n" % (message, str(exc_info[1]))
+                exc_list = traceback.format_exception(exc_info[0],
+                                                      exc_info[1],
+                                                      exc_info[2])
+                message = "%s\n%s\n" % (message, ''.join(exc_list))
+                for line in message.split('\n'):
+                    self._log(severity, line, None, None)
+                return
+
             message = message.rstrip()
 
             try:
@@ -226,6 +242,15 @@ class Logger(object):
 
     def log(self, severity, message, args, exc_info):
         ''' Really log a message '''
+        try:
+            self._log(severity, message, args, exc_info)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            pass
+
+    def _log(self, severity, message, args, exc_info):
+        ''' Really log a message '''
 
         # No point in logging empty lines
         if not message:
@@ -244,7 +269,14 @@ class Logger(object):
         if args:
             message = message % args
         if exc_info:
-            message = "%s: %s\n" % (message, str(exc_info[1]))
+            exc_list = traceback.format_exception(exc_info[0],
+                                                  exc_info[1],
+                                                  exc_info[2])
+            message = "%s\n%s\n" % (message, ''.join(exc_list))
+            for line in message.split('\n'):
+                self._log(severity, line, None, None)
+            return
+
         message = message.rstrip()
 
         # Write log into the database
@@ -317,16 +349,6 @@ class LogWrapper(logging.Handler):
         exc_info = record.exc_info
         LOG.log(level, msg, args, exc_info)
 
-class AccessLogWrapper(logging.Handler):
-
-    """Glue between stdlib logging and access logger"""
-
-    def emit(self, record):
-        msg = record.msg
-        args = record.args
-        exc_info = record.exc_info
-        LOG.log('ACCESS', msg, args, exc_info)
-
 STREAMING_LOG = StreamingLogger()
 
 class StreamingLogWrapper(logging.Handler):
@@ -346,19 +368,6 @@ ROOT_LOGGER.handlers = []
 ROOT_LOGGER.addHandler(LogWrapper())
 ROOT_LOGGER.addHandler(StreamingLogWrapper())
 ROOT_LOGGER.setLevel(logging.DEBUG)
-
-#
-# Create 'access' logger
-# XXX Probably it should be more tidy to make sure this
-# code always runs before http_server.py, to avoid all
-# possible race conditions.
-#
-ACCESS_LOGGER = logging.getLogger('access')
-ACCESS_LOGGER.setLevel(logging.INFO)
-ACCESS_LOGGER.addHandler(AccessLogWrapper())
-
-# Avoid passing access-log messages to the ROOT logger
-ACCESS_LOGGER.propagate = False
 
 def set_verbose():
     ''' Make logger verbose '''

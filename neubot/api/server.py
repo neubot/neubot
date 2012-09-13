@@ -93,7 +93,7 @@ class ServerAPI(ServerHTTP):
             error = sys.exc_info()[1]
             reason = re.sub(r"[\0-\31]", "", str(error))
             reason = re.sub(r"[\x7f-\xff]", "", reason)
-            logging.info('Exception', exc_info=1)
+            logging.info('Internal error while serving response', exc_info=1)
             response = Message()
             response.compose(code="500", reason=reason,
                     body=reason)
