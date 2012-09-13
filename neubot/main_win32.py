@@ -72,15 +72,25 @@ def subcommand_status(args):
     ''' Status subcommand '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], '')
+        options, arguments = getopt.getopt(args[1:], 'v')
     except getopt.error:
-        sys.exit('usage: neubot status')
-    if options or arguments:
-        sys.exit('usage: neubot status')
+        sys.exit('usage: neubot status [-v]')
+    if arguments:
+        sys.exit('usage: neubot status [-v]')
+
+    verbose = 0
+    for opt in options:
+        if opt[0] == '-v':
+            verbose = 1
 
     running = utils_ctl.is_running('127.0.0.1', '9774')
+    if verbose:
+        if not running:
+            sys.stdout.write('Neubot is not running\n')
+        else:
+            sys.stdout.write('Neubot is running\n')
     if not running:
-        sys.exit('ERROR: neubot is not running')
+        sys.exit(1)
 
 def subcommand_stop(args):
     ''' Stop subcommand '''
@@ -102,7 +112,7 @@ USAGE = '''\
 usage: neubot -h|--help
        neubot -V
        neubot start [-k]
-       neubot status
+       neubot status [-v]
        neubot stop
        neubot subcommand [option]... [argument]...
 '''
