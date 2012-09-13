@@ -182,7 +182,7 @@ class Logger(object):
         POLLER.sched(INTERVAL, self._maintain_database)
 
         if (self._use_database and not NOTIFIER.is_subscribed("testdone")):
-            self._writeback()
+            self.writeback()
 
     #
     # We don't want to log into the database when we run
@@ -196,7 +196,7 @@ class Logger(object):
         self.logger = system.get_background_logger()
         system.redirect_to_dev_null()
 
-    def __writeback(self):
+    def _writeback(self):
         """Really commit pending log records into the database"""
 
         connection = DATABASE.connection()
@@ -209,12 +209,12 @@ class Logger(object):
         connection.execute("VACUUM;")
         connection.commit()
 
-    def _writeback(self):
+    def writeback(self):
         """Commit pending log records into the database"""
 
         # At least do not crash
         try:
-            self.__writeback()
+            self._writeback()
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -281,7 +281,7 @@ class Logger(object):
 
             self._queue.append(record)
             if commit:
-                self._writeback()
+                self.writeback()
 
         # Write to the current logger object
         self.logger(severity, message)

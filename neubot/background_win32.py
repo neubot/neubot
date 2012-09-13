@@ -23,7 +23,7 @@
 ''' Run in background on Win32 '''
 
 import getopt
-import os
+import logging
 import sys
 
 if __name__ == '__main__':
@@ -39,6 +39,7 @@ from neubot.updater_win32 import UpdaterWin32
 from neubot import background_api
 from neubot import privacy
 from neubot import utils_sysdirs
+from neubot import utils_version
 
 def __start_updater():
     ''' Start updater '''
@@ -64,6 +65,8 @@ def main(args):
     #
     LOG.use_database()
 
+    logging.info('%s for Windows: starting up', utils_version.PRODUCT)
+
     # Complain if privacy settings are not OK
     privacy.complain_if_needed()
 
@@ -73,6 +76,9 @@ def main(args):
     __start_updater()
 
     POLLER.loop()
+
+    logging.info('%s for Windows: shutting down', utils_version.PRODUCT)
+    LOG.writeback()
 
     #
     # Make sure that we do not leave the database
