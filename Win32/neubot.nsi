@@ -104,6 +104,9 @@ section
 
     exec '"$INSTDIR\neubotw.exe" start -k'
 
+    fileopen $0 "$INSTDIR\.neubot-installed-ok"
+    fileclose $0
+
 !endif
 sectionend
 

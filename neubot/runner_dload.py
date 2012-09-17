@@ -68,10 +68,18 @@ class RunnerDload(ClientHTTP):
         request = Message()
         request.compose(method='GET', uri=self.ctx['uri'], keepalive=False)
         request['user-agent'] = 'Neubot/0.4.13'
+        if 'if-modified-since' in self.ctx:
+            request['if-modified-since'] = self.ctx['if-modified-since']
         stream.send_request(request)
 
     def got_response(self, stream, request, response):
         ''' Invoked when the response is received '''
+
+        if response.code == '304':
+            logging.info('runner_dload: not modified')
+            self.ctx['result'] = (-1, None, '')
+            stream.close()
+            return
 
         if response.code != '200':
             logging.error('runner_dload: bad response')

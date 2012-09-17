@@ -137,7 +137,7 @@ def main(args):
     updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR)
 
     if arguments:
-        updater.retrieve_files(arguments[0])
+        updater.retrieve_files({}, arguments[0])
     else:
         # Enable automatic updates if we arrive here
         CONFIG.conf['win32_updater'] = 1

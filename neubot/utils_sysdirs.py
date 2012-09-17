@@ -77,6 +77,12 @@ BASEDIR = os.path.dirname(ROOTDIR)
 VERSIONDIR = ROOTDIR
 
 #
+# File that indicates that Neubot was correctly installed or auto
+# updated.
+#
+OKFILE = os.sep.join([VERSIONDIR, '.neubot-installed-ok'])
+
+#
 # OPENSSL is the path to openssl executable in the current
 # system.  Under UNIX we search for openssl in the usual
 # locations (/bin, /usr/bin).  Under Win32 the executable
@@ -157,6 +163,7 @@ def main(args):
 BASEDIR       : "%(BASEDIR)s"
 DATABASEPATH  : "%(DATABASEPATH)s"
 LOCALSTATEDIR : "%(LOCALSTATEDIR)s"
+OKFILE        : "%(OKFILE)s"
 OPENSSL       : "%(OPENSSL)s"
 ROOTDIR       : "%(ROOTDIR)s"
 SYSCONFDIR    : "%(SYSCONFDIR)s"

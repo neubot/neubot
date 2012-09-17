@@ -32,8 +32,10 @@
 #
 
 import base64
+import email.utils
 import getopt
 import logging
+import os
 import sys
 
 if __name__ == '__main__':
@@ -74,6 +76,21 @@ class UpdaterRunner(object):
                       interval)
         POLLER.sched(interval, self.retrieve_versioninfo)
 
+    @staticmethod
+    def _okfile_lastmod():
+        ''' Return when the OK file was last modified '''
+        try:
+            statbuf = os.stat(utils_sysdirs.OKFILE)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.warning('updater_runner: cannot stat(2) OKFILE', exc_info=1)
+            return ''
+        else:
+            lastmod = email.utils.formatdate(statbuf.st_mtime, usegmt=1)
+            logging.info('updater_runner: OKFILE last modified: %s', lastmod)
+            return lastmod
+
     def retrieve_versioninfo(self):
         ''' Retrieve version information '''
 
@@ -105,7 +122,7 @@ class UpdaterRunner(object):
             return
         length, body, error = ctx.pop('result')
         if length == -1:
-            logging.error('updater_runner: error: %s', str(error))
+            logging.info('updater_runner: %s', str(error))
             self._schedule()
             return
 
@@ -115,19 +132,31 @@ class UpdaterRunner(object):
             self._schedule()
             return
         if not updater_utils.versioninfo_is_newer(vinfo):
-            logging.debug('updater_runner: no updates available')
-            self._schedule()
-            return
+            channel = CONFIG['win32_updater_channel']
+            if channel != 'testing':
+                logging.debug('updater_runner: no updates available')
+                self._schedule()
+                return
+            lastmod = self._okfile_lastmod()
+            if not lastmod:
+                logging.debug('updater_runner: no updates available')
+                self._schedule()
+                return
+            logging.info('updater_runner: using OKFILE lastmod to decide '
+                         'whether to update "testing"')
+            ctx['if-modified-since'] = lastmod
+            logging.info('updater_runner: 0.004013999 (updated snapshot)')
+        else:
+            logging.info('updater_runner: %s -> %s', '0.004013999', vinfo)
+        self.retrieve_files(ctx, vinfo)
 
-        logging.info('updater_runner: %s -> %s', '0.004013999', vinfo)
-        self.retrieve_files(vinfo)
-
-    def retrieve_files(self, vinfo):
+    def retrieve_files(self, ctx, vinfo):
         ''' Retrieve files for a given version '''
         # Note: this is a separate function for testability
 
         uri = updater_utils.signature_get_uri(self.system, vinfo)
-        ctx = {'vinfo': vinfo, 'uri': uri}
+        ctx['uri'] = uri
+        ctx['vinfo'] = vinfo
         logging.info('updater_runner: GET %s', uri)
 
         deferred = Deferred()
@@ -146,14 +175,13 @@ class UpdaterRunner(object):
 
         length, body, error = ctx.pop('result')
         if length == -1:
-            logging.error('updater_runner: error: %s', str(error))
+            logging.info('updater_runner: %s', str(error))
             self._schedule()
             return
 
         logging.info('updater_runner: signature (base64): %s',
                      base64.b64encode(body))
 
-        # XXX We should not reuse the same CTX here
         ctx['signature'] = body
         ctx['uri'] = updater_utils.tarball_get_uri(self.system, ctx['vinfo'])
 
@@ -175,7 +203,7 @@ class UpdaterRunner(object):
 
         length, body, error = ctx.pop('result')
         if length == -1:
-            logging.error('updater_runner: error: %s', str(error))
+            logging.error('updater_runner: %s', str(error))
             self._schedule()
             return
 
@@ -234,7 +262,7 @@ def main(args):
     updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR)
 
     if arguments:
-        updater.retrieve_files(arguments[0])
+        updater.retrieve_files({}, arguments[0])
     else:
         # Enable automatic updates if we arrive here
         CONFIG.conf['win32_updater'] = 1
