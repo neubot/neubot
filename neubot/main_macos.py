@@ -34,6 +34,7 @@ if __name__ == '__main__':
 from neubot import log
 from neubot import main_common
 from neubot import utils_ctl
+from neubot import utils_version
 
 def subcommand_start(args):
     ''' Start subcommand '''
@@ -134,7 +135,7 @@ def main(args):
         sys.exit(0)
 
     if subcommand == '-V':
-        sys.stdout.write('Neubot 0.4.13\n')
+        sys.stdout.write(utils_version.PRODUCT + '\n')
         sys.exit(0)
 
     if subcommand == 'start':

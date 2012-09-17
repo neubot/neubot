@@ -52,6 +52,7 @@ if __name__ == '__main__':
 
 from neubot import utils_sysdirs
 from neubot import privacy
+from neubot import utils_version
 
 NEUBOT_ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(NEUBOT_ICON) or not os.access(NEUBOT_ICON, os.R_OK):
@@ -115,7 +116,7 @@ def __notify_adjust_privacy():
         via the web user interface '''
 
     try:
-        pynotify.init('Neubot 0.4.13')
+        pynotify.init(utils_version.PRODUCT)
         notification = pynotify.Notification(
                                              PRIVACY_TITLE,
                                              PRIVACY_EXPLANATION,

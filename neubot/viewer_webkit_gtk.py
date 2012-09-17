@@ -46,6 +46,7 @@ if __name__ == '__main__':
 from neubot import utils_net
 from neubot import utils_rc
 from neubot import utils_ctl
+from neubot import utils_version
 
 ICON = '@DATADIR@/icons/hicolor/scalable/apps/neubot.svg'
 if not os.path.isfile(ICON) or not os.access(ICON, os.R_OK):
@@ -73,7 +74,7 @@ class WebkitGUI(gtk.Window):
         if ICON:
             self.set_icon_from_file(ICON)
 
-        self.set_title('Neubot 0.4.13')
+        self.set_title(utils_version.PRODUCT)
         self.connect('destroy', gtk.main_quit)
         self.maximize()
         self._open_web_page(uri)

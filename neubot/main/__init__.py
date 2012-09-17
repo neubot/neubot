@@ -38,6 +38,8 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname (os.path.dirname(os.path.dirname
                                         (os.path.abspath(__file__)))))
 
+from neubot import utils_version
+
 USAGE = '''\
 neubot - The network neutrality bot
 
@@ -50,7 +52,7 @@ Try `neubot help` to get a list of available subcommands.
 Try `neubot subcommand --help` for more help on subcommand.
 '''
 
-VERSION = "0.4.13"
+VERSION = utils_version.CANONICAL_VERSION
 
 def main(argv):
 

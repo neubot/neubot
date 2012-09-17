@@ -29,8 +29,9 @@ import hashlib
 import re
 
 from neubot import utils_path
+from neubot import utils_version
 
-VERSION = '0.004013999'
+VERSION = utils_version.NUMERIC_VERSION
 
 def versioninfo_extract(content):
     ''' Extract version info '''

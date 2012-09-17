@@ -46,6 +46,8 @@ from neubot import utils
 from neubot.bytegen_speedtest import BytegenSpeedtest
 from neubot import runner_clnt
 
+from neubot import utils_version
+
 TESTDONE = "testdone" #TODO: use directly the string instead
 
 ESTIMATE = {
@@ -220,7 +222,7 @@ class ClientCollect(ClientHTTP):
         m1.privacy_can_collect = self.conf.get("privacy.can_collect", 0)
         m1.privacy_can_share = self.conf.get("privacy.can_publish", 0)  # XXX
 
-        m1.neubot_version = utils_version.to_numeric("0.4.13")
+        m1.neubot_version = utils_version.NUMERIC_VERSION
         m1.platform = sys.platform
 
         m1.connectTime = sum(self.rtts) / len(self.rtts)

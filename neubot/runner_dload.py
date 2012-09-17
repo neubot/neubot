@@ -42,6 +42,8 @@ from neubot.config import CONFIG
 from neubot.poller import POLLER
 from neubot.notify import NOTIFIER
 
+from neubot import utils_version
+
 class RunnerDload(ClientHTTP):
     ''' Nonblocking downloader invoked via runner '''
 
@@ -67,7 +69,7 @@ class RunnerDload(ClientHTTP):
         ''' Invoked when the connection is ready '''
         request = Message()
         request.compose(method='GET', uri=self.ctx['uri'], keepalive=False)
-        request['user-agent'] = 'Neubot/0.4.13'
+        request['user-agent'] = utils_version.HTTP_HEADER
         if 'if-modified-since' in self.ctx:
             request['if-modified-since'] = self.ctx['if-modified-since']
         stream.send_request(request)

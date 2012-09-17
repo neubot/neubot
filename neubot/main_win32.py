@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
 from neubot import main_common
 from neubot import utils_ctl
+from neubot import utils_version
 
 # Reference viewer and notifier so py2exe includes 'em
 if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
@@ -123,7 +124,7 @@ def main(args):
         sys.exit(0)
 
     if subcommand == '-V':
-        sys.stdout.write('Neubot 0.4.13\n')
+        sys.stdout.write(utils_version.PRODUCT + '\n')
         sys.exit(0)
 
     if subcommand == 'start':

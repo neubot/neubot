@@ -50,6 +50,7 @@ from neubot import updater_install
 from neubot import updater_utils
 from neubot import updater_verify
 from neubot import utils_sysdirs
+from neubot import utils_version
 
 class UpdaterRunner(object):
 
@@ -131,6 +132,7 @@ class UpdaterRunner(object):
             logging.error('updater_runner: invalid versioninfo')
             self._schedule()
             return
+        cur = utils_version.NUMERIC_VERSION
         if not updater_utils.versioninfo_is_newer(vinfo):
             channel = CONFIG['win32_updater_channel']
             if channel != 'testing':
@@ -145,9 +147,9 @@ class UpdaterRunner(object):
             logging.info('updater_runner: using OKFILE lastmod to decide '
                          'whether to update "testing"')
             ctx['if-modified-since'] = lastmod
-            logging.info('updater_runner: 0.004013999 (updated snapshot)')
+            logging.info('updater_runner: %s (updated snapshot)', cur)
         else:
-            logging.info('updater_runner: %s -> %s', '0.004013999', vinfo)
+            logging.info('updater_runner: %s -> %s', cur, vinfo)
         self.retrieve_files(ctx, vinfo)
 
     def retrieve_files(self, ctx, vinfo):

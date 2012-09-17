@@ -65,6 +65,7 @@ if __name__ == '__main__':
 
 from neubot import updater_install
 from neubot import utils_rc
+from neubot import utils_version
 
 # Note: BASEDIR/VERSIONDIR/neubot/updater/unix.py
 VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
@@ -72,7 +73,7 @@ VERSIONDIR = os.path.dirname(os.path.dirname(os.path.dirname(
 BASEDIR = os.path.dirname(VERSIONDIR)
 
 # Version number in numeric representation
-VERSION = "0.004013999"
+VERSION = utils_version.NUMERIC_VERSION
 
 # Configuration
 CONFIG = {
@@ -436,7 +437,7 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
                 connection = __lib_http.HTTPSConnection(address)
             else:
                 connection = __lib_http.HTTPConnection(address)
-            headers = {'User-Agent': 'Neubot/0.4.13'}
+            headers = {'User-Agent': utils_version.HTTP_HEADER}
             connection.request("GET", rpath, None, headers)
 
             # Recv HTTP response

@@ -34,6 +34,11 @@ import httplib
 import getopt
 import sys
 
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
+
+from neubot import utils_version
+
 def runner_client(address, port, verbosity, test):
     ''' Run the specified test in the context of the Neubot
         daemon and shows log messages while the test is
@@ -84,7 +89,7 @@ def __runner_client(address, port, verbosity, test, hint):
     if response.status != 200:
         raise RuntimeError('Not speaking with a Neubot daemon')
     body = response.read()
-    if body != "0.4.13":
+    if body != utils_version.CANONICAL_VERSION:
         raise RuntimeError('Bad Neubot daemon version')
 
     #

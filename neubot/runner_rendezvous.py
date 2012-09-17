@@ -42,6 +42,8 @@ from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
+from neubot import utils_version
+
 class RunnerRendezvous(ClientHTTP):
     ''' Rendezvous client '''
 
@@ -66,7 +68,7 @@ class RunnerRendezvous(ClientHTTP):
 
         message = {
                    'accept': ['speedtest', 'bittorrent'],
-                   'version': '0.4.13',
+                   'version': utils_version.CANONICAL_VERSION,
                    'privacy_informed': CONFIG['privacy.informed'],
                    'privacy_can_collect': CONFIG['privacy.can_collect'],
                    # Using the old name for backward compatibility
