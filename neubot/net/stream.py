@@ -27,6 +27,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Will be replaced by neubot/stream.py 
+
 import collections
 import errno
 import socket

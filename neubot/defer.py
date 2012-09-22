@@ -45,6 +45,9 @@ class Deferred(object):
     def __init__(self):
         self.chain = collections.deque()
 
+    def __len__(self):
+        return len(self.chain)
+
     def add_callback(self, func):
         ''' Add a callback to the deferred '''
         self.chain.append((CALLBACK, func))

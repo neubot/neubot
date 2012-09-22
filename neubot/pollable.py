@@ -1,7 +1,7 @@
-# neubot/poller.py
+# neubot/pollable.py
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2010, 2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -20,18 +20,16 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Dispatch read, write, periodic and other events '''
+''' An object that can be passed to the poller '''
 
-# Will be replaced by neubot/poller.py
+# Adapted from neubot/net/poller.py
 
-from neubot.poller import POLLER
-from neubot.utils import ticks
+from neubot import utils
 
-#
-# The default watchdog timeout is positive and large
-# because we don't want by mistake that something runs
-# forever.  Who needs to do that should override it.
-#
+# States returned by the socket model
+(SUCCESS, WANT_READ, WANT_WRITE, CONNRST) = range(4)
+
+# Reclaim stream after 300 seconds
 WATCHDOG = 300
 
 class Pollable(object):
@@ -39,23 +37,22 @@ class Pollable(object):
     ''' Base class for pollable objects '''
 
     def __init__(self):
-        ''' Initialize '''
-        self.created = ticks()
+        self.created = utils.ticks()
         self.watchdog = WATCHDOG
 
     def fileno(self):
-        ''' Return file number '''
-        raise NotImplementedError
+        ''' Return file descriptor number '''
+        return -1
 
     def handle_read(self):
-        ''' Invoked to handle the read event '''
+        ''' Handle the READ event '''
 
     def handle_write(self):
-        ''' Invoked to handle the write event '''
+        ''' Handle the WRITE event '''
 
     def handle_close(self):
-        ''' Invoked to handle the close event '''
+        ''' Handle the CLOSE event '''
 
     def handle_periodic(self, timenow):
-        ''' Invoked to handle the periodic event '''
+        ''' Handle the PERIODIC event '''
         return self.watchdog >= 0 and timenow - self.created > self.watchdog

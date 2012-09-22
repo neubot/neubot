@@ -364,3 +364,20 @@ _add_doc(reraise, """Reraise an exception.""")
 def with_metaclass(meta, base=object):
     """Create a base class with a metaclass."""
     return meta("NewBase", (base,), {})
+
+
+#
+# Buffer / memoryview
+# Written by Simone Basso
+#
+
+if PY3:
+    def buff(string, offset, size):
+        if not size:
+            size = len(size)
+        return memoryview(string)[offset:size]
+else:
+    def buff(string, offset, size=None):
+        if not size:
+            size = len(string)
+        return buffer(string, offset, size)
