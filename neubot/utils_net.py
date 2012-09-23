@@ -72,16 +72,14 @@ def format_ainfo(ainfo):
       canonname, sockaddr)
 
 # Make sure AF_INET < AF_INET6
-__COMPARE_AF = {
+COMPARE_AF = {
     socket.AF_INET: 1,
     socket.AF_INET6: 2,
 }
 
-def __compare_af(left, right):
-    ''' Compare address families '''
-    left = __COMPARE_AF[left[0]]
-    right = __COMPARE_AF[right[0]]
-    return cmp(left, right)
+def addrinfo_key(ainfo):
+    ''' Map addrinfo to protocol family '''
+    return COMPARE_AF[ainfo[0]]
 
 def listen(epnt, prefer_ipv6):
     ''' Listen to all sockets represented by epnt '''
@@ -105,9 +103,8 @@ def listen(epnt, prefer_ipv6):
         addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
                             socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
     except socket.error:
-        exception = sys.exc_info()[1]
-        logging.error('listen(): cannot listen to %s: %s',
-                      format_epnt(epnt), str(exception))
+        logging.error('listen(): cannot listen to %s',
+                      format_epnt(epnt), exc_info=1)
         return sockets
 
     message = ['listen(): getaddrinfo() returned: [']
@@ -117,7 +114,7 @@ def listen(epnt, prefer_ipv6):
     message[-1] = ']'
     logging.debug(''.join(message))
 
-    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
+    addrinfo.sort(key=addrinfo_key, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
@@ -134,13 +131,11 @@ def listen(epnt, prefer_ipv6):
             sockets.append(sock)
 
         except socket.error:
-            exception = sys.exc_info()[1]
-            logging.warning('listen(): cannot listen to %s: %s',
-              format_epnt(ainfo[4]), str(exception))
+            logging.warning('listen(): cannot listen to %s',
+              format_epnt(ainfo[4]), exc_info=1)
         except:
-            exception = sys.exc_info()[1]
-            logging.warning('listen(): cannot listen to %s: %s',
-              format_epnt(ainfo[4]), str(exception))
+            logging.warning('listen(): cannot listen to %s',
+              format_epnt(ainfo[4]), exc_info=1)
 
     if not sockets:
         logging.error('listen(): cannot listen to %s: %s',
@@ -157,9 +152,8 @@ def connect(epnt, prefer_ipv6):
         addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
                                       socket.SOCK_STREAM)
     except socket.error:
-        exception = sys.exc_info()[1]
-        logging.error('connect(): cannot connect to %s: %s',
-                      format_epnt(epnt), str(exception))
+        logging.error('connect(): cannot connect to %s',
+                      format_epnt(epnt), exc_info=1)
         return None
 
     message = ['connect(): getaddrinfo() returned: [']
@@ -169,7 +163,7 @@ def connect(epnt, prefer_ipv6):
     message[-1] = ']'
     logging.debug(''.join(message))
 
-    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
+    addrinfo.sort(key=addrinfo_key, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
@@ -186,13 +180,11 @@ def connect(epnt, prefer_ipv6):
             return sock
 
         except socket.error:
-            exception = sys.exc_info()[1]
-            logging.warning('connect(): cannot connect to %s: %s',
-              format_epnt(ainfo[4]), str(exception))
+            logging.warning('connect(): cannot connect to %s',
+              format_epnt(ainfo[4]), exc_info=1)
         except:
-            exception = sys.exc_info()[1]
-            logging.warning('connect(): cannot connect to %s: %s',
-              format_epnt(ainfo[4]), str(exception))
+            logging.warning('connect(): cannot connect to %s',
+              format_epnt(ainfo[4]), exc_info=1)
 
     logging.error('connect(): cannot connect to %s: %s',
       format_epnt(epnt), 'all attempts failed')
@@ -206,27 +198,31 @@ def isconnected(endpoint, sock):
     logging.debug('isconnected(): checking whether connect() to %s succeeded',
                   format_epnt(endpoint))
 
+    exception, peername = None, None
     try:
         peername = getpeername(sock)
     except socket.error:
-        exception = sys.exc_info()
+        exception = sys.exc_info()[1]
 
-        # MacOSX getpeername() fails with EINVAL
-        if exception[1][0] in (errno.ENOTCONN, errno.EINVAL):
-            try:
-                sock.recv(1024)
-            except socket.error:
-                # Override exception to get real error
-                exception = sys.exc_info()
+    if not exception:
+        logging.debug('isconnected(): connect() to %s succeeded', (
+                      format_epnt(peername)))
+        return peername
 
-        logging.error('isconnected(): connect() to %s failed: %s ',
-                      format_epnt(endpoint), exception[1])
-
+    # MacOSX getpeername() fails with EINVAL
+    if exception.args[0] not in (errno.ENOTCONN, errno.EINVAL):
+        logging.error('isconnected(): connect() to %s failed',
+                      format_epnt(endpoint), exc_info=1)
         return None
 
-    logging.debug('isconnected(): connect() to %s succeeded', (
-                  format_epnt(peername)))
-    return peername
+    try:
+        sock.recv(1024)
+    except socket.error:
+        logging.error('isconnected(): connect() to %s failed',
+                      format_epnt(endpoint), exc_info=1)
+        return None
+
+    raise RuntimeError('isconnected(): internal error')
 
 def __strip_ipv4mapped_prefix(function):
     ''' Strip IPv4-mapped and IPv4-compatible prefix when the kernel does
