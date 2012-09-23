@@ -22,7 +22,6 @@
 
 ''' Dispatch read, write, periodic and other events '''
 
-import asyncore
 import logging
 import errno
 import select
@@ -130,7 +129,7 @@ class Poller(sched.scheduler):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            logging.error(str(asyncore.compact_traceback()))
+            logging.error('poller: run_task() failed', exc_info=1)
 
     def set_readable(self, stream):
         ''' Monitor for readability '''
@@ -161,7 +160,7 @@ class Poller(sched.scheduler):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            logging.error(str(asyncore.compact_traceback()))
+            logging.error('poller: handle_close() failed', exc_info=1)
 
     #
     # We are very careful when accessing readset and writeset because
@@ -184,7 +183,7 @@ class Poller(sched.scheduler):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                logging.error(str(asyncore.compact_traceback()))
+                logging.error('poller: handle_read() failed', exc_info=1)
                 self.close(stream)
 
     def _call_handle_write(self, fileno):
@@ -196,7 +195,7 @@ class Poller(sched.scheduler):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                logging.error(str(asyncore.compact_traceback()))
+                logging.error('poller: handle_write() failed', exc_info=1)
                 self.close(stream)
 
     def break_loop(self):
@@ -215,7 +214,7 @@ class Poller(sched.scheduler):
             except StopPoller:
                 break
             except:
-                logging.error(str(asyncore.compact_traceback()))
+                logging.error('poller: unhandled exception', exc_info=1)
 
     def _poll(self, timeout):
         ''' Poll for readability and writability '''
@@ -235,7 +234,7 @@ class Poller(sched.scheduler):
             except select.error:
                 code = sys.exc_info()[1][0]
                 if code != errno.EINTR:
-                    logging.error(str(asyncore.compact_traceback()))
+                    logging.error('poller: select() failed', exc_info=1)
                     raise
 
                 else:
