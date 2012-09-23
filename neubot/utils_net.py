@@ -28,8 +28,6 @@ import os
 import socket
 import sys
 
-from neubot.config import CONFIG
-
 # Winsock returns EWOULDBLOCK
 INPROGRESS = [ 0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN ]
 
@@ -85,7 +83,7 @@ def __compare_af(left, right):
     right = __COMPARE_AF[right[0]]
     return cmp(left, right)
 
-def listen(epnt):
+def listen(epnt, prefer_ipv6):
     ''' Listen to all sockets represented by epnt '''
 
     logging.debug('listen(): about to listen to: %s', str(epnt))
@@ -99,7 +97,7 @@ def listen(epnt):
     # Allow to listen on a list of addresses
     if epnt[0] and ' ' in epnt[0]:
         for address in epnt[0].split():
-            result = listen((address.strip(), epnt[1]))
+            result = listen((address.strip(), epnt[1]), prefer_ipv6)
             sockets.extend(result)
         return sockets
 
@@ -119,7 +117,7 @@ def listen(epnt):
     message[-1] = ']'
     logging.debug(''.join(message))
 
-    addrinfo.sort(cmp=__compare_af, reverse=CONFIG['prefer_ipv6'])
+    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
@@ -150,7 +148,7 @@ def listen(epnt):
 
     return sockets
 
-def connect(epnt):
+def connect(epnt, prefer_ipv6):
     ''' Connect to epnt '''
 
     logging.debug('connect(): about to connect to: %s', str(epnt))
@@ -171,7 +169,7 @@ def connect(epnt):
     message[-1] = ']'
     logging.debug(''.join(message))
 
-    addrinfo.sort(cmp=__compare_af, reverse=CONFIG['prefer_ipv6'])
+    addrinfo.sort(cmp=__compare_af, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:

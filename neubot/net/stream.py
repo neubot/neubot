@@ -456,7 +456,7 @@ class Connector(Pollable):
 
         self.endpoint = endpoint
 
-        sock = utils_net.connect(endpoint)
+        sock = utils_net.connect(endpoint, CONFIG['prefer_ipv6'])
         if not sock:
             self._connection_failed()
             return
@@ -534,7 +534,7 @@ class StreamHandler(object):
         self.conf = conf
 
     def listen(self, endpoint):
-        sockets = utils_net.listen(endpoint)
+        sockets = utils_net.listen(endpoint, CONFIG['prefer_ipv6'])
         if not sockets:
             self.bind_failed(endpoint)
             return
