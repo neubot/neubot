@@ -28,7 +28,6 @@
 # user interface of Neubot.
 #
 
-import asyncore
 import collections
 import getopt
 import sys
@@ -39,8 +38,10 @@ if __name__ == '__main__':
 
 from neubot.net.poller import POLLER
 from neubot.speedtest.client import ClientSpeedtest
+
 from neubot.config import CONFIG
 from neubot.database import DATABASE
+from neubot.defer import Deferred
 from neubot.log import STREAMING_LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_tests import RUNNER_TESTS
@@ -64,20 +65,20 @@ class RunnerCore(object):
         ''' Reports whether a test is running '''
         return self.running
 
-    def run(self, test, callback, auto_rendezvous=True, ctx=None):
-        ''' Run test and callback() when done '''
-
+    def run(self, test, deferred, auto_rendezvous=True, ctx=None):
+        ''' Run test and deferred when done '''
         #
         # If we are about to run a test and the list of
         # available tests is empty, we need certainly to
         # refill it before proceeding.
         #
         if (auto_rendezvous and test != 'rendezvous' and
-            len(RUNNER_TESTS.get_test_names()) == 0):
+          len(RUNNER_TESTS.get_test_names()) == 0):
             logging.info('runner_core: Need to rendezvous first...')
-            self.queue.append(('rendezvous', lambda: None, None))
-
-        self.queue.append((test, callback, ctx))
+            deferred2 = Deferred()
+            deferred2.add_callback(lambda param: None)
+            self.queue.append(('rendezvous', deferred2, None))
+        self.queue.append((test, deferred, ctx))
         self.run_queue()
 
     def run_queue(self):
@@ -102,17 +103,19 @@ class RunnerCore(object):
         self.running = True
 
         # Safely run first element in queue
-        try:
-            self._do_run_queue()
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except:
-            exc = asyncore.compact_traceback()
-            error = str(exc)
-            logging.error('runner_core: catched exception: %s', error)
-            NOTIFIER.publish('testdone')
+        deferred = Deferred()
+        deferred.add_callback(self._do_run_queue)
+        deferred.add_errback(self._run_queue_error)
+        deferred.callback(self.queue[0])
 
-    def _do_run_queue(self):
+    @staticmethod
+    def _run_queue_error(error):
+        ''' Invoked when _do_run_queue() fails '''
+        logging.error('runner_core: catched exception: %s', error)
+        NOTIFIER.publish('testdone')
+
+    @staticmethod
+    def _do_run_queue(first_elem):
         ''' Actually run first element in queue '''
 
         # Make a copy of current settings
@@ -121,45 +124,45 @@ class RunnerCore(object):
         # Make sure we abide to M-Lab policy
         if privacy.count_valid(conf, 'privacy.') != 3:
             privacy.complain()
-            raise RuntimeError('Bad privacy settings')
+            raise RuntimeError('runner_core: bad privacy settings')
 
         # Run rendezvous
-        elif self.queue[0][0] == 'rendezvous':
+        elif first_elem[0] == 'rendezvous':
             runner_rendezvous.run(conf['agent.master'], '9773')
 
         # Run speedtest
-        elif self.queue[0][0] == 'speedtest':
+        elif first_elem[0] == 'speedtest':
             uri = RUNNER_TESTS.test_to_negotiate_uri('speedtest')
             #
             # If we have no negotiate URI for this test, possibly
             # because we are offline, abort it.
             #
             if not uri:
-                raise RuntimeError('No negotiate URI for speedtest')
+                raise RuntimeError('runner_core: no URI for speedtest')
             conf['speedtest.client.uri'] =  uri
             client = ClientSpeedtest(POLLER)
             client.configure(conf)
             client.connect_uri()
 
         # Run bittorrent
-        elif self.queue[0][0] == 'bittorrent':
+        elif first_elem[0] == 'bittorrent':
             uri = RUNNER_TESTS.test_to_negotiate_uri('bittorrent')
             #
             # If we have no negotiate URI for this test, possibly
             # because we are offline, abort it.
             #
             if not uri:
-                raise RuntimeError('No negotiate URI for bittorrent')
+                raise RuntimeError('runner_core: No URI for bittorrent')
             conf['bittorrent._uri'] =  uri
             bittorrent.run(POLLER, conf)
 
         # Run dload
-        elif self.queue[0][0] == 'dload':
-            RunnerDload(self.queue[0][2])
+        elif first_elem[0] == 'dload':
+            RunnerDload(first_elem[2])
 
         # Safety net
         else:
-            raise RuntimeError('Asked to run an unknown test')
+            raise RuntimeError('runner_core: asked to run an unknown test')
 
     def test_done(self, *baton):
         ''' Invoked when the test is done '''
@@ -178,21 +181,11 @@ class RunnerCore(object):
 
         # Paranoid
         if baton[0] != 'testdone':
-            raise RuntimeError('Invoked for the wrong event')
+            raise RuntimeError('runner_core: invoked for the wrong event')
 
         # Notify the caller that the test is done
-        callback, ctx = self.queue.popleft()[1:]
-        try:
-            if ctx:
-                callback(ctx)
-            else:
-                callback()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            exc = asyncore.compact_traceback()
-            error = str(exc)
-            logging.error('runner_core: catched exception: %s', error)
+        deferred, ctx = self.queue.popleft()[1:]
+        deferred.callback(ctx)
 
         #
         # Allow for more tests
@@ -233,7 +226,9 @@ def main(args):
     else:
         ctx = None
 
-    RUNNER_CORE.run(arguments[0], lambda *args: None, auto_rendezvous, ctx)
+    deferred = Deferred()
+    deferred.add_callback(lambda param: None)
+    RUNNER_CORE.run(arguments[0], deferred, auto_rendezvous, ctx)
     POLLER.loop()
 
 if __name__ == '__main__':

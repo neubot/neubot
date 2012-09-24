@@ -25,6 +25,7 @@
 import cgi
 
 from neubot.config import ConfigError
+from neubot.defer import Deferred
 from neubot.http.message import Message
 from neubot.log import STREAMING_LOG
 from neubot.runner_core import RUNNER_CORE
@@ -32,13 +33,13 @@ from neubot.state import STATE
 
 from neubot import utils
 
-def runner_api_done():
-    ''' Invoked when the test is done '''
+def runner_api_done(state):
+    ''' Invoked when the test completes successfully '''
     #
-    # Needed otherwise the GUI stays on collect after a
-    # test is run on demand.
+    # State value should be 'idle'.  This is needed otherwise the GUI stays
+    # on collect after a test is run on demand.
     #
-    STATE.update('idle')
+    STATE.update(state)
 
 def runner_api(stream, request, query):
 
@@ -88,7 +89,9 @@ def runner_api(stream, request, query):
     # body to keep happy the AJAX code.
     #
     if not 'streaming' in options or not utils.intify(options['streaming'][0]):
-        RUNNER_CORE.run(test, runner_api_done)
+        deferred = Deferred()
+        deferred.add_callback(runner_api_done)
+        RUNNER_CORE.run(test, deferred, True, 'idle')
         response.compose(code='200', reason='Ok', body='{}',
                          mimetype='application/json')
         stream.send_response(request, response)
@@ -110,4 +113,6 @@ def runner_api(stream, request, query):
       up_to_eof=True, mimetype='text/plain')
     stream.send_response(request, response)
     STREAMING_LOG.start_streaming(stream)
-    RUNNER_CORE.run(test, runner_api_done)
+    deferred = Deferred()
+    deferred.add_callback(runner_api_done)
+    RUNNER_CORE.run(test, deferred, True, 'idle')

@@ -39,6 +39,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
+from neubot.defer import Deferred
 from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
 
@@ -68,6 +69,11 @@ class UpdaterRunner(object):
         self.system = system
         self.basedir = basedir
         self.channel = channel
+
+    def _handle_failure(self, argument):
+        ''' Handle callback failure '''
+        logging.warning('updater_runner: callback failed: %s', argument)
+        self._schedule()
 
     def start(self):
         ''' Schedule first check for updates '''
@@ -100,12 +106,15 @@ class UpdaterRunner(object):
 
         ctx = { 'uri': updater_utils.versioninfo_get_uri(self.system,
                                                          self.channel) }
-        RUNNER_CORE.run('dload', self._process_versioninfo, False, ctx)
+
+        deferred = Deferred()
+        deferred.add_callback(self._process_versioninfo)
+        deferred.add_errback(self._handle_failure)
+
+        RUNNER_CORE.run('dload', deferred, False, ctx)
 
     def _process_versioninfo(self, ctx):
         ''' Process version information '''
-
-        # TODO make this function more robust wrt unexpected errors
 
         if not 'result' in ctx:
             logging.error('updater_runner: no result')
@@ -133,15 +142,19 @@ class UpdaterRunner(object):
     def retrieve_files(self, vinfo):
         ''' Retrieve files for a given version '''
         # Note: this is a separate function for testability
+
         uri = updater_utils.sha256sum_get_uri(self.system, vinfo)
         ctx = {'vinfo': vinfo, 'uri': uri}
         logging.info('updater_runner: GET %s', uri)
-        RUNNER_CORE.run('dload', self._retrieve_signature, False, ctx)
+
+        deferred = Deferred()
+        deferred.add_callback(self._retrieve_signature)
+        deferred.add_errback(self._handle_failure)
+
+        RUNNER_CORE.run('dload', deferred, False, ctx)
 
     def _retrieve_signature(self, ctx):
         ''' Retrieve signature for a given version '''
-
-        # TODO make this function more robust wrt unexpected errors
 
         if not 'result' in ctx:
             logging.error('updater_runner: no result')
@@ -167,12 +180,14 @@ class UpdaterRunner(object):
 
         logging.info('updater_runner: GET %s', ctx['uri'])
 
-        RUNNER_CORE.run('dload', self._retrieve_tarball, False, ctx)
+        deferred = Deferred()
+        deferred.add_callback(self._retrieve_tarball)
+        deferred.add_errback(self._handle_failure)
+
+        RUNNER_CORE.run('dload', deferred, False, ctx)
 
     def _retrieve_tarball(self, ctx):
         ''' Retrieve tarball for a given version '''
-
-        # TODO make this function more robust wrt unexpected errors
 
         if not 'result' in ctx:
             logging.error('updater_runner: no result')
@@ -193,12 +208,14 @@ class UpdaterRunner(object):
 
         logging.info('updater_runner: GET %s', ctx['uri'])
 
-        RUNNER_CORE.run('dload', self._process_files, False, ctx)
+        deferred = Deferred()
+        deferred.add_callback(self._process_files)
+        deferred.add_errback(self._handle_failure)
+
+        RUNNER_CORE.run('dload', deferred, False, ctx)
 
     def _process_files(self, ctx):
         ''' Process files for a given version '''
-
-        # TODO make this function more robust wrt unexpected errors
 
         if not 'result' in ctx:
             logging.error('updater_runner: no result')
@@ -226,16 +243,9 @@ class UpdaterRunner(object):
                                      ctx['signature'])
 
         # Verify signature using OpenSSL
-        # TODO once we deal with exceptions in the runner, remove
-        # this try...catch clause
-        try:
-            updater_verify.dgst_verify(updater_utils.signature_path(
-              self.basedir, ctx['vinfo']), updater_utils.tarball_path(
-              self.basedir, ctx['vinfo']))
-        except:
-            logging.error('updater_runner: invalid signature')
-            self._schedule()
-            return
+        updater_verify.dgst_verify(updater_utils.signature_path(
+          self.basedir, ctx['vinfo']), updater_utils.tarball_path(
+          self.basedir, ctx['vinfo']))
 
         logging.info('updater_runner: signature OK')
 

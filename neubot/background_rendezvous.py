@@ -42,6 +42,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
+from neubot.defer import Deferred
 from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
@@ -50,19 +51,16 @@ from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
 from neubot import privacy
-from neubot import utils_rc
 
 class BackgroundRendezvous(object):
     ''' Runs rendezvous for the background module '''
 
     def __init__(self):
-        ''' Initializer '''
         self.interval = 0
 
     @staticmethod
     def _open_browser_on_windows(page):
         ''' Open a browser in the user session to notify something '''
-
         #
         # This is possible only on Windows, where we run in the same
         # context of the user.  I contend that opening the browser is
@@ -71,14 +69,11 @@ class BackgroundRendezvous(object):
         # If you are annoyed by that and have time, please consider
         # contributing a PyWin32 notification mechanism.
         #
-
         if os.name == 'nt':
             NOTIFIER_BROWSER.notify_page(page)
 
-    def _after_rendezvous(self):
+    def _after_rendezvous(self, unused):
         ''' After rendezvous actions '''
-
-        # TODO Make this function more robust wrt unexpected errors
 
         #
         # This function is invoked both when the rendezvous fails
@@ -109,24 +104,25 @@ class BackgroundRendezvous(object):
         #
         test = RUNNER_TESTS.get_next_test()
         if not test:
-            logging.warning('background_rendezvous: no test available')
-            self._schedule()
-            return
+            raise RuntimeError('background_rendezvous: no test available')
 
         logging.info('background_rendezvous: chosen test: %s', test)
 
         # Are we allowed to run a test?
         if not CONFIG['enabled']:
-            logging.info('background_rendezvous: automatic tests are disabled')
-            self._schedule()
-            return
+            raise RuntimeError('background_rendezvous: automatic '
+                               'tests disabled')
 
         # Actually run the test
-        RUNNER_CORE.run(test, self._schedule)
+        deferred = Deferred()
+        deferred.add_callback(self._schedule)
+        RUNNER_CORE.run(test, deferred, False, None)
 
-    def _schedule(self):
+    def _schedule(self, exception):
         ''' Schedule next rendezvous '''
-
+        if exception:
+            logging.warning('background_rendezvous: exception while processing'
+                            ' rendezvous response: %s', exception)
         #
         # Typically the user does not specify the interval
         # and we use a random value around 1500 seconds.
@@ -139,17 +135,13 @@ class BackgroundRendezvous(object):
             if not self.interval:
                 self.interval = 1380 + random.randrange(0, 240)
             interval = self.interval
-
         self._schedule_after(interval)
 
     def _schedule_after(self, interval):
         ''' Schedule next rendezvous after interval seconds '''
-
         logging.info('background_rendezvous: next rendezvous in %d seconds',
                      interval)
-
         task = POLLER.sched(interval, self.run)
-
         STATE.update('idle', publish=False)
         STATE.update('next_rendezvous', task.timestamp)
 
@@ -160,16 +152,17 @@ class BackgroundRendezvous(object):
 
     def run(self):
         ''' Periodically run rendezvous '''
-
         #
         # Except from opening the browser, privacy actions are
         # now performed by RUNNER_CORE
         #
         if not privacy.allowed_to_run():
             self._open_browser_on_windows('privacy.html')
-
         logging.info('background_rendezvous: automatic rendezvous...')
-        RUNNER_CORE.run('rendezvous', self._after_rendezvous)
+        deferred = Deferred()
+        deferred.add_callback(self._after_rendezvous)
+        deferred.add_errback(self._schedule)
+        RUNNER_CORE.run('rendezvous', deferred, True, None)
 
 BACKGROUND_RENDEZVOUS = BackgroundRendezvous()
 
@@ -177,20 +170,20 @@ def main(args):
     ''' Main() function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'nO:vy')
+        options, arguments = getopt.getopt(args[1:], 'ni:vy')
     except getopt.error:
-        sys.exit('usage: neubot background_rendezvous [-nvy] [-O setting]')
+        sys.exit('usage: neubot background_rendezvous [-nvy] [-i interval]')
     if arguments:
-        sys.exit('usage: neubot background_rendezvous [-nvy] [-O setting]')
+        sys.exit('usage: neubot background_rendezvous [-nvy] [-i interval]')
 
     notest = False
     fakeprivacy = False
-    settings = []
+    interval = 0
     for name, value in options:
         if name == '-n':
             notest = True
-        elif name == '-O':
-            settings.append(value)
+        elif name == '-i':
+            interval = int(value)
         elif name == '-v':
             CONFIG['verbose'] = 1
         elif name == '-y':
@@ -198,18 +191,15 @@ def main(args):
 
     # Fake privacy settings
     if fakeprivacy:
-        CONFIG.conf.update({
-                            'privacy.informed': 1,
-                            'privacy.can_collect': 1,
-                            'privacy.can_publish': 1
-                           })
+        CONFIG['privacy.informed'] = 1
+        CONFIG['privacy.can_collect'] = 1
+        CONFIG['privacy.can_publish'] = 1
 
     if notest:
-        CONFIG.conf.update({'enabled': 0})
+        CONFIG['enabled'] = 0
 
-    settings = utils_rc.parse_safe(iterable=settings)
-    if 'interval' in settings:
-        CONFIG.conf['agent.interval'] = settings['interval']
+    if interval:
+        CONFIG['agent.interval'] = interval
 
     BACKGROUND_RENDEZVOUS.run()
     POLLER.loop()
