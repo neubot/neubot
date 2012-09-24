@@ -54,7 +54,7 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
-VER=0.4.13
+VER=0.4.15
 
 echo 'BEGIN: Create debian package...'
 test -f dist/neubot-$VER-1_all.deb || { make clean; make deb; }

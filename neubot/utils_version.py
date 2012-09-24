@@ -160,10 +160,10 @@ def compare(left, right):
     return (decimal.Decimal(to_numeric(left)) -
            decimal.Decimal(to_numeric(right)))
 
-CANONICAL_VERSION = '0.4.13'
-NUMERIC_VERSION = '0.004013999'
-PRODUCT = 'Neubot 0.4.13'
-HTTP_HEADER = 'Neubot/0.4.13'
+CANONICAL_VERSION = '0.4.15'
+NUMERIC_VERSION = '0.004015999'
+PRODUCT = 'Neubot 0.4.15'
+HTTP_HEADER = 'Neubot/0.4.15'
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
