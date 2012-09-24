@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 #
 # Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
@@ -25,6 +25,12 @@
 #
 ./scripts/cleanup
 
+NOCOMMIT=0
+if [ "$1" = "-n" ]; then
+    NOCOMMIT=1
+    shift
+fi
+
 #
 # Get current version number
 # Note: the two char classes below contain a space and a tab
@@ -40,7 +46,7 @@ CURRENT_PATCH=`echo $CURRENT | cut -d. -f3`
 if [ $# -eq 1 ]; then
     NEW=$1
 else
-    printf "Usage: %s new-version\n" $0 1>&2
+    printf "Usage: %s [-n] new-version\n" $0 1>&2
     exit 1
 fi
 
@@ -72,5 +78,8 @@ done
 #
 # Commit
 #
+if [ $NOCOMMIT != 0 ]; then
+    exit 0
+fi
 git commit -a -m "Neubot/$NEW released"
 git tag $NEW
