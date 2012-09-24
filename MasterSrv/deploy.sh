@@ -38,7 +38,7 @@ SUDO="$DEBUG SUDO_ASKPASS=/usr/bin/ssh-askpass /usr/bin/sudo -A"
 # Command line
 args=$(getopt fn $*) || {
     echo "Usage: $0 [-nf] [host... ]" 1>&2
-    echo "  -n : Do not complain if Master/neubot.tgz already exists" 1>&2
+    echo "  -n : Do not complain if MasterSrv/neubot.tgz already exists" 1>&2
     echo "  -f : Force deployment when it is already deployed" 1>&2
     exit 1
 }
@@ -57,16 +57,16 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "$SKIP" = "0" ]; then
-    if [ -f Master/neubot.tar.gz ]; then
+    if [ -f MasterSrv/neubot.tar.gz ]; then
         echo "error: Working directory not clean" 1>&2
         exit 1
     fi
 fi
 
-if [ ! -f Master/neubot.tar.gz ]; then
-    $DEBUG git archive --format=tar --prefix=neubot/ -o Master/neubot.tar HEAD
-    $DEBUG gzip -9 Master/neubot.tar
-    $DEBUG git describe --tags > Master/version
+if [ ! -f MasterSrv/neubot.tar.gz ]; then
+    $DEBUG git archive --format=tar --prefix=neubot/ -o MasterSrv/neubot.tar HEAD
+    $DEBUG gzip -9 MasterSrv/neubot.tar
+    $DEBUG git describe --tags > MasterSrv/version
 fi
 
 if [ $# -eq 0 ]; then
@@ -105,20 +105,20 @@ for HOST in $HOSTS; do
 
         if [ "$DOINST" = "1" ]; then
             echo "$HOST: stop and remove old neubot"
-            stop_sh='neubot/Master/stop.sh'
+            stop_sh='neubot/MasterSrv/stop.sh'
             $SSH $HOST "if test -x $stop_sh; then $SUDO $stop_sh; fi"
             $SSH $HOST rm -rf neubot
 
             echo "$HOST: copy files"
-            $SCP Master/neubot.tar.gz $HOST:
-            $SCP Master/version $HOST:
+            $SCP MasterSrv/neubot.tar.gz $HOST:
+            $SCP MasterSrv/version $HOST:
 
             echo "$HOST: install new neubot"
             $SSH $HOST tar -xzf neubot.tar.gz
             $SSH $HOST python -m compileall -q neubot/neubot/
 
             echo "$HOST: start new neubot"
-            $SSH $HOST $SUDO neubot/Master/install.sh
+            $SSH $HOST $SUDO neubot/MasterSrv/install.sh
             $SSH $HOST $SUDO /etc/rc.local
 
             echo "$HOST: cleanup"

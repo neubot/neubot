@@ -11,6 +11,6 @@
 #
 # By default this script does nothing.
 
-/home/simone/neubot/Master/start.sh
+/home/simone/neubot/MasterSrv/start.sh
 exit 0
 

@@ -22,7 +22,7 @@
 
 #
 # Install Neubot on an a master server.
-# Remotely invoked on the server by Master/deploy.sh.
+# Remotely invoked on the server by MasterSrv/deploy.sh.
 # Adapted from M-Lab/install.sh
 #
 
