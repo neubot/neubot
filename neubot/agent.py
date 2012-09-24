@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
 from neubot.http.server import HTTP_SERVER
 from neubot.api.server import ServerAPI
-from neubot.rendezvous.client import ClientRendezvous
+from neubot.background_rendezvous import BACKGROUND_RENDEZVOUS
 from neubot.net.poller import POLLER
 
 from neubot.config import CONFIG
@@ -88,8 +88,7 @@ def main(args):
     LOG.use_database()
 
     if conf["agent.rendezvous"]:
-        client = ClientRendezvous()
-        client.run()
+        BACKGROUND_RENDEZVOUS.start()
 
     POLLER.loop()
 
