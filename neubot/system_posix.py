@@ -38,6 +38,7 @@ import signal
 import syslog
 
 from neubot import utils_sysdirs
+from neubot import utils_posix
 
 def __logger(severity, message):
 
@@ -123,17 +124,16 @@ def go_background():
     if os.fork() > 0:
         os._exit(0)
 
-def drop_privileges():
+def drop_privileges(user='_neubot'):
 
     '''
-     Drop root privileges and run on behalf of the ``_neubot``
+     Drop root privileges and run on behalf of the specified
      unprivileged users.
     '''
 
     if os.getuid() == 0:
-        passwd = lookup_user_info('_neubot')
-        os.setgid(passwd.pw_gid)
-        os.setuid(passwd.pw_uid)
+        passwd = utils_posix.getpwnam(user)
+        utils_posix.chuser(passwd)
 
 def redirect_to_dev_null():
 
