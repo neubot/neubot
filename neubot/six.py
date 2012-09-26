@@ -367,7 +367,7 @@ def with_metaclass(meta, base=object):
 
 
 #
-# Buffer / memoryview
+# Buffer / memoryview, urlparse
 # Written by Simone Basso
 #
 
@@ -376,8 +376,15 @@ if PY3:
         if not size:
             size = len(size)
         return memoryview(string)[offset:size]
+
+    import urllib.parse as urlparse
+    from collections import OrderedDict
+
 else:
     def buff(string, offset, size=None):
         if not size:
             size = len(string)
         return buffer(string, offset, size)
+
+    import urlparse
+    from neubot.simplejson.ordered_dict import OrderedDict
