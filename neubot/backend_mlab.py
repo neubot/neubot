@@ -42,6 +42,10 @@ class BackendMLab(BackendNull):
         ''' Saves the results of a bittorrent test '''
         self.do_store('bittorrent', message)
 
+    def store_raw(self, message):
+        ''' Saves the results of the RAW test '''
+        self.do_store('raw', message)
+
     def speedtest_store(self, message):
         ''' Saves the results of a speedtest test '''
         self.do_store('speedtest', message)

@@ -33,6 +33,7 @@ import logging
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
+from neubot.database import table_raw
 
 from neubot.backend_null import BackendNull
 
@@ -45,6 +46,13 @@ class BackendNeubot(BackendNull):
             logging.warning('backend_neubot: readonly database')
             return
         table_bittorrent.insert(DATABASE.connection(), message)
+
+    def store_raw(self, message):
+        ''' Saves the results of a raw test '''
+        if DATABASE.readonly:
+            logging.warning('backend_neubot: readonly database')
+            return
+        table_raw.insert(DATABASE.connection(), message)
 
     def speedtest_store(self, message):
         ''' Saves the results of a speedtest test '''

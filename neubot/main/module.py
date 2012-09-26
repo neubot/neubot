@@ -24,11 +24,6 @@ import sys
 import textwrap
 import logging
 
-#
-# XXX It would be nice to run just main() in MOD.__init__
-# but let's not daydream: this is not going to happen for a
-# heck of a long time.
-#
 MODULES = {
     "CA"                  : "net.CA",
     "agent"               : "agent",
@@ -39,6 +34,7 @@ MODULES = {
     "http.server"         : "http.server",
     'notifier'            : 'notifier',
     "privacy"             : "privacy",
+    "raw"                 : "raw",
     "rendezvous.server"   : "rendezvous.server",
     "server"              : "server",
     "speedtest"           : "speedtest.client",

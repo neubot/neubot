@@ -1,4 +1,4 @@
-# neubot/backend_null.py
+# neubot/raw_srvr_glue.py
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -20,16 +20,23 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Null backend driver '''
+'''
+ Glue between raw_srvr.py and server-side negotiation.  Adds to raw_srvr.py
+ access control capabilities.
+'''
 
-class BackendNull(object):
-    ''' Null backend driver '''
+from neubot.negotiate.server_raw import NEGOTIATE_SERVER_RAW
+from neubot.raw_srvr import RawServer
 
-    def bittorrent_store(self, message):
-        ''' Save result of BitTorrent test '''
+class RawServerEx(RawServer):
+    ''' Negotiation-enabled RAW test server '''
+    # Same-as RawServer but checks that the peer is authorized
 
-    def store_raw(self, message):
-        ''' Save result of RAW test '''
+    def filter_auth(self, stream, tmp):
+        ''' Filter client auth '''
+        if tmp not in NEGOTIATE_SERVER_RAW.peers:
+            raise RuntimeError('raw_negotiate: unknown peer')
+        context = stream.opaque
+        context.state = NEGOTIATE_SERVER_RAW.peers[tmp]
 
-    def speedtest_store(self, message):
-        ''' Save result of speedtest test '''
+RAW_SERVER_EX = RawServerEx()

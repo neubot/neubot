@@ -52,6 +52,7 @@ from neubot.config import CONFIG
 from neubot.backend import BACKEND
 from neubot.filesys import FILESYS
 from neubot.log import LOG
+from neubot.raw_srvr_glue import RAW_SERVER_EX
 
 from neubot import bittorrent
 from neubot import negotiate
@@ -235,6 +236,14 @@ def main(args):
     #
     conf["http.server.rootdir"] = ""
     HTTP_SERVER.configure(conf)
+
+    #
+    # New-new style: don't bother with abstraction and start the fucking
+    # server by invoking its listen() method.
+    #
+    logging.debug('server: starting raw server... in progress')
+    RAW_SERVER_EX.listen((":: 0.0.0.0", 12345), CONFIG['prefer_ipv6'], 0, '')
+    logging.debug('server: starting raw server... complete')
 
     #
     # New-style modules are started just setting a

@@ -1,4 +1,4 @@
-# neubot/backend_null.py
+# neubot/raw_defs.py
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -20,16 +20,22 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Null backend driver '''
+'''
+ Definitions shared between raw_clnt.py and raw_srvr.py
+'''
 
-class BackendNull(object):
-    ''' Null backend driver '''
+from neubot import six
+import struct
 
-    def bittorrent_store(self, message):
-        ''' Save result of BitTorrent test '''
+AUTH_LEN = 64
+EMPTY_MESSAGE = struct.pack('!I', 0)
+FAKEAUTH = six.b('0') * AUTH_LEN
 
-    def store_raw(self, message):
-        ''' Save result of RAW test '''
+PING_CODE = six.b(chr(0))
+PINGBACK_CODE = six.b(chr(1))
+RAWTEST_CODE = six.b(chr(2))
+PIECE_CODE = six.b(chr(3))
 
-    def speedtest_store(self, message):
-        ''' Save result of speedtest test '''
+PING = struct.pack('!I', 5) + PING_CODE
+PINGBACK = struct.pack('!I', 5) + PINGBACK_CODE
+RAWTEST = struct.pack('!I', 5) + RAWTEST_CODE

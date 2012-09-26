@@ -52,7 +52,7 @@ from neubot.utils import get_uuid
 from neubot import compat
 
 # The regress test requires this variable
-SCHEMA_VERSION = '4.4'
+SCHEMA_VERSION = '4.5'
 
 def create(connection, commit=True):
     ''' Creates table_config if it does not exist '''

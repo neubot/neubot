@@ -35,6 +35,7 @@ from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
+from neubot.database import table_raw
 from neubot.http.message import Message
 from neubot.utils_api import NotImplementedTest
 
@@ -58,6 +59,8 @@ def api_data(stream, request, query):
         table = table_bittorrent
     elif test == 'speedtest':
         table = table_speedtest
+    elif test == 'raw':
+        table = table_raw
     else:
         raise NotImplementedTest("Test not implemented")
 

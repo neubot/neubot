@@ -35,6 +35,7 @@ SUBCOMMANDS = {
     'database': 'neubot.database.main',
     'notifier': 'neubot.notifier',
     'privacy': 'neubot.privacy',
+    'raw': 'neubot.raw',
     'speedtest': 'neubot.speedtest.client',
     'viewer': 'neubot.viewer',
 }

@@ -1,0 +1,54 @@
+Neubot raw test
+'''''''''''''''
+
+:Authors: Simone Basso <bassosimone@gmail.com>
+:Version: 1.1
+:Date: 2012/09/29
+:X-Documents: neubot/database/table_raw.py neubot/negotiate/server_raw.py
+    neubot/raw.py neubot/raw_clnt.py neubot/raw_defs.py neubot/raw_negotiate.py
+    neubot/raw_srvr.py neubot/raw_srvr_glue.py
+
+This file documents the raw transmission test.  This is a test that aims at
+characterizing the user Internet connection by estimating round-trip latency
+at application level, and by measuring the download goodput.  During the
+download, the test captures snapshots of the download goodput on the client,
+and snapshots of Web100 variables on the server.
+
+The test is implemented by a number of files having the word `raw` in their
+name.  Each of these files is briefly described below.
+
+neubot/database/table_raw.py
+  Definition of SQL table for saving results on the client side, plus functions
+  to save and retrieve results.
+
+  Note: this file is scheduled to be moved to neubot/raw_table.py.
+
+neubot/negotiate/server_raw.py
+  Extends the base negotiate server (neubot/negotiate/server.py) with the bits
+  needed to negotiate raw tests.  The code in this file is invoked on the server
+  side during the `negotiate` and `collect` phases of the test.
+
+  Note: this file will probably be moved to neubot/raw_negotiate_srvr.py.
+
+neubot/raw.py
+  Implements the raw command, i.e. this file contains the main() that is
+  invoked when you type `neubot raw` from command line.
+
+neubot/raw_clnt.py
+  Implements the client-side `test` phase of the raw test (code for `negotiate`
+  and `collect` phases is not here).
+
+neubot/raw_defs.py
+  Definitions shared by raw_clnt.py and raw_srvr.py.
+
+neubot/raw_negotiate.py
+  Implements the client-side `negotiate` and `collect` phases of the raw test,
+  and invokes raw_clnt.py during the `test` phase.
+
+neubot/raw_srvr.py
+  Implements the server-side `test` phase of the raw test (code for `negotiate`
+  and `collect` phases is not here).
+
+neubot/raw_srvr_glue.py
+  Extends raw_srvr.py code to add access control: clients that have not
+  performed negotiation are not allowed to run the test.

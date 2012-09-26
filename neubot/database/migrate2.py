@@ -500,6 +500,27 @@ def migrate_from_4_3_to_4_4(connection):
 
     logging.info('migrate2: from schema version 4.3 to 4.4... done')
 
+
+# ===================
+# Migrate: 4.4 -> 4.5
+# ===================
+
+def migrate_from_4_4_to_4_5(connection):
+    ''' Migrate: 4.4 -> 4.5 '''
+    logging.info('migrate2: from schema version 4.4 to 4.5... in progress')
+    connection.execute('''CREATE TABLE IF NOT EXISTS raw (
+                            id INTEGER PRIMARY KEY, internal_address TEXT,
+                            latency REAL, neubot_version TEXT,
+                            timestamp INTEGER, connect_time REAL,
+                            remote_address TEXT, download_speed REAL,
+                            json_data TEXT, real_address TEXT,
+                            uuid TEXT, platform TEXT);''')
+    connection.execute('''UPDATE config SET value='4.5'
+                              WHERE name='version';''')
+    connection.commit()
+    logging.info('migrate2: from schema version 4.4 to 4.5... complete')
+
+
 # ====
 # Main
 # ====
@@ -507,6 +528,7 @@ def migrate_from_4_3_to_4_4(connection):
 MIGRATORS = {
     '4.2': MigrateFrom42To43.migrate,
     '4.3': migrate_from_4_3_to_4_4,
+    '4.4': migrate_from_4_4_to_4_5,
 }
 
 def migrate(connection):

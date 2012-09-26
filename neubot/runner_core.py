@@ -44,10 +44,12 @@ from neubot.database import DATABASE
 from neubot.defer import Deferred
 from neubot.log import STREAMING_LOG
 from neubot.notify import NOTIFIER
+from neubot.raw_negotiate import RawNegotiate
 from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_dload import RunnerDload
 
 from neubot import bittorrent
+from neubot import http_utils
 from neubot import privacy
 from neubot import runner_rendezvous
 from neubot import system
@@ -126,11 +128,9 @@ class RunnerCore(object):
             privacy.complain()
             raise RuntimeError('runner_core: bad privacy settings')
 
-        # Run rendezvous
         elif first_elem[0] == 'rendezvous':
             runner_rendezvous.run(conf['agent.master'], '9773')
 
-        # Run speedtest
         elif first_elem[0] == 'speedtest':
             uri = RUNNER_TESTS.test_to_negotiate_uri('speedtest')
             #
@@ -144,7 +144,6 @@ class RunnerCore(object):
             client.configure(conf)
             client.connect_uri()
 
-        # Run bittorrent
         elif first_elem[0] == 'bittorrent':
             uri = RUNNER_TESTS.test_to_negotiate_uri('bittorrent')
             #
@@ -156,11 +155,21 @@ class RunnerCore(object):
             conf['bittorrent._uri'] =  uri
             bittorrent.run(POLLER, conf)
 
-        # Run dload
         elif first_elem[0] == 'dload':
             RunnerDload(first_elem[2])
 
-        # Safety net
+        elif first_elem[0] == 'raw':
+            uri = RUNNER_TESTS.test_to_negotiate_uri('raw')
+            #
+            # If we have no negotiate URI for this test, possibly
+            # because we are offline, abort it.
+            #
+            if not uri:
+                raise RuntimeError('runner_core: No URI for RAW')
+            handler = RawNegotiate()
+            address, port = http_utils.urlsplit(uri)[1:3]
+            handler.connect((address, port), CONFIG['prefer_ipv6'], 0, {})
+
         else:
             raise RuntimeError('runner_core: asked to run an unknown test')
 

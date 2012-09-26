@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="41cm" height="54cm" viewBox="45 -56 809 1072" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="362" y="75" width="139.8" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="362" y="75" width="139.8" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="431.9" y="96.9">
+      <tspan x="431.9" y="96.9">_connection_ready</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="375.3" y="186.3" width="116.7" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="375.3" y="186.3" width="116.7" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="433.65" y="208.2">
+      <tspan x="433.65" y="208.2">_fakeauth_sent</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="380.3" y="304.3" width="108.5" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="380.3" y="304.3" width="108.5" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="434.55" y="326.2">
+      <tspan x="434.55" y="326.2">_waiting_auth</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" x1="432.199" y1="112.001" x2="433.281" y2="180.828"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="428.159,173.143 433.316,183.064 438.158,172.986 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" x1="433.795" y1="223.256" x2="434.371" y2="298.872"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="429.312,291.146 434.388,301.108 439.312,291.07 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 488.8 340.3 C 583,395 580,258 492.788,302.276"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="497.447,294.303 490.794,303.288 501.974,303.219 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="442" y="155">
+    <tspan x="442" y="155">{stream.send(FAKEAUTH)}</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="443.3" y="257.2">
+    <tspan x="443.3" y="257.2">{stream.recv(len(AUTH))}</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="566.3" y="318.2">
+    <tspan x="566.3" y="318.2">[!pullup]</tspan>
+    <tspan x="566.3" y="334.2">  {stream.recv(len(AUTH))}</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="374.3" y="522.8" width="127.55" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="374.3" y="522.8" width="127.55" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="438.075" y="544.7">
+      <tspan x="438.075" y="544.7">_waiting_rawtest</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="256.3" y="708.724" width="95" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="256.3" y="708.724" width="95" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="303.8" y="730.624">
+      <tspan x="303.8" y="730.624">_piece_sent</tspan>
+    </text>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="404.3" y="437.7">
+    <tspan x="404.3" y="437.7">{stream.recv(len(RAWTEST))}</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 501.85 558.8 C 596.05,613.5 593.05,476.5 505.838,520.776"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="510.497,512.803 503.844,521.788 515.024,521.719 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="575.3" y="525.7">
+    <tspan x="575.3" y="525.7">[!pullup]</tspan>
+    <tspan x="575.3" y="541.7">  {stream.recv(len(RAWTEST))}</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 373.535 552.841 C 305.461,565.541 246.543,564.492 209.391,503.364"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="217.696,507.402 208.229,501.453 209.15,512.595 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="114.3" y="557.7">
+    <tspan x="114.3" y="557.7">[pullup &amp;&amp; PING]</tspan>
+    <tspan x="114.3" y="573.7">  {stream.send(PINGBACK)}</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="317.3" y="979.55" width="126.4" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="317.3" y="979.55" width="126.4" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="380.5" y="1001.45">
+      <tspan x="380.5" y="1001.45">_connection_lost</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" x1="381.55" y1="881.55" x2="380.712" y2="974.089"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="375.783,966.28 380.692,976.325 385.782,966.371 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="247.3" y="939.45">
+    <tspan x="247.3" y="939.45">[watchdog timeout]</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 666.3 746.724 C 750,778.25 745,670.25 670.277,708.679"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="674.895,700.681 668.289,709.701 679.468,709.574 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="732.3" y="715.2">
+    <tspan x="732.3" y="715.2">[context]</tspan>
+    <tspan x="732.3" y="731.2">  {POLLER.enter()}</tspan>
+  </text>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" x1="431.826" y1="-18.2" x2="431.896" y2="70.5279"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="426.89,62.7679 431.898,72.7639 436.89,62.76 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="444.3" y="38.95">
+    <tspan x="444.3" y="38.95">{Stream()}</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="375.3" y="-54.2" width="113.05" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="375.3" y="-54.2" width="113.05" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="431.825" y="-32.3">
+      <tspan x="431.825" y="-32.3">handle_accept</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="166.3" y="305.55" width="85.2" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="166.3" y="305.55" width="85.2" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="208.9" y="327.45">
+      <tspan x="208.9" y="327.45">filter_auth</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" x1="380.3" y1="322.3" x2="255.972" y2="323.507"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="263.687,318.431 253.736,323.528 263.784,328.431 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="296.3" y="312.45">
+    <tspan x="296.3" y="312.45">[pullup]</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="139.3" y="462.55" width="112.45" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="139.3" y="462.55" width="112.45" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="195.525" y="484.45">
+      <tspan x="195.525" y="484.45">sent_pingback</tspan>
+    </text>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 222.258 342.549 C 247.358,378.249 458.194,421.571 442.013,517.461"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="438.374,508.973 441.64,519.666 448.235,510.637 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 212.847 461.561 C 312.322,352.511 455.66,449.5 442.58,517.408"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="439.138,508.839 442.157,519.604 448.958,510.73 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="477.3" y="709.724" width="100.1" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="477.3" y="709.724" width="100.1" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="527.35" y="731.624">
+      <tspan x="527.35" y="731.624">_waiting_eof</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="586.3" y="710.724" width="80" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="586.3" y="710.724" width="80" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="626.3" y="732.624">
+      <tspan x="626.3" y="732.624">_periodic</tspan>
+    </text>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 401.97 559.803 C 319.896,603.003 294,650 303.064,704.313"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="296.854,697.478 303.432,706.518 306.718,695.832 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="155.3" y="659.7">
+    <tspan x="155.3" y="659.7">{stream.send(PIECE)}</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="402.3" y="664.2">
+    <tspan x="402.3" y="664.2">{stream.recv(1)}</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 472.703 559.797 C 549.629,601.997 560.497,619.993 612.482,705.891"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="604.184,701.838 613.64,707.804 612.74,696.66 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="594.3" y="667.2">
+    <tspan x="594.3" y="667.2">{POLLER.enter()}</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 455.466 559.803 C 512.392,622.003 508,623 526.376,705.359"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="519.805,698.87 526.863,707.542 529.565,696.693 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 256.3 744.724 C 188,794 167,682 252.016,707.442"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="243.144,710.006 254.158,708.083 246.011,700.426 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="45.3" y="737.2">
+    <tspan x="45.3" y="737.2">[elapsed &lt; 10]</tspan>
+    <tspan x="45.3" y="753.2">  {stream.send(PIECE)}</tspan>
+  </text>
+  <g>
+    <rect style="fill: #ffffff" x="310.3" y="845.55" width="142.5" height="36" rx="10" ry="10"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="310.3" y="845.55" width="142.5" height="36" rx="10" ry="10"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="381.55" y="867.45">
+      <tspan x="381.55" y="867.45">_empty_piece_sent</tspan>
+    </text>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 305.115 745.427 C 308.865,798.753 412.441,764.08 388.768,840.309"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="386.295,831.412 388.105,842.444 395.845,834.377 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="194.3" y="817.2">
+    <tspan x="194.3" y="817.2">{stream.send(EMPTY_PIECE)}</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 20 4 4 4 4 4; stroke: #000000" d="M 529.151 746.707 C 533.351,790.983 496.555,911.246 409.644,975.877"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="412.89,967.232 407.849,977.212 418.857,975.257 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="495" y="894.25">
+    <tspan x="495" y="894.25">[EOF, RST, error,</tspan>
+    <tspan x="495" y="910.25">any byte]</tspan>
+  </text>
+</svg>
