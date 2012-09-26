@@ -1,7 +1,7 @@
 # neubot/server.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
+# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
 #  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -27,6 +27,7 @@ the negotiate server and the test server.
 """
 
 import gc
+import getopt
 import sys
 import logging
 
@@ -45,12 +46,12 @@ from neubot.notify import NOTIFIER
 from neubot.state import STATE
 
 from neubot.compat import json
+from neubot.database import DATABASE
 from neubot.debug import objgraph
 from neubot.config import CONFIG
 from neubot.backend import BACKEND
 from neubot.filesys import FILESYS
 from neubot.log import LOG
-from neubot.main import common
 
 from neubot import bittorrent
 from neubot import negotiate
@@ -156,12 +157,7 @@ class ServerSideAPI(ServerHTTP):
 
         stream.send_response(request, response)
 
-#
-# Register default values in the global scope so that
-# their variable names are always defined and the rules
-# for casting the types apply.
-#
-CONFIG.register_defaults({
+SETTINGS = {
     "server.bittorrent": True,
     "server.daemonize": True,
     'server.debug': False,
@@ -169,31 +165,67 @@ CONFIG.register_defaults({
     "server.rendezvous": False,         # Not needed on the random server
     "server.sapi": True,
     "server.speedtest": True,
-})
+}
+
+USAGE = '''\
+usage: neubot server [-dv] [-b backend] [-D macro=value]
+
+valid backends:
+  mlab   Saves results as compressed json files (this is the default)
+  neubot Saves results in sqlite3 database
+  null   Do not save results but pretend to do so
+
+valid defines:
+  bittorrent Set to nonzero to enable BitTorrent server (default: 1)
+  daemonize  Set to nonzero to run in the background (default: 1)
+  debug      Set to nonzero to enable localhost only debug API (default: 0)
+  negotiate  Set to nonzero to enable negotiate server (default: 1)
+  rendezvous Set to nonzero to enable rendezvous server (default: 0)
+  sapi       Set to nonzero to enable nagios API (default: 1)
+  speedtest  Set to nonzero to enable speedtest server (default: 1)'''
+
+VALID_MACROS = ('bittorrent', 'daemonize', 'debug', 'negotiate', 'rendezvous',
+                'sapi', 'speedtest')
 
 def main(args):
     """ Starts the server module """
 
-    # By default, use mlab backend
-    FILESYS.datadir_init()
-    BACKEND.use_backend('mlab')
+    try:
+        options, arguments = getopt.getopt(args[1:], 'b:D:dv')
+    except getopt.error:
+        sys.exit(USAGE)
+    if arguments:
+        sys.exit(USAGE)
 
-    #
-    # Register descriptions in main() only so that
-    # we don't advertise the name of knobs that aren't
-    # relevant in the current context.
-    #
-    CONFIG.register_descriptions({
-        "server.bittorrent": "Start up BitTorrent test and negotiate server",
-        "server.daemonize": "Become a daemon and run in background",
-        'server.debug': 'Run the localhost-only debug server',
-        "server.negotiate": "Turn on negotiation infrastructure",
-        "server.rendezvous": "Start up rendezvous server",
-        "server.sapi": "Turn on Server-side API",
-        "server.speedtest": "Start up Speedtest test and negotiate server",
-    })
+    backend = 'mlab'
+    for name, value in options:
+        if name == '-b':
+            backend = value
+        elif name == '-D':
+            name, value = value.split('=', 1)
+            if name not in VALID_MACROS:
+                sys.exit(USAGE)
+            name = 'server.' + name
+            SETTINGS[name] = int(value)
+        elif name == '-d':
+            SETTINGS['server.daemonize'] = 0
+        elif name == '-v':
+            CONFIG['verbose'] = 1
 
-    common.main("server", "Neubot server-side component", args)
+    logging.debug('server: using backend: %s... in progress', backend)
+    if backend == 'mlab':
+        FILESYS.datadir_init()
+        BACKEND.use_backend('mlab')
+    elif backend == 'neubot':
+        DATABASE.connect()
+        BACKEND.use_backend('neubot')
+    else:
+        BACKEND.use_backend('null')
+    logging.debug('server: using backend: %s... complete', backend)
+
+    for name, value in SETTINGS.items():
+        CONFIG[name] = value
+
     conf = CONFIG.copy()
 
     #
