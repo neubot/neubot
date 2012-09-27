@@ -24,6 +24,8 @@
 
 # Adapted from neubot/http/message.py
 
+import logging
+from neubot.compat import json
 from neubot import six
 
 def urlsplit(uri):
@@ -66,3 +68,9 @@ def urlsplit(uri):
         pathquery = pathquery + '?' + query
 
     return scheme, address, port, pathquery
+
+def prettyprint_json(obj, prefix):
+    ''' Pretty-print JSON body '''
+    string = json.dumps(obj, indent=4, sort_keys=True)
+    for line in string.split('\n'):
+        logging.debug('%s %s', prefix, line.rstrip())
