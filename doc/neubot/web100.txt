@@ -1,0 +1,32 @@
+Web100
+''''''
+
+:Authors: Simone Basso <bassosimone@gmail.com>
+:Version: 1.1
+:Date: 2012/09/27
+:X-Documents: neubot/web100.py
+
+The file neubot/web100.py contains a simple, pure-python web100 client
+implementation (which is considerably simpler than libweb100, doesn't have the
+web100 agent, and is specifically designed to accomplish just the needs of
+Neubot).
+
+Specifically, neubot/web100.py allows to take a snapshot of the state of
+specific connections tracked by web100.  The connection is looked up by
+iterating over /proc/web100/*/spec-file to find a matching spec.  Differently
+from libweb100, the search is not interrupted after the first match, since
+web100 documentation says that it's possible to have multiple matches.  When
+this happens (it should not happen very frequently) the web100.py code does
+not return any result.
+
+The snapshot is a dictionary, where standard web100 variables names map to
+the respective value.  All types are treated as one would expect, e.g.
+INTEGER32 is converted to a python `int` type.  The only exception to this
+rule are IPv4 and IPv6 addresses, which are not represented in human readable
+format, but rather as strings containing an hexadecimal number.  Also the
+code ensures that IPv4-mapped and IPv4-compatible IPv6 addresses are converted
+to IPv4 addresses, for consistency with neubot/utils_net.py code.
+
+Last remark: for now I've decided to return only standard web100 variables,
+omitting deprecated and extended variables, i.e. the ones starting with,
+respectively, '_' and 'X_'.
