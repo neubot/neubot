@@ -22,6 +22,8 @@
 
 ''' HTTP client '''
 
+# Will be replaced by neubot/http_clnt.py
+
 import collections
 import os.path
 import sys

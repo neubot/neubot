@@ -28,6 +28,9 @@
  enforce an ASCII-only policy on all the path names.
 '''
 
+# Should be moved to neubot/http_ssi.py
+# Should be converted to utils_path
+
 from neubot.utils import asciiify
 
 import sys

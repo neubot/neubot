@@ -22,6 +22,8 @@
 
 ''' HTTP stream '''
 
+# Will be replaced by neubot/http_clnt.py and neubot/http_srvr.py
+
 import logging
 
 from neubot.net.stream import MAXBUF
