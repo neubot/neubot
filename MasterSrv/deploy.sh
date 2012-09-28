@@ -27,8 +27,8 @@
 #
 
 DEBUG=
+DEPLOY=1
 FORCE=0
-SKIP=0
 
 # Wrappers for ssh, scp
 SCP="$DEBUG /usr/bin/scp"
@@ -38,7 +38,7 @@ SUDO="$DEBUG SUDO_ASKPASS=/usr/bin/ssh-askpass /usr/bin/sudo -A"
 # Command line
 args=$(getopt fn $*) || {
     echo "Usage: $0 [-nf] [host... ]" 1>&2
-    echo "  -n : Do not complain if MasterSrv/neubot.tgz already exists" 1>&2
+    echo "  -n : generate the tarball and exit" 1>&2
     echo "  -f : Force deployment when it is already deployed" 1>&2
     exit 1
 }
@@ -48,7 +48,7 @@ while [ $# -gt 0 ]; do
         FORCE=1
         shift
     elif [ "$1" = "-n" ]; then
-        SKIP=1
+        DEPLOY=0
         shift
     elif [ "$1" = "--" ]; then
         shift
@@ -56,17 +56,17 @@ while [ $# -gt 0 ]; do
     fi
 done
 
-if [ "$SKIP" = "0" ]; then
-    if [ -f MasterSrv/neubot.tar.gz ]; then
-        echo "error: Working directory not clean" 1>&2
-        exit 1
-    fi
-fi
+destdir=dist/MasterSrv
+tarball=$destdir/neubot.tar.gz
+version=$destdir/version
 
-if [ ! -f MasterSrv/neubot.tar.gz ]; then
-    $DEBUG git archive --format=tar --prefix=neubot/ -o MasterSrv/neubot.tar HEAD
-    $DEBUG gzip -9 MasterSrv/neubot.tar
-    $DEBUG git describe --tags > MasterSrv/version
+rm -rf -- $destdir
+mkdir -p $destdir
+$DEBUG git archive --format=tar --prefix=neubot/ HEAD|gzip -9 > $tarball
+$DEBUG git describe --tags > $version
+
+if [ "$DEPLOY" = "0" ]; then
+    exit 0
 fi
 
 if [ $# -eq 0 ]; then
@@ -106,12 +106,12 @@ for HOST in $HOSTS; do
         if [ "$DOINST" = "1" ]; then
             echo "$HOST: stop and remove old neubot"
             stop_sh='neubot/MasterSrv/stop.sh'
-            $SSH $HOST "if test -x $stop_sh; then $SUDO $stop_sh; fi"
+            $SSH $HOST "if test -x $stop_sh; then $SUDO $stop_sh || true; fi"
             $SSH $HOST rm -rf neubot
 
             echo "$HOST: copy files"
-            $SCP MasterSrv/neubot.tar.gz $HOST:
-            $SCP MasterSrv/version $HOST:
+            $SCP $tarball $HOST:
+            $SCP $version $HOST:
 
             echo "$HOST: install new neubot"
             $SSH $HOST tar -xzf neubot.tar.gz

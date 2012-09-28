@@ -31,11 +31,12 @@ FORCE=0
 # Wrappers for ssh, scp
 SCP="$DEBUG $HOME/bin/mlab_scp"
 SSH="$DEBUG $HOME/bin/mlab_ssh"
+SUDO="/usr/bin/sudo"
 
 # Command line
 args=$(getopt fn $*) || {
     echo "Usage: $0 [-nf] [host... ]" 1>&2
-    echo "  -n : generate the update tarball and exit" 1>&2
+    echo "  -n : generate the tarball and exit" 1>&2
     echo "  -f : Force deployment when it is already deployed" 1>&2
     exit 1
 }
@@ -53,11 +54,12 @@ while [ $# -gt 0 ]; do
     fi
 done
 
-tarball=dist/mlab/neubot.tar.gz
-version=dist/mlab/version
+destdir=dist/mlab
+tarball=$destdir/neubot.tar.gz
+version=$destdir/version
 
-rm -rf -- dist/mlab
-mkdir -p dist/mlab
+rm -rf -- $destdir
+mkdir -p $destdir
 $DEBUG git archive --format=tar --prefix=neubot/ HEAD|gzip -9 > $tarball
 $DEBUG git describe --tags > $version
 
@@ -95,8 +97,7 @@ for HOST in $HOSTS; do
         DOINST=1
         if [ $FORCE -eq 0 ]; then
             echo "$HOST: do we need to resume?"
-            ALLRUNNING=$($SSH $HOST 'ps auxww|grep ^_neubot')
-            if [ ! -z "$ALLRUNNING" ]; then
+            if $SSH $HOST 'ps auxww|grep -q ^_neubot'; then
                 DOINST=0
             fi
         fi
@@ -104,7 +105,7 @@ for HOST in $HOSTS; do
         if [ "$DOINST" = "1" ]; then
             echo "$HOST: stop and remove old neubot"
             stop_sh='/home/mlab_neubot/neubot/M-Lab/stop.sh'
-            $SSH $HOST "if test -x $stop_sh; then sudo $stop_sh || true; fi "
+            $SSH $HOST "if test -x $stop_sh; then $SUDO $stop_sh || true; fi"
             $SSH $HOST rm -rf neubot
 
             echo "$HOST: copy files"
@@ -116,8 +117,8 @@ for HOST in $HOSTS; do
             $SSH $HOST python -m compileall -q neubot/neubot/
 
             echo "$HOST: start new neubot"
-            $SSH $HOST sudo /home/mlab_neubot/neubot/M-Lab/install.sh
-            $SSH $HOST sudo /etc/rc.d/rc.local
+            $SSH $HOST $SUDO /home/mlab_neubot/neubot/M-Lab/install.sh
+            $SSH $HOST $SUDO /etc/rc.d/rc.local
 
             echo "$HOST: cleanup"
             $SSH $HOST rm -rf neubot.tar.gz
