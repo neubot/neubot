@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -39,7 +40,7 @@ class TestState(unittest.TestCase):
         """Make sure we correctly set the empty event"""
         thestate = state.State(publish=lambda e, t: None)
         thestate.update("foobar")
-        self.assertEquals(thestate._events["foobar"], {})
+        self.assertEquals(thestate.events["foobar"], {})
 
     def test_publish(self):
         """Make sure we publish when requested to do so"""
@@ -77,17 +78,16 @@ class TestState(unittest.TestCase):
 
         self.assertEquals(state.STATECHANGE, "statechange")
 
-
     def test_current(self):
         """Make sure we honour current"""
         thestate = state.State(publish=lambda e, t: None)
         thestate.update("idle")
-        self.assertEquals(thestate._current, "idle")
+        self.assertEquals(thestate.current, "idle")
 
     def test_dictionarize(self):
         """Make sure we dictionarize to the expected format"""
 
-        thestate = state.State(publish=lambda e, t: None, T=lambda: 42)
+        thestate = state.State(publish=lambda e, t: None, time=lambda: 42)
         thestate.update("foobar", {"a": True, "b": 1.7, "c": 13})
         thestate.update("since", 1234567890)
         thestate.update("xo")

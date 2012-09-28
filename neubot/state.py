@@ -1,8 +1,9 @@
 # neubot/state.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,49 +21,52 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' State of the test '''
+
 import os
 import logging
 
 from neubot.notify import NOTIFIER
 from neubot import utils
 
-# states of neubot
 STATES = ( "idle", "rendezvous", "negotiate", "test", "collect" )
-
-# name of 'state changed' notification
 STATECHANGE = "statechange"
 
 class State(object):
-    def __init__(self, publish=NOTIFIER.publish, T=utils.T):
-        self._publish = publish
-        self._T = T
+    ''' State of the test '''
 
-        self._current = ""
-        self._events = {}
-        self._t = self._T()
+    def __init__(self, publish=NOTIFIER.publish, time=utils.T):
+        self.publish = publish
+        self.time = time
+
+        self.current = ""
+        self.events = {}
+        self.tsnap = self.time()
 
         self.update("since", utils.timestamp())
         self.update("pid", os.getpid())
 
     def dictionarize(self):
+        ''' Transforms the state to a dictionary '''
         return {
-                "events": self._events,
-                "current": self._current,
-                "t": self._t,
+                "events": self.events,
+                "current": self.current,
+                "t": self.tsnap,
                }
 
     def update(self, name, event=None, publish=True):
+        ''' Updates test state '''
         if not event:
             event = {}
 
         if name in STATES:
-            self._current = name
-        self._t = self._T()
-        self._events[name] = event
+            self.current = name
+        self.tsnap = self.time()
+        self.events[name] = event
 
         logging.debug("state: %s %s", name, event)
 
         if publish:
-            self._publish(STATECHANGE, self._t)
+            self.publish(STATECHANGE, self.tsnap)
 
 STATE = State()
