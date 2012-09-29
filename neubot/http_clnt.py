@@ -489,7 +489,7 @@ def main(args):
         elif name == '-v':
             level = logging.DEBUG
 
-    logging.basicConfig(format='%(message)s', level=level)
+    logging.getLogger().setLevel(level)
 
     handler = HttpClientSmpl()
     handler.connect((address, port), prefer_ipv6, sslconfig,
