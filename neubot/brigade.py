@@ -22,11 +22,18 @@
 
 ''' Bucket brigade '''
 
+# Python3-ready: yes
+
 from collections import deque
 from neubot import six
 
 NEWLINE = six.b('\n')
 EMPTY = six.b('')
+
+if six.PY3:
+    BYTES = bytes
+else:
+    BYTES = str
 
 class Brigade(object):
 
@@ -63,7 +70,7 @@ class Brigade(object):
                 if len(bucket) > length:
                     self.brigade.appendleft(six.buff(bucket, length))
                     bucket = six.buff(bucket, 0, length)
-                retval.append(str(bucket))
+                retval.append(BYTES(bucket))
                 self.total -= len(bucket)
                 length -= len(bucket)
         return EMPTY.join(retval)

@@ -372,9 +372,9 @@ def with_metaclass(meta, base=object):
 #
 
 if PY3:
-    def buff(string, offset, size):
+    def buff(string, offset, size=None):
         if not size:
-            size = len(size)
+            size = len(string)
         return memoryview(string)[offset:size]
 
     import urllib.parse as urlparse
