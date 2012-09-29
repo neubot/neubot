@@ -380,6 +380,9 @@ if PY3:
     import urllib.parse as urlparse
     from collections import OrderedDict
 
+    def bytes_to_string(octets, encoding):
+        return str(octets, encoding)
+
 else:
     def buff(string, offset, size=None):
         if not size:
@@ -388,3 +391,6 @@ else:
 
     import urlparse
     from neubot.simplejson.ordered_dict import OrderedDict
+
+    def bytes_to_string(octets, encoding):
+        return octets

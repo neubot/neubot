@@ -442,7 +442,7 @@ class HttpClientSmpl(HttpClient):
         self.append_header(stream, 'Pragma', 'no-cache')
         self.append_end_of_headers(stream)
         self.send_message(stream)
-        context.body = sys.stdout  # Want to print the body
+        context.body = self  # Want to print the body
         cntvec[0] += 1
 
     def handle_end_of_body(self, stream):
@@ -459,6 +459,11 @@ class HttpClientSmpl(HttpClient):
             stream.close()
             return
         self.connection_made(stream)
+
+    def write(self, data):
+        ''' Write data on standard output '''
+        # Remember that with Python 3 we need to decode data
+        sys.stdout.write(six.bytes_to_string(data, 'utf-8'))
 
 USAGE = 'usage: neubot http_clnt [-6Sv] [-A address] [-p port] path...'
 
