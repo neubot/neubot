@@ -26,6 +26,7 @@
 
 import errno
 import logging
+import os
 import socket
 import sys
 
@@ -95,6 +96,20 @@ class StreamWrapper(object):
             else:
                 raise
 
+class StreamWrapperDebug(StreamWrapper):
+    ''' Debug stream wrapper '''
+
+    def sorecv(self, maxlen):
+        maxlen = 1
+        return StreamWrapper.sorecv(self, maxlen)
+
+def _stream_wrapper(sock):
+    ''' Create the right stream wrapper '''
+    if not os.environ.get('NEUBOT_STREAM_DEBUG'):
+        return StreamWrapper(sock)
+    logging.warning('stream: creating debug stream: performance will suck')
+    return StreamWrapperDebug(sock)
+
 class Stream(Pollable):
 
     ''' A pollable stream socket '''
@@ -142,7 +157,7 @@ class Stream(Pollable):
         self.atconnect.add_errback(self._connection_made_error)
 
         if not sslconfig:
-            self.sock = StreamWrapper(sock)
+            self.sock = _stream_wrapper(sock)
             self.atconnect.callback(self)
             return
 
