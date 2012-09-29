@@ -113,7 +113,8 @@ class Stream(Pollable):
         self.filenum = sock.fileno()
         self.myname = utils_net.getsockname(sock)
         self.peername = utils_net.getpeername(sock)
-        self.logname = str((self.myname, self.peername))
+        self.logname = '%s %s' % (utils_net.format_epnt(self.myname),
+                                  utils_net.format_epnt(self.peername))
 
         logging.debug('stream: __init__(): %s', self.logname)
 
