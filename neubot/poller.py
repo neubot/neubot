@@ -23,6 +23,7 @@
 ''' Dispatch read, write, periodic and other events '''
 
 # Was neubot/net/poller.py
+# Python3-ready: yes
 
 import logging
 import errno

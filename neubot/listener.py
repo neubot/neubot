@@ -23,6 +23,7 @@
 ''' Pollable socket listener '''
 
 # Adapted from neubot/net/stream.py
+# Python3-ready: yes
 
 from neubot.pollable import Pollable
 from neubot.poller import POLLER

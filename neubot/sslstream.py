@@ -22,6 +22,8 @@
 
 ''' Pollable SSL stream '''
 
+# Python3-ready: yes
+
 import logging
 import ssl
 import sys

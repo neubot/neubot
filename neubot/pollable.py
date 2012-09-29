@@ -23,6 +23,7 @@
 ''' An object that can be passed to the poller '''
 
 # Adapted from neubot/net/poller.py
+# Python3-ready: yes
 
 from neubot import utils
 

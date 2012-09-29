@@ -22,6 +22,8 @@
 
 ''' Pollable socket stream '''
 
+# Python3-ready: yes
+
 import errno
 import logging
 import socket

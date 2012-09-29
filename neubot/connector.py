@@ -23,6 +23,7 @@
 ''' Pollable socket connector '''
 
 # Adapted from neubot/net/stream.py
+# Python3-ready: yes
 
 import collections
 
