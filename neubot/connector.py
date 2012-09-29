@@ -69,7 +69,6 @@ class Connector(Pollable):
         if self.sock:
             POLLER.unset_writable(self)
             self.sock = None  # MUST be below unset_writable()
-        self.epnts.popleft()
         if not self.epnts:
             self.parent.handle_connect_error(self)
             return
@@ -77,7 +76,7 @@ class Connector(Pollable):
 
     def _connect(self):
         ''' Connect first available epnt '''
-        sock = utils_net.connect(self.epnts[0], self.prefer_ipv6)
+        sock = utils_net.connect(self.epnts.popleft(), self.prefer_ipv6)
         if sock:
             self.sock = sock
             self.timestamp = utils.ticks()
