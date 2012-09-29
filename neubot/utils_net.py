@@ -231,7 +231,7 @@ def __strip_ipv4mapped_prefix(function):
     result = list(result)
     if result[0].startswith('::ffff:'):
         result[0] = result[0][7:]
-    elif result[0].startswith('::'):
+    elif result[0].startswith('::') and result[0] != '::1':
         result[0] = result[0][1:]
     return tuple(result)
 
