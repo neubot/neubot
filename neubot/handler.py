@@ -62,7 +62,7 @@ class Handler(object):
 
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
         ''' Connect() to endpoint '''
-        Connector(self, endpoint, prefer_ipv6, sslconfig, extra)
+        return Connector(self, endpoint, prefer_ipv6, sslconfig, extra)
 
     def handle_connect_error(self, connector):
         ''' Handle the CONNECT_ERROR event '''

@@ -56,6 +56,17 @@ class Deferred(object):
         ''' Add an errback to the deferred '''
         self.chain.append((ERRBACK, func))
 
+    def callback_each_np(self, argument):
+        ''' Pass argument to every function in the chain (non portable) '''
+        while self.chain:
+            func = self.chain.popleft()[1]
+            try:
+                func(argument)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                logging.warning('defer: unhandled error\n%s', Failure())
+
     def callback(self, argument):
         ''' Run the callback/errback chain '''
         while self.chain:

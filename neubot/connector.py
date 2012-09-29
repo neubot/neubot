@@ -26,7 +26,9 @@
 # Python3-ready: yes
 
 import collections
+import logging
 
+from neubot.defer import Deferred
 from neubot.pollable import Pollable
 from neubot.poller import POLLER
 
@@ -49,6 +51,9 @@ class Connector(Pollable):
         self.timestamp = 0
         self.watchdog = 10
 
+        self.aterror = Deferred()
+        self.aterror.add_callback(self.parent.handle_connect_error)
+
         # For logging purpose, save original endpoint
         self.endpoint = endpoint
 
@@ -64,13 +69,17 @@ class Connector(Pollable):
     def __repr__(self):
         return str(self.endpoint)
 
+    def register_errfunc(self, func):
+        ''' Register a cleanup function '''
+        self.aterror.add_callback(func)
+
     def _connection_failed(self):
         ''' Failed to connect first available epnt '''
         if self.sock:
             POLLER.unset_writable(self)
             self.sock = None  # MUST be below unset_writable()
         if not self.epnts:
-            self.parent.handle_connect_error(self)
+            self.aterror.callback_each_np(self)
             return
         self._connect()
 
@@ -89,14 +98,23 @@ class Connector(Pollable):
 
     def handle_write(self):
         POLLER.unset_writable(self)
-
         if not utils_net.isconnected(self.endpoint, self.sock):
             self._connection_failed()
             return
+        deferred = Deferred()
+        deferred.add_callback(self._handle_connect)
+        deferred.add_errback(self._handle_connect_error)
+        deferred.callback(utils.ticks())
 
-        self.parent.handle_connect(self, self.sock,
-               (utils.ticks() - self.timestamp),
-               self.sslconfig, self.extra)
+    def _handle_connect(self, ticks):
+        ''' Internally handle connect '''
+        self.parent.handle_connect(self, self.sock, (ticks - self.timestamp),
+          self.sslconfig, self.extra)
+
+    def _handle_connect_error(self, error):
+        ''' Internally handle connect error '''
+        logging.warning('connector: connect() error: %s', str(error))
+        self._connection_failed()
 
     def handle_close(self):
         self._connection_failed()

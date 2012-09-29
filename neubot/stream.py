@@ -203,8 +203,7 @@ class Stream(Pollable):
         logging.debug('stream: closing %s', self.logname)
         self.isclosed = True
 
-        while self.atclose:  # XXX
-            self.atclose.callback(self)
+        self.atclose.callback_each_np(self)
         self.sock.close()
 
         self.atclose = None
