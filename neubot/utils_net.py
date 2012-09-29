@@ -227,12 +227,16 @@ def isconnected(endpoint, sock):
 def __strip_ipv4mapped_prefix(function):
     ''' Strip IPv4-mapped and IPv4-compatible prefix when the kernel does
         not implement a hard separation between IPv4 and IPv6 '''
-    result = function()
+    return __strip_ipv4mapped_prefix1(function())
+
+def __strip_ipv4mapped_prefix1(result):
+    ''' Strip IPv4-mapped and IPv4-compatible prefix when the kernel does
+        not implement a hard separation between IPv4 and IPv6 '''
     result = list(result)
     if result[0].startswith('::ffff:'):
         result[0] = result[0][7:]
     elif result[0].startswith('::') and result[0] != '::1':
-        result[0] = result[0][1:]
+        result[0] = result[0][2:]
     return tuple(result)
 
 def getpeername(sock):
