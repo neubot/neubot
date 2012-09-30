@@ -71,7 +71,7 @@ def check_database_path(pathname):
 
     pathname = os.path.abspath(pathname)
 
-    if not running_as_root():
+    if os.name == 'posix' and not running_as_root():
         return pathname
 
     _want_rwx_dir(os.path.dirname(pathname))
