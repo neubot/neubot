@@ -241,7 +241,8 @@ class RawNegotiate(HttpClient):
                  }
         self._start_collect(stream, result)
 
-    def _handle_test_failure(self, stream, error):
+    @staticmethod
+    def _handle_test_failure(stream, error):
         ''' Invoked when the test fails '''
         logging.warning('raw_negotiate: test failed: %s', str(error))
         stream.close()
