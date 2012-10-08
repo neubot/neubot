@@ -50,7 +50,7 @@ except ImportError:
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot import utils_sysdirs
+from neubot import utils_hier
 from neubot import privacy
 from neubot import utils_version
 
@@ -149,7 +149,7 @@ def main(args):
     if arguments:
         sys.exit('Usage: neubot notifier [-f database]\n')
 
-    database = utils_sysdirs.DATABASEPATH
+    database = utils_hier.DATABASEPATH
     for name, value in options:
         if name == '-f':
             database = value

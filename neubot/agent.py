@@ -47,7 +47,7 @@ from neubot.main import common
 
 from neubot import privacy
 from neubot import system
-from neubot import utils_sysdirs
+from neubot import utils_hier
 
 def main(args):
     """ Main function """
@@ -60,8 +60,8 @@ def main(args):
 
     if conf["agent.api"]:
         server = HTTP_SERVER
-        logging.debug("* API server root directory: %s", utils_sysdirs.WWWDIR)
-        conf["http.server.rootdir"] = utils_sysdirs.WWWDIR
+        logging.debug("* API server root directory: %s", utils_hier.WWWDIR)
+        conf["http.server.rootdir"] = utils_hier.WWWDIR
         conf["http.server.ssi"] = True
         conf["http.server.bind_or_die"] = True
         server.configure(conf)

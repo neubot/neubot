@@ -36,7 +36,7 @@ import random
 # reachable with Windows.  They are stored into
 # library.zip.
 #
-from neubot import utils_sysdirs
+from neubot import utils_hier
 
 # Maximum depth
 MAXDEPTH = 16
@@ -66,7 +66,7 @@ def create_base_block(length):
     base_block = collections.deque()
 
     files = []
-    listdir(utils_sysdirs.WWWDIR, files, 0)
+    listdir(utils_hier.WWWDIR, files, 0)
     random.shuffle(files)
 
     for fpath in files:

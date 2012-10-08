@@ -37,7 +37,7 @@ import os.path
 import signal
 import syslog
 
-from neubot import utils_sysdirs
+from neubot import utils_hier
 from neubot import utils_posix
 
 def __logger(severity, message):
@@ -81,7 +81,7 @@ def lookup_user_info(uname):
 
 def _get_profile_dir():
     ''' The profile directory is always LOCALSTATEDIR '''
-    return utils_sysdirs.LOCALSTATEDIR
+    return utils_hier.LOCALSTATEDIR
 
 def change_dir():
     ''' Switch from current directory to root directory '''

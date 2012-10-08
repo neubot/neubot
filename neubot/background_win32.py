@@ -38,12 +38,12 @@ from neubot.updater_win32 import UpdaterWin32
 
 from neubot import background_api
 from neubot import privacy
-from neubot import utils_sysdirs
+from neubot import utils_hier
 from neubot import utils_version
 
 def __start_updater():
     ''' Start updater '''
-    updater = UpdaterWin32('win32', utils_sysdirs.BASEDIR)
+    updater = UpdaterWin32('win32', utils_hier.BASEDIR)
     updater.start()
 
 def main(args):

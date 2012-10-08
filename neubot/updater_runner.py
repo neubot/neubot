@@ -49,7 +49,7 @@ from neubot.runner_core import RUNNER_CORE
 from neubot import updater_install
 from neubot import updater_utils
 from neubot import updater_verify
-from neubot import utils_sysdirs
+from neubot import utils_hier
 from neubot import utils_version
 
 class UpdaterRunner(object):
@@ -81,7 +81,7 @@ class UpdaterRunner(object):
     def _okfile_lastmod():
         ''' Return when the OK file was last modified '''
         try:
-            statbuf = os.stat(utils_sysdirs.OKFILE)
+            statbuf = os.stat(utils_hier.OKFILE)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -261,7 +261,7 @@ def main(args):
                             'privacy.can_publish': 1})
 
     CONFIG['win32_updater_channel'] = channel
-    updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR)
+    updater = UpdaterRunner(sysname, utils_hier.BASEDIR)
 
     if arguments:
         updater.retrieve_files({}, arguments[0])

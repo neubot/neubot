@@ -1,4 +1,4 @@
-# neubot/utils_sysdirs.py
+# neubot/utils_hier.py
 
 #
 # Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
@@ -20,12 +20,10 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Location of system-dependent directories and files '''
-
-# TODO Since it contains both directories and files, this file would
-# be better named utils_syshier.py.
+''' System dependent hier(7) '''
 
 # Formerly neubot/rootdir.py
+# Formerly neubot/utils_sysdirs.py
 
 import os
 import sys
@@ -157,7 +155,7 @@ def main(args):
         sys.stdout.write('%s\n' % globals()[args[1]])
         sys.exit(0)
     elif len(args) > 2:
-        sys.exit('usage: neubot utils_sysdirs [VARIABLE]')
+        sys.exit('usage: neubot utils_hier [VARIABLE]')
 
     sys.stdout.write('''\
 BASEDIR       : "%(BASEDIR)s"

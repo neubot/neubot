@@ -26,14 +26,14 @@
 
 import os.path
 
-from neubot import utils_sysdirs
+from neubot import utils_hier
 
 def change_dir():
     ''' Change directory '''
 
 def _get_profile_dir():
     ''' Get database directory '''
-    return utils_sysdirs.LOCALSTATEDIR
+    return utils_hier.LOCALSTATEDIR
 
 def _want_rwx_dir(pathname):
     ''' Ensure the directory has RWX perms '''

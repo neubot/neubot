@@ -50,7 +50,7 @@ from neubot import runner_api
 from neubot import utils
 from neubot import api_data
 from neubot import api_results
-from neubot import utils_sysdirs
+from neubot import utils_hier
 
 from neubot.utils_api import NotImplementedTest
 
@@ -126,7 +126,7 @@ class ServerAPI(ServerHTTP):
         NOTIFIER.snap(debuginfo)
         POLLER.snap(debuginfo)
         debuginfo["queue_history"] = QUEUE_HISTORY
-        debuginfo["WWWDIR"] = utils_sysdirs.WWWDIR
+        debuginfo["WWWDIR"] = utils_hier.WWWDIR
         gc.collect()
         debuginfo['typestats'] = objgraph.typestats()
         body = pprint.pformat(debuginfo)

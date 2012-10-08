@@ -42,7 +42,7 @@ from neubot.poller import POLLER
 from neubot.updater_runner import UpdaterRunner
 
 from neubot import utils_path
-from neubot import utils_sysdirs
+from neubot import utils_hier
 
 class UpdaterWin32(UpdaterRunner):
 
@@ -132,7 +132,7 @@ def main(args):
                             'privacy.can_publish': 1})
 
     CONFIG['win32_updater_channel'] = channel
-    updater = UpdaterRunner(sysname, utils_sysdirs.BASEDIR)
+    updater = UpdaterRunner(sysname, utils_hier.BASEDIR)
 
     if arguments:
         updater.retrieve_files({}, arguments[0])

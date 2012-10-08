@@ -32,7 +32,7 @@ if __name__ == '__main__':
 from neubot.config import CONFIG
 from neubot import utils_posix
 from neubot import utils_path
-from neubot import utils_sysdirs
+from neubot import utils_hier
 
 # Default user name
 UNAME = '_neubot'
@@ -51,7 +51,7 @@ class FileSystemPOSIX(object):
         if datadir:
             self.datadir = datadir
         else:
-            self.datadir = utils_sysdirs.LOCALSTATEDIR
+            self.datadir = utils_hier.LOCALSTATEDIR
         logging.debug('filesys_posix: datadir: %s', self.datadir)
 
         logging.debug('filesys_posix: user name: %s', uname)

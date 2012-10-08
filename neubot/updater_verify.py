@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
 from neubot.config import CONFIG
 
-from neubot import utils_sysdirs
+from neubot import utils_hier
 from neubot import utils_path
 
 if os.name == 'posix':
@@ -61,10 +61,10 @@ def dgst_verify(signature, tarball, key=None):
      algorithm is SHA256.
     '''
 
-    if not utils_sysdirs.OPENSSL:
+    if not utils_hier.OPENSSL:
         raise RuntimeError('updater_verify: No OPENSSL defined')
     if not key:
-        key = os.sep.join([utils_sysdirs.VERSIONDIR, 'pubkey.pem'])
+        key = os.sep.join([utils_hier.VERSIONDIR, 'pubkey.pem'])
 
     #
     # By default subprocess.call() does not invoke the shell and
@@ -82,7 +82,7 @@ def dgst_verify(signature, tarball, key=None):
     #
     for path in (signature, tarball, key):
         path = utils_path.normalize(path)
-        if not path.startswith(utils_sysdirs.BASEDIR):
+        if not path.startswith(utils_hier.BASEDIR):
             raise RuntimeError('updater_verify: passed path outside of BASEDIR')
 
     #
@@ -94,7 +94,7 @@ def dgst_verify(signature, tarball, key=None):
     # reason, I wonder whether it makes sense to run the openssl subpro-
     # cess with reduced privileges.
     #
-    cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-verify', key,
+    cmdline = [utils_hier.OPENSSL, 'dgst', '-sha256', '-verify', key,
                '-signature', signature, tarball]
 
     __logging_info('updater_verify: exec: %s', str(cmdline))
@@ -118,10 +118,10 @@ def __dgst_sign(signature, tarball, key):
     # correctness checks that the verify function implements.
     #
 
-    if not utils_sysdirs.OPENSSL:
+    if not utils_hier.OPENSSL:
         raise RuntimeError('updater_verify: No OPENSSL defined')
 
-    cmdline = [utils_sysdirs.OPENSSL, 'dgst', '-sha256', '-sign', key,
+    cmdline = [utils_hier.OPENSSL, 'dgst', '-sha256', '-sign', key,
                '-out', signature, tarball]
 
     __logging_info('updater_verify: exec: %s', str(cmdline))
