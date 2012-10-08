@@ -205,10 +205,12 @@ class RawClient(Handler):
 
     def _periodic(self, *args):
         ''' Periodically snap goodput '''
-        deferred = Deferred()
-        deferred.add_callback(self._periodic_internal)
-        deferred.add_errback(lambda err: self._periodic_error(args[0], err))
-        deferred.callback(args[0])
+        stream = args[0]
+        if stream.opaque:
+            deferred = Deferred()
+            deferred.add_callback(self._periodic_internal)
+            deferred.add_errback(lambda err: self._periodic_error(stream, err))
+            deferred.callback(stream)
 
     @staticmethod
     def _periodic_error(stream, err):
@@ -219,25 +221,24 @@ class RawClient(Handler):
     def _periodic_internal(self, stream):
         ''' Periodically snap goodput (internal function) '''
         context = stream.opaque
-        if context:
-            utime, stime = os.times()[:2]
-            utimediff = utime - context.snap_utime
-            stimediff = stime - context.snap_stime
-            ticks = utils.ticks()
-            timediff = ticks - context.snap_ticks
-            bytesdiff = stream.bytes_in - context.snap_count
-            context.state.setdefault('goodput_snap', []).append({
-              'ticks': ticks, 'bytesdiff': bytesdiff, 'timediff': timediff,
-              'utimediff': utimediff, 'stimediff': stimediff})
-            logging.debug('raw_clnt: utime, stime = %f, %f', utime, stime)
-            if timediff > 1e-06:
-                speed = utils.speed_formatter(bytesdiff / timediff)
-                logging.debug('raw_clnt: goodput_snap: %s', speed)
-            context.snap_count = stream.bytes_in
-            context.snap_ticks = ticks
-            context.snap_utime = utime
-            context.snap_stime = stime
-            POLLER.enter(1, 0, self._periodic, (stream,))
+        utime, stime = os.times()[:2]
+        utimediff = utime - context.snap_utime
+        stimediff = stime - context.snap_stime
+        ticks = utils.ticks()
+        timediff = ticks - context.snap_ticks
+        bytesdiff = stream.bytes_in - context.snap_count
+        context.state.setdefault('goodput_snap', []).append({
+          'ticks': ticks, 'bytesdiff': bytesdiff, 'timediff': timediff,
+          'utimediff': utimediff, 'stimediff': stimediff})
+        logging.debug('raw_clnt: utime, stime = %f, %f', utime, stime)
+        if timediff > 1e-06:
+            speed = utils.speed_formatter(bytesdiff / timediff)
+            logging.debug('raw_clnt: goodput_snap: %s', speed)
+        context.snap_count = stream.bytes_in
+        context.snap_ticks = ticks
+        context.snap_utime = utime
+        context.snap_stime = stime
+        POLLER.enter(1, 0, self._periodic, (stream,))
 
     def _connection_lost(self, stream):
         ''' Invoked when the connection is lost '''
