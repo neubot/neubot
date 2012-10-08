@@ -26,6 +26,8 @@
   node, or a random node).
 '''
 
+# Python3-ready: yes
+
 import getopt
 import logging
 import sys
@@ -90,7 +92,7 @@ class RunnerMlabns(HttpClient):
         #self.append_header(stream, 'Connection', 'close')
         self.append_end_of_headers(stream)
         self.send_message(stream)
-        context.body = six.StringIO()  # Want to save body
+        context.body = http_utils.Body()  # Want to save body
         extra['requests'] += 1
 
     def handle_end_of_body(self, stream):
@@ -105,7 +107,8 @@ class RunnerMlabns(HttpClient):
             logging.error('runner_mlabns: bad response')
             stream.close()
             return
-        response = json.loads(six.u(context.body.getvalue()))
+        content = six.bytes_to_string(context.body.getvalue(), 'utf-8')
+        response = json.loads(content)
         http_utils.prettyprint_json(response, '<')
         if extra['policy'] == 'random':
             RUNNER_HOSTS.set_random_node(response)

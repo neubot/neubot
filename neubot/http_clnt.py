@@ -23,6 +23,7 @@
 ''' HTTP client '''
 
 # Adapted from neubot/http/stream.py
+# Python3-ready: yes
 
 import collections
 import getopt
@@ -262,7 +263,7 @@ class HttpClient(Handler):
         ''' Handles the FIRSTLINE event '''
         context = stream.opaque
         line = line.rstrip()
-        logging.debug('< %s', line)
+        logging.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
         vector = line.split(None, 2)
         if len(vector) != 3:
             raise RuntimeError('http_clnt: invalid first line')
@@ -290,7 +291,7 @@ class HttpClient(Handler):
             logging.debug('<')
             handle_done(stream)
             return
-        logging.debug('< %s', line)
+        logging.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
         index = line.find(COLON)
         if index >= 0:
             name, value = line.split(COLON, 1)

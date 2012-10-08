@@ -28,6 +28,21 @@ import logging
 from neubot.compat import json
 from neubot import six
 
+class Body(object):
+    ''' Body that contains bytes '''
+    def __init__(self):
+        self.queue = []
+
+    def write(self, octets):
+        ''' Write octets into body '''
+        self.queue.append(octets)
+
+    def getvalue(self):
+        ''' Return bufferized data '''
+        data = six.b('').join(self.queue)
+        del self.queue[:]
+        return data
+
 def urlsplit(uri):
     ''' Wrapper for urlparse.urlsplit() '''
 

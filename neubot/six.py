@@ -383,6 +383,9 @@ if PY3:
     def bytes_to_string(octets, encoding):
         return str(octets, encoding)
 
+    def bytes_to_string_safe(octets, encoding):
+        return str(octets, encoding, errors='ignore')
+
 else:
     def buff(string, offset, size=None):
         if not size:
@@ -393,4 +396,7 @@ else:
     from neubot.simplejson.ordered_dict import OrderedDict
 
     def bytes_to_string(octets, encoding):
+        return octets
+
+    def bytes_to_string_safe(octets, encoding):
         return octets
