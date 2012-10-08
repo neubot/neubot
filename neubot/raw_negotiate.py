@@ -135,7 +135,6 @@ class RawNegotiate(HttpClient):
         self.append_bytes(stream, body)
         http_utils.prettyprint_json(request, '>')
         self.send_message(stream)
-        context = stream.opaque
         context.body = six.StringIO()  # Want to save body
         extra['requests'] += 1
 
