@@ -135,15 +135,15 @@ PYTHON = python
 # [1] http://bit.ly/aLduJz (gnu.org)
 # [2] http://bit.ly/ayYyAR (debian.org)
 #
-DESTDIR =
-PREFIX = /usr/local
+DESTDIR ?=
+PREFIX ?= /usr/local
 
-BINDIR = $(PREFIX)/bin
-DATADIR = $(PREFIX)/share
-LOCALSTATEDIR = $(PREFIX)/var
-MANDIR = $(PREFIX)/share/man
-SYSCONFDIR = $(PREFIX)/etc
-USER = '_neubot'
+BINDIR ?= $(PREFIX)/bin
+DATADIR ?= $(PREFIX)/share
+LOCALSTATEDIR ?= $(PREFIX)/var
+MANDIR ?= $(PREFIX)/share/man
+SYSCONFDIR ?= $(PREFIX)/etc
+USER ?= '_neubot'
 
 _install:
 	find . -type f -name .DS_Store -exec rm {} \;
