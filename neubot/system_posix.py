@@ -32,6 +32,14 @@
 # the latter can.
 #
 
+#
+# By default use `nobody`, so it's possible to develop Neubot on UNIX systems
+# where the `_neubot` user does not exist.
+#
+USER = '@USER@'
+if USER.startswith('@'):
+    USER='nobody'
+
 import pwd
 import os.path
 import signal
@@ -90,7 +98,7 @@ def change_dir():
 def _want_rwx_dir(datadir):
 
     '''
-     This function ensures that the user ``_neubot`` is the
+     This function ensures that the user `USER` is the
      owner of the directory that contains Neubot database.
      Otherwise sqlite3 fails to lock the database for writing
      (it creates a lockfile for that).
@@ -104,7 +112,7 @@ def _want_rwx_dir(datadir):
 
     # Change directory ownership
     if os.getuid() == 0:
-        passwd = lookup_user_info('_neubot')
+        passwd = lookup_user_info(USER)
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
@@ -124,7 +132,7 @@ def go_background():
     if os.fork() > 0:
         os._exit(0)
 
-def drop_privileges(user='_neubot'):
+def drop_privileges(user=USER):
 
     '''
      Drop root privileges and run on behalf of the specified
@@ -152,7 +160,7 @@ def _want_rw_file(path):
     '''
      Ensure that the given file is readable and writable
      by its owner.  If running as root force ownership
-     to be of the unprivileged ``_neubot`` user.
+     to be of the unprivileged `USER` user.
     '''
 
     # Create file if non-existent
@@ -161,7 +169,7 @@ def _want_rw_file(path):
 
     # Enforce file ownership
     if os.getuid() == 0:
-        passwd = lookup_user_info('_neubot')
+        passwd = lookup_user_info(USER)
         os.chown(path, passwd.pw_uid, passwd.pw_gid)
 
     # Set permissions
