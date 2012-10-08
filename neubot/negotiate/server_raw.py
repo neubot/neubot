@@ -75,7 +75,6 @@ class NegotiateServerRaw(NegotiateServerModule):
               sha512.encode('hex'))
             complete_result = {'client': request_body, 'server': result}
             BACKEND.store_raw(complete_result)
-            result['web100_snap'] = {}  # XXX disabled for 0.4.15
             return result
 
     def _update_peers(self, stream, ignored):

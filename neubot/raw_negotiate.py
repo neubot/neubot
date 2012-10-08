@@ -291,6 +291,7 @@ class RawNegotiate(HttpClient):
     def _save_results(opaque):
         ''' Save test results '''
         local_result, remote_result = opaque
+        remote_result['web100_snap'] = {}  # XXX disabled for 0.4.15
         complete_result = {'client': local_result, 'server': remote_result}
         BACKEND.store_raw(complete_result)
 
