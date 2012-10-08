@@ -190,5 +190,5 @@ class ServerAPI(ServerHTTP):
     @staticmethod
     def _api_exit(stream, request, query):
         ''' Implements /api/exit URI '''
-        # Break out of the loop immediately
-        POLLER.break_loop()
+        # This is the expedite way of breaking out of poller loop
+        raise KeyboardInterrupt('api_server: received /api/exit request')

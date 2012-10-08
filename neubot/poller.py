@@ -68,9 +68,6 @@ class Task(object):
         return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
           self.__dict__)
 
-class StopPoller(Exception):
-    ''' Raise when we should stop polling '''
-
 class Poller(sched.scheduler):
 
     ''' Dispatch read, write, periodic and other events '''
@@ -184,12 +181,10 @@ class Poller(sched.scheduler):
         while True:
             try:
                 self.run()
-            except (KeyboardInterrupt, SystemExit):
+            except (SystemExit, select.error):
                 raise
-            except select.error:
-                raise
-            except StopPoller:
-                break
+            except KeyboardInterrupt:
+                break  # overriden semantic: break out of poller loop NOW
             except:
                 logging.error('poller: unhandled exception', exc_info=1)
 
@@ -198,7 +193,7 @@ class Poller(sched.scheduler):
 
         # Immediately break out of the loop if requested to do so
         if not self.again:
-            raise StopPoller('self.again is False')
+            raise KeyboardInterrupt('poller: self.again is false')
 
         # Monitor streams readability/writability
         elif self.readset or self.writeset:
@@ -226,7 +221,7 @@ class Poller(sched.scheduler):
 
         # No I/O pending?  Break out of the loop.
         else:
-            raise StopPoller('No I/O pending')
+            raise KeyboardInterrupt('poller: no I/O pending')
 
     def check_timeout(self):
         ''' Dispatch the periodic event '''
