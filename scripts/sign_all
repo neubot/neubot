@@ -41,4 +41,4 @@ fi
 while [ $# -gt 0 ]; do
     openssl_sign $1
     shift
-done 
+done
