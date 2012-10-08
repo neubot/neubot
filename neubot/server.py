@@ -177,16 +177,18 @@ valid backends:
   null   Do not save results but pretend to do so
 
 valid defines:
-  bittorrent Set to nonzero to enable BitTorrent server (default: 1)
-  daemonize  Set to nonzero to run in the background (default: 1)
-  debug      Set to nonzero to enable localhost only debug API (default: 0)
-  negotiate  Set to nonzero to enable negotiate server (default: 1)
-  rendezvous Set to nonzero to enable rendezvous server (default: 0)
-  sapi       Set to nonzero to enable nagios API (default: 1)
-  speedtest  Set to nonzero to enable speedtest server (default: 1)'''
+  server.bittorrent Set to nonzero to enable BitTorrent server (default: 1)
+  server.daemonize  Set to nonzero to run in the background (default: 1)
+  server.debug      Set to nonzero to enable debug API (default: 0)
+  server.negotiate  Set to nonzero to enable negotiate server (default: 1)
+  server.raw        Set to nonzero to enable RAW server (default: 1)
+  server.rendezvous Set to nonzero to enable rendezvous server (default: 0)
+  server.sapi       Set to nonzero to enable nagios API (default: 1)
+  server.speedtest  Set to nonzero to enable speedtest server (default: 1)'''
 
-VALID_MACROS = ('bittorrent', 'daemonize', 'debug', 'negotiate', 'rendezvous',
-                'sapi', 'speedtest')
+VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.debug',
+                'server.negotiate', 'server.raw', 'server.rendezvous',
+                'server.sapi', 'server.speedtest')
 
 def main(args):
     """ Starts the server module """
@@ -206,7 +208,6 @@ def main(args):
             name, value = value.split('=', 1)
             if name not in VALID_MACROS:
                 sys.exit(USAGE)
-            name = 'server.' + name
             SETTINGS[name] = int(value)
         elif name == '-d':
             SETTINGS['server.daemonize'] = 0
@@ -241,9 +242,11 @@ def main(args):
     # New-new style: don't bother with abstraction and start the fucking
     # server by invoking its listen() method.
     #
-    logging.debug('server: starting raw server... in progress')
-    RAW_SERVER_EX.listen((":: 0.0.0.0", 12345), CONFIG['prefer_ipv6'], 0, '')
-    logging.debug('server: starting raw server... complete')
+    if CONFIG['server.raw']:
+        logging.debug('server: starting raw server... in progress')
+        RAW_SERVER_EX.listen((":: 0.0.0.0", 12345),
+          CONFIG['prefer_ipv6'], 0, '')
+        logging.debug('server: starting raw server... complete')
 
     #
     # New-style modules are started just setting a
