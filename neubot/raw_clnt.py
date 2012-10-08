@@ -179,7 +179,7 @@ class RawClient(Handler):
                     context.ticks = context.snap_ticks = utils.ticks()
                     context.count = context.snap_count = stream.bytes_in
                     context.snap_utime, context.snap_stime = os.times()[:2]
-                    POLLER.enter(1, 0, self._periodic, (stream,))
+                    POLLER.sched(1, self._periodic, stream)
                 if context.left == 0:
                     logging.debug('< {empty-message}')
                     logging.info('raw_clnt: raw goodput test... complete')
@@ -204,7 +204,7 @@ class RawClient(Handler):
                 raise RuntimeError('raw_clnt: internal error')
         stream.recv(MAXRECV, self._waiting_piece)
 
-    def _periodic(self, *args):
+    def _periodic(self, args):
         ''' Periodically snap goodput '''
         stream = args[0]
         if stream.opaque:
@@ -212,7 +212,7 @@ class RawClient(Handler):
             deferred.add_callback(self._periodic_internal)
             deferred.add_errback(lambda err: self._periodic_error(stream, err))
             deferred.callback(stream)
-            POLLER.enter(1, 0, self._periodic, (stream,))
+            POLLER.sched(1, self._periodic, stream)
 
     @staticmethod
     def _periodic_error(stream, err):

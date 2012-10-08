@@ -153,7 +153,7 @@ class RawServer(Handler):
         context.message = struct.pack('!I', len(message)) + message
         stream.send(context.message, self._piece_sent)
         #logging.debug('> PIECE')
-        POLLER.enter(1, 0, self._periodic, (stream,))
+        POLLER.sched(1, self._periodic, stream)
         stream.recv(1, self._waiting_eof)
 
     @staticmethod
@@ -189,7 +189,7 @@ class RawServer(Handler):
         stream.send(EMPTY_MESSAGE, self._empty_message_sent)
         logging.debug('> {empty-message}')
 
-    def _periodic(self, *args):
+    def _periodic(self, args):
         ''' Periodically snap goodput '''
         stream = args[0]
         if stream.opaque:
@@ -197,7 +197,7 @@ class RawServer(Handler):
             deferred.add_callback(self._periodic_internal)
             deferred.add_errback(lambda err: self._periodic_error(stream, err))
             deferred.callback(stream)
-            POLLER.enter(1, 0, self._periodic, (stream,))
+            POLLER.sched(1, self._periodic, stream)
 
     @staticmethod
     def _periodic_error(stream, err):

@@ -1,8 +1,9 @@
 # neubot/poller.py
 
 #
-# Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2010, 2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -47,27 +48,6 @@ CHECK_TIMEOUT = 10
 #
 WATCHDOG = 300
 
-class Task(object):
-
-    ''' A pending task '''
-
-    #
-    # We need to add timestamp because ticks() might be just the
-    # time since neubot started (as happens with Windows).
-    # In particular timestamp is used to print the timestamp of
-    # the next rendezvous in <rendezvous/client.py>.
-    #
-    def __init__(self, delta, func):
-        ''' Initialize '''
-        self.time = ticks() + delta
-        self.timestamp = timestamp() + int(delta)
-        self.func = func
-
-    def __repr__(self):
-        ''' Task representation '''
-        return ("Task: time=%(time)f timestamp=%(timestamp)d func=%(func)s" %
-          self.__dict__)
-
 class Poller(sched.scheduler):
 
     ''' Dispatch read, write, periodic and other events '''
@@ -89,17 +69,21 @@ class Poller(sched.scheduler):
         self.writeset = {}
         self.check_timeout()
 
-    def sched(self, delta, func):
+    def sched(self, delta, func, *args):
         ''' Schedule task '''
-        task = Task(delta, func)
-        self.enter(delta, 0, self._run_task, (task,))
-        return task
+        #logging.debug('poller: sched: %s, %s, %s', delta, func, args)
+        self.enter(delta, 0, self._run_task, (func, args))
+        return timestamp() + delta
 
     @staticmethod
-    def _run_task(task):
+    def _run_task(func, args):
         ''' Safely run task '''
+        #logging.debug('poller: run_task: %s, %s', func, args)
         try:
-            task.func()
+            if args:
+                func(args)
+            else:
+                func()
         except (KeyboardInterrupt, SystemExit):
             raise
         except:

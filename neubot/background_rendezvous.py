@@ -141,9 +141,9 @@ class BackgroundRendezvous(object):
         ''' Schedule next rendezvous after interval seconds '''
         logging.info('background_rendezvous: next rendezvous in %d seconds',
                      interval)
-        task = POLLER.sched(interval, self.run)
+        timestamp = POLLER.sched(interval, self.run)
         STATE.update('idle', publish=False)
-        STATE.update('next_rendezvous', task.timestamp)
+        STATE.update('next_rendezvous', timestamp)
 
     def start(self):
         ''' Start automatic rendezvous '''
