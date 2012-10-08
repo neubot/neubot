@@ -185,6 +185,7 @@ class RawServer(Handler):
         if timediff > 1e-06:
             speed = utils.speed_formatter(bytesdiff / timediff)
             logging.info('raw_srvr: goodput: %s', speed)
+        self._periodic_internal(stream)
         stream.send(EMPTY_MESSAGE, self._empty_message_sent)
         logging.debug('> {empty-message}')
 
@@ -196,6 +197,7 @@ class RawServer(Handler):
             deferred.add_callback(self._periodic_internal)
             deferred.add_errback(lambda err: self._periodic_error(stream, err))
             deferred.callback(stream)
+            POLLER.enter(1, 0, self._periodic, (stream,))
 
     @staticmethod
     def _periodic_error(stream, err):
@@ -227,7 +229,6 @@ class RawServer(Handler):
         context.snap_ticks = ticks
         context.snap_utime = utime
         context.snap_stime = stime
-        POLLER.enter(1, 0, self._periodic, (stream,))
 
     @staticmethod
     def _empty_message_sent(stream):

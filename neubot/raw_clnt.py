@@ -196,6 +196,7 @@ class RawClient(Handler):
                         logging.info('raw_clnt: goodput: %s', speed)
                         STATE.update('test_download', speed, publish=0)
                         STATE.update('test_upload', 'N/A')
+                    self._periodic_internal(stream)
                     context.state['complete'] = 1
                     stream.close()
                     return
@@ -211,6 +212,7 @@ class RawClient(Handler):
             deferred.add_callback(self._periodic_internal)
             deferred.add_errback(lambda err: self._periodic_error(stream, err))
             deferred.callback(stream)
+            POLLER.enter(1, 0, self._periodic, (stream,))
 
     @staticmethod
     def _periodic_error(stream, err):
@@ -238,7 +240,6 @@ class RawClient(Handler):
         context.snap_ticks = ticks
         context.snap_utime = utime
         context.snap_stime = stime
-        POLLER.enter(1, 0, self._periodic, (stream,))
 
     def _connection_lost(self, stream):
         ''' Invoked when the connection is lost '''
