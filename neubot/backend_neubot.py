@@ -42,6 +42,7 @@ class BackendNeubot(BackendNull):
 
     def bittorrent_store(self, message):
         ''' Saves the results of a bittorrent test '''
+        DATABASE.connect()
         if DATABASE.readonly:
             logging.warning('backend_neubot: readonly database')
             return
@@ -49,6 +50,7 @@ class BackendNeubot(BackendNull):
 
     def store_raw(self, message):
         ''' Saves the results of a raw test '''
+        DATABASE.connect()
         if DATABASE.readonly:
             logging.warning('backend_neubot: readonly database')
             return
@@ -56,6 +58,7 @@ class BackendNeubot(BackendNull):
 
     def speedtest_store(self, message):
         ''' Saves the results of a speedtest test '''
+        DATABASE.connect()
         if DATABASE.readonly:
             logging.warning('backend_neubot: readonly database')
             return
