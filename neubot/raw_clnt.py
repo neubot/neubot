@@ -220,7 +220,8 @@ class RawClient(Handler):
         logging.warning('raw_clnt: _periodic_internal() failed: %s', err)
         stream.close()
 
-    def _periodic_internal(self, stream):
+    @staticmethod
+    def _periodic_internal(stream):
         ''' Periodically snap goodput (internal function) '''
         context = stream.opaque
         utime, stime = os.times()[:2]
