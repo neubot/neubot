@@ -1,7 +1,0 @@
-MacOS icon
-''''''''''
-
-To convert a .png or .svg icon to MacOSX .icns use the following
-web service::
-
-	http://www.img2icnsapp.com/
