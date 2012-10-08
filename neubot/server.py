@@ -163,6 +163,7 @@ SETTINGS = {
     "server.daemonize": True,
     'server.debug': False,
     "server.negotiate": True,
+    "server.raw": True,
     "server.rendezvous": False,         # Not needed on the random server
     "server.sapi": True,
     "server.speedtest": True,
