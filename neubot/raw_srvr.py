@@ -220,6 +220,7 @@ class RawServer(Handler):
                 logging.debug('raw_srvr: goodput_snap: %s', speed)
             web100_snap = web100.web100_snap(web100.WEB100_HEADER,
               context.web100_dirname)
+            web100_snap['ticks'] = ticks
             context.state.setdefault('web100_snap', []).append(web100_snap)
             context.snap_count = stream.bytes_out
             context.snap_ticks = ticks
