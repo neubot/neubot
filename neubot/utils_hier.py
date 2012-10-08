@@ -114,7 +114,10 @@ else:
 # But we always define it to keep the code plain and uniform.
 #
 if os.name == 'posix':
-    SYSCONFDIR = '/etc/neubot'
+    SYSCONFDIR = '@SYSCONFDIR@'
+    if SYSCONFDIR.startswith('@'):
+        SYSCONFDIR = '/etc'
+    SYSCONFDIR += '/neubot'
 elif os.name == 'nt':
     SYSCONFDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
 else:
@@ -136,10 +139,12 @@ else:
 # user ``foo``.
 #
 if os.name == 'posix':
+    LOCALSTATEDIR = '@LOCALSTATEDIR@'
+    if LOCALSTATEDIR.startswith('@'):
+        LOCALSTATEDIR = '/var'
     if sys.platform.startswith('linux'):
-        LOCALSTATEDIR = '/var/lib/neubot'
-    else:
-        LOCALSTATEDIR = '/var/neubot'
+        LOCALSTATEDIR += '/lib'
+    LOCALSTATEDIR += '/neubot'
 elif os.name == 'nt':
     LOCALSTATEDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
 else:

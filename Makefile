@@ -189,11 +189,13 @@ _install:
 	done
 	$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)/neubot
 	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g' \
-	        's|@LOCALSTATEDIR@|$(LOCALSTATEDIR)|g'; do \
+	        's|@LOCALSTATEDIR@|$(LOCALSTATEDIR)|g' \
+	        's|@SYSCONFDIR@|$(SYSCONFDIR)|g'; do \
 	    ./scripts/sed_inplace $$PATTERN \
 	        $(DESTDIR)$(BINDIR)/neubot \
 	        $(DESTDIR)$(DATADIR)/applications/neubot.desktop \
 	        $(DESTDIR)$(DATADIR)/neubot/notifier/unix.py \
+	        $(DESTDIR)$(DATADIR)/neubot/utils_hier.py \
 	        $(DESTDIR)$(DATADIR)/neubot/viewer_webkit_gtk.py \
 	        $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop; \
 	    test $$? || exit 1; \
