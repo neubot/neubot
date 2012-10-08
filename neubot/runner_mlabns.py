@@ -48,9 +48,7 @@ from neubot import utils_version
 
 APPLICATION_JSON = six.b('application/json')
 CODE200 = six.b('200')
-CODE302 = six.b('302')
 CONTENT_TYPE = six.b('content-type')
-LOCATION = 'location'
 
 class RunnerMlabns(HttpClient):
     ''' Runner client for mlab-ns '''
