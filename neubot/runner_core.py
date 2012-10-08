@@ -45,14 +45,17 @@ from neubot.defer import Deferred
 from neubot.log import STREAMING_LOG
 from neubot.notify import NOTIFIER
 from neubot.raw_negotiate import RawNegotiate
-from neubot.runner_tests import RUNNER_TESTS
 from neubot.runner_dload import RunnerDload
+from neubot.runner_mlabns import RunnerMlabns
+from neubot.runner_tests import RUNNER_TESTS
 
 from neubot import bittorrent
 from neubot import http_utils
 from neubot import privacy
 from neubot import runner_rendezvous
 from neubot import system
+
+NO_AUTO_RENDEZVOUS = ('dload', 'mlab-ns', 'rendezvous')
 
 class RunnerCore(object):
 
@@ -74,7 +77,7 @@ class RunnerCore(object):
         # available tests is empty, we need certainly to
         # refill it before proceeding.
         #
-        if (auto_rendezvous and test != 'rendezvous' and
+        if (auto_rendezvous and test not in NO_AUTO_RENDEZVOUS and
           len(RUNNER_TESTS.get_test_names()) == 0):
             logging.info('runner_core: Need to rendezvous first...')
             deferred2 = Deferred()
@@ -170,6 +173,15 @@ class RunnerCore(object):
             address, port = http_utils.urlsplit(uri)[1:3]
             handler.connect((address, port), CONFIG['prefer_ipv6'], 0, {})
 
+        elif first_elem[0] == 'mlab-ns':
+            handler = RunnerMlabns()
+            if not first_elem[2]:
+                extra = {'policy': ''}  # get closest server by default
+            else:
+                extra = first_elem[2]
+            handler.connect(('mlab-ns.appspot.com', 80),
+              CONFIG['prefer_ipv6'], 0, extra)
+
         else:
             raise RuntimeError('runner_core: asked to run an unknown test')
 
@@ -208,15 +220,15 @@ class RunnerCore(object):
 
 RUNNER_CORE = RunnerCore()
 
+USAGE = 'usage: neubot runner_core [-nv] [-f dabatase] test [uri]'
+
 def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'f:n')
+        options, arguments = getopt.getopt(args[1:], 'f:nv')
     except getopt.error:
-        sys.exit('Usage: %s [-n] [-f database] test [negotiate_uri]' % args[0])
-    if len(arguments) != 1 and len(arguments) != 2:
-        sys.exit('Usage: %s [-n] [-f database] test [negotiate_uri]' % args[0])
+        sys.exit(USAGE)
 
     database_path = system.get_default_database_path()
     auto_rendezvous = True
@@ -225,6 +237,11 @@ def main(args):
             database_path = value
         elif name == '-n':
             auto_rendezvous = False
+        elif name == '-v':
+            CONFIG['verbose'] = 1
+
+    if len(arguments) != 1 and len(arguments) != 2:
+        sys.exit(USAGE)
 
     DATABASE.set_path(database_path)
     CONFIG.merge_database(DATABASE.connection())
