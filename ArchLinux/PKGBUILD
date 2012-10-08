@@ -19,7 +19,7 @@ source=("http://releases.neubot.org/_packages/$pkgname-$pkgver.tar.gz" 'neubot')
 
 build() {
   cd "$srcdir/$pkgname-$pkgver"
-  make PREFIX=/usr DESTDIR=$pkgdir PYTHON=python2.7 install
+  make PREFIX=/usr SYSCONFDIR=/etc LOCALSTATEDIR=/var/lib DESTDIR=$pkgdir PYTHON=python2.7 install
   install -d ${pkgdir}/etc/rc.d/
   install  -o 0 -g 0 -m755 $srcdir/neubot ${pkgdir}/etc/rc.d/
   sed -i -e 's/#!\/usr\/bin\/env python/#!\/usr\/bin\/env python2/' ${pkgdir}/usr/bin/neubot

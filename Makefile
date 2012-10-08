@@ -131,19 +131,18 @@ PYTHON = python
 # We install neubot in $(DATADIR)/neubot following sect.
 # 3.1.1 of Debian Python Policy which covers the shipping
 # of private modules [2].
-# We follow BSD hier(7) and we install manual pages in
-# /usr/local/man by default.
 #
 # [1] http://bit.ly/aLduJz (gnu.org)
 # [2] http://bit.ly/ayYyAR (debian.org)
 #
 DESTDIR =
-SYSCONFDIR = /etc
-LOCALSTATEDIR = $(python neubot/utils_sysdirs.py LOCALSTATEDIR)
 PREFIX = /usr/local
+
 BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
-MANDIR = $(PREFIX)/man
+LOCALSTATEDIR = $(PREFIX)/var
+MANDIR = $(PREFIX)/share/man
+SYSCONFDIR = $(PREFIX)/etc
 
 _install:
 	find . -type f -name .DS_Store -exec rm {} \;
@@ -188,7 +187,7 @@ _install:
 	    $(INSTALL) -m644 $$FILE $(DESTDIR)$(DATADIR)/$$FILE; \
 	    test $$? || exit 1; \
 	done
-	$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)
+	$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)/neubot
 	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g' \
 	        's|@LOCALSTATEDIR@|$(LOCALSTATEDIR)|g'; do \
 	    ./scripts/sed_inplace $$PATTERN \
@@ -234,8 +233,8 @@ DEB_PACKAGE = dist/neubot-$(VERSION)-1_all.deb
 DEB_PACKAGE_NOX = dist/neubot-nox-$(VERSION)-1_all.deb
 
 _deb_data:
-	make -f Makefile _install DESTDIR=dist/data \
-	    PREFIX=/usr MANDIR=/usr/share/man
+	make -f Makefile _install DESTDIR=dist/data PREFIX=/usr \
+	    LOCALSTATEDIR=/var/lib SYSCONFDIR=/etc
 	$(INSTALL) -d dist/data/etc/apt/sources.list.d
 	$(INSTALL) -m644 Debian/neubot.list dist/data/etc/apt/sources.list.d/
 	$(INSTALL) -d dist/data/etc/cron.daily
