@@ -192,13 +192,14 @@ class ErrbackToCallback(unittest.TestCase):
     def _callback(self, result):
         ''' Function that is invoked as callback and fails '''
         self.count_callbacks += 1
-        return 1.0 / result
+        return 1 / result
 
     def _errback(self, failure):
         ''' Function invoked as errback '''
         self.count_errbacks += 1
         self.assertEqual(failure.type, ZeroDivisionError)
-        self.assertEqual(str(failure.value), 'float division by zero')
+        self.assertEqual(str(failure.value),
+          'integer division or modulo by zero')
         return 65537
 
 class PingPong(unittest.TestCase):
@@ -215,25 +216,26 @@ class PingPong(unittest.TestCase):
         deferred.add_errback(self._errback)
         deferred.add_callback(self._callback)
         deferred.add_callback(self._callback)
-        deferred.add_callback(self._callback)
         deferred.add_errback(self._errback)
+        deferred.add_callback(self._callback)
         deferred.add_errback(self._errback)
 
         _call(deferred.callback, 0)
 
         self.assertEqual(self.count_callbacks, 2)
-        self.assertEqual(self.count_errbacks, 1)
+        self.assertEqual(self.count_errbacks, 2)
 
     def _callback(self, result):
         ''' Function invoked as callback '''
         self.count_callbacks += 1
-        return 1.0 / result
+        return 1 / result
 
     def _errback(self, failure):
         ''' Function invoked as errback '''
         self.count_errbacks += 1
         self.assertEqual(failure.type, ZeroDivisionError)
-        self.assertEqual(str(failure.value), 'float division by zero')
+        self.assertEqual(str(failure.value),
+          'integer division or modulo by zero')
         return 0
 
 if __name__ == '__main__':
