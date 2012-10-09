@@ -30,6 +30,11 @@ Release procedure
     #. Make sure that Neubot autoupdates on a Windows machine
        where it was already installed.
 
+#. Make sure that Windows installer is not identified as a
+   virus by <http://www.virustotal.com/>.
+
+#. Deploy the new Neubot version on Measurement Lab.
+
 #. Install Neubot on a Debian machine and:
 
      #. make sure it prompts for privacy settings during the
@@ -66,9 +71,6 @@ Release procedure
 #. Read the manual page, make sure it's still relevant and
    that there are no changes to be performed.
 
-#. Make sure that Windows installer is not identified as a
-   virus by <http://www.virustotal.com/>.
-
 #. Deploy packages on the releases server using the following
    convenience script::
 
@@ -83,8 +85,6 @@ Release procedure
    to date with reality.
 
 #. Publish SHA256 sums at wiki/sha256.
-
-#. Deploy the new Neubot version on Measurement Lab.
 
 #. Announce the availability of the new version.
 
