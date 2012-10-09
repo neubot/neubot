@@ -46,6 +46,7 @@ from neubot.log import STREAMING_LOG
 from neubot.notify import NOTIFIER
 from neubot.raw_negotiate import RawNegotiate
 from neubot.runner_dload import RunnerDload
+from neubot.runner_hosts import RUNNER_HOSTS
 from neubot.runner_mlabns import RunnerMlabns
 from neubot.runner_tests import RUNNER_TESTS
 
@@ -54,8 +55,6 @@ from neubot import http_utils
 from neubot import privacy
 from neubot import runner_rendezvous
 from neubot import system
-
-NO_AUTO_RENDEZVOUS = ('dload', 'mlab-ns', 'rendezvous')
 
 class RunnerCore(object):
 
@@ -70,19 +69,18 @@ class RunnerCore(object):
         ''' Reports whether a test is running '''
         return self.running
 
-    def run(self, test, deferred, auto_rendezvous=True, ctx=None):
+    def run(self, test, deferred, auto_discover=True, ctx=None):
         ''' Run test and deferred when done '''
-        #
-        # If we are about to run a test and the list of
-        # available tests is empty, we need certainly to
-        # refill it before proceeding.
-        #
-        if (auto_rendezvous and test not in NO_AUTO_RENDEZVOUS and
-          len(RUNNER_TESTS.get_test_names()) == 0):
-            logging.info('runner_core: Need to rendezvous first...')
+        # Always refresh adjacent servers before running a transmission test
+        if auto_discover:
+            logging.info('runner_core: Need to auto-discover first...')
             deferred2 = Deferred()
             deferred2.add_callback(lambda param: None)
-            self.queue.append(('rendezvous', deferred2, None))
+            if test == 'raw':
+                # Raw uses mlab-ns and wants a random server
+                self.queue.append(('mlab-ns', deferred2, {'policy': 'random'}))
+            else:
+                self.queue.append(('rendezvous', deferred2, None))
         self.queue.append((test, deferred, ctx))
         self.run_queue()
 
@@ -162,16 +160,9 @@ class RunnerCore(object):
             RunnerDload(first_elem[2])
 
         elif first_elem[0] == 'raw':
-            uri = RUNNER_TESTS.test_to_negotiate_uri('raw')
-            #
-            # If we have no negotiate URI for this test, possibly
-            # because we are offline, abort it.
-            #
-            if not uri:
-                raise RuntimeError('runner_core: No URI for RAW')
+            address = RUNNER_HOSTS.get_random_host()
             handler = RawNegotiate()
-            address, port = http_utils.urlsplit(uri)[1:3]
-            handler.connect((address, port), CONFIG['prefer_ipv6'], 0, {})
+            handler.connect((address, 8080), CONFIG['prefer_ipv6'], 0, {})
 
         elif first_elem[0] == 'mlab-ns':
             handler = RunnerMlabns()
@@ -231,12 +222,12 @@ def main(args):
         sys.exit(USAGE)
 
     database_path = system.get_default_database_path()
-    auto_rendezvous = True
+    auto_discover = True
     for name, value in options:
         if name == '-f':
             database_path = value
         elif name == '-n':
-            auto_rendezvous = False
+            auto_discover = False
         elif name == '-v':
             CONFIG['verbose'] = 1
 
@@ -254,7 +245,7 @@ def main(args):
 
     deferred = Deferred()
     deferred.add_callback(lambda param: None)
-    RUNNER_CORE.run(arguments[0], deferred, auto_rendezvous, ctx)
+    RUNNER_CORE.run(arguments[0], deferred, auto_discover, ctx)
     POLLER.loop()
 
 if __name__ == '__main__':

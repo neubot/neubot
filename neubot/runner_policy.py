@@ -28,6 +28,7 @@ import random
 
 TEST_NAMES = [
               'bittorrent',
+              'raw',
               'speedtest',
              ]
 

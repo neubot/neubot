@@ -35,12 +35,6 @@ from neubot.runner_hosts import RUNNER_HOSTS
 
 from neubot import utils_net
 
-STATIC_TESTS = {
-    'raw': [
-        'http://neubot.mlab.mlab4.nuq01.measurement-lab.org:8080/',
-    ],
-}
-
 class RunnerTests(object):
 
     ''' Implements list of available tests '''
@@ -56,8 +50,6 @@ class RunnerTests(object):
         ''' Update the list of available tests '''
         # For now just trust what the rendezvous passes us
         self.avail = avail
-        for name, vector in STATIC_TESTS.items():
-            self.avail.setdefault(name, []).extend(vector)
 
     def test_to_negotiate_uri(self, test):
         ''' Map test to its negotiate URI '''
@@ -69,9 +61,5 @@ class RunnerTests(object):
             endpoint = (fqdn, 8080)
             uri = 'http://%s/' % utils_net.format_epnt(endpoint)
             return uri
-
-    def get_test_names(self):
-        ''' Return names of all registered tests '''
-        return self.avail.keys()
 
 RUNNER_TESTS = RunnerTests()

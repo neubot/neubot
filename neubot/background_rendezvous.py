@@ -110,10 +110,19 @@ class BackgroundRendezvous(object):
             raise RuntimeError('background_rendezvous: automatic '
                                'tests disabled')
 
+        #
+        # RAW test requires auto_discover to be True, since it uses mlab-ns
+        # to discover servers.  Other tests don't need that, since, at the
+        # moment, they discover servers during the rendezvous.  So, if their
+        # auto_discover were True, they'd end up running two rendezvous in
+        # a row for no good reason.
+        #
+        auto_discover = (test == 'raw')
+
         # Actually run the test
         deferred = Deferred()
         deferred.add_callback(self._schedule)
-        RUNNER_CORE.run(test, deferred, False, None)
+        RUNNER_CORE.run(test, deferred, auto_discover, None)
 
     def _schedule(self, exception):
         ''' Schedule next rendezvous '''
@@ -159,7 +168,7 @@ class BackgroundRendezvous(object):
         deferred = Deferred()
         deferred.add_callback(self._after_rendezvous)
         deferred.add_errback(self._schedule)
-        RUNNER_CORE.run('rendezvous', deferred, True, None)
+        RUNNER_CORE.run('rendezvous', deferred, False, None)
 
 BACKGROUND_RENDEZVOUS = BackgroundRendezvous()
 
