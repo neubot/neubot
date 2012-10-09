@@ -44,9 +44,7 @@ class RegressionTest(unittest.TestCase):
         ''' Check behavior is correct when empty '''
         # It should return None in both cases
         lst = RunnerTests()
-        self.assertEqual(lst.test_to_negotiate_uri('foo'), None)
-        self.assertEqual(lst.get_next_test(), None)
-        self.assertEqual(lst.get_test_names(), [])
+        self.assertTrue(len(lst.test_to_negotiate_uri('foo')) > 10)
 
     def test_test_to_negotiate_uri(self):
         ''' Check test_to_negotiate_uri works as expected '''
@@ -59,40 +57,6 @@ class RegressionTest(unittest.TestCase):
         self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
         self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
         self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
-
-    def test_get_next_test_simple(self):
-        ''' Check get_next_test() works OK when we have just one test '''
-        #
-        # When we have just one test it should always return that
-        # test name, I know that seems silly but we need to ensure
-        # it works OK because that is a special case in the code.
-        #
-        lst = RunnerTests()
-        lst.update({'foo': ['a', 'b', 'c']})
-        self.assertEqual(lst.get_next_test(), 'foo')
-        self.assertEqual(lst.get_next_test(), 'foo')
-        self.assertEqual(lst.get_next_test(), 'foo')
-
-    def test_get_next_test(self):
-        ''' Check get_next_test() works OK when we have more than one test '''
-        #
-        # When we have more than one test, it should not return the
-        # same test two times in a row.  Not so clever, but that's
-        # the way the current code is working.
-        #
-        lst = RunnerTests()
-        lst.update({'foo': ['a', 'b', 'c'], 'bar': ['a', 'b', 'c']})
-        nxt = lst.get_next_test()
-        self.assertNotEqual(lst.get_next_test(), nxt)
-
-    def test_get_test_names(self):
-        ''' Check get_test_names() behavior '''
-        lst = RunnerTests()
-        self.assertEqual(lst.get_test_names(), [])
-        lst.update({'foo': ['a']})
-        self.assertEqual(lst.get_test_names(), ['foo'])
-        lst.update({'foo': ['a'], 'bar': ['b']})
-        self.assertEqual(lst.get_test_names(), ['foo', 'bar'])
 
 if __name__ == '__main__':
     unittest.main()
