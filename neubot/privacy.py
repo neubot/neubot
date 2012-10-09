@@ -22,11 +22,9 @@
 
 ''' Initialize and manage privacy settings '''
 
-import asyncore
 import getopt
 import os
 import sys
-import types
 import xml.dom.minidom
 import logging
 
@@ -130,8 +128,7 @@ def main(args):
     except (SystemExit, KeyboardInterrupt):
         raise
     except:
-        sys.stderr.write('ERROR: unhandled exception: %s\n' %
-           str(asyncore.compact_traceback()))
+        logging.error('unhandled exception\n', exc_info=1)
         sys.exit(1)
 
 def print_policy():
