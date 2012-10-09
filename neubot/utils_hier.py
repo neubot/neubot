@@ -142,8 +142,8 @@ if os.name == 'posix':
     LOCALSTATEDIR = '@LOCALSTATEDIR@'
     if LOCALSTATEDIR.startswith('@'):
         LOCALSTATEDIR = '/var'
-    if sys.platform.startswith('linux'):
-        LOCALSTATEDIR += '/lib'
+        if sys.platform.startswith('linux'):
+            LOCALSTATEDIR += '/lib'
     LOCALSTATEDIR += '/neubot'
 elif os.name == 'nt':
     LOCALSTATEDIR = os.sep.join([os.environ['APPDATA'], 'neubot']) 
