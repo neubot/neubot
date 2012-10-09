@@ -24,6 +24,7 @@
 ''' Policy for selecting the next test '''
 
 import collections
+import logging
 import random
 
 TEST_NAMES = [
@@ -44,6 +45,7 @@ class RunnerPolicy(object):
         ''' Returns next test that must be performed '''
         selected = self.sequence[0]
         self.sequence.rotate()
+        logging.info('runner_policy: test sequence: %s', list(self.sequence))
         return selected
 
     def get_random_test(self):
