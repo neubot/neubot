@@ -107,7 +107,7 @@ class RegressionTest(unittest.TestCase):
         # the right parameters, not to invoke it.
         #
         run_invoked = [0]
-        def on_run_invoked(test, callback):
+        def on_run_invoked(test, callback, auto_discover, ctx):
             ''' Convenience function to notify that run was invoked '''
             # pylint: disable=W0613
             run_invoked[0] += 1
@@ -168,7 +168,7 @@ class RegressionTest(unittest.TestCase):
             start_streaming_invoked[0] += 1
 
         run_invoked = [0]
-        def on_run_invoked(test, callback):
+        def on_run_invoked(test, callback, auto_discover, ctx):
             ''' Convenience function to notify that run was invoked '''
             # pylint: disable=W0613
             run_invoked[0] += 1
