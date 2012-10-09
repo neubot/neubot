@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Regression test for neubot/net/poller.py '''
+''' Regression test for neubot/poller.py '''
 
 import sys
 import unittest
@@ -28,7 +28,7 @@ import unittest
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.net.poller import Poller
+from neubot.poller import Poller
 
 class TestCheckTimeoutStream(object):
     ''' Fake stream for TestCheckTimeout '''
