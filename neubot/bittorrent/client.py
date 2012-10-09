@@ -61,6 +61,7 @@ class BitTorrentClient(ClientHTTP):
         self.http_stream = None
         self.success = False
         self.my_side = {}
+        self.final_state = False
 
     def connect_uri(self, uri=None, count=None):
         if not uri:
@@ -124,12 +125,14 @@ class BitTorrentClient(ClientHTTP):
                           self.conf["bittorrent.port"]))
 
     def peer_connection_failed(self, connector, exception):
+        logging.warning('bittorrent_client: test connect() failed')
         stream = self.http_stream
         # TODO signal the other end something went wrong?
         stream.close()
 
     def peer_connection_lost(self, stream):
         if not self.success:
+            logging.warning('bittorrent_client: test connection lost')
             stream = self.http_stream
             # TODO signal the other end something went wrong?
             stream.close()
@@ -208,9 +211,13 @@ class BitTorrentClient(ClientHTTP):
             if target_bytes > 0:
                 estimate.UPLOAD = target_bytes
 
+            self.final_state = True
+
         stream.close()
 
     def connection_lost(self, stream):
+        if not self.final_state:
+            logging.warning('bittorrent_client: not reached final state')
         NOTIFIER.publish(TESTDONE)
 
     def connection_failed(self, connector, exception):

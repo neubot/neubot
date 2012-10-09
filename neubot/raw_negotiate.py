@@ -92,10 +92,12 @@ class RawNegotiate(HttpClient):
             extra['redirs'] = 8
         extra['requests'] = 0
         extra['saved_stream'] = None
+        extra['final_state'] = 0
 
         return HttpClient.connect(self, endpoint, prefer_ipv6, sslconfig, extra)
 
     def handle_connect_error(self, connector):
+        logging.warning('raw_negotiate: connect() failed')
         NOTIFIER.publish('testdone')
 
     def handle_connect(self, connector, sock, rtt, sslconfig, extra):
@@ -105,12 +107,17 @@ class RawNegotiate(HttpClient):
     @staticmethod
     def handle_connection_lost(stream):
         ''' Invoked when the connection is lost '''
+        final_state = 0
         context = stream.opaque
         if context:
             extra = context.extra
             if extra and extra.get('prevent_publish'):
                 del extra['prevent_publish']
                 return
+            if extra:
+                final_state = extra['final_state']
+        if not final_state:
+            logging.warning('raw_negotiate: not reached final state')
         NOTIFIER.publish('testdone')  # Tell the runner we're done
 
     def handle_connection_made(self, stream):
@@ -285,6 +292,7 @@ class RawNegotiate(HttpClient):
         deferred = Deferred()
         deferred.add_callback(self._save_results)
         deferred.callback((extra['local_result'], remote_result))
+        extra['final_state'] = 1
         stream.close()
 
     @staticmethod
