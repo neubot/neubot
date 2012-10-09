@@ -54,6 +54,7 @@ class RunnerMlabns(HttpClient):
     ''' Runner client for mlab-ns '''
 
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
+        logging.info('runner_mlabns: server discovery... in progress')
         extra['address'] = endpoint[0]
         extra['port'] = endpoint[1]
         extra['requests'] = 0
@@ -62,6 +63,7 @@ class RunnerMlabns(HttpClient):
         return HttpClient.connect(self, endpoint, prefer_ipv6, sslconfig, extra)
 
     def handle_connect_error(self, connector):
+        logging.info('runner_mlabns: server discovery... connect() failed')
         NOTIFIER.publish('testdone')  # Tell the runner we're done
 
     def handle_connect(self, connector, sock, rtt, sslconfig, extra):
@@ -71,6 +73,7 @@ class RunnerMlabns(HttpClient):
     @staticmethod
     def handle_connection_lost(stream):
         ''' Invoked when the connection is lost '''
+        logging.info('runner_mlabns: server discovery... complete')
         NOTIFIER.publish('testdone')  # Tell the runner we're done
 
     def handle_connection_made(self, stream):
