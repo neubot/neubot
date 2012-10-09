@@ -1,7 +1,7 @@
 Release procedure
 '''''''''''''''''
 
-:Version: 1.1 of 2012/02/15
+:Version: 1.2 of 2012/10/09
 :Authors: Simone Basso
 :Documents: the release procedure
 
@@ -18,6 +18,17 @@ Release procedure
 
 #. Run regression tests.  You need access to a Debian machine
    where you are root and where Neubot is not installed.
+
+#. Autoupdate
+
+    #. Make sure that Neubot autoupdates on a Debian machine
+       where it was already installed.
+
+    #. Make sure that Neubot autoupdates on a MacOS machine
+       where it was already installed.
+
+    #. Make sure that Neubot autoupdates on a Windows machine
+       where it was already installed.
 
 #. Install Neubot on a Debian machine and:
 
@@ -67,12 +78,6 @@ Release procedure
    Where `location` is the place where you have placed the
    release.  The -r form deploys a release candidate, while
    the -R form deploys a stable release.
-
-#. Make sure that Neubot autoupdates on a Debian machine
-   where it was already installed.
-
-#. Make sure that Neubot autoupdates on a MacOS machine
-   where it was already installed.
 
 #. Read wiki/errata and make sure all entries are still up
    to date with reality.
