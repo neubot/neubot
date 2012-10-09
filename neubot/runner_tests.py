@@ -31,7 +31,9 @@
 # running a test.
 #
 
-import random
+from neubot.runner_hosts import RUNNER_HOSTS
+
+from neubot import utils_net
 
 STATIC_TESTS = {
     'raw': [
@@ -63,26 +65,10 @@ class RunnerTests(object):
         if test in self.avail:
             return self.avail[test][0]
         else:
-            return None
-
-    def get_next_test(self):
-        ''' Returns next test that must be performed '''
-        #
-        # This is the same strategy that was implemented in
-        # rendezvous/client.py: return any test as long as
-        # it's not the last one.  It can be improved by using
-        # and rotating a collections.deque.
-        #
-        keys = self.avail.keys()
-        # At the beginning keys is empty
-        if self.last in keys:
-            keys.remove(self.last)
-        if not keys:
-            # Just one test available
-            return self.last
-        choice = random.choice(keys)
-        self.last = choice
-        return choice
+            fqdn = RUNNER_HOSTS.get_random_static_host()
+            endpoint = (fqdn, 8080)
+            uri = 'http://%s/' % utils_net.format_epnt(endpoint)
+            return uri
 
     def get_test_names(self):
         ''' Return names of all registered tests '''

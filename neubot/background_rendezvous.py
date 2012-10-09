@@ -46,7 +46,7 @@ from neubot.defer import Deferred
 from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
-from neubot.runner_tests import RUNNER_TESTS
+from neubot.runner_policy import RUNNER_POLICY
 from neubot.runner_updates import RUNNER_UPDATES
 from neubot.state import STATE
 
@@ -102,10 +102,7 @@ class BackgroundRendezvous(object):
         # disabled.  So we can print the test name also
         # when tests are disabled.
         #
-        test = RUNNER_TESTS.get_next_test()
-        if not test:
-            raise RuntimeError('background_rendezvous: no test available')
-
+        test = RUNNER_POLICY.get_next_test()
         logging.info('background_rendezvous: chosen test: %s', test)
 
         # Are we allowed to run a test?
