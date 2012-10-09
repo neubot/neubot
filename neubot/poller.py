@@ -41,13 +41,6 @@ from neubot.utils import timestamp
 #
 CHECK_TIMEOUT = 10
 
-#
-# The default watchdog timeout is positive and large
-# because we don't want by mistake that something runs
-# forever.  Who needs to do that should override it.
-#
-WATCHDOG = 300
-
 class Poller(sched.scheduler):
 
     ''' Dispatch read, write, periodic and other events '''
