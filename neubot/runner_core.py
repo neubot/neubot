@@ -134,12 +134,6 @@ class RunnerCore(object):
 
         elif first_elem[0] == 'speedtest':
             uri = RUNNER_TESTS.test_to_negotiate_uri('speedtest')
-            #
-            # If we have no negotiate URI for this test, possibly
-            # because we are offline, abort it.
-            #
-            if not uri:
-                raise RuntimeError('runner_core: no URI for speedtest')
             conf['speedtest.client.uri'] =  uri
             client = ClientSpeedtest(POLLER)
             client.configure(conf)
@@ -147,12 +141,6 @@ class RunnerCore(object):
 
         elif first_elem[0] == 'bittorrent':
             uri = RUNNER_TESTS.test_to_negotiate_uri('bittorrent')
-            #
-            # If we have no negotiate URI for this test, possibly
-            # because we are offline, abort it.
-            #
-            if not uri:
-                raise RuntimeError('runner_core: No URI for bittorrent')
             conf['bittorrent._uri'] =  uri
             bittorrent.run(POLLER, conf)
 

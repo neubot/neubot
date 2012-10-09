@@ -30,6 +30,7 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
+from neubot.defer import Deferred
 from neubot.log import LOG
 from neubot.notify import NOTIFIER
 from neubot.runner_core import RunnerCore
@@ -108,7 +109,7 @@ class RunQueueTest(unittest.TestCase):
 
         CONFIG.conf['privacy.informed'] = 0
         core = RunnerCore()
-        core.queue.append(('foo', lambda: None, None))
+        core.queue.append(('foo', Deferred(), None))
         core.run_queue()
 
         # Restore
@@ -147,7 +148,7 @@ class RunQueueTest(unittest.TestCase):
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('bittorrent', lambda: None, None))
+        core.queue.append(('bittorrent', Deferred(), None))
         core.run_queue()
 
         # Restore
@@ -163,36 +164,6 @@ class RunQueueTest(unittest.TestCase):
         # screw up other tests and we don't want that
         #
         NOTIFIER.publish("testdone")
-
-    def test_bittorrent_invokation_bad(self):
-        ''' Verify run_queue() behavior when bittorrent is invoked
-            and there is NOT a URI for bittorrent '''
-
-        #
-        # The whole point of this test is to make sure that
-        # the callback() is invoked and the "testdone" event
-        # has been fired, when we try to run a bittorrent
-        # test and we don't have a registered URI for such
-        # test.
-        #
-
-        # We need to ensure callback() is invoked
-        callback = [0]
-        def on_callback():
-            ''' Register callback() invokation '''
-            # pylint: disable=W0613
-            callback[0] += 1
-
-        CONFIG.conf['privacy.can_publish'] = 1
-        CONFIG.conf['privacy.informed'] = 1
-        CONFIG.conf['privacy.can_collect'] = 1
-        core = RunnerCore()
-        core.queue.append(('bittorrent', on_callback, None))
-        core.run_queue()
-
-        # Worked as expected?
-        self.assertTrue(callback[0])
-        self.assertFalse(NOTIFIER.is_subscribed("testdone"))
 
     def test_safety_net(self):
         ''' Verify run_queue() safety net works '''
@@ -219,7 +190,7 @@ class RunQueueTest(unittest.TestCase):
         CONFIG.conf['privacy.informed'] = 1
         CONFIG.conf['privacy.can_collect'] = 1
         core = RunnerCore()
-        core.queue.append(('foo', lambda: None, None))
+        core.queue.append(('foo', Deferred(), None))
         core.run_queue()
 
         # Restore
