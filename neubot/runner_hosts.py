@@ -21,33 +21,33 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Keeps track of known M-Lab nodes '''
+''' Keeps track of known M-Lab hosts '''
 
 import logging
 
 class RunnerHosts(object):
-    ''' Keeps track of known M-Lab nodes '''
+    ''' Keeps track of known M-Lab hosts '''
 
     def __init__(self):
         self.closest = None
         self.random = None
 
-    def set_closest_node(self, node):
-        ''' Sets the closest M-Lab node '''
-        logging.debug('runner_hosts: closest node: %s', node['fqdn'])
-        self.closest = node
+    def set_closest_host(self, host):
+        ''' Sets the closest M-Lab host '''
+        logging.debug('runner_hosts: closest host: %s', host['fqdn'])
+        self.closest = host
 
-    def set_random_node(self, node):
-        ''' Sets one random M-Lab node '''
-        logging.debug('runner_hosts: random node: %s', node['fqdn'])
-        self.random = node
+    def set_random_host(self, host):
+        ''' Sets one random M-Lab host '''
+        logging.debug('runner_hosts: random host: %s', host['fqdn'])
+        self.random = host
 
-    def get_closest_node(self):
-        ''' Return the closest node '''
+    def get_closest_host(self):
+        ''' Return the closest host '''
         return self.closest
 
-    def get_random_node(self):
-        ''' Return one random node '''
+    def get_random_host(self):
+        ''' Return one random host '''
         return self.random
 
 RUNNER_HOSTS = RunnerHosts()

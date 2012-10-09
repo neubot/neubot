@@ -109,9 +109,9 @@ class RunnerMlabns(HttpClient):
         response = json.loads(content)
         http_utils.prettyprint_json(response, '<')
         if extra['policy'] == 'random':
-            RUNNER_HOSTS.set_random_node(response)
+            RUNNER_HOSTS.set_random_host(response)
         else:
-            RUNNER_HOSTS.set_closest_node(response)
+            RUNNER_HOSTS.set_closest_host(response)
         stream.close()
 
 USAGE = 'usage: neubot runner_mlabns [-6Sv] [-A address] [-P policy] [-p port]'
