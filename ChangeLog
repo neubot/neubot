@@ -1,3 +1,10 @@
+Neubot 0.4.15.5 [2012-10-10]
+	* main_win32: reference the raw command for py2exe to include it
+	* runner_hosts: don't remember previous query results
+	* runner_tests: do not cache query results as well
+	* Bump version to 0.4.15.5
+	* Neubot/0.4.15.5 released
+
 Neubot 0.4.15.4 [2012-10-10]
 	* Make scripts/sign_all a bit more friendly
 	* Allow to invoke runner_rendezvous subcommand and set alternative port
