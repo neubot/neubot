@@ -55,7 +55,10 @@ class RunnerTests(object):
         ''' Map test to its negotiate URI '''
         # For now just return the first item in the list
         if test in self.avail:
-            return self.avail[test][0]
+            # Do not cache results (see runner_hosts comment on that)
+            result = self.avail[test][0]
+            self.avail.clear()
+            return result
         else:
             fqdn = RUNNER_HOSTS.get_random_static_host()
             endpoint = (fqdn, 8080)
