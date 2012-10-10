@@ -180,7 +180,7 @@ CONFIG.register_defaults({
     "rendezvous.server.address": "",
     "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.update_version": utils_version.CANONICAL_VERSION,
+    "rendezvous.server.update_version": "0.4.14",
     "rendezvous.geoip_wrapper.country_database":                        \
         "/usr/local/share/GeoIP/GeoIP.dat",
     "rendezvous.server.default": "master.neubot.org",
