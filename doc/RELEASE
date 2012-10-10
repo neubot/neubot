@@ -57,16 +57,13 @@ Release procedure
      #. make sure it prompts for privacy settings during the
         install;
 
-     #. make sure it prompts for privacy settings after a
-        reboot;
-
      #. make sure that the following commands work properly:
         `bittorrent`, `browser`, `database`, `notifier`,
         `privacy`, `raw`, `speedtest`, `viewer`;
 
 #. Install and upgrade Neubot on a Windows machine and:
 
-     #. make sure it prompts for privacy settings during the
+     #. make sure it prompts for privacy settings after the
         install;
 
      #. make sure it prompts for privacy settings after a
