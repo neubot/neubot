@@ -32,10 +32,8 @@
 #
 
 import base64
-import email.utils
 import getopt
 import logging
-import os
 import sys
 
 if __name__ == '__main__':
@@ -76,21 +74,6 @@ class UpdaterRunner(object):
         logging.debug('updater_runner: next check in %d seconds',
                       interval)
         POLLER.sched(interval, self.retrieve_versioninfo)
-
-    @staticmethod
-    def _okfile_lastmod():
-        ''' Return when the OK file was last modified '''
-        try:
-            statbuf = os.stat(utils_hier.OKFILE)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.warning('updater_runner: cannot stat(2) OKFILE', exc_info=1)
-            return ''
-        else:
-            lastmod = email.utils.formatdate(statbuf.st_mtime, usegmt=1)
-            logging.info('updater_runner: OKFILE last modified: %s', lastmod)
-            return lastmod
 
     def retrieve_versioninfo(self):
         ''' Retrieve version information '''
@@ -134,22 +117,10 @@ class UpdaterRunner(object):
             return
         cur = utils_version.NUMERIC_VERSION
         if not updater_utils.versioninfo_is_newer(vinfo):
-            channel = CONFIG['win32_updater_channel']
-            if channel != 'testing':
-                logging.debug('updater_runner: no updates available')
-                self._schedule()
-                return
-            lastmod = self._okfile_lastmod()
-            if not lastmod:
-                logging.debug('updater_runner: no updates available')
-                self._schedule()
-                return
-            logging.info('updater_runner: using OKFILE lastmod to decide '
-                         'whether to update "testing"')
-            ctx['if-modified-since'] = lastmod
-            logging.info('updater_runner: %s (updated snapshot)', cur)
-        else:
-            logging.info('updater_runner: %s -> %s', cur, vinfo)
+            logging.debug('updater_runner: no updates available')
+            self._schedule()
+            return
+        logging.info('updater_runner: %s -> %s', cur, vinfo)
         self.retrieve_files(ctx, vinfo)
 
     def retrieve_files(self, ctx, vinfo):
