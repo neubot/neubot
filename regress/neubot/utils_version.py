@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -45,12 +46,14 @@ class TestLibVersion(unittest.TestCase):
          in comparing different version numbers.
         """
 
-        self.assertTrue(utils_version.compare("7.5.3", "7.5.3") == 0)
-        self.assertTrue(utils_version.compare("7.0", "7.5.3") < 0)
-        self.assertTrue(utils_version.compare("8.0", "7.5.3") > 0)
-        self.assertTrue(utils_version.compare("8.0.0", "8.0.1") < 0)
-        self.assertTrue(utils_version.compare("8.0.0-rc3", "8.0.0-rc4") < 0)
-        self.assertTrue(utils_version.compare("8.0.0-rc3", "8.0.0") < 0)
+        self.assertTrue(utils_version.compare("7.5.3.0", "7.5.3.0") == 0)
+        self.assertTrue(utils_version.compare("7.0.0.0", "7.5.3.0") < 0)
+        self.assertTrue(utils_version.compare("8.0.0.0", "7.5.3.0") > 0)
+        self.assertTrue(utils_version.compare("8.0.0.0", "8.0.1.0") < 0)
+
+        # Legacy
+        self.assertTrue(utils_version.compare("0.0.0-rc3", "0.0.0-rc4") < 0)
+        self.assertTrue(utils_version.compare("0.0.0-rc3", "0.0.0") < 0)
 
     def test_to_numeric_failures(self):
 
@@ -65,26 +68,37 @@ class TestLibVersion(unittest.TestCase):
         # of tests does not cover all the cases.
         #
 
-        # Minor number must always be there
+        # All numbers must always be there
         self.assertRaises(ValueError, utils_version.to_numeric, "8")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.0")
 
-        # Minor number must indeed be a number
-        self.assertRaises(ValueError, utils_version.to_numeric, "8.xo")
+        # All numbers must acutally be... numbers
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.xo.0.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.xo.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.0.xo")
 
         # Only one -rc is allowed
-        self.assertRaises(ValueError, utils_version.to_numeric, "8-rc1-rc2")
+        self.assertRaises(ValueError, utils_version.to_numeric, "0.0.0-rc1-rc2")
 
         # We need something to chew
         self.assertRaises(ValueError, utils_version.to_numeric, " ")
 
-        # RCNUM is limited to 999
-        self.assertRaises(ValueError, utils_version.to_numeric, "8.3-rc1000")
+        # MINOR, PATCH, RCNUM are limited to 999
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.1000.0.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.1000.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.0.1000")
 
-        # RCNUM must be positive
-        self.assertRaises(ValueError, utils_version.to_numeric, "8-rc-1")
+        # RCNUM must be positive (legacy)
+        self.assertRaises(ValueError, utils_version.to_numeric, "0-rc-1")
 
-        # MINOR must be positive
-        self.assertRaises(ValueError, utils_version.to_numeric, "8.-1")
+        # MINOR, PATCH, RCNUM must be positive
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.-1.0.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.-1.0")
+        self.assertRaises(ValueError, utils_version.to_numeric, "8.0.0.-1")
+
+        # The "-rc" notation fails after 0.4.14
+        self.assertRaises(ValueError, utils_version.to_numeric, "0.4.15-rc1")
 
     def test_to_canonical_failures(self):
 
@@ -111,18 +125,42 @@ class TestLibVersion(unittest.TestCase):
 
         # canonical -> numeric -> canonical
         self.assertEquals(utils_version.to_canonical(
-          utils_version.to_numeric("133.35.71-rc19")),
-          "133.35.71-rc19")
+          utils_version.to_numeric("133.35.71.19")),
+          "133.35.71.19")
 
-        # Same as above but check for -rc999
+        # Same as above but check for -rc999 (legacy check)
         self.assertEquals(utils_version.to_canonical(
-          utils_version.to_numeric("133.35.71-rc999")),
-          "133.35.71")
+          utils_version.to_numeric("0.3.71-rc999")),
+          "0.3.71")
 
         # numeric -> canonical -> numeric
         self.assertEquals(utils_version.to_numeric(
           utils_version.to_canonical("133.035071019")),
           "133.035071019")
+
+    def test_boundary(self):
+
+        """
+         Test behavior around 0.4.14.999 boundary
+        """
+
+        self.assertEquals(utils_version.to_canonical('0.004014998'),
+          '0.4.14-rc998')
+        self.assertEquals(utils_version.to_canonical('0.004014999'),
+          '0.4.14')
+        self.assertEquals(utils_version.to_canonical('0.004015000'),
+          '0.4.15.0')
+        self.assertEquals(utils_version.to_canonical('0.004015999'),
+          '0.4.15.999')
+
+        self.assertEquals(utils_version.to_numeric('0.4.14-rc998'),
+          '0.004014998')
+        self.assertEquals(utils_version.to_numeric('0.4.14'),
+          '0.004014999')
+        self.assertEquals(utils_version.to_numeric('0.4.15.0'),
+          '0.004015000')
+        self.assertEquals(utils_version.to_numeric('0.4.15.999'),
+          '0.004015999')
 
 if __name__ == "__main__":
     unittest.main()

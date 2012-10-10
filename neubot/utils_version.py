@@ -1,8 +1,9 @@
 # neubot/utils_version.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -27,17 +28,13 @@
   representation.
 
   A version number in canonical representation is a string and follows the
-  standard numbering schema MAJOR.MINOR[.PATCH][-rcRCNUM].  MAJOR must
+  standard numbering schema MAJOR.MINOR.PATCH.RCNUM.  MAJOR must
   be a positive integer, while MINOR, PATCH and RCNUM must be between 0
   and 999.  This is to allow for numeric representation.
 
   A version number in numeric representation is the string representation
   of a float.  It must have nine digits after the radix point. For example,
-  0.037001003 is the numeric representation of 0.37.1-rc3.
-
-  When RCNUM value is 999 it means that the target release is not a
-  release candidate but a stable version.  I.e. 0.37.1 is equivalent
-  to 0.37.1-rc999 and viceversa.
+  `0.037001003` is the numeric representation of `0.37.1.3`.
 
   The general idea is that of using the canonical representation to label
   new versions to avoid user confusion.  We will use the numeric representation
@@ -47,12 +44,14 @@
   version number in a simple way.
 """
 
+import getopt
 import decimal
 import sys
 import re
 
 # Canonical representation
-CANONICAL_REPR = "^([0-9]+)\.([0-9]+)(\.([0-9]+))?(-rc([0-9]+))?$"
+LEGACY_CANONICAL_REPR = "^([0-9]+)\.([0-9]+)(\.([0-9]+))?(-rc([0-9]+))?$"
+CANONICAL_REPR = "^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$"
 
 # Numeric representation
 NUMERIC_REPR = "^([0-9]+)\.([0-9]{3,3})([0-9]{3,3})([0-9]{3,3})$"
@@ -79,7 +78,7 @@ def check(major, minor, patch, rcnum):
     if rcnum < 0 or rcnum > 999:
         raise ValueError("utils_version: RCNUM out of range(1000)")
 
-def to_numeric(string):
+def to_numeric_legacy(string):
 
     """
     Convert version number from canonical representation to
@@ -90,7 +89,7 @@ def to_numeric(string):
 
     string = string.strip()
 
-    match = re.match(CANONICAL_REPR, string)
+    match = re.match(LEGACY_CANONICAL_REPR, string)
     if not match:
         raise ValueError("utils_version: Invalid canonical representation")
 
@@ -102,6 +101,12 @@ def to_numeric(string):
     else:
         patch = 0
 
+    # Last legacy release is 0.4.14
+    notlegacy = ((major > 0) or (major == 0 and minor > 4) or
+                 (major == 0 and minor == 4 and patch > 14))
+    if notlegacy:
+        raise ValueError("utils_version: Invalid canonical representation")
+
     if match.group(6):
         rcnum = int(match.group(6))
     else:
@@ -110,6 +115,20 @@ def to_numeric(string):
     check(major, minor, patch, rcnum)
 
     return "%d.%03d%03d%03d" % (major, minor, patch, rcnum)
+
+def to_numeric(string):
+    ''' Convert version number from canonical representation to numeric
+        representation.  Raises ValueError in case of failure. '''
+    string = string.strip()
+    match = re.match(CANONICAL_REPR, string)
+    if not match:
+        return to_numeric_legacy(string)
+    major = int(match.group(1))
+    minor = int(match.group(2))
+    patch = int(match.group(3))
+    rcnum = int(match.group(4))
+    check(major, minor, patch, rcnum)
+    return '%d.%03d%03d%03d' % (major, minor, patch, rcnum)
 
 def to_canonical(string):
 
@@ -130,6 +149,13 @@ def to_canonical(string):
     minor = int(match.group(2))
     patch = int(match.group(3))
     rcnum = int(match.group(4))
+
+    # Last legacy release is 0.4.14
+    notlegacy = ((major > 0) or (major == 0 and minor > 4) or
+                 (major == 0 and minor == 4 and patch > 14))
+    if notlegacy:
+        vector = [str(major), ".", str(minor), ".", str(patch), ".", str(rcnum)]
+        return "".join(vector)
 
     vector = [str(major), ".", str(minor)]
     if patch:
@@ -160,13 +186,33 @@ def compare(left, right):
     return (decimal.Decimal(to_numeric(left)) -
            decimal.Decimal(to_numeric(right)))
 
-CANONICAL_VERSION = '0.4.15'
-NUMERIC_VERSION = '0.004015999'
-PRODUCT = 'Neubot 0.4.15'
-HTTP_HEADER = 'Neubot/0.4.15'
+CANONICAL_VERSION = '0.4.15.0'
+NUMERIC_VERSION = to_numeric(CANONICAL_VERSION)
+PRODUCT = 'Neubot %s' % CANONICAL_VERSION
+HTTP_HEADER = 'Neubot/%s' % CANONICAL_VERSION
+
+def main(args):
+    ''' Main function '''
+    try:
+        options, arguments = getopt.getopt(args[1:], 'c')
+    except getopt.error:
+        sys.exit('usage: neubot utils_version [-c] [version...]')
+    canonical = 0
+    for opt in options:
+        if opt[0] == '-c':
+            canonical = 1
+
+    if not arguments:
+        if canonical:
+            arguments = [NUMERIC_VERSION]
+        else:
+            arguments = [CANONICAL_VERSION]
+
+    for argument in arguments:
+        if canonical:
+            sys.stdout.write('%s\n' % to_canonical(argument))
+        else:
+            sys.stdout.write('%s\n' % to_numeric(argument))
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 2:
-        print(to_numeric(sys.argv[1]))
-    else:
-        print(to_numeric(CANONICAL_VERSION))
+    main(sys.argv)
