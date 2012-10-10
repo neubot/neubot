@@ -104,7 +104,6 @@ sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "IT",
 sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "IT", "neubot.mlab.mlab1.mil01.measurement-lab.org:8080");'
 sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "IT", "neubot.mlab.mlab2.trn01.measurement-lab.org:8080");'
 sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "IT", "neubot.mlab.mlab3.trn01.measurement-lab.org:8080");'
-sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "IT", "neubot.mlab.mlab1.trn01.measurement-lab.org:8080");'
 sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "IT", "neubot.mlab.mlab2.mil01.measurement-lab.org:8080");'
 sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "VN", "neubot.mlab.mlab3.hnd01.measurement-lab.org:8080");'
 sqlite3 $database 'INSERT INTO geoloc (id, country, address) VALUES (NULL, "KZ", "neubot.mlab.mlab3.hnd01.measurement-lab.org:8080");'
