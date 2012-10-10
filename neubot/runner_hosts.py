@@ -145,16 +145,37 @@ class RunnerHosts(object):
         logging.debug('runner_hosts: random host: %s', host['fqdn'])
         self.random = host['fqdn']
 
+    #
+    # Why we don't cache latest random/closest host
+    # ---------------------------------------------
+    #
+    # For the random host, it is wrong to cache it: if next mlab-ns query fails,
+    # next test is going to reuse the cached host.  This is clearly not random.
+    # So, use the random host returned by mlab-ns just once.
+    #   For the closest host, it may be good to cache it: if next mlab-ns query
+    # fails, next test is going to reuse it.  However, the static table should
+    # be the exception, not the norm.  Therefore, behave same-as the random host
+    # and avoid caching, such that, if there is a failure, the behavior changes
+    # (e.g. warnings in the logs, big changes in RTT) and the problem (perhaps
+    # just a local routing problem) is more likely to be spotted.  Moreover the
+    # cached closest host may be down, and insisting with it in this case is
+    # worst than choosing one host at random.
+    #
+
     def get_closest_host(self):
         ''' Return the closest host '''
         if self.closest:
-            return self.closest
+            result = self.closest
+            self.closest = None
+            return result
         return self.get_random_static_host()
 
     def get_random_host(self):
         ''' Return one random host '''
         if self.random:
-            return self.random
+            result = self.random
+            self.random = None
+            return result
         return self.get_random_static_host()
 
     @staticmethod
