@@ -35,6 +35,7 @@ from neubot import utils_version
 # Reference viewer and notifier so py2exe includes 'em
 if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     from neubot import notifier
+    from neubot import raw
     from neubot import viewer
 
 def subcommand_start(args):
