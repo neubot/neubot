@@ -1,3 +1,122 @@
+Neubot 0.4.15.4 [2012-10-10]
+	* Make scripts/sign_all a bit more friendly
+	* Allow to invoke runner_rendezvous subcommand and set alternative port
+	* .gitignore: stop ignoring .pyc files
+	* net/poller.py: better error messages
+	* utils_net: don't pull CONFIG
+	* updater: allow to configure win32 update check interval
+	* Get rid of neubot/rendezvous/client.py
+	* add neubot/defer: minimal deferreds implementation
+	* runner_core: use deferreds to make code more robust
+	* updater: batch of simplification and fixes
+	* updater: use last-modified to retrieve development snapshots
+	* Consolidate version number
+	* Master -> MasterSrv to avoid name clashes with the master branch
+	* script/release: hack support for -n option
+	* Bump version number to 0.4.15
+	* utils_posix: add goodies for later
+	* system_posix: reimplement drop_root_privileges using utils_posix
+	* utils_net.py: now python3 compliant
+	* Import six 1.2.0
+	* neubot/server.py: get rid of common main
+	* Next evolution of networking code
+	* Next evolution of http client
+	* neubot/http: note the destiny of files inside this directory
+	* neubot/http: note the destiny of files inside this directory
+	* http_utils: allow to pretty-print json bodies
+	* Merge remote-tracking branch 'origin/master'
+	* M-Lab: don't fail if we cannot kill the old process
+	* Minimize diff between M-Lab and MasterSrv deploy.sh
+	* state: fix pylint warnings
+	* notify: fix pylint warnings
+	* Add and document neubot's pure-python web100 implementation
+	* brigade six: python3 compatibility fixes
+	* http_clnt: don't call basicConfig()
+	* Make http_clnt python3 compatible
+	* Networking code: mark python3-compatible files
+	* neubot/stream.py: better logname for stream
+	* utils_net.py: make sure ::1 is not stripped leading ::
+	* utils_net: fix handling of IPv4 compatible IPv6 addresses
+	* neubot/stream.py: allow to create debug stream
+	* connector: deal with queued epnts in a more natural way
+	* Networking code: better connect() failure handling
+	* Add the new RAW transmission test
+	* utils_sysdirs.py: fix WWWDIR for win32 non-py2exe case
+	* main_win32: implement status -v
+	* Reimplement start -k without race conditions
+	* win32: write startup/shutdown log messages
+	* utils_ctl: read /api/exit nonexistent response
+	* system.py: win32: make sure we init database dir
+	* Make logger more robust and simpler
+	* MacOS port moved to github.com/neubot/neubot_macos
+	* Remove win32 folder
+	* Makefile: by default use GNU conventions
+	* Rename utils_sysdirs.py -> utils_hier.py
+	* utils_hier: honor Makefile variables
+	* system_posix: Run as nobody when not installed
+	* api/server.py: break out of poller loop the expedite way
+	* ChangeLog: add 0.4.14 entry
+	* scripts/sign_all: zap space at end of line
+	* Move MacOS documentation into MacOS repository
+	* raw_srvr: save ticks in web100_snap
+	* raw_clnt raw_srvr: anticipate stream.opaque check in _periodic()
+	* raw_clnt raw_srvr: save one extra snapshot at end of test
+	* raw test: always transmit web100 snaps, ignore them at client
+	* poller: modernise task execution
+	* raw_clnt raw_srvr: make _periodic_internal() static
+	* raw_negotiate: remove duplicate line
+	* raw_negotiate: make _handle_test_failure() static
+	* server: don't break legacy option names and provide knob for raw server
+	* Client for mlab-ns: add and attach to runner
+	* Make http_clnt, runner_mlabns python3-ready
+	* server.py: define default server.raw value
+	* backend_neubot: make sure the database is opened before using it
+	* Makefile: allow to specify DESTDIR & co. using environment
+	* runner_mlabns.py: remove unused definitions
+	* raw_negotiate: make LOCATION string python3 compatible
+	* rendezvous/server.py: re-enable updates advertisement
+	* runner_hosts runner_mlabns: node -> host, for clarity
+	* When discovery fails, fallback to static hosts table
+	* Automatically run RAW test
+	* runner_mlabns: inform the user we're running
+	* regress: repair neubot/defer test
+	* Repair regress/neubot/http/rootdir.txt
+	* Repair poller.py's regression test
+	* Repair regress/neubot/runner_api.py test
+	* Half decommission^H^H repair regress/neubot/runner_tests.py test
+	* Repair Makefile regression tests
+	* runner_core: now we always have a negotiate URI
+	* privacy.py: maintenance
+	* utils_hier: Linux: append /lib on LOCALSTATEDIR only if not set
+	* regress: add typical regress tests output
+	* doc/RELEASE: better documentation of auto-update testing
+	* doc/RELEASE: move up check of installer and M-Lab deployment
+	* Update expected M-Lab ports
+	* M-Lab/install.sh: ensure we run as _neubot
+	* gc scripts/publish: now I track releases.n.o via git
+	* Do not spam syslog with watchdog timeout messages
+	* neubot/poller.py: remove unused define
+	* Static host table: provide user more and better info
+	* runner_policy: for now, print next test sequence
+	* Teach stream to treat RST in a more stealth way
+	* doc/RELEASE: remove obsolete bits, clarify here and there
+	* Backout update-if-modified change
+	* zap regress/typical_output.txt: too version dependent to be useful
+	* Switch from 0.4.14-rc123 model to 0.4.14.123
+	* Prepare for third 0.4.15 snapshot
+	* runner_policy: print test sequence before rotating it
+	* rendezvous/server.py: advertise 0.4.14 (the last stable version)
+	* doc/RELEASE: note that we need to deploy master twice
+	* MasterSrv/install.sh: make sure we run as _neubot
+	* M-Lab/ip_addr.dat: update
+	* M-Lab: airports_cache.dat servers.dat: update
+	* M-Lab/redir_table.sh: update
+	* doc/RELEASE: bump version
+	* M-Lab/redir_table.sh: leave mlab1.trn01 for IPv6 testing
+	* More doc/RELEASE love
+	* Bump version to 0.4.15.4
+	* Neubot/0.4.15.4 released
+
 Neubot 0.4.14 [2012-09-06]
 	* M-Lab: update list of servers
 	* M-Lab/ip_addr.dat: update
