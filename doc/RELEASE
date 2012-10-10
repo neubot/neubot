@@ -36,6 +36,10 @@ Release procedure
 #. Deploy the new Neubot version on a restricted set of
    Measurement Lab nodes (3-6 slivers).
 
+#. Deploy the new Neubot version at the master server and
+   make sure it DOES NOT advertises the new version via
+   rendezvous.
+
 #. Install Neubot on a Debian machine and:
 
      #. make sure it prompts for privacy settings during the
