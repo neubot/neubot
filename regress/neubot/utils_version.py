@@ -148,8 +148,8 @@ class TestLibVersion(unittest.TestCase):
           '0.4.14-rc998')
         self.assertEquals(utils_version.to_canonical('0.004014999'),
           '0.4.14')
-        self.assertEquals(utils_version.to_canonical('0.004015003'),
-          '0.4.15.3')
+        self.assertEquals(utils_version.to_canonical('0.004015000'),
+          '0.4.15.4')
         self.assertEquals(utils_version.to_canonical('0.004015999'),
           '0.4.15.999')
 
@@ -157,8 +157,8 @@ class TestLibVersion(unittest.TestCase):
           '0.004014998')
         self.assertEquals(utils_version.to_numeric('0.4.14'),
           '0.004014999')
-        self.assertEquals(utils_version.to_numeric('0.4.15.3'),
-          '0.004015003')
+        self.assertEquals(utils_version.to_numeric('0.4.15.0'),
+          '0.004015004')
         self.assertEquals(utils_version.to_numeric('0.4.15.999'),
           '0.004015999')
 
