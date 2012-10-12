@@ -9,7 +9,7 @@
    * `1.2. What is Measurement Lab?`_
    * `1.3. What is network neutrality?`_
    * `1.4. Why "the network neutrality bot"?`_
-   * `1.5. Why is crucial to monitor network neutrality?`_
+   * `1.5. Why is it crucial to monitor network neutrality?`_
    * `1.6. Why might I want to install Neubot?`_
    * `1.7. What tests are implemented by the latest version?`_
    * `1.8. What is the roadmap to Neubot/1.0?`_
@@ -31,8 +31,8 @@
 * `3. Using Neubot`_
 
    * `3.1. Neubot installed. What should I do now?`_
-   * `3.2. How much resources does Neubot need?`_
-   * `3.3. How do I report bugs, ask questions, make suggestions?`_
+   * `3.2. How many resources does Neubot need?`_
+   * `3.3. How do I report bugs, ask questions, or make suggestions?`_
    * `3.4. What are the issues if I use mobile broadband, 3G modem, Internet key?`_
    * `3.5. Do I need to tweak the configuration of my router?`_
    * `3.6. How do I read Neubot logs?`_
@@ -42,11 +42,11 @@
 * `4. Technical questions`_
 
    * `4.1. How does Neubot work?`_
-   * `4.2. What does speedtest test measures?`_
+   * `4.2. What does speedtest test measure?`_
    * `4.3. How does Neubot change my Windows registry?`_
    * `4.4. What is the path of Neubot database?`_
    * `4.5. How can I dump the content of the database?`_
-   * `4.6. What does bittorrent test measures?`_
+   * `4.6. What does bittorrent test measure?`_
    * `4.7. What does measuring goodput mean?`_
    * `4.8. Is it possible to compare speedtest and bittorrent results?`_
 
@@ -57,7 +57,7 @@
 
 * `6. Data questions`_
 
-   * `6.1. Where are data published?`_
+   * `6.1. Where is data published?`_
    * `6.2. Is there any license attached to data?`_
    * `6.3. What is data format?`_
 
@@ -66,11 +66,11 @@
    * `7.1. What is the web user interface?`_
    * `7.2. How do I open the web user interface?`_
    * `7.3. What does the status page shows?`_
-   * `7.4. What does the speedtest page shows?`_
-   * `7.5. What does the bittorrent page shows?`_
-   * `7.6. What does the log page shows?`_
-   * `7.7. What does the privacy page shows?`_
-   * `7.8. What does the settings page shows?`_
+   * `7.4. What does the speedtest page show?`_
+   * `7.5. What does the bittorrent page show?`_
+   * `7.6. What does the log page show?`_
+   * `7.7. What does the privacy page show?`_
+   * `7.8. What does the settings page show?`_
    * `7.9. How do I change the web user interface language?`_
 
 ------------------------------------------------------------------------
@@ -81,13 +81,13 @@
 1.1. What is Neubot?
 ~~~~~~~~~~~~~~~~~~~~
 
-Neubot is a research project on network neutrality of the `NEXA Center for
+Neubot is a research project on network neutrality at the `NEXA Center for
 Internet & Society`_ at `Politecnico di Torino`_. The project is based on
 a lightweight `free software`_ program that interested users can download
 and install on their computers. The program runs in the background and
-periodically performs transmission tests with test servers, hosted by
-the distributed `Measurement Lab`_ platform, and (in future) with other
-instances of the program itself.  Transmission tests probe the Internet
+periodically performs transmission tests with test servers hosted by
+the distributed `Measurement Lab`_ platform, and ,in the future, with other
+instances of the program.  Transmission tests probe the Internet
 using various application level protocols and test results are saved both
 locally and on the test servers.  The results dataset contains samples
 from various Providers and is `published on the web`_, allowing anyone to
@@ -101,10 +101,10 @@ connectivity and servers around the world for projects that aim to
 measure the quality and/or neutrality of broadband Internet connections
 by probing the network with active tests.
 
-Starting from version 0.4.6, Neubot has become one of the projects hosted
-at Measurement Lab, and, since version 0.4.8, most tests are carried
-out by Measurement Lab servers.  Old clients are still served by Neubot
-master server, but the percentage is fading.
+From version 0.4.6 onward Neubot is hosted at Measurement Lab, and, since
+version 0.4.8, most tests are carried out by Measurement Lab servers.
+Old clients are still served by Neubot master server, but the percentage
+is fading.
 
 1.3. What is network neutrality?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -120,27 +120,26 @@ to minimize the interaction between applications and the network
 (see RFC3439_). This design choice allowed very fast packet switching
 and enabled strong openness towards unforeseen uses of the Internet
 Protocol. The result has been an extraordinary outburst of innovation,
-and a level-playing field for citizens, associations and companies
+and a level-playing field for citizens, associations, and companies
 worldwide.
 
-The modern Internet is not always neutral due to technologies that
+The modern Internet is not always neutral because some technologies
 allow for fine-grained discrimination of traffic. When they enter into
 the network of an Internet Service Provider, packets may be classified,
 i.e.  assigned to a class like *web*, *video*, or *file-sharing*. The
 most commonly exploited characteristics in traffic classification
 are the content of packets headers and the payload. But a packet can
-also inherit the class from the flow it belongs to, if the flow is
+also inherit the class from the flow it belongs to if the flow is
 already classified. Once a packet has been classified at the border,
 it receives the service associated with its traffic class from routers
 inside the network.
 
 The policy debate regarding network neutrality is on whether it is
-preferable to continue with *laissez-faire* or whether Internet
-neutrality should be safeguarded by the law. The topic can be tackled
-using a variety of disciplinary perspectives, such as the ones of
-competition law and innovation processes. To know more about neutrality,
-the related debate and the various positions, refer to `Wikipedia's
-article`_.
+preferable to continue with a *laissez-faire* policy or to safeguard
+network neutrality. This topic can be tackled from a variety of disciplines,
+including competition law and innovation processes. To know more about
+neutrality, the related debate and the various positions, go to
+`Wikipedia's article`_.
 
 1.4. Why *"the network neutrality bot"*?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,7 +161,7 @@ interested stakeholders (including regulators and citizens) and should
 provide a more reliable basis for discussing policies.
 
 Monitoring network neutrality is crucial in an *ex-post* scenario as
-well. Indeed, it enables to verify operators behavior in light of
+well. Indeed, it enables us to verify operators behavior in light of
 regulatory decisions regarding neutrality.
 
 1.6. Why might I want to install Neubot?
@@ -185,7 +184,7 @@ more in-depth understanding of the behavior of your home network and of
 the behavior of your Provider.
 
 If you are interested, don't hesitate to install it, because the success
-of this research effort depends heavily on how much people installs the
+of this research effort depends heavily on how many people install the
 Neubot.
 
 1.7. What tests are implemented by the latest version?
@@ -230,7 +229,7 @@ The release process strives to `release early, release often`_ to
 maximize feedback.  The `github repository`_ is updated very frequently
 and there is a commitment to deploy a new release every month.
 
-In general, most releases are *patch releases*, add new features and/or
+In general, most releases are *patch releases*, adding new features and/or
 correct bugs.  Typically, after a numer of patch releases, there is a
 critical mass of new features, and a *milestone release* is issued.
 
@@ -353,12 +352,12 @@ using the `send-pr`_ interface.
 
 Neubot automatically downloads and installs updates on all platforms
 but Microsoft Windows (and, of course, if you installed it from
-sources, you will not receive automatic updates).
+source, you will not receive automatic updates).
 
 If you are not using Windows, you should periodically make sure that
 it automatically updated to the latest version.  As a rule of thumb, if
-more than two weeks have passed since the last release and it has not
-updated, then it's a bug.
+more than two weeks have passed since the last release and Neubot has not
+updated, there's a bug.
 
 If you are running Windows, the web user interface (see `7. Web user
 interface`_) will be opened
@@ -385,10 +384,10 @@ time.
 
 Here are a couple of screenshots captured from a netbook running Ubuntu
 9.10 and attached to Politecnico di Torino network. In the first
-screenshot you can see the resources usage during an on-demand test
+screenshot you can see the resource usage during an on-demand test
 invoked from the command line. The *init* phase of the test is the one
 where Neubot generates the random data to send during the upload phase.
-(The resources usage is much lower if you run the test at home, given
+(The resource usage is much lower if you run the test at home, given
 that Politecnico network is 5x/10x faster than most ADSLs.)
 
 .. image:: http://www.neubot.org/neubotfiles/resources1.png
@@ -406,14 +405,14 @@ particular memory) when Neubot is idle.
 To report bugs and ask questions, please use our mailing list. The
 official languages for the mailing list are English and Italian.
 
-Note that you **must** subscribe the mailing list first, because otherwise
-your message **would not** be accepted. To subscribe, go to:
+Note that you **must** subscribe to the mailing list first, otherwise
+your message **will not** be accepted. To subscribe, go to:
 
       http://www.neubot.org/cgi-bin/mailman/listinfo/neubot
 
 The mailing list subscription page does not have a valid SSL certificate
-and your browser is likely to complain.  Don't be scared by that, it
-is the page to register to Neubot mailing list, not your bank account.
+and your browser is likely to complain.  Don't be scared; it
+is the page to register to the Neubot mailing list, not your bank account.
 
 We advise you to search the public archive **before** posting a message,
 because others might have already asked the same question or reported
@@ -469,14 +468,14 @@ out of each file, as follows::
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 No.  Logs are always saved in the database, but Neubot will periodically
-prune old logs.  Under UNIX logs are also saved using ``syslog(3)``, which
+prune old logs.  On UNIX logs are also saved using ``syslog(3)``, which
 should automatically rotate them.
 
 3.8. Do I have to periodically rotate the database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Yes. Neubot database should grow slowly in space over time. (My
-workstation database weights 2 MBytes after 8 months, and I frequently
+workstation database weighs 2 MBytes after 8 months, and I frequently
 run a test every 30 seconds for testing purpose.) To prune the database
 run the following command (as root)::
 
@@ -498,10 +497,10 @@ Windows Neubot is started when the user logs in for the first time
 Neubot has a minimal impact on system and network load. It spends most
 of its time asleep or waiting for its turn to perform a test. During a
 test Neubot consumes a lot of system and network resources but the
-program tries to guarantee that the test does not take not too much
+program tries to guarantee that the test does not take too much
 time, as detailed below.
 
-Periodically, Neubot downloads form the *Master Server* information on
+Periodically, Neubot downloads form the *Master Server* information about
 the next test it should perform, including the name of the test, the
 Test Server to connect to, and possibly other parameters. If there are
 updates available, the Master Server response includes update
@@ -519,16 +518,15 @@ servers.
 Finally, after the test, Neubot sleeps for a long time, before
 connecting again to the Master Server.
 
-As of version 0.4.2, Neubot uses to following algorithm to keep the test
+As of version 0.4.2, Neubot uses the following algorithm to keep the test
 duration bounded. The default amount of bytes to transfer is designed to
 allow for reasonable testing time with slow ADSL connections. After the
-test, Neubot adapts the number of bytes to be transferred by next test
-so that the next test would take about five seconds, under current
-conditions. Also, it repeats the test for up to seven times if the test
+test, Neubot adapts the number of bytes to be transferred for the next test
+so that the next test will take about five seconds, regardless of connection
+speed. Also, it repeats the test up to seven times if the test
 did not take at least three seconds.
 
-*(Future versions of Neubot will implement peer-to-peer tests, i.e.
-within instances of Neubot.)*
+*(Future versions of Neubot will implement peer-to-peer tests within instances of Neubot.)*
 
 4.2. What does *speedtest* test measures?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -544,7 +542,7 @@ required to transfer them.
 4.3. How does Neubot change my Windows registry?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The installer writes the two following registry keys::
+The installer writes the following two registry keys::
 
     HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\neubot"
     HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Neubot"
@@ -614,18 +612,18 @@ suffer if, for example:
 #. you don't live `near our server`_;
 #. our server is overloaded.
 
-I.e. you must take Neubot results `cum grano salis`_.
+I.e. you must take Neubot results `with a grain of salt`_.
 
 4.8. Is it possible to compare speedtest and bittorrent results?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The bittorrent test was released in 0.4.0. At that time the comparison
 was not always possible because the speedtest test used two connections
-while the bittorrent one used only one, resulting in worst performances
-with high-speed, high-delay and/or more congested network. Neubot 0.4.2
+while the bittorrent one used only one, resulting in worse performance
+with high-speed, high-delay and/or more congested networks. Neubot 0.4.2
 fixed this issue and modified speedtest to use just one connection.
 
-This is not enough.  Before Neubot 0.5.0 more work is due to make the
+This is not enough.  Before Neubot 0.5.0 more work must be done to make the
 behavior of the two tests much more similar, allowing for a fair comparison
 of them.
 
@@ -639,13 +637,13 @@ of them.
 
 Neubot does not inspect your traffic, does not monitor the sites you
 have visited, etc. Neubot use a fraction of your network capacity
-to run periodic transmission tests and this tests either use random data
+to run periodic transmission tests and these tests use either random data
 or data from our servers.
 
 Neubot collects the Internet address of the computer where it is
 running. We have to collect your Internet address (which is personal
 data) because it tells us your Internet Service Provider and (roughly)
-your location. Both information are functional to our goal of monitoring
+your location. Both information are imperative to our goal of monitoring
 network neutrality.
 
 We identify each instance of Neubot with a random unique identifier. We
@@ -675,15 +673,14 @@ review its measurements and data analysis methodology.
 
 Of course, Neubot cannot publish your Internet address without your
 prior informed consent, in compliance with European privacy laws.
-For this reason, it asks you this permission during the installation,
+For this reason, it asks for permission during the installation,
 if applicable, or during operation.  It goes without saying that it
 will not start any test until you have read the privacy policy and
 provided the permission to publish your Internet address.
 
 One more reason why Neubot cannot run any test until you provide
-the permission to publish your Internet address is that this is
-also request by the policy of the distributed server platform that
-empowers the Neubot Project, Measurement Lab (M-Lab_), which requires
+the permission to publish your Internet address is that Measurement Lab (M-Lab_),
+the distributed server platform that empowers the Neubot Project, requires
 all results to be released as open data.
 
 For more information, please refer to the `privacy policy`_.
@@ -693,7 +690,7 @@ For more information, please refer to the `privacy policy`_.
 6. Data questions
 -----------------
 
-6.1. Where are data published?
+6.1. Where is data published?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Data is automatically harvested and published by Measurement Lab, as
@@ -742,8 +739,8 @@ format:
 7.1. What is the web user interface?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The web user interface is a web-based interface that allows to
-control **neubot** and show recent results.  By default, when
+The web user interface is a web-based interface that allows the user to
+control **neubot** and shows recent results.  By default, when
 **neubot** is started, it binds port ``9774`` on ``127.0.0.1``
 and waits for web requests.
 
@@ -778,12 +775,12 @@ the following command::
 opens a custom ``Gtk+`` application that embeds ``WebKit`` and uses
 it to show the web user interface.
 
-On **any platform**, of course, the user can open her favorite web
+On **any platform**, of course, the user can open his or her favorite web
 browser and point it to the following URI::
 
     http://127.0.0.1:9774/
 
-7.3. What does the status page shows?
+7.3. What does the status page show?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *status* page (which is the default one) shows the status of Neubot,
@@ -792,7 +789,7 @@ and the result of the latest transmission test.
 .. image:: http://www.neubot.org/neubotfiles/faq-wui-status.png
    :align: center
 
-7.4. What does the speedtest page shows?
+7.4. What does the speedtest page show?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *speedtest* page shows the results of recent *speedtest* tests, i.e.
@@ -802,7 +799,7 @@ form.
 .. image:: http://www.neubot.org/neubotfiles/faq-wui-speedtest.png
    :align: center
 
-7.5. What does the bittorrent page shows?
+7.5. What does the bittorrent page show?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *bittorrent* page shows the results of recent *bittorrent* tests, i.e.
@@ -812,7 +809,7 @@ form.
 .. image:: http://www.neubot.org/neubotfiles/faq-wui-bittorrent.png
    :align: center
 
-7.6. What does the log page shows?
+7.6. What does the log page show?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *log* page shows recent logs.  The color of each log entry reflects
@@ -828,7 +825,7 @@ One can refresh the page by clicking on the `Refresh page` link.
 .. image:: http://www.neubot.org/neubotfiles/faq-wui-log.png
    :align: center
 
-7.7. What does the privacy page shows?
+7.7. What does the privacy page show?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *privacy* page shows the privacy policy and allows to set privacy
@@ -837,7 +834,7 @@ permissions.  See `5. Privacy questions`_ section for more info.
 .. image:: http://www.neubot.org/neubotfiles/faq-wui-privacy.png
    :align: center
 
-7.8. What does the settings page shows?
+7.8. What does the settings page show?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *settings* page shows and allow to change Neubot settings.  One must
