@@ -75,14 +75,13 @@ class Brigade(object):
                 length -= len(bucket)
         return EMPTY.join(retval)
 
+    def getvalue(self):
+        ''' Read the whole content of the brigade '''
+        return self.pullup(self.total)
+
     def getline(self, maxline):
         ''' Read line from brigade '''
-        if self.total >= maxline:
-            tmp = self.pullup(maxline)
-        else:
-            tmp = self.pullup(self.total)
-            self.brigade.clear()
-            self.total = 0
+        tmp = self.pullup(min(maxline, self.total))
         index = tmp.find(NEWLINE)
         if index >= 0:
             line = tmp[:index + 1]

@@ -33,7 +33,7 @@ class Body(object):
     def __init__(self):
         self.queue = []
 
-    def write(self, octets):
+    def write(self, stream, octets):
         ''' Write octets into body '''
         self.queue.append(octets)
 
