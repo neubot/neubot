@@ -27,24 +27,18 @@
 import os
 
 if os.name == "nt":
-    from neubot.system_win32 import change_dir
     from neubot.system_win32 import go_background
     from neubot.system_win32 import drop_privileges
-    from neubot.system_win32 import redirect_to_dev_null
     from neubot.system_win32 import _get_profile_dir
-    from neubot.system_win32 import _get_pidfile_dir
     from neubot.system_win32 import _want_rwx_dir
     from neubot.system_win32 import _want_rw_file
     from neubot.system_win32 import get_background_logger
     from neubot.system_win32 import has_enough_privs
 
 elif os.name == "posix":
-    from neubot.system_posix import change_dir
     from neubot.system_posix import go_background
     from neubot.system_posix import drop_privileges
-    from neubot.system_posix import redirect_to_dev_null
     from neubot.system_posix import _get_profile_dir
-    from neubot.system_posix import _get_pidfile_dir
     from neubot.system_posix import _want_rwx_dir
     from neubot.system_posix import _want_rw_file
     from neubot.system_posix import get_background_logger
@@ -52,15 +46,6 @@ elif os.name == "posix":
 
 else:
     raise RuntimeError("Your system is not supported")
-
-def write_pidfile():
-    ''' Write pidfile '''
-    dirname = _get_pidfile_dir()
-    if dirname:
-        pathname = os.sep.join([ dirname, "neubot.pid" ])
-        filep = open(pathname, "w")
-        filep.write("%d\n" % os.getpid())
-        filep.close()
 
 def get_default_database_path():
     ''' Get default database path '''

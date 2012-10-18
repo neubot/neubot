@@ -310,10 +310,8 @@ def main(args):
     # then enter into the main loop.
     #
     if conf["server.daemonize"]:
-        system.change_dir()
-        system.go_background()
-        system.write_pidfile()
         LOG.redirect()
+        system.go_background()
 
     system.drop_privileges()
     POLLER.loop()
