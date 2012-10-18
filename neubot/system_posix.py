@@ -126,7 +126,7 @@ def go_background():
     if os.fork() > 0:
         os._exit(0)
 
-def drop_privileges(user=USER):
+def drop_privileges():
 
     '''
      Drop root privileges and run on behalf of the specified
@@ -134,7 +134,7 @@ def drop_privileges(user=USER):
     '''
 
     if os.getuid() == 0:
-        passwd = utils_posix.getpwnam(user)
+        passwd = utils_posix.getpwnam(USER)
         utils_posix.chuser(passwd)
 
 def redirect_to_dev_null():
