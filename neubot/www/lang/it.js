@@ -92,7 +92,7 @@ test di trasmissione. L'ultima posizione nota in coda è \
 risultati sul server di Neubot.",
 
     'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.15.5. \
-Neubot è un programma <a href='http://www.neubot.org/copying'>open-source</a> \
+Neubot è un programma <a href='http://www.neubot.org/copying'>free software</a> \
 leggero che viene eseguito in background ed esegue periodicamente test \
 di trasmissione dati per testare la tua connessione a Internet utilizzando \
 diversi protocolli applicativi. <a href='http://www.neubot.org/faq'>Leggi \

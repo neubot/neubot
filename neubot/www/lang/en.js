@@ -49,7 +49,7 @@ var LANG = {
 
     'i18n_about_text':
 'This is the web user interface of Neubot v0.4.15.5.\
- Neubot is a lightweight <a href="http://www.neubot.org/copying">open-source</a> program\
+ Neubot is a lightweight <a href="http://www.neubot.org/copying">free software</a> program\
  that runs in background and periodically performs\
  transmission tests to probe your Internet connection\
  using various application level protocols. <a href="http://www.neubot.org/faq">Read more</a>',
