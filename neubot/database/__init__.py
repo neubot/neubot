@@ -71,7 +71,7 @@ class DatabaseManager(object):
             # normal users.  In this case, mark the database as readonly since
             # write operation are going to raise exceptions.
             #
-            if os.name == 'posix' and not system.running_as_root():
+            if not system.has_enough_privs():
                 logging.warning('database: opening database in readonly mode')
                 self.readonly = True
                 return self.dbc

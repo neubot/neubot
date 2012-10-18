@@ -181,6 +181,6 @@ def _get_pidfile_dir():
     else:
         return None
 
-def running_as_root():
-    ''' Returns true if this process is running as root '''
+def has_enough_privs():
+    ''' Returns true if this process has enough privileges '''
     return os.getuid() == 0
