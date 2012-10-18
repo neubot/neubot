@@ -142,7 +142,7 @@ class RawNegotiate(HttpClient):
         self.append_bytes(stream, body)
         http_utils.prettyprint_json(request, '>')
         self.send_message(stream)
-        context.body = six.StringIO()  # Want to save body
+        context.body = http_utils.Body()  # Want to save body
         extra['requests'] += 1
 
     def handle_end_of_body(self, stream):
@@ -277,7 +277,7 @@ class RawNegotiate(HttpClient):
         self.append_bytes(stream, body)
         http_utils.prettyprint_json(result, '>')
         self.send_message(stream)
-        context.body = six.StringIO()  # Want to save body
+        context.body = http_utils.Body()  # Want to save body
         extra['requests'] += 1
 
     def _process_collect_response(self, stream, remote_result):

@@ -46,6 +46,7 @@ MAXPIECE = 524288
 MAXREAD = 8000
 MAXRECEIVE = 262144
 
+CHARSET = six.b('charset')
 CHUNKED = six.b('chunked')
 CLOSE = six.b('close')
 CODE204 = six.b('204')
@@ -54,14 +55,17 @@ COLON = six.b(':')
 COMMASPACE = six.b(', ')
 CONNECTION = six.b('connection')
 CONTENT_LENGTH = six.b('content-length')
+CONTENT_TYPE = six.b('content-type')
 CRLF = six.b('\r\n')
 EMPTY_STRING = six.b('')
+EQUAL = six.b('=')
 HEAD = six.b('HEAD')
 HTTP_PREFIX = six.b('HTTP/')
 HTTP10 = six.b('HTTP/1.0')
 HTTP11 = six.b('HTTP/1.1')
 LAST_CHUNK = six.b('0\r\n')
 ONE = six.b('1')
+SEMICOLON = six.b(';')
 SPACE = six.b(' ')
 TAB = six.b('\t')
 TRANSFER_ENCODING = six.b('transfer-encoding')
@@ -416,7 +420,7 @@ class HttpClient(Handler):
         # Note: by default the body is discarded
         context = stream.opaque
         if context.body:
-            context.body.write(piece)
+            context.body.write(stream, piece)
 
     def handle_end_of_body(self, stream):
         ''' Handle the END_OF_BODY event '''
@@ -438,7 +442,7 @@ class HttpClientSmpl(HttpClient):
     def connection_made(self, stream):
         ''' Invoked when the connection is established '''
         context = stream.opaque
-        address, port, paths, cntvec, close = context.extra
+        address, port, paths, cntvec, close = context.extra[:5]
         if not paths:
             stream.close()
             return
@@ -461,6 +465,29 @@ class HttpClientSmpl(HttpClient):
         context.body = self  # Want to print the body
         cntvec[0] += 1
 
+    def handle_end_of_headers(self, stream):
+        HttpClient.handle_end_of_headers(self, stream)
+        context = stream.opaque
+        encoding = context.extra[5]
+        value = context.headers.get(CONTENT_TYPE)
+        if not value:
+            return
+        # type"/"subtype *( ";"parameter )
+        index = value.find(SEMICOLON)
+        if index < 0:
+            return
+        value = value[index + 1:]
+        tokens = value.split(SEMICOLON)
+        for token in tokens:
+            index = token.find(EQUAL)
+            if index < 0:
+                continue
+            name = token[:index].strip().lower()
+            value = token[index + 1:].strip()
+            if name == CHARSET:
+                encoding[0] = six.bytes_to_string_safe(value, 'ascii')
+                logging.debug('http_clnt: response encoding: %s', encoding[0])
+
     def handle_end_of_body(self, stream):
         HttpClient.handle_end_of_body(self, stream)
         context = stream.opaque
@@ -477,10 +504,12 @@ class HttpClientSmpl(HttpClient):
         self.connection_made(stream)
 
     @staticmethod
-    def write(data):
+    def write(stream, data):
         ''' Write data on standard output '''
         # Remember that with Python 3 we need to decode data
-        sys.stdout.write(six.bytes_to_string(data, 'utf-8'))
+        context = stream.opaque
+        encoding = context.extra[5]
+        sys.stdout.write(six.bytes_to_string(data, encoding[0]))
 
 USAGE = 'usage: neubot http_clnt [-6CSv] [-A address] [-p port] path...'
 
@@ -518,7 +547,8 @@ def main(args):
 
     handler = HttpClientSmpl()
     handler.connect((address, port), prefer_ipv6, sslconfig,
-      (address, port, collections.deque(arguments), [0], close))
+      (address, port, collections.deque(arguments), [0], close,
+       ['utf-8']))
     POLLER.loop()
 
 if __name__ == '__main__':
