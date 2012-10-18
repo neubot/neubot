@@ -52,6 +52,9 @@ from neubot import utils_hier
 def main(args):
     """ Main function """
 
+    if not system.has_enough_privs():
+        sys.exit('FATAL: you must be root')
+
     common.main("agent", "Run in background, periodically run tests", args)
 
     conf = CONFIG.copy()

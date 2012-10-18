@@ -194,6 +194,9 @@ VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.debug',
 def main(args):
     """ Starts the server module """
 
+    if not system.has_enough_privs():
+        sys.exit('FATAL: you must be root')
+
     try:
         options, arguments = getopt.getopt(args[1:], 'b:D:dv')
     except getopt.error:

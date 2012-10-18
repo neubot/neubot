@@ -111,15 +111,12 @@ def go_background():
                        pidfile='/var/run/neubot.pid')
 
 def drop_privileges():
-
     '''
      Drop root privileges and run on behalf of the specified
      unprivileged users.
     '''
-
-    if os.getuid() == 0:
-        passwd = utils_posix.getpwnam(USER)
-        utils_posix.chuser(passwd)
+    passwd = utils_posix.getpwnam(USER)
+    utils_posix.chuser(passwd)
 
 def _want_rw_file(path):
 
