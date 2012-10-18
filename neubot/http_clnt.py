@@ -123,10 +123,16 @@ class HttpClient(Handler):
         logging.debug('http_clnt: stream setup... complete')
         context.connection_made(stream)
 
-    @staticmethod
-    def _handle_connection_lost(stream):
+    def _handle_connection_lost(self, stream):
         ''' Internally handles the CONNECTION_LOST event '''
         context = stream.opaque
+        if context.handle_piece == self._handle_piece_unbounded and stream.eof:
+            logging.debug('http_clnt: EOF terminates unbounded body')
+            # There may be bufferised data
+            piece = context.getvalue()
+            if piece:
+                context.handle_piece(stream, piece)
+            self.handle_end_of_body(stream)
         if context.connection_lost:
             context.connection_lost(stream)
 
@@ -432,7 +438,7 @@ class HttpClientSmpl(HttpClient):
     def connection_made(self, stream):
         ''' Invoked when the connection is established '''
         context = stream.opaque
-        address, port, paths, cntvec = context.extra
+        address, port, paths, cntvec, close = context.extra
         if not paths:
             stream.close()
             return
@@ -441,6 +447,15 @@ class HttpClientSmpl(HttpClient):
         self.append_header(stream, 'User-Agent', utils_version.HTTP_HEADER)
         self.append_header(stream, 'Cache-Control', 'no-cache')
         self.append_header(stream, 'Pragma', 'no-cache')
+        #
+        # GET http://mlab-ns.appspot.com/neubot returns a chunked response if
+        # the client does not send 'Connection: close'.  Otherwise the response
+        # is up to EOF.  Also http://www.google.it/ seems to behave the same
+        # way.  Therefore, the close knob allows to test the client compliancy
+        # in light of this behavior.
+        #
+        if close:
+            self.append_header(stream, 'Connection', 'close')
         self.append_end_of_headers(stream)
         self.send_message(stream)
         context.body = self  # Want to print the body
@@ -461,18 +476,19 @@ class HttpClientSmpl(HttpClient):
             return
         self.connection_made(stream)
 
-    def write(self, data):
+    @staticmethod
+    def write(data):
         ''' Write data on standard output '''
         # Remember that with Python 3 we need to decode data
         sys.stdout.write(six.bytes_to_string(data, 'utf-8'))
 
-USAGE = 'usage: neubot http_clnt [-6Sv] [-A address] [-p port] path...'
+USAGE = 'usage: neubot http_clnt [-6CSv] [-A address] [-p port] path...'
 
 def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'A:p:Sv')
+        options, arguments = getopt.getopt(args[1:], 'A:Cp:Sv')
     except getopt.error:
         sys.exit(USAGE)
     if not arguments:
@@ -480,6 +496,7 @@ def main(args):
 
     prefer_ipv6 = 0
     address = '127.0.0.1'
+    close = 0
     sslconfig = 0
     port = 80
     level = logging.INFO
@@ -488,6 +505,8 @@ def main(args):
             prefer_ipv6 = 1
         elif name == '-A':
             address = value
+        elif name == '-C':
+            close = 1
         elif name == '-p':
             port = int(value)
         elif name == '-S':
@@ -499,7 +518,7 @@ def main(args):
 
     handler = HttpClientSmpl()
     handler.connect((address, port), prefer_ipv6, sslconfig,
-      (address, port, collections.deque(arguments), [0]))
+      (address, port, collections.deque(arguments), [0], close))
     POLLER.loop()
 
 if __name__ == '__main__':
