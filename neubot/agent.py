@@ -48,6 +48,7 @@ from neubot.main import common
 from neubot import privacy
 from neubot import system
 from neubot import utils_hier
+from neubot import utils_version
 
 def main(args):
     """ Main function """
@@ -79,8 +80,6 @@ def main(args):
     if conf["agent.use_syslog"]:
         LOG.redirect()
 
-    system.drop_privileges()
-
     #
     # When we run as an agent we also save logs into
     # the database, to easily access and show them via
@@ -88,10 +87,17 @@ def main(args):
     #
     LOG.use_database()
 
+    logging.info('%s for POSIX: starting up', utils_version.PRODUCT)
+
+    system.drop_privileges()
+
     if conf["agent.rendezvous"]:
         BACKGROUND_RENDEZVOUS.start()
 
     POLLER.loop()
+
+    logging.info('%s for POSIX: shutting down', utils_version.PRODUCT)
+    LOG.writeback()
 
     #
     # Make sure that we do not leave the database
