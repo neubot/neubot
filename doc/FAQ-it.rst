@@ -83,7 +83,7 @@
 
 Neubot è un progetto di ricerca sulla neutralità della rete del `Centro
 NEXA su Internet & Società`_ del `Politecnico di Torino`_. Il progetto si
-basa su un programma leggero e `open source`_ che gli utenti interessati
+basa su un programma leggero e `free software`_ che gli utenti interessati
 possono scaricare e installare sul proprio computer. Il programma funziona
 in background ed effettua periodicamente prove di trasmissione con alcuni
 server di prova, ospitati dalla piattaforma distribuita `Measurement Lab`_,
@@ -977,4 +977,4 @@ opzione può assumere uno dei seguenti valori:
 .. _`protocollo HTTP`: http://en.wikipedia.org/wiki/HTTP
 
 .. _`Politecnico di Torino`: http://www.dauin.polito.it/
-.. _`open source`: https://github.com/neubot/neubot/blob/master/COPYING
+.. _`free software`: https://github.com/neubot/neubot/blob/master/COPYING

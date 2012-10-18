@@ -83,7 +83,7 @@
 
 Neubot is a research project on network neutrality of the `NEXA Center for
 Internet & Society`_ at `Politecnico di Torino`_. The project is based on
-a lightweight `open source`_ program that interested users can download
+a lightweight `free software`_ program that interested users can download
 and install on their computers. The program runs in the background and
 periodically performs transmission tests with test servers, hosted by
 the distributed `Measurement Lab`_ platform, and (in future) with other
@@ -919,7 +919,7 @@ using the *settings* page.  Currently the value can be one of:
 .. _`HTTP protocol`: http://en.wikipedia.org/wiki/HTTP
 
 .. _`Politecnico di Torino`: http://www.dauin.polito.it/
-.. _`open source`: https://github.com/neubot/neubot/blob/master/COPYING
+.. _`free software`: https://github.com/neubot/neubot/blob/master/COPYING
 
 .. _`near our server`: http://en.wikipedia.org/wiki/TCP_tuning#Window_size
 .. _`cum grano salis`: http://en.wikipedia.org/wiki/Grain_of_salt
