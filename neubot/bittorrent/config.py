@@ -46,7 +46,6 @@ PROPERTIES = (
     ('bittorrent.address', '', 'Address to listen/connect to ("" = auto)'),
     ('bittorrent.bytes.down', 0, 'Num of bytes to download (0 = auto)'),
     ('bittorrent.bytes.up', 0, 'Num of bytes to upload (0 = auto)'),
-    ('bittorrent.daemonize', False, 'Become a daemon and run in background'),
     ('bittorrent.infohash', '', 'Set InfoHash ("" = auto)'),
     ('bittorrent.listen', False, 'Run in server mode'),
     ('bittorrent.negotiate', True, 'Enable negotiate client/server'),

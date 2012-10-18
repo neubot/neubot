@@ -40,14 +40,13 @@ from neubot.net.poller import POLLER
 
 from neubot.bittorrent import config
 from neubot.config import CONFIG
-from neubot.log import LOG, oops
+from neubot.log import oops
 from neubot.notify import NOTIFIER
 from neubot.main import common
 
 from neubot import negotiate
 from neubot import privacy
 from neubot import runner_clnt
-from neubot import system
 from neubot import utils
 
 #
@@ -134,17 +133,6 @@ def main(args):
                                conf["bittorrent.negotiate.port"]))
             conf["negotiate.listen"] = True
             negotiate.run(POLLER, conf)
-
-        #
-        # Drop privileges after listen() so we can
-        # bind() to privileged ports
-        #
-        if conf["bittorrent.daemonize"]:
-            system.change_dir()
-            system.go_background()
-            LOG.redirect()
-
-        system.drop_privileges()
 
     else:
 
