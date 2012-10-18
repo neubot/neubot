@@ -509,7 +509,8 @@ class HttpClientSmpl(HttpClient):
         # Remember that with Python 3 we need to decode data
         context = stream.opaque
         encoding = context.extra[5]
-        sys.stdout.write(six.bytes_to_string(data, encoding[0]))
+        data = six.bytes_to_string(data, encoding[0])
+        sys.stdout.write(data)
 
 USAGE = 'usage: neubot http_clnt [-6CSv] [-A address] [-p port] path...'
 
