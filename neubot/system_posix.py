@@ -34,9 +34,7 @@
 
 USER = '_neubot'
 
-import pwd
-import os.path
-import signal
+import os
 import syslog
 
 from neubot import utils_hier
@@ -66,21 +64,6 @@ def get_background_logger():
     syslog.openlog("neubot", syslog.LOG_PID, syslog.LOG_DAEMON)
     return __logger
 
-def lookup_user_info(uname):
-
-    '''
-     Lookup and return the specified user's uid and gid.
-     This function is not part of the function that changes
-     user context because you may want to chroot() before
-     dropping root privileges.
-    '''
-
-    try:
-        return pwd.getpwnam(uname)
-    except KeyError:
-        syslog.syslog(syslog.LOG_ERR, 'No such "%s" user.  Exiting' % uname)
-        os._exit(1)
-
 def _get_profile_dir():
     ''' The profile directory is always LOCALSTATEDIR '''
     return utils_hier.LOCALSTATEDIR
@@ -102,7 +85,7 @@ def _want_rwx_dir(datadir):
 
     # Change directory ownership
     if os.getuid() == 0:
-        passwd = lookup_user_info(USER)
+        passwd = utils_posix.getpwnam(USER)
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
@@ -132,7 +115,7 @@ def _want_rw_file(path):
 
     # Enforce file ownership
     if os.getuid() == 0:
-        passwd = lookup_user_info(USER)
+        passwd = utils_posix.getpwnam(USER)
         os.chown(path, passwd.pw_uid, passwd.pw_gid)
 
     # Set permissions
