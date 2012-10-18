@@ -210,7 +210,6 @@ class Logger(object):
 
     def redirect(self):
         self.logger = system.get_background_logger()
-        system.redirect_to_dev_null()
 
     def _writeback(self):
         """Really commit pending log records into the database"""

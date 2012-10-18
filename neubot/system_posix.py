@@ -85,10 +85,6 @@ def _get_profile_dir():
     ''' The profile directory is always LOCALSTATEDIR '''
     return utils_hier.LOCALSTATEDIR
 
-def change_dir():
-    ''' Switch from current directory to root directory '''
-    os.chdir("/")
-
 def _want_rwx_dir(datadir):
 
     '''
@@ -111,20 +107,8 @@ def _want_rwx_dir(datadir):
 
 def go_background():
     ''' Detach from the shell and run in background '''
-
-    # Ignore SIGINT
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-    # Detach from the current shell
-    if os.fork() > 0:
-        os._exit(0)
-
-    # Create a new session
-    os.setsid()
-
-    # Detach from the new session
-    if os.fork() > 0:
-        os._exit(0)
+    utils_posix.detach(detach=1, close_stdio=1, chdir='/', ignore_signals=1,
+                       pidfile='/var/run/neubot.pid')
 
 def drop_privileges():
 
@@ -136,18 +120,6 @@ def drop_privileges():
     if os.getuid() == 0:
         passwd = utils_posix.getpwnam(USER)
         utils_posix.chuser(passwd)
-
-def redirect_to_dev_null():
-
-    ''' Redirect stdin, stdout and stderr to /dev/null '''
-
-    # Close descriptors
-    for filedesc in range(3):
-        os.close(filedesc)
-
-    # Re-open and point to /dev/null
-    for _ in range(3):
-        os.open("/dev/null", os.O_RDWR)
 
 def _want_rw_file(path):
 
@@ -168,18 +140,6 @@ def _want_rw_file(path):
 
     # Set permissions
     os.chmod(path, 420)         # 0644 in base 10
-
-def _get_pidfile_dir():
-
-    '''
-     This function returns the directory where the pidfile is to
-     be written or None if the user is not privileged.
-    '''
-
-    if os.getuid() == 0:
-        return "/var/run"
-    else:
-        return None
 
 def has_enough_privs():
     ''' Returns true if this process has enough privileges '''

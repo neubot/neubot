@@ -28,9 +28,6 @@ import os.path
 
 from neubot import utils_hier
 
-def change_dir():
-    ''' Change directory '''
-
 def _get_profile_dir():
     ''' Get database directory '''
     return utils_hier.LOCALSTATEDIR
@@ -46,16 +43,10 @@ def go_background():
 def drop_privileges():
     ''' Drop root privileges '''
 
-def redirect_to_dev_null():
-    ''' Redirect stdio to /dev/null '''
-
 def _want_rw_file(path):
     ''' Ensure the file has RW perms '''
     filep = open(path, "ab+")
     filep.close()
-
-def _get_pidfile_dir():
-    ''' Return directory where to write pidfile '''
 
 #
 # We tried NT Event Logger but it is not as friendly as

@@ -70,10 +70,8 @@ def main(args):
                        conf["agent.api.port"]))
 
     if conf["agent.daemonize"]:
-        system.change_dir()
-        system.go_background()
-        system.write_pidfile()
         LOG.redirect()
+        system.go_background()
 
     if conf["agent.use_syslog"]:
         LOG.redirect()
