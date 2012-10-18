@@ -350,7 +350,7 @@ class HttpClient(Handler):
             raise RuntimeError('http_clnt: invalid content length')
 
         logging.debug('http_clnt: expecting unbounded message body')
-        context.get_piece = self._handle_piece_unbounded
+        context.handle_piece = self._handle_piece_unbounded
         context.left = MAXPIECE
 
     def _handle_chunklen(self, stream, line):
