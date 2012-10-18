@@ -336,7 +336,14 @@ class HttpClient(Handler):
 
         if (context.method == HEAD or context.code[0] == ONE or
           context.code == CODE204 or context.code == CODE304):
-            logging.debug('http_clnt: expecting no message body')
+            logging.debug('http_clnt: no message body')
+            #
+            # Cannot invoke handle_end_of_body() here since we need first to
+            # finish processing the END_OF_HEADERS event.  Think, e.g. at the
+            # case where the parent class runs its END_OF_HEADERS handler
+            # just after the generic one.
+            #
+            POLLER.sched(0, self._handle_end_of_body_delayed, stream)
             self.handle_end_of_body(stream)
             return
 
@@ -354,14 +361,21 @@ class HttpClient(Handler):
                 context.left = length
                 return
             if length == 0:
-                logging.debug('http_clnt: expecting no message body')
-                self.handle_end_of_body(stream)
+                logging.debug('http_clnt: empty message body')
+                # See above for rationale of delayed END_OF_BODY
+                POLLER.sched(0, self._handle_end_of_body_delayed, stream)
                 return
             raise RuntimeError('http_clnt: invalid content length')
 
         logging.debug('http_clnt: expecting unbounded message body')
         context.handle_piece = self._handle_piece_unbounded
         context.left = MAXPIECE
+
+    def _handle_end_of_body_delayed(self, args):
+        ''' Handles the END_OF_BODY delayed event '''
+        logging.debug('http_clnt: processing delayed END_OF_BODY')
+        stream = args[0]
+        self.handle_end_of_body(stream)
 
     def _handle_chunklen(self, stream, line):
         ''' Handles the CHUNKLEN event '''
