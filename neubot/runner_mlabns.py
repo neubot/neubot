@@ -90,7 +90,7 @@ class RunnerMlabns(HttpClient):
         self.append_header(stream, 'User-Agent', utils_version.HTTP_HEADER)
         self.append_header(stream, 'Cache-Control', 'no-cache')
         self.append_header(stream, 'Pragma', 'no-cache')
-        #self.append_header(stream, 'Connection', 'close')
+        self.append_header(stream, 'Connection', 'close')
         self.append_end_of_headers(stream)
         self.send_message(stream)
         context.body = http_utils.Body()  # Want to save body
