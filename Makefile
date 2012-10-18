@@ -143,7 +143,6 @@ DATADIR ?= $(PREFIX)/share
 LOCALSTATEDIR ?= $(PREFIX)/var
 MANDIR ?= $(PREFIX)/share/man
 SYSCONFDIR ?= $(PREFIX)/etc
-USER ?= '_neubot'
 
 _install:
 	find . -type f -name .DS_Store -exec rm {} \;
@@ -191,8 +190,7 @@ _install:
 	$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)/neubot
 	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g' \
 	        's|@LOCALSTATEDIR@|$(LOCALSTATEDIR)|g' \
-	        's|@SYSCONFDIR@|$(SYSCONFDIR)|g' \
-	        's|@USER@|$(USER)|g'; do \
+	        's|@SYSCONFDIR@|$(SYSCONFDIR)|g'; do \
 	    ./scripts/sed_inplace $$PATTERN \
 	        $(DESTDIR)$(BINDIR)/neubot \
 	        $(DESTDIR)$(DATADIR)/applications/neubot.desktop \

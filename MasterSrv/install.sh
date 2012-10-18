@@ -42,7 +42,6 @@ $DEBUG $INSTALL rc.local /etc/rc.local
 $DEBUG /bin/grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
 $DEBUG /bin/grep -q ^_neubot /etc/passwd || \
        $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
-$DEBUG sed -i 's/@USER@/_neubot/g' /home/simone/neubot/neubot/system_posix.py
 $DEBUG $INSTALL -d /var/lib/neubot
 
 $DEBUG $INSTALL -d /usr/local/share/GeoIP

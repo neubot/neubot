@@ -32,13 +32,7 @@
 # the latter can.
 #
 
-#
-# By default use `nobody`, so it's possible to develop Neubot on UNIX systems
-# where the `_neubot` user does not exist.
-#
-USER = '@USER@'
-if USER.startswith('@'):
-    USER='nobody'
+USER = '_neubot'
 
 import pwd
 import os.path
