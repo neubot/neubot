@@ -36,7 +36,7 @@ if [ `id -u` -ne 0 ]; then
     exit 1
 fi
 
-VER=0.4.15.5
+VER=0.4.16.0
 
 echo 'BEGIN: Create debian package...'
 test -f dist/neubot-$VER-1_all.deb || { make clean; make deb; }
