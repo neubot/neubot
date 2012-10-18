@@ -57,9 +57,7 @@ from neubot import utils_version
 
 APPLICATION_JSON = six.b('application/json')
 CODE200 = six.b('200')
-CODE302 = six.b('302')
 CONTENT_TYPE = six.b('content-type')
-LOCATION = six.b('location')
 
 class RawNegotiate(HttpClient):
 
@@ -72,15 +70,13 @@ class RawNegotiate(HttpClient):
     #
 
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
-        redirected = 'redirs' in extra
 
         # Reset web interface
-        if not redirected:
-            STATE.update('test_latency', '---', publish=False)
-            STATE.update('test_download', '---', publish=False)
-            STATE.update('test_upload', '---', publish=False)
-            STATE.update('test_name', 'raw', publish=False)
-            STATE.update('negotiate')
+        STATE.update('test_latency', '---', publish=False)
+        STATE.update('test_download', '---', publish=False)
+        STATE.update('test_upload', '---', publish=False)
+        STATE.update('test_name', 'raw', publish=False)
+        STATE.update('negotiate')
 
         # Variables
         extra['address'] = endpoint[0]
@@ -88,8 +84,6 @@ class RawNegotiate(HttpClient):
         extra['local_result'] = None
         extra['port'] = endpoint[1]
         extra['prefer_ipv6'] = prefer_ipv6
-        if not redirected:
-            extra['redirs'] = 8
         extra['requests'] = 0
         extra['saved_stream'] = None
         extra['final_state'] = 0
@@ -111,9 +105,6 @@ class RawNegotiate(HttpClient):
         context = stream.opaque
         if context:
             extra = context.extra
-            if extra and extra.get('prevent_publish'):
-                del extra['prevent_publish']
-                return
             if extra:
                 final_state = extra['final_state']
         if not final_state:
@@ -153,24 +144,6 @@ class RawNegotiate(HttpClient):
         if extra['requests'] <= 0:
             raise RuntimeError('raw_negotiate: unexpected response')
         extra['requests'] -= 1
-        if context.code == CODE302:
-            tmp = context.headers.get(LOCATION)
-            if not tmp:
-                logging.error('raw_negotiate: missing location header')
-                stream.close()
-                return
-            extra['redirs'] -= 1
-            if extra['redirs'] <= 0:
-                logging.error('raw_negotiate: too many redirections')
-                stream.close()
-                return
-            extra['prevent_publish'] = 1
-            stream.close()
-            logging.info('raw_negotiate: follow redirection: %s', tmp)
-            scheme, address, port = http_utils.urlsplit(tmp)[:3]
-            self.connect((address, port), extra['prefer_ipv6'],
-              scheme == 'https', extra)
-            return
         tmp = context.headers.get(CONTENT_TYPE)
         if context.code != CODE200 or tmp != APPLICATION_JSON:
             logging.error('raw_negotiate: bad response')
