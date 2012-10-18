@@ -69,6 +69,9 @@ def main(args):
         server.listen((conf["agent.api.address"],
                        conf["agent.api.port"]))
 
+    if not system.has_enough_privs():
+        raise RuntimeError('agent: you must be root')
+
     if conf["agent.daemonize"]:
         LOG.redirect()
         system.go_background()
