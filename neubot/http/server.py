@@ -43,7 +43,6 @@ from neubot.net.stream import StreamHandler
 from neubot.net.poller import POLLER
 
 from neubot.main import common
-from neubot import system
 from neubot import utils
 from neubot import utils_net
 
@@ -315,7 +314,6 @@ HTTP_SERVER = ServerHTTP(POLLER)
 CONFIG.register_defaults({
     "http.server.address": "",
     "http.server.class": "",
-    "http.server.daemonize": True,
     "http.server.mime": True,
     "http.server.ports": "8080,",
     "http.server.rootdir": "",
@@ -329,7 +327,6 @@ def main(args):
     CONFIG.register_descriptions({
         "http.server.address": "Address to listen to",
         "http.server.class": "Use alternate ServerHTTP-like class",
-        "http.server.daemonize": "Run in background as a daemon",
         "http.server.mime": "Enable code that guess mime types",
         "http.server.ports": "List of ports to listen to",
         "http.server.rootdir": "Root directory for static pages",
@@ -347,14 +344,6 @@ def main(args):
     for port in conf["http.server.ports"].split(","):
         if port:
             HTTP_SERVER.listen((conf["http.server.address"], int(port)))
-
-    if conf["http.server.daemonize"]:
-        system.change_dir()
-        system.go_background()
-        system.write_pidfile()
-        LOG.redirect()
-
-    system.drop_privileges()
 
     POLLER.loop()
 

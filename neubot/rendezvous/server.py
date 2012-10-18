@@ -35,14 +35,12 @@ from neubot.database import table_geoloc
 from neubot.http.message import Message
 from neubot.http.server import HTTP_SERVER
 from neubot.http.server import ServerHTTP
-from neubot.log import LOG
 from neubot.net.poller import POLLER
 from neubot.rendezvous.geoip_wrapper import Geolocator
 from neubot.rendezvous import compat
 
 from neubot.main import common
 from neubot import marshal
-from neubot import system
 from neubot import privacy
 
 from neubot import utils_version
@@ -178,7 +176,6 @@ class ServerRendezvous(ServerHTTP):
 
 CONFIG.register_defaults({
     "rendezvous.server.address": "",
-    "rendezvous.server.daemonize": True,
     "rendezvous.server.ports": "9773,8080",
     "rendezvous.server.update_version": "0.4.15.5",
     "rendezvous.geoip_wrapper.country_database":                        \
@@ -202,7 +199,6 @@ def main(args):
 
     CONFIG.register_descriptions({
         "rendezvous.server.address": "Set rendezvous server address",
-        "rendezvous.server.daemonize": "Enable daemon behavior",
         "rendezvous.server.ports": "List of rendezvous server ports",
         "rendezvous.server.update_version": "Update Neubot version number",
         "rendezvous.geoip_wrapper.country_database":                    \
@@ -220,12 +216,6 @@ def main(args):
     # Really start this module
     run()
 
-    if conf["rendezvous.server.daemonize"]:
-        system.change_dir()
-        system.go_background()
-        LOG.redirect()
-
-    system.drop_privileges()
     POLLER.loop()
 
 if __name__ == "__main__":

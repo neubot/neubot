@@ -45,11 +45,10 @@ if __name__ == "__main__":
     sys.path.insert(0, ".")
 
 from neubot.config import CONFIG
-from neubot.log import LOG, oops
+from neubot.log import oops
 from neubot.net.poller import POLLER
 from neubot.net.poller import Pollable
 
-from neubot import system
 from neubot import utils
 from neubot import utils_net
 
@@ -665,7 +664,6 @@ CONFIG.register_defaults({
     "net.stream.address": "127.0.0.1 ::1",
     "net.stream.chunk": 262144,
     "net.stream.clients": 1,
-    "net.stream.daemonize": False,
     "net.stream.duration": 10,
     "net.stream.listen": False,
     "net.stream.port": 12345,
@@ -683,7 +681,6 @@ def main(args):
         "net.stream.address": "Set client or server address",
         "net.stream.chunk": "Chunk written by each write",
         "net.stream.clients": "Set number of client connections",
-        "net.stream.daemonize": "Enable daemon behavior",
         "net.stream.duration": "Set duration of a test",
         "net.stream.listen": "Enable server mode",
         "net.stream.port": "Set client or server port",
@@ -709,11 +706,6 @@ def main(args):
     handler.configure(conf)
 
     if conf["net.stream.listen"]:
-        if conf["net.stream.daemonize"]:
-            system.change_dir()
-            system.go_background()
-            LOG.redirect()
-        system.drop_privileges()
         conf["net.stream.server_side"] = True
         handler.listen(endpoint)
     else:
