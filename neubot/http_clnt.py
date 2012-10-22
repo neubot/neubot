@@ -81,6 +81,7 @@ class ClientContext(Brigade):
 
         self.outq = []
         self.outfp = None
+        self.outfp_chunked = False
 
         self.method = EMPTY_STRING
 
@@ -211,11 +212,12 @@ class HttpClient(Handler):
         context.outq.append(LAST_CHUNK)
 
     @staticmethod
-    def append_file(stream, filep):
+    def append_file(stream, filep, chunked=False):
         ''' Append file to output buffer '''
         context = stream.opaque
         LOGGER.debug('> {file}')
         context.outfp = filep
+        context.outfp_chunked = chunked
 
     def send_message(self, stream):
         ''' Send output buffer content to the other end '''
@@ -230,10 +232,18 @@ class HttpClient(Handler):
         if context.outfp:
             bytez = context.outfp.read(MAXREAD)
             if bytez:
-                context.outq.append(bytez)
+                if context.outfp_chunked:
+                    self.append_chunk(stream, bytez)
+                else:
+                    self.append_bytes(stream, bytez)
                 self.send_message(stream)
                 return
+            elif context.outfp_chunked:
+                self.append_last_chunk(stream)
+                self.append_end_of_headers(stream)
+                self.send_message(stream)
             context.outfp = None
+            context.outfp_chunked = False
         self.handle_send_complete(stream)
 
     def handle_send_complete(self, stream):
