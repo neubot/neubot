@@ -181,12 +181,6 @@ class HttpClient(Handler):
         context.outq.append(CRLF)
 
     @staticmethod
-    def append_string(stream, string):
-        ''' Append string to output buffer '''
-        context = stream.opaque
-        context.outq.append(six.b(string))
-
-    @staticmethod
     def append_bytes(stream, bytez):
         ''' Append bytes to output buffer '''
         context = stream.opaque
