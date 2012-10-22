@@ -85,8 +85,7 @@ class ClientContext(Brigade):
         self.connection_made = connection_made
         self.connection_lost = connection_lost
         self.extra = extra
-        self.handle_piece = None
-        self.handle_line = None
+        self.handle_input = None
         self.headers = {}
         self.last_hdr = EMPTY_STRING
         self.left = 0
@@ -123,19 +122,19 @@ class HttpClient(Handler):
         ''' Internally handles the CONNECTION_MADE event '''
         context = stream.opaque
         stream.recv(MAXRECEIVE, self._handle_data)  # Kick receiver off
-        context.handle_line = self._handle_firstline
+        context.handle_input = self._handle_firstline
         LOGGER.debug('stream setup... complete')
         context.connection_made(stream)
 
     def _handle_connection_lost(self, stream):
         ''' Internally handles the CONNECTION_LOST event '''
         context = stream.opaque
-        if stream.eof and context.handle_piece == self._handle_piece_unbounded:
+        if stream.eof and context.handle_input == self._handle_piece_unbounded:
             LOGGER.debug('EOF terminates unbounded body')
             # There may be bufferised data
             piece = context.getvalue()
             if piece:
-                context.handle_piece(stream, piece)
+                context.handle_input(stream, piece)
             self._handle_end_of_body(stream)
         if context.connection_lost:
             context.connection_lost(stream)
@@ -264,13 +263,13 @@ class HttpClient(Handler):
                 tmp = context.pullup(context.left)
                 if not tmp:
                     break
-                context.left = 0  # MUST be before handle_piece()
-                context.handle_piece(stream, tmp)
+                context.left = 0  # MUST be before handle_input()
+                context.handle_input(stream, tmp)
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
                 if not tmp:
                     break
-                context.handle_line(stream, tmp)
+                context.handle_input(stream, tmp)
             else:
                 raise RuntimeError('internal error #1')
         if not stream.isclosed:
@@ -293,7 +292,7 @@ class HttpClient(Handler):
         context.reason = vector[2]
         context.last_hdr = EMPTY_STRING
         context.headers = {}
-        context.handle_line = self._handle_header
+        context.handle_input = self._handle_header
 
     def _handle_header(self, stream, line):
         ''' Handles the HEADER event '''
@@ -340,7 +339,7 @@ class HttpClient(Handler):
         if (context.method == HEAD or context.code[0] == ONE or
           context.code == CODE204 or context.code == CODE304):
             LOGGER.debug('no message body')
-            context.handle_line = self._handle_firstline
+            context.handle_input = self._handle_firstline
             # Pretend we received an empty body
             self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
             return
@@ -348,7 +347,7 @@ class HttpClient(Handler):
         # Note: chunked has precedence over content-length
         if context.headers.get(TRANSFER_ENCODING) == CHUNKED:
             LOGGER.debug('expecting chunked message body')
-            context.handle_line = self._handle_chunklen
+            context.handle_input = self._handle_chunklen
             self.handle_event(stream, HTTP_EVENT_HEADERS)
             return
 
@@ -357,19 +356,19 @@ class HttpClient(Handler):
             length = int(tmp)
             if length > 0:
                 LOGGER.debug('expecting bounded message body')
-                context.handle_piece = self._handle_piece_bounded
+                context.handle_input = self._handle_piece_bounded
                 context.left = length
                 self.handle_event(stream, HTTP_EVENT_HEADERS)
                 return
             if length == 0:
                 LOGGER.debug('empty message body')
-                context.handle_line = self._handle_firstline
+                context.handle_input = self._handle_firstline
                 self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
                 return
             raise RuntimeError('negative content length')
 
         LOGGER.debug('expecting unbounded message body')
-        context.handle_piece = self._handle_piece_unbounded
+        context.handle_input = self._handle_piece_unbounded
         context.left = MAXPIECE
         self.handle_event(stream, HTTP_EVENT_HEADERS)
 
@@ -382,11 +381,11 @@ class HttpClient(Handler):
             if tmp < 0:
                 raise RuntimeError('negative chunk-length')
             elif tmp == 0:
-                context.handle_line = self._handle_trailer
+                context.handle_input = self._handle_trailer
                 LOGGER.debug('< {last-chunk/}')
             else:
                 context.left = tmp
-                context.handle_piece = self._handle_piece_chunked
+                context.handle_input = self._handle_piece_chunked
                 LOGGER.debug('< {chunk len=%d}', tmp)
         else:
             raise RuntimeError('bad chunk-length line')
@@ -396,7 +395,7 @@ class HttpClient(Handler):
         context = stream.opaque
         if not line.strip():
             LOGGER.debug('< {/chunk}')
-            context.handle_line = self._handle_chunklen
+            context.handle_input = self._handle_chunklen
         else:
             raise RuntimeError('bad chunk-end line')
 
@@ -422,7 +421,7 @@ class HttpClient(Handler):
         context = stream.opaque
         self.handle_piece(stream, piece)
         if context.left == 0:
-            context.handle_line = self._handle_chunkend
+            context.handle_input = self._handle_chunkend
 
     @staticmethod
     def handle_piece(stream, piece):
@@ -439,7 +438,7 @@ class HttpClient(Handler):
         # if HTTP/1.0 or if "Connection" is set to "close").
         #
         context = stream.opaque
-        context.handle_line = self._handle_firstline  # Restart
+        context.handle_input = self._handle_firstline  # Restart
         self.handle_event(stream, HTTP_EVENT_BODY)
 
     def handle_event(self, stream, event):
