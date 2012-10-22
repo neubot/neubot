@@ -70,6 +70,8 @@ SPACE = six.b(' ')
 TAB = six.b('\t')
 TRANSFER_ENCODING = six.b('transfer-encoding')
 
+LOGGER = logging.getLogger('http_clnt')
+
 class ClientContext(Brigade):
 
     ''' HTTP client context '''
@@ -114,7 +116,7 @@ class HttpClient(Handler):
     def create_stream(self, sock, connection_made, connection_lost,
           sslconfig, sslcert, extra):
         ''' Creates an HTTP stream '''
-        logging.debug('http_clnt: stream setup... in progress')
+        LOGGER.debug('stream setup... in progress')
         context = ClientContext(extra, connection_made, connection_lost)
         Stream(sock, self._handle_connection_made, self._handle_connection_lost,
           sslconfig, sslcert, context)
@@ -124,14 +126,14 @@ class HttpClient(Handler):
         context = stream.opaque
         stream.recv(MAXRECEIVE, self._handle_data)  # Kick receiver off
         context.handle_line = self._handle_firstline
-        logging.debug('http_clnt: stream setup... complete')
+        LOGGER.debug('stream setup... complete')
         context.connection_made(stream)
 
     def _handle_connection_lost(self, stream):
         ''' Internally handles the CONNECTION_LOST event '''
         context = stream.opaque
         if context.handle_piece == self._handle_piece_unbounded and stream.eof:
-            logging.debug('http_clnt: EOF terminates unbounded body')
+            LOGGER.debug('EOF terminates unbounded body')
             # There may be bufferised data
             piece = context.getvalue()
             if piece:
@@ -153,7 +155,7 @@ class HttpClient(Handler):
     def append_request(stream, method, uri, protocol):
         ''' Append request to output buffer '''
         context = stream.opaque
-        logging.debug('> %s %s %s', method, uri, protocol)
+        LOGGER.debug('> %s %s %s', method, uri, protocol)
         context.method = six.b(method)
         context.outq.append(six.b(method))
         context.outq.append(SPACE)
@@ -166,7 +168,7 @@ class HttpClient(Handler):
     def append_header(stream, name, value):
         ''' Append header to output buffer '''
         context = stream.opaque
-        logging.debug('> %s: %s', name, value)
+        LOGGER.debug('> %s: %s', name, value)
         context.outq.append(six.b(name))
         context.outq.append(COLON)
         context.outq.append(SPACE)
@@ -177,7 +179,7 @@ class HttpClient(Handler):
     def append_end_of_headers(stream):
         ''' Append end-of-headers (an empty line) to output buffer '''
         context = stream.opaque
-        logging.debug('>')
+        LOGGER.debug('>')
         context.outq.append(CRLF)
 
     @staticmethod
@@ -196,7 +198,7 @@ class HttpClient(Handler):
     def append_chunk(stream, bytez):
         ''' Append chunk to output buffer '''
         context = stream.opaque
-        logging.debug('> {chunk len=%d}', len(bytez))
+        LOGGER.debug('> {chunk len=%d}', len(bytez))
         context.outq.append(six.b('%x\r\n' % len(bytez)))
         context.outq.append(bytez)
         context.outq.append(CRLF)
@@ -205,14 +207,14 @@ class HttpClient(Handler):
     def append_last_chunk(stream):
         ''' Append last-chunk to output buffer '''
         context = stream.opaque
-        logging.debug('> {last-chunk}')
+        LOGGER.debug('> {last-chunk}')
         context.outq.append(LAST_CHUNK)
 
     @staticmethod
     def append_file(stream, filep):
         ''' Append file to output buffer '''
         context = stream.opaque
-        logging.debug('> {file}')
+        LOGGER.debug('> {file}')
         context.outfp = filep
 
     def send_message(self, stream):
@@ -265,7 +267,7 @@ class HttpClient(Handler):
                     break
                 context.handle_line(stream, tmp)
             else:
-                raise RuntimeError('http_clnt: internal error #1')
+                raise RuntimeError('internal error #1')
         if not stream.isclosed:
             stream.recv(MAXRECEIVE, self._handle_data)
 
@@ -273,15 +275,15 @@ class HttpClient(Handler):
         ''' Handles the FIRSTLINE event '''
         context = stream.opaque
         line = line.rstrip()
-        logging.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
+        LOGGER.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
         vector = line.split(None, 2)
         if len(vector) != 3:
-            raise RuntimeError('http_clnt: invalid first line')
+            raise RuntimeError('invalid first line')
         context.protocol = vector[0]
         if not context.protocol.startswith(HTTP_PREFIX):
-            raise RuntimeError('http_clnt: invalid protocol')
+            raise RuntimeError('invalid protocol')
         if context.protocol not in (HTTP11, HTTP10):
-            raise RuntimeError('http_clnt: unsuppored protocol')
+            raise RuntimeError('unsupported protocol')
         context.code = vector[1]
         context.reason = vector[2]
         context.last_hdr = EMPTY_STRING
@@ -298,10 +300,10 @@ class HttpClient(Handler):
         context = stream.opaque
         line = line.rstrip()
         if not line:
-            logging.debug('<')
+            LOGGER.debug('<')
             handle_done(stream)
             return
-        logging.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
+        LOGGER.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
         index = line.find(COLON)
         if index >= 0:
             name, value = line.split(COLON, 1)
@@ -318,7 +320,7 @@ class HttpClient(Handler):
         # overrides handle_end_of_body() and forgets to invoke the parent class
         # method, which resets the line reader.
         #
-        raise RuntimeError('http_clnt: internal error #2')
+        raise RuntimeError('internal error #2')
 
     def handle_end_of_headers(self, stream):
         ''' Handle END_OF_HEADERS event '''
@@ -336,7 +338,7 @@ class HttpClient(Handler):
 
         if (context.method == HEAD or context.code[0] == ONE or
           context.code == CODE204 or context.code == CODE304):
-            logging.debug('http_clnt: no message body')
+            LOGGER.debug('no message body')
             #
             # Cannot invoke handle_end_of_body() here since we need first to
             # finish processing the END_OF_HEADERS event.  Think, e.g. at the
@@ -348,7 +350,7 @@ class HttpClient(Handler):
             return
 
         if context.headers.get(TRANSFER_ENCODING) == CHUNKED:
-            logging.debug('http_clnt: expecting chunked message body')
+            LOGGER.debug('expecting chunked message body')
             context.handle_line = self._handle_chunklen
             return
 
@@ -356,24 +358,24 @@ class HttpClient(Handler):
         if tmp:
             length = int(tmp)
             if length > 0:
-                logging.debug('http_clnt: expecting bounded message body')
+                LOGGER.debug('expecting bounded message body')
                 context.handle_piece = self._handle_piece_bounded
                 context.left = length
                 return
             if length == 0:
-                logging.debug('http_clnt: empty message body')
+                LOGGER.debug('empty message body')
                 # See above for rationale of delayed END_OF_BODY
                 POLLER.sched(0, self._handle_end_of_body_delayed, stream)
                 return
-            raise RuntimeError('http_clnt: invalid content length')
+            raise RuntimeError('invalid content length')
 
-        logging.debug('http_clnt: expecting unbounded message body')
+        LOGGER.debug('expecting unbounded message body')
         context.handle_piece = self._handle_piece_unbounded
         context.left = MAXPIECE
 
     def _handle_end_of_body_delayed(self, args):
         ''' Handles the END_OF_BODY delayed event '''
-        logging.debug('http_clnt: processing delayed END_OF_BODY')
+        LOGGER.debug('processing delayed END_OF_BODY')
         stream = args[0]
         self.handle_end_of_body(stream)
 
@@ -384,25 +386,25 @@ class HttpClient(Handler):
         if vector:
             tmp = int(vector[0], 16)
             if tmp < 0:
-                raise RuntimeError('http_clnt: negative chunk-length')
+                raise RuntimeError('negative chunk-length')
             elif tmp == 0:
                 context.handle_line = self._handle_trailer
-                logging.debug('< {last-chunk/}')
+                LOGGER.debug('< {last-chunk/}')
             else:
                 context.left = tmp
                 context.handle_piece = self._handle_piece_chunked
-                logging.debug('< {chunk len=%d}', tmp)
+                LOGGER.debug('< {chunk len=%d}', tmp)
         else:
-            raise RuntimeError('http_clnt: bad chunk-length line')
+            raise RuntimeError('bad chunk-length line')
 
     def _handle_chunkend(self, stream, line):
         ''' Handles the CHUNKEND event '''
         context = stream.opaque
         if not line.strip():
-            logging.debug('< {/chunk}')
+            LOGGER.debug('< {/chunk}')
             context.handle_line = self._handle_chunklen
         else:
-            raise RuntimeError('http_clnt: bad chunk-end line')
+            raise RuntimeError('bad chunk-end line')
 
     def _handle_trailer(self, stream, line):
         ''' Handles the TRAILER event '''
@@ -500,7 +502,7 @@ class HttpClientSmpl(HttpClient):
             value = token[index + 1:].strip()
             if name == CHARSET:
                 encoding[0] = six.bytes_to_string_safe(value, 'ascii')
-                logging.debug('http_clnt: response encoding: %s', encoding[0])
+                LOGGER.debug('response encoding: %s', encoding[0])
 
     def handle_end_of_body(self, stream):
         HttpClient.handle_end_of_body(self, stream)
@@ -532,7 +534,7 @@ def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'A:Cp:Sv')
+        options, arguments = getopt.getopt(args[1:], '6A:Cp:Sv')
     except getopt.error:
         sys.exit(USAGE)
     if not arguments:
