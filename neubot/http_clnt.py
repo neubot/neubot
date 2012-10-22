@@ -35,6 +35,8 @@ if __name__ == '__main__':
 
 from neubot.brigade import Brigade
 from neubot.handler import Handler
+from neubot.http_utils import HTTP_EVENT_HEADERS
+from neubot.http_utils import HTTP_EVENT_BODY
 from neubot.poller import POLLER
 from neubot.stream import Stream
 
@@ -139,7 +141,7 @@ class HttpClient(Handler):
             piece = context.getvalue()
             if piece:
                 context.handle_piece(stream, piece)
-            self.handle_end_of_body(stream)
+            self._handle_end_of_body(stream)
         if context.connection_lost:
             context.connection_lost(stream)
 
@@ -302,7 +304,7 @@ class HttpClient(Handler):
 
     def _handle_header(self, stream, line):
         ''' Handles the HEADER event '''
-        self._handle_header_ex(stream, line, self.handle_end_of_headers)
+        self._handle_header_ex(stream, line, self._handle_end_of_headers)
 
     @staticmethod
     def _handle_header_ex(stream, line, handle_done):
@@ -325,14 +327,9 @@ class HttpClient(Handler):
             context.headers[name] += COMMASPACE
             context.headers[name] += line.strip()
             return
-        #
-        # N.B. I have observed that this error is often triggered when one
-        # overrides handle_end_of_body() and forgets to invoke the parent class
-        # method, which resets the line reader.
-        #
         raise RuntimeError('internal error #2')
 
-    def handle_end_of_headers(self, stream):
+    def _handle_end_of_headers(self, stream):
         ''' Handle END_OF_HEADERS event '''
 
         #
@@ -349,19 +346,14 @@ class HttpClient(Handler):
         if (context.method == HEAD or context.code[0] == ONE or
           context.code == CODE204 or context.code == CODE304):
             LOGGER.debug('no message body')
-            #
-            # Cannot invoke handle_end_of_body() here since we need first to
-            # finish processing the END_OF_HEADERS event.  Think, e.g. at the
-            # case where the parent class runs its END_OF_HEADERS handler
-            # just after the generic one.
-            #
-            POLLER.sched(0, self._handle_end_of_body_delayed, stream)
-            self.handle_end_of_body(stream)
+            context.handle_line = self._handle_firstline
+            self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
             return
 
         if context.headers.get(TRANSFER_ENCODING) == CHUNKED:
             LOGGER.debug('expecting chunked message body')
             context.handle_line = self._handle_chunklen
+            self.handle_event(stream, HTTP_EVENT_HEADERS)
             return
 
         tmp = context.headers.get(CONTENT_LENGTH)
@@ -371,23 +363,19 @@ class HttpClient(Handler):
                 LOGGER.debug('expecting bounded message body')
                 context.handle_piece = self._handle_piece_bounded
                 context.left = length
+                self.handle_event(stream, HTTP_EVENT_HEADERS)
                 return
             if length == 0:
                 LOGGER.debug('empty message body')
-                # See above for rationale of delayed END_OF_BODY
-                POLLER.sched(0, self._handle_end_of_body_delayed, stream)
+                context.handle_line = self._handle_firstline
+                self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
                 return
             raise RuntimeError('invalid content length')
 
         LOGGER.debug('expecting unbounded message body')
         context.handle_piece = self._handle_piece_unbounded
         context.left = MAXPIECE
-
-    def _handle_end_of_body_delayed(self, args):
-        ''' Handles the END_OF_BODY delayed event '''
-        LOGGER.debug('processing delayed END_OF_BODY')
-        stream = args[0]
-        self.handle_end_of_body(stream)
+        self.handle_event(stream, HTTP_EVENT_HEADERS)
 
     def _handle_chunklen(self, stream, line):
         ''' Handles the CHUNKLEN event '''
@@ -418,7 +406,7 @@ class HttpClient(Handler):
 
     def _handle_trailer(self, stream, line):
         ''' Handles the TRAILER event '''
-        self._handle_header_ex(stream, line, self.handle_end_of_body)
+        self._handle_header_ex(stream, line, self._handle_end_of_body)
 
     def _handle_piece_unbounded(self, stream, piece):
         ''' Handles the PIECE_UNBOUNDED event '''
@@ -431,7 +419,7 @@ class HttpClient(Handler):
         context = stream.opaque
         self.handle_piece(stream, piece)
         if context.left == 0:
-            self.handle_end_of_body(stream)
+            self._handle_end_of_body(stream)
 
     def _handle_piece_chunked(self, stream, piece):
         ''' Handles the PIECE_CHUNKED event '''
@@ -448,7 +436,7 @@ class HttpClient(Handler):
         if context.body:
             context.body.write(stream, piece)
 
-    def handle_end_of_body(self, stream):
+    def _handle_end_of_body(self, stream):
         ''' Handle the END_OF_BODY event '''
         #
         # It is user responsibility to close the stream here
@@ -457,6 +445,10 @@ class HttpClient(Handler):
         #
         context = stream.opaque
         context.handle_line = self._handle_firstline  # Restart
+        self.handle_event(stream, HTTP_EVENT_BODY)
+
+    def handle_event(self, stream, event):
+        ''' Process protocol event '''
 
 class HttpClientSmpl(HttpClient):
     ''' Simple HTTP client '''
@@ -491,8 +483,15 @@ class HttpClientSmpl(HttpClient):
         context.body = self  # Want to print the body
         cntvec[0] += 1
 
-    def handle_end_of_headers(self, stream):
-        HttpClient.handle_end_of_headers(self, stream)
+    def handle_event(self, stream, event):
+        if event & HTTP_EVENT_HEADERS:
+            self._process_headers(stream)
+        if event & HTTP_EVENT_BODY:
+            self._process_body(stream)
+
+    @staticmethod
+    def _process_headers(stream):
+        ''' Process headers '''
         context = stream.opaque
         encoding = context.extra[5]
         value = context.headers.get(CONTENT_TYPE)
@@ -514,8 +513,8 @@ class HttpClientSmpl(HttpClient):
                 encoding[0] = six.bytes_to_string_safe(value, 'ascii')
                 LOGGER.debug('response encoding: %s', encoding[0])
 
-    def handle_end_of_body(self, stream):
-        HttpClient.handle_end_of_body(self, stream)
+    def _process_body(self, stream):
+        ''' Process body '''
         context = stream.opaque
         cntvec = context.extra[3]
         if cntvec[0] <= 0:  # No unexpected responses

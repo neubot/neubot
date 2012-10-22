@@ -37,6 +37,7 @@ if __name__ == '__main__':
 
 from neubot.compat import json
 from neubot.http_clnt import HttpClient
+from neubot.http_utils import HTTP_EVENT_BODY
 from neubot.notify import NOTIFIER
 from neubot.poller import POLLER
 from neubot.runner_hosts import RUNNER_HOSTS
@@ -96,8 +97,9 @@ class RunnerMlabns(HttpClient):
         context.body = http_utils.Body()  # Want to save body
         extra['requests'] += 1
 
-    def handle_end_of_body(self, stream):
-        HttpClient.handle_end_of_body(self, stream)
+    def handle_event(self, stream, event):
+        if not (event & HTTP_EVENT_BODY):
+            return
         context = stream.opaque
         extra = context.extra
         if extra['requests'] <= 0:

@@ -28,6 +28,10 @@ import logging
 from neubot.compat import json
 from neubot import six
 
+# Events passed to handle_event() method
+HTTP_EVENT_HEADERS = 1 << 0
+HTTP_EVENT_BODY = 1 << 1
+
 class Body(object):
     ''' Body that contains bytes '''
     def __init__(self):
