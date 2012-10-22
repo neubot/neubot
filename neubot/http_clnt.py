@@ -80,27 +80,22 @@ class ClientContext(Brigade):
 
     def __init__(self, extra, connection_made, connection_lost):
         Brigade.__init__(self)
-
-        self.outq = []
-        self.outfp = None
-        self.outfp_chunked = False
-
-        self.method = EMPTY_STRING
-
-        self.protocol = EMPTY_STRING
-        self.code = EMPTY_STRING
-        self.reason = EMPTY_STRING
-        self.headers = {}
-        self.last_hdr = EMPTY_STRING
         self.body = None
-
-        self.handle_piece = None
-        self.handle_line = None
-        self.left = 0
-
-        self.extra = extra
+        self.code = EMPTY_STRING
         self.connection_made = connection_made
         self.connection_lost = connection_lost
+        self.extra = extra
+        self.handle_piece = None
+        self.handle_line = None
+        self.headers = {}
+        self.last_hdr = EMPTY_STRING
+        self.left = 0
+        self.method = EMPTY_STRING
+        self.outfp = None
+        self.outfp_chunked = False
+        self.outq = []
+        self.protocol = EMPTY_STRING
+        self.reason = EMPTY_STRING
 
 class HttpClient(Handler):
 
