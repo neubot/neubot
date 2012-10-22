@@ -512,7 +512,7 @@ class HttpClientSmpl(HttpClient):
             raise RuntimeError('http_dload: unexpected response')
         cntvec[0] -= 1
         sys.stdout.flush()
-        # XXX ignoring the "Connection" header for HTTP/1.0
+        # Ignoring the "Connection" header for HTTP/1.0
         if (context.protocol == HTTP10 or
           context.headers.get(CONNECTION) == CLOSE):
             stream.close()
