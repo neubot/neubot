@@ -107,8 +107,8 @@ class HttpClient(Handler):
     # wrapped by a function because the HTTP code must kick off the HTTP
     # receiver once the connection is ready.  Indeed, the receiver is "ON"
     # during the whole connection lifetime, so that EOF and RST can be
-    # detected immediately (the underlying socket is in select() read set
-    # as long as the HTTP code keeps receiving).
+    # detected immediately (the underlying socket is in POLLER's readset
+    # as long as the HTTP code is receiving).
     #
 
     def create_stream(self, sock, connection_made, connection_lost,
@@ -130,7 +130,7 @@ class HttpClient(Handler):
     def _handle_connection_lost(self, stream):
         ''' Internally handles the CONNECTION_LOST event '''
         context = stream.opaque
-        if context.handle_piece == self._handle_piece_unbounded and stream.eof:
+        if stream.eof and context.handle_piece == self._handle_piece_unbounded:
             LOGGER.debug('EOF terminates unbounded body')
             # There may be bufferised data
             piece = context.getvalue()
@@ -154,7 +154,7 @@ class HttpClient(Handler):
         ''' Append request to output buffer '''
         context = stream.opaque
         LOGGER.debug('> %s %s %s', method, uri, protocol)
-        context.method = six.b(method)
+        context.method = six.b(method)  # Save for _handle_end_of_headers()
         context.outq.append(six.b(method))
         context.outq.append(SPACE)
         context.outq.append(six.b(uri))
@@ -220,8 +220,8 @@ class HttpClient(Handler):
         ''' Send output buffer content to the other end '''
         context = stream.opaque
         string = EMPTY_STRING.join(context.outq)
-        stream.send(string, self._handle_send_complete)
         context.outq = []
+        stream.send(string, self._handle_send_complete)
 
     def _handle_send_complete(self, stream):
         ''' Internally handles the SEND_COMPLETE event '''
@@ -237,8 +237,10 @@ class HttpClient(Handler):
                 return
             elif context.outfp_chunked:
                 self.append_last_chunk(stream)
+                # No support for trailers
                 self.append_end_of_headers(stream)
                 self.send_message(stream)
+                # Fall through
             context.outfp = None
             context.outfp_chunked = False
         self.handle_send_complete(stream)
@@ -248,13 +250,15 @@ class HttpClient(Handler):
 
     #
     # Receive path.  The receiver is always active and the user is expected to
-    # handle the end of headers and end of body events, by overriding the
-    # corresponding functions.  One caveat: the decision whether a response
-    # is expected or not is left to the user (typically you expect a response
-    # after a full request was sent, but there are exceptions, e.g. the "100
-    # Continue" case).  Also, it should be noted that, by default, response
-    # body is discarded: the user is expected to override context.body and
-    # point it to a file-like object, if he/she wants to save it.
+    # handle HTTP_EVENT_HEADER and/or HTTP_EVENT_BODY, by overriding the
+    # handle_event() method.  Depending on the circumstances, handle_event()
+    # can receive both HEADER and BODY events, or just one of them.
+    #   The decision about whether a response is expected or not is left to the
+    # programmer.  Typically you expect a response after a full request was
+    # sent, but there are exceptions, e.g. the "100 Continue" case.
+    #   Also, it should be noted that, by default, response body is discarded:
+    # the user is expected to override context.body and point it to a file-like
+    # object, if he/she wants to save it.
     #
 
     def _handle_data(self, stream, bytez):
@@ -266,7 +270,7 @@ class HttpClient(Handler):
                 tmp = context.pullup(context.left)
                 if not tmp:
                     break
-                context.left = 0  # MUST be before got_piece()
+                context.left = 0  # MUST be before handle_piece()
                 context.handle_piece(stream, tmp)
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
@@ -318,6 +322,7 @@ class HttpClient(Handler):
             context.headers[name] = value.strip()
             context.last_hdr = name
             return
+        # Note: line[0:1] is for Python3 compat
         if context.last_hdr and line[0:1] in (SPACE, TAB):
             context.headers[name] += COMMASPACE
             context.headers[name] += line.strip()
@@ -342,9 +347,11 @@ class HttpClient(Handler):
           context.code == CODE204 or context.code == CODE304):
             LOGGER.debug('no message body')
             context.handle_line = self._handle_firstline
+            # Pretend we received an empty body
             self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
             return
 
+        # Note: chunked has precedence over content-length
         if context.headers.get(TRANSFER_ENCODING) == CHUNKED:
             LOGGER.debug('expecting chunked message body')
             context.handle_line = self._handle_chunklen
@@ -365,7 +372,7 @@ class HttpClient(Handler):
                 context.handle_line = self._handle_firstline
                 self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
                 return
-            raise RuntimeError('invalid content length')
+            raise RuntimeError('negative content length')
 
         LOGGER.debug('expecting unbounded message body')
         context.handle_piece = self._handle_piece_unbounded
@@ -434,9 +441,8 @@ class HttpClient(Handler):
     def _handle_end_of_body(self, stream):
         ''' Handle the END_OF_BODY event '''
         #
-        # It is user responsibility to close the stream here
-        # if appropriate (i.e. if HTTP/1.0 or if the "Connection"
-        # header value is set to  "close").
+        # It is user responsibility to close the stream if appropriate (i.e.
+        # if HTTP/1.0 or if "Connection" is set to "close").
         #
         context = stream.opaque
         context.handle_line = self._handle_firstline  # Restart
@@ -547,8 +553,8 @@ def main(args):
     prefer_ipv6 = 0
     address = '127.0.0.1'
     close = 0
-    sslconfig = 0
     port = 80
+    sslconfig = 0
     level = logging.INFO
     for name, value in options:
         if name == '-6':
