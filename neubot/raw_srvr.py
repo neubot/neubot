@@ -36,7 +36,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.brigade import Brigade
+from neubot.buff import Buff
 from neubot.defer import Deferred
 from neubot.handler import Handler
 from neubot.poller import POLLER
@@ -59,12 +59,12 @@ from neubot import web100
 LEN_MESSAGE = 32768
 MAXRECV = 262144
 
-class ServerContext(Brigade):
+class ServerContext(Buff):
 
     ''' Server context '''
 
     def __init__(self):
-        Brigade.__init__(self)
+        Buff.__init__(self)
         self.ticks = 0.0
         self.count = 0
         self.message = six.b('')

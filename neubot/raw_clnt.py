@@ -36,7 +36,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.brigade import Brigade
+from neubot.buff import Buff
 from neubot.defer import Deferred
 from neubot.handler import Handler
 from neubot.poller import POLLER
@@ -54,12 +54,12 @@ AUTH_LEN = 64
 LEN_MESSAGE = 32768
 MAXRECV = 262144
 
-class ClientContext(Brigade):
+class ClientContext(Buff):
 
     ''' Client context '''
 
     def __init__(self, state):
-        Brigade.__init__(self)
+        Buff.__init__(self)
         self.ticks = 0.0
         self.count = 0
         self.left = 0

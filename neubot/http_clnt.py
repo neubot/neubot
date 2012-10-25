@@ -33,7 +33,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.brigade import Brigade
+from neubot.buff import Buff
 from neubot.handler import Handler
 from neubot.http_utils import HTTP_EVENT_HEADERS
 from neubot.http_utils import HTTP_EVENT_BODY
@@ -74,12 +74,12 @@ TRANSFER_ENCODING = six.b('transfer-encoding')
 
 LOGGER = logging.getLogger('http_clnt')
 
-class ClientContext(Brigade):
+class ClientContext(Buff):
 
     ''' HTTP client context '''
 
     def __init__(self, extra, connection_made, connection_lost):
-        Brigade.__init__(self)
+        Buff.__init__(self)
         self.body = None
         self.code = EMPTY_STRING
         self.connection_made = connection_made
