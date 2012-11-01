@@ -40,6 +40,17 @@ def format_epnt(epnt):
         address = ''.join(['[', address, ']'])
     return ':'.join([address, str(port)])
 
+def format_epnt_web100(epnt):
+    ''' Format endpoint for web100 '''
+    address, port = epnt[:2]
+    if not address:
+        address = ''
+    if ':' in address:
+        sep = '.'
+    else:
+        sep = ':'
+    return sep.join([address, str(port)])
+
 def format_ainfo(ainfo):
     ''' Format addrinfo for printing '''
     family, socktype, proto, canonname, sockaddr = ainfo
