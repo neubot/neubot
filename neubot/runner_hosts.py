@@ -26,7 +26,7 @@
 import logging
 import random
 
-STATIC_TABLE_TIME = 'Wed Oct 10 00:59:02 2012'
+STATIC_TABLE_TIME = 'Sun Nov 18 09:51:31 2012'
 
 STATIC_TABLE = [
     'neubot.mlab.mlab1.akl01.measurement-lab.org',
@@ -51,6 +51,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab1.mia01.measurement-lab.org',
     'neubot.mlab.mlab1.mil01.measurement-lab.org',
     'neubot.mlab.mlab1.nuq01.measurement-lab.org',
+    'neubot.mlab.mlab1.nuq02.measurement-lab.org',
     'neubot.mlab.mlab1.ord01.measurement-lab.org',
     'neubot.mlab.mlab1.par01.measurement-lab.org',
     'neubot.mlab.mlab1.sea01.measurement-lab.org',
@@ -83,6 +84,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab2.mia01.measurement-lab.org',
     'neubot.mlab.mlab2.mil01.measurement-lab.org',
     'neubot.mlab.mlab2.nuq01.measurement-lab.org',
+    'neubot.mlab.mlab2.nuq02.measurement-lab.org',
     'neubot.mlab.mlab2.ord01.measurement-lab.org',
     'neubot.mlab.mlab2.par01.measurement-lab.org',
     'neubot.mlab.mlab2.sea01.measurement-lab.org',
@@ -115,6 +117,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab3.mia01.measurement-lab.org',
     'neubot.mlab.mlab3.mil01.measurement-lab.org',
     'neubot.mlab.mlab3.nuq01.measurement-lab.org',
+    'neubot.mlab.mlab3.nuq02.measurement-lab.org',
     'neubot.mlab.mlab3.ord01.measurement-lab.org',
     'neubot.mlab.mlab3.par01.measurement-lab.org',
     'neubot.mlab.mlab3.sea01.measurement-lab.org',
@@ -126,6 +129,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab3.vie01.measurement-lab.org',
     'neubot.mlab.mlab3.wlg01.measurement-lab.org',
     'neubot.mlab.mlab4.nuq01.measurement-lab.org',
+    'neubot.mlab.mlab4.nuq02.measurement-lab.org',
 ]
 
 class RunnerHosts(object):
