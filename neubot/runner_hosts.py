@@ -59,7 +59,6 @@ STATIC_TABLE = [
     'neubot.mlab.mlab1.syd01.measurement-lab.org',
     'neubot.mlab.mlab1.syd02.measurement-lab.org',
     'neubot.mlab.mlab1.tpe01.measurement-lab.org',
-    'neubot.mlab.mlab1.trn01.measurement-lab.org',
     'neubot.mlab.mlab1.vie01.measurement-lab.org',
     'neubot.mlab.mlab1.wlg01.measurement-lab.org',
     'neubot.mlab.mlab2.akl01.measurement-lab.org',
@@ -128,8 +127,6 @@ STATIC_TABLE = [
     'neubot.mlab.mlab3.trn01.measurement-lab.org',
     'neubot.mlab.mlab3.vie01.measurement-lab.org',
     'neubot.mlab.mlab3.wlg01.measurement-lab.org',
-    'neubot.mlab.mlab4.nuq01.measurement-lab.org',
-    'neubot.mlab.mlab4.nuq02.measurement-lab.org',
 ]
 
 class RunnerHosts(object):
