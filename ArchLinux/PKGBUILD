@@ -1,6 +1,6 @@
 # Maintainer: Davide Allavena <davide.allavena@gmail.com>
 pkgname=neubot
-pkgver=0.4.15.5
+pkgver=0.4.15.6
 pkgrel=2
 epoch=
 pkgdesc="Network neutrality bot"
