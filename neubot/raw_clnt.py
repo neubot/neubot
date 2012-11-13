@@ -161,6 +161,8 @@ class RawClient(Handler):
 
     def _waiting_piece(self, stream, data):
         ''' Invoked when new data is available '''
+        # Note: this loop cannot be adapted to process other messages
+        # easily, as pointed out in <raw_defs.py>.
         context = stream.opaque
         context.bufferise(data)
         while True:
