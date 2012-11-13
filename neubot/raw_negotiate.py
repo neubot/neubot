@@ -51,6 +51,7 @@ from neubot.raw_clnt import RawClient
 from neubot.state import STATE
 
 from neubot import http_utils
+from neubot import raw_analyze
 from neubot import six
 from neubot import utils_net
 from neubot import utils_version
@@ -235,6 +236,11 @@ class RawNegotiate(HttpClient):
         ''' Invoked when the test succeeds '''
         logging.debug('raw_negotiate: test complete... success')
         result = {
+                  'al_capacity': raw_analyze.compute_bottleneck_capacity(
+                     state['rcvr_data'], state['mss']),
+                  'al_mss': state['mss'],
+                  'al_rexmits': raw_analyze.select_likely_rexmits(
+                     state['rcvr_data'], state['connect_time'], state['mss']),
                   'alrtt_list': state['alrtt_list'],
                   'alrtt_avg': state['alrtt_avg'],
                   'connect_time': state['connect_time'],
