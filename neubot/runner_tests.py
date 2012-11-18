@@ -53,7 +53,6 @@ class RunnerTests(object):
 
     def test_to_negotiate_uri(self, test):
         ''' Map test to its negotiate URI '''
-        # For now just return the first item in the list
         if test in self.avail:
             # Do not cache results (see runner_hosts comment on that)
             result = self.avail[test][0]

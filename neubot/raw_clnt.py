@@ -30,6 +30,7 @@
 import logging
 import getopt
 import os
+import socket
 import struct
 import sys
 
@@ -82,6 +83,8 @@ class RawClient(Handler):
         Stream(sock, self._connection_ready, self._connection_lost,
           sslconfig, '', ClientContext(state))
         STATE.update('test', 'raw')
+        state['mss'] = sock.getsockopt(socket.IPPROTO_TCP, socket.TCP_MAXSEG)
+        state['rcvr_data'] = []
 
     def _connection_ready(self, stream):
         ''' Invoked when the connection is ready '''
@@ -161,8 +164,11 @@ class RawClient(Handler):
 
     def _waiting_piece(self, stream, data):
         ''' Invoked when new data is available '''
+        # Note: this loop cannot be adapted to process other messages
+        # easily, as pointed out in <raw_defs.py>.
         context = stream.opaque
         context.bufferise(data)
+        context.state['rcvr_data'].append((utils.ticks(), len(data)))
         while True:
             if context.left > 0:
                 context.left = context.skip(context.left)

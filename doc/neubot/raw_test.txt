@@ -2,11 +2,12 @@ Neubot raw test
 '''''''''''''''
 
 :Authors: Simone Basso <bassosimone@gmail.com>
-:Version: 1.1
-:Date: 2012/09/29
+:Version: 1.2
+:Date: 2012/11/12
 :X-Documents: neubot/database/table_raw.py neubot/negotiate/server_raw.py
-    neubot/raw.py neubot/raw_clnt.py neubot/raw_defs.py neubot/raw_negotiate.py
-    neubot/raw_srvr.py neubot/raw_srvr_glue.py
+    neubot/raw.py neubot/raw_analyze.py neubot/raw_clnt.py neubot/raw_defs.py
+    neubot/raw_negotiate.py neubot/raw_srvr.py neubot/raw_srvr_glue.py
+    regress/neubot/raw_analyze.py
 
 This file documents the raw transmission test.  This is a test that aims at
 characterizing the user Internet connection by estimating round-trip latency
@@ -34,6 +35,10 @@ neubot/raw.py
   Implements the raw command, i.e. this file contains the main() that is
   invoked when you type `neubot raw` from command line.
 
+neubot/raw_analyze.py
+  Helper code to quickly postprocess client-side application-level results, to
+  shrink the amount of data saved into the database.
+
 neubot/raw_clnt.py
   Implements the client-side `test` phase of the raw test (code for `negotiate`
   and `collect` phases is not here).
@@ -52,3 +57,6 @@ neubot/raw_srvr.py
 neubot/raw_srvr_glue.py
   Extends raw_srvr.py code to add access control: clients that have not
   performed negotiation are not allowed to run the test.
+
+regress/neubot/raw_analyze.py
+  Regression tests for the raw_analyze.py module.

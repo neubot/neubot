@@ -36,6 +36,12 @@ PINGBACK_CODE = six.b(chr(1))
 RAWTEST_CODE = six.b(chr(2))
 PIECE_CODE = six.b(chr(3))
 
+#
+# XXX I wanted to follow the |length|code|body| pattern, unfortunately the
+# length is wrong.  It is 5, but it should be 1 (we should not count the
+# initial 4 bytes in the total length).  Note that this cannot be easily fixed,
+# because we need to stay compatible with old clients.
+#
 PING = struct.pack('!I', 5) + PING_CODE
 PINGBACK = struct.pack('!I', 5) + PINGBACK_CODE
 RAWTEST = struct.pack('!I', 5) + RAWTEST_CODE

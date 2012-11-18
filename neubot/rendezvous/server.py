@@ -177,7 +177,7 @@ class ServerRendezvous(ServerHTTP):
 CONFIG.register_defaults({
     "rendezvous.server.address": "",
     "rendezvous.server.ports": "9773,8080",
-    "rendezvous.server.update_version": "0.4.15.5",
+    "rendezvous.server.update_version": "0.4.15.6",
     "rendezvous.geoip_wrapper.country_database":                        \
         "/usr/local/share/GeoIP/GeoIP.dat",
     "rendezvous.server.default": "master.neubot.org",
