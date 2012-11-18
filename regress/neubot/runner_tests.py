@@ -46,17 +46,5 @@ class RegressionTest(unittest.TestCase):
         lst = RunnerTests()
         self.assertTrue(len(lst.test_to_negotiate_uri('foo')) > 10)
 
-    def test_test_to_negotiate_uri(self):
-        ''' Check test_to_negotiate_uri works as expected '''
-        #
-        # It should always return the first URI: it suck but that is
-        # how it works as of now.
-        #
-        lst = RunnerTests()
-        lst.update({'foo': ['a', 'b', 'c']})
-        self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
-        self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
-        self.assertEqual(lst.test_to_negotiate_uri('foo'), 'a')
-
 if __name__ == '__main__':
     unittest.main()

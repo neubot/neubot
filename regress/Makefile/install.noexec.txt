@@ -87,10 +87,12 @@ dist/temp/datadir/neubot/notifier/macos.py
 dist/temp/datadir/neubot/notifier/unix.py
 dist/temp/datadir/neubot/notifier_browser.py
 dist/temp/datadir/neubot/notify.py
+dist/temp/datadir/neubot/percentile.py
 dist/temp/datadir/neubot/pollable.py
 dist/temp/datadir/neubot/poller.py
 dist/temp/datadir/neubot/privacy.py
 dist/temp/datadir/neubot/raw.py
+dist/temp/datadir/neubot/raw_analyze.py
 dist/temp/datadir/neubot/raw_clnt.py
 dist/temp/datadir/neubot/raw_defs.py
 dist/temp/datadir/neubot/raw_negotiate.py
