@@ -130,17 +130,18 @@ class TestComputeBottleneckCapacity(unittest.TestCase):
 
     def test_empty(self):
         ''' Make sure it works for empty input '''
-        self.assertEqual(raw_analyze._compute_bottleneck_capacity([], 1440), [])
+        self.assertEqual(raw_analyze._compute_bottleneck_capacity([], 1440),
+          None)
 
     def test_ignore_big_mss(self):
         ''' Make sure we ignore samples bigger than one MSS '''
         self.assertEqual(raw_analyze._compute_bottleneck_capacity(
-          [(1234567894, 3, 1441)], 1440), [])
+          [(1234567894, 3, 1441)], 1440), None)
 
     def test_ignore_small_mss(self):
         ''' Make sure we ignore samples <= than 1/2 MSS '''
         self.assertEqual(raw_analyze._compute_bottleneck_capacity(
-          [(1234567894, 3, 720)], 1440), [])
+          [(1234567894, 3, 720)], 1440), None)
 
     def test_percentile(self):
         ''' Garner confidence that we're not biases by rare events '''
@@ -157,7 +158,7 @@ class TestComputeBottleneckCapacity(unittest.TestCase):
     def test_float_division(self):
         ''' Make sure it deals gracefully with zero interval '''
         self.assertEqual(raw_analyze._compute_bottleneck_capacity(
-          [(1234567894, 0, 720)], 1440), [])
+          [(1234567894, 0, 720)], 1440), None)
 
     def test_functionality(self):
         ''' Make sure it produces a reasonable result for typical input '''

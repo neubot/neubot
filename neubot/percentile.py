@@ -17,7 +17,7 @@ import math
 def percentile(vector, percent):
     ''' Find the percentile of a list of values '''
     if not vector:
-        return []
+        return None
     vector = sorted(vector)
     return _percentile(vector, percent)
 
