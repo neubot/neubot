@@ -158,7 +158,7 @@ class TestComputeBottleneckCapacity(unittest.TestCase):
     def test_float_division(self):
         ''' Make sure it deals gracefully with zero interval '''
         self.assertEqual(raw_analyze._compute_bottleneck_capacity(
-          [(1234567894, 0, 720)], 1440), None)
+          [(1234567894, 0, 1380)], 1440), None)
 
     def test_functionality(self):
         ''' Make sure it produces a reasonable result for typical input '''
