@@ -30,12 +30,14 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.config import CONFIG
+
+from neubot import system_posix
 from neubot import utils_posix
 from neubot import utils_path
 from neubot import utils_hier
 
 # Default user name
-UNAME = '_neubot'
+UNAME = system_posix.UNPRIV_USER
 
 class FileSystemPOSIX(object):
     ''' POSIX file system '''
