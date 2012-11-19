@@ -51,7 +51,6 @@ from neubot.runner_mlabns import RunnerMlabns
 from neubot.runner_tests import RUNNER_TESTS
 
 from neubot import bittorrent
-from neubot import http_utils
 from neubot import privacy
 from neubot import runner_rendezvous
 from neubot import system
