@@ -177,6 +177,7 @@ class RawServer(Handler):
         ticks = utils.ticks()
         timediff = ticks - context.ticks
         bytesdiff = stream.bytes_out - context.count
+        context.state['timestamp'] = utils.timestamp()
         context.state['goodput'] = {
                                     'ticks': ticks,
                                     'bytesdiff': bytesdiff,
