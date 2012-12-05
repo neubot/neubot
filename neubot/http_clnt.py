@@ -472,7 +472,7 @@ def main(args):
     ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'A:p:Sv')
+        options, arguments = getopt.getopt(args[1:], '6A:p:Sv')
     except getopt.error:
         sys.exit(USAGE)
     if not arguments:
