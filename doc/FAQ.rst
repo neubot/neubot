@@ -81,7 +81,7 @@
 1.1. What is Neubot?
 ~~~~~~~~~~~~~~~~~~~~
 
-Neubot is a research project on network neutrality at the `NEXA Center for
+Neubot is a research project on network neutrality by the `NEXA Center for
 Internet & Society`_ at `Politecnico di Torino`_. The project is based on
 a lightweight `free software`_ program that interested users can download
 and install on their computers. The program runs in the background and
