@@ -306,7 +306,7 @@ def main(args):
         server.listen(('127.0.0.1 ::1', 9774))
 
     if not system.has_enough_privs():
-        raise RuntimeError('server: you must be root')
+        sys.exit('FATAL: you must be root')
 
     #
     # Go background and drop privileges,

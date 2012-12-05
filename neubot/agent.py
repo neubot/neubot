@@ -71,7 +71,7 @@ def main(args):
                        conf["agent.api.port"]))
 
     if not system.has_enough_privs():
-        raise RuntimeError('agent: you must be root')
+        sys.exit('FATAL: you must be root')
 
     if conf["agent.daemonize"]:
         LOG.redirect()
