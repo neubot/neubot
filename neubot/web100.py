@@ -152,9 +152,8 @@ def web100_find_dirname(hdr, spec):
             if not data:
                 continue
             data = data.strip()
-            # XXX AFAIK the usage of triple colons is nonstandard
+            # Work-around web100 kernel bug
             if ':::' in data:
-                logging.warning('web100: workaround triple colons: %s', data)
                 data = data.replace(':::', '::')
             if data == spec:
                 matching.append(dirname)
