@@ -78,6 +78,17 @@
    * `8.1. How do I clone Neubot repository?`_
    * `8.2. How do I prepare a diff for Neubot?`_
 
+* `9. Localhost web API`_
+
+   * `9.1. How do I get a a list of APIs?`_
+   * `9.2. How do I get test data?`_
+   * `9.3. How do I get/set configuration variables?`_
+   * `9.4. How do I start a test?`_
+   * `9.5. How do I get debugging info?`_
+   * `9.6. Home page redirections`_
+   * `9.7. How do I force Neubot to exit?`_
+   * `9.8. How do I track Neubot state?`_
+
 ------------------------------------------------------------------------
 
 1. General questions
@@ -928,6 +939,552 @@ and you can cleanup your work environment::
     git checkout master
     git branch -D feature_123
     git tag -d feature_123_start
+
+------------------------------------------------------------------------
+
+9. Localhost web API
+--------------------
+
+.. TODO:: rewrite to be impersonal
+
+Here is the documentation of Neubot 127.0.0.1:9774
+web API.  This wiki describes roughly 3/5 of the API.
+I will follow-up with the remainder soon.
+
+The API is quite liberal and in most cases any method,
+will do.  When the behavior depends on the method I
+have specified that.  Of course, I usually use the GET
+method to test the API from command line.
+
+9.1. How do I get a a list of APIs?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first API you can access is, indeed, /api/ and
+returns just the list of APIs.  I originally planned
+to return documentation here, but I never went that
+further.  Still, I mention that possibility, because
+it may be a nice thing to do in the interest of
+discoverability.
+
+Anyway here's the API in action::
+
+ $ curl -o- http://127.0.0.1:9774/api/
+ [
+   "/api",
+   "/api/",
+   "/api/results",
+   "/api/config",
+   "/api/debug",
+   "/api/exit",
+   "/api/index",
+   "/api/log",
+   "/api/runner",
+   "/api/state",
+   "/api/version"
+ ]
+
+Needless to say, the response is JSON.
+
+Oh, and of course, /api is just an alias for /api/.
+
+9.2. How do I get test data?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. NOTE:: This API will be renamed /api/data
+   starting from Neubot 0.4.13
+
+We have a common API, /api/results, for both BitTorrent
+and speedtest.
+
+I will describe /api/results taking BitTorrent as an example
+but the same apply to speedtest. Both return a list of
+dictionaries, what differs is that speedtest dictionaries
+have one more (key, value) pair (with key='latency').
+
+Calling /api/results?test=bittorrent without any further
+option returns a list of BitTorrent results (just use
+test=speedtest for speedtest results), where each result
+is a dictionary::
+
+ $ curl -o- http://127.0.0.1:9774/api/results?test=bittorrent
+ [{"real_address": "80.182.50.210", "privacy_can_collect": 1, ...}, {...}]
+
+The response is a very long line, here I have edited
+it for readability.  (Below there is a pretty-printed
+example, with all the dict keys.)
+
+Apart from `test=name`, the other available options are:
+
+since=int
+ Returns only results after the specified date,
+ which is relative to the EPOCH.
+
+until=int
+ Does not return results after the specified date,
+ which is relative to the EPOCH.
+
+debug=bool
+ Pretty prints the JSON.
+
+One comment: when I wrote the interface I didn't know,
+but IIRC here it would be more correct english to use
+from..to instead of since..until.
+
+Here's an example with some options::
+
+ $ curl -o- 'http://127.0.0.1:9774/api/results?test=bittorrent&debug=1&since=1332738000'
+ [
+   {
+       "connect_time": 0.034081935882568359,
+       "download_speed": 862063.72062096791,
+       "internal_address": "192.168.0.33",
+       "neubot_version": "0.004010999",
+       "platform": "darwin",
+       "privacy_can_collect": 1,
+       "privacy_can_publish": 1,
+       "privacy_informed": 1,
+       "real_address": "87.14.214.244",
+       "remote_address": "194.116.85.224",
+       "timestamp": 1332867719,
+       "upload_speed": 49437.521614604324,
+       "uuid": "0964312e-f451-4579-9984-3954dcfdeb42"
+   },
+   {
+       "connect_time": 0.035229921340942383,
+       "download_speed": 861644.9323690217,
+       "internal_address": "192.168.0.33",
+       "neubot_version": "0.004010999",
+       "platform": "darwin",
+       "privacy_can_collect": 1,
+       "privacy_can_publish": 1,
+       "privacy_informed": 1,
+       "real_address": "87.14.214.244",
+       "remote_address": "194.116.85.211",
+       "timestamp": 1332841328,
+       "upload_speed": 48351.377174934867,
+       "uuid": "0964312e-f451-4579-9984-3954dcfdeb42"
+   },
+   {
+       "connect_time": 0.03593897819519043,
+       "download_speed": 861803.16141179914,
+       "internal_address": "192.168.0.33",
+       "neubot_version": "0.004010999",
+       "platform": "darwin",
+       "privacy_can_collect": 1,
+       "privacy_can_publish": 1,
+       "privacy_informed": 1,
+       "real_address": "87.14.214.244",
+       "remote_address": "194.116.85.224",
+       "timestamp": 1332838263,
+       "upload_speed": 46651.459334347594,
+       "uuid": "0964312e-f451-4579-9984-3954dcfdeb42"
+   },
+   {
+       "connect_time": 0.036273956298828125,
+       "download_speed": 841047.23338805605,
+       "internal_address": "192.168.0.33",
+       "neubot_version": "0.004010999",
+       "platform": "darwin",
+       "privacy_can_collect": 1,
+       "privacy_can_publish": 1,
+       "privacy_informed": 1,
+       "real_address": "87.14.214.244",
+       "remote_address": "194.116.85.237",
+       "timestamp": 1332805450,
+       "upload_speed": 44710.82837997895,
+       "uuid": "0964312e-f451-4579-9984-3954dcfdeb42"
+   }
+ ]
+
+The difference between bittorrent and speedtest is
+just that the speedtest dictionary has one more (key,
+value) pair.  More generally, defines the format of its
+own dictionary -- and the javascript on the web api
+side is expected to be able to cope with it.
+
+9.3. How do I get/set configuration variables?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To get/set configuration variable Neubot uses the
+/api/config API.  More specifically:
+
+1. the configuration is a dictionary;
+
+2. GET is used to read and POST to modify it.
+
+GET returns a JSON object, while POST sends an
+urlencoded string.
+
+Available options are:
+
+debug=boolean
+ Pretty prints the JSON.
+
+labels=boolean
+ When True, the API does not return variable
+ values but rather their description.
+
+In the following examples I will always use
+the debug option, so I don't need to wrap text
+at hand anymore :-).
+
+::
+
+ $ curl -o- 'http://127.0.0.1:9774/api/config?debug=1'
+ {
+   "agent.api": 1,
+   "agent.api.address": "127.0.0.1",
+   "agent.api.port": 9774,
+   "agent.daemonize": 0,
+   "agent.interval": 0,
+   "agent.master": "master.neubot.org",
+   "agent.rendezvous": 1,
+   "agent.use_syslog": 1,
+   "bittorrent.address": "",
+   "bittorrent.bytes.down": 0,
+   "bittorrent.bytes.up": 0,
+   "bittorrent.daemonize": 0,
+   "bittorrent.infohash": "",
+   "bittorrent.listen": 0,
+   "bittorrent.my_id": "",
+   "bittorrent.negotiate": 1,
+   "bittorrent.negotiate.port": 80,
+   "bittorrent.numpieces": 1048576,
+   "bittorrent.piece_len": 131072,
+   "bittorrent.port": 6881,
+   "bittorrent.watchdog": 300,
+   "enabled": 1,
+   "http.client.class": "",
+   "http.client.method": "GET",
+   "http.client.stdout": 0,
+   "http.client.uri": "",
+   "http.server.address": "0.0.0.0",
+   "http.server.class": "",
+   "http.server.daemonize": 1,
+   "http.server.mime": 1,
+   "http.server.ports": "8080,",
+   "http.server.rootdir": "",
+   "http.server.ssi": 0,
+   "negotiate.max_thresh": 64,
+   "negotiate.min_thresh": 32,
+   "negotiate.parallelism": 7,
+   "net.stream.address": "127.0.0.1",
+   "net.stream.certfile": "",
+   "net.stream.chunk": 262144,
+   "net.stream.clients": 1,
+   "net.stream.daemonize": 0,
+   "net.stream.duration": 10,
+   "net.stream.ipv6": 0,
+   "net.stream.key": "",
+   "net.stream.listen": 0,
+   "net.stream.port": 12345,
+   "net.stream.proto": "",
+   "net.stream.rcvbuf": 0,
+   "net.stream.secure": 0,
+   "net.stream.server_side": 0,
+   "net.stream.sndbuf": 0,
+   "notifier_browser.honor_enabled": 0,
+   "notifier_browser.min_interval": 86400,
+   "privacy.can_collect": 1,
+   "privacy.can_publish": 1,
+   "privacy.informed": 1,
+   "runner.enabled": 1,
+   "speedtest.client.latency_tries": 10,
+   "speedtest.client.nconn": 1,
+   "speedtest.client.uri": "http://master.neubot.org/",
+   "uuid": "0964312e-f451-4579-9984-3954dcfdeb42",
+   "version": "4.2",
+   "www.lang": "default"
+ }
+
+ $ curl -o- 'http://127.0.0.1:9774/api/config?debug=1&labels=1'
+ {
+   "agent.api": "Enable API server",
+   "agent.api.address": "Set API server address",
+   "agent.api.port": "Set API server port",
+   "agent.daemonize": "Enable daemon behavior",
+   "agent.interval": "Set rendezvous interval, in seconds (must be >= 1380 or 0 = random value in a given interval)",
+   "agent.master": "Set master server address",
+   "agent.rendezvous": "Enable rendezvous client",
+   "agent.use_syslog": "Force syslog usage in any case",
+   "enabled": "Enable Neubot to perform automatic transmission tests",
+   "notifier_browser.honor_enabled": "Set to 1 to suppress notifications when Neubot is disabled",
+   "notifier_browser.min_interval": "Minimum interval between each browser notification",
+   "privacy.can_collect": "You give Neubot the permission to collect your Internet address for research purposes",
+   "privacy.can_publish": "You give Neubot the permission to publish on the web your Internet address so that it can be reused for research purposes",
+   "privacy.informed": "You assert that you have read and understood the privacy policy",
+   "runner.enabled": "When true command line tests are executed in the context of the local daemon, provided that it is running",
+   "uuid": "Random unique identifier of this Neubot agent",
+   "version": "Version number of the Neubot database schema",
+   "www.lang": "Web GUI language (`default' means: use browser default)"
+ }
+
+ # Now I change the default language for the
+ # web user interface
+
+ $ curl -s -o- 'http://127.0.0.1:9774/api/config?debug=1'|grep 'www\.lang'
+   "www.lang": "default"
+ $ curl -s -d www.lang=it -o- 'http://127.0.0.1:9774/api/config?debug=1'
+ "{}"
+ $ curl -s -o- 'http://127.0.0.1:9774/api/config?debug=1'|grep 'www\.lang'
+   "www.lang": "it"
+
+9.4. How do I start a test?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This feature is implemented by the /api/runner API,
+which accepts the following options:
+
+test=string
+ This is the name of the test to start.  If there is no
+ name, this operation is basically a no-operation.
+
+streaming=boolean
+ When this is True, Neubot will write a copy of the logs
+ generated by the test on the network socket, so that one
+ can run a test from command line in the context of the
+ server and see the logs on console.
+
+Unless streaming is True, this API returns an empty
+dictionary to keep jquery happy.
+
+Currently, there is no feedback when there is no test
+name, the test name is not known, or the test is known.
+This is quite confusing and probably an error should
+be returned in the first two cases::
+
+ $ curl -s -o- 'http://127.0.0.1:9774/api/runner'
+ {}
+ $ curl -s -o- 'http://127.0.0.1:9774/api/runner?test=foo'
+ {}
+ $ curl -s -o- 'http://127.0.0.1:9774/api/runner?test=speedtest'
+ {}
+
+At this point a test is in progress and trying to run
+another test will cause an error::
+
+ $ curl -v -o- 'http://127.0.0.1:9774/api/runner?test=speedtest'
+ * About to connect() to 127.0.0.1 port 9774 (#0)
+ *   Trying 127.0.0.1... connected
+ * Connected to 127.0.0.1 (127.0.0.1) port 9774 (#0)
+ > GET /api/runner?test=speedtest HTTP/1.1
+ > User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8r zlib/1.2.3
+ > Host: 127.0.0.1:9774
+ > Accept: */*
+ >
+ < HTTP/1.1 500 A test is already in progress, try again later
+ < Date: Tue, 27 Mar 2012 17:45:23 GMT
+ < Content-Length: 46
+ < Cache-Control: no-cache
+ <
+ * Connection #0 to host 127.0.0.1 left intact
+ * Closing connection #0
+ A test is already in progress, try again later$
+
+Finally, this demonstrates the streaming feature.  Note
+that all logs are passed thru, and it's up to the client
+to filter out e.g. DEBUG logs::
+
+ $ curl -s -o- 'http://127.0.0.1:9774/api/runner?test=speedtest&streaming=1'
+ DEBUG state: test_latency ---
+ DEBUG state: test_download ---
+ DEBUG state: test_upload ---
+ DEBUG state: test_name speedtest
+ DEBUG * publish: statechange
+ INFO * speedtest with http://neubot.mlab.mlab3.trn01.measurement-lab.org:9773/speedtest
+ DEBUG * Connecting to (u'neubot.mlab.mlab3.trn01.measurement-lab.org', 9773) ...
+ DEBUG ClientHTTP: latency: 36.5 ms
+ DEBUG * Connection made (('192.168.0.33', 50192), ('194.116.85.237', 9773))
+ DEBUG state: negotiate {}
+ DEBUG * publish: statechange
+ INFO * speedtest: negotiate in progress...
+ DEBUG > GET /speedtest/negotiate HTTP/1.1
+ DEBUG > Content-Length: 0
+ DEBUG > Host: neubot.mlab.mlab3.trn01.measurement-lab.org:9773
+ DEBUG > Pragma: no-cache
+ DEBUG > Cache-Control: no-cache
+ DEBUG > Date: Tue, 27 Mar 2012 17:42:56 GMT
+ DEBUG > Authorization:
+ DEBUG >
+ DEBUG < HTTP/1.1 200 Ok
+ ...
+ DEBUG < HTTP/1.1 200 Ok
+ DEBUG < Date: Tue, 27 Mar 2012 17:43:05 GMT
+ DEBUG < Connection: close
+ DEBUG < Cache-Control: no-cache
+ DEBUG <
+ INFO * speedtest: collect...done [in 67.6 ms]
+ DEBUG * publish: testdone
+ DEBUG state: idle {}
+ DEBUG * publish: statechange
+
+Neubot stops copying logs when the 'testdone' event is
+generated.  This event should be generated at the end
+of a test, whatever the result.
+
+Streaming is a nice feature.  I would probably include
+it in a specification because it allows for transparency
+in the tool.  But I will leave it optional, so a tool
+can choose whether to support it or not.  (Or it can be
+implemented after some time, when the tool has become
+stable).
+
+9.5. How do I get debugging info?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To get debugging information use the /api/debug API. Please
+note that this is useful only to developers and the consistency
+of the format is not guaranteed.
+
+This is an example of a debug request and its output::
+
+ $ curl -o- http://127.0.0.1:9774/api/debug
+ {'WWW': '/usr/share/neubot/www',
+  'notifier': {'_subscribers': {},
+               '_timestamps': {'statechange': 1336727245277393,
+                               'testdone': 1336727245277246}},
+  'poller': {'readset': {5: listener at ('127.0.0.1', 9774)}, 'writeset': {}},
+  'queue_history': [],
+  'typestats': {'ABCMeta': 26,
+                'BackendNeubot': 1,
+                'BackendProxy': 1,
+                'CDLL': 1,
+                'CFunctionType': 5,
+                'ClientRendezvous': 1,
+                'CodecInfo': 5,
+                'Config': 1,
+                'ConfigDict': 1,
+                'Context': 3,
+                'DatabaseManager': 1,
+                'Decimal': 6,
+                'EmptyNodeList': 1,
+                'Event': 5,
+                'FileSystemPOSIX': 1,
+                'Formatter': 1,
+                'JSONDecoder': 3,
+                'JSONEncoder': 3,
+                'LazyImporter': 19,
+                'LibraryLoader': 2,
+                'Listener': 1,
+                'Logger': 1,
+                'Manager': 1,
+                'MemoryError': 1,
+                'Message': 3,
+                'NegotiateServer': 1,
+                'NegotiateServerBitTorrent': 1,
+                'NegotiateServerSpeedtest': 1,
+                'Notifier': 1,
+                'NotifierBrowser': 1,
+                'Profiler': 1,
+                'PyCFuncPtrType': 8,
+                'PyCPointerType': 2,
+                'PyCSimpleType': 26,
+                'PyDLL': 1,
+                'Quitter': 2,
+                'Random': 1,
+                'RandomBlocks': 1,
+                'RootLogger': 1,
+                'RunnerCore': 1,
+                'RunnerTests': 1,
+                'RunnerUpdates': 1,
+                'RuntimeError': 1,
+                'Scanner': 3,
+                'ServerAPI': 1,
+                'ServerHTTP': 1,
+                'ServerStream': 1,
+                'SocketWrapper': 1,
+                'SpeedtestServer': 1,
+                'SpeedtestWrapper': 1,
+                'SplitResult': 5,
+                'State': 1,
+                'StgDict': 37,
+                'Task': 5,
+                'TypeInfo': 10,
+                'UUID': 4,
+                'WeakSet': 78,
+                '_Condition': 2,
+                '_Event': 1,
+                '_FuncPtr': 2,
+                '_Helper': 1,
+                '_Log10Memoize': 1,
+                '_MainThread': 1,
+                '_Printer': 3,
+                '_RLock': 3,
+                '_TemplateMetaclass': 1,
+                '_local': 1,
+                '_socketobject': 3,
+                '_swapped_meta': 1,
+                'abstractproperty': 4,
+                'builtin_function_or_method': 841,
+                'cell': 1,
+                'classmethod': 29,
+                'classmethod_descriptor': 20,
+                'classobj': 103,
+                'defaultdict': 5,
+                'deque': 19,
+                'dict': 984,
+                'error': 1,
+                'frame': 25,
+                'frozenset': 21,
+                'function': 3168,
+                'generator': 1,
+                'getset_descriptor': 382,
+                'instance': 17,
+                'instancemethod': 75,
+                'itemgetter': 42,
+                'list': 425,
+                'listiterator': 2,
+                'member_descriptor': 307,
+                'method_descriptor': 697,
+                'module': 235,
+                'partial': 14,
+                'property': 112,
+                'set': 184,
+                'staticmethod': 29,
+                'traceback': 8,
+                'tuple': 672,
+                'type': 251,
+                'weakref': 803,
+                'wrapper_descriptor': 1214}}
+
+9.6. Home page redirections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The API /api/index is used to redirect the user to
+/index.html or /privacy.html depending on whether he
+has already set privacy permission or not.
+
+This is an example of its usage::
+
+ $ curl -o- http://127.0.0.1:9774/api/index
+ <HTML>
+  <HEAD>
+   <TITLE>Found</TITLE>
+  </HEAD>
+  <BODY>
+   You should go to <A HREF="/index.html">/index.html</A>.
+  </BODY>
+ </HTML>
+
+Since in this case privacy permission was already set, we
+are redirected to /index.html.
+
+9.7. How do I force Neubot to exit?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To exit Neubot, the API /api/neubot can be used. When
+Neubot's daemon get this request, it will exit immediately
+from the poller's loop, without sending back a message.
+
+Currently this is a cross-platform API, however in the future
+we will use it only for Windows systems.
+
+9.8. How do I track Neubot state?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. TODO:: write this section
+
+------------------------------------------------------------------------
 
 ..
 .. Links
