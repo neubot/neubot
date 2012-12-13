@@ -73,6 +73,11 @@
    * `7.8. What does the settings page show?`_
    * `7.9. How do I change the web user interface language?`_
 
+* `8. Following development`_
+
+   * `8.1. How do I clone Neubot repository?`_
+   * `8.2. How do I prepare a diff for Neubot?`_
+
 ------------------------------------------------------------------------
 
 1. General questions
@@ -857,6 +862,72 @@ using the *settings* page.  Currently the value can be one of:
 
 **it**
   Uses italian.
+
+------------------------------------------------------------------------
+
+8. Following development
+------------------------
+
+8.1. How do I clone Neubot repository?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install git and clone the git repository with the following command::
+
+    git clone git://github.com/neubot/neubot.git
+
+It contains the `master branch`, which holds the code that will be
+included in next release.  There may be other branches, but
+they are intended for internal development only.  So, they can be
+deleted or rebased without notice.
+
+Specific repositories are available for ports on supported operating
+systems::
+
+    git clone git://github.com/neubot/neubot_debian.git
+    git clone git://github.com/neubot/neubot_macos.git
+    git clone git://github.com/neubot/neubot_win32.git
+
+Each contains a `master` branch, which holds the code and patches
+that will be included in next release.
+
+8.2. How do I prepare a diff for Neubot?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assuming you already cloned Neubot's git repository, the first step is to
+sync your local copy with it::
+
+    git fetch origin
+    git checkout master
+    git merge origin/master
+
+The second step is to create a branch for your patches.  It is a good idea
+to tag your starting point::
+
+    git checkout -b feature_123
+    git tag feature_123_start
+
+The third step is to develop your patches.  Make sure that each patch
+implements one single change and the rationale of the change is well
+documented by the commit message.
+
+When you think your patches are ready, subscribe to the public mailing
+list, if needed, and send your patches with `git send-email`::
+
+    git format-patch feature_123_start
+    git send-email *.patch
+
+Patches may be rejected or accepted, possibly with the indication of
+performing additional changes.  Accepted patches are committed on some
+testing branch of Neubot repository.  When we think that they are
+stable enough to be included into a release, they are committed on
+the master branch.
+
+At this point, they are part of the official history of the project
+and you can cleanup your work environment::
+
+    git checkout master
+    git branch -D feature_123
+    git tag -d feature_123_start
 
 ..
 .. Links
