@@ -53,6 +53,9 @@ from neubot import utils_version
 def main(args):
     """ Main function """
 
+    if not system.has_enough_privs():
+        sys.exit('FATAL: you must be root')
+
     common.main("agent", "Run in background, periodically run tests", args)
 
     conf = CONFIG.copy()
@@ -69,9 +72,6 @@ def main(args):
         server.register_child(ServerAPI(POLLER), "/api")
         server.listen((conf["agent.api.address"],
                        conf["agent.api.port"]))
-
-    if not system.has_enough_privs():
-        sys.exit('FATAL: you must be root')
 
     if conf["agent.daemonize"]:
         LOG.redirect()

@@ -152,6 +152,9 @@ def web100_find_dirname(hdr, spec):
             if not data:
                 continue
             data = data.strip()
+            # Work-around web100 kernel bug
+            if ':::' in data:
+                data = data.replace(':::', '::')
             if data == spec:
                 matching.append(dirname)
         if len(matching) == 1:

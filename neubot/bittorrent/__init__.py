@@ -20,11 +20,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# This file contains the external entry points to
-# the bittorrent module, that tries to emulate the
-# behavior of a bittorrent peer.
-#
+'''
+ This file contains the external entry points to
+ the bittorrent module, that tries to emulate the
+ behavior of a bittorrent peer.
+'''
 
 import sys
 import logging
@@ -49,12 +49,12 @@ from neubot import privacy
 from neubot import runner_clnt
 from neubot import utils
 
-#
-# This function is invoked when Neubot is already
-# running and you want to leverage some functionalities
-# of this module.
-#
 def run(poller, conf):
+    '''
+     This function is invoked when Neubot is already
+     running and you want to leverage some functionalities
+     of this module.
+    '''
 
     # Make sure the conf makes sense before we go
     config.finalize_conf(conf)
@@ -109,11 +109,11 @@ def run(poller, conf):
             client.connect((conf["bittorrent.address"],
                            conf["bittorrent.port"]))
 
-#
-# This function is invoked when the user wants
-# to run precisely this module.
-#
 def main(args):
+    '''
+     This function is invoked when the user wants
+     to run precisely this module.
+    '''
 
     config.register_descriptions()
     common.main("bittorrent", "Neubot BitTorrent module", args)

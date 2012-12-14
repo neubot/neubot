@@ -92,9 +92,8 @@ class RawServer(Handler):
         ''' Invoked when the connection is ready '''
         logging.info('raw_srvr: sending auth to client... in progress')
         context = stream.opaque
-        # XXX Not tested but I'm confident the kernel will quote IPv6 addresses
-        spec = '%s %s' % (utils_net.format_epnt(stream.myname),
-                          utils_net.format_epnt(stream.peername))
+        spec = '%s %s' % (utils_net.format_epnt_web100(stream.myname),
+                          utils_net.format_epnt_web100(stream.peername))
         context.web100_dirname = web100.web100_find_dirname(
           web100.WEB100_HEADER, spec)
         logging.debug('> FAKEAUTH')

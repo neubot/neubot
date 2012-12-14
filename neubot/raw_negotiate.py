@@ -65,12 +65,6 @@ class RawNegotiate(HttpClient):
 
     ''' Raw negotiate client '''
 
-    #
-    # The negotiator is complicated by the fact that it must accept
-    # redirection: M-Lab will soon implement a service to redirect
-    # via HTTP to the closest sliver.
-    #
-
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
 
         # Reset web interface

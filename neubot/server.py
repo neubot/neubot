@@ -194,6 +194,9 @@ VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.debug',
 def main(args):
     """ Starts the server module """
 
+    if not system.has_enough_privs():
+        sys.exit('FATAL: you must be root')
+
     try:
         options, arguments = getopt.getopt(args[1:], 'b:D:dv')
     except getopt.error:
@@ -304,9 +307,6 @@ def main(args):
         server = DebugAPI(POLLER)
         server.configure(conf)
         server.listen(('127.0.0.1 ::1', 9774))
-
-    if not system.has_enough_privs():
-        sys.exit('FATAL: you must be root')
 
     #
     # Go background and drop privileges,

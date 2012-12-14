@@ -20,6 +20,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+''' Database module '''
+
 import logging
 import os
 import sqlite3
@@ -37,18 +39,23 @@ from neubot import database_xxx
 from neubot import system
 
 class DatabaseManager(object):
+    ''' Manages connection to database '''
+
     def __init__(self):
         self.path = system.get_default_database_path()
         self.readonly = False
         self.dbc = None
 
     def set_path(self, path):
+        ''' Overrides default database path '''
         self.path = path
 
     def connect(self):
+        ''' Connects to database '''
         self.connection()
 
     def connection(self):
+        ''' Return connection to database '''
         if not self.dbc:
             database_xxx.linux_fixup_databasedir()
             if self.path != ":memory:":
@@ -99,6 +106,7 @@ class DatabaseManager(object):
         return self.dbc
 
     def close(self):
+        ''' Close connection to database '''
         if self.dbc:
             self.dbc.close()
             self.dbc = None

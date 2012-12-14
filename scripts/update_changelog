@@ -35,7 +35,7 @@ fi
 
 DATE=`date +%F`
 printf "Neubot $NEW [$DATE]\n" > ChangeLog.in
-git log --oneline --reverse --format="%x09* %s" $CURRENT..HEAD >> ChangeLog.in
+git log --oneline --reverse --format="%x09* %s" $CURRENT..$NEW >> ChangeLog.in
 printf "\t* Neubot/$NEW released\n\n" >> ChangeLog.in
 cat ChangeLog >> ChangeLog.in
 mv ChangeLog.in ChangeLog
