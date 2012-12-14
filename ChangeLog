@@ -1,3 +1,17 @@
+Neubot 0.4.15.6 [2012-11-18]
+	* rendezvous/server.py: announce 0.4.15.5
+	* Revert custom user: it's optional complexity
+	* runner_hosts.py: sort hosts
+	* runner_hosts.py: update
+	* runner_hosts.py: remove servers reserved for testing
+	* raw: document oddity in protocol design
+	* www/results.html: uniform name for buttons
+	* www: update description of the RAW test
+	* lang/en.js: regen
+	* Bump version number to 0.4.15.6
+	* raw_clnt raw_negotiate: save more application-level info
+	* regress: repair regression tests
+
 Neubot 0.4.15.5 [2012-10-10]
 	* main_win32: reference the raw command for py2exe to include it
 	* runner_hosts: don't remember previous query results
