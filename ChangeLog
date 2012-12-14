@@ -1,3 +1,39 @@
+Neubot 0.4.15.7 [2012-12-14]
+	* percentile: return None, not [], when input is empty
+	* raw_analyze.py: make sure test fails for interval, not bytez
+	* rendezvous/server.py: announce 0.4.15.6
+	* neubot/raw_srvr.py: save timestamp on the server
+	* system: replace running_as_root with has_enough_privs
+	* README: open source -> free software
+	* http_clnt: fix typo: context.{get => handle}_piece
+	* raw_negotiate: remove redirection code
+	* system_posix: drop_privileges(): remove unused param
+	* Reduce the number of places where we daemonize
+	* system: simplify go_background() by using utils_posix
+	* agent server: require root permissions
+	* system_posix: get rid of lookup_user_info()
+	* www: open-source -> free software
+	* agent.py: write startup/shutdown log entries
+	* system_posix: USER -> UNPRIV_USER
+	* filesys_posix: fetch unpriv user name from system_posix
+	* runner_core: remove unused import
+	* http_clnt: add missing -6 option spec in getopt()
+	* Deleted http_server.py
+	* Edited grammatical errors in FAQ
+	* FAQ.rst: Use 'by Nexa Center', not at, for describing Neubot
+	* raw_srvr utils_net: format IPv6 addresses using web100 convention
+	* web100: workaround apparently nonstandard IPv6 address repr
+	* percentile.py raw_analyze.py: chmod -x
+	* web100: this is confirmed to be a bug in web100 kernel
+	* FAQ: document git repository
+	* FAQ: document localhost web API
+	* ChangeLog: add 0.4.15.5...0.4.15.6 commits
+	* bittorrent/__init__.py: document funcs
+	* database/__init__.py: add docstrings
+	* update_changelog: honor $NEW
+	* Bump version number to 0.14.5.7
+	* Neubot/0.4.15.7 released
+
 Neubot 0.4.15.6 [2012-11-18]
 	* rendezvous/server.py: announce 0.4.15.5
 	* Revert custom user: it's optional complexity
