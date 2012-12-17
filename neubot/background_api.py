@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 from neubot.api_server import API_SERVER
 from neubot.config import CONFIG
-from neubot.http_server import HTTP_SERVER
+from neubot.http.server import HTTP_SERVER
 from neubot.poller import POLLER
 
 from neubot import utils_rc
