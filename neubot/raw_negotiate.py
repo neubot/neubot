@@ -228,7 +228,7 @@ class RawNegotiate(HttpClient):
         stream.close()
 
     def _start_collect(self, stream, result):
-        ''' Invoked when the test fails '''
+        ''' Start the COLLECT phase '''
         STATE.update('collect')
         logging.debug('raw_negotiate: collect in progress...')
         context = stream.opaque
