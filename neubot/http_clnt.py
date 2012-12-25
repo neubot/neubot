@@ -1,8 +1,9 @@
 # neubot/http_clnt.py
 
 #
-# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -35,8 +36,6 @@ if __name__ == '__main__':
 
 from neubot.buff import Buff
 from neubot.handler import Handler
-from neubot.http_utils import HTTP_EVENT_HEADERS
-from neubot.http_utils import HTTP_EVENT_BODY
 from neubot.poller import POLLER
 from neubot.stream import Stream
 
@@ -74,13 +73,12 @@ TRANSFER_ENCODING = six.b('transfer-encoding')
 
 LOGGER = logging.getLogger('http_clnt')
 
-class ClientContext(Buff):
+class HttpClientContext(Buff):
 
     ''' HTTP client context '''
 
     def __init__(self, extra, connection_made, connection_lost):
         Buff.__init__(self)
-        self.body = None
         self.code = EMPTY_STRING
         self.connection_made = connection_made
         self.connection_lost = connection_lost
@@ -89,6 +87,7 @@ class ClientContext(Buff):
         self.headers = {}
         self.last_hdr = EMPTY_STRING
         self.left = 0
+        self.max_headers = 0
         self.method = EMPTY_STRING
         self.outfp = None
         self.outfp_chunked = False
@@ -101,30 +100,28 @@ class HttpClient(Handler):
     ''' HTTP client '''
 
     #
-    # Setup.  The user should implement handle_connect() and invoke the
-    # create_stream() function to setup a new stream.  Stream creation is
-    # wrapped by a function because the HTTP code must kick off the HTTP
-    # receiver once the connection is ready.  Indeed, the receiver is "ON"
-    # during the whole connection lifetime, so that EOF and RST can be
-    # detected immediately (the underlying socket is in POLLER's readset
-    # as long as the HTTP code is receiving).
+    # Setup.  The user should implement handle_connect() and invoke
+    # create_stream().  This function setups a new stream and asks
+    # the poller to register the stream as readable.  In turn, this
+    # is imperative to avoid delaying EOF and RST.
     #
 
     def create_stream(self, sock, connection_made, connection_lost,
-          sslconfig, sslcert, extra):
+                      sslconfig, sslcert, extra):
         ''' Creates an HTTP stream '''
         LOGGER.debug('stream setup... in progress')
-        context = ClientContext(extra, connection_made, connection_lost)
+        context = HttpClientContext(extra, connection_made, connection_lost)
         Stream(sock, self._handle_connection_made, self._handle_connection_lost,
-          sslconfig, sslcert, context)
+               sslconfig, sslcert, context)
 
     def _handle_connection_made(self, stream):
         ''' Internally handles the CONNECTION_MADE event '''
         context = stream.opaque
-        stream.recv(MAXRECEIVE, self._handle_data)  # Kick receiver off
         context.handle_input = self._handle_firstline
+        stream.recv(MAXRECEIVE, self._handle_data)
+        if context.connection_made:
+            context.connection_made(stream)
         LOGGER.debug('stream setup... complete')
-        context.connection_made(stream)
 
     def _handle_connection_lost(self, stream):
         ''' Internally handles the CONNECTION_LOST event '''
@@ -140,12 +137,11 @@ class HttpClient(Handler):
             context.connection_lost(stream)
 
     #
-    # Send path.  This section provides methods to append stuff to the internal
-    # output buffer, including an open file handle.  The user is expected to
-    # append everything needed to make an HTTP message, and, once that is done,
-    # he/she is expected to invoke the send_message() to start sending the whole
-    # message to the other end.  Once done, the handle_send_complete() function
-    # is invoked (this is an empty method that the user may want to override.)
+    # Send path.  This section has methods to append headers and body to the
+    # internal output buffer.  Once the HTTP message is ready, send_message()
+    # allows the programmer to start sending it.  When the message is sent,
+    # handle_send_complete() is invoked.  This is an empty method that can be
+    # overriden to take actions.
     #
 
     @staticmethod
@@ -205,7 +201,8 @@ class HttpClient(Handler):
     def append_file(stream, filep, chunked=False):
         ''' Append file to output buffer '''
         context = stream.opaque
-        LOGGER.debug('> {file}')
+        if not chunked:
+            LOGGER.debug('> {file}')
         context.outfp = filep
         context.outfp_chunked = chunked
 
@@ -228,30 +225,30 @@ class HttpClient(Handler):
                 else:
                     stream.send(bytez, self._handle_send_complete)
                 return
-            elif context.outfp_chunked:
+            if context.outfp_chunked:
+                context.outfp_chunked = False
+                context.outfp = None
                 self.append_last_chunk(stream)
-                # No support for trailers
+                # Note: no support for trailers
                 self.append_end_of_headers(stream)
                 self.send_message(stream)
-                # Fall through
-            context.outfp = None
+                return
             context.outfp_chunked = False
+            context.outfp = None
         self.handle_send_complete(stream)
 
     def handle_send_complete(self, stream):
         ''' Handles the SEND_COMPLETE event '''
 
     #
-    # Receive path.  The receiver is always active and the user is expected to
-    # handle HTTP_EVENT_HEADER and/or HTTP_EVENT_BODY, by overriding the
-    # handle_event() method.  Depending on the circumstances, handle_event()
-    # can receive both HEADER and BODY events, or just one of them.
-    #   The decision about whether a response is expected or not is left to the
-    # programmer.  Typically you expect a response after a full request was
-    # sent, but there are exceptions, e.g. the "100 Continue" case.
-    #   Also, it should be noted that, by default, response body is discarded:
-    # the user is expected to override context.body and point it to a file-like
-    # object, if he/she wants to save it.
+    # Receive path.  The receiver automatically receives HTTP messages and
+    # dispatches events accordingly.  Handle_end_of_headers() is invoked after
+    # headers are received.  Handle_body_piece() is invoked for each received
+    # body piece.  Handle_end_of_body() is invoked when the whole message
+    # has been received.
+    #   The code does not check whether a response is expected or not, leaving
+    # the decision to the programmer.  It is designed like this to allow the
+    # programmer to receive interim responses like '100 Continue'.
     #
 
     def _handle_data(self, stream, bytez):
@@ -266,14 +263,13 @@ class HttpClient(Handler):
                 context.left -= len(tmp)  # MUST be before handle_input()
                 if context.left < 0:
                     raise RuntimeError('negative context.left')
-                context.handle_input(stream, tmp)
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
                 if not tmp:
                     break
-                context.handle_input(stream, tmp)
             else:
-                raise RuntimeError('internal error #1')
+                raise RuntimeError('negative context.left')
+            context.handle_input(stream, tmp)
         if not stream.isclosed:
             stream.recv(MAXRECEIVE, self._handle_data)
 
@@ -286,14 +282,15 @@ class HttpClient(Handler):
         if len(vector) != 3:
             raise RuntimeError('invalid first line')
         context.protocol = vector[0]
+        context.code = vector[1]
+        context.reason = vector[2]
         if not context.protocol.startswith(HTTP_PREFIX):
             raise RuntimeError('invalid protocol')
         if context.protocol not in (HTTP11, HTTP10):
             raise RuntimeError('unsupported protocol')
-        context.code = vector[1]
-        context.reason = vector[2]
         context.last_hdr = EMPTY_STRING
         context.headers = {}
+        context.max_headers = 128  # include also trailers
         context.handle_input = self._handle_header
 
     def _handle_header(self, stream, line):
@@ -304,6 +301,9 @@ class HttpClient(Handler):
     def _handle_header_ex(stream, line, handle_done):
         ''' Handles the HEADER_EX event '''
         context = stream.opaque
+        context.max_headers -= 1
+        if context.max_headers <= 0:
+            raise RuntimeError('too many headers')
         line = line.rstrip()
         if not line:
             LOGGER.debug('<')
@@ -321,6 +321,7 @@ class HttpClient(Handler):
         index = line.find(COLON)
         if index >= 0:
             name, value = line.split(COLON, 1)
+            # Note: header names are case insensitive
             name = name.strip().lower()
             value = value.strip()
             if name not in context.headers:
@@ -330,10 +331,10 @@ class HttpClient(Handler):
                 context.headers[name] += value
             context.last_hdr = name
             return
-        raise RuntimeError('internal error #2')
+        raise RuntimeError('invalid header')
 
     def _handle_end_of_headers(self, stream):
-        ''' Handle END_OF_HEADERS event '''
+        ''' Internally handles the END_OF_HEADERS event '''
 
         #
         #     "[...] All responses to the HEAD request method MUST NOT include a
@@ -346,57 +347,60 @@ class HttpClient(Handler):
 
         context = stream.opaque
 
+        # Note: context.code[0:1] is for Python3 compat
         if (context.method == HEAD or context.code[0:1] == ONE or
           context.code == CODE204 or context.code == CODE304):
             LOGGER.debug('no message body')
-            context.handle_input = self._handle_firstline
-            # Pretend we received an empty body
-            self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
+            self.handle_end_of_headers(stream)
+            context.handle_input = self._handle_firstline  # Robustness
+            # Note: pretend there was an empty body
+            self._handle_end_of_body(stream)
             return
 
         # Note: chunked has precedence over content-length
         if context.headers.get(TRANSFER_ENCODING) == CHUNKED:
-            LOGGER.debug('expecting chunked message body')
+            LOGGER.debug('chunked message body')
             context.handle_input = self._handle_chunklen
-            self.handle_event(stream, HTTP_EVENT_HEADERS)
+            self.handle_end_of_headers(stream)
             return
 
         tmp = context.headers.get(CONTENT_LENGTH)
         if tmp:
             length = int(tmp)
             if length > 0:
-                LOGGER.debug('expecting bounded message body')
+                LOGGER.debug('bounded message body')
                 context.handle_input = self._handle_piece_bounded
                 context.left = length
-                self.handle_event(stream, HTTP_EVENT_HEADERS)
+                self.handle_end_of_headers(stream)
                 return
             if length == 0:
                 LOGGER.debug('empty message body')
-                context.handle_input = self._handle_firstline
-                self.handle_event(stream, HTTP_EVENT_HEADERS|HTTP_EVENT_BODY)
+                self.handle_end_of_headers(stream)
+                context.handle_input = self._handle_firstline  # Robustness
+                self._handle_end_of_body(stream)
                 return
             raise RuntimeError('negative content length')
 
-        LOGGER.debug('expecting unbounded message body')
+        LOGGER.debug('unbounded message body')
         context.handle_input = self._handle_piece_unbounded
         context.left = MAXPIECE
-        self.handle_event(stream, HTTP_EVENT_HEADERS)
+        self.handle_end_of_headers(stream)
 
     def _handle_chunklen(self, stream, line):
         ''' Handles the CHUNKLEN event '''
         context = stream.opaque
         vector = line.split()
         if vector:
-            tmp = int(vector[0], 16)
-            if tmp < 0:
-                raise RuntimeError('negative chunk-length')
-            elif tmp == 0:
+            length = int(vector[0], 16)
+            if length > 0:
+                context.left = length
+                context.handle_input = self._handle_piece_chunked
+                LOGGER.debug('< {chunk len=%d}', length)
+            elif length == 0:
                 context.handle_input = self._handle_trailer
                 LOGGER.debug('< {last-chunk/}')
             else:
-                context.left = tmp
-                context.handle_input = self._handle_piece_chunked
-                LOGGER.debug('< {chunk len=%d}', tmp)
+                raise RuntimeError('negative chunk-length')
         else:
             raise RuntimeError('bad chunk-length line')
 
@@ -416,52 +420,50 @@ class HttpClient(Handler):
     def _handle_piece_unbounded(self, stream, piece):
         ''' Handles the PIECE_UNBOUNDED event '''
         context = stream.opaque
-        self.handle_piece(stream, piece)
+        self.handle_body_piece(stream, piece)
         context.left = MAXPIECE  # Read until the connection is closed
 
     def _handle_piece_bounded(self, stream, piece):
         ''' Handles the PIECE_BOUNDED event '''
         context = stream.opaque
-        self.handle_piece(stream, piece)
+        self.handle_body_piece(stream, piece)
         if context.left == 0:
             self._handle_end_of_body(stream)
 
     def _handle_piece_chunked(self, stream, piece):
         ''' Handles the PIECE_CHUNKED event '''
         context = stream.opaque
-        self.handle_piece(stream, piece)
+        self.handle_body_piece(stream, piece)
         if context.left == 0:
             context.handle_input = self._handle_chunkend
 
-    @staticmethod
-    def handle_piece(stream, piece):
-        ''' Handle the PIECE event '''
-        # Note: by default the body is discarded
-        context = stream.opaque
-        if context.body:
-            context.body.write(stream, piece)
-
     def _handle_end_of_body(self, stream):
-        ''' Handle the END_OF_BODY event '''
+        ''' Internally handles the END_OF_BODY event '''
         #
         # It is user responsibility to close the stream if appropriate (i.e.
         # if HTTP/1.0 or if "Connection" is set to "close").
         #
         context = stream.opaque
         context.handle_input = self._handle_firstline  # Restart
-        self.handle_event(stream, HTTP_EVENT_BODY)
+        self.handle_end_of_body(stream)
 
-    def handle_event(self, stream, event):
-        ''' Process protocol event '''
+    def handle_end_of_headers(self, stream):
+        ''' Handles the END_OF_HEADERS event '''
+
+    def handle_body_piece(self, stream, piece):
+        ''' Handles the BODY_PIECE event '''
+
+    def handle_end_of_body(self, stream):
+        ''' Handles the END_OF_BODY event '''
 
 class HttpClientSmpl(HttpClient):
     ''' Simple HTTP client '''
 
     def handle_connect(self, connector, sock, rtt, sslconfig, extra):
-        self.create_stream(sock, self.connection_made, None,
-          sslconfig, None, extra)
+        self.create_stream(sock, self._connection_made, None,
+                           sslconfig, None, extra)
 
-    def connection_made(self, stream):
+    def _connection_made(self, stream):
         ''' Invoked when the connection is established '''
         context = stream.opaque
         address, port, paths, cntvec, close = context.extra[:5]
@@ -484,18 +486,9 @@ class HttpClientSmpl(HttpClient):
             self.append_header(stream, 'Connection', 'close')
         self.append_end_of_headers(stream)
         self.send_message(stream)
-        context.body = self  # Want to print the body
         cntvec[0] += 1
 
-    def handle_event(self, stream, event):
-        if event & HTTP_EVENT_HEADERS:
-            self._process_headers(stream)
-        if event & HTTP_EVENT_BODY:
-            self._process_body(stream)
-
-    @staticmethod
-    def _process_headers(stream):
-        ''' Process headers '''
+    def handle_end_of_headers(self, stream):
         context = stream.opaque
         encoding = context.extra[5]
         value = context.headers.get(CONTENT_TYPE)
@@ -517,8 +510,7 @@ class HttpClientSmpl(HttpClient):
                 encoding[0] = six.bytes_to_string_safe(value, 'ascii')
                 LOGGER.debug('response encoding: %s', encoding[0])
 
-    def _process_body(self, stream):
-        ''' Process body '''
+    def handle_end_of_body(self, stream):
         context = stream.opaque
         cntvec = context.extra[3]
         if cntvec[0] <= 0:  # No unexpected responses
@@ -530,11 +522,9 @@ class HttpClientSmpl(HttpClient):
           context.headers.get(CONNECTION) == CLOSE):
             stream.close()
             return
-        self.connection_made(stream)
+        self._connection_made(stream)
 
-    @staticmethod
-    def write(stream, data):
-        ''' Write data on standard output '''
+    def handle_body_piece(self, stream, data):
         # Remember that with Python 3 we need to decode data
         context = stream.opaque
         encoding = context.extra[5]

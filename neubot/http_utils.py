@@ -1,8 +1,9 @@
 # neubot/http_utils.py
 
 #
-# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2010-2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -28,16 +29,12 @@ import logging
 from neubot.compat import json
 from neubot import six
 
-# Events passed to handle_event() method
-HTTP_EVENT_HEADERS = 1 << 0
-HTTP_EVENT_BODY = 1 << 1
-
 class Body(object):
     ''' Body that contains bytes '''
     def __init__(self):
         self.queue = []
 
-    def write(self, stream, octets):
+    def write(self, octets):
         ''' Write octets into body '''
         self.queue.append(octets)
 
