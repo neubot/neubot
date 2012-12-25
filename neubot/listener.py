@@ -32,14 +32,13 @@ class Listener(Pollable):
 
     ''' Pollable socket listener '''
 
-    def __init__(self, parent, sock, endpoint, sslconfig, sslcert, extra):
+    def __init__(self, parent, sock, endpoint, sslconfig, sslcert):
         Pollable.__init__(self)
         self.parent = parent
         self.lsock = sock
         self.endpoint = endpoint
         self.sslconfig = sslconfig
         self.sslcert = sslcert
-        self.extra = extra
 
         # Want to listen "forever"
         self.watchdog = -1
@@ -58,8 +57,7 @@ class Listener(Pollable):
         try:
             sock = self.lsock.accept()[0]
             sock.setblocking(False)
-            self.parent.handle_accept(self, sock, self.sslconfig,
-                                      self.sslcert, self.extra)
+            self.parent.handle_accept(self, sock, self.sslconfig, self.sslcert)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:

@@ -80,7 +80,7 @@ class RawServer(Handler):
 
     ''' Raw test server '''
 
-    def handle_accept(self, listener, sock, sslconfig, sslcert, extra):
+    def handle_accept(self, listener, sock, sslconfig, sslcert):
         logging.info('raw_srvr: new connection at %s', listener)
         Stream(sock, self._connection_ready, self._connection_lost,
           sslconfig, sslcert, ServerContext())
@@ -276,7 +276,7 @@ def main(args):
     logging.getLogger().setLevel(level)
 
     handler = RawServer()
-    handler.listen((address, port), prefer_ipv6, sslconfig, sslcert, {})
+    handler.listen((address, port), prefer_ipv6, sslconfig, sslcert)
     POLLER.loop()
 
 if __name__ == '__main__':

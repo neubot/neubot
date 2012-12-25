@@ -249,7 +249,7 @@ def main(args):
     if CONFIG['server.raw']:
         logging.debug('server: starting raw server... in progress')
         RAW_SERVER_EX.listen((":: 0.0.0.0", 12345),
-          CONFIG['prefer_ipv6'], 0, '', {})
+          CONFIG['prefer_ipv6'], 0, '')
         logging.debug('server: starting raw server... complete')
 
     #

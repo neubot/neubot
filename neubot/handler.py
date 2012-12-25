@@ -36,14 +36,14 @@ class Handler(object):
 
     # Inspired by BitTorrent handle class
 
-    def listen(self, endpoint, prefer_ipv6, sslconfig, sslcert, extra):
+    def listen(self, endpoint, prefer_ipv6, sslconfig, sslcert):
         ''' Listen() at endpoint '''
         sockets = utils_net.listen(endpoint, prefer_ipv6)
         if not sockets:
             self.handle_listen_error(endpoint)
             return
         for sock in sockets:
-            Listener(self, sock, endpoint, sslconfig, sslcert, extra)
+            Listener(self, sock, endpoint, sslconfig, sslcert)
 
     def handle_listen_error(self, endpoint):
         ''' Handle the LISTEN_ERROR event '''
@@ -54,7 +54,7 @@ class Handler(object):
     def handle_listen_close(self, listener):
         ''' Handle the LISTEN_CLOSE event '''
 
-    def handle_accept(self, listener, sock, sslconfig, sslcert, extra):
+    def handle_accept(self, listener, sock, sslconfig, sslcert):
         ''' Handle the ACCEPT event '''
 
     def handle_accept_error(self, listener):
