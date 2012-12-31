@@ -66,7 +66,7 @@ class PrepareMessage(unittest.TestCase):
     def test_append_request(self):
         ''' Make sure append_request() works '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_request(stream, 'GET', '/', 'HTTP/1.0')
         self.assertEqual(context.method, six.b('GET'))
@@ -81,7 +81,7 @@ class PrepareMessage(unittest.TestCase):
     def test_append_header(self):
         ''' Make sure append_header() works '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_header(stream, 'Content-Type', 'text/plain')
         self.assertEqual(context.outq[0], six.b('Content-Type'))
@@ -94,7 +94,7 @@ class PrepareMessage(unittest.TestCase):
     def test_append_end_of_headers(self):
         ''' Make sure append_end_of_headers() works '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_end_of_headers(stream)
         self.assertEqual(context.outq[0], http_clnt.CRLF)
@@ -103,7 +103,7 @@ class PrepareMessage(unittest.TestCase):
     def test_append_bytes(self):
         ''' Make sure append_bytes() works '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_bytes(stream, six.b('A') * 512)
         self.assertEqual(context.outq[0], six.b('A') * 512)
@@ -112,7 +112,7 @@ class PrepareMessage(unittest.TestCase):
     def test_append_chunk(self):
         ''' Make sure append_chunk() works '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_chunk(stream, six.b('A') * 513)
         self.assertEqual(context.outq[0], six.b('201\r\n'))
@@ -123,7 +123,7 @@ class PrepareMessage(unittest.TestCase):
     def test_append_file(self):
         ''' Make sure append_file() works '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_file(stream, '1234')  # Whathever works
         self.assertEqual(context.outfp, '1234')
@@ -140,7 +140,7 @@ class SendMessage(unittest.TestCase):
     def test_no_body(self):
         ''' Make sure send_message() works without body '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_request(stream, 'GET', '/', 'HTTP/1.0')
         client.append_header(stream, 'Accept', 'text/plain')
@@ -156,7 +156,7 @@ class SendMessage(unittest.TestCase):
     def test_bytes_body(self):
         ''' Make sure send_message() works with bytes-only body '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_request(stream, 'GET', '/', 'HTTP/1.0')
         client.append_header(stream, 'Accept', 'text/plain')
@@ -179,7 +179,7 @@ class SendMessage(unittest.TestCase):
         ''' Make sure send_message() works with filep body '''
 
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client.append_request(stream, 'GET', '/', 'HTTP/1.0')
         client.append_header(stream, 'Accept', 'text/plain')
@@ -248,7 +248,7 @@ class HandleData(unittest.TestCase):
     def test_no_data_open(self):
         ''' Make sure _handle_data() works for no data and open stream '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client._handle_data(stream, six.b(''))
         # Make sure the code schedules the next recv
@@ -258,7 +258,7 @@ class HandleData(unittest.TestCase):
     def test_no_data_closed(self):
         ''' Make sure _handle_data() works for no data and closed stream '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         stream.isclosed = 1  # Pretend the stream is closed
         client._handle_data(stream, six.b(''))
@@ -269,7 +269,7 @@ class HandleData(unittest.TestCase):
     def test_readline_smpl(self):
         ''' Make sure _handle_data() works for reading simple lines '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         bytez = six.b('GET / HTTP/1.0\r\nAccept: */*\r\n\r\n')
         self.stuff = []  # Start over
@@ -284,7 +284,7 @@ class HandleData(unittest.TestCase):
     def test_readline_partial(self):
         ''' Make sure _handle_data() works for reading partial lines '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.stuff = []  # Start over
         context.handle_input = self.handle_stuff
@@ -305,7 +305,7 @@ class HandleData(unittest.TestCase):
     def test_readline_too_long(self):
         ''' Make sure _handle_data() fails when reading too-long lines '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         bytez = six.b('A') * http_clnt.MAXLINE
         # Note: failure because no LF at line[MAXLINE -1]
@@ -314,7 +314,7 @@ class HandleData(unittest.TestCase):
     def test_readpiece_small(self):
         ''' Make sure _handle_data() works for reading small pieces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         bytez = six.b('A') * 7
         context.left = 7
@@ -328,7 +328,7 @@ class HandleData(unittest.TestCase):
     def test_readpiece_partial(self):
         ''' Make sure _handle_data() works for reading partial pieces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.stuff = []  # Start over
         context.left = 7
@@ -348,7 +348,7 @@ class HandleData(unittest.TestCase):
     def test_readpiece_large(self):
         ''' Make sure _handle_data() works for reading large pieces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.stuff = []  # Start over
         context.left = http_clnt.MAXRECEIVE + 8
@@ -370,7 +370,7 @@ class HandleData(unittest.TestCase):
     def test_read_piece_to_line(self):
         ''' Make sure _handle_data() reads lines when done with pieces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.stuff = []  # Start over
         context.left = 64
@@ -394,7 +394,7 @@ class HandleData(unittest.TestCase):
     def test_read_line_to_piece(self):
         ''' Make sure _handle_data() reads pieces after lines '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.stuff = []  # Start over
         context.handle_input = self.handle_stuff
@@ -423,7 +423,7 @@ class HandleFirstline(unittest.TestCase):
     def test_numtokens(self):
         ''' Make sure _handle_firstline() requires 3+ tokens '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.assertRaises(RuntimeError, client._handle_firstline,
                           stream, six.b(''))
@@ -437,7 +437,7 @@ class HandleFirstline(unittest.TestCase):
     def test_protocol_name(self):
         ''' Make sure _handle_firstline() requires HTTP protocol '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.assertRaises(RuntimeError, client._handle_firstline,
                           stream, six.b('SMTP/1.0 200 Ok\r\n'))
@@ -445,7 +445,7 @@ class HandleFirstline(unittest.TestCase):
     def test_protocol_version(self):
         ''' Make sure _handle_firstline() requires HTTP/1.{0,1} protocol '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.assertRaises(RuntimeError, client._handle_firstline,
                           stream, six.b('HTTP/1.2 200 Ok\r\n'))
@@ -453,7 +453,7 @@ class HandleFirstline(unittest.TestCase):
     def test_success(self):
         ''' Make sure _handle_firstline() works as expected '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         client._handle_firstline(stream, six.b('HTTP/1.1 404 Not Found\r\n'))
         self.assertEqual(context.protocol, six.b('HTTP/1.1'))
@@ -467,7 +467,7 @@ class HandleFirstline(unittest.TestCase):
     def test_blanks(self):
         ''' Make sure _handle_firstline() works as expected w/ extra blanks '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
 
         client._handle_firstline(stream,
@@ -500,7 +500,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_eoh(self):
         ''' Make sure _handle_header_ex() recognizes EOH '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('\r\n'), self.handle_done)
@@ -509,7 +509,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_eoh_lf_only(self):
         ''' Make sure _handle_header_ex() recognizes EOH w/ LF only '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('\n'), self.handle_done)
@@ -518,7 +518,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_eoh_space(self):
         ''' Make sure _handle_header_ex() recognizes EOH w/ spaces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b(' \r\n'), self.handle_done)
@@ -527,7 +527,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_eoh_tab(self):
         ''' Make sure _handle_header_ex() recognizes EOH w/ tab '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('\t\r\n'), self.handle_done)
@@ -536,7 +536,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_eoh_empty(self):
         ''' Make sure _handle_header_ex() recognizes EOH w/ empty string '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b(''), self.handle_done)
@@ -551,7 +551,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_header_smpl(self):
         ''' Make sure _handle_header_ex() correctly parses simple headers '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('Content-Type: text/plain\r\n'),
@@ -566,7 +566,7 @@ class HandleHeaderEx(unittest.TestCase):
         ''' Make sure _handle_header_ex() correctly parses headers
             with extra spaces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream,
@@ -581,7 +581,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_header_badfmt(self):
         ''' Make sure _handle_header_ex() errs out on bad header format '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.assertRaises(RuntimeError, client._handle_header_ex, stream,
           six.b('Content-Type text/plain\r\n'), self.handle_done)
@@ -590,7 +590,7 @@ class HandleHeaderEx(unittest.TestCase):
         ''' Make sure _handle_header_ex() correctly parses multiple headers
             with headrs with equal name '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream,
@@ -609,7 +609,7 @@ class HandleHeaderEx(unittest.TestCase):
         ''' Make sure _handle_header_ex() correctly parses multiple headers
             with headrs with equal name and spaces '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream,
@@ -636,7 +636,7 @@ class HandleHeaderEx(unittest.TestCase):
             with a space or tab '''
         # This is a "feature" of Neubot's HTTP
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b(' Content-Type: text/plain\r\n'),
@@ -650,7 +650,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_folding_space(self):
         ''' Make sure _handle_header_ex() folds line starting with space '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('Content-Type: \r\n'),
@@ -666,7 +666,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_folding_tab(self):
         ''' Make sure _handle_header_ex() folds line starting with tab '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('Content-Type: \r\n'),
@@ -682,7 +682,7 @@ class HandleHeaderEx(unittest.TestCase):
     def test_folding_multi(self):
         ''' Make sure _handle_header_ex() folds multiple lines '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('Accept: \r\n'),
@@ -701,7 +701,7 @@ class HandleHeaderEx(unittest.TestCase):
         ''' Make sure _handle_header_ex() correctly handles colon
             in folded line '''
         client = http_clnt.HttpClient()
-        context = http_clnt.ClientContext({}, None, None)
+        context = http_clnt.HttpClientContext({}, None, None)
         stream = FakeStream(context)
         self.handle_done_cnt = 0  # Start over
         client._handle_header_ex(stream, six.b('Accept: \r\n'),

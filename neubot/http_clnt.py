@@ -42,6 +42,7 @@ from neubot.stream import Stream
 from neubot import six
 from neubot import utils_version
 
+MAXHEADERS = 128
 MAXLINE = 512
 MAXPIECE = 524288
 MAXREAD = 8000
@@ -87,7 +88,7 @@ class HttpClientContext(Buff):
         self.headers = {}
         self.last_hdr = EMPTY_STRING
         self.left = 0
-        self.max_headers = 0
+        self.max_headers = MAXHEADERS
         self.method = EMPTY_STRING
         self.outfp = None
         self.outfp_chunked = False
@@ -290,7 +291,7 @@ class HttpClient(Handler):
             raise RuntimeError('unsupported protocol')
         context.last_hdr = EMPTY_STRING
         context.headers = {}
-        context.max_headers = 128  # include also trailers
+        context.max_headers = MAXHEADERS  # include also trailers
         context.handle_input = self._handle_header
 
     def _handle_header(self, stream, line):
