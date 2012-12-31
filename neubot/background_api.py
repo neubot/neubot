@@ -1,8 +1,9 @@
 # neubot/background_api.py
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -37,10 +38,17 @@ from neubot.poller import POLLER
 from neubot import utils_rc
 from neubot import utils_hier
 
-def start(address, port):
+def start_api(address=None, port=None):
     ''' Starts API for background module '''
 
     logging.debug('background_api: starting API server...')
+
+    # Honor /etc/neubot/api
+    settings = utils_rc.parse_safe(utils_hier.APIFILEPATH)
+    if not address:
+        address = settings.get('address', '::1 127.0.0.1')
+    if not port:
+        port = settings.get('port', '9774')
 
     # Configure HTTP server
     conf = CONFIG.copy()
@@ -60,29 +68,26 @@ def start(address, port):
     logging.debug('background_api: starting API server... done')
 
 def main(args):
-    ''' Run the API server '''
+    ''' Main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'O:v')
+        options, arguments = getopt.getopt(args[1:], 'A:p:v')
     except getopt.error:
-        sys.exit('usage: neubot background_api [-v] [-O setting]')
+        sys.exit('usage: neubot background_api [-v] [-A address] [-p port]')
     if arguments:
-        sys.exit('usage: neubot background_api [-v] [-O setting]')
+        sys.exit('usage: neubot background_api [-v] [-A address] [-p port]')
 
-    settings = []
+    address = None
+    port = None
     for name, value in options:
-        if name == '-O':
-            settings.append(value)
+        if name == '-A':
+            address = value
+        elif name == '-p':
+            port = int(value)
         elif name == '-v':
             CONFIG['verbose'] = 1
 
-    settings = utils_rc.parse_safe(iterable=settings)
-    if not 'address' in settings:
-        settings['address'] = '127.0.0.1 ::1'
-    if not 'port' in settings:
-        settings['port'] = '9774'
-
-    start(settings['address'], settings['port'])
+    start_api(address, port)
     POLLER.loop()
 
 if __name__ == '__main__':

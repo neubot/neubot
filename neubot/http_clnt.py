@@ -224,9 +224,9 @@ class HttpClient(Handler):
             if bytez:
                 if context.outfp_chunked:
                     self.append_chunk(stream, bytez)
+                    self.send_message(stream)
                 else:
-                    self.append_bytes(stream, bytez)
-                self.send_message(stream)
+                    stream.send(bytez, self._handle_send_complete)
                 return
             elif context.outfp_chunked:
                 self.append_last_chunk(stream)
@@ -260,10 +260,12 @@ class HttpClient(Handler):
         context.bufferise(bytez)
         while True:
             if context.left > 0:
-                tmp = context.pullup(context.left)
+                tmp = context.pullup(min(context.left, MAXRECEIVE))
                 if not tmp:
                     break
-                context.left = 0  # MUST be before handle_input()
+                context.left -= len(tmp)  # MUST be before handle_input()
+                if context.left < 0:
+                    raise RuntimeError('negative context.left')
                 context.handle_input(stream, tmp)
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
@@ -308,17 +310,25 @@ class HttpClient(Handler):
             handle_done(stream)
             return
         LOGGER.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
+        # Note: must preceed header parsing to permit colons in folded line(s)
+        if context.last_hdr and line[0:1] in (SPACE, TAB):
+            value = context.headers[context.last_hdr]
+            value += SPACE
+            value += line.strip()
+            # Note: make sure there are no leading or trailing spaces
+            context.headers[context.last_hdr] = value.strip()
+            return
         index = line.find(COLON)
         if index >= 0:
             name, value = line.split(COLON, 1)
             name = name.strip().lower()
-            context.headers[name] = value.strip()
+            value = value.strip()
+            if name not in context.headers:
+                context.headers[name] = value
+            else:
+                context.headers[name] += COMMASPACE
+                context.headers[name] += value
             context.last_hdr = name
-            return
-        # Note: line[0:1] is for Python3 compat
-        if context.last_hdr and line[0:1] in (SPACE, TAB):
-            context.headers[name] += COMMASPACE
-            context.headers[name] += line.strip()
             return
         raise RuntimeError('internal error #2')
 
@@ -336,7 +346,7 @@ class HttpClient(Handler):
 
         context = stream.opaque
 
-        if (context.method == HEAD or context.code[0] == ONE or
+        if (context.method == HEAD or context.code[0:1] == ONE or
           context.code == CODE204 or context.code == CODE304):
             LOGGER.debug('no message body')
             context.handle_input = self._handle_firstline

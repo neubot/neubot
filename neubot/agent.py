@@ -35,8 +35,6 @@ import logging
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.http.server import HTTP_SERVER
-from neubot.api.server import ServerAPI
 from neubot.background_rendezvous import BACKGROUND_RENDEZVOUS
 from neubot.net.poller import POLLER
 
@@ -45,9 +43,9 @@ from neubot.database import DATABASE
 from neubot.log import LOG
 from neubot.main import common
 
+from neubot import background_api
 from neubot import privacy
 from neubot import system
-from neubot import utils_hier
 from neubot import utils_version
 
 def main(args):
@@ -62,16 +60,9 @@ def main(args):
 
     privacy.complain_if_needed()
 
-    if conf["agent.api"]:
-        server = HTTP_SERVER
-        logging.debug("* API server root directory: %s", utils_hier.WWWDIR)
-        conf["http.server.rootdir"] = utils_hier.WWWDIR
-        conf["http.server.ssi"] = True
-        conf["http.server.bind_or_die"] = True
-        server.configure(conf)
-        server.register_child(ServerAPI(POLLER), "/api")
-        server.listen((conf["agent.api.address"],
-                       conf["agent.api.port"]))
+    # FIXME We're ignoring agent.api.{address,port} that are now
+    # deprecated and should be removed soon.
+    background_api.start_api()
 
     if conf["agent.daemonize"]:
         LOG.redirect()

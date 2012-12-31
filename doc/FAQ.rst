@@ -12,7 +12,7 @@
    * `1.5. Why is it crucial to monitor network neutrality?`_
    * `1.6. Why might I want to install Neubot?`_
    * `1.7. What tests are implemented by the latest version?`_
-   * `1.8. What is the roadmap to Neubot/1.0?`_
+   * `1.8. What is the roadmap to Neubot 1.0.0.0?`_
    * `1.9. When is the next release of Neubot?`_
    * `1.10. What is your versioning policy?`_
    * `1.11. What is the best version of Neubot?`_
@@ -97,17 +97,17 @@
 1.1. What is Neubot?
 ~~~~~~~~~~~~~~~~~~~~
 
-Neubot is a research project on network neutrality by the `NEXA Center for
-Internet & Society`_ at `Politecnico di Torino`_. The project is based on
-a lightweight `free software`_ program that interested users can download
-and install on their computers. The program runs in the background and
-periodically performs transmission tests with test servers hosted by
-the distributed `Measurement Lab`_ platform, and ,in the future, with other
-instances of the program.  Transmission tests probe the Internet
-using various application level protocols and test results are saved both
-locally and on the test servers.  The results dataset contains samples
-from various Providers and is `published on the web`_, allowing anyone to
-analyze the data for research purposes.
+Neubot is a research project on network neutrality by the `Nexa Center for
+Internet & Society`_ at `Politecnico di Torino (DAUIN)`_.  The project is
+based on a lightweight `free software`_ computer program that interested
+users can download and install on their computers.  The program runs in the
+background and periodically performs transmission tests with servers
+hosted by the distributed `Measurement Lab`_ platform, and, in the future,
+with other instances of Neubot.  Transmission tests measure network performance
+with various application-level protocols.  Test results are saved both
+locally and on the test servers.  Data is collected for research purposes
+and `published on the web`_ under Creative Commons Zero allowing anyone
+to re-use it freely for the same purpose.
 
 1.2. What is Measurement Lab?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,12 +115,12 @@ analyze the data for research purposes.
 Measurement Lab (M-Lab_) is a distributed server platform that provides
 connectivity and servers around the world for projects that aim to
 measure the quality and/or neutrality of broadband Internet connections
-by probing the network with active tests.
+by probing the network with active tests.  It also provides additional
+services, e.g., server discovery APIs, automatic data collection and
+publishing, support for gathering network-stack level statistics.
 
-From version 0.4.6 onward Neubot is hosted at Measurement Lab, and, since
-version 0.4.8, most tests are carried out by Measurement Lab servers.
-Old clients are still served by Neubot master server, but the percentage
-is fading.
+From version 0.4.6 onward Neubot is hosted at Measurement Lab.  Since
+version 0.4.8, all tests are carried out by Measurement Lab servers.
 
 1.3. What is network neutrality?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,114 +128,109 @@ is fading.
 Network neutrality is the principle that the Internet should be neutral
 with respect to kinds of applications, senders and destinations. In
 other words, a network is neutral when routers_ forward packets using
-a *first come, first served* strategy. And is not neutral when certain
-packets receive a preferential treatment.
+a *first come, first served* strategy.  Instead, it is not neutral when
+certain packets receive a preferential treatment.
 
 The ancient Internet was strictly neutral, because it was designed
 to minimize the interaction between applications and the network
 (see RFC3439_). This design choice allowed very fast packet switching
 and enabled strong openness towards unforeseen uses of the Internet
-Protocol. The result has been an extraordinary outburst of innovation,
+Protocol. The result was an extraordinary outburst of innovation
 and a level-playing field for citizens, associations, and companies
 worldwide.
 
 The modern Internet is not always neutral because some technologies
 allow for fine-grained discrimination of traffic. When they enter into
-the network of an Internet Service Provider, packets may be classified,
-i.e.  assigned to a class like *web*, *video*, or *file-sharing*. The
-most commonly exploited characteristics in traffic classification
+the network of an Internet Service Provider, packets are *classified*
+(i.e., assigned to a class like *web*, *video*, or *file-sharing*).
+The most commonly exploited characteristics in traffic classification
 are the content of packets headers and the payload. But a packet can
-also inherit the class from the flow it belongs to if the flow is
-already classified. Once a packet has been classified at the border,
-it receives the service associated with its traffic class from routers
-inside the network.
+also inherit the class from the flow it belongs to if it is
+already classified. Once a packet has been classified at the border
+of the network it is treated accordingly by network routers.
 
 The policy debate regarding network neutrality is on whether it is
-preferable to continue with a *laissez-faire* policy or to safeguard
-network neutrality. This topic can be tackled from a variety of disciplines,
+preferable to continue with *laissez-faire* or to safeguard it.
+This topic can be tackled from a variety of disciplines,
 including competition law and innovation processes. To know more about
-neutrality, the related debate and the various positions, go to
-`Wikipedia's article`_.
+network neutrality, the related debate and the various positions go
+to `Wikipedia's article`_.
 
 1.4. Why *"the network neutrality bot"*?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The program is called *network neutrality bot* because it is a
 `software application that runs automated tasks over the Internet`_
-in order to quantify *network neutrality*.
+to collect data meaningful to study network neutrality.
 
 1.5. Why is crucial to monitor network neutrality?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Monitoring network neutrality is crucial because it enables a deeper
-understanding of operators behavior. This is paramount *ex-ante*, i.e.
-at a time when there is a broad discussion regarding changes in network
-neutrality policies. The availability of quantitative datasets collected
-by independent researchers should rebalance, at least in part, the deep
-information asymmetry between Internet Service Providers and other
-interested stakeholders (including regulators and citizens) and should
-provide a more reliable basis for discussing policies.
+understanding of Internet Service Providers (ISPs) behavior. This
+is paramount *ex-ante*, i.e., at a time when there is a broad discussion
+regarding changes in network neutrality policies. The availability of
+quantitative datasets collected by independent researchers should
+rebalance, at least in part, the deep information asymmetry between
+ISPs and other interested stakeholders (including regulators and
+citizens). In turn, providing a more reliable basis for discussing
+network neutrality policies.
 
-Monitoring network neutrality is crucial in an *ex-post* scenario as
-well. Indeed, it enables us to verify operators behavior in light of
-regulatory decisions regarding neutrality.
+Monitoring network neutrality is crucial in an *ex-post* scenario
+as well. Indeed, it enables independent researchers to verify operators
+behavior in light of regulatory decisions on the matter.
 
 1.6. Why might I want to install Neubot?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You might want to install Neubot if you care about network neutrality,
-you wish to support this research effort and are willing to donate
-this project a fraction of your network capacity to run periodic
-transmission tests. You will contribute to build a quantitative dataset
-on network neutrality, and the availability of this independent dataset
-will be arguably conducive to a more democratic decisional process
-about the Internet, one of the key infrastructures of our societies.
+wish to support this research project and are willing to donate it a
+fraction of your network capacity to run its tests. You will contribute
+to build a quantitative dataset of data meaningful to study the
+network neutrality. The availability of which will allow for a more
+democratic decisional process about the Internet, one of the key
+infrastructures of our societies.
 
-Another reason why you might want to install Neubot is that test results
-provide a brief picture of how your Internet connection is working, at
-different hours and using different protocols. You can compare these
-local results
-with results obtained using other tests, in order to achieve a
-more in-depth understanding of the behavior of your home network and of
-the behavior of your Provider.
+Another reason to install it is that it provides you with a brief
+picture of how your Internet connection works at different hours
+and using different protocols. You can compare Neubot results with
+other tests' results to achieve a more in-depth understanding of
+the behavior of your home network and ISP.
 
-If you are interested, don't hesitate to install it, because the success
-of this research effort depends heavily on how many people install the
-Neubot.
+If you are interested, don't hesitate to install it. The success of
+this project depends heavily on how many people install it.
 
 1.7. What tests are implemented by the latest version?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The latest version of Neubot implements the following transmission
-tests:
+The latest version of Neubot implements the following tests:
 
-**Speedtest**
-  This transmission test was originally inspired to the test of
-  speedtest.net_, hence the name. It is an HTTP client-server test
-  and measures `round trip time`_, download and upload goodput_.
+**bittorrent**
+  It emulates the `BitTorrent peer-wire protocol`_ and measures
+  `round trip time`_, download and upload goodput_.
 
-**BitTorrent**
-  This transmission test is a `BitTorrent peer-wire protocol`_
-  client-server test and measures `round trip time`_, download and
-  upload goodput_.
+**raw**
+  It does not emulate any protocol and performs a download-only
+  *raw* TCP test.  It measures `round trip time`_ and download
+  goodput_.  In addition, it also saves CPU uage information and
+  TCP/IP stack statistics.
 
-If you're interested, you can get more details on transmission tests in
+**speedtest**
+  It is an HTTP client-server test and measures `round trip time`_,
+  download and upload goodput_.
+
+  The initial implementation was inspired to the test provided by
+  speedtest.net_, hence the name.
+
+If you're interested, you can get more details on them in
 the `4. Technical questions`_ section.
 
-1.8. What is the roadmap to Neubot/1.0?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.8. What is the roadmap to Neubot 1.0.0.0?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Neubot/1.0 will be able to perform client-server and peer-to-peer
-transmission tests using various application level protocols. At
-the outset, we had divided the path to get to Neubot/1.0 into four
-steps:
-
-#. implement a simple HTTP-based client-server transmission test;
-#. implement a simple BitTorrent client-server transmission test;
-#. amend the BitTorrent test to work in peer-to-peer mode;
-#. implement more peer-to-peer tests for more protocols.
-
-Roadmap_ and TODO_ list are now updated and maintained using
+Neubot 1.0.0.0 will be able to perform client-server and peer-to-peer
+transmission tests using multiple application level protocols.
+The roadmap_ and TODO_ list are now updated and maintained on the
 `github's wiki`_.
 
 1.9. When is the next release of Neubot?
@@ -244,13 +239,6 @@ Roadmap_ and TODO_ list are now updated and maintained using
 The release process strives to `release early, release often`_ to
 maximize feedback.  The `github repository`_ is updated very frequently
 and there is a commitment to deploy a new release every month.
-
-In general, most releases are *patch releases*, adding new features and/or
-correct bugs.  Typically, after a numer of patch releases, there is a
-critical mass of new features, and a *milestone release* is issued.
-
-The version numbering directly reflects the distinction between patch
-and milestone releases, as explained by the next FAQ.
 
 1.10. What is your versioning policy?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1517,7 +1505,7 @@ we will use it only for Windows systems.
 .. _`github repository`: https://github.com/neubot/neubot
 
 .. _`Simone Basso`: http://www.neubot.org/people#basso
-.. _`NEXA Center for Internet & Society`: http://nexa.polito.it/
+.. _`Nexa Center for Internet & Society`: http://nexa.polito.it/
 .. _`Antonio Servetti`: http://www.neubot.org/people#servetti
 .. _`Federico Morando`: http://www.neubot.org/people#morando
 .. _`Juan Carlos De Martin`: http://www.neubot.org/people#de_martin
@@ -1543,7 +1531,7 @@ we will use it only for Windows systems.
 
 .. _`HTTP protocol`: http://en.wikipedia.org/wiki/HTTP
 
-.. _`Politecnico di Torino`: http://www.dauin.polito.it/
+.. _`Politecnico di Torino (DAUIN)`: http://www.dauin.polito.it/
 .. _`free software`: https://github.com/neubot/neubot/blob/master/COPYING
 
 .. _`near our server`: http://en.wikipedia.org/wiki/TCP_tuning#Window_size
