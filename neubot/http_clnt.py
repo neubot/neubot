@@ -218,8 +218,7 @@ class HttpClient(Handler):
         if context.outfp:
             bytez = context.outfp.read(MAXREAD)
             if bytez:
-                context.outq.append(bytez)
-                self.send_message(stream)
+                stream.send(bytez, self._handle_send_complete)
                 return
             context.outfp = None
         self.handle_send_complete(stream)
@@ -244,10 +243,12 @@ class HttpClient(Handler):
         context.bufferise(bytez)
         while True:
             if context.left > 0:
-                tmp = context.pullup(context.left)
+                tmp = context.pullup(min(context.left, MAXRECEIVE))
                 if not tmp:
                     break
-                context.left = 0  # MUST be before got_piece()
+                context.left -= len(tmp)  # MUST be before got_piece()
+                if context.left < 0:
+                    raise RuntimeError('negative context.left')
                 context.handle_piece(stream, tmp)
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
@@ -292,16 +293,25 @@ class HttpClient(Handler):
             handle_done(stream)
             return
         logging.debug('< %s', six.bytes_to_string_safe(line, 'utf-8'))
+        # Note: must preceed header parsing to permit colons in folded line(s)
+        if context.last_hdr and line[0:1] in (SPACE, TAB):
+            value = context.headers[context.last_hdr]
+            value += SPACE
+            value += line.strip()
+            # Note: make sure there are no leading or trailing spaces
+            context.headers[context.last_hdr] = value.strip()
+            return
         index = line.find(COLON)
         if index >= 0:
             name, value = line.split(COLON, 1)
             name = name.strip().lower()
-            context.headers[name] = value.strip()
+            value = value.strip()
+            if name not in context.headers:
+                context.headers[name] = value
+            else:
+                context.headers[name] += COMMASPACE
+                context.headers[name] += value
             context.last_hdr = name
-            return
-        if context.last_hdr and line[0:1] in (SPACE, TAB):
-            context.headers[name] += COMMASPACE
-            context.headers[name] += line.strip()
             return
         #
         # N.B. I have observed that this error is often triggered when one
@@ -324,7 +334,7 @@ class HttpClient(Handler):
 
         context = stream.opaque
 
-        if (context.method == HEAD or context.code[0] == ONE or
+        if (context.method == HEAD or context.code[0:1] == ONE or
           context.code == CODE204 or context.code == CODE304):
             logging.debug('http_clnt: expecting no message body')
             self.handle_end_of_body(stream)
