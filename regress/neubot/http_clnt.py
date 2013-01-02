@@ -197,7 +197,7 @@ class SendMessage(unittest.TestCase):
                              str(3 * http_clnt.MAXREAD - 4))
         client.append_header(stream, 'Content-Type', 'text/plain')
         client.append_end_of_headers(stream)
-        stringio = six.StringIO('A' * (3 * http_clnt.MAXREAD - 4))
+        stringio = six.BytesIO(six.b('A') * (3 * http_clnt.MAXREAD - 4))
         client.append_file(stream, stringio)
 
         # Make sure send_complete is called just once and at the end
@@ -219,19 +219,19 @@ class SendMessage(unittest.TestCase):
         # Second send() sends the first MAXREAD bytes and should not
         # invoke the send_complete() hook
         client._handle_send_complete(stream)
-        self.assertEqual(stream.outs, 'A' * http_clnt.MAXREAD)
+        self.assertEqual(stream.outs, six.b('A') * http_clnt.MAXREAD)
         self.assertEqual(self.send_complete_cnt, 0)
 
         # Third send() sends the second MAXREAD bytes and should not
         # invoke the send_complete() hook
         client._handle_send_complete(stream)
-        self.assertEqual(stream.outs, 'A' * http_clnt.MAXREAD)
+        self.assertEqual(stream.outs, six.b('A') * http_clnt.MAXREAD)
         self.assertEqual(self.send_complete_cnt, 0)
 
         # Fourth send() sends the third MAXREAD bytes and should not
         # invoke the send_complete() hook
         client._handle_send_complete(stream)
-        self.assertEqual(stream.outs, 'A' * (http_clnt.MAXREAD - 4))
+        self.assertEqual(stream.outs, six.b('A') * (http_clnt.MAXREAD - 4))
         self.assertEqual(self.send_complete_cnt, 0)
 
         # Fifth send() should cleanup things, should invoke the

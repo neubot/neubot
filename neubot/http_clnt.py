@@ -218,7 +218,9 @@ class HttpClient(Handler):
         if context.outfp:
             bytez = context.outfp.read(MAXREAD)
             if bytez:
-                stream.send(bytez, self._handle_send_complete)
+                # Note: honor the queue, don't send directly
+                context.outq.append(bytez)
+                self.send_message(stream)
                 return
             context.outfp = None
         self.handle_send_complete(stream)
