@@ -249,8 +249,6 @@ class HttpClient(Handler):
                 if not tmp:
                     break
                 context.left -= len(tmp)  # MUST be before got_piece()
-                if context.left < 0:
-                    raise RuntimeError('negative context.left')
                 context.handle_piece(stream, tmp)
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
@@ -258,7 +256,7 @@ class HttpClient(Handler):
                     break
                 context.handle_line(stream, tmp)
             else:
-                raise RuntimeError('http_clnt: internal error #1')
+                raise RuntimeError('negative context.left')
         if not stream.isclosed:
             stream.recv(MAXRECEIVE, self._handle_data)
 
