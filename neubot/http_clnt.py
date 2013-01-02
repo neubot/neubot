@@ -223,8 +223,10 @@ class HttpClient(Handler):
                 if context.outfp_chunked:
                     self.append_chunk(stream, bytez)
                     self.send_message(stream)
-                else:
-                    stream.send(bytez, self._handle_send_complete)
+                    return
+                # Note: honor the queue, don't send directly
+                context.outq.append(bytez)
+                self.send_message(stream)
                 return
             if context.outfp_chunked:
                 context.outfp_chunked = False
@@ -262,8 +264,6 @@ class HttpClient(Handler):
                 if not tmp:
                     break
                 context.left -= len(tmp)  # MUST be before handle_input()
-                if context.left < 0:
-                    raise RuntimeError('negative context.left')
             elif context.left == 0:
                 tmp = context.getline(MAXLINE)
                 if not tmp:
