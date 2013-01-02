@@ -228,16 +228,14 @@ class HttpClient(Handler):
                 context.outq.append(bytez)
                 self.send_message(stream)
                 return
+            context.outfp = None
             if context.outfp_chunked:
                 context.outfp_chunked = False
-                context.outfp = None
                 self.append_last_chunk(stream)
                 # Note: no support for trailers
                 self.append_end_of_headers(stream)
                 self.send_message(stream)
                 return
-            context.outfp_chunked = False
-            context.outfp = None
         self.handle_send_complete(stream)
 
     def handle_send_complete(self, stream):
