@@ -933,8 +933,6 @@ and you can cleanup your work environment::
 9. Localhost web API
 --------------------
 
-.. TODO:: rewrite to be impersonal
-
 Here is the documentation of Neubot 127.0.0.1:9774
 web API.  This wiki describes roughly 3/5 of the API.
 I will follow-up with the remainder soon.
@@ -1470,7 +1468,7 @@ we will use it only for Windows systems.
 9.8. How do I track Neubot state?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. TODO:: write this section
+TODO Write this section.
 
 ------------------------------------------------------------------------
 
