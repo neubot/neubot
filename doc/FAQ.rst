@@ -65,7 +65,7 @@
 
    * `7.1. What is the web user interface?`_
    * `7.2. How do I open the web user interface?`_
-   * `7.3. What does the status page shows?`_
+   * `7.3. What does the status page show?`_
    * `7.4. What does the speedtest page show?`_
    * `7.5. What does the bittorrent page show?`_
    * `7.6. What does the log page show?`_
@@ -163,8 +163,8 @@ The program is called *network neutrality bot* because it is a
 `software application that runs automated tasks over the Internet`_
 to collect data meaningful to study network neutrality.
 
-1.5. Why is crucial to monitor network neutrality?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.5. Why is it crucial to monitor network neutrality?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Monitoring network neutrality is crucial because it enables a deeper
 understanding of Internet Service Providers (ISPs) behavior. This
@@ -377,7 +377,7 @@ speed tests and tools.  If so, we would appreciate it if you would share
 your results with us, especially when Neubot results are not consistent
 with the ones of other tools.
 
-3.2. How much resources does Neubot need?
+3.2. How many resources does Neubot need?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Neubot has a minimal impact on system and network load. It spends most
@@ -403,8 +403,8 @@ particular memory) when Neubot is idle.
 .. image:: http://www.neubot.org/neubotfiles/resources2.png
    :align: center
 
-3.3. How do I report bugs, ask questions, make suggestions?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.3. How do I report bugs, ask questions, or make suggestions?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To report bugs and ask questions, please use our mailing list. The
 official languages for the mailing list are English and Italian.
@@ -532,8 +532,8 @@ did not take at least three seconds.
 
 *(Future versions of Neubot will implement peer-to-peer tests within instances of Neubot.)*
 
-4.2. What does *speedtest* test measures?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4.2. What does *speedtest* test measure?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *speedtest* test uses the `HTTP protocol`_ and measures: `round trip
 time`_, download and upload goodput_. It was originally inspired to
@@ -587,8 +587,8 @@ results. (Note that under UNIX, you must be root in order to dump the
 content of the system-wide database: If you run this command as an
 ordinary user you will dump the user-specific database instead.)
 
-4.6. What does *bittorrent* test measures?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4.6. What does *bittorrent* test measure?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *bittorrent* test emulates the `BitTorrent peer-wire protocol`_ and
 measures: `round trip time`_, download and upload goodput_. The test
@@ -785,7 +785,7 @@ browser and point it to the following URI::
     http://127.0.0.1:9774/
 
 7.3. What does the status page show?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *status* page (which is the default one) shows the status of Neubot,
 and the result of the latest transmission test.
@@ -1535,4 +1535,4 @@ we will use it only for Windows systems.
 .. _`free software`: https://github.com/neubot/neubot/blob/master/COPYING
 
 .. _`near our server`: http://en.wikipedia.org/wiki/TCP_tuning#Window_size
-.. _`cum grano salis`: http://en.wikipedia.org/wiki/Grain_of_salt
+.. _`with a grain of salt`: http://en.wikipedia.org/wiki/Grain_of_salt
