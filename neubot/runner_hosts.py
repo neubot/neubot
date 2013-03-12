@@ -1,7 +1,7 @@
 # neubot/runner_hosts.py
 
 #
-# Copyright (c) 2012
+# Copyright (c) 2012-2013
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -26,7 +26,7 @@
 import logging
 import random
 
-STATIC_TABLE_TIME = 'Sat Dec 15 17:20:02 2012'
+STATIC_TABLE_TIME = 'Tue Mar 12 11:26:08 2013'
 
 STATIC_TABLE = [
     'neubot.mlab.mlab1.akl01.measurement-lab.org',
@@ -41,8 +41,10 @@ STATIC_TABLE = [
     'neubot.mlab.mlab1.ham01.measurement-lab.org',
     'neubot.mlab.mlab1.hnd01.measurement-lab.org',
     'neubot.mlab.mlab1.iad01.measurement-lab.org',
+    'neubot.mlab.mlab1.jnb01.measurement-lab.org',
     'neubot.mlab.mlab1.lax01.measurement-lab.org',
     'neubot.mlab.mlab1.lba01.measurement-lab.org',
+    'neubot.mlab.mlab1.lca01.measurement-lab.org',
     'neubot.mlab.mlab1.lga01.measurement-lab.org',
     'neubot.mlab.mlab1.lga02.measurement-lab.org',
     'neubot.mlab.mlab1.lhr01.measurement-lab.org',
@@ -50,6 +52,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab1.mad01.measurement-lab.org',
     'neubot.mlab.mlab1.mia01.measurement-lab.org',
     'neubot.mlab.mlab1.mil01.measurement-lab.org',
+    'neubot.mlab.mlab1.nbo01.measurement-lab.org',
     'neubot.mlab.mlab1.nuq01.measurement-lab.org',
     'neubot.mlab.mlab1.nuq02.measurement-lab.org',
     'neubot.mlab.mlab1.ord01.measurement-lab.org',
@@ -75,8 +78,10 @@ STATIC_TABLE = [
     'neubot.mlab.mlab2.ham01.measurement-lab.org',
     'neubot.mlab.mlab2.hnd01.measurement-lab.org',
     'neubot.mlab.mlab2.iad01.measurement-lab.org',
+    'neubot.mlab.mlab2.jnb01.measurement-lab.org',
     'neubot.mlab.mlab2.lax01.measurement-lab.org',
     'neubot.mlab.mlab2.lba01.measurement-lab.org',
+    'neubot.mlab.mlab2.lca01.measurement-lab.org',
     'neubot.mlab.mlab2.lga01.measurement-lab.org',
     'neubot.mlab.mlab2.lga02.measurement-lab.org',
     'neubot.mlab.mlab2.lhr01.measurement-lab.org',
@@ -84,6 +89,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab2.mad01.measurement-lab.org',
     'neubot.mlab.mlab2.mia01.measurement-lab.org',
     'neubot.mlab.mlab2.mil01.measurement-lab.org',
+    'neubot.mlab.mlab2.nbo01.measurement-lab.org',
     'neubot.mlab.mlab2.nuq01.measurement-lab.org',
     'neubot.mlab.mlab2.nuq02.measurement-lab.org',
     'neubot.mlab.mlab2.ord01.measurement-lab.org',
@@ -109,8 +115,10 @@ STATIC_TABLE = [
     'neubot.mlab.mlab3.ham01.measurement-lab.org',
     'neubot.mlab.mlab3.hnd01.measurement-lab.org',
     'neubot.mlab.mlab3.iad01.measurement-lab.org',
+    'neubot.mlab.mlab3.jnb01.measurement-lab.org',
     'neubot.mlab.mlab3.lax01.measurement-lab.org',
     'neubot.mlab.mlab3.lba01.measurement-lab.org',
+    'neubot.mlab.mlab3.lca01.measurement-lab.org',
     'neubot.mlab.mlab3.lga01.measurement-lab.org',
     'neubot.mlab.mlab3.lga02.measurement-lab.org',
     'neubot.mlab.mlab3.lhr01.measurement-lab.org',
@@ -118,6 +126,7 @@ STATIC_TABLE = [
     'neubot.mlab.mlab3.mad01.measurement-lab.org',
     'neubot.mlab.mlab3.mia01.measurement-lab.org',
     'neubot.mlab.mlab3.mil01.measurement-lab.org',
+    'neubot.mlab.mlab3.nbo01.measurement-lab.org',
     'neubot.mlab.mlab3.nuq01.measurement-lab.org',
     'neubot.mlab.mlab3.nuq02.measurement-lab.org',
     'neubot.mlab.mlab3.ord01.measurement-lab.org',
