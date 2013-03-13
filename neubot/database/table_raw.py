@@ -31,8 +31,6 @@
 
 # Adapted from neubot/database/table_bittorrent.py
 
-from neubot.simplejson.ordered_dict import OrderedDict
-
 from neubot.compat import json
 from neubot.database import _table_utils
 
@@ -80,24 +78,6 @@ def __json_to_mapped_row(result):
                                result['client']['goodput']['timediff']),
             'json_data': json.dumps(result),
            }
-
-# List the visible fields only
-PRETTY_TEMPLATE = OrderedDict((
-    ('timestamp', 'Timestamp'),
-    ('internal_address', 'Internal address'),
-    ('real_address', 'Real address'),
-    ('remote_address', 'Remote address'),
-    ('connect_time', 'Connect time'),
-    ('latency', 'Appl. latency'),
-    ('download_speed', 'Download speed'),
-))
-
-JS_TYPES = {
-    'timestamp': 'datetime',
-    'connect_time': 'ms',
-    'latency': 'ms',
-    'download_speed': 'mbits',
-}
 
 CREATE_TABLE = _table_utils.make_create_table('raw', TEMPLATE)
 INSERT_INTO = _table_utils.make_insert_into('raw', TEMPLATE)

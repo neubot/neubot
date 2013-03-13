@@ -1,8 +1,9 @@
 # neubot/config.py
 
 #
-# Copyright (c) 2010-2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2010-2011, 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -219,7 +220,15 @@ CONFIG.register_defaults({
     "win32_updater_channel": "latest",
     "win32_updater_interval": 1800,
     "www.lang": "default",
+    "www_default_test_to_show": "speedtest",
+    "www_no_description": 0,
+    "www_no_legend": 0,
+    "www_no_plot": 0,
+    "www_no_split_by_ip": 0,
+    "www_no_table": 0,
+    "www_no_title": 0,
 })
+
 CONFIG.register_descriptions({
     "agent.api": "Enable API server",
     "agent.api.address": "Set API server address",
@@ -246,4 +255,11 @@ CONFIG.register_descriptions({
     "win32_updater_channel": "The channel used for automatic updates",
     "win32_updater_interval": "Interval between check for updates",
     "www.lang": "Web GUI language (`default' means: use browser default)",
+    "www_default_test_to_show": "Test to show by default in results.html",
+    "www_no_description": "Set to nonzero to hide test description",
+    "www_no_legend": "Set to nonzero to hide the plot legend",
+    "www_no_plot": "Set to nonzero to hide the plot(s)",
+    "www_no_split_by_ip": "Set to nonzero to avoid split by IP address",
+    "www_no_table": "Set to nonzero to hide the table",
+    "www_no_title": "Set to nonzero to hide test-specific title",
 })

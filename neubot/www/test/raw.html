@@ -1,0 +1,23 @@
+  <!-- BEGIN www/test/raw.html -->
+
+   <div>
+    <p>The `raw` test is a test that characterizes your Internet connection
+       by estimating round-trip latency at application level and by measuring
+       the download goodput.  Instead of targeting a single Neubot server,
+       this test selects a random server each time (so the goodput is expected
+       to oscillate with the round-trip latency).  The test does not emulate
+       any protocol, and just sends random data, but takes download goodput
+       snapshots during the test, as well as process load information and TCP
+       statistics.  The plan is to use this test's results to study certain
+       TCP properties that may lead to a better understanding of network
+       neutrality.  For sure, we aim to backport innovations introduced by
+       this test to the other transmission tests.</p>
+
+    <p>Please, note that the web user interface is unfortunately not yet ready
+       to show goodput and TCP snapshots collected by this test.  We decided
+       to deploy the test core in this release, even if the web interface
+       integration was not finished, to start studying this test results, in
+       order to identify the best parameters to show.</p>
+   </div>
+
+  <!-- END www/test/raw.html -->

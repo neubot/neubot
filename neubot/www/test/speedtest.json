@@ -1,0 +1,88 @@
+{
+
+    "title": "Your recent Speedtest results",
+
+    "plots": [
+        {
+            "title": "Download and upload speed",
+            "xlabel": "Date",
+            "ylabel": "Goodput (Mbit/s)",
+            "datasets": [
+                {
+                    "key": "download_speed",
+                    "label": "Dload",
+                    "formatter": "speed",
+                    "marker": "circle"
+                },
+                {
+                    "key": "upload_speed",
+                    "label": "Upload",
+                    "formatter": "speed",
+                    "marker": "square"
+                }
+            ]
+        },
+        {
+            "title": "Connect time and latency",
+            "xlabel": "Date",
+            "ylabel": "Delay (ms)",
+            "datasets": [
+                {
+                    "key": "latency",
+                    "label": "Appl. latency",
+                    "formatter": "time",
+                    "marker": "circle"
+                },
+                {
+                    "key":"connect_time",
+                    "label": "Connect time",
+                    "formatter": "time",
+                    "marker": "square"
+                }
+            ]
+        }
+    ],
+
+    "table": [
+        {
+            "key": "timestamp",
+            "label": "Timestamp",
+            "formatter": "datetime"
+        },
+        {
+            "key": "internal_address",
+            "label": "Internal address",
+            "formatter": "string"
+        },
+        {
+            "key": "real_address",
+            "label": "Real address",
+            "formatter": "string"
+        },
+        {
+            "key": "remote_address",
+            "label": "Remote address",
+            "formatter": "string"
+        },
+        {
+            "key": "connect_time",
+            "label": "Connect time",
+            "formatter": "time"
+        },
+        {
+            "key": "latency",
+            "label": "Appl. latency",
+            "formatter": "time"
+        },
+        {
+            "key": "download_speed",
+            "label": "Download speed",
+            "formatter": "speed"
+        },
+        {
+            "key": "upload_speed",
+            "label": "Upload speed",
+            "formatter": "speed"
+        }
+    ]
+}
