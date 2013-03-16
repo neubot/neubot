@@ -167,7 +167,7 @@ class Message(object):
 
     def serialize_body(self):
         ''' Serialize message body '''
-        self.prettyprintbody(">")
+        #self.prettyprintbody(">")  # Slow in some cases - disable
         return self.body
 
     #
