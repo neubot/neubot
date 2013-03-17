@@ -26,7 +26,7 @@
 
 //
 // Documented-by: doc/results.js.{dia,png,svg}
-// Last-jslint: Wed Mar 13 16:24:50 CET 2013
+// Last-jslint: Sun Mar 17 20:41:06 CET 2013
 //
 
 var results = (function () {
@@ -36,6 +36,218 @@ var results = (function () {
 
     self.one_day_in_ms = 24 * 60 * 60 * 1000;
     self.one_hour_in_ms = 60 * 60 * 1000;
+
+    function eval_recipe(code, result) {
+
+        function must_be_array(target) {
+            if (jQuery.type(target) !== "array") {
+                throw "must_be_array: not an array";
+            }
+            return target;
+        }
+
+        function must_be_number(target) {
+            if (jQuery.type(target) !== "number") {
+                throw "must_be_number: not a number";
+            }
+            return target;
+        }
+
+        function must_be_string(target) {
+            if (jQuery.type(target) !== "string") {
+                throw "must_be_string: not a string";
+            }
+            return target;
+        }
+
+        function must_not_be_undefined(target) {
+            if (target === undefined) {
+                throw "must_not_be_undefined: passed undefined value";
+            }
+            return target;
+        }
+
+        function apply_divide(left, right) {
+            return must_be_number(left) / must_be_number(right);
+        }
+
+        function apply_map_select(selector, target) {
+            var i, tmp = [];
+
+            must_be_string(selector);
+            must_be_array(target);
+
+            for (i = 0; i < target.length; i += 1) {
+                tmp.push(target[i][selector]);
+            }
+
+            return tmp;
+        }
+
+        function apply_parse_json(target) {
+            return jQuery.parseJSON(must_be_string(target));
+        }
+
+        function apply_reduce_avg(target) {
+            var i, tmp = 0.0;
+
+            must_be_array(target);
+
+            for (i = 0; i < target.length; i += 1) {
+                tmp += target[i];
+            }
+            if (target.length > 0) {
+                tmp /= target.length;
+            }
+
+            return tmp;
+        }
+
+        function apply_select(selector, target) {
+
+            if (jQuery.type(selector) === "string") {
+                return must_not_be_undefined(target[selector]);
+            }
+
+            if (jQuery.type(selector) === "number"
+                    && jQuery.type(target) === "array") {
+                while (target.length > 0 && selector < 0) {
+                    selector += target.length;  /* Pythonism */
+                }
+                return must_not_be_undefined(target[selector]);
+            }
+
+            throw "apply_select: invalid arguments";
+        }
+
+        function apply_to_datetime(target) {
+            return utils.getTimeFromSeconds(must_be_number(target), true);
+        }
+
+        function apply_to_millisecond(target) {
+            return utils.toMsNumber(must_be_number(target));
+        }
+
+        function apply_to_millisecond_string(target) {
+            return utils.toMs(must_be_number(target));
+        }
+
+        function apply_to_speed(target) {
+            return utils.toMbitsPerSecondNumber(must_be_number(target));
+        }
+
+        function apply_to_speed_string(target) {
+            return utils.toMbitsPerSecond(must_be_number(target));
+        }
+
+        function do_eval(curcode) {
+
+            function eval_target(target) {
+                if (jQuery.type(target) === "array") {
+                    return do_eval(target);         /* XXX recursion */
+                }
+                if (target === "result") {
+                    return result;
+                }
+                throw "eval_target: invalid target";
+            }
+
+            // divide left right
+            if (curcode[0] === "divide") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: divide: invalid curcode length";
+                }
+                return apply_divide(eval_target(curcode[1]),
+                                    eval_target(curcode[2]));
+            }
+
+            // map-select key target
+            if (curcode[0] === "map-select") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: map-select: invalid curcode length";
+                }
+                return apply_map_select(curcode[1], eval_target(curcode[2]));
+            }
+
+            // parse-json target
+            if (curcode[0] === "parse-json") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: parse-json: invalid curcode length";
+                }
+                return apply_parse_json(eval_target(curcode[1]));
+            }
+
+            // reduce-avg target
+            if (curcode[0] === "reduce-avg") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: reduce-avg: invalid curcode length";
+                }
+                return apply_reduce_avg(eval_target(curcode[1]));
+            }
+
+            // select key target
+            if (curcode[0] === "select") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: select: invalid curcode length";
+                }
+                return apply_select(curcode[1], eval_target(curcode[2]));
+            }
+
+            // to-datetime target
+            if (curcode[0] === "to-datetime") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-datetime: invalid curcode length";
+                }
+                return apply_to_datetime(eval_target(curcode[1]));
+            }
+
+            // to-millisecond target
+            if (curcode[0] === "to-millisecond") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-millisecond: invalid curcode length";
+                }
+                return apply_to_millisecond(eval_target(curcode[1]));
+            }
+
+            // to-millisecond-string target
+            if (curcode[0] === "to-millisecond-string") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-millisecond-string: "
+                          + "invalid curcode length";
+                }
+                return apply_to_millisecond_string(eval_target(curcode[1]));
+            }
+
+            // to-speed target
+            if (curcode[0] === "to-speed") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-speed: invalid curcode length";
+                }
+                return apply_to_speed(eval_target(curcode[1]));
+            }
+
+            // to-speed-string target
+            if (curcode[0] === "to-speed-string") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-speed-string: invalid curcode length";
+                }
+                return apply_to_speed_string(eval_target(curcode[1]));
+            }
+
+            throw "do_eval: invalid curcode[0]";  /* Catches undefined too */
+        }
+
+        var retval;
+
+        try {
+            retval = do_eval(must_be_array(code));
+        } catch (error) {
+            /*console.log("eval_recipe failed: " + error);*/
+            retval = undefined;
+        }
+
+        return retval;
+    }
 
     function jqplot_plotter() {
 
@@ -101,16 +313,16 @@ var results = (function () {
             self.params.axes.yaxis.label = value;
         };
 
-        self.set_data = function (value) {
-            self.data = value;
+        self.push_data = function (value) {
+            self.data.push(value);
         };
 
         self.set_div = function (value) {
             self.div = value;
         };
 
-        self.set_per_serie_options = function (value) {
-            self.params.series = value;
+        self.push_options = function (value) {
+            self.params.series.push(value);
         };
 
         self.show_hide_legend = function (value) {
@@ -134,25 +346,16 @@ var results = (function () {
         return self;
     }
 
-    function build_vector(result, key, formatter) {
+    function build_vector(result, recipe) {
         var dataset, k, timestamp, value;
 
         dataset = [];
         for (k = 0; k < result.length; k += 1) {
             timestamp = result[k].timestamp * 1000;  // To millisec
-            value = result[k][key];
-            switch (formatter) {
-            case "time":
-                value = utils.toMsNumber(value);
-                break;
-            case "speed":
-                value = utils.toMbitsPerSecondNumber(value);
-                break;
-            default:
-                /* nothing */
-                break;
+            value = eval_recipe(recipe, result[k]);
+            if (value !== undefined) {
+                dataset.push([timestamp, value]);
             }
-            dataset.push([timestamp, value]);
         }
 
         return dataset;
@@ -175,11 +378,10 @@ var results = (function () {
         return dictionary;
     }
 
-    function mkplot(info, dataset, result, data, options) {
-        var address, data_by_ip, formatter, i, key, label, marker;
+    function mkplot(info, dataset, result, plotter) {
+        var address, data_by_ip, i, label, marker, recipe;
 
-        formatter = dataset.formatter;
-        key = dataset.key;
+        recipe = dataset.recipe;
         label = dataset.label;
         marker = dataset.marker;
 
@@ -197,8 +399,11 @@ var results = (function () {
         }
 
         jQuery.each(data_by_ip, function (address, vector) {
-            data.push(build_vector(vector, key, formatter));
-            options.push(build_per_serie_options(label, address, marker));
+            if (vector.length > 0) {
+                plotter.push_data(build_vector(vector, recipe));
+                plotter.push_options(build_per_serie_options(label,
+                                     address, marker));
+            }
         });
     }
 
@@ -236,7 +441,7 @@ var results = (function () {
     }
 
     function formatter_plot(info, result, since, until) {
-        var data, i, j, options, plotter;
+        var i, j, plotter;
 
         for (i = 0; i < info.plots.length; i += 1) {
             plotter = jqplot_plotter();
@@ -246,20 +451,17 @@ var results = (function () {
             plotter.set_ylabel(info.plots[i].ylabel);
             plotter.set_xmin(compute_xmin(result, since));
             plotter.set_xfmt(compute_xfmt(since));
-            data = [];
             options = [];
             for (j = 0; j < info.plots[i].datasets.length; j += 1) {
-                mkplot(info, info.plots[i].datasets[j], result, data, options);
+                mkplot(info, info.plots[i].datasets[j], result, plotter);
             }
-            plotter.set_data(data);
-            plotter.set_per_serie_options(options);
             plotter.show_hide_legend(!info.www_no_legend);
             plotter.plot("#charts");
         }
     }
 
     function formatter_table(info, data, since, until) {
-        var html = "", i, j, key, value;
+        var html = "", i, j, recipe, value;
 
         html += '<center><table id="results_table">';
         html += "<thead><tr>";
@@ -272,23 +474,11 @@ var results = (function () {
         for (i = 0; i < data.length; i += 1) {
             html += "<tr>";
             for (j = 0; j < info.table.length; j += 1) {
-                key = info.table[j].key;
-                value = data[i][key];
-                switch (info.table[j].formatter) {
-                case "time":
-                    value = utils.toMs(value);
-                    break;
-                case "speed":
-                    value = utils.toMbitsPerSecond(value);
-                    break;
-                case "datetime":
-                    value = utils.getTimeFromSeconds(value, true);
-                    break;
-                default:
-                    /* nothing */
-                    break;
+                recipe = info.table[j].recipe;
+                value = eval_recipe(recipe, data[i]);
+                if (value !== undefined) {
+                    html += "<td>" + value + "</td>";
                 }
-                html += "<td>" + value + "</td>";
             }
             html += "</tr>";
         }

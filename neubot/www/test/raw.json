@@ -9,9 +9,9 @@
             "ylabel": "Goodput (Mbit/s)",
             "datasets": [
                 {
-                    "key": "download_speed",
+                    "recipe": ["to-speed",
+                               ["select", "download_speed", "result"]],
                     "label": "Dload",
-                    "formatter": "speed",
                     "marker": "circle"
                 }
             ]
@@ -22,56 +22,94 @@
             "ylabel": "Delay (ms)",
             "datasets": [
                 {
-                    "key": "latency",
+                    "recipe": ["to-millisecond",
+                               ["select", "latency", "result"]],
                     "label": "Appl. latency",
-                    "formatter": "time",
                     "marker": "circle"
                 },
                 {
-                    "key":"connect_time",
+                    "recipe": ["to-millisecond",
+                               ["select", "connect_time", "result"]],
                     "label": "Connect time",
-                    "formatter": "time",
                     "marker": "square"
                 }
             ]
+        },
+        {
+            "title": "Average congestion window",
+            "xlabel": "Date",
+            "ylabel": "Congestion window (bytes)",
+            "datasets": [
+                {
+                    "recipe": ["reduce-avg",
+                               ["map-select", "CurCwnd",
+                                ["select", "web100_snap",
+                                 ["select", "server",
+                                  ["parse-json",
+                                   ["select", "json_data", "result"]]]]]],
+                    "label": "Congestion window",
+                    "marker": "circle"
+                }
+            ]
+        },
+        {
+            "title": "Packet loss rate",
+            "xlabel": "Date",
+            "ylabel": "Packet loss rate",
+            "datasets": [
+                {
+                    "recipe": ["divide",
+                               ["select", "CongestionSignals",
+                                ["select", -1,
+                                 ["select", "web100_snap",
+                                  ["select", "server",
+                                   ["parse-json",
+                                    ["select", "json_data", "result"]]]]]],
+                               ["select", "PktsOut",
+                                ["select", -1,
+                                 ["select", "web100_snap",
+                                  ["select", "server",
+                                   ["parse-json",
+                                    ["select", "json_data", "result"]]]]]]],
+                    "label": "Packet loss rate",
+                    "marker": "circle"
+                }
+            ]
         }
+
     ],
 
     "table": [
         {
-            "key": "timestamp",
-            "label": "Timestamp",
-            "formatter": "datetime"
+            "recipe": ["to-datetime", ["select", "timestamp", "result"]],
+            "label": "Timestamp"
         },
         {
-            "key": "internal_address",
-            "label": "Internal address",
-            "formatter": "string"
+            "recipe": ["select", "internal_address", "result"],
+            "label": "Internal address"
         },
         {
-            "key": "real_address",
-            "label": "Real address",
-            "formatter": "string"
+            "recipe": ["select", "real_address", "result"],
+            "label": "Real address"
         },
         {
-            "key": "remote_address",
-            "label": "Remote address",
-            "formatter": "string"
+            "recipe": ["select", "remote_address", "result"],
+            "label": "Remote address"
         },
         {
-            "key": "connect_time",
-            "label": "Connect time",
-            "formatter": "time"
+            "recipe": ["to-millisecond-string",
+                       ["select", "connect_time", "result"]],
+            "label": "Connect time"
         },
         {
-            "key": "latency",
-            "label": "Appl. latency",
-            "formatter": "time"
+            "recipe": ["to-millisecond-string",
+                       ["select", "latency", "result"]],
+            "label": "Appl. latency"
         },
         {
-            "key": "download_speed",
-            "label": "Download speed",
-            "formatter": "speed"
+            "recipe": ["to-speed-string",
+                       ["select", "download_speed", "result"]],
+            "label": "Download speed"
         }
     ]
 }
