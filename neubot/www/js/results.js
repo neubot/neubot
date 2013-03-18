@@ -273,19 +273,21 @@ var results = (function () {
                 }
             },
             legend: {
-                show: 1,
-                location: "e"
+                location: "nw",
+                predraw: 1,
+                show: 1
             },
             cursor: {
                 showVerticalLine: false,
                 showHorizontalLine: true,
                 showCursorLegend: false,
-                showTooltip: false,
-                tooltipLocation: 'sw',
+                showTooltip: true,
+                tooltipLocation: 'se',
                 zoom: true
             },
             highlighter: {
-                show: false
+                sizeAdjust: 7.5,
+                show: true
             },
             series: []
         };
@@ -313,6 +315,11 @@ var results = (function () {
             self.params.axes.yaxis.label = value;
         };
 
+        // Not yet
+        //self.set_ylogscale = function (value) {
+        //    self.params.axes.yaxis.renderer = jQuery.jqplot.LogAxisRenderer;
+        //};
+
         self.push_data = function (value) {
             self.data.push(value);
         };
@@ -335,12 +342,10 @@ var results = (function () {
             html = "<div class='chartdiv' id='" + self.div + "'></div>";
             jQuery(container).append(html);
             if (self.data === undefined || self.data.length <= 0) {
-                message = i18n.get("No results");
-                jQuery(self.div).html("<span>" + message + "</span>");
-                return;
+                jQuery.jqplot(self.div, [[null]], undefined).replot();
+            } else {
+                jQuery.jqplot(self.div, self.data, self.params).replot();
             }
-            jQuery.jqplot(self.div, self.data, self.params).replot();
-            jQuery('.jqplot-table-legend').css('top', '200');  // Magik
         };
 
         return self;
@@ -431,7 +436,9 @@ var results = (function () {
 
         hours = Math.abs(Math.round((since - utils.getNow()) /
                       (1000 * 60 * 60)));
-        if (hours <= 120) {
+        if (hours <= 4) {
+            xfmt = '%H:%M';
+        } else if (hours <= 120) {
             xfmt = '%b %#d, h %H';
         } else {
             xfmt = '%b %#d';
