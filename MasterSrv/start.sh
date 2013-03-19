@@ -32,7 +32,7 @@ PYTHON=/usr/bin/python
 [ $(id -u) -eq 0 ] || { echo 'you must be root' 1>&2; exit 1; }
 
 $DEBUG $INSTDIR/MasterSrv/stop.sh
-$DEBUG /bin/sh $INSTDIR/M-Lab/redir_table.sh
+$DEBUG /bin/sh $INSTDIR/MasterSrv/redir_table.sh
 
 $DEBUG sqlite3 /var/lib/neubot/database.sqlite3 'select * from geoloc';
 $DEBUG echo 'If the GEOLOC table looks ugly, hit ^C NOW!'

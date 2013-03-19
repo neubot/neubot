@@ -23,7 +23,7 @@
 ''' Write the approxymate location of all nodes in a slice '''
 
 #
-# This file is used to compile M-Lab/servers.dat.
+# This file is used to compile MasterSrv/servers.dat.
 #
 
 import ConfigParser
@@ -39,7 +39,7 @@ def __load_airports():
 
     airports_new = {}
 
-    filep = open('M-Lab/airports.json', 'rb')
+    filep = open('MasterSrv/airports.json', 'rb')
     airports_orig = json.load(filep)
     filep.close()
 
@@ -55,7 +55,7 @@ def __load_airports_cache():
 
     cache = {}
 
-    filep = open('M-Lab/airports_cache.dat', 'rb')
+    filep = open('MasterSrv/airports_cache.dat', 'rb')
     for line in filep:
         line = shlex.split(line)
         if not line:
@@ -92,7 +92,7 @@ def serversmain():
     airports = __load_airports()
     cache = __load_airports_cache()
 
-    filep = open('M-Lab/servers.dat', 'wb')
+    filep = open('MasterSrv/servers.dat', 'wb')
     for hostname in hostnames:
         # E.g. mlab1.atl01.measurement-lab.org
         vector = hostname.split('.')
