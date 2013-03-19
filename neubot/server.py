@@ -170,7 +170,7 @@ SETTINGS = {
 }
 
 USAGE = '''\
-usage: neubot server [-dv] [-b backend] [-D macro=value]
+usage: neubot server [-dv] [-A address] [-b backend] [-D macro=value]
 
 valid backends:
   mlab   Saves results as compressed json files (this is the default)
@@ -198,15 +198,18 @@ def main(args):
         sys.exit('FATAL: you must be root')
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'b:D:dv')
+        options, arguments = getopt.getopt(args[1:], 'A:b:D:dv')
     except getopt.error:
         sys.exit(USAGE)
     if arguments:
         sys.exit(USAGE)
 
+    address = ':: 0.0.0.0'
     backend = 'mlab'
     for name, value in options:
-        if name == '-b':
+        if name == '-A':
+            address = value
+        elif name == '-b':
             backend = value
         elif name == '-D':
             name, value = value.split('=', 1)
@@ -248,7 +251,7 @@ def main(args):
     #
     if CONFIG['server.raw']:
         logging.debug('server: starting raw server... in progress')
-        RAW_SERVER_EX.listen((":: 0.0.0.0", 12345),
+        RAW_SERVER_EX.listen((address, 12345),
           CONFIG['prefer_ipv6'], 0, '')
         logging.debug('server: starting raw server... complete')
 
@@ -256,11 +259,15 @@ def main(args):
     # New-style modules are started just setting a
     # bunch of conf[] variables and then invoking
     # their run() method in order to kick them off.
+    # This is now depricated in favor of the new-
+    # new style described above.
     #
+
     if conf["server.negotiate"]:
         negotiate.run(POLLER, conf)
 
     if conf["server.bittorrent"]:
+        conf["bittorrent.address"] = address
         conf["bittorrent.listen"] = True
         conf["bittorrent.negotiate"] = True
         bittorrent.run(POLLER, conf)
@@ -284,7 +291,6 @@ def main(args):
     # do that easily w/ M-Lab because the port
     # is already taken.
     #
-    address = ":: 0.0.0.0"
     ports = (80, 8080, 9773)
     for port in ports:
         HTTP_SERVER.listen((address, port))
