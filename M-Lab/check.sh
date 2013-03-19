@@ -22,22 +22,11 @@
 #
 
 #
-# Install Neubot on an M-Lab sliver - Invoked on the sliver
-# by init/initialize.sh.
+# Script to check Neubot deployment on M-Lab slivers - Invoked on
+# the sliver by init/initialize.sh.
 #
 
-DEBUG=
-
-if [ `id -u` -ne 0 ]; then
-    echo "$0: FATAL: need root privileges" 1>&2
-    exit 1
-fi
-
-$DEBUG cd /home/mlab_neubot
-$DEBUG python -m compileall -q neubot/neubot/
-
-$DEBUG grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
-
-# From useradd(8): `The default is to disable the password.`
-$DEBUG grep -q ^_neubot /etc/passwd || \
-       $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
+echo "make sure we've bind all ports"
+netstat -a --tcp -n | grep LISTEN | awk '{print $4}' \
+    | sort > neubot/M-Lab/ports.new
+diff -u neubot/M-Lab/ports.txt neubot/M-Lab/ports.new
