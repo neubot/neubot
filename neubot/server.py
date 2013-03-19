@@ -161,6 +161,7 @@ class ServerSideAPI(ServerHTTP):
 SETTINGS = {
     "server.bittorrent": True,
     "server.daemonize": True,
+    "server.datadir": '',
     'server.debug': False,
     "server.negotiate": True,
     "server.raw": True,
@@ -180,6 +181,7 @@ valid backends:
 valid defines:
   server.bittorrent Set to nonzero to enable BitTorrent server (default: 1)
   server.daemonize  Set to nonzero to run in the background (default: 1)
+  server.datadir    Set data directory (default: LOCALSTATEDIR/neubot)
   server.debug      Set to nonzero to enable debug API (default: 0)
   server.negotiate  Set to nonzero to enable negotiate server (default: 1)
   server.raw        Set to nonzero to enable RAW server (default: 1)
@@ -187,9 +189,9 @@ valid defines:
   server.sapi       Set to nonzero to enable nagios API (default: 1)
   server.speedtest  Set to nonzero to enable speedtest server (default: 1)'''
 
-VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.debug',
-                'server.negotiate', 'server.raw', 'server.rendezvous',
-                'server.sapi', 'server.speedtest')
+VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.datadir',
+                'server.debug', 'server.negotiate', 'server.raw',
+                'server.rendezvous', 'server.sapi', 'server.speedtest')
 
 def main(args):
     """ Starts the server module """
@@ -215,7 +217,9 @@ def main(args):
             name, value = value.split('=', 1)
             if name not in VALID_MACROS:
                 sys.exit(USAGE)
-            SETTINGS[name] = int(value)
+            if name != 'server.datadir':  # XXX
+                value = int(value)
+            SETTINGS[name] = value
         elif name == '-d':
             SETTINGS['server.daemonize'] = 0
         elif name == '-v':
@@ -223,7 +227,7 @@ def main(args):
 
     logging.debug('server: using backend: %s... in progress', backend)
     if backend == 'mlab':
-        FILESYS.datadir_init()
+        FILESYS.datadir_init(datadir=SETTINGS['server.datadir'])
         BACKEND.use_backend('mlab')
     elif backend == 'neubot':
         DATABASE.connect()
