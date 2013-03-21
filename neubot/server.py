@@ -43,7 +43,6 @@ from neubot.negotiate.server import NEGOTIATE_SERVER
 from neubot.negotiate.server_speedtest import NEGOTIATE_SERVER_SPEEDTEST
 from neubot.negotiate.server_bittorrent import NEGOTIATE_SERVER_BITTORRENT
 from neubot.notify import NOTIFIER
-from neubot.state import STATE
 
 from neubot.compat import json
 from neubot.database import DATABASE
@@ -98,7 +97,6 @@ class DebugAPI(ServerHTTP):
                     'NOTIFIER._timestamps': len(NOTIFIER._timestamps),
                     'NOTIFIER._subscribers': len(NOTIFIER._subscribers),
                     'NOTIFIER._tofire': len(NOTIFIER._tofire),
-                    'STATE._events': len(STATE._events),
                    }
 
         elif request.uri == '/debugmem/garbage':
