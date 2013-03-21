@@ -30,6 +30,7 @@ import gc
 import getopt
 import sys
 import logging
+import signal
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -55,7 +56,7 @@ from neubot.raw_srvr_glue import RAW_SERVER_EX
 from neubot import bittorrent
 from neubot import negotiate
 from neubot import system
-from neubot import utils_modules
+from neubot import utils_posix
 
 #from neubot import rendezvous          # Not yet
 import neubot.rendezvous.server
@@ -332,8 +333,15 @@ def main(args):
         LOG.redirect()
         system.go_background()
 
+    sigterm_handler = lambda signo, frame: POLLER.break_loop()
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
+    logging.info('Neubot server -- starting up')
     system.drop_privileges()
     POLLER.loop()
+
+    logging.info('Neubot server -- shutting down')
+    utils_posix.remove_pidfile('/var/run/neubot.pid')
 
 if __name__ == "__main__":
     main(sys.argv)

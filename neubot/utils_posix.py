@@ -205,6 +205,15 @@ def daemonize(pidfile=None, sighandler=None):
         signal.signal(signal.SIGTERM, sighandler)
         signal.signal(signal.SIGHUP, sighandler)
 
+def remove_pidfile(pidfile):
+    ''' Removes the pidfile '''
+    try:
+        os.unlink(pidfile)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        pass
+
 def chuser(passwd):
 
     '''
