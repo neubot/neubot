@@ -65,6 +65,7 @@ if __name__ == '__main__':
 
 from neubot import updater_install
 from neubot import utils_rc
+from neubot import utils_posix
 from neubot import utils_version
 
 # Note: BASEDIR/VERSIONDIR/neubot/updater/unix.py
@@ -136,165 +137,6 @@ def __waitpid(pid, timeo=-1):
                 raise
 
     return 0, 0
-
-def __lookup_user_info(uname):
-
-    '''
-     Lookup and return the specified user's uid and gid.
-     This function is not part of __change_user() because
-     you may want to chroot() once you have user info
-     and before you drop root privileges.
-    '''
-
-    try:
-        return pwd.getpwnam(uname)
-    except KeyError:
-        raise RuntimeError('No such user: %s' % uname)
-
-def __change_user(passwd):
-
-    '''
-     Change user, group to @passwd.pw_uid, @passwd.pw_gid and
-     setup a bare environement for the new user.  This function
-     is typically used to drop root privileges but can also be
-     used to sanitize the privileged daemon environment.
-
-     More in detail, this function will:
-
-     1. set the umask to 022;
-
-     2. change group ID to @passwd.pw_gid;
-
-     3. clear supplementary groups;
-
-     4. change user ID to @passwd.pw_uid;
-
-     5. purify environment.
-
-     Optionally, you might want to invoke chroot() before
-     invoking this function.
-    '''
-
-    #
-    # I've checked that this function does more or less
-    # the same steps of OpenBSD setusercontext(3) and of
-    # launchd(8) to drop privileges.
-    # Note that this function does not invoke setlogin(2)
-    # because that should be called when becoming a daemon,
-    # AFAIK, not here.
-    # For dropping privileges we try to follow the guidelines
-    # established by Chen, et al. in "Setuid Demystified":
-    #
-    #   Since setresuid has a clear semantics and is able
-    #   to set each user ID individually, it should always
-    #   be used if available.  Otherwise, to set only the
-    #   effective uid, seteuid(new euid) should be used; to
-    #   set all three user IDs, setreuid(new uid, new uid)
-    #   should be used.
-    #
-
-    # Set default umask (18 == 0022)
-    os.umask(18)
-
-    # Change group ID.
-    if hasattr(os, 'setresgid'):
-        os.setresgid(passwd.pw_gid, passwd.pw_gid, passwd.pw_gid)
-    elif hasattr(os, 'setregid'):
-        os.setregid(passwd.pw_gid, passwd.pw_gid)
-    else:
-        raise RuntimeError('Cannot drop group privileges')
-
-    # Clear supplementary groups.
-    os.setgroups([])
-
-    # Change user ID.
-    if hasattr(os, 'setresuid'):
-        os.setresuid(passwd.pw_uid, passwd.pw_uid, passwd.pw_uid)
-    elif hasattr(os, 'setreuid'):
-        os.setreuid(passwd.pw_uid, passwd.pw_uid)
-    else:
-        raise RuntimeError('Cannot drop user privileges')
-
-    # Purify environment
-    for name in list(os.environ.keys()):
-        del os.environ[name]
-    os.environ = {
-                  "HOME": "/",
-                  "LOGNAME": passwd.pw_name,
-                  "PATH": "/usr/local/bin:/usr/bin:/bin",
-                  "TMPDIR": "/tmp",
-                  "USER": passwd.pw_name,
-                 }
-
-def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
-
-    '''
-     Perform the typical steps to run in background as a
-     well-behaved Unix daemon.
-
-     In detail:
-
-     1. detach from the current shell;
-
-     2. become a session leader;
-
-     3. detach from the current session;
-
-     4. chdir to rootdir;
-
-     5. redirect stdin, stdout, stderr to /dev/null;
-
-     6. ignore SIGINT, SIGPIPE;
-
-     7. write pidfile;
-
-     8. install SIGTERM, SIGHUP handler;
-
-    '''
-
-    #
-    # I've verified that the first chunk of this function
-    # matches loosely the behavior of the daemon(3) function
-    # available under BSD.
-    # What is missing here is setlogin(2) which is not part
-    # of python library.  Doh.
-    #
-
-    # detach from the shell
-    if os.fork() > 0:
-        __exit(0)
-
-    # create new session
-    os.setsid()
-
-    # detach from the session
-    if os.fork() > 0:
-        __exit(0)
-
-    # redirect stdio to /dev/null
-    for fdesc in range(3):
-        os.close(fdesc)
-    for _ in range(3):
-        os.open('/dev/null', os.O_RDWR)
-
-    # chdir to rootdir
-    os.chdir('/')
-
-    # ignore SIGINT, SIGPIPE
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-
-    # write pidfile
-    if pidfile:
-        filep = open(pidfile, 'w')
-        filep.write('%d\n' % os.getpid())
-        filep.close()
-
-    # install SIGTERM, SIGHUP handler
-    if sigterm_handler:
-        signal.signal(signal.SIGTERM, sigterm_handler)
-    if sighup_handler:
-        signal.signal(signal.SIGHUP, sighup_handler)
 
 def __printable_only(string):
     ''' Remove non-printable characters from string '''
@@ -413,10 +255,10 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
         try:
 
             # Lookup unprivileged user info
-            passwd = __lookup_user_info('_neubot_update')
+            passwd = utils_posix.getpwnam('_neubot_update')
 
             # Become unprivileged as soon as possible
-            __change_user(passwd)
+            utils_posix.chuser(passwd)
 
             # Close all unneeded file descriptors
             for tmpdesc in range(64):
@@ -840,11 +682,11 @@ def __main():
     syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
 
     # Clear root user environment
-    __change_user(__lookup_user_info('root'))
+    utils_posix.chuser(utils_posix.getpwnam('root'))
 
     # Daemonize
     if daemonize:
-        __go_background('/var/run/neubot.pid')
+        utils_posix.daemonize('/var/run/neubot.pid')
 
     #
     # TODO We should install a signal handler that kills
