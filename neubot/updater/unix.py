@@ -559,11 +559,11 @@ def __start_neubot_agent():
         if not os.access(VERSIONDIR, os.R_OK|os.X_OK):
             raise RuntimeError('Cannot access: %s' % VERSIONDIR)
 
-        syslog.syslog(syslog.LOG_ERR,
-                      'Prepending "%s" to Python search path' %
-                      VERSIONDIR)
-
-        sys.path.insert(0, VERSIONDIR)
+        if not VERSIONDIR in sys.path:
+            syslog.syslog(syslog.LOG_ERR,
+                          'Prepending "%s" to Python search path' %
+                          VERSIONDIR)
+            sys.path.insert(0, VERSIONDIR)
 
         # Import the required modules
         from neubot.log import LOG
