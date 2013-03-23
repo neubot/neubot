@@ -405,9 +405,12 @@ var results = (function () {
 
         jQuery.each(data_by_ip, function (address, vector) {
             if (vector.length > 0) {
-                plotter.push_data(build_vector(vector, recipe));
-                plotter.push_options(build_per_serie_options(label,
-                                     address, marker));
+                vector = build_vector(vector, recipe);
+                if (vector.length > 0) {
+                    plotter.push_data(vector);
+                    plotter.push_options(build_per_serie_options(label,
+                                         address, marker));
+                }
             }
         });
     }
