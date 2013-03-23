@@ -112,7 +112,7 @@ def terminate_process(pid):
         return True
     return False
 
-def detach(**kwargs):
+def daemonize(pidfile=None, sighandler=None):
 
     '''
      Perform the typical steps to become a daemon.
@@ -157,55 +157,51 @@ def detach(**kwargs):
     # because the latter raises an exception that may be caught.
     #
 
-    if kwargs.get('detach'):
-        logging.debug('utils_posix: detach from the current shell')
-        if os.fork() > 0:
-            os._exit(0)
+    logging.debug('utils_posix: detach from the current shell')
+    if os.fork() > 0:
+        os._exit(0)
 
-        logging.debug('utils_posix: become a session leader')
-        os.setsid()
+    logging.debug('utils_posix: become a session leader')
+    os.setsid()
 
-        #
-        # "when the session leader terminates (the first child), all
-        #  processes in the session (the second child) receive the
-        #  SIGHUP signal" (UNP pag. 369)
-        #
-        logging.debug('utils_posix: ignore SIGINT')
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
+    #
+    # "when the session leader terminates (the first child), all
+    #  processes in the session (the second child) receive the
+    #  SIGHUP signal" (UNP pag. 369)
+    #
+    logging.debug('utils_posix: ignore SIGINT')
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-        logging.debug('utils_posix: detach from the current session')
-        if os.fork() > 0:
-            os._exit(0)
+    logging.debug('utils_posix: detach from the current session')
+    if os.fork() > 0:
+        os._exit(0)
 
-    if kwargs.get('close_stdio'):
-        logging.debug('utils_posix: redirect stdio to /dev/null')
-        for fdesc in range(3):
-            os.close(fdesc)
-        # Unix Network Programming opens stdin as readonly
-        os.open('/dev/null', os.O_RDONLY)
-        os.open('/dev/null', os.O_RDWR)
-        os.open('/dev/null', os.O_RDWR)
+    logging.debug('utils_posix: redirect stdio to /dev/null')
+    for fdesc in range(3):
+        os.close(fdesc)
+    # Unix Network Programming opens stdin as readonly
+    os.open('/dev/null', os.O_RDONLY)
+    os.open('/dev/null', os.O_RDWR)
+    os.open('/dev/null', os.O_RDWR)
 
-    if kwargs.get('chdir'):
-        logging.debug('utils_posix: chdir() to "%s"', kwargs['chdir'])
-        os.chdir(kwargs['chdir'])
+    logging.debug('utils_posix: chdir() to "/"')
+    os.chdir('/')
 
     # Note: python already ignores SIGPIPE by default, this is just for
     # the sake of writing correct daemonizing code.
-    if kwargs.get('ignore_signals'):
-        logging.debug('utils_posix: ignore SIGPIPE')
-        signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+    logging.debug('utils_posix: ignore SIGPIPE')
+    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
-    if kwargs.get('pidfile'):
-        logging.debug('utils_posix: write pidfile: "%s"', kwargs['pidfile'])
-        filep = open(kwargs['pidfile'], 'w')
+    if pidfile:
+        logging.debug('utils_posix: write pidfile: "%s"', pidfile)
+        filep = open(pidfile, 'w')
         filep.write('%d\n' % os.getpid())
         filep.close()
 
-    if kwargs.get('sighandler'):
+    if sighandler:
         logging.debug('utils_posix: install SIGTERM and SIGHUP handler')
-        signal.signal(signal.SIGTERM, kwargs['sighandler'])
-        signal.signal(signal.SIGHUP, kwargs['sighandler'])
+        signal.signal(signal.SIGTERM, sighandler)
+        signal.signal(signal.SIGHUP, sighandler)
 
 def chuser(passwd):
 
@@ -337,7 +333,7 @@ if __name__ == '__main__':
 
     USAGE = '''\
 usage: utils_posix.py [-v] [-f file] [-u user] chuser
-       utils_posix.py [-v] [-f file] [-u user] detach
+       utils_posix.py [-v] [-f file] [-u user] daemonize
        utils_posix.py [-v] [-f file] [-u user] getpwnam pwd_field
        utils_posix.py [-v] [-f file] [-u user] mkdir path
        utils_posix.py [-v] [-f file] [-u user] touch path'''
@@ -378,11 +374,11 @@ usage: utils_posix.py [-v] [-f file] [-u user] chuser
         os.execv('/usr/bin/env', ['/usr/bin/env'])
 
     def __my_handler(signo, frame):
-        ''' Signal handler for the detach subcommand '''
+        ''' Signal handler for the daemonize subcommand '''
         logging.info('delivered signal: %d, %s', signo, frame)
 
-    def __subcommand_detach(user, args):
-        ''' `detach` subcommand '''
+    def __subcommand_daemonize(user, args):
+        ''' `daemonize` subcommand '''
         if len(args) != 0:
             sys.exit(USAGE)
 
@@ -390,8 +386,8 @@ usage: utils_posix.py [-v] [-f file] [-u user] chuser
         logging.info('old pid: %d\n', os.getpid())
         logging.info('*** now going in the background ***')
 
-        detach(detach=1, close_stdio=1, chdir='/tmp', ignore_signals=1,
-               pidfile='/tmp/neubot-utils-posix.pid', sighandler=__my_handler)
+        daemonize(pidfile='/var/run/neubot-utils-posix.pid',
+                  sighandler=__my_handler)
 
         logging.info('*** process information after becoming a daemon ***')
         logging.info('new pid: %d\n', os.getpid())
@@ -463,7 +459,7 @@ usage: utils_posix.py [-v] [-f file] [-u user] chuser
 
     SUBCOMMANDS = {
         'chuser': __subcommand_chuser,
-        'detach': __subcommand_detach,
+        'daemonize': __subcommand_daemonize,
         'getpwnam': __subcommand_getpwnam,
         'mkdir': __subcommand_mkdir,
         'touch': __subcommand_touch,

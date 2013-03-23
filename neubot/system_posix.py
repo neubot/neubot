@@ -90,8 +90,7 @@ def _want_rwx_dir(datadir):
 
 def go_background():
     ''' Detach from the shell and run in background '''
-    utils_posix.detach(detach=1, close_stdio=1, chdir='/', ignore_signals=1,
-                       pidfile='/var/run/neubot.pid')
+    utils_posix.daemonize(pidfile='/var/run/neubot.pid')
 
 def drop_privileges():
     '''
