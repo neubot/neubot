@@ -194,9 +194,11 @@ def daemonize(pidfile=None, sighandler=None):
 
     if pidfile:
         logging.debug('utils_posix: write pidfile: "%s"', pidfile)
+        old_umask = os.umask(MODE_022)
         filep = open(pidfile, 'w')
         filep.write('%d\n' % os.getpid())
         filep.close()
+        os.umask(old_umask)
 
     if sighandler:
         logging.debug('utils_posix: install SIGTERM and SIGHUP handler')
