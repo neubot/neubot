@@ -23,6 +23,7 @@
 ''' Configuration file utils '''
 
 import getopt
+import os
 import pprint
 import shlex
 import sys
@@ -33,6 +34,8 @@ def parse(path=None, iterable=None):
     if path and iterable:
         raise ValueError('Both path and iterable are not None')
     elif path:
+        if not os.path.isfile(path):
+            return {}
         iterable = open(path, 'rb')
     elif iterable:
         path = '<cmdline>'

@@ -79,6 +79,7 @@ VERSION = utils_version.NUMERIC_VERSION
 # Configuration
 CONFIG = {
     'channel': 'latest',
+    'update_user': '_neubot_update',
 }
 
 # State
@@ -255,10 +256,13 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
         try:
 
             # Lookup unprivileged user info
-            passwd = utils_posix.getpwnam('_neubot_update')
+            passwd = utils_posix.getpwnam(CONFIG['update_user'])
 
             # Become unprivileged as soon as possible
             utils_posix.chuser(passwd)
+
+            if os.getuid() == 0 or os.geteuid() == 0:
+                raise RuntimeError('Has not dropped privileges')
 
             # Close all unneeded file descriptors
             for tmpdesc in range(64):
@@ -676,7 +680,7 @@ def __main():
 
     # We must be run as root
     if os.getuid() != 0 and os.geteuid() != 0:
-        sys.exit('You must be root.')
+        sys.exit('FATAL: You must be root.')
 
     # Open the system logger
     syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
@@ -710,10 +714,9 @@ def __main():
         else:
             time.sleep(15)
 
-        # Read configuration file
-        if os.path.isfile('/etc/neubot/updater'):
-            cnf = utils_rc.parse_safe('/etc/neubot/updater')
-            CONFIG.update(cnf)
+        # Read configuration files
+        CONFIG.update(utils_rc.parse_safe('/etc/neubot/updater'))
+        CONFIG.update(utils_rc.parse_safe('/etc/neubot/users'))
 
         try:
 
