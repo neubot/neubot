@@ -39,6 +39,7 @@ import syslog
 
 from neubot import utils_hier
 from neubot import utils_posix
+from neubot import utils_rc
 
 def __logger(severity, message):
 
@@ -71,7 +72,7 @@ def _get_profile_dir():
 def _want_rwx_dir(datadir):
 
     '''
-     This function ensures that the user `UNPRIV_USER` is the
+     This function ensures that the unprivileged user is the
      owner of the directory that contains Neubot database.
      Otherwise sqlite3 fails to lock the database for writing
      (it creates a lockfile for that).
@@ -85,19 +86,26 @@ def _want_rwx_dir(datadir):
 
     # Change directory ownership
     if os.getuid() == 0:
-        passwd = utils_posix.getpwnam(UNPRIV_USER)
+        passwd = getpwnam()
         os.chown(datadir, passwd.pw_uid, passwd.pw_gid)
 
 def go_background():
     ''' Detach from the shell and run in background '''
     utils_posix.daemonize(pidfile='/var/run/neubot.pid')
 
+def getpwnam():
+    ''' Wrapper for getpwnam '''
+    cnf = utils_rc.parse_safe('/etc/neubot/users')
+    unpriv_user = cnf.get('unpriv_user', UNPRIV_USER)
+    passwd = utils_posix.getpwnam(unpriv_user)
+    return passwd
+
 def drop_privileges():
     '''
      Drop root privileges and run on behalf of the specified
      unprivileged users.
     '''
-    passwd = utils_posix.getpwnam(UNPRIV_USER)
+    passwd = getpwnam()
     utils_posix.chuser(passwd)
 
 def _want_rw_file(path):
@@ -105,7 +113,7 @@ def _want_rw_file(path):
     '''
      Ensure that the given file is readable and writable
      by its owner.  If running as root force ownership
-     to be of the unprivileged `UNPRIV_USER` user.
+     to be of the unprivileged user.
     '''
 
     # Create file if non-existent
@@ -114,7 +122,7 @@ def _want_rw_file(path):
 
     # Enforce file ownership
     if os.getuid() == 0:
-        passwd = utils_posix.getpwnam(UNPRIV_USER)
+        passwd = getpwnam()
         os.chown(path, passwd.pw_uid, passwd.pw_gid)
 
     # Set permissions

@@ -31,6 +31,7 @@
 
 import sys
 import logging
+import os
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -81,6 +82,10 @@ def main(args):
     logging.info('%s for POSIX: starting up', utils_version.PRODUCT)
 
     system.drop_privileges()
+
+    if os.getuid() == 0 or os.geteuid() == 0:
+        logging.error('agent: still running as root')
+        os._exit(1)
 
     if conf["agent.rendezvous"]:
         BACKGROUND_RENDEZVOUS.start()
