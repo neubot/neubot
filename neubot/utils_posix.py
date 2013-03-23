@@ -336,11 +336,11 @@ if __name__ == '__main__':
     import getopt
 
     USAGE = '''\
-usage: utils_posix.py [-v] [-u user] chuser
-       utils_posix.py [-v] [-u user] detach
-       utils_posix.py [-v] [-u user] getpwnam pwd_field
-       utils_posix.py [-v] [-u user] mkdir path
-       utils_posix.py [-v] [-u user] touch path'''
+usage: utils_posix.py [-v] [-f file] [-u user] chuser
+       utils_posix.py [-v] [-f file] [-u user] detach
+       utils_posix.py [-v] [-f file] [-u user] getpwnam pwd_field
+       utils_posix.py [-v] [-f file] [-u user] mkdir path
+       utils_posix.py [-v] [-f file] [-u user] touch path'''
 
     def __subcommand_chuser(user, args):
         ''' `chuser` subcommand '''
@@ -473,16 +473,19 @@ usage: utils_posix.py [-v] [-u user] chuser
         ''' main() function '''
 
         try:
-            options, arguments = getopt.getopt(args[1:], 'u:v')
+            options, arguments = getopt.getopt(args[1:], 'f:u:v')
         except getopt.error:
             sys.exit(USAGE)
         if len(arguments) < 1:  # variable number of args per subcommand
             sys.exit(USAGE)
 
+        logfile = None
         user = os.environ['LOGNAME']  # Should be there: it's standard
         verbose = 0
         for name, value in options:
-            if name == '-u':
+            if name == '-f':
+                logfile = value
+            elif name == '-u':
                 user = value
             elif name == '-v':
                 verbose = 1
@@ -492,7 +495,10 @@ usage: utils_posix.py [-v] [-u user] chuser
             sys.exit(USAGE)
 
         _logger = logging.getLogger()
-        _logger.handlers = [SyslogAdaptor()]
+        if not logfile:
+            _logger.handlers = [SyslogAdaptor()]
+        else:
+            _logger.handlers = [logging.StreamHandler(open(logfile, 'w'))]
         if verbose:
             _logger.setLevel(logging.DEBUG)
         SUBCOMMANDS[subcommand](user, arguments[1:])
