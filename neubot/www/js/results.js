@@ -111,7 +111,7 @@ var results = (function () {
 
             if (jQuery.type(selector) === "number"
                     && jQuery.type(target) === "array") {
-                while (target.length > 0 && selector < 0) {
+                if (selector < 0) {
                     selector += target.length;  /* Pythonism */
                 }
                 return must_not_be_undefined(target[selector]);
