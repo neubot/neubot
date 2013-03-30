@@ -34,6 +34,44 @@
                     "marker": "square"
                 }
             ]
+        },
+        {
+            "title": "Average congestion window",
+            "xlabel": "Date",
+            "ylabel": "Congestion window (bytes)",
+            "datasets": [
+                {
+                    "recipe": ["reduce-avg",
+                               ["map-select", "CurCwnd",
+                                ["select", "web100_snap",
+                                 ["select", "server",
+                                  ["parse-json",
+                                   ["select", "json_data", "result"]]]]]],
+                    "label": "Congestion window",
+                    "marker": "circle"
+                }
+            ]
+        },
+        {
+            "title": "Packet loss rate",
+            "xlabel": "Date",
+            "ylabel": "Packet loss rate",
+            "datasets": [
+                {
+                    "recipe": ["begin",
+                               ["define", "snap",
+                                ["select", -1,
+                                 ["select", "web100_snap",
+                                  ["select", "server",
+                                   ["parse-json",
+                                    ["select", "json_data", "result"]]]]]],
+                               ["divide",
+                                ["select", "CongestionSignals", "snap"],
+                                ["select", "PktsOut", "snap"]]],
+                    "label": "Packet loss rate",
+                    "marker": "circle"
+                }
+            ]
         }
 
     ],
