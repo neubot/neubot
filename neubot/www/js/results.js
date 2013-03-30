@@ -161,6 +161,7 @@ var results = (function () {
         }
 
         function do_eval(curcode) {
+            var i, retval;
 
             function eval_target(target) {
                 var retval;
@@ -181,6 +182,17 @@ var results = (function () {
                     throw "eval_target: invalid target";
                 }
 
+                return retval;
+            }
+
+            // begin target...
+            if (curcode[0] === "begin") {
+                if (curcode.length < 2) {
+                    throw "do_eval: begin: invalid curcode length";
+                }
+                for (i = 1; i < curcode.length; i++) {
+                    retval = eval_target(curcode[i]);
+                }
                 return retval;
             }
 
