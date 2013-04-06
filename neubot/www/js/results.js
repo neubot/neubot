@@ -76,7 +76,7 @@ var results = (function () {
 
         function apply_define(left, right) {
             symbols[left] = right;
-            return null;
+            return left;
         }
 
         function apply_divide(left, right) {
