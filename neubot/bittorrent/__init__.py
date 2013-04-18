@@ -26,8 +26,10 @@
  behavior of a bittorrent peer.
 '''
 
-import sys
+import getopt
 import logging
+import os
+import sys
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -38,12 +40,13 @@ from neubot.bittorrent.server import ServerPeer
 from neubot.http.server import HTTP_SERVER
 from neubot.net.poller import POLLER
 
+from neubot.backend import BACKEND
 from neubot.bittorrent import config
 from neubot.config import CONFIG
-from neubot.log import oops
+from neubot.database import DATABASE
 from neubot.notify import NOTIFIER
-from neubot.main import common
 
+from neubot import log
 from neubot import negotiate
 from neubot import privacy
 from neubot import runner_clnt
@@ -86,7 +89,7 @@ def run(poller, conf):
         # none times out of ten.
         #
         if not NOTIFIER.is_subscribed("testdone"):
-            oops("The 'testdone' event is not subscribed")
+            log.oops("The 'testdone' event is not subscribed")
 
         if conf["bittorrent.negotiate"]:
             client = BitTorrentClient(poller)
@@ -115,61 +118,69 @@ def main(args):
      to run precisely this module.
     '''
 
-    config.register_descriptions()
-    common.main("bittorrent", "Neubot BitTorrent module", args)
+    try:
+        options, arguments = getopt.getopt(args[1:], '6A:fp:v')
+    except getopt.error:
+        sys.exit('usage: neubot bittorrent [-6fv] [-A address] [-p port]')
+    if arguments:
+        sys.exit('usage: neubot bittorrent [-6fv] [-A address] [-p port]')
+
+    prefer_ipv6 = 0
+    address = 'master.neubot.org'
+    force = 0
+    port = 6881
+    noisy = 0
+    for name, value in options:
+        if name == '-6':
+            prefer_ipv6 = 1
+        elif name == '-A':
+            address = value
+        elif name == '-f':
+            force = 1
+        elif name == '-p':
+            port = int(value)
+        elif name == '-v':
+            noisy = 1
+
+    if os.path.isfile(DATABASE.path):
+        DATABASE.connect()
+        CONFIG.merge_database(DATABASE.connection())
+    else:
+        logging.warning('bittorrent: database file is missing: %s',
+                        DATABASE.path)
+        BACKEND.use_backend('null')
+    if noisy:
+        log.set_verbose()
+
+    config.register_descriptions()  # Needed?
     conf = CONFIG.copy()
     config.finalize_conf(conf)
 
-    if conf["bittorrent.listen"]:
+    conf['bittorrent.address'] = address
+    conf['bittorrent.port'] = port
+    conf['prefer_ipv6'] = prefer_ipv6
 
-        #
-        # If we need to negotiate and we're runing
-        # standalone we also need to bring up the
-        # global HTTP server.
-        #
-        if conf["bittorrent.negotiate"]:
-            HTTP_SERVER.configure(conf)
-            HTTP_SERVER.listen((conf["bittorrent.address"],
-                               conf["bittorrent.negotiate.port"]))
-            conf["negotiate.listen"] = True
-            negotiate.run(POLLER, conf)
-
-    else:
-
-        #
-        # If possible use the runner, which will execute the
-        # test in the context of the neubot daemon.  Then exit
-        # to bypass the run() invokation that is below here.
-        # If the runner fails, fallback to the usual code path,
-        # which executes the test in the context of the local
-        # process.
-        # Set 'runned.enabled' to 0 to bypass the runner and
-        # run the test locally.
-        #
-        if (utils.intify(conf['runner.enabled']) and
-            runner_clnt.runner_client(conf["agent.api.address"],
-                                      conf["agent.api.port"],
-                                      CONFIG['verbose'],
-                                      "bittorrent")):
+    if not force:
+        if runner_clnt.runner_client(conf["agent.api.address"],
+                                     conf["agent.api.port"],
+                                     CONFIG['verbose'],
+                                     "bittorrent"):
             sys.exit(0)
+        logging.warning(
+          'bittorrent: failed to contact Neubot; is Neubot running?')
+        sys.exit(1)
 
-        logging.info('Will run the test in the local context...')
+    logging.info('bittorrent: run the test in the local process context...')
 
-        if not privacy.allowed_to_run():
-            privacy.complain()
-            sys.exit(1)
-
-        #
-        # When we're connecting to a remote host to perform a test
-        # we want Neubot to quit at the end of the test.  When this
-        # happens the test code publishes the "testdone" event, so
-        # here we prepare to intercept the event and break our main
-        # loop.
-        #
-        NOTIFIER.subscribe("testdone", lambda event, ctx: POLLER.break_loop())
-
+    #
+    # When we're connecting to a remote host to perform a test
+    # we want Neubot to quit at the end of the test.  When this
+    # happens the test code publishes the "testdone" event, so
+    # here we prepare to intercept the event and break our main
+    # loop.
+    #
+    NOTIFIER.subscribe("testdone", lambda event, ctx: POLLER.break_loop())
     run(POLLER, conf)
-
     POLLER.loop()
 
 if __name__ == "__main__":

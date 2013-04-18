@@ -42,7 +42,6 @@ import errno
 import syslog
 import signal
 import hashlib
-import pwd
 import re
 import os.path
 import sys
@@ -353,7 +352,7 @@ def __download_version_info(address, channel):
     if not version:
         raise RuntimeError('Download failed')
     version = __printable_only(version)
-    match = re.match('^([0-9]+)\.([0-9]{9})$', version)
+    match = re.match(r'^([0-9]+)\.([0-9]{9})$', version)
     if not match:
         raise RuntimeError('Invalid version string: %s' % version)
     else:
@@ -510,9 +509,9 @@ def __clear_base_directory():
         # the path if the name looks good.
         #
         if os.path.isfile(path):
-            if re.match('^([0-9]+)\.([0-9]{9}).tar.gz$', name):
+            if re.match(r'^([0-9]+)\.([0-9]{9}).tar.gz$', name):
                 os.unlink(path)
-            elif re.match('^([0-9]+)\.([0-9]{9}).tar.gz.sig$', name):
+            elif re.match(r'^([0-9]+)\.([0-9]{9}).tar.gz.sig$', name):
                 os.unlink(path)
             continue
 
@@ -530,7 +529,7 @@ def __clear_base_directory():
         # be safe even with Python 2.5.  (It goes without saying that
         # the remainder of rmtree() does not follow symlinks.)
         #
-        if (os.path.isdir(path) and re.match('^([0-9]+)\.([0-9]{9})$', name)
+        if (os.path.isdir(path) and re.match(r'^([0-9]+)\.([0-9]{9})$', name)
             and decimal.Decimal(name) != decimal.Decimal(VERSION)):
             shutil.rmtree(path)
 
@@ -665,17 +664,20 @@ def __main():
     daemonize = True
 
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'Dd')
+        options, arguments = getopt.getopt(sys.argv[1:], 'adv')
     except getopt.error:
-        sys.exit('Usage: neubot/updater/unix.py [-Dd]')
+        sys.exit('Usage: neubot/updater/unix.py [-adv]')
 
     if arguments:
-        sys.exit('Usage: neubot/updater/unix.py [-Dd]')
+        sys.exit('Usage: neubot/updater/unix.py [-adv]')
 
+    check_for_updates = 0  # By default we don't check for updates
     for tpl in options:
-        if tpl[0] == '-D':
-            daemonize = False
+        if tpl[0] == '-a':
+            check_for_updates = 1
         elif tpl[0] == '-d':
+            daemonize = False
+        elif tpl[0] == '-v':
             logopt |= syslog.LOG_PERROR|syslog.LOG_NDELAY
 
     # We must be run as root
@@ -725,27 +727,33 @@ def __main():
                 syslog.syslog(syslog.LOG_INFO, 'Starting the agent')
                 pid = __start_neubot_agent()
 
-            # Check for updates
-            now = time.time()
-            if now - STATE['lastcheck'] > 1800:
-                STATE['lastcheck'] = now
-                nversion = _download_and_verify_update()
-                if nversion:
-                    if pid > 0:
-                        __stop_neubot_agent(pid)
-                        pid = -1
-                    __install_new_version(nversion)
-                    __switch_to_new_version()
-                    raise RuntimeError('Internal error')
+            if check_for_updates:
+                now = time.time()
+                updates_check_in = 1800 - (now - STATE['lastcheck'])
+                if updates_check_in <= 0:
+                    STATE['lastcheck'] = now
+                    nversion = _download_and_verify_update()
+                    if nversion:
+                        if pid > 0:
+                            __stop_neubot_agent(pid)
+                            pid = -1
+                        __install_new_version(nversion)
+                        __switch_to_new_version()
+                        raise RuntimeError('Internal error')
 
-                #
-                # We have not found an update, while here make
-                # sure that we keep clean our base directory,
-                # remove old files and directories, the tarball
-                # of this version, etc.
-                #
+                    #
+                    # We have not found an update, while here make
+                    # sure that we keep clean our base directory,
+                    # remove old files and directories, the tarball
+                    # of this version, etc.
+                    #
+                    else:
+                        __clear_base_directory()
                 else:
-                    __clear_base_directory()
+                    syslog.syslog(syslog.LOG_DEBUG,
+                      'Auto-updates check in %d sec' % updates_check_in)
+            else:
+                syslog.syslog(syslog.LOG_DEBUG, 'Auto-updates are disabled')
 
             # Monitor the agent
             rpid, status = __waitpid(pid, 0)

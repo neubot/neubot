@@ -46,31 +46,28 @@ from neubot import runner_clnt
 def main(args):
     ''' Main function '''
     try:
-        options, arguments = getopt.getopt(args[1:], '6A:np:vy')
+        options, arguments = getopt.getopt(args[1:], '6A:fp:v')
     except getopt.error:
-        sys.exit('usage: neubot raw [-6nvy] [-A address] [-p port]')
+        sys.exit('usage: neubot raw [-6fv] [-A address] [-p port]')
     if arguments:
-        sys.exit('usage: neubot raw [-6nvy] [-A address] [-p port]')
+        sys.exit('usage: neubot raw [-6fv] [-A address] [-p port]')
 
     prefer_ipv6 = 0
     address = 'master.neubot.org'
-    runner = 1
+    force = 0
     port = 8080
     noisy = 0
-    fakeprivacy = 0
     for name, value in options:
         if name == '-6':
             prefer_ipv6 = 1
         elif name == '-A':
             address = value
-        elif name == '-n':
-            runner = 0
+        elif name == '-f':
+            force = 1
         elif name == '-p':
             port = int(value)
         elif name == '-v':
             noisy = 1
-        elif name == '-y':
-            fakeprivacy = 1
 
     if os.path.isfile(DATABASE.path):
         DATABASE.connect()
@@ -80,19 +77,16 @@ def main(args):
         BACKEND.use_backend('null')
     if noisy:
         log.set_verbose()
-    if runner:
+
+    if not force:
         result = runner_clnt.runner_client(CONFIG['agent.api.address'],
           CONFIG['agent.api.port'], CONFIG['verbose'], 'raw')
         if result:
             sys.exit(0)
-
-    logging.info('raw: running the test in the local process context...')
-    if not fakeprivacy and not privacy.allowed_to_run():
-        privacy.complain()
-        logging.info('raw: otherwise use -y option to temporarily provide '
-                     'privacy permissions')
+        logging.warning('raw: failed to contact Neubot; is Neubot running?')
         sys.exit(1)
 
+    logging.info('raw: run the test in the local process context...')
     handler = RawNegotiate()
     handler.connect((address, port), prefer_ipv6, 0, {})
     POLLER.loop()

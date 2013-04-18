@@ -46,7 +46,7 @@ neubot - The network neutrality bot
 Usage: neubot
        neubot --help
        neubot -V
-       neubot subcommand [option]... [argument]...
+       neubot subcommand ...
 
 Try `neubot help` to get a list of available subcommands.
 Try `neubot subcommand --help` for more help on subcommand.

@@ -33,13 +33,12 @@ from neubot import utils
 USAGE = '''\
 Neubot database -- Low-level database operations
 
-Usage: neubot database [-f FILE] [info]
+Usage: neubot database [-f FILE]
        neubot database [-f FILE] delete_all
        neubot database [-f FILE] dump
        neubot database [-f FILE] prune
        neubot database [-f FILE] regen_uuid
        neubot database [-f FILE] show
-       neubot database --help
 
 '''
 
@@ -47,7 +46,7 @@ Usage: neubot database [-f FILE] [info]
 def main(args):
 
     try:
-        options, arguments = getopt.getopt(args[1:], "f:", ["help"])
+        options, arguments = getopt.getopt(args[1:], "f:")
     except getopt.GetoptError:
         sys.stderr.write(USAGE)
         sys.exit(1)
@@ -55,13 +54,10 @@ def main(args):
     for key, value in options:
         if key == "-f":
             DATABASE.set_path(value)
-        elif key == "--help":
-            sys.stdout.write(USAGE)
-            sys.exit(0)
 
     DATABASE.connect()
 
-    if not arguments or arguments[0] == "info":
+    if not arguments:
         sys.stdout.write('%s\n' % DATABASE.path)
 
     elif arguments[0] == "regen_uuid":

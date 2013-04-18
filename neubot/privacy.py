@@ -1,8 +1,9 @@
 # neubot/privacy.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011, 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -96,26 +97,7 @@ def complain_if_needed():
     if not allowed_to_run():
         complain()
 
-USAGE = '''
-Usage: neubot privacy [-Pt] [-D name=value] [-f database]
-
-Options:
-    -D name=value       : Set privacy setting value
-    -f database         : Force database path
-    -P                  : Print privacy policy on stdout
-    -t                  : Test privacy settings
-
-Settings:
-    privacy.informed    : You have read Neubot's privacy policy
-    privacy.can_collect : Neubot can save your IP address
-    privacy.can_publish : Neubot can publish your IP address
-
-Neubot is not allowed to use the distributed M-Lab platform to perform
-tests unless you (i) assert that you have read the privacy policy and
-you provide the permission to (ii) collect and (iii) publish your Internet
-address.  We need to ask you (i), (ii) and (iii) explicitly to comply
-with European Union privacy laws.
-'''
+USAGE = '''usage: neubot privacy [-Pt] [-D setting=value] [-f database]'''
 
 POLICY = os.sep.join([utils_hier.WWWDIR, 'privacy.html'])
 
@@ -185,13 +167,13 @@ def print_settings(connection, database_path):
 
     ''' Print privacy settings and exit '''
 
-    sys.stdout.write(USAGE + '\n')
-    sys.stdout.write('Current database: %s\n' % database_path)
-    sys.stdout.write('Current settings:\n')
+    sys.stdout.write('database: %s\n' % database_path)
+    sys.stdout.write('settings:\n')
     dictionary = table_config.dictionarize(connection)
     for name, value in dictionary.items():
         if name.startswith('privacy.'):
-            sys.stdout.write('    %-20s: %d\n' % (name,
+            name = name.replace("privacy.", "")
+            sys.stdout.write('    %-12s: %d\n' % (name,
                     utils.intify(value)))
     sys.stdout.write('\n')
 
@@ -215,6 +197,8 @@ def __main(args):
     for name, value in options:
         if name == '-D':
             name, value = value.split('=', 1)
+            if not name.startswith("privacy."):
+                name = "privacy." + name
             settings[name] = value
         elif name == '-f':
             database_path = value
