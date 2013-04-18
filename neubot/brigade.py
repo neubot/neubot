@@ -1,4 +1,4 @@
-# neubot/buff.py
+# neubot/brigade.py
 
 #
 # Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
@@ -20,7 +20,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Input buffer '''
+''' Bucket brigade '''
 
 # Python3-ready: yes
 
@@ -35,26 +35,26 @@ if six.PY3:
 else:
     BYTES = str
 
-class Buff(object):
+class Brigade(object):
 
-    ''' Input buffer '''
+    ''' Bucket brigade '''
 
     def __init__(self):
-        self.buff = deque()
+        self.brigade = deque()
         self.total = 0
 
     def bufferise(self, octets):
         ''' Bufferise incoming data '''
-        self.buff.append(octets)
+        self.brigade.append(octets)
         self.total += len(octets)
 
     def skip(self, length):
-        ''' Skip up to lenght bytes from buff '''
+        ''' Skip up to lenght bytes from brigade '''
         if self.total >= length:
             while length > 0:
-                bucket = self.buff.popleft()
+                bucket = self.brigade.popleft()
                 if len(bucket) > length:
-                    self.buff.appendleft(six.buff(bucket, length))
+                    self.brigade.appendleft(six.buff(bucket, length))
                     self.total -= length
                     return 0
                 length -= len(bucket)
@@ -62,36 +62,37 @@ class Buff(object):
         return length
 
     def pullup(self, length):
-        ''' Pullup length bytes from buff '''
+        ''' Pullup length bytes from brigade '''
         retval = []
         if self.total >= length:
             while length > 0:
-                bucket = self.buff.popleft()
+                bucket = self.brigade.popleft()
                 if len(bucket) > length:
-                    self.buff.appendleft(six.buff(bucket, length))
+                    self.brigade.appendleft(six.buff(bucket, length))
                     bucket = six.buff(bucket, 0, length)
                 retval.append(BYTES(bucket))
                 self.total -= len(bucket)
                 length -= len(bucket)
         return EMPTY.join(retval)
 
-    def getvalue(self):
-        ''' Read the whole content of the buff '''
-        return self.pullup(self.total)
-
     def getline(self, maxline):
-        ''' Read line from buff '''
-        tmp = self.pullup(min(maxline, self.total))
+        ''' Read line from brigade '''
+        if self.total >= maxline:
+            tmp = self.pullup(maxline)
+        else:
+            tmp = self.pullup(self.total)
+            self.brigade.clear()
+            self.total = 0
         index = tmp.find(NEWLINE)
         if index >= 0:
             line = tmp[:index + 1]
             remainder = tmp[index + 1:]
             if remainder:
-                self.buff.appendleft(remainder)
+                self.brigade.appendleft(remainder)
                 self.total += len(remainder)
             return line
         if len(tmp) >= maxline:
-            raise RuntimeError('buff: line too long')
-        self.buff.appendleft(tmp)
+            raise RuntimeError('brigade: line too long')
+        self.brigade.appendleft(tmp)
         self.total += len(tmp)
         return EMPTY

@@ -56,7 +56,6 @@ class RunnerMlabns(HttpClient):
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
         logging.info('runner_mlabns: server discovery... in progress')
         extra['address'] = endpoint[0]
-        extra['body'] = http_utils.Body()
         extra['port'] = endpoint[1]
         extra['requests'] = 0
         if extra['policy'] not in ('random', ''):
@@ -91,17 +90,14 @@ class RunnerMlabns(HttpClient):
         self.append_header(stream, 'User-Agent', utils_version.HTTP_HEADER)
         self.append_header(stream, 'Cache-Control', 'no-cache')
         self.append_header(stream, 'Pragma', 'no-cache')
-        self.append_header(stream, 'Connection', 'close')
+        #self.append_header(stream, 'Connection', 'close')
         self.append_end_of_headers(stream)
         self.send_message(stream)
+        context.body = http_utils.Body()  # Want to save body
         extra['requests'] += 1
 
-    def handle_body_piace(self, stream, piece):
-        context = stream.opaque
-        extra = context.extra
-        extra['body'].write(piece)
-
     def handle_end_of_body(self, stream):
+        HttpClient.handle_end_of_body(self, stream)
         context = stream.opaque
         extra = context.extra
         if extra['requests'] <= 0:
@@ -112,7 +108,7 @@ class RunnerMlabns(HttpClient):
             logging.error('runner_mlabns: bad response')
             stream.close()
             return
-        content = six.bytes_to_string(extra['body'].getvalue(), 'utf-8')
+        content = six.bytes_to_string(context.body.getvalue(), 'utf-8')
         response = json.loads(content)
         http_utils.prettyprint_json(response, '<')
         if extra['policy'] == 'random':
