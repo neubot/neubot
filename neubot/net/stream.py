@@ -472,7 +472,8 @@ class Connector(Pollable):
 
         self.endpoint = endpoint
 
-        sock = utils_net.connect(endpoint, CONFIG['prefer_ipv6'])
+        prefer_ipv6 = conf.get("prefer_ipv6", CONFIG["prefer_ipv6"])
+        sock = utils_net.connect(endpoint, prefer_ipv6)
         if not sock:
             self._connection_failed()
             return

@@ -1,8 +1,9 @@
-# neubot/viewer/__init__.py
+# neubot/viewer.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011, 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,17 +21,43 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' The viewer is the component of Neubot that allows the user to
-    view the current state of the daemon and recent results.  To do
-    that, it embeds the web browser into a graphical frame, using
-    the most convenient toolkit for the platform. '''
+''' Neubot viewer '''
 
+import getopt
 import os
 import sys
 
-if os.name == 'posix' and sys.platform != 'darwin':
+if __name__ == '__main__':
+    sys.path.insert(0, '.')
+
+from neubot import utils_hier
+from neubot import utils_rc
+
+def fallback_main(args):
+    ''' Fallback main function '''
+    try:
+        getopt.getopt(args[1:], '')
+    except getopt.error:
+        sys.exit('usage: neubot viewer')
+
+    if os.path.isfile(utils_hier.APIFILEPATH):
+        config = utils_rc.parse_safe(utils_hier.APIFILEPATH)
+    else:
+        config = {}
+    address = config.get('address', '127.0.0.1')
+    port = config.get('port', 9774)
+
+    sys.stderr.write('FATAL: python-webkit not available on this system.\n')
+    sys.stderr.write('Hint: Web interface at <%s:%d>, use your browser.\n' % (
+                     address, port))
+    sys.exit(1)
+
+try:
     from neubot.viewer_webkit_gtk import main
-else:
+except ImportError:
     def main(args):
-        ''' main stub '''
-        sys.exit('Viewer not implemented on this platform.')
+        ''' Main function '''
+        fallback_main(args)
+
+if __name__ == '__main__':
+    main(sys.argv)

@@ -41,10 +41,6 @@ PHONIES += archive
 PHONIES += _install
 PHONIES += install
 PHONIES += uninstall
-PHONIES += _deb_data
-PHONIES += _deb_control
-PHONIES += _deb
-PHONIES += deb
 PHONIES += release
 
 .PHONY: $(PHONIES)
@@ -223,81 +219,6 @@ install:
 	make -f Makefile _install INSTALL='install -o 0 -g 0'
 	$(PYTHON) -m compileall $(DESTDIR)$(DATADIR)/neubot
 
-#      _      _
-#   __| | ___| |__
-#  / _` |/ _ \ '_ \
-# | (_| |  __/ |_) |
-#  \__,_|\___|_.__/
-#
-# Make package for Debian/Ubuntu/Mint
-#
-
-DEB_PACKAGE = dist/neubot-$(VERSION)-1_all.deb
-DEB_PACKAGE_NOX = dist/neubot-nox-$(VERSION)-1_all.deb
-
-_deb_data:
-	make -f Makefile _install DESTDIR=dist/data PREFIX=/usr \
-	    LOCALSTATEDIR=/var/lib SYSCONFDIR=/etc
-	$(INSTALL) -d dist/data/etc/apt/sources.list.d
-	$(INSTALL) -m644 Debian/neubot.list dist/data/etc/apt/sources.list.d/
-	$(INSTALL) -d dist/data/etc/cron.daily
-	$(INSTALL) Debian/cron-neubot dist/data/etc/cron.daily/neubot
-	$(INSTALL) -d dist/data/etc/init.d
-	$(INSTALL) Debian/init-neubot dist/data/etc/init.d/neubot
-	$(INSTALL) -d dist/data/usr/share/doc/neubot
-	$(INSTALL) -m644 Debian/copyright dist/data/usr/share/doc/neubot/
-	$(INSTALL) -m644 Debian/changelog.Debian.gz \
-	    dist/data/usr/share/doc/neubot
-
-_deb_control:
-	$(INSTALL) -d dist/control
-	$(INSTALL) -m644 Debian/control/control dist/control/control
-	$(INSTALL) -m644 Debian/control/conffiles dist/control/conffiles
-	$(INSTALL) Debian/control/postinst dist/control/postinst
-	$(INSTALL) Debian/control/prerm dist/control/prerm
-	$(INSTALL) Debian/control/postrm dist/control/postrm
-
-	$(INSTALL) -m644 /dev/null dist/control/md5sums
-	./scripts/cksum.py -a md5 `find dist/data -type f` >dist/control/md5sums
-	./scripts/sed_inplace 's|dist\/data\/||g' dist/control/md5sums
-
-	SIZE=`du -k -s dist/data/|cut -f1` && \
-	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
-
-#
-# Note that we must make _deb_data before _deb_control
-# because the latter must calculate the md5sums and the
-# total size.
-# Fakeroot will guarantee that we don't ship a debian
-# package with ordinary user ownership.
-#
-_deb:
-	make -f Makefile _deb_data
-	cd dist/data && tar czf ../data.tar.gz ./*
-	make -f Makefile _deb_control
-	cd dist/control && tar czf ../control.tar.gz ./*
-	echo '2.0' > dist/debian-binary
-	ar r $(DEB_PACKAGE) dist/debian-binary \
-	 dist/control.tar.gz dist/data.tar.gz
-
-	$(INSTALL) -m644 Debian/control/control-nox dist/control/control
-	SIZE=`du -k -s dist/data/|cut -f1` && \
-	 ./scripts/sed_inplace "s|@SIZE@|$$SIZE|" dist/control/control
-	cd dist/control && tar czf ../control.tar.gz ./*
-	ar r $(DEB_PACKAGE_NOX) dist/debian-binary \
-	 dist/control.tar.gz dist/data.tar.gz
-
-	cd dist && rm -rf debian-binary control.tar.gz data.tar.gz \
-         control/ data/
-	chmod 644 $(DEB_PACKAGE)
-	chmod 644 $(DEB_PACKAGE_NOX)
-
-deb:
-	fakeroot make -f Makefile _deb
-	lintian $(DEB_PACKAGE)
-	# This still fails because of /usr/share/doc/neubot...
-	lintian $(DEB_PACKAGE_NOX) || true
-
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
 # | '__/ _ \ |/ _ \/ _` / __|/ _ \
@@ -314,7 +235,6 @@ release:
 	    exit 1;							\
 	fi
 	make clean
-	make deb
 	make archive
 	./M-Lab/deploy.sh -n
 	./scripts/sign_all

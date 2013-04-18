@@ -29,7 +29,6 @@
 # it all the needed parameters.
 #
 
-import asyncore
 import httplib
 import getopt
 import sys
@@ -46,8 +45,7 @@ def runner_client(address, port, verbosity, test):
 
     # Just a wrapper function
 
-    sys.stderr.write('INFO Try to run the test in the context of the '
-                     'local daemon...\n')
+    sys.stderr.write('INFO: Asking Neubot to run the test...\n')
 
     hint = {}
     try:
@@ -55,9 +53,8 @@ def runner_client(address, port, verbosity, test):
     except (KeyboardInterrupt, SystemExit):
         pass
     except:
-        error = asyncore.compact_traceback()
-        sys.stderr.write('ERR Something went wrong with the local '
-                         'daemon: %s\n' % str(error))
+        error = sys.exc_info()[1]
+        sys.stderr.write('ERROR: cannot contact Neubot: %s\n' % str(error))
 
     return not hint['run_locally']
 

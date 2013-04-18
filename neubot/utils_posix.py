@@ -1,8 +1,9 @@
 # neubot/utils_posix.py
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>,
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -23,18 +24,19 @@
 ''' POSIX utils '''
 
 #
-# Part of the POSIX code is in this file, part is in system, and part
-# is in updater/unix.  The mid-term plan is to move here all the POSIX
-# related code.
+# TODO Part of the POSIX code is in this file, part is in system, and part
+# is in updater/unix.py.  The mid-term plan is to move here all the POSIX
+# related code.  updater/unix.py will be changed to depend on this file.
+# (system_posix.py already pulls from this file.)
 #
 
 import errno
-import getopt
 import logging
 import os.path
 import pwd
 import signal
 import sys
+import syslog
 import time
 
 # For python3 portability
@@ -42,8 +44,45 @@ MODE_755 = int('755', 8)
 MODE_644 = int('644', 8)
 MODE_022 = int('022', 8)
 
+class SyslogAdaptor(logging.Handler):
+    ''' Syslog handler that uses syslog module '''
+
+    #
+    # TODO This class is currently unused outside this module.  It is a more
+    # pythonic replacement of system_posix.py code.  It should replace it.
+    #
+
+    def __init__(self):
+        logging.Handler.__init__(self)
+        syslog.openlog('neubot', syslog.LOG_PID, syslog.LOG_DAEMON)
+
+    def emit(self, record):
+        try:
+
+            #
+            # Note: no format-string worries here since Python does 'the right
+            # thing' in Modules/syslogmodule.c:
+            #
+            # >    syslog(priority, "%s", message);
+            #
+            msg = record.msg % record.args
+            if record.levelname == 'ERORR':
+                syslog.syslog(syslog.LOG_ERR, msg)
+            elif record.levelname == 'WARNING':
+                syslog.syslog(syslog.LOG_WARNING, msg)
+            elif record.levelname == 'DEBUG':
+                syslog.syslog(syslog.LOG_DEBUG, msg)
+            else:
+                syslog.syslog(syslog.LOG_INFO, msg)
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            pass
+
 def is_running(pid):
     ''' Returns true if PID is running '''
+    # Note: fails when you are not permitted to kill PID
     running = True
     try:
         os.kill(pid, 0)
@@ -55,7 +94,7 @@ def is_running(pid):
     return running
 
 def terminate_process(pid):
-    ''' Terminate process '''
+    ''' Terminate process and return success/failure '''
     if not is_running(pid):
         logging.debug('utils_posix: process %d is not running', pid)
         return True
@@ -73,76 +112,103 @@ def terminate_process(pid):
         return True
     return False
 
-def detach(**kwargs):
+def daemonize(pidfile=None, sighandler=None):
 
     '''
      Perform the typical steps to become a daemon.
 
      In detail:
 
-     1. detach from the current shell;
+     1. run in the background:
 
-     2. become a session leader;
+         1.1. detach from the current shell;
 
-     3. detach from the current session;
+         1.2. become a session leader;
 
-     4. chdir to rootdir;
+         1.3. ignore SIGINT;
 
-     5. redirect stdin, stdout, stderr to /dev/null;
+         1.4. detach from the current session;
 
-     6. ignore SIGINT, SIGPIPE;
+     2. redirect stdio to /dev/null;
 
-     7. write pidfile;
+     3. chdir to rootdir;
 
-     8. install SIGTERM, SIGHUP handler.
+     4. ignore SIGPIPE;
 
+     5. (over)write pidfile;
+
+     6. install SIGTERM and SIGHUP handler.
+
+     Assumes that logging.debug() and other logging functions are
+     writing messages on the system log.
+
+     (Over)writes the pidfile unconditionally.  Fails if it's not
+     possible to write it.
     '''
 
     #
-    # I've verified that the first chunk of this function matches loosely the
-    # behavior of the daemon(3) function available under BSD.  What is missing
-    # here is setlogin(2) which is not part of python standard library.
+    # In summer 2011 I verified that the first chunk of this function matches
+    # loosely the behavior of OpenBSD daemon(3).  What is missing here is
+    # setlogin(2), which is not available through python's standard library.
+    # In January 2013 I further modified the code to match Unix Network
+    # Programming vol. 1 III ed. pagg. 368-369.
+    #
+    # Note: the code below MUST use os._exit() (as opposed to sys.exit())
+    # because the latter raises an exception that may be caught.
     #
 
-    if kwargs.get('detach'):
-        logging.debug('utils_posix: detach from current shell')
-        if os.fork() > 0:
-            os._exit(0)
-        os.setsid()
-        if os.fork() > 0:
-            os._exit(0)
+    logging.debug('utils_posix: detach from the current shell')
+    if os.fork() > 0:
+        os._exit(0)
 
-    if kwargs.get('close_stdio'):
-        logging.debug('utils_posix: close stdio')
-        for fdesc in range(3):
-            os.close(fdesc)
-        for _ in range(3):
-            os.open('/dev/null', os.O_RDWR)
+    logging.debug('utils_posix: become a session leader')
+    os.setsid()
 
-    if kwargs.get('chdir'):
-        logging.debug('utils_posix: chdir() to "%s"', kwargs['chdir'])
-        os.chdir(kwargs['chdir'])
+    #
+    # "when the session leader terminates (the first child), all
+    #  processes in the session (the second child) receive the
+    #  SIGHUP signal" (UNP pag. 369)
+    #
+    logging.debug('utils_posix: ignore SIGINT')
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-    if kwargs.get('ignore_signals'):
-        logging.debug('utils_posix: ignore SIGINT and SIGPIPE')
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-        signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+    logging.debug('utils_posix: detach from the current session')
+    if os.fork() > 0:
+        os._exit(0)
 
-    if kwargs.get('pidfile'):
-        logging.debug('utils_posix: pidfile "%s"', kwargs['pidfile'])
-        filep = open(kwargs['pidfile'], 'w')
+    logging.debug('utils_posix: redirect stdio to /dev/null')
+    for fdesc in range(3):
+        os.close(fdesc)
+    # Unix Network Programming opens stdin as readonly
+    os.open('/dev/null', os.O_RDONLY)
+    os.open('/dev/null', os.O_RDWR)
+    os.open('/dev/null', os.O_RDWR)
+
+    logging.debug('utils_posix: chdir() to "/"')
+    os.chdir('/')
+
+    # Note: python already ignores SIGPIPE by default, this is just for
+    # the sake of writing correct daemonizing code.
+    logging.debug('utils_posix: ignore SIGPIPE')
+    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+
+    if pidfile:
+        logging.debug('utils_posix: write pidfile: "%s"', pidfile)
+        old_umask = os.umask(MODE_022)
+        filep = open(pidfile, 'w')
         filep.write('%d\n' % os.getpid())
         filep.close()
+        os.umask(old_umask)
 
-    if kwargs.get('sighandler'):
-        logging.debug('utils_posix: install signal handlers')
-        signal.signal(signal.SIGTERM, kwargs['sighandler'])
-        signal.signal(signal.SIGHUP, kwargs['sighandler'])
+    if sighandler:
+        logging.debug('utils_posix: install SIGTERM and SIGHUP handler')
+        signal.signal(signal.SIGTERM, sighandler)
+        signal.signal(signal.SIGHUP, sighandler)
 
 def chuser(passwd):
 
     '''
-     Change user, group to `passwd.pw_uid`, `passwd.pw_gid` and setup a bare
+     Change user (group) to `passwd.pw_uid` (`passwd.pw_gid`) and set a bare
      environement for the new user.  This function is mainly used to drop root
      privileges, but can also be used to sanitize the privileged daemon's
      environment.
@@ -153,7 +219,7 @@ def chuser(passwd):
 
      2. change group ID to `passwd.pw_gid`;
 
-     3. clear supplementary groups;
+     3. set minimal supplementary groups;
 
      4. change user ID to `passwd.pw_uid`;
 
@@ -162,10 +228,10 @@ def chuser(passwd):
     '''
 
     #
-    # I've checked that this function does more or less the same steps of
-    # OpenBSD setusercontext(3) and of launchd(8) to drop privileges.
-    # For dropping privileges we try to follow the guidelines established by
-    # Chen, et al. in "Setuid Demystified":
+    # In summer 2011 I checked that this function does more or less the same
+    # steps of OpenBSD setusercontext(3) and launchd(8).  For dropping
+    # privileges I try to follow the guidelines established by Chen, et al.,
+    # in their 'Setuid Demystified' work:
     #
     # > Since setresuid has a clear semantics and is able to set each user ID
     # > individually, it should always be used if available.  Otherwise, to set
@@ -195,16 +261,24 @@ def chuser(passwd):
     else:
         raise RuntimeError('utils_posix: cannot drop user privileges')
 
+    #
+    # If putenv() and unsetenv() are available, the following code should
+    # reflect changes in os.environ to the environment (see Lib/os.py).
+    # I cannot use os.environ.clear() because it did not cleared the 'real'
+    # environ in Python 2.5.  I cannot replace the environment with a
+    # dict because the latter does not automatically propagate changes
+    # to the 'real' environment.
+    #
     logging.debug('utils_posix: purify environ')
     for name in list(os.environ.keys()):
         del os.environ[name]
-    os.environ = {
-                  "HOME": "/",
-                  "LOGNAME": passwd.pw_name,
-                  "PATH": "/usr/local/bin:/usr/bin:/bin",
-                  "TMPDIR": "/tmp",
-                  "USER": passwd.pw_name,
-                 }
+    os.environ.update({
+                       "HOME": "/",
+                       "LOGNAME": passwd.pw_name,
+                       "PATH": "/usr/local/bin:/usr/bin:/bin",
+                       "TMPDIR": "/tmp",
+                       "USER": passwd.pw_name,
+                      })
 
 def getpwnam(uname):
     ''' Get password database entry by name '''
@@ -212,7 +286,8 @@ def getpwnam(uname):
     try:
         passwd = pwd.getpwnam(uname)
     except KeyError:
-        raise RuntimeError('utils_posix: "%s": no such user' % uname)
+        raise RuntimeError('utils_posix: getpwnam(): "%s": no such user' %
+                           uname)
     else:
         logging.debug('utils_posix: getpwnam(): %s/%d/%d', passwd.pw_name,
                       passwd.pw_uid, passwd.pw_gid)
@@ -251,42 +326,179 @@ def touch_idempotent(curpath, uid=None, gid=None):
     os.chown(curpath, uid, gid)
     os.chmod(curpath, MODE_644)
 
-USAGE = '''\
-Usage: utils_posix.py [-f pwd_field] [-g gid] [-u uid] command [args...]'''
-
-def main(args):
-    ''' main() function '''
-
-    try:
-        options, arguments = getopt.getopt(args[1:], 'f:g:u:')
-    except getopt.error:
-        sys.exit(USAGE)
-
-    gid = None
-    selector = None
-    uid = None
-    for name, value in options:
-        if name == '-f':
-            selector = value
-        elif name == '-g':
-            gid = int(value)
-        elif name == '-u':
-            uid = int(value)
-
-    if len(arguments) == 2 and arguments[0] == 'getpwnam':
-        passwd = getpwnam(arguments[1])
-        if selector:
-            passwd = getattr(passwd, selector)
-        sys.stdout.write('%s\n' % str(passwd))
-
-    elif len(arguments) == 2 and arguments[0] == 'mkdir':
-        mkdir_idempotent(arguments[1], uid, gid)
-
-    elif len(arguments) == 2 and arguments[0] == 'touch':
-        touch_idempotent(arguments[1], uid, gid)
-
-    else:
-        sys.exit(USAGE)
-
 if __name__ == '__main__':
+
+    sys.path.insert(0, '.')
+
+    from neubot import six
+    import getopt
+
+    USAGE = '''\
+usage: utils_posix.py [-v] [-f file] [-u user] chuser
+       utils_posix.py [-v] [-f file] [-u user] daemonize
+       utils_posix.py [-v] [-f file] [-u user] getpwnam pwd_field
+       utils_posix.py [-v] [-f file] [-u user] mkdir path
+       utils_posix.py [-v] [-f file] [-u user] touch path'''
+
+    def __subcommand_chuser(user, args):
+        ''' `chuser` subcommand '''
+        if len(args) != 0:
+            sys.exit(USAGE)
+        passwd = getpwnam(user)
+        chuser(passwd)
+
+        real_umask = os.umask(0)
+        os.umask(real_umask) 
+        sys.stdout.write('new umask: 0%o\n' % real_umask)
+
+        if hasattr(os, 'getresgid'):
+            rgid, egid, sgid = os.getresgid()
+            sys.stdout.write('new rgid: %d\n' % rgid)
+            sys.stdout.write('new egid: %d\n' % egid)
+            sys.stdout.write('new sgid: %d\n' % sgid)
+        else:
+            gid = os.getgid()
+            sys.stdout.write('new gid: %d\n' % gid)
+
+        if hasattr(os, 'getgroups'):
+            sys.stdout.write('new supplementary groups: %s\n' % os.getgroups())
+
+        if hasattr(os, 'getresuid'):
+            ruid, euid, suid = os.getresuid()
+            sys.stdout.write('new ruid: %d\n' % ruid)
+            sys.stdout.write('new euid: %d\n' % euid)
+            sys.stdout.write('new suid: %d\n' % suid)
+        else:
+            uid = os.getuid()
+            sys.stdout.write('new uid: %d\n' % uid)
+
+        sys.stdout.write('environ as seen by /usr/bin/env:\n')
+        os.execv('/usr/bin/env', ['/usr/bin/env'])
+
+    def __my_handler(signo, frame):
+        ''' Signal handler for the daemonize subcommand '''
+        logging.info('delivered signal: %d, %s', signo, frame)
+
+    def __subcommand_daemonize(user, args):
+        ''' `daemonize` subcommand '''
+        if len(args) != 0:
+            sys.exit(USAGE)
+
+        sys.stderr.write('Note: logging messages via syslog\n')
+        logging.info('old pid: %d\n', os.getpid())
+        logging.info('*** now going in the background ***')
+
+        daemonize(pidfile='/var/run/neubot-utils-posix.pid',
+                  sighandler=__my_handler)
+
+        logging.info('*** process information after becoming a daemon ***')
+        logging.info('new pid: %d\n', os.getpid())
+        logging.info('ppid: %d\n', os.getppid())
+        logging.info('sid: %d\n', os.getsid(0))
+
+        os.kill(os.getpid(), signal.SIGINT)
+        logging.info('SIGINT was correctly ignored')
+
+        statbuf = os.stat('/dev/null')
+        logging.info('/dev/null: %d/%d\n', statbuf.st_dev, statbuf.st_ino)
+        statbuf = os.fstat(0)
+        logging.info('stdin: %d/%d\n', statbuf.st_dev, statbuf.st_ino)
+        statbuf = os.fstat(1)
+        logging.info('stdout: %d/%d\n', statbuf.st_dev, statbuf.st_ino)
+        statbuf = os.fstat(2)
+        logging.info('stderr: %d/%d\n', statbuf.st_dev, statbuf.st_ino)
+
+        logging.info('read stdin: %s\n', os.read(0, 1024))
+        logging.info('read stdout: %s\n', os.read(1, 1024))
+        logging.info('read stderr: %s\n', os.read(2, 1024))
+
+        try:
+            os.write(0, six.b('a'))
+        except OSError:
+            logging.info('write stdin: %s\n', sys.exc_info()[1])
+        logging.info('write stdout: %d\n', os.write(1, six.b('a')))
+        logging.info('write stderr: %d\n', os.write(2, six.b('a')))
+
+        logging.info('cwd: %s\n', os.getcwd())
+
+        os.kill(os.getpid(), signal.SIGPIPE)
+        logging.info('SIGPIPE was correctly ignored')
+
+        filep = open('/tmp/neubot-utils-posix.pid', 'r')
+        pid = int(filep.read().strip())
+        filep.close()
+        logging.info('pid from pidfile: %d', pid)
+
+        logging.info('sending SIGTERM to myself')
+        os.kill(os.getpid(), signal.SIGTERM)
+        logging.info('sent SIGTERM to myself')
+
+        logging.info('sending SIGHUP to myself')
+        os.kill(os.getpid(), signal.SIGHUP)
+        logging.info('sent SIGHUP to myself')
+
+    def __subcommand_getpwnam(user, args):
+        ''' `getpwnam` subcommand '''
+        if len(args) != 1:
+            sys.exit(USAGE)
+        passwd = getpwnam(user)
+        field = getattr(passwd, args[0])
+        sys.stdout.write('%s\n' % str(field))
+
+    def __subcommand_mkdir(user, args):
+        ''' `mkdir` subcommand '''
+        if len(args) != 1:
+            sys.exit(USAGE)
+        passwd = getpwnam(user)
+        mkdir_idempotent(args[0], passwd.pw_uid, passwd.pw_gid)
+
+    def __subcommand_touch(user, args):
+        ''' `touch` subcommand '''
+        if len(args) != 1:
+            sys.exit(USAGE)
+        passwd = getpwnam(user)
+        touch_idempotent(args[0], passwd.pw_uid, passwd.pw_gid)
+
+    SUBCOMMANDS = {
+        'chuser': __subcommand_chuser,
+        'daemonize': __subcommand_daemonize,
+        'getpwnam': __subcommand_getpwnam,
+        'mkdir': __subcommand_mkdir,
+        'touch': __subcommand_touch,
+    }
+
+    def main(args):
+        ''' main() function '''
+
+        try:
+            options, arguments = getopt.getopt(args[1:], 'f:u:v')
+        except getopt.error:
+            sys.exit(USAGE)
+        if len(arguments) < 1:  # variable number of args per subcommand
+            sys.exit(USAGE)
+
+        logfile = None
+        user = os.environ['LOGNAME']  # Should be there: it's standard
+        verbose = 0
+        for name, value in options:
+            if name == '-f':
+                logfile = value
+            elif name == '-u':
+                user = value
+            elif name == '-v':
+                verbose = 1
+
+        subcommand = arguments[0]
+        if not subcommand in SUBCOMMANDS:
+            sys.exit(USAGE)
+
+        _logger = logging.getLogger()
+        if not logfile:
+            _logger.handlers = [SyslogAdaptor()]
+        else:
+            _logger.handlers = [logging.StreamHandler(open(logfile, 'w'))]
+        if verbose:
+            _logger.setLevel(logging.DEBUG)
+        SUBCOMMANDS[subcommand](user, arguments[1:])
+
     main(sys.argv)

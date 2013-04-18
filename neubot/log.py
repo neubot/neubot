@@ -56,6 +56,12 @@ NOCOMMIT = 32
 INTERVAL = 120
 
 #
+# Interval in seconds between each invocation of the
+# function that compacts the database.
+#
+INTERVAL_VACUUM = 3600
+
+#
 # This is the number of days of logs we keep into
 # the database.  Older logs are pruned.
 # TODO Allow to configure this.
@@ -180,7 +186,8 @@ class Logger(object):
     def __init__(self):
         self.logger = stderr_logger
         self.message = None
-        self.ticks = 0
+
+        self.last_vacuum = 0
 
         self._nocommit = NOCOMMIT
         self._use_database = False
@@ -221,7 +228,10 @@ class Logger(object):
             table_log.insert(connection, record, False)
         connection.commit()
 
-        connection.execute("VACUUM;")
+        now = utils.ticks()
+        if now - self.last_vacuum > INTERVAL_VACUUM:
+            connection.execute("VACUUM;")
+            self.last_vacuum = now
         connection.commit()
 
     def writeback(self):

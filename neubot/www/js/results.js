@@ -1,9 +1,12 @@
 /* neubot/www/js/results.js */
-/*
- * Copyright (c) 2011-2012 Alessio Palmero Aprosio <alessio@apnetwork.it>,
- *  Universita` degli Studi di Milano
- * Copyright (c) 2010 Simone Basso <bassosimone@gmail.com>,
- *  NEXA Center for Internet & Society at Politecnico di Torino
+
+/*-
+ * Copyright (c) 2010, 2013
+ *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+ *     and Simone Basso <bassosimone@gmail.com>
+ *
+ * Copyright (c) 2011-2012
+ *     Alessio Palmero Aprosio <alessio@apnetwork.it>
  *
  * This file is part of Neubot <http://www.neubot.org/>.
  *
@@ -21,363 +24,612 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * This file is the fusion of bittorrent.js
- * and speedtest.js.
- */
+//
+// Documented-by: doc/results.js.{dia,png,svg}
+// Last-jslint: Sun Mar 17 20:41:06 CET 2013
+//
 
-var results = (function() {
+var results = (function () {
+    /*"use strict";*/  // Only when running jslint
+
     var self = {};
-    self.request = {};
 
-    self.result_fields = [];
-    self.result_titles = [];
+    self.one_day_in_ms = 24 * 60 * 60 * 1000;
+    self.one_hour_in_ms = 60 * 60 * 1000;
 
-    // Initialize global variables, e.g. result_fields, request
-    self.init = function(request) {
+    function eval_recipe(code, result) {
 
-        self.request = request;
+        function must_be_array(target) {
+            if (jQuery.type(target) !== "array") {
+                throw "must_be_array: not an array";
+            }
+            return target;
+        }
 
-        jQuery("#results_title").html(i18n.get(self.request.title));
+        function must_be_number(target) {
+            if (jQuery.type(target) !== "number") {
+                throw "must_be_number: not a number";
+            }
+            return target;
+        }
 
-        //
-        // Emulate what happens when we load the page,
-        // except that when we load the page the initial
-        // HTML is already there.  Now, instead, we put
-        // it in the right place and then we kick the
-        // i18n engine.
-        //
-        jQuery(".i18n").css("visibility", "hidden");
-        jQuery("#results_description").html(self.request.description);
-        i18n.translate_page(self.request.description, /^(i18n_results.*)$/i)
-        jQuery(".i18n").css("visibility", "visible");
+        function must_be_string(target) {
+            if (jQuery.type(target) !== "string") {
+                throw "must_be_string: not a string";
+            }
+            return target;
+        }
 
-        self.result_fields = [];
-        self.result_titles = [];
+        function must_not_be_undefined(target) {
+            if (target === undefined) {
+                throw "must_not_be_undefined: passed undefined value";
+            }
+            return target;
+        }
 
-        // Table fields is a mapping that binds the name of each field, e.g.
-        // 'timestamp', with the related display name, e.g. 'Timestamp'.
-        jQuery.each(request.table_fields, function(i, v) {
-            self.result_fields.push(i);
-            self.result_titles.push(v);
+        function apply_divide(left, right) {
+            return must_be_number(left) / must_be_number(right);
+        }
+
+        function apply_map_select(selector, target) {
+            var i, tmp = [];
+
+            must_be_string(selector);
+            must_be_array(target);
+
+            for (i = 0; i < target.length; i += 1) {
+                tmp.push(target[i][selector]);
+            }
+
+            return tmp;
+        }
+
+        function apply_parse_json(target) {
+            return jQuery.parseJSON(must_be_string(target));
+        }
+
+        function apply_reduce_avg(target) {
+            var i, tmp = 0.0;
+
+            must_be_array(target);
+
+            for (i = 0; i < target.length; i += 1) {
+                tmp += target[i];
+            }
+            if (target.length > 0) {
+                tmp /= target.length;
+            }
+
+            return tmp;
+        }
+
+        function apply_select(selector, target) {
+
+            if (jQuery.type(selector) === "string") {
+                return must_not_be_undefined(target[selector]);
+            }
+
+            if (jQuery.type(selector) === "number"
+                    && jQuery.type(target) === "array") {
+                if (selector < 0) {
+                    selector += target.length;  /* Pythonism */
+                }
+                return must_not_be_undefined(target[selector]);
+            }
+
+            throw "apply_select: invalid arguments";
+        }
+
+        function apply_to_datetime(target) {
+            return utils.getTimeFromSeconds(must_be_number(target), true);
+        }
+
+        function apply_to_millisecond(target) {
+            return utils.toMsNumber(must_be_number(target));
+        }
+
+        function apply_to_millisecond_string(target) {
+            return utils.toMs(must_be_number(target));
+        }
+
+        function apply_to_speed(target) {
+            return utils.toMbitsPerSecondNumber(must_be_number(target));
+        }
+
+        function apply_to_speed_string(target) {
+            return utils.toMbitsPerSecond(must_be_number(target));
+        }
+
+        function do_eval(curcode) {
+
+            function eval_target(target) {
+                if (jQuery.type(target) === "array") {
+                    return do_eval(target);         /* XXX recursion */
+                }
+                if (target === "result") {
+                    return result;
+                }
+                throw "eval_target: invalid target";
+            }
+
+            // divide left right
+            if (curcode[0] === "divide") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: divide: invalid curcode length";
+                }
+                return apply_divide(eval_target(curcode[1]),
+                                    eval_target(curcode[2]));
+            }
+
+            // map-select key target
+            if (curcode[0] === "map-select") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: map-select: invalid curcode length";
+                }
+                return apply_map_select(curcode[1], eval_target(curcode[2]));
+            }
+
+            // parse-json target
+            if (curcode[0] === "parse-json") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: parse-json: invalid curcode length";
+                }
+                return apply_parse_json(eval_target(curcode[1]));
+            }
+
+            // reduce-avg target
+            if (curcode[0] === "reduce-avg") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: reduce-avg: invalid curcode length";
+                }
+                return apply_reduce_avg(eval_target(curcode[1]));
+            }
+
+            // select key target
+            if (curcode[0] === "select") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: select: invalid curcode length";
+                }
+                return apply_select(curcode[1], eval_target(curcode[2]));
+            }
+
+            // to-datetime target
+            if (curcode[0] === "to-datetime") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-datetime: invalid curcode length";
+                }
+                return apply_to_datetime(eval_target(curcode[1]));
+            }
+
+            // to-millisecond target
+            if (curcode[0] === "to-millisecond") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-millisecond: invalid curcode length";
+                }
+                return apply_to_millisecond(eval_target(curcode[1]));
+            }
+
+            // to-millisecond-string target
+            if (curcode[0] === "to-millisecond-string") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-millisecond-string: "
+                          + "invalid curcode length";
+                }
+                return apply_to_millisecond_string(eval_target(curcode[1]));
+            }
+
+            // to-speed target
+            if (curcode[0] === "to-speed") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-speed: invalid curcode length";
+                }
+                return apply_to_speed(eval_target(curcode[1]));
+            }
+
+            // to-speed-string target
+            if (curcode[0] === "to-speed-string") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-speed-string: invalid curcode length";
+                }
+                return apply_to_speed_string(eval_target(curcode[1]));
+            }
+
+            throw "do_eval: invalid curcode[0]";  /* Catches undefined too */
+        }
+
+        var retval;
+
+        try {
+            retval = do_eval(must_be_array(code));
+        } catch (error) {
+            /*console.log("eval_recipe failed: " + error);*/
+            retval = undefined;
+        }
+
+        return retval;
+    }
+
+    function jqplot_plotter() {
+
+        var self = {};
+
+        self.params = {
+            title: {
+                text: "",
+                fontSize: "16pt"
+            },
+            axes: {
+                xaxis: {
+                    labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                    renderer: jQuery.jqplot.DateAxisRenderer,
+                    label: "",
+                    showTickMarks: true,
+                    tickOptions: {}
+                },
+                yaxis: {
+                    labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                    label: "",
+                    min: 0
+                }
+            },
+            legend: {
+                location: "nw",
+                predraw: 1,
+                show: 1
+            },
+            cursor: {
+                showVerticalLine: false,
+                showHorizontalLine: true,
+                showCursorLegend: false,
+                showTooltip: true,
+                tooltipLocation: 'se',
+                zoom: true
+            },
+            highlighter: {
+                sizeAdjust: 7.5,
+                show: true
+            },
+            series: []
+        };
+
+        self.data = [];
+        self.div = "";
+
+        self.set_title = function (title) {
+            self.params.title.text = title;
+        };
+
+        self.set_xmin = function (value) {
+            self.params.axes.xaxis.min = value;
+        };
+
+        self.set_xfmt = function (value) {
+            self.params.axes.xaxis.tickOptions.formatString = value;
+        };
+
+        self.set_xlabel = function (value) {
+            self.params.axes.xaxis.label = value;
+        };
+
+        self.set_ylabel = function (value) {
+            self.params.axes.yaxis.label = value;
+        };
+
+        // Not yet
+        //self.set_ylogscale = function (value) {
+        //    self.params.axes.yaxis.renderer = jQuery.jqplot.LogAxisRenderer;
+        //};
+
+        self.push_data = function (value) {
+            self.data.push(value);
+        };
+
+        self.set_div = function (value) {
+            self.div = value;
+        };
+
+        self.push_options = function (value) {
+            self.params.series.push(value);
+        };
+
+        self.show_hide_legend = function (value) {
+            self.params.legend.show = value;
+        };
+
+        self.plot = function (container) {
+            var message, html;
+
+            html = "<div class='chartdiv' id='" + self.div + "'></div>";
+            jQuery(container).append(html);
+            if (self.data === undefined || self.data.length <= 0) {
+                jQuery.jqplot(self.div, [[null]], undefined).replot();
+            } else {
+                jQuery.jqplot(self.div, self.data, self.params).replot();
+            }
+        };
+
+        return self;
+    }
+
+    function build_vector(result, recipe) {
+        var dataset, k, timestamp, value;
+
+        dataset = [];
+        for (k = 0; k < result.length; k += 1) {
+            timestamp = result[k].timestamp * 1000;  // To millisec
+            value = eval_recipe(recipe, result[k]);
+            if (value !== undefined) {
+                dataset.push([timestamp, value]);
+            }
+        }
+
+        return dataset;
+    }
+
+    function build_per_serie_options(label, address, marker) {
+        var dictionary;
+
+        if (address !== "") {
+            label += " (" + address + ")";
+        }
+        dictionary = {
+            label: label,
+            markerOptions: {
+                style: marker
+            },
+            neighborThreshold: -1
+        };
+
+        return dictionary;
+    }
+
+    function mkplot(info, dataset, result, plotter) {
+        var address, data_by_ip, i, label, marker, recipe;
+
+        recipe = dataset.recipe;
+        label = dataset.label;
+        marker = dataset.marker;
+
+        data_by_ip = {};
+        if (!info.www_no_split_by_ip) {
+            for (i = 0; i < result.length; i += 1) {
+                address = result[i].real_address;
+                if (data_by_ip[address] === undefined) {
+                    data_by_ip[address] = [];
+                }
+                data_by_ip[address].push(result[i]);
+            }
+        } else {
+            data_by_ip[""] = result;
+        }
+
+        jQuery.each(data_by_ip, function (address, vector) {
+            if (vector.length > 0) {
+                vector = build_vector(vector, recipe);
+                if (vector.length > 0) {
+                    plotter.push_data(vector);
+                    plotter.push_options(build_per_serie_options(label,
+                                         address, marker));
+                }
+            }
         });
     }
 
-    // Request the Neubot daemon raw data
-    // TODO This function should be renamed get_data()
-    self.get_results = function(callbacks, since, unit, until) {
-        var res = new Array();
-        if (!since) {
-            since = 0;
+    // We added this function in 2012, to workaround a jqplot bug. It makes
+    // sense to check whether this is still needed with newer jqplots.
+    function compute_xmin(result, since) {
+        var k, list, timestamp, xmin;
+
+        list = [];
+        for (k = 0; k < result.length; k += 1) {                /* XXX */
+            timestamp = result[k].timestamp * 1000;
+            list.push(timestamp);
         }
-        since_s = Math.ceil(since / 1000);
-        var url = "/api/data?test=" + self.request.selected_test +
-                                      "&since=" + since_s;
-        if (until != undefined) {
-            until_s = Math.ceil(until / 1000);
-            url += "&until=" + until_s;
+        if (list.length > 0) {
+            xmin = Math.min.apply(null, list) - 300000;
+        } else {
+            xmin = since;
         }
-        var params = {
-            url: url,
-            success: function(data) {
-                for (var i = 0; i < callbacks.length; i++) {
-                    res[i] = callbacks[i](data, since, unit, until);
-                }
-            },
-            dataType: "json"
-        };
-        jQuery.ajax(params);
+
+        return xmin;
     }
 
-    // Process raw data to format results table
-    self.formatter_table = function(data, since, unit, until) {
-        var i;
-        var html = "";
+    function compute_xfmt(since) {
+        var hours, xfmt;
+
+        hours = Math.abs(Math.round((since - utils.getNow()) /
+                      (1000 * 60 * 60)));
+        if (hours <= 4) {
+            xfmt = '%H:%M';
+        } else if (hours <= 120) {
+            xfmt = '%b %#d, h %H';
+        } else {
+            xfmt = '%b %#d';
+        }
+
+        return xfmt;
+    }
+
+    function formatter_plot(info, result, since, until) {
+        var i, j, plotter;
+
+        for (i = 0; i < info.plots.length; i += 1) {
+            plotter = jqplot_plotter();
+            plotter.set_div("chartdiv" + (i + 1));
+            plotter.set_title(info.plots[i].title);
+            plotter.set_xlabel(info.plots[i].xlabel);
+            plotter.set_ylabel(info.plots[i].ylabel);
+            plotter.set_xmin(compute_xmin(result, since));
+            plotter.set_xfmt(compute_xfmt(since));
+            options = [];
+            for (j = 0; j < info.plots[i].datasets.length; j += 1) {
+                mkplot(info, info.plots[i].datasets[j], result, plotter);
+            }
+            plotter.show_hide_legend(!info.www_no_legend);
+            plotter.plot("#charts");
+        }
+    }
+
+    function formatter_table(info, data, since, until) {
+        var html = "", i, j, recipe, value;
 
         html += '<center><table id="results_table">';
         html += "<thead><tr>";
-        for (i = 0; i < self.result_fields.length; i++) {
-            html += '<th>' + self.result_titles[i] + '</th>';
+        for (j = 0; j < info.table.length; j += 1) {
+            html += '<th>' + info.table[j].label + '</th>';
         }
         html += "</tr></thead>";
         html += "<tbody>";
 
-        for (j = 0; j < data.length; j++) {
-            var result = data[j];
-
-            // Table_fields maps field names to pretty field names,
-            // and table_types maps field names to their type
-
+        for (i = 0; i < data.length; i += 1) {
             html += "<tr>";
-            jQuery.each(self.request.table_fields, function(i, v) {
-                var formatted = result[i];
-                switch (self.request.table_types[i]) {
-                case "ms":
-                    formatted = utils.toMs(formatted);
-                    break;
-                case "mbits":
-                    formatted = utils.toMbitsPerSecond(formatted);
-                    break;
-                case "datetime":
-                    formatted = utils.getTimeFromSeconds(formatted, true);
-                    break;
+            for (j = 0; j < info.table.length; j += 1) {
+                recipe = info.table[j].recipe;
+                value = eval_recipe(recipe, data[i]);
+                if (value !== undefined) {
+                    html += "<td>" + value + "</td>";
                 }
-                html += "<td>" + formatted + "</td>";
-            });
+            }
             html += "</tr>";
         }
 
         html += "</tbody></table></center>";
-
         jQuery("#results").html(html);
-        return html;
-    };
+    }
 
-    // Process raw data to produce plots
-    self.formatter_plot = function(data, since, unit, until) {
+    function get_data(info, since, until) {
+        var data;
 
-        // Axis_labels is a vector that contains the x-axis and y-axis
-        // labels of each plot we want
-
-        var num_of_plots = self.request.axis_labels.length;
-
-        var dataType = [];
-        var dataTypeLabels = [];
-        var dataTypeShape = [];
-        var dataType_no = [];
-
-        var j = 0;
-        for (var i = 0; i < num_of_plots; i++) {
-            dataType_no[i] = [];
-            jQuery.each(self.request.datasets[i][0], function(index, value) {
-                dataType_no[i].push(index);
-                dataType.push(index);
-                dataTypeLabels.push(value);
-
-                // XXX this does not scale well with the number of plots
-                if (++j % 2) {
-                    dataTypeShape.push("square");
-                }
-                else {
-                    dataTypeShape.push("circle");
-                }
-            })
-        }
-
-        var ipCounter = [];
-        var ipCounterN = 0;
-        var myData = [];
-        var labels = [];
-
-        var timestamps = [];
-        var minx = 0;
-
-        for (var j = 0; j < dataType.length; j++) {
-            myData[dataType[j]] = [];
-            labels[dataType[j]] = [];
-        }
-
-        for (i = 0; i < data.length; i++) {
-            var result = data[i];
-            var address = result["real_address"];
-            var timestamp = result["timestamp"];
-
-            if (ipCounter[address] == undefined) {      // XXX
-                ipCounter[address] = ipCounterN;
-
-                for (var j = 0; j < dataType.length; j++) {
-                    myData[dataType[j]][ipCounterN] = []
-                    labels[dataType[j]][ipCounterN] = {
-                        label: dataTypeLabels[j] + " " + address,
-                        markerOptions: {
-                          style: dataTypeShape[j]
-                        },
-                        neighborThreshold: -1
-                    };
-
-                }
-                ipCounterN++;
-            }
-
-            counter = ipCounter[address];
-            timestamp *= 1000;
-
-            for (var j = 0; j < dataType.length; j++) {
-                switch (self.request.table_types[dataType[j]]) {
-                case "mbits":
-                    myData[dataType[j]][counter].push([timestamp,
-                      Number(utils.toMbitsPerSecondNumber(
-                      result[dataType[j]]))]);
-                    break;
-                case "ms":
-                    myData[dataType[j]][counter].push([timestamp,
-                      1000 * result[dataType[j]]]);
-                    break;
-                }
-            }
-
-            timestamps.push(timestamp);
-        }
-
-        // Do not waste plot estate without a good reason
-        if (timestamps.length) {
-            minx = Math.min.apply(null, timestamps) - 300000;
-        }
-        else {
-            minx = since;
-        }
-
-        var xaxis = {
-            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-            renderer: jQuery.jqplot.DateAxisRenderer,
-            showTickMarks: true,
-            min: minx
+        data = {
+            'test': info.selected_test
         };
-
-        var hours = Math.abs(Math.round((since - utils.getNow()) /
-                      (1000 * 60 * 60)));
-
-        if (hours <= 120) {
-            xaxis.tickOptions = {
-              formatString:'%b %#d, h %H'
-            };
+        if (since !== undefined) {
+            data.since = Math.ceil(since / 1000);
         }
-        else {
-            xaxis.tickOptions = {
-              formatString:'%b %#d'
-            };
+        if (until !== undefined) {
+            data.until = Math.ceil(until / 1000);
         }
-
-        jQuery("#charts").html("");
-
-        for (var i = 0; i < num_of_plots; i++) {
-            jQuery("#charts").append("<div class='chartdiv' id='chartdiv" +
-                                       (i + 1) + "'></div>");
-
-            if (myData[dataType_no[i][1]]) {
-                mydata = myData[dataType_no[i][0]].concat(
-                           myData[dataType_no[i][1]]);
-            }
-            else {
-                mydata = myData[dataType_no[i][0]];
-            }
-
-            if (mydata.length) {
-                xaxis.label = self.request.axis_labels[i][0];
-                var plot = jQuery.jqplot("chartdiv" + (i + 1), mydata, {
-                  title: {
-                    text: i18n.get(self.request.plot_titles[i]),
-                    fontSize: "16pt"
-                  },
-                  axes: {
-                    xaxis: xaxis,
-                    yaxis: {
-                      labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-                      label: self.request.axis_labels[i][1],
-                      min: 0
-                    }
-                  },
-                  legend: {
-                    show: true,
-                    location: "e"
-                  },
-                  cursor: {
-                    showVerticalLine: false,
-                    showHorizontalLine: true,
-                    showCursorLegend: false,
-                    showTooltip: false,
-                    tooltipLocation: 'sw',
-                    zoom: true
-                  },
-                  highlighter: {
-                    show: false
-                  },
-                  series: labels[dataType_no[i][0]].concat(
-                             labels[dataType_no[i][1]])
-                });
-
-                plot.replot();
-            }
-            else {
-                jQuery("#chartdiv" + (i + 1)).html("<span>" +
-                  i18n.get("No results")
-                  + "</span>");  /* must be on a separate line */
-            }
-        }
-
-        // some additional CSS-magic
-        jQuery('.jqplot-table-legend').css('top', '200');
-    };
-
-    return self;
-})();
-
-// Initialize the results tab
-// TODO This function should be moved inside the above namespace
-function results_init() {
-    utils.setActiveTab("results");
-
-    jQuery.jqplot.config.enablePlugins = true;
-
-    // Invoked when we need to update the page content
-    var confirm_test = function() {
-        var testname = jQuery("#res_type_value").val();
-
         jQuery.ajax({
-            url: "/api/results",
-            data: {
-                'test': testname
+            url: '/api/data',
+            data: data,
+            success: function (data) {
+                jQuery("#charts").html("");
+                jQuery("#results").html("");
+                if (!info.www_no_plot) {
+                    formatter_plot(info, data, since, until);
+                }
+                if (!info.www_no_table) {
+                    formatter_table(info, data, since, until);
+                }
             },
-            dataType: 'json',
-            success: function(myrequest) {
-
-                results.init(myrequest);
-
-                // XXX I'd move these checks before the ajax() call
-                var n = Number(jQuery("#res_value").val());
-                if (n == NaN) {
-                    alert(i18n.get("Please insert a valid number"));
-                    return false;
-                }
-                var since = 0;
-                switch (jQuery("#res_unit").val()) {
-                case "d":
-                    var one_day_in_ms = 24 * 60 * 60 * 1000;
-                    since = utils.getNow() - one_day_in_ms * n;
-                    break;
-
-                case "h":
-                    var one_hour_in_ms = 60 * 60 * 1000;
-                    since = utils.getNow() - one_hour_in_ms * n;
-                    break;
-                }
-
-                results.get_results([results.formatter_table,
-                    results.formatter_plot], since);
-            }
+            dataType: "json"
         });
     }
 
-    // Update plots when the user presses enter when editing the number
-    // of days or months to show
-    jQuery("#res_value").keydown(function(event) {
-        if (event.keyCode == 13) {
-            return confirm_test();
+    /*
+     * This function processes the JSON returned by /api/results. The JSON is
+     * a dictionary that describes how to construct the plots and the table
+     * of the selected test (plus a list of existing tests). This information
+     * is not hardcoded somewhere in this file because we want users (and
+     * especially power users) to be able to change the appearance of plots
+     * and tables in a simpler way (i.e., by editing the corresponding files
+     * in WWWDIR/test).
+     *
+     * To better understand this function, it helps to read the output
+     * of `curl http://127.0.0.1:9774/api/results?debug=1`.
+     */
+    function handle_api_results(info) {
+        var html, i, since;
+
+        // Dynamically populate the list of available tests
+        html = "";
+        for (i = 0; i < info.available_tests.length; i += 1) {
+            html += '<option value="';
+            html += info.available_tests[i];
+            html += '"';
+            if (info.selected_test === info.available_tests[i]) {
+                html += ' selected="selected"';
+            }
+            html += '>' + info.available_tests[i] + '</option>\n';
         }
-    });
+        jQuery("#res_type_value").html(html);
 
-    // Update plots when the user presses the "Go" button
-    jQuery("#res_type_submit").click(confirm_test);
+        if (!info.www_no_description) {
+            //
+            // Emulate what happens when we load the page: write the description
+            // of the test and then run the i18n engine.
+            //
+            jQuery(".i18n").css("visibility", "hidden");
+            jQuery("#results_description").html(info.description);
+            i18n.translate_page("", /^(i18n_results_[a-z0-9_]+)$/i);
+            jQuery(".i18n").css("visibility", "visible");
+        }
+        if (!info.www_no_title) {
+            jQuery("#results_title").html(i18n.get(info.title));
+        }
 
-    // Invoke one first time to fill the page and fetch the results
-    // of the default test, which currently is speedtest
-    confirm_test();
+        /*
+         * TODO Validation of input should probably be performed
+         * before we invoke /api/results API.
+         */
+        since = Number(jQuery("#res_value").val());
+        if (isNaN(since)) {
+            alert(i18n.get("Please insert a valid number"));  /* XXX */
+            return;
+        }
+        switch (jQuery("#res_unit").val()) {
+        case "d":
+            since = utils.getNow() - self.one_day_in_ms * since;
+            break;
+        case "h":
+            since = utils.getNow() - self.one_hour_in_ms * since;
+            break;
+        default:
+            /* nothing */
+            break;
+        }
 
-    // Track the state of the Neubot daemon
-    tracker = state.tracker();
-    tracker.start();
-};
+        get_data(info, since);
+    }
 
-jQuery(document).ready(function() {
-    i18n.translate(results_init);
+    function call_api_results(data) {
+        jQuery.ajax({
+            url: "/api/results",
+            data: data,
+            dataType: 'json',
+            success: handle_api_results
+        });
+    }
+
+    function confirm_test() {
+        call_api_results({
+            'test': jQuery("#res_type_value").val()
+        });
+        return false;
+    }
+
+    self.init = function () {
+        jQuery.jqplot.config.enablePlugins = true;
+        utils.setActiveTab("results");
+        state.tracker().start();
+        jQuery("#res_value").keydown(function (event) {
+            if (event.keyCode === 13) {
+                return confirm_test();
+            }
+            return true;
+        });
+        jQuery("#res_type_submit").click(confirm_test);
+        // By passing no parameter we tell api_results.py to show the results
+        // of the default test (i.e., the one indicated by the setting named
+        // `www_default_test_to_show` - see neubot/config.py).
+        call_api_results();
+    };
+
+    return self;
+
+}());
+
+jQuery(document).ready(function () {
+    /*"use strict";*/  // Only when running jslint
+    i18n.translate(results.init);
 });

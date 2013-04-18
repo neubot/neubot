@@ -326,6 +326,16 @@ class HttpClient(Handler):
             if name not in context.headers:
                 context.headers[name] = value
             else:
+                #
+                # "Multiple message-header fields with the same field-name MAY
+                # be present in a message if and only if the entire field-value
+                # for that header field is defined as a comma-separated list
+                # [i.e., #(values)]. It MUST be possible to combine the multiple
+                # header fields into one "field-name: field-value" pair, without
+                # changing the semantics of the message, by appending each
+                # subsequent field-value to the first, each separated by
+                # a comma."  (RFC2616, sect. 4.2)
+                #
                 context.headers[name] += COMMASPACE
                 context.headers[name] += value
             context.last_hdr = name

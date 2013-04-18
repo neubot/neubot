@@ -42,7 +42,6 @@ import errno
 import syslog
 import signal
 import hashlib
-import pwd
 import re
 import os.path
 import sys
@@ -65,6 +64,7 @@ if __name__ == '__main__':
 
 from neubot import updater_install
 from neubot import utils_rc
+from neubot import utils_posix
 from neubot import utils_version
 
 # Note: BASEDIR/VERSIONDIR/neubot/updater/unix.py
@@ -78,6 +78,7 @@ VERSION = utils_version.NUMERIC_VERSION
 # Configuration
 CONFIG = {
     'channel': 'latest',
+    'update_user': '_neubot_update',
 }
 
 # State
@@ -136,165 +137,6 @@ def __waitpid(pid, timeo=-1):
                 raise
 
     return 0, 0
-
-def __lookup_user_info(uname):
-
-    '''
-     Lookup and return the specified user's uid and gid.
-     This function is not part of __change_user() because
-     you may want to chroot() once you have user info
-     and before you drop root privileges.
-    '''
-
-    try:
-        return pwd.getpwnam(uname)
-    except KeyError:
-        raise RuntimeError('No such user: %s' % uname)
-
-def __change_user(passwd):
-
-    '''
-     Change user, group to @passwd.pw_uid, @passwd.pw_gid and
-     setup a bare environement for the new user.  This function
-     is typically used to drop root privileges but can also be
-     used to sanitize the privileged daemon environment.
-
-     More in detail, this function will:
-
-     1. set the umask to 022;
-
-     2. change group ID to @passwd.pw_gid;
-
-     3. clear supplementary groups;
-
-     4. change user ID to @passwd.pw_uid;
-
-     5. purify environment.
-
-     Optionally, you might want to invoke chroot() before
-     invoking this function.
-    '''
-
-    #
-    # I've checked that this function does more or less
-    # the same steps of OpenBSD setusercontext(3) and of
-    # launchd(8) to drop privileges.
-    # Note that this function does not invoke setlogin(2)
-    # because that should be called when becoming a daemon,
-    # AFAIK, not here.
-    # For dropping privileges we try to follow the guidelines
-    # established by Chen, et al. in "Setuid Demystified":
-    #
-    #   Since setresuid has a clear semantics and is able
-    #   to set each user ID individually, it should always
-    #   be used if available.  Otherwise, to set only the
-    #   effective uid, seteuid(new euid) should be used; to
-    #   set all three user IDs, setreuid(new uid, new uid)
-    #   should be used.
-    #
-
-    # Set default umask (18 == 0022)
-    os.umask(18)
-
-    # Change group ID.
-    if hasattr(os, 'setresgid'):
-        os.setresgid(passwd.pw_gid, passwd.pw_gid, passwd.pw_gid)
-    elif hasattr(os, 'setregid'):
-        os.setregid(passwd.pw_gid, passwd.pw_gid)
-    else:
-        raise RuntimeError('Cannot drop group privileges')
-
-    # Clear supplementary groups.
-    os.setgroups([])
-
-    # Change user ID.
-    if hasattr(os, 'setresuid'):
-        os.setresuid(passwd.pw_uid, passwd.pw_uid, passwd.pw_uid)
-    elif hasattr(os, 'setreuid'):
-        os.setreuid(passwd.pw_uid, passwd.pw_uid)
-    else:
-        raise RuntimeError('Cannot drop user privileges')
-
-    # Purify environment
-    for name in list(os.environ.keys()):
-        del os.environ[name]
-    os.environ = {
-                  "HOME": "/",
-                  "LOGNAME": passwd.pw_name,
-                  "PATH": "/usr/local/bin:/usr/bin:/bin",
-                  "TMPDIR": "/tmp",
-                  "USER": passwd.pw_name,
-                 }
-
-def __go_background(pidfile=None, sigterm_handler=None, sighup_handler=None):
-
-    '''
-     Perform the typical steps to run in background as a
-     well-behaved Unix daemon.
-
-     In detail:
-
-     1. detach from the current shell;
-
-     2. become a session leader;
-
-     3. detach from the current session;
-
-     4. chdir to rootdir;
-
-     5. redirect stdin, stdout, stderr to /dev/null;
-
-     6. ignore SIGINT, SIGPIPE;
-
-     7. write pidfile;
-
-     8. install SIGTERM, SIGHUP handler;
-
-    '''
-
-    #
-    # I've verified that the first chunk of this function
-    # matches loosely the behavior of the daemon(3) function
-    # available under BSD.
-    # What is missing here is setlogin(2) which is not part
-    # of python library.  Doh.
-    #
-
-    # detach from the shell
-    if os.fork() > 0:
-        __exit(0)
-
-    # create new session
-    os.setsid()
-
-    # detach from the session
-    if os.fork() > 0:
-        __exit(0)
-
-    # redirect stdio to /dev/null
-    for fdesc in range(3):
-        os.close(fdesc)
-    for _ in range(3):
-        os.open('/dev/null', os.O_RDWR)
-
-    # chdir to rootdir
-    os.chdir('/')
-
-    # ignore SIGINT, SIGPIPE
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-    signal.signal(signal.SIGPIPE, signal.SIG_IGN)
-
-    # write pidfile
-    if pidfile:
-        filep = open(pidfile, 'w')
-        filep.write('%d\n' % os.getpid())
-        filep.close()
-
-    # install SIGTERM, SIGHUP handler
-    if sigterm_handler:
-        signal.signal(signal.SIGTERM, sigterm_handler)
-    if sighup_handler:
-        signal.signal(signal.SIGHUP, sighup_handler)
 
 def __printable_only(string):
     ''' Remove non-printable characters from string '''
@@ -413,10 +255,13 @@ def __download(address, rpath, tofile=False, https=False, maxbytes=67108864):
         try:
 
             # Lookup unprivileged user info
-            passwd = __lookup_user_info('_neubot_update')
+            passwd = utils_posix.getpwnam(CONFIG['update_user'])
 
             # Become unprivileged as soon as possible
-            __change_user(passwd)
+            utils_posix.chuser(passwd)
+
+            if os.getuid() == 0 or os.geteuid() == 0:
+                raise RuntimeError('Has not dropped privileges')
 
             # Close all unneeded file descriptors
             for tmpdesc in range(64):
@@ -507,7 +352,7 @@ def __download_version_info(address, channel):
     if not version:
         raise RuntimeError('Download failed')
     version = __printable_only(version)
-    match = re.match('^([0-9]+)\.([0-9]{9})$', version)
+    match = re.match(r'^([0-9]+)\.([0-9]{9})$', version)
     if not match:
         raise RuntimeError('Invalid version string: %s' % version)
     else:
@@ -664,9 +509,9 @@ def __clear_base_directory():
         # the path if the name looks good.
         #
         if os.path.isfile(path):
-            if re.match('^([0-9]+)\.([0-9]{9}).tar.gz$', name):
+            if re.match(r'^([0-9]+)\.([0-9]{9}).tar.gz$', name):
                 os.unlink(path)
-            elif re.match('^([0-9]+)\.([0-9]{9}).tar.gz.sig$', name):
+            elif re.match(r'^([0-9]+)\.([0-9]{9}).tar.gz.sig$', name):
                 os.unlink(path)
             continue
 
@@ -684,7 +529,7 @@ def __clear_base_directory():
         # be safe even with Python 2.5.  (It goes without saying that
         # the remainder of rmtree() does not follow symlinks.)
         #
-        if (os.path.isdir(path) and re.match('^([0-9]+)\.([0-9]{9})$', name)
+        if (os.path.isdir(path) and re.match(r'^([0-9]+)\.([0-9]{9})$', name)
             and decimal.Decimal(name) != decimal.Decimal(VERSION)):
             shutil.rmtree(path)
 
@@ -713,11 +558,11 @@ def __start_neubot_agent():
         if not os.access(VERSIONDIR, os.R_OK|os.X_OK):
             raise RuntimeError('Cannot access: %s' % VERSIONDIR)
 
-        syslog.syslog(syslog.LOG_ERR,
-                      'Prepending "%s" to Python search path' %
-                      VERSIONDIR)
-
-        sys.path.insert(0, VERSIONDIR)
+        if not VERSIONDIR in sys.path:
+            syslog.syslog(syslog.LOG_ERR,
+                          'Prepending "%s" to Python search path' %
+                          VERSIONDIR)
+            sys.path.insert(0, VERSIONDIR)
 
         # Import the required modules
         from neubot.log import LOG
@@ -819,32 +664,35 @@ def __main():
     daemonize = True
 
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'Dd')
+        options, arguments = getopt.getopt(sys.argv[1:], 'adv')
     except getopt.error:
-        sys.exit('Usage: neubot/updater/unix.py [-Dd]')
+        sys.exit('Usage: neubot/updater/unix.py [-adv]')
 
     if arguments:
-        sys.exit('Usage: neubot/updater/unix.py [-Dd]')
+        sys.exit('Usage: neubot/updater/unix.py [-adv]')
 
+    check_for_updates = 0  # By default we don't check for updates
     for tpl in options:
-        if tpl[0] == '-D':
-            daemonize = False
+        if tpl[0] == '-a':
+            check_for_updates = 1
         elif tpl[0] == '-d':
+            daemonize = False
+        elif tpl[0] == '-v':
             logopt |= syslog.LOG_PERROR|syslog.LOG_NDELAY
 
     # We must be run as root
     if os.getuid() != 0 and os.geteuid() != 0:
-        sys.exit('You must be root.')
+        sys.exit('FATAL: You must be root.')
 
     # Open the system logger
     syslog.openlog('neubot(updater)', logopt, syslog.LOG_DAEMON)
 
     # Clear root user environment
-    __change_user(__lookup_user_info('root'))
+    utils_posix.chuser(utils_posix.getpwnam('root'))
 
     # Daemonize
     if daemonize:
-        __go_background('/var/run/neubot.pid')
+        utils_posix.daemonize('/var/run/neubot.pid')
 
     #
     # TODO We should install a signal handler that kills
@@ -868,10 +716,9 @@ def __main():
         else:
             time.sleep(15)
 
-        # Read configuration file
-        if os.path.isfile('/etc/neubot/updater'):
-            cnf = utils_rc.parse_safe('/etc/neubot/updater')
-            CONFIG.update(cnf)
+        # Read configuration files
+        CONFIG.update(utils_rc.parse_safe('/etc/neubot/updater'))
+        CONFIG.update(utils_rc.parse_safe('/etc/neubot/users'))
 
         try:
 
@@ -880,27 +727,33 @@ def __main():
                 syslog.syslog(syslog.LOG_INFO, 'Starting the agent')
                 pid = __start_neubot_agent()
 
-            # Check for updates
-            now = time.time()
-            if now - STATE['lastcheck'] > 1800:
-                STATE['lastcheck'] = now
-                nversion = _download_and_verify_update()
-                if nversion:
-                    if pid > 0:
-                        __stop_neubot_agent(pid)
-                        pid = -1
-                    __install_new_version(nversion)
-                    __switch_to_new_version()
-                    raise RuntimeError('Internal error')
+            if check_for_updates:
+                now = time.time()
+                updates_check_in = 1800 - (now - STATE['lastcheck'])
+                if updates_check_in <= 0:
+                    STATE['lastcheck'] = now
+                    nversion = _download_and_verify_update()
+                    if nversion:
+                        if pid > 0:
+                            __stop_neubot_agent(pid)
+                            pid = -1
+                        __install_new_version(nversion)
+                        __switch_to_new_version()
+                        raise RuntimeError('Internal error')
 
-                #
-                # We have not found an update, while here make
-                # sure that we keep clean our base directory,
-                # remove old files and directories, the tarball
-                # of this version, etc.
-                #
+                    #
+                    # We have not found an update, while here make
+                    # sure that we keep clean our base directory,
+                    # remove old files and directories, the tarball
+                    # of this version, etc.
+                    #
+                    else:
+                        __clear_base_directory()
                 else:
-                    __clear_base_directory()
+                    syslog.syslog(syslog.LOG_DEBUG,
+                      'Auto-updates check in %d sec' % updates_check_in)
+            else:
+                syslog.syslog(syslog.LOG_DEBUG, 'Auto-updates are disabled')
 
             # Monitor the agent
             rpid, status = __waitpid(pid, 0)

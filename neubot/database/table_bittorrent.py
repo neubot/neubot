@@ -27,7 +27,6 @@
  by the BitTorrent test.
 '''
 
-from neubot.simplejson.ordered_dict import OrderedDict
 from neubot.database import _table_utils
 from neubot import utils
 
@@ -51,24 +50,6 @@ TEMPLATE = {
 
     # Added Neubot 0.4.12
     "test_version": 1,
-}
-
-# List the visible fields only
-PRETTY_TEMPLATE = OrderedDict((
-    ('timestamp', 'Timestamp'),
-    ('internal_address', 'Internal address'),
-    ('real_address', 'Real address'),
-    ('remote_address', 'Remote address'),
-    ('connect_time', 'Connect time'),
-    ('download_speed', 'Download speed'),
-    ('upload_speed', 'Upload speed')
-))
-
-JS_TYPES = {
-    'timestamp': 'datetime',
-    'connect_time': 'ms',
-    'download_speed': 'mbits',
-    'upload_speed': 'mbits'
 }
 
 CREATE_TABLE = _table_utils.make_create_table("bittorrent", TEMPLATE)

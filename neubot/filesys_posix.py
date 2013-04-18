@@ -1,8 +1,9 @@
 # neubot/filesys_posix.py
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -36,9 +37,6 @@ from neubot import utils_posix
 from neubot import utils_path
 from neubot import utils_hier
 
-# Default user name
-UNAME = system_posix.UNPRIV_USER
-
 class FileSystemPOSIX(object):
     ''' POSIX file system '''
 
@@ -47,7 +45,7 @@ class FileSystemPOSIX(object):
         self.datadir = None
         self.passwd = None
 
-    def datadir_init(self, uname=UNAME, datadir=None):
+    def datadir_init(self, uname=None, datadir=None):
         ''' Initialize datadir '''
 
         if datadir:
@@ -57,7 +55,10 @@ class FileSystemPOSIX(object):
         logging.debug('filesys_posix: datadir: %s', self.datadir)
 
         logging.debug('filesys_posix: user name: %s', uname)
-        self.passwd = utils_posix.getpwnam(uname)
+        if uname:
+            self.passwd = utils_posix.getpwnam(uname)
+        else:
+            self.passwd = system_posix.getpwnam()  # The common case
         logging.debug('filesys_posix: uid: %d', self.passwd.pw_uid)
         logging.debug('filesys_posix: gid: %d', self.passwd.pw_gid)
 
@@ -100,7 +101,7 @@ def main(args):
         sys.exit(USAGE)
 
     datadir = None
-    uname = UNAME
+    uname = None
     for name, value in options:
         if name == '-d':
             datadir = value

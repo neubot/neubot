@@ -91,7 +91,7 @@ test di trasmissione. L'ultima posizione nota in coda è \
     'i18n_collect_status_text': "Neubot sta eseguendo l'upload dei \
 risultati sul server di Neubot.",
 
-    'i18n_about_text': "Questa è l'interfaccia web di Neubot v0.4.16.0. \
+    'i18n_about_text': "Questa è l'interfaccia web di Neubot. \
 Neubot è un programma <a href='http://www.neubot.org/copying'>free software</a> \
 leggero che viene eseguito in background ed esegue periodicamente test \
 di trasmissione dati per testare la tua connessione a Internet utilizzando \
@@ -134,11 +134,6 @@ lo stato corrente.",
                            facendo prima di fare modifiche.  Non riceverai\
                            alcun tipo di aiuto se Neubot smette di funzionare\
                            per colpa di modifiche inopportune.",
-
-    'i18n_settings_par2':
- 'Alcune impostazioni, come ad esempio <code>agent.api.address</code>\
-  e <code>agent.api.port</code>, hanno effetto solo al successivo\
-  restart di Neubot.',
 
     // neubot/www/descr/bittorrent.html
 

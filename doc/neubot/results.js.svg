@@ -1,0 +1,1118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="52cm"
+   height="66cm"
+   viewBox="-118 -560 1039 1304"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="results.js.svg"
+   inkscape:export-filename="/home/simone/neubot/doc/neubot/results.js.png"
+   inkscape:export-xdpi="128"
+   inkscape:export-ydpi="128">
+  <metadata
+     id="metadata404">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs402" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="959"
+     inkscape:window-height="576"
+     id="namedview400"
+     showgrid="false"
+     inkscape:zoom="0.10091582"
+     inkscape:cx="921.25983"
+     inkscape:cy="1169.2914"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <g
+     id="g4">
+    <rect
+       style="fill: #ffffff"
+       x="299"
+       y="639"
+       width="119.15"
+       height="36"
+       id="rect6" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #008000"
+       x="299"
+       y="639"
+       width="119.15"
+       height="36"
+       id="rect8" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="358.575"
+       y="660.9"
+       id="text10">
+      <tspan
+         x="358.575"
+         y="660.9"
+         id="tspan12">i18n.translate()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="309"
+       y1="663.95"
+       x2="408.15"
+       y2="663.95"
+       id="line14" />
+  </g>
+  <g
+     id="g16">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="359"
+       y1="726"
+       x2="358.719"
+       y2="680.407"
+       id="line18" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="363.767,688.14 358.705,678.171 353.767,688.201 "
+       id="polyline20" />
+  </g>
+  <g
+     id="g22">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="358.814"
+       y1="638.005"
+       x2="359.304"
+       y2="599.167"
+       id="line24" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="364.206,606.993 359.332,596.931 354.207,606.867 "
+       id="polyline26" />
+  </g>
+  <g
+     id="g28">
+    <rect
+       style="fill: #ffffff"
+       x="334.5"
+       y="557.7"
+       width="50.2"
+       height="36"
+       id="rect30" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="334.5"
+       y="557.7"
+       width="50.2"
+       height="36"
+       id="rect32" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="359.6"
+       y="579.6"
+       id="text34">
+      <tspan
+         x="359.6"
+         y="579.6"
+         id="tspan36">init()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="344.5"
+       y1="582.65"
+       x2="374.7"
+       y2="582.65"
+       id="line38" />
+  </g>
+  <g
+     id="g40">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="385.706"
+       y1="561.387"
+       x2="583.67"
+       y2="452.852"
+       id="line42" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="579.266,460.969 585.631,451.777 574.458,452.2 "
+       id="polyline44" />
+  </g>
+  <g
+     id="g46">
+    <rect
+       style="fill: #ffffff"
+       x="544.5"
+       y="413.7"
+       width="155.5"
+       height="36"
+       id="rect48" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #ffa500"
+       x="544.5"
+       y="413.7"
+       width="155.5"
+       height="36"
+       id="rect50" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="622.25"
+       y="435.6"
+       id="text52">
+      <tspan
+         x="622.25"
+         y="435.6"
+         id="tspan54">state.tracker().start()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="554.5"
+       y1="438.65"
+       x2="690"
+       y2="438.65"
+       id="line56" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="324"
+     y="741"
+     id="text58">
+    <tspan
+       x="324"
+       y="741"
+       id="tspan60">&lt;&lt;load&gt;&gt;</tspan>
+  </text>
+  <g
+     id="g62">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="359.811"
+       y1="556.697"
+       x2="361.024"
+       y2="447.172"
+       id="line64" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="365.938,454.991 361.049,444.936 355.939,454.88 "
+       id="polyline66" />
+  </g>
+  <g
+     id="g68">
+    <rect
+       style="fill: #ffffff"
+       x="297.5"
+       y="406.7"
+       width="127.15"
+       height="36"
+       id="rect70" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="297.5"
+       y="406.7"
+       width="127.15"
+       height="36"
+       id="rect72" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="361.075"
+       y="428.6"
+       id="text74">
+      <tspan
+         x="361.075"
+         y="428.6"
+         id="tspan76">call_api_results()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="307.5"
+       y1="431.65"
+       x2="414.65"
+       y2="431.65"
+       id="line78" />
+  </g>
+  <g
+     id="g80">
+    <rect
+       style="fill: #ffffff"
+       x="301.5"
+       y="283.7"
+       width="120.8"
+       height="36"
+       id="rect82" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2.35099e-37; stroke: #000000"
+       x="301.5"
+       y="283.7"
+       width="120.8"
+       height="36"
+       id="rect84" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="361.9"
+       y="305.6"
+       id="text86">
+      <tspan
+         x="361.9"
+         y="305.6"
+         id="tspan88">GET /api/results</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1.17549e-37; stroke: #000000"
+       x1="311.5"
+       y1="308.65"
+       x2="412.3"
+       y2="308.65"
+       id="line90" />
+  </g>
+  <g
+     id="g92">
+    <rect
+       style="fill: #ffffff"
+       x="376.5"
+       y="160.7"
+       width="148.8"
+       height="36"
+       id="rect94" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="376.5"
+       y="160.7"
+       width="148.8"
+       height="36"
+       id="rect96" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="450.9"
+       y="182.6"
+       id="text98">
+      <tspan
+         x="450.9"
+         y="182.6"
+         id="tspan100">handle_api_results()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="386.5"
+       y1="185.65"
+       x2="515.3"
+       y2="185.65"
+       id="line102" />
+  </g>
+  <g
+     id="g104">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="375.643"
+       y1="282.706"
+       x2="434.535"
+       y2="201.317"
+       id="line106" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="434.035,210.538 435.846,199.505 425.933,204.676 "
+       id="polyline108" />
+  </g>
+  <g
+     id="g110">
+    <rect
+       style="fill: #ffffff"
+       x="397.5"
+       y="-72.3"
+       width="106.85"
+       height="36"
+       id="rect112" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2.35099e-37; stroke: #000000"
+       x="397.5"
+       y="-72.3"
+       width="106.85"
+       height="36"
+       id="rect114" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="450.925"
+       y="-50.4"
+       id="text116">
+      <tspan
+         x="450.925"
+         y="-50.4"
+         id="tspan118">GET /api/data</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1.17549e-37; stroke: #000000"
+       x1="407.5"
+       y1="-47.35"
+       x2="494.35"
+       y2="-47.35"
+       id="line120" />
+  </g>
+  <g
+     id="g122">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="452.355"
+       y1="37.6964"
+       x2="451.29"
+       y2="-30.8248"
+       id="line124" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="456.41,-23.1395 451.255,-33.0606 446.411,-22.9841 "
+       id="polyline126" />
+  </g>
+  <g
+     id="g128">
+    <rect
+       style="fill: #ffffff"
+       x="545.5"
+       y="-210.3"
+       width="129.7"
+       height="36"
+       id="rect130" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="545.5"
+       y="-210.3"
+       width="129.7"
+       height="36"
+       id="rect132" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="610.35"
+       y="-188.4"
+       id="text134">
+      <tspan
+         x="610.35"
+         y="-188.4"
+         id="tspan136">formatter_table()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="555.5"
+       y1="-185.35"
+       x2="665.2"
+       y2="-185.35"
+       id="line138" />
+  </g>
+  <g
+     id="g140">
+    <rect
+       style="fill: #ffffff"
+       x="391.5"
+       y="-211.3"
+       width="121.8"
+       height="36"
+       id="rect142" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="391.5"
+       y="-211.3"
+       width="121.8"
+       height="36"
+       id="rect144" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="452.4"
+       y="-189.4"
+       id="text146">
+      <tspan
+         x="452.4"
+         y="-189.4"
+         id="tspan148">formatter_plot()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="401.5"
+       y1="-186.35"
+       x2="503.3"
+       y2="-186.35"
+       id="line150" />
+  </g>
+  <g
+     id="g152">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="472.799"
+       y1="-73.2346"
+       x2="585.094"
+       y2="-170.439"
+       id="line154" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="582.497,-161.577 586.785,-171.902 575.952,-169.138 "
+       id="polyline156" />
+  </g>
+  <g
+     id="g158">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="451.124"
+       y1="-73.0324"
+       x2="452.154"
+       y2="-170.096"
+       id="line160" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="457.071,-162.279 452.177,-172.332 447.072,-162.385 "
+       id="polyline162" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="-117.5"
+     y="430.6"
+     id="text164">
+    <tspan
+       x="-117.5"
+       y="430.6"
+       id="tspan166">&lt;&lt;Go button&gt;&gt;</tspan>
+  </text>
+  <g
+     id="g168">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="-6"
+       y1="427"
+       x2="91.0248"
+       y2="425.581"
+       id="line170" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="83.3349,430.694 93.2607,425.548 83.1886,420.695 "
+       id="polyline172" />
+  </g>
+  <g
+     id="g174">
+    <rect
+       style="fill: #ffffff"
+       x="409.5"
+       y="38.7"
+       width="86.3"
+       height="36"
+       id="rect176" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="409.5"
+       y="38.7"
+       width="86.3"
+       height="36"
+       id="rect178" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="452.65"
+       y="60.6"
+       id="text180">
+      <tspan
+         x="452.65"
+         y="60.6"
+         id="tspan182">get_data()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="419.5"
+       y1="63.65"
+       x2="485.8"
+       y2="63.65"
+       id="line184" />
+  </g>
+  <g
+     id="g186">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="361.202"
+       y1="405.706"
+       x2="361.743"
+       y2="325.166"
+       id="line188" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="366.69,332.963 361.758,322.93 356.691,332.896 "
+       id="polyline190" />
+  </g>
+  <g
+     id="g192">
+    <rect
+       style="fill: #ffffff"
+       x="96.5"
+       y="406.7"
+       width="109.5"
+       height="36"
+       id="rect194" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="96.5"
+       y="406.7"
+       width="109.5"
+       height="36"
+       id="rect196" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="151.25"
+       y="428.6"
+       id="text198">
+      <tspan
+         x="151.25"
+         y="428.6"
+         id="tspan200">confirm_test()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="106.5"
+       y1="431.65"
+       x2="196"
+       y2="431.65"
+       id="line202" />
+  </g>
+  <g
+     id="g204">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="451.172"
+       y1="159.727"
+       x2="452.314"
+       y2="80.1448"
+       id="line206" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="457.202,87.9797 452.346,77.909 447.203,87.8362 "
+       id="polyline208" />
+  </g>
+  <g
+     id="g210">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="206.998"
+       y1="424.7"
+       x2="292.025"
+       y2="424.7"
+       id="line212" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="284.261,429.7 294.261,424.7 284.261,419.7 "
+       id="polyline214" />
+  </g>
+  <g
+     id="g216">
+    <rect
+       style="fill: #ffffff"
+       x="134.2"
+       y="160.6"
+       width="186.2"
+       height="36"
+       id="rect218" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="134.2"
+       y="160.6"
+       width="186.2"
+       height="36"
+       id="rect220" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="227.3"
+       y="182.5"
+       id="text222">
+      <tspan
+         x="227.3"
+         y="182.5"
+         id="tspan224">handle_api_results_error()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="144.2"
+       y1="185.55"
+       x2="310.4"
+       y2="185.55"
+       id="line226" />
+  </g>
+  <g
+     id="g228">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+       x1="341.123"
+       y1="282.699"
+       x2="251.377"
+       y2="200.62"
+       id="line230" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="260.48,202.17 249.727,199.111 253.732,209.549 "
+       id="polyline232" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="224.95"
+     y="248.475"
+     id="text234">
+    <tspan
+       x="224.95"
+       y="248.475"
+       id="tspan236">Not implemented</tspan>
+  </text>
+  <g
+     id="g238">
+    <rect
+       style="fill: #ffffff"
+       x="188.2"
+       y="-212.4"
+       width="172.25"
+       height="36"
+       id="rect240" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="188.2"
+       y="-212.4"
+       width="172.25"
+       height="36"
+       id="rect242" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="274.325"
+       y="-190.5"
+       id="text244">
+      <tspan
+         x="274.325"
+         y="-190.5"
+         id="tspan246">handle_api_data_error()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="198.2"
+       y1="-187.45"
+       x2="350.45"
+       y2="-187.45"
+       id="line248" />
+  </g>
+  <g
+     id="g250">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+       x1="427.039"
+       y1="-73.2491"
+       x2="301.714"
+       y2="-172.672"
+       id="line252" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="310.904,-171.763 299.963,-174.061 304.689,-163.929 "
+       id="polyline254" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="300"
+     y="-113.525"
+     id="text256">
+    <tspan
+       x="300"
+       y="-113.525"
+       id="tspan258">Not implemented</tspan>
+  </text>
+  <g
+     id="g260">
+    <rect
+       style="fill: #ffffff"
+       x="209.2"
+       y="-352.4"
+       width="115.35"
+       height="36"
+       id="rect262" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #a52a2a"
+       x="209.2"
+       y="-352.4"
+       width="115.35"
+       height="36"
+       id="rect264" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="266.875"
+       y="-330.5"
+       id="text266">
+      <tspan
+         x="266.875"
+         y="-330.5"
+         id="tspan268">jqplot_plotter()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="219.2"
+       y1="-327.45"
+       x2="314.55"
+       y2="-327.45"
+       id="line270" />
+  </g>
+  <g
+     id="g272">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="427.579"
+       y1="-212.178"
+       x2="295.256"
+       y2="-312.815"
+       id="line274" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="304.462,-312.095 293.476,-314.169 298.409,-304.135 "
+       id="polyline276" />
+  </g>
+  <g
+     id="g278">
+    <rect
+       style="fill: #ffffff"
+       x="334.2"
+       y="-353.4"
+       width="74.4"
+       height="36"
+       id="rect280" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="334.2"
+       y="-353.4"
+       width="74.4"
+       height="36"
+       id="rect282" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="371.4"
+       y="-331.5"
+       id="text284">
+      <tspan
+         x="371.4"
+         y="-331.5"
+         id="tspan286">mkplot()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="344.2"
+       y1="-328.45"
+       x2="398.6"
+       y2="-328.45"
+       id="line288" />
+  </g>
+  <g
+     id="g290">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="441.603"
+       y1="-212.242"
+       x2="384.412"
+       y2="-312.573"
+       id="line292" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="392.601,-308.304 383.305,-314.515 383.913,-303.352 "
+       id="polyline294" />
+  </g>
+  <g
+     id="g296">
+    <rect
+       style="fill: #ffffff"
+       x="418.2"
+       y="-353.4"
+       width="124.6"
+       height="36"
+       id="rect298" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="418.2"
+       y="-353.4"
+       width="124.6"
+       height="36"
+       id="rect300" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="480.5"
+       y="-331.5"
+       id="text302">
+      <tspan
+         x="480.5"
+         y="-331.5"
+         id="tspan304">compute_xmin()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="428.2"
+       y1="-328.45"
+       x2="532.8"
+       y2="-328.45"
+       id="line306" />
+  </g>
+  <g
+     id="g308">
+    <rect
+       style="fill: #ffffff"
+       x="549.2"
+       y="-351.4"
+       width="122.45"
+       height="36"
+       id="rect310" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="549.2"
+       y="-351.4"
+       width="122.45"
+       height="36"
+       id="rect312" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="610.425"
+       y="-329.5"
+       id="text314">
+      <tspan
+         x="610.425"
+         y="-329.5"
+         id="tspan316">compute_xfmt()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="559.2"
+       y1="-326.45"
+       x2="661.65"
+       y2="-326.45"
+       id="line318" />
+  </g>
+  <g
+     id="g320">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="456.146"
+       y1="-212.242"
+       x2="475.887"
+       y2="-312.071"
+       id="line322" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="479.286,-303.484 476.32,-314.264 469.476,-305.424 "
+       id="polyline324" />
+  </g>
+  <g
+     id="g326">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="473.773"
+       y1="-212.249"
+       x2="585.705"
+       y2="-311.484"
+       id="line328" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="583.213,-302.592 587.378,-312.968 576.579,-310.075 "
+       id="polyline330" />
+  </g>
+  <g
+     id="g332">
+    <rect
+       style="fill: #ffffff"
+       x="239.2"
+       y="-488.4"
+       width="108.55"
+       height="36"
+       id="rect334" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="239.2"
+       y="-488.4"
+       width="108.55"
+       height="36"
+       id="rect336" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="293.475"
+       y="-466.5"
+       id="text338">
+      <tspan
+         x="293.475"
+         y="-466.5"
+         id="tspan340">build_vector()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="249.2"
+       y1="-463.45"
+       x2="337.75"
+       y2="-463.45"
+       id="line342" />
+  </g>
+  <g
+     id="g344">
+    <rect
+       style="fill: #ffffff"
+       x="361.4"
+       y="-488.8"
+       width="180.4"
+       height="36"
+       id="rect346" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #1e90ff"
+       x="361.4"
+       y="-488.8"
+       width="180.4"
+       height="36"
+       id="rect348" />
+    <text
+       font-size="12.8"
+       style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+       x="451.6"
+       y="-466.9"
+       id="text350">
+      <tspan
+         x="451.6"
+         y="-466.9"
+         id="tspan352">build_per_serie_options()</tspan>
+    </text>
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000"
+       x1="371.4"
+       y1="-463.85"
+       x2="531.8"
+       y2="-463.85"
+       id="line354" />
+  </g>
+  <g
+     id="g356">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="360.432"
+       y1="-354.401"
+       x2="306.678"
+       y2="-447.526"
+       id="line358" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="314.89,-443.301 305.561,-449.463 306.229,-438.302 "
+       id="polyline360" />
+  </g>
+  <g
+     id="g362">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="382.649"
+       y1="-354.391"
+       x2="438.072"
+       y2="-447.961"
+       id="line364" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="438.417,-438.733 439.212,-449.885 429.813,-443.829 "
+       id="polyline366" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="530"
+     y="538.425"
+     id="text368">
+    <tspan
+       x="530"
+       y="538.425"
+       id="tspan370">XXX concurrent with</tspan>
+    <tspan
+       x="530"
+       y="554.425"
+       id="tspan372">plotting the results</tspan>
+  </text>
+  <g
+     id="g374">
+    <path
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+       d="M 639.269,412.742 A 220.413,220.413 0 0 0 500.227,57.3289"
+       id="path376" />
+    <polyline
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="508.584,53.3408 498.017,56.992 507.278,63.2552 "
+       id="polyline378" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="724.95"
+     y="98.475"
+     id="text380">
+    <tspan
+       x="724.95"
+       y="98.475"
+       id="tspan382">TODO it would be nice to</tspan>
+    <tspan
+       x="724.95"
+       y="114.475"
+       id="tspan384">trigger a replot when data from</tspan>
+    <tspan
+       x="724.95"
+       y="130.475"
+       id="tspan386">a new experiment is avail.</tspan>
+  </text>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="803.15"
+     y="-203.525"
+     id="text388">
+    <tspan
+       x="803.15"
+       y="-203.525"
+       id="tspan390">TODO modify the code so that</tspan>
+    <tspan
+       x="803.15"
+       y="-187.525"
+       id="tspan392">the browser has a chance to breathe</tspan>
+    <tspan
+       x="803.15"
+       y="-171.525"
+       id="tspan394">when there is too much data</tspan>
+  </text>
+  <text
+     font-size="24.8356"
+     style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal"
+     x="425"
+     y="-536.4"
+     id="text396">
+    <tspan
+       x="425"
+       y="-536.4"
+       id="tspan398">Design and architecture of www/results.js</tspan>
+  </text>
+</svg>

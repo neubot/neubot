@@ -1,0 +1,74 @@
+{
+
+    "title": "Your recent raw test results",
+
+    "plots": [
+        {
+            "title": "Download speed",
+            "xlabel": "Date",
+            "ylabel": "Goodput (Mbit/s)",
+            "datasets": [
+                {
+                    "recipe": ["to-speed",
+                               ["select", "download_speed", "result"]],
+                    "label": "Dload",
+                    "marker": "circle"
+                }
+            ]
+        },
+        {
+            "title": "Connect time and latency",
+            "xlabel": "Date",
+            "ylabel": "Delay (ms)",
+            "datasets": [
+                {
+                    "recipe": ["to-millisecond",
+                               ["select", "latency", "result"]],
+                    "label": "Appl. latency",
+                    "marker": "circle"
+                },
+                {
+                    "recipe": ["to-millisecond",
+                               ["select", "connect_time", "result"]],
+                    "label": "Connect time",
+                    "marker": "square"
+                }
+            ]
+        }
+
+    ],
+
+    "table": [
+        {
+            "recipe": ["to-datetime", ["select", "timestamp", "result"]],
+            "label": "Timestamp"
+        },
+        {
+            "recipe": ["select", "internal_address", "result"],
+            "label": "Internal address"
+        },
+        {
+            "recipe": ["select", "real_address", "result"],
+            "label": "Real address"
+        },
+        {
+            "recipe": ["select", "remote_address", "result"],
+            "label": "Remote address"
+        },
+        {
+            "recipe": ["to-millisecond-string",
+                       ["select", "connect_time", "result"]],
+            "label": "Connect time"
+        },
+        {
+            "recipe": ["to-millisecond-string",
+                       ["select", "latency", "result"]],
+            "label": "Appl. latency"
+        },
+        {
+            "recipe": ["to-speed-string",
+                       ["select", "download_speed", "result"]],
+            "label": "Download speed"
+        }
+    ]
+}

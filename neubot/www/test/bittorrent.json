@@ -1,0 +1,74 @@
+{
+
+    "title": "Your recent BitTorrent results",
+
+    "plots": [
+        {
+            "title": "Download and upload speed",
+            "xlabel": "Date",
+            "ylabel": "Goodput (Mbit/s)",
+            "datasets": [
+                {
+                    "recipe": ["to-speed",
+                               ["select", "download_speed", "result"]],
+                    "label": "Dload",
+                    "marker": "circle"
+                },
+                {
+                    "recipe": ["to-speed",
+                               ["select", "upload_speed", "result"]],
+                    "label": "Upload",
+                    "marker": "square"
+                }
+            ]
+        },
+        {
+            "title": "Connect time",
+            "xlabel": "Date",
+            "ylabel": "Delay (ms)",
+            "datasets": [
+                {
+                    "recipe": ["to-millisecond",
+                               ["select", "connect_time", "result"]],
+                    "label": "Connect time",
+                    "formatter": "time",
+                    "marker": "circle"
+                }
+            ]
+        }
+    ],
+
+    "table": [
+        {
+            "recipe": ["to-datetime", ["select", "timestamp", "result"]],
+            "label": "Timestamp"
+        },
+        {
+            "recipe": ["select", "internal_address", "result"],
+            "label": "Internal address"
+        },
+        {
+            "recipe": ["select", "real_address", "result"],
+            "label": "Real address"
+        },
+        {
+            "recipe": ["select", "remote_address", "result"],
+            "label": "Remote address"
+        },
+        {
+            "recipe": ["to-millisecond-string",
+                       ["select", "connect_time", "result"]],
+            "label": "Connect time"
+        },
+        {
+            "recipe": ["to-speed-string",
+                       ["select", "download_speed", "result"]],
+            "label": "Download speed"
+        },
+        {
+            "recipe": ["to-speed-string",
+                       ["select", "upload_speed", "result"]],
+            "label": "Upload speed"
+        }
+    ]
+}

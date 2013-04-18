@@ -83,7 +83,7 @@ fi
 printf "Make sure getpwnam correctly reports the uid..."
 (
     set -e
-    [ $(python neubot/utils_posix.py -f pw_uid getpwnam $LOGNAME) = $(id -u) ]
+    [ $(python neubot/utils_posix.py -u $LOGNAME getpwnam pw_uid) = $(id -u) ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -94,7 +94,7 @@ printf "YES\n"
 printf "Make sure getpwnam correctly reports the gid..."
 (
     set -e
-    [ $(python neubot/utils_posix.py -f pw_gid getpwnam $LOGNAME) = $(id -g) ]
+    [ $(python neubot/utils_posix.py -u $LOGNAME getpwnam pw_gid) = $(id -g) ]
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -105,7 +105,7 @@ printf "YES\n"
 printf "Make sure getpwnam fails for nonexistent users..."
 (
     set -e
-    python neubot/utils_posix.py getpwnam nonexistent 2>/dev/null
+    python neubot/utils_posix.py getpwnam -u nonexistent pw_uid 2>/dev/null
 )
 if [ $? -eq 0 ]; then
     printf "NO\n"
@@ -122,9 +122,6 @@ printf "YES\n"
 # So we compare against the user and group name, which is
 # 'nobody' in BSD and 'nogroup' in Debian.
 #
-
-NOBODY_UID=$(python neubot/utils_posix.py -f pw_uid getpwnam nobody)
-NOBODY_GID=$(python neubot/utils_posix.py -f pw_gid getpwnam nobody)
 
 #
 # Garner confidence that the mkdir functionality works as
@@ -146,7 +143,7 @@ printf "OK\n"
 printf "Make sure mkdir can create a new directory..."
 (
     set -e
-    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
+    python neubot/utils_posix.py -u 'nobody' mkdir XO
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -201,7 +198,7 @@ printf "YES\n"
 printf "Make sure mkdir is idempotent..."
 (
     set -e
-    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
+    python neubot/utils_posix.py -u 'nobody' mkdir XO
     [ -d XO ]
     [ "$(stat_perms XO)" = 'drwxr-xr-x' ]
     [ "$(stat_user XO)" = 'nobody' ]
@@ -227,7 +224,7 @@ printf "OK\n"
 printf "Make sure mkdir updates permissions..."
 (
     set -e
-    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID mkdir XO
+    python neubot/utils_posix.py -u 'nobody' mkdir XO
     [ "$(stat_perms XO)" = 'drwxr-xr-x' ]
 )
 if [ $? -ne 0 ]; then
@@ -258,7 +255,7 @@ printf "YES\n"
 printf "Make sure touch can create a new file..."
 (
     set -e
-    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
+    python neubot/utils_posix.py -u 'nobody' touch XO/f
 )
 if [ $? -ne 0 ]; then
     printf "NO\n"
@@ -313,7 +310,7 @@ printf "YES\n"
 printf "Make sure touch is idempotent..."
 (
     set -e
-    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
+    python neubot/utils_posix.py -u 'nobody' touch XO/f
     [ -f XO/f ]
     [ "$(stat_perms XO/f)" = '-rw-r--r--' ]
     [ "$(stat_user XO/f)" = 'nobody' ]
@@ -339,7 +336,7 @@ printf "OK\n"
 printf "Make sure touch updates permissions..."
 (
     set -e
-    python neubot/utils_posix.py -u $NOBODY_UID -g $NOBODY_GID touch XO/f
+    python neubot/utils_posix.py -u 'nobody' touch XO/f
     [ "$(stat_perms XO/f)" = '-rw-r--r--' ]
 )
 if [ $? -ne 0 ]; then
