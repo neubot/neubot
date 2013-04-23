@@ -26,7 +26,7 @@ The network neutrality bot
 ..
 
 :Manual section: 1
-:Date: 2013-04-11
+:Date: 2013-04-23
 :Manual group: Neubot manual
 :Version: Neubot 0.4.16.0
 
@@ -53,13 +53,12 @@ described in the `IMPLEMENTED TESTS`_ section.
 Neubot does not perform any network test until you grant it the
 permission to collect and publish your IP address for research
 purposes. Neubot behaves like this because it is developed in the
-European Union, thus it must comply with European privacy laws
-(which consider IP addresses personal data). More on privacy
-aspects in the PRIVACY_ section.
+European Union; therefore, it must comply with European privacy laws
+(which consider IP addresses personal data). See the PRIVACY_
+section for more info.
 
 Neubot is a background process. You can control it by using its
-subcommands, its web interface or its web API (see, respectively,
-the SUBCOMMANDS_, `WEB INTERFACE FILES`_ and `WEB API`_ sections). Neubot
+subcommands, its web interface or its web API. Neubot
 listens for web requests at ``http://127.0.0.1:9774/``. To access
 the web interface, use either your favorite browser or the ``viewer``
 subcommand. To change the address and/or port where Neubot listens
@@ -71,22 +70,23 @@ or with the ones of the user indicated in the ``/etc/neubot/users``
 configuration file (see the `FILES`_ section).
 
 The command line interface allows you to get the usage string
-(``neubot --help``), get the version number (``neubot -V``) and
+(``neubot --help``), get the version number (``neubot -V``), and
 run a Neubot's subcommand (``neubot subcommand...``).
 
 IMPLEMENTED TESTS
 `````````````````
 
-All Neubot tests receive and send random data. Also, note that Neubot does
+All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
 Neubot implements three active network tests: ``bittorrent``, ``raw`` and
 ``speedtest``. For each test, there is a Neubot subcommand that allows
-to run the test immediately. Also, note that Neubot schedules one of the
+to run the test immediately. Moreover, Neubot schedules one of the
 three tests at random every 23 - 27 minutes.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
-estimates the round-trip time, the download and the upload goodput.
+estimates the round-trip time, the download and the upload goodput
+(i.e. the application-level speed measured at the receiver).
 It uses the time that connect() takes to complete as an estimator of
 the round-trip time. It estimates the goodput by dividing the amount of
 transferred bytes by the elapsed time. To avoid consuming too much
@@ -111,10 +111,6 @@ response (like ``raw``). It estimates the goodput by dividing the
 amount of transferred bytes by the elapsed time. To avoid consuming
 too much user resources, the ``bittorrent`` test adapts the number
 of bytes to transfer such that the test runs for about five seconds.
-
-See the `WEB API`_ section for a description of the results saved
-by all the experiments (see, in particular, the ``/api/data``
-description).
 
 SUBCOMMANDS
 ```````````
@@ -148,7 +144,7 @@ This section documents Neubot's subcommands.
   Performs the specified ``action`` or prints the database's path
   if no action is specified.  We do not recommended to use this
   command to modify the database while Neubot is running, since
-  Neubot's does not expect the database to change while it is
+  Neubot does not expect the database to change while it is
   running, so it won't pick the changes up. This command requires
   ``root`` privileges to modify the database: if you are not
   ``root``, the database is opened in readonly mode.
@@ -189,7 +185,7 @@ This section documents Neubot's subcommands.
     Turn on (nonzero) and off (zero) the specified privacy
     setting.
 
-    Note: this command just modifies the database: you have to
+    This command just modifies the database: you have to
     restart Neubot to make changes effective. To modify privacy
     settings when Neubot is running, we recommend to use the
     web interface.
@@ -207,20 +203,17 @@ This section documents Neubot's subcommands.
       The user provides the permission to publish his/her IP
       address allowing anyone to reuse it for research purposes.
 
-    Note: Neubot performs network tests only when all privacy
-    settings are on.
+  -f database
+    Force file. Forces the command to use database instead of the
+    default database path.
 
-    -f database
-      Force file. Forces the command to use database instead of the
-      default database path.
+  -P
+    Prints privacy policy on the standard output.
 
-    -P
-      Prints privacy policy on the standard output.
-
-    -t
-      Test.  Exits with success (exit value *0*) if all privacy
-      settings all nonzero.  Exits with failure (exit value
-      *nonzero*) if at least one setting is zero.
+  -t
+    Test.  Exits with success (exit value *0*) if all privacy
+    settings all nonzero.  Exits with failure (exit value
+    *nonzero*) if at least one setting is zero.
 
 **neubot raw [-6fv] [-A address] [-p port]**
   Asks Neubot to run a raw test using the web API and fails if
@@ -379,7 +372,7 @@ list of the files installed.
 EXAMPLES
 ````````
 
-In this section we represent the unprivileged user prompt with ``$``
+In this section, we represent the unprivileged user prompt with ``$``
 and the ``root`` user prompt with ``#``.
 
 Run on-demand bittorrent test::
@@ -411,6 +404,10 @@ Run Neubot in the foreground with verbose logging::
 Export Neubot results to JSON::
 
     # neubot database dump > output.json
+
+Read Neubot's privacy policy::
+
+    $ neubot privacy -P
 
 Run Neubot ``command`` from the sources directory::
 
@@ -474,10 +471,10 @@ interface:
     Miscellaneous helper functions.
 
 **lang/**
-  Directory that contains one javascript file for each translation of
-  the web interface. Each of these javascripts contains a dictionary, named
-  ``LANG``, that maps a string (or a key representing a string) to its
-  translation.
+  Directory that contains one javascript file for each language in which
+  the web interface is translated. Each of these javascripts contains
+  a dictionary, named ``LANG``, that maps a string (or a key representing
+  a string) to its translation.
 
   In javascript, you mark strings for translation by wrapping them
   with ``i18n.get()`` calls. For example, to indicate that the string
@@ -512,7 +509,7 @@ interface:
   Page displayed when Neubot is not running.
 
 **privacy.html**
-  Shows (and allows to modify) privacy settings.
+  Shows, and allows to modify, privacy settings.
 
 **results.html**
   The results page, dynamically filled by javascript using Neubot web
@@ -534,7 +531,7 @@ interface:
   **test/foo.json**
     Description of the plots and tables included into ``results.html``
     when test ``foo`` is selected. The format of the JSON is documented
-    into the `WEB API`_ section (see ``/api/results`` description).
+    into the `WEB API`_ section of this manual page.
 
   **test/foo.json.local**
     When ``foo.json.local`` exists, Neubot will use it (instead of
@@ -550,7 +547,7 @@ interface:
 WEB API
 ```````
 
-To access Neubot API, send HTTP requests to the address and port
+To access Neubot API, you send HTTP requests to the address and port
 where Neubot is listening (which is ``127.0.0.1:9774`` by default, and
 which can be changed by editing ``/etc/neubot/api``).
 
@@ -623,9 +620,8 @@ Here is a detailed description of each API.
   name using the query string.
 
   This API returns a JSON that serializes a list of dictionaries, in which
-  each dictionary is the data collected during a test. The structure of the
-  dictionary returned by each test is described in a dedicated section of
-  this manual page.
+  each dictionary is the data collected during a test. We dedicate a section
+  of the manual page to the structure returned by each test.
 
   This API accepts the following query-string parameters:
 
@@ -648,11 +644,11 @@ Here is a detailed description of each API.
     1st 1970).
 
 **/api/debug**
-  This API allows you to get (``GET``) information about Neubot internals,
-  which is typically useful for debugging purposes. As such, the consistency
-  of the output format is not guaranteed.
+  This API allows you to get (``GET``) text/plain information about Neubot
+  internals, which is typically useful for debugging purposes. As such,
+  the consistency of the output format is not guaranteed.
 
-  Returned JSON example::
+  Returned text example::
 
     {'WWW': '/usr/share/neubot/www',
      'notifier': {'_subscribers': {},
@@ -670,12 +666,12 @@ Here is a detailed description of each API.
   sending any response).
 
   Don't use this API to shut down Neubot on MacOS, use the ``neubot
-  stop`` command instead. For this API has effect on the unprivileged
+  stop`` command instead. This API, in fact, has effect on the unprivileged
   Neubot process only, and the privileged process will respawn the
-  unprivileged process, once it notices it died.
+  unprivileged process once it notices it died.
 
 **/api/index**
-  This API redirects (using ``302 Found`` and ``Location``) the
+  This API uses ``302 Found`` and ``Location`` to redirect the
   caller to either ``index.html`` (if privacy settings are OK)
   or on ``privacy.html`` (if privacy settings are not OK).
 
@@ -689,7 +685,7 @@ Here is a detailed description of each API.
     elapsed since midnight of January, 1st 1970.
 
   **severity (string)**
-    The log message severity, one of ``DEBUG``, ``INFO``, ``WARNING``,
+    The log message severity; one of: ``DEBUG``, ``INFO``, ``WARNING``,
     and ``ERROR``.
 
   **message (string)**
@@ -740,7 +736,7 @@ Here is a detailed description of each API.
   format results. It returns a dictionary, encoded as JSON, that indicates
   the plots and the tables to be generated in the ``results.html`` page for the
   *selected test* (which is either the test specified via query string or
-  the default test if none was specified).
+  the default test, speedtest, if none was specified).
 
   The dictionary for test ``foo`` is generated using ``www/test/foo.json`` (or
   ``www/test/foo.json.local``) as template and contains the following fields:
@@ -750,15 +746,15 @@ Here is a detailed description of each API.
 
   **description (string)**
     String that contains a long description of the selected test. This is
-    the content of the ``www/test/foo.html`` file.
+    the content of ``www/test/foo.html``.
 
   **plots (list of dictionaries)**
-    List of dictionaries: each dictionary contains the instructions to
-    generate a plot. The dictionary contains the following fields:
+    List of dictionaries. Each dictionary contains the instructions to
+    generate a plot:
 
     **datasets (list of dictionaries)**
-      List of dictionaries: each dictionary contains the instructions to
-      plot one serie of data. The dictionary contains the following fields:
+      List of dictionaries. Each dictionary contains the instructions to
+      plot one serie of data:
 
       **label (string)**
         Label to use in the legend.
@@ -767,9 +763,9 @@ Here is a detailed description of each API.
         Indicates the marker to use, either ``circle`` or ``square``.
 
       **recipe (list)**
-        Lisp-like code that describes how to generate one point on the Y
+        LISP-like code that describes how to generate one point on the Y
         axis from one row of the selected test's data. We describe this
-        lisp-like language in the `Data processing language`_ section of
+        lisp-like language in the `DATA PROCESSING LANGUAGE`_ section of
         this manual page.
 
     **title (string)**
@@ -785,17 +781,17 @@ Here is a detailed description of each API.
     The selected test name.
 
   **table (list of dictionaries)**
-    List of dictionaries: each dictionary is one column of the table
-    that must be generated. Each dictionary contains the following fields:
+    List of dictionaries. Each dictionary is one column of the table
+    to be added to ``results.html``:
 
     **label (string)**
-      Label to use in the legend.
+      Label of the column header.
 
     **recipe (list)**
-      Lisp-like code that describes how to generate the value of the
+      LISP-like code that describes how to generate the value of the
       current column in the table from one row of the selected test's
-      data. We describe this lisp-like language in the `Data processing
-      language`_ section of this manual page.
+      data. We describe this lisp-like language in the `DATA PROCESSING
+      LANGUAGE`_ section of this manual page.
 
   **title (string)**
     The title of the test (e.g. 'BitTorrent test').
@@ -824,7 +820,7 @@ Here is a detailed description of each API.
 
   The API accepts the following query-string options:
 
-  **debug=integer**
+  **debug=integer [default: 0]**
     When nonzero, the API returns a pretty-printed JSON. Otherwise,
     the JSON is serialized on a single line.
 
@@ -892,13 +888,15 @@ Here is a detailed description of each API.
                 {
                     "marker": "circle",
                     "recipe": ["to-speed",
-                                ["select", "download_speed", "result"]],
+                                ["select", "download_speed",
+                                 "result"]],
                     "label": "Dload"
                 },
                 {
                     "marker": "square",
                     "recipe": ["to-speed",
-                                ["select", "upload_speed", "result"]],
+                                ["select", "upload_speed",
+                                 "result"]],
                     "label": "Upload"
                 }
             ],
@@ -917,7 +915,8 @@ Here is a detailed description of each API.
                 {
                     "marker": "square",
                     "recipe": ["to-millisecond",
-                                ["select", "connect_time", "result"]],
+                                ["select", "connect_time",
+                                 "result"]],
                     "label": "Connect time"
                 }
             ],
@@ -940,13 +939,13 @@ Here is a detailed description of each API.
     This option is mandatory and indicates the name of the test
     that Neubot should schedule for execution.
 
-  **streaming=integer**
+  **streaming=integer [default: 0]**
     When nonzero, Neubot streams logs generated during the test in the
     response body and closes the connection when the test is complete.
     Otherwise, the response body is an empty dictionary.
 
     When you invoke tests from the command line (e.g. ``neubot
-    bittorrent``), this is the feature that allows to print logs
+    bittorrent``), *streaming* is the feature that allows to print logs
     generated by the test on the console.
 
   Returned JSON example::
@@ -956,19 +955,19 @@ Here is a detailed description of each API.
   Returned text example::
 
    1366299354 [INFO] runner_core: Need to auto-discover first...
-   1366299355 [INFO] runner_mlabns: server discovery... in progress
-   1366299356 [INFO] runner_mlabns: server discovery... complete
+   1366299355 [INFO] runner_mlabns: server discovery...
+   1366299356 [INFO] runner_mlabns: server discovery... done
    1366299356 [INFO] raw_clnt: connection established with ...
    1366299356 [INFO] raw_clnt: connect_time: 13.6 ms
-   1366299357 [INFO] raw_clnt: sending auth to server... in progress
-   1366299357 [INFO] raw_clnt: sending auth to server... complete
-   1366299357 [INFO] raw_clnt: receiving auth from server... in progress
-   1366299357 [INFO] raw_clnt: receiving auth from server... complete
-   1366299357 [INFO] raw_clnt: estimating ALRTT... in progress
+   1366299357 [INFO] raw_clnt: sending auth to server...
+   1366299357 [INFO] raw_clnt: sending auth to server... done
+   1366299357 [INFO] raw_clnt: receiving auth from server...
+   1366299357 [INFO] raw_clnt: receiving auth from server... done
+   1366299357 [INFO] raw_clnt: estimating ALRTT...
    1366299357 [INFO] raw_clnt: alrtt_avg: 14.3 ms
-   1366299357 [INFO] raw_clnt: estimating ALRTT... complete
-   1366299357 [INFO] raw_clnt: raw goodput test... in progress
-   1366299367 [INFO] raw_clnt: raw goodput test... complete
+   1366299357 [INFO] raw_clnt: estimating ALRTT... done
+   1366299357 [INFO] raw_clnt: raw goodput test...
+   1366299367 [INFO] raw_clnt: raw goodput test... done
    1366299367 [INFO] raw_clnt: goodput: 65.5 Mbit/s
 
 **/api/state[?options]**
@@ -976,7 +975,7 @@ Here is a detailed description of each API.
   of Neubot. The API returns a dictionary with the following fields:
 
   **current=string**
-    The name of the current state, one of: ``idle``, ``rendezvous``,
+    The name of the current state; one of: ``idle``, ``rendezvous``,
     ``negotiate``, ``test``, and ``collect``.
 
   **events=dictionary**
@@ -986,7 +985,7 @@ Here is a detailed description of each API.
 
     While running, Neubot generates a limited set of events, which drive
     the web interface. For example, the ``test_download`` event value
-    is used to update the download speed of the latest test in the right
+    is used to update the download speed in the right
     sidebar of the web interface.
 
     The list of generated events is not standardized yet, so we don't
@@ -997,7 +996,7 @@ Here is a detailed description of each API.
 
   The API accepts the following query-string options:
 
-  **debug=integer**
+  **debug=integer [default: 0]**
     When nonzero, the API returns a pretty-printed JSON. Otherwise,
     the JSON is serialized on a single line.
 
@@ -1026,8 +1025,8 @@ dictionary that contains the following fields:
   to complete, measured in seconds.
 
 **download_speed (float)**
-  Download speed measured by dividing the number of received bytes over
-  the elapsed download time, measured in bytes over seconds.
+  Download speed measured by dividing the number of received bytes by
+  the elapsed download time, measured in bytes per second.
 
 **internal_address (string)**
   Neubot's IP address, as seen by Neubot. It is typically either
@@ -1069,8 +1068,8 @@ dictionary that contains the following fields:
   elapsed since midnight of January, 1st 1970.
 
 **upload_speed (float)**
-  Upload speed measured by dividing the number of sent bytes over the
-  elapsed upload time, measured in bytes over seconds.
+  Upload speed measured by dividing the number of sent bytes by the
+  elapsed upload time, measured in bytes per second.
 
 **uuid (string)**
   Random unique identifier of the Neubot instance, useful to perform
@@ -1108,8 +1107,8 @@ dictionary that contains the following fields:
   to complete, measured in seconds.
 
 **download_speed (float)**
-  Download speed measured by dividing the number of received bytes over
-  the elapsed download time, measured in bytes over seconds.
+  Download speed measured by dividing the number of received bytes by
+  the elapsed download time, measured in bytes per second.
 
 **json_data (string)**
   This string contains the serialization of a JSON object, which
@@ -1117,7 +1116,7 @@ dictionary that contains the following fields:
   and on the client side. The dictionary that we are describing, in
   fact, contains just a subset of the collected results. We can
   not store the full JSON object directly until Neubot's ``database``
-  module and web interface get ready for that.
+  module and web interface are ready to process it.
 
 **internal_address (string)**
   Neubot's IP address, as seen by Neubot. It is typically either
@@ -1179,31 +1178,47 @@ Once unserialized, the JSON object saved into the ``json_data`` field
 of the ``raw`` dictionary (henceforth, 'outer dictionary') is a
 dictionary that contains the following fields:
 
+**client (dictionary)**
+  A dictionary that contains data collected on the client side.
+
+**server (dictionary)**
+  A dictionary that contains data collected on the server side.
+
+The client dictionary contains the following fields:
+
 **al_capacity (float)**
-  Median bottleneck capacity computed at application level. We are
-  still doing research to assess the reliability of this field.
+  Median bottleneck capacity computed at application level (experimental).
 
 **al_mss (float)**
   MSS according to the application level (information gathered
   using setsockopt(2)).
 
 **al_rexmits (list)**
-  Likely retransmission events computed at application level. We are
-  still doing research to assess the reliability of this field.
-
-**alrtt_list (list of floats)**
-  List of RTT samples estimated by measuring the average time elapsed
-  between sending a small request and receiving a small response,
-  measured in seconds.
+  Likely retransmission events computed at application level (experimental).
 
 **alrtt_avg (float)**
   Same as ``latency`` in the outer dictionary.
 
+**alrtt_list (list of tuples)**
+  List of RTT samples estimated by measuring the average time elapsed
+  between sending a small request and receiving a small response,
+  measured in seconds.
+
 **connect_time (float)**
   Same as ``connect_time`` in the outer dictionary.
 
-**goodput (float)**
-  Same as ``download_speed`` in the outer dictionary.
+**goodput (dictionary)**
+  The dictionary contains the following fields:
+
+  **bytesdiff**
+    Total number of received bytes.
+
+  **ticks (float)**
+    Timestamp when this piece of data was collected, expressed as number of
+    seconds elapsed since midnight of January, 1st 1970.
+
+  **timediff (float)**
+    Total download time.
 
 **goodput_snap (list of dictionaries)**
   List that contains a dictionary, which is updated roughly every
@@ -1245,6 +1260,71 @@ dictionary that contains the following fields:
 
 **version (string)**
   Same as ``neubot_version`` in the outer dictionary.
+
+The server dictionary contains the following fields:
+
+**goodput (dictionary)**
+  The dictionary contains the following fields:
+
+  **bytesdiff**
+    Total number of sent bytes.
+
+  **ticks (float)**
+    Timestamp when this piece of data was collected, expressed as number of
+    seconds elapsed since midnight of January, 1st 1970.
+
+  **timediff (float)**
+    Total upload time.
+
+**goodput_snap (list of dictionaries)**
+  List that contains a dictionary, which is updated roughly every
+  second during the upload, and which contains the following fields:
+
+  **ticks (float)**
+    Time when the current dictionary was saved, expressed as number
+    of seconds since midnight of January, 1st 1970.
+
+  **bytesdiff (integer)**
+    Number of bytes sent since stats were previously saved.
+
+  **timediff (float)**
+    Number of seconds elapsed since stats were previously saved.
+
+  **utimediff (float)**
+    Difference between current ``tms_utime`` field of the ``tms``
+    struct modified by ``times(3)`` and the previous value of
+    the same field.
+
+  **stimediff (float)**
+    Difference between current ``tms_stime`` field of the ``tms``
+    struct modified by ``times(3)`` and the previous value of
+    the same field.
+
+**myname (string)**
+  Servers's address. This is same as ``server_address`` in the outer
+  dictionary.
+
+**peername (string)**
+  Neubot's address (according to the server). This is same as
+  ``real_address`` in the outer dictionary.
+
+**platform (string)**
+  Same as ``platform`` in the outer dictionary.
+
+**timestamp (integer)**
+  Time when the server dictionary was created, expressed as number of
+  seconds elapsed since midnight of January, 1st 1970.
+
+**version (string)**
+  Same as ``neubot_version`` in the outer dictionary.
+
+**web100_snap (list)**
+  A list that contains dictionaries. Each dictionary is a snapshot
+  of the Web100 TCP state. We take one Web100 snapshot every second
+  during the upload.
+
+  On the client side, this field is empty. We are working to identify
+  the most interesting fields that is interesting to save.
 
 Example::
 
@@ -1325,8 +1405,8 @@ dictionary that contains the following fields:
   to complete, measured in seconds.
 
 **download_speed (float)**
-  Download speed measured by dividing the number of received bytes over
-  the elapsed download time, measured in bytes over seconds.
+  Download speed measured by dividing the number of received bytes by
+  the elapsed download time, measured in bytes per second.
 
 **internal_address (string)**
   Neubot's IP address, as seen by Neubot. It is typically either
@@ -1372,8 +1452,8 @@ dictionary that contains the following fields:
   elapsed since midnight of January, 1st 1970.
 
 **upload_speed (float)**
-  Upload speed measured by dividing the number of sent bytes over the
-  elapsed upload time, measured in bytes over seconds.
+  Upload speed measured by dividing the number of sent bytes by the
+  elapsed upload time, measured in bytes per second.
 
 **uuid (string)**
   Random unique identifier of the Neubot instance, useful to perform
@@ -1401,70 +1481,92 @@ Example::
     },
     ...
 
-Data processing language
+DATA PROCESSING LANGUAGE
 ````````````````````````
 
-TDB
+The data processing language is a simple LISP-like language. As such,
+it describes processes whose goal is to transform pieces of collected data
+by using lists.
+
+Differently from traditional LISP syntax, however, the data processing
+language is encoded using JSON.
+
+The language implements the following operations:
+
+**["divide", atom-or-list, atom-or-list]**
+  Divides the left atom (or list) by the right atom (or list) and
+  returns the result.
+
+**["map-select", atom, list]**
+  Cycles over the list and, for each element, it selects the
+  field indicated by the atom.
+
+**["parse-json", atom-or-list]**
+  Parses the value of the atom (or list) into an object.
+
+**["reduce-avg", list]**
+  Computes the average value of the list.
+
+**["select", atom, object]**
+  Selects the element of object indicated by atom.
+
+**["to-datetime", atom-or-list]**
+  Converts atom (or list) to datetime string.
+
+**["to-millisecond", atom-or-list]**
+  Converts atom (or list) to millisecond.
+
+**["to-millisecond-string", atom-or-list]**
+  Converts atom (or list) to millisecond string.
+
+**["to-speed", atom-or-list]**
+  Converts atom (or list) to speed (in bits per second).
+
+**["to-speed-string", atom-or-list]**
+  Converts atom (or list) to speed string (in bits per second).
+
+**"result"**
+  The current piece of data we are processing.
+
+Example (select the ``json_data`` field of the result, convert it to json,
+take the ``client`` field, take and compute the average of the ``alrtt_list``
+field, convert the result to millisecond)::
+
+  ["to-millisecond",
+    ["reduce-avg",
+      ["select", "alrtt_list",
+        ["select", "client",
+          ["parse-json",
+            ["select", "json_data", "result"]]]]]]
 
 PRIVACY
 ```````
 
-.. :Version: 2.0.3
+Neubot collects your IP address, which is personal data according to
+European privacy laws. For this reason, Neubot needs to obtain your
+permission to collect your IP address for research purposes, as well
+as to publish it on the web for the same purpose. In addition, it
+also needs that you assert that you have read the privacy policy.
 
-The Neubot project is a research effort that aims to study the quality
-and neutrality of ordinary users' Internet connections, to rebalance the
-information asymmetry between them and Service Providers.  The Neubot
-software (i) *measures* the quality and neutrality of your Internet
-connection.  The raw measurement results are (ii) *collected* on the
-measurement servers for research purposes and (iii) *published*, to allow
-other individuals and institutions to reuse them for research purposes.
+Without the assertion that you have read the privacy policy and the
+permission to collect and publish your IP address, Neubot can not
+perform automatic (or manual) tests.
 
-To *measure* the quality and neutrality of your Internet connection,
-the Neubot software does not monitor or analyze your Internet traffic.
-It just uses a fraction of your connection capacity to perform background
-transmission tests, sending and/or receiving random data.  The results
-contain the measured performance metrics, such as the download speed,
-or the latency, as well as your computer load, as a percentage, and
-*your Internet address*.
+You can read Neubot's privacy policy by running the ``neubot privacy -P``
+command. The privacy policy is also available at::
 
-The Internet address is paramount because it allows to *infer your Internet
-Service Provider* and to have a rough idea of *your location*, allowing to
-put the results in context.  The Neubot project needs to *collect* it
-to study the data and wants to *publish* it to enable other individuals
-and institutions to carry alternative studies and/or peer-review its
-measurements and data analysis methodology.  This is coherent with the
-policy of the distributed server platform that empowers the Neubot
-project, Measurement Lab (M-Lab), which requires all results to be
-released as open data [1]_.
+    http://127.0.0.1:9774/privacy.html
 
-You are reading this privacy policy because Neubot is developed in the
-European Union, where there is consensus that Internet addresses are
-*personal data*.  This means that the Neubot project cannot store, process
-or publish your address without your prior *informed consent*, under the
-provisions of the "Codice in materia di protezione dei dati personali"
-(Decree 196/03) [2]_.  In accordance with the law, data controller is the
-NEXA Center for Internet & Society [3]_, represented by its co-director Juan
-Carlos De Martin.
+Of course, if you modified the address and/or port where Neubot listens,
+you need to update the URI accordingly.
 
-Via its web interface [4]_, the Neubot software asks you (a) to explicitly
-assert that you are *informed*, i.e. that you have read the privacy
-policy, (b) to give it the permission to *collect* and (c) *publish* your
-IP address.  If you do not assert (a) and you don't give the permission
-to do (b) and (c), Neubot cannot run tests because, if it did, it would
-violate privacy laws and/or Measurement Lab policy.
-
-The data controller guarantees you the rights as per Art. 7 of the
-above-mentioned Decree 196/03.  Basically, you have total control over
-you personal data, and you can, for example, inquire Neubot to remove
-your Internet address from its data sets.  To exercise your rights, please
-write to <privacy@neubot.org> or to "NEXA Center for Internet & Society,
-Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
-degli Abruzzi 24, 10129 Turin, ITALY."
-
-.. [1] http://www.measurementlab.net/about
-.. [2] http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248
-.. [3] http://nexa.polito.it/
-.. [4] http://127.0.0.1:9774/privacy.html
+In addition to the above, each Neubot is identified by a random
+unique identifier (UUID) that is used to perform time series
+analysis. We believe that this identifier does not brach your
+privacy: in the worst case, we would be able to say that a given
+Neubot has changed Internet address (anche, hence, ISP and/or
+location). To regenerate your unique identifier, you can run
+the ``neubot database regen_uuid`` command.
 
 AUTHOR
 ``````
@@ -1472,11 +1574,11 @@ AUTHOR
 Neubot authors are::
 
   Simone Basso                  <bassosimone@gmail.com>
-  Antonio Servetti              <antonio.servetti@polito.it>
 
 The following people have contributed patches to the project::
 
   Alessio Palmero Aprosio	<alessio@apnetwork.it>
+  Antonio Servetti              <antonio.servetti@polito.it>
   Roberto D'Auria		<everlastingfire@autistici.org>
   Marco Scopesi			<marco.scopesi@gmail.com>
 

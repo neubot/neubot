@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH NEUBOT 1 "2013-04-11" "Neubot 0.4.16.0" "Neubot manual"
+.TH NEUBOT 1 "2013-04-23" "Neubot 0.4.16.0" "Neubot manual"
 .SH NAME
 neubot \- The network neutrality bot
 .
@@ -89,13 +89,12 @@ described in the \fI\%IMPLEMENTED TESTS\fP section.
 Neubot does not perform any network test until you grant it the
 permission to collect and publish your IP address for research
 purposes. Neubot behaves like this because it is developed in the
-European Union, thus it must comply with European privacy laws
-(which consider IP addresses personal data). More on privacy
-aspects in the \fI\%PRIVACY\fP section.
+European Union; therefore, it must comply with European privacy laws
+(which consider IP addresses personal data). See the \fI\%PRIVACY\fP
+section for more info.
 .sp
 Neubot is a background process. You can control it by using its
-subcommands, its web interface or its web API (see, respectively,
-the \fI\%SUBCOMMANDS\fP, \fI\%WEB INTERFACE FILES\fP and \fI\%WEB API\fP sections). Neubot
+subcommands, its web interface or its web API. Neubot
 listens for web requests at \fBhttp://127.0.0.1:9774/\fP. To access
 the web interface, use either your favorite browser or the \fBviewer\fP
 subcommand. To change the address and/or port where Neubot listens
@@ -107,20 +106,21 @@ or with the ones of the user indicated in the \fB/etc/neubot/users\fP
 configuration file (see the \fI\%FILES\fP section).
 .sp
 The command line interface allows you to get the usage string
-(\fBneubot \-\-help\fP), get the version number (\fBneubot \-V\fP) and
+(\fBneubot \-\-help\fP), get the version number (\fBneubot \-V\fP), and
 run a Neubot\(aqs subcommand (\fBneubot subcommand...\fP).
 .SH IMPLEMENTED TESTS
 .sp
-All Neubot tests receive and send random data. Also, note that Neubot does
+All Neubot tests receive and send random data. Neubot does
 not monitor the user\(aqs traffic.
 .sp
 Neubot implements three active network tests: \fBbittorrent\fP, \fBraw\fP and
 \fBspeedtest\fP. For each test, there is a Neubot subcommand that allows
-to run the test immediately. Also, note that Neubot schedules one of the
+to run the test immediately. Moreover, Neubot schedules one of the
 three tests at random every 23 \- 27 minutes.
 .sp
 The \fBbittorrent\fP test emulates BitTorrent peer\-wire protocol and
-estimates the round\-trip time, the download and the upload goodput.
+estimates the round\-trip time, the download and the upload goodput
+(i.e. the application\-level speed measured at the receiver).
 It uses the time that connect() takes to complete as an estimator of
 the round\-trip time. It estimates the goodput by dividing the amount of
 transferred bytes by the elapsed time. To avoid consuming too much
@@ -145,10 +145,6 @@ response (like \fBraw\fP). It estimates the goodput by dividing the
 amount of transferred bytes by the elapsed time. To avoid consuming
 too much user resources, the \fBbittorrent\fP test adapts the number
 of bytes to transfer such that the test runs for about five seconds.
-.sp
-See the \fI\%WEB API\fP section for a description of the results saved
-by all the experiments (see, in particular, the \fB/api/data\fP
-description).
 .SH SUBCOMMANDS
 .sp
 This section documents Neubot\(aqs subcommands.
@@ -183,7 +179,7 @@ Makes the command more verbose.
 Performs the specified \fBaction\fP or prints the database\(aqs path
 if no action is specified.  We do not recommended to use this
 command to modify the database while Neubot is running, since
-Neubot\(aqs does not expect the database to change while it is
+Neubot does not expect the database to change while it is
 running, so it won\(aqt pick the changes up. This command requires
 \fBroot\fP privileges to modify the database: if you are not
 \fBroot\fP, the database is opened in readonly mode.
@@ -229,7 +225,7 @@ Accepts the following options:
 Turn on (nonzero) and off (zero) the specified privacy
 setting.
 .sp
-Note: this command just modifies the database: you have to
+This command just modifies the database: you have to
 restart Neubot to make changes effective. To modify privacy
 settings when Neubot is running, we recommend to use the
 web interface.
@@ -248,9 +244,7 @@ address for research purposes.
 The user provides the permission to publish his/her IP
 address allowing anyone to reuse it for research purposes.
 .UNINDENT
-.sp
-Note: Neubot performs network tests only when all privacy
-settings are on.
+.UNINDENT
 .INDENT 7.0
 .TP
 .BI \-f \ database
@@ -264,7 +258,6 @@ Prints privacy policy on the standard output.
 Test.  Exits with success (exit value \fI0\fP) if all privacy
 settings all nonzero.  Exits with failure (exit value
 \fInonzero\fP) if at least one setting is zero.
-.UNINDENT
 .UNINDENT
 .TP
 .B \fBneubot raw [\-6fv] [\-A address] [\-p port]\fP
@@ -444,7 +437,7 @@ created when Neubot starts for the first time.
 .UNINDENT
 .SH EXAMPLES
 .sp
-In this section we represent the unprivileged user prompt with \fB$\fP
+In this section, we represent the unprivileged user prompt with \fB$\fP
 and the \fBroot\fP user prompt with \fB#\fP.
 .sp
 Run on\-demand bittorrent test:
@@ -533,6 +526,18 @@ Export Neubot results to JSON:
 .UNINDENT
 .UNINDENT
 .sp
+Read Neubot\(aqs privacy policy:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+$ neubot privacy \-P
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
 Run Neubot \fBcommand\fP from the sources directory:
 .INDENT 0.0
 .INDENT 3.5
@@ -604,10 +609,10 @@ Miscellaneous helper functions.
 .UNINDENT
 .TP
 .B \fBlang/\fP
-Directory that contains one javascript file for each translation of
-the web interface. Each of these javascripts contains a dictionary, named
-\fBLANG\fP, that maps a string (or a key representing a string) to its
-translation.
+Directory that contains one javascript file for each language in which
+the web interface is translated. Each of these javascripts contains
+a dictionary, named \fBLANG\fP, that maps a string (or a key representing
+a string) to its translation.
 .sp
 In javascript, you mark strings for translation by wrapping them
 with \fBi18n.get()\fP calls. For example, to indicate that the string
@@ -666,7 +671,7 @@ Shows Neubot logs.
 Page displayed when Neubot is not running.
 .TP
 .B \fBprivacy.html\fP
-Shows (and allows to modify) privacy settings.
+Shows, and allows to modify, privacy settings.
 .TP
 .B \fBresults.html\fP
 The results page, dynamically filled by javascript using Neubot web
@@ -689,7 +694,7 @@ Description of the \fBfoo\fP test. It is included into the
 .B \fBtest/foo.json\fP
 Description of the plots and tables included into \fBresults.html\fP
 when test \fBfoo\fP is selected. The format of the JSON is documented
-into the \fI\%WEB API\fP section (see \fB/api/results\fP description).
+into the \fI\%WEB API\fP section of this manual page.
 .TP
 .B \fBtest/foo.json.local\fP
 When \fBfoo.json.local\fP exists, Neubot will use it (instead of
@@ -705,7 +710,7 @@ should never pop up.
 .UNINDENT
 .SH WEB API
 .sp
-To access Neubot API, send HTTP requests to the address and port
+To access Neubot API, you send HTTP requests to the address and port
 where Neubot is listening (which is \fB127.0.0.1:9774\fP by default, and
 which can be changed by editing \fB/etc/neubot/api\fP).
 .sp
@@ -797,9 +802,8 @@ tests.  As we have a single API for all tests, you must provide the test
 name using the query string.
 .sp
 This API returns a JSON that serializes a list of dictionaries, in which
-each dictionary is the data collected during a test. The structure of the
-dictionary returned by each test is described in a dedicated section of
-this manual page.
+each dictionary is the data collected during a test. We dedicate a section
+of the manual page to the structure returned by each test.
 .sp
 This API accepts the following query\-string parameters:
 .INDENT 7.0
@@ -824,11 +828,11 @@ as the number of seconds elapsed since midnight of January,
 .UNINDENT
 .TP
 .B \fB/api/debug\fP
-This API allows you to get (\fBGET\fP) information about Neubot internals,
-which is typically useful for debugging purposes. As such, the consistency
-of the output format is not guaranteed.
+This API allows you to get (\fBGET\fP) text/plain information about Neubot
+internals, which is typically useful for debugging purposes. As such,
+the consistency of the output format is not guaranteed.
 .sp
-Returned JSON example:
+Returned text example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -854,12 +858,12 @@ When this API is invoked, Neubot exits immediately (i.e. without
 sending any response).
 .sp
 Don\(aqt use this API to shut down Neubot on MacOS, use the \fBneubot
-stop\fP command instead. For this API has effect on the unprivileged
+stop\fP command instead. This API, in fact, has effect on the unprivileged
 Neubot process only, and the privileged process will respawn the
-unprivileged process, once it notices it died.
+unprivileged process once it notices it died.
 .TP
 .B \fB/api/index\fP
-This API redirects (using \fB302 Found\fP and \fBLocation\fP) the
+This API uses \fB302 Found\fP and \fBLocation\fP to redirect the
 caller to either \fBindex.html\fP (if privacy settings are OK)
 or on \fBprivacy.html\fP (if privacy settings are not OK).
 .TP
@@ -874,7 +878,7 @@ Time when this log was generated, expressed as number of seconds
 elapsed since midnight of January, 1st 1970.
 .TP
 .B \fBseverity (string)\fP
-The log message severity, one of \fBDEBUG\fP, \fBINFO\fP, \fBWARNING\fP,
+The log message severity; one of: \fBDEBUG\fP, \fBINFO\fP, \fBWARNING\fP,
 and \fBERROR\fP.
 .TP
 .B \fBmessage (string)\fP
@@ -935,7 +939,7 @@ This API allows the web interface to get (\fBGET\fP) information on how to
 format results. It returns a dictionary, encoded as JSON, that indicates
 the plots and the tables to be generated in the \fBresults.html\fP page for the
 \fIselected test\fP (which is either the test specified via query string or
-the default test if none was specified).
+the default test, speedtest, if none was specified).
 .sp
 The dictionary for test \fBfoo\fP is generated using \fBwww/test/foo.json\fP (or
 \fBwww/test/foo.json.local\fP) as template and contains the following fields:
@@ -946,16 +950,16 @@ List that contains the name of all the available tests.
 .TP
 .B \fBdescription (string)\fP
 String that contains a long description of the selected test. This is
-the content of the \fBwww/test/foo.html\fP file.
+the content of \fBwww/test/foo.html\fP.
 .TP
 .B \fBplots (list of dictionaries)\fP
-List of dictionaries: each dictionary contains the instructions to
-generate a plot. The dictionary contains the following fields:
+List of dictionaries. Each dictionary contains the instructions to
+generate a plot:
 .INDENT 7.0
 .TP
 .B \fBdatasets (list of dictionaries)\fP
-List of dictionaries: each dictionary contains the instructions to
-plot one serie of data. The dictionary contains the following fields:
+List of dictionaries. Each dictionary contains the instructions to
+plot one serie of data:
 .INDENT 7.0
 .TP
 .B \fBlabel (string)\fP
@@ -965,9 +969,9 @@ Label to use in the legend.
 Indicates the marker to use, either \fBcircle\fP or \fBsquare\fP.
 .TP
 .B \fBrecipe (list)\fP
-Lisp\-like code that describes how to generate one point on the Y
+LISP\-like code that describes how to generate one point on the Y
 axis from one row of the selected test\(aqs data. We describe this
-lisp\-like language in the \fI\%Data processing language\fP section of
+lisp\-like language in the \fI\%DATA PROCESSING LANGUAGE\fP section of
 this manual page.
 .UNINDENT
 .TP
@@ -985,18 +989,18 @@ Label for the Y axis.
 The selected test name.
 .TP
 .B \fBtable (list of dictionaries)\fP
-List of dictionaries: each dictionary is one column of the table
-that must be generated. Each dictionary contains the following fields:
+List of dictionaries. Each dictionary is one column of the table
+to be added to \fBresults.html\fP:
 .INDENT 7.0
 .TP
 .B \fBlabel (string)\fP
-Label to use in the legend.
+Label of the column header.
 .TP
 .B \fBrecipe (list)\fP
-Lisp\-like code that describes how to generate the value of the
+LISP\-like code that describes how to generate the value of the
 current column in the table from one row of the selected test\(aqs
-data. We describe this lisp\-like language in the \fI\%Data processing
-language\fP section of this manual page.
+data. We describe this lisp\-like language in the \fI\%DATA PROCESSING
+LANGUAGE\fP section of this manual page.
 .UNINDENT
 .TP
 .B \fBtitle (string)\fP
@@ -1028,7 +1032,7 @@ or not (nonzero).
 The API accepts the following query\-string options:
 .INDENT 7.0
 .TP
-.B \fBdebug=integer\fP
+.B \fBdebug=integer [default: 0]\fP
 When nonzero, the API returns a pretty\-printed JSON. Otherwise,
 the JSON is serialized on a single line.
 .TP
@@ -1101,13 +1105,15 @@ Returned JSON example:
              {
                  "marker": "circle",
                  "recipe": ["to\-speed",
-                             ["select", "download_speed", "result"]],
+                             ["select", "download_speed",
+                              "result"]],
                  "label": "Dload"
              },
              {
                  "marker": "square",
                  "recipe": ["to\-speed",
-                             ["select", "upload_speed", "result"]],
+                             ["select", "upload_speed",
+                              "result"]],
                  "label": "Upload"
              }
          ],
@@ -1126,7 +1132,8 @@ Returned JSON example:
              {
                  "marker": "square",
                  "recipe": ["to\-millisecond",
-                             ["select", "connect_time", "result"]],
+                             ["select", "connect_time",
+                              "result"]],
                  "label": "Connect time"
              }
          ],
@@ -1154,13 +1161,13 @@ The API accepts the following query\-string options:
 This option is mandatory and indicates the name of the test
 that Neubot should schedule for execution.
 .TP
-.B \fBstreaming=integer\fP
+.B \fBstreaming=integer [default: 0]\fP
 When nonzero, Neubot streams logs generated during the test in the
 response body and closes the connection when the test is complete.
 Otherwise, the response body is an empty dictionary.
 .sp
 When you invoke tests from the command line (e.g. \fBneubot
-bittorrent\fP), this is the feature that allows to print logs
+bittorrent\fP), \fIstreaming\fP is the feature that allows to print logs
 generated by the test on the console.
 .UNINDENT
 .sp
@@ -1183,19 +1190,19 @@ Returned text example:
 .nf
 .ft C
 1366299354 [INFO] runner_core: Need to auto\-discover first...
-1366299355 [INFO] runner_mlabns: server discovery... in progress
-1366299356 [INFO] runner_mlabns: server discovery... complete
+1366299355 [INFO] runner_mlabns: server discovery...
+1366299356 [INFO] runner_mlabns: server discovery... done
 1366299356 [INFO] raw_clnt: connection established with ...
 1366299356 [INFO] raw_clnt: connect_time: 13.6 ms
-1366299357 [INFO] raw_clnt: sending auth to server... in progress
-1366299357 [INFO] raw_clnt: sending auth to server... complete
-1366299357 [INFO] raw_clnt: receiving auth from server... in progress
-1366299357 [INFO] raw_clnt: receiving auth from server... complete
-1366299357 [INFO] raw_clnt: estimating ALRTT... in progress
+1366299357 [INFO] raw_clnt: sending auth to server...
+1366299357 [INFO] raw_clnt: sending auth to server... done
+1366299357 [INFO] raw_clnt: receiving auth from server...
+1366299357 [INFO] raw_clnt: receiving auth from server... done
+1366299357 [INFO] raw_clnt: estimating ALRTT...
 1366299357 [INFO] raw_clnt: alrtt_avg: 14.3 ms
-1366299357 [INFO] raw_clnt: estimating ALRTT... complete
-1366299357 [INFO] raw_clnt: raw goodput test... in progress
-1366299367 [INFO] raw_clnt: raw goodput test... complete
+1366299357 [INFO] raw_clnt: estimating ALRTT... done
+1366299357 [INFO] raw_clnt: raw goodput test...
+1366299367 [INFO] raw_clnt: raw goodput test... done
 1366299367 [INFO] raw_clnt: goodput: 65.5 Mbit/s
 .ft P
 .fi
@@ -1208,7 +1215,7 @@ of Neubot. The API returns a dictionary with the following fields:
 .INDENT 7.0
 .TP
 .B \fBcurrent=string\fP
-The name of the current state, one of: \fBidle\fP, \fBrendezvous\fP,
+The name of the current state; one of: \fBidle\fP, \fBrendezvous\fP,
 \fBnegotiate\fP, \fBtest\fP, and \fBcollect\fP.
 .TP
 .B \fBevents=dictionary\fP
@@ -1218,7 +1225,7 @@ or a dictionary).
 .sp
 While running, Neubot generates a limited set of events, which drive
 the web interface. For example, the \fBtest_download\fP event value
-is used to update the download speed of the latest test in the right
+is used to update the download speed in the right
 sidebar of the web interface.
 .sp
 The list of generated events is not standardized yet, so we don\(aqt
@@ -1231,7 +1238,7 @@ The identifier of the current event.
 The API accepts the following query\-string options:
 .INDENT 7.0
 .TP
-.B \fBdebug=integer\fP
+.B \fBdebug=integer [default: 0]\fP
 When nonzero, the API returns a pretty\-printed JSON. Otherwise,
 the JSON is serialized on a single line.
 .TP
@@ -1269,8 +1276,8 @@ RTT estimated by measuring the time that connect() takes
 to complete, measured in seconds.
 .TP
 .B \fBdownload_speed (float)\fP
-Download speed measured by dividing the number of received bytes over
-the elapsed download time, measured in bytes over seconds.
+Download speed measured by dividing the number of received bytes by
+the elapsed download time, measured in bytes per second.
 .TP
 .B \fBinternal_address (string)\fP
 Neubot\(aqs IP address, as seen by Neubot. It is typically either
@@ -1320,8 +1327,8 @@ Time when the test was performed, expressed as number of seconds
 elapsed since midnight of January, 1st 1970.
 .TP
 .B \fBupload_speed (float)\fP
-Upload speed measured by dividing the number of sent bytes over the
-elapsed upload time, measured in bytes over seconds.
+Upload speed measured by dividing the number of sent bytes by the
+elapsed upload time, measured in bytes per second.
 .TP
 .B \fBuuid (string)\fP
 Random unique identifier of the Neubot instance, useful to perform
@@ -1367,8 +1374,8 @@ RTT estimated by measuring the time that connect() takes
 to complete, measured in seconds.
 .TP
 .B \fBdownload_speed (float)\fP
-Download speed measured by dividing the number of received bytes over
-the elapsed download time, measured in bytes over seconds.
+Download speed measured by dividing the number of received bytes by
+the elapsed download time, measured in bytes per second.
 .TP
 .B \fBjson_data (string)\fP
 This string contains the serialization of a JSON object, which
@@ -1376,7 +1383,7 @@ contains all the data collected during the test, both on the server
 and on the client side. The dictionary that we are describing, in
 fact, contains just a subset of the collected results. We can
 not store the full JSON object directly until Neubot\(aqs \fBdatabase\fP
-module and web interface get ready for that.
+module and web interface are ready to process it.
 .TP
 .B \fBinternal_address (string)\fP
 Neubot\(aqs IP address, as seen by Neubot. It is typically either
@@ -1456,31 +1463,51 @@ of the \fBraw\fP dictionary (henceforth, \(aqouter dictionary\(aq) is a
 dictionary that contains the following fields:
 .INDENT 0.0
 .TP
+.B \fBclient (dictionary)\fP
+A dictionary that contains data collected on the client side.
+.TP
+.B \fBserver (dictionary)\fP
+A dictionary that contains data collected on the server side.
+.UNINDENT
+.sp
+The client dictionary contains the following fields:
+.INDENT 0.0
+.TP
 .B \fBal_capacity (float)\fP
-Median bottleneck capacity computed at application level. We are
-still doing research to assess the reliability of this field.
+Median bottleneck capacity computed at application level (experimental).
 .TP
 .B \fBal_mss (float)\fP
 MSS according to the application level (information gathered
 using setsockopt(2)).
 .TP
 .B \fBal_rexmits (list)\fP
-Likely retransmission events computed at application level. We are
-still doing research to assess the reliability of this field.
-.TP
-.B \fBalrtt_list (list of floats)\fP
-List of RTT samples estimated by measuring the average time elapsed
-between sending a small request and receiving a small response,
-measured in seconds.
+Likely retransmission events computed at application level (experimental).
 .TP
 .B \fBalrtt_avg (float)\fP
 Same as \fBlatency\fP in the outer dictionary.
 .TP
+.B \fBalrtt_list (list of tuples)\fP
+List of RTT samples estimated by measuring the average time elapsed
+between sending a small request and receiving a small response,
+measured in seconds.
+.TP
 .B \fBconnect_time (float)\fP
 Same as \fBconnect_time\fP in the outer dictionary.
 .TP
-.B \fBgoodput (float)\fP
-Same as \fBdownload_speed\fP in the outer dictionary.
+.B \fBgoodput (dictionary)\fP
+The dictionary contains the following fields:
+.INDENT 7.0
+.TP
+.B \fBbytesdiff\fP
+Total number of received bytes.
+.TP
+.B \fBticks (float)\fP
+Timestamp when this piece of data was collected, expressed as number of
+seconds elapsed since midnight of January, 1st 1970.
+.TP
+.B \fBtimediff (float)\fP
+Total download time.
+.UNINDENT
 .TP
 .B \fBgoodput_snap (list of dictionaries)\fP
 List that contains a dictionary, which is updated roughly every
@@ -1524,6 +1551,77 @@ Same as \fBuuid\fP in the outer dictionary.
 .TP
 .B \fBversion (string)\fP
 Same as \fBneubot_version\fP in the outer dictionary.
+.UNINDENT
+.sp
+The server dictionary contains the following fields:
+.INDENT 0.0
+.TP
+.B \fBgoodput (dictionary)\fP
+The dictionary contains the following fields:
+.INDENT 7.0
+.TP
+.B \fBbytesdiff\fP
+Total number of sent bytes.
+.TP
+.B \fBticks (float)\fP
+Timestamp when this piece of data was collected, expressed as number of
+seconds elapsed since midnight of January, 1st 1970.
+.TP
+.B \fBtimediff (float)\fP
+Total upload time.
+.UNINDENT
+.TP
+.B \fBgoodput_snap (list of dictionaries)\fP
+List that contains a dictionary, which is updated roughly every
+second during the upload, and which contains the following fields:
+.INDENT 7.0
+.TP
+.B \fBticks (float)\fP
+Time when the current dictionary was saved, expressed as number
+of seconds since midnight of January, 1st 1970.
+.TP
+.B \fBbytesdiff (integer)\fP
+Number of bytes sent since stats were previously saved.
+.TP
+.B \fBtimediff (float)\fP
+Number of seconds elapsed since stats were previously saved.
+.TP
+.B \fButimediff (float)\fP
+Difference between current \fBtms_utime\fP field of the \fBtms\fP
+struct modified by \fBtimes(3)\fP and the previous value of
+the same field.
+.TP
+.B \fBstimediff (float)\fP
+Difference between current \fBtms_stime\fP field of the \fBtms\fP
+struct modified by \fBtimes(3)\fP and the previous value of
+the same field.
+.UNINDENT
+.TP
+.B \fBmyname (string)\fP
+Servers\(aqs address. This is same as \fBserver_address\fP in the outer
+dictionary.
+.TP
+.B \fBpeername (string)\fP
+Neubot\(aqs address (according to the server). This is same as
+\fBreal_address\fP in the outer dictionary.
+.TP
+.B \fBplatform (string)\fP
+Same as \fBplatform\fP in the outer dictionary.
+.TP
+.B \fBtimestamp (integer)\fP
+Time when the server dictionary was created, expressed as number of
+seconds elapsed since midnight of January, 1st 1970.
+.TP
+.B \fBversion (string)\fP
+Same as \fBneubot_version\fP in the outer dictionary.
+.TP
+.B \fBweb100_snap (list)\fP
+A list that contains dictionaries. Each dictionary is a snapshot
+of the Web100 TCP state. We take one Web100 snapshot every second
+during the upload.
+.sp
+On the client side, this field is empty. We are working to identify
+the most interesting fields that is interesting to save.
 .UNINDENT
 .sp
 Example:
@@ -1612,8 +1710,8 @@ RTT estimated by measuring the time that connect() takes
 to complete, measured in seconds.
 .TP
 .B \fBdownload_speed (float)\fP
-Download speed measured by dividing the number of received bytes over
-the elapsed download time, measured in bytes over seconds.
+Download speed measured by dividing the number of received bytes by
+the elapsed download time, measured in bytes per second.
 .TP
 .B \fBinternal_address (string)\fP
 Neubot\(aqs IP address, as seen by Neubot. It is typically either
@@ -1667,8 +1765,8 @@ Time when the test was performed, expressed as number of seconds
 elapsed since midnight of January, 1st 1970.
 .TP
 .B \fBupload_speed (float)\fP
-Upload speed measured by dividing the number of sent bytes over the
-elapsed upload time, measured in bytes over seconds.
+Upload speed measured by dividing the number of sent bytes by the
+elapsed upload time, measured in bytes per second.
 .TP
 .B \fBuuid (string)\fP
 Random unique identifier of the Neubot instance, useful to perform
@@ -1706,68 +1804,105 @@ Example:
 .UNINDENT
 .SH DATA PROCESSING LANGUAGE
 .sp
-TDB
+The data processing language is a simple LISP\-like language. As such,
+it describes processes whose goal is to transform pieces of collected data
+by using lists.
+.sp
+Differently from traditional LISP syntax, however, the data processing
+language is encoded using JSON.
+.sp
+The language implements the following operations:
+.INDENT 0.0
+.TP
+.B \fB["divide", atom\-or\-list, atom\-or\-list]\fP
+Divides the left atom (or list) by the right atom (or list) and
+returns the result.
+.TP
+.B \fB["map\-select", atom, list]\fP
+Cycles over the list and, for each element, it selects the
+field indicated by the atom.
+.TP
+.B \fB["parse\-json", atom\-or\-list]\fP
+Parses the value of the atom (or list) into an object.
+.TP
+.B \fB["reduce\-avg", list]\fP
+Computes the average value of the list.
+.TP
+.B \fB["select", atom, object]\fP
+Selects the element of object indicated by atom.
+.TP
+.B \fB["to\-datetime", atom\-or\-list]\fP
+Converts atom (or list) to datetime string.
+.TP
+.B \fB["to\-millisecond", atom\-or\-list]\fP
+Converts atom (or list) to millisecond.
+.TP
+.B \fB["to\-millisecond\-string", atom\-or\-list]\fP
+Converts atom (or list) to millisecond string.
+.TP
+.B \fB["to\-speed", atom\-or\-list]\fP
+Converts atom (or list) to speed (in bits per second).
+.TP
+.B \fB["to\-speed\-string", atom\-or\-list]\fP
+Converts atom (or list) to speed string (in bits per second).
+.TP
+.B \fB"result"\fP
+The current piece of data we are processing.
+.UNINDENT
+.sp
+Example (select the \fBjson_data\fP field of the result, convert it to json,
+take the \fBclient\fP field, take and compute the average of the \fBalrtt_list\fP
+field, convert the result to millisecond):
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+["to\-millisecond",
+  ["reduce\-avg",
+    ["select", "alrtt_list",
+      ["select", "client",
+        ["parse\-json",
+          ["select", "json_data", "result"]]]]]]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SH PRIVACY
-.\" :Version: 2.0.3
-.
 .sp
-The Neubot project is a research effort that aims to study the quality
-and neutrality of ordinary users\(aq Internet connections, to rebalance the
-information asymmetry between them and Service Providers.  The Neubot
-software (i) \fImeasures\fP the quality and neutrality of your Internet
-connection.  The raw measurement results are (ii) \fIcollected\fP on the
-measurement servers for research purposes and (iii) \fIpublished\fP, to allow
-other individuals and institutions to reuse them for research purposes.
+Neubot collects your IP address, which is personal data according to
+European privacy laws. For this reason, Neubot needs to obtain your
+permission to collect your IP address for research purposes, as well
+as to publish it on the web for the same purpose. In addition, it
+also needs that you assert that you have read the privacy policy.
 .sp
-To \fImeasure\fP the quality and neutrality of your Internet connection,
-the Neubot software does not monitor or analyze your Internet traffic.
-It just uses a fraction of your connection capacity to perform background
-transmission tests, sending and/or receiving random data.  The results
-contain the measured performance metrics, such as the download speed,
-or the latency, as well as your computer load, as a percentage, and
-\fIyour Internet address\fP.
+Without the assertion that you have read the privacy policy and the
+permission to collect and publish your IP address, Neubot can not
+perform automatic (or manual) tests.
 .sp
-The Internet address is paramount because it allows to \fIinfer your Internet
-Service Provider\fP and to have a rough idea of \fIyour location\fP, allowing to
-put the results in context.  The Neubot project needs to \fIcollect\fP it
-to study the data and wants to \fIpublish\fP it to enable other individuals
-and institutions to carry alternative studies and/or peer\-review its
-measurements and data analysis methodology.  This is coherent with the
-policy of the distributed server platform that empowers the Neubot
-project, Measurement Lab (M\-Lab), which requires all results to be
-released as open data [1].
+You can read Neubot\(aqs privacy policy by running the \fBneubot privacy \-P\fP
+command. The privacy policy is also available at:
+.INDENT 0.0
+.INDENT 3.5
 .sp
-You are reading this privacy policy because Neubot is developed in the
-European Union, where there is consensus that Internet addresses are
-\fIpersonal data\fP.  This means that the Neubot project cannot store, process
-or publish your address without your prior \fIinformed consent\fP, under the
-provisions of the "Codice in materia di protezione dei dati personali"
-(Decree 196/03) [2].  In accordance with the law, data controller is the
-NEXA Center for Internet & Society [3], represented by its co\-director Juan
-Carlos De Martin.
+.nf
+.ft C
+http://127.0.0.1:9774/privacy.html
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .sp
-Via its web interface [4], the Neubot software asks you (a) to explicitly
-assert that you are \fIinformed\fP, i.e. that you have read the privacy
-policy, (b) to give it the permission to \fIcollect\fP and (c) \fIpublish\fP your
-IP address.  If you do not assert (a) and you don\(aqt give the permission
-to do (b) and (c), Neubot cannot run tests because, if it did, it would
-violate privacy laws and/or Measurement Lab policy.
+Of course, if you modified the address and/or port where Neubot listens,
+you need to update the URI accordingly.
 .sp
-The data controller guarantees you the rights as per Art. 7 of the
-above\-mentioned Decree 196/03.  Basically, you have total control over
-you personal data, and you can, for example, inquire Neubot to remove
-your Internet address from its data sets.  To exercise your rights, please
-write to <\fI\%privacy@neubot.org\fP> or to "NEXA Center for Internet & Society,
-Dipartimento di Automatica e Infomatica, Politecnico di Torino, Corso Duca
-degli Abruzzi 24, 10129 Turin, ITALY."
-.IP [1] 5
-\fI\%http://www.measurementlab.net/about\fP
-.IP [2] 5
-\fI\%http://www.garanteprivacy.it/garante/doc.jsp?ID=1311248\fP
-.IP [3] 5
-\fI\%http://nexa.polito.it/\fP
-.IP [4] 5
-\fI\%http://127.0.0.1:9774/privacy.html\fP
+In addition to the above, each Neubot is identified by a random
+unique identifier (UUID) that is used to perform time series
+analysis. We believe that this identifier does not brach your
+privacy: in the worst case, we would be able to say that a given
+Neubot has changed Internet address (anche, hence, ISP and/or
+location). To regenerate your unique identifier, you can run
+the \fBneubot database regen_uuid\fP command.
 .SH AUTHOR
 .sp
 Neubot authors are:
@@ -1777,7 +1912,6 @@ Neubot authors are:
 .nf
 .ft C
 Simone Basso                  <bassosimone@gmail.com>
-Antonio Servetti              <antonio.servetti@polito.it>
 .ft P
 .fi
 .UNINDENT
@@ -1790,6 +1924,7 @@ The following people have contributed patches to the project:
 .nf
 .ft C
 Alessio Palmero Aprosio       <alessio@apnetwork.it>
+Antonio Servetti              <antonio.servetti@polito.it>
 Roberto D\(aqAuria               <everlastingfire@autistici.org>
 Marco Scopesi                 <marco.scopesi@gmail.com>
 .ft P
