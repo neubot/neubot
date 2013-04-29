@@ -1,8 +1,9 @@
 #!/bin/sh
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012-2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -25,8 +26,17 @@
 #
 
 if [ -z $rst2html ]; then
-    rst2html=/usr/bin/rst2html
+    for rst2html in /opt/local/bin/rst2html-2.7.py \
+                    /usr/bin/rst2html; do
+        if [ -x $rst2html ]; then
+            break
+        fi
+    done
 fi
+
+# On MacOS, I need to force the locale settings like this. It should not
+# hurt to do the same on other platforms.
+export LC_ALL=en_US.UTF-8
 
 faq_filter() {
     ./scripts/faq_filter "$(date)"
