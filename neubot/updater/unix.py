@@ -727,11 +727,13 @@ def __main():
                 syslog.syslog(syslog.LOG_INFO, 'Starting the agent')
                 pid = __start_neubot_agent()
 
-            if check_for_updates:
-                now = time.time()
-                updates_check_in = 1800 - (now - STATE['lastcheck'])
-                if updates_check_in <= 0:
-                    STATE['lastcheck'] = now
+            # Check for updates
+            now = time.time()
+            updates_check_in = 1800 - (now - STATE['lastcheck'])
+            if updates_check_in <= 0:
+                STATE['lastcheck'] = now
+
+                if check_for_updates:
                     nversion = _download_and_verify_update()
                     if nversion:
                         if pid > 0:
@@ -750,10 +752,11 @@ def __main():
                     else:
                         __clear_base_directory()
                 else:
-                    syslog.syslog(syslog.LOG_DEBUG,
-                      'Auto-updates check in %d sec' % updates_check_in)
-            else:
-                syslog.syslog(syslog.LOG_DEBUG, 'Auto-updates are disabled')
+                    syslog.syslog(syslog.LOG_DEBUG, 'Auto-updates are disabled')
+
+            elif check_for_updates:
+                syslog.syslog(syslog.LOG_DEBUG,
+                  'Auto-updates check in %d sec' % updates_check_in)
 
             # Monitor the agent
             rpid, status = __waitpid(pid, 0)
