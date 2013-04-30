@@ -25,8 +25,11 @@
 # Script to check Neubot deployment on M-Lab slivers - Invoked on
 # the sliver by init/initialize.sh.
 #
+# Note: port 7999 (rsync) is now managed by M-Lab scripts; therefore,
+# we don't need to worry about it anymore.
+#
 
 echo "make sure we've bind all ports"
-netstat -a --tcp -n | grep LISTEN | awk '{print $4}' \
+netstat -a --tcp -n | grep LISTEN | grep -v 7999 | awk '{print $4}' \
     | sort > neubot/M-Lab/ports.new
 diff -u neubot/M-Lab/ports.txt neubot/M-Lab/ports.new
