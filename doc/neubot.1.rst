@@ -91,7 +91,7 @@ It uses the time that connect() takes to complete as an estimator of
 the round-trip time. It estimates the goodput by dividing the amount of
 transferred bytes by the elapsed time. To avoid consuming too much
 user resources, the ``bittorrent`` test adapts the number of bytes to
-transfer such that the test runs for about five seconds.
+transfer such that the test runs for about ten seconds.
 
 The ``raw`` test performs a `raw` 10-second TCP download to estimate
 the download goodput. Also, it estimates the goodput from the
@@ -109,8 +109,8 @@ to complete (like ``bittorrent``) and (2) by measuring the average
 time elapsed between sending a small request and receiving a small
 response (like ``raw``). It estimates the goodput by dividing the
 amount of transferred bytes by the elapsed time. To avoid consuming
-too much user resources, the ``bittorrent`` test adapts the number
-of bytes to transfer such that the test runs for about five seconds.
+too much user resources, the ``speedtest`` test adapts the number
+of bytes to transfer such that the test runs for about ten seconds.
 
 SUBCOMMANDS
 ```````````
@@ -403,7 +403,7 @@ Run Neubot in the foreground with verbose logging::
 
 Export Neubot results to JSON::
 
-    # neubot database dump > output.json
+    $ neubot database dump > output.json
 
 Read Neubot's privacy policy::
 
