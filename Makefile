@@ -36,7 +36,6 @@ VERSION	= 0.4.16.0
 PHONIES += help
 PHONIES += regress
 PHONIES += clean
-PHONIES += doc
 PHONIES += archive
 PHONIES += _install
 PHONIES += install
@@ -75,9 +74,6 @@ regress:
 
 clean:
 	./scripts/cleanup
-
-doc:
-	./scripts/faq
 
 #                 _     _
 #   __ _ _ __ ___| |__ (_)_   _____
