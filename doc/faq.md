@@ -51,7 +51,7 @@ Index
 - [7. Web interface](#7-web-interface)
     - [7.1. What is the web interface?](#71-what-is-the-web-interface)
     - [7.2. How do I open the web interface?](#72-how-do-i-open-the-web-interface)
-    - [7.2. What pages does the web interface contains?](#72-what-pages-does-the-web-interface-contains)
+    - [7.2. What pages does the web interface contain?](#72-what-pages-does-the-web-interface-contain)
     - [7.3. How do I change the web interface language?](#73-how-do-i-change-the-web-interface-language)
 - [8. Following development](#8-following-development)
     - [8.1. How do I clone Neubot repository?](#81-how-do-i-clone-neubot-repository)
@@ -875,8 +875,8 @@ browser and point it to the following URI:
     http://127.0.0.1:9774/
 
 
-7.2. What pages does the web interface contains?
-------------------------------------------------
+7.2. What pages does the web interface contain?
+-----------------------------------------------
 
 * The *status* page (which is the default one) shows the status of Neubot,
 and the result of the latest transmission test.
