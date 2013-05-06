@@ -596,13 +596,16 @@ Both keys are removed by the uninstall process.
 Under Linux the database path is ``/var/lib/neubot/database.sqlite3``,
 while on other UNIX systems it is ``/var/neubot/database.sqlite3``.
 
-Under Windows, the database path is always
-``%APPDATA%\neubot\database.sqlite3``.
+Under Windows, the database path is ``%APPDATA%\neubot\database.sqlite3`` (see
+[Wikipedia's article on Windows special folders][wiki-appdata] for more info
+on `%APPDATA`, the *Application Data* folder).
+
+[wiki-appdata]: http://en.wikipedia.org/wiki/Special_folder#File_system_directories
 
 For Neubot >= 0.3.7 you can query the location of the database running
-the ``neubot database info`` command, for example:
+the ``neubot database`` command, for example:
 
-    # neubot database info
+    # neubot database
     /var/lib/neubot/database.sqlite3
 
 
