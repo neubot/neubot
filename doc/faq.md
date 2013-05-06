@@ -631,12 +631,12 @@ To avoid consuming too much user resources, the *bittorrent* test adapts
 the number of bytes to transfer such that the test runs for about ten
 seconds.
 
-Since BitTorrent uses small messages, it is not possible to transfer a
-huge resource and divide the number of transmitted bytes by the time of
-the transfer. Therefore, the test initially makes many back to back requests
-to fill the space between the client and the server of many flying
-responses. The measurement starts only when the requester thinks there
-are enough responses in flight to approximate a continuous transfer.
+Since BitTorrent uses small messages, this test cannot request a
+large resource, as the speedtest test does.  Instead, the test
+initially sends many back to back requests to fill the space between
+the client and the server of many flying responses. The measurement
+starts only when the requester thinks there are enough responses
+in flight to approximate a continuous transfer.
 
 
 4.7. What does measuring goodput mean?
