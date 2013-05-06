@@ -830,9 +830,11 @@ Commons Zero license:
 Data is published in compressed tarballs, where each tarballs contains
 all the results collected during a day by a test server.  Each result
 is a text file that contains JSON-encoded dictionary, which is described
-here:
+in the manual page:
 
-    http://data.neubot.org/mlab_mirror/README
+    https://github.com/neubot/neubot/blob/master/doc/neubot.1.rst#bittorrent-data-format
+    https://github.com/neubot/neubot/blob/master/doc/neubot.1.rst#raw-test-data-format
+    https://github.com/neubot/neubot/blob/master/doc/neubot.1.rst#speedtest-data-format
 
 Data published before the 27th January 2011 is published in different
 format:
