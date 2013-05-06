@@ -1,3 +1,5 @@
+The Frequently Asked Questions (FAQ) of Neubot <http://neubot.org/>.
+
 Index
 =====
 
