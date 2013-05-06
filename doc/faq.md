@@ -974,8 +974,8 @@ Install git and clone the git repository with the following command:
 
 It contains the `master branch`, which holds the code that will be
 included in next release.  There may be other branches, but
-they are intended for internal development only.  So, they can be
-deleted or rebased without notice.
+they are intended for internal development only.  Therefore, they will
+be deleted or rebased without notice.
 
 Specific repositories are available for ports on supported operating
 systems:
