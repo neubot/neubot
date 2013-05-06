@@ -522,8 +522,8 @@ MacOS, Neubot also runs two extra processes: one is the privileged
 process that implements the auto-update functionality, the other
 is an unprivileged process that is started on demand by the privileged
 process to download the tarball of a new version.  Under Windows
-Neubot is started when the user logs in for the first time; subsequent
-logins don't start additional instances of Neubot.
+Neubot is started when the user logs in and runs in the context of
+the user's session.
 
 Neubot has a minimal impact on system and network load. It spends
 most of its time asleep, and it performs automatic tests every 23-27
