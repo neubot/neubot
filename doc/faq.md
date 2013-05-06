@@ -433,7 +433,7 @@ your message will not be accepted. To subscribe, go to:
       http://www.neubot.org/cgi-bin/mailman/listinfo/neubot
 
 The mailing list subscription page uses an auto-signed SSL certificate
-and your browser is likely to complain.  Don't be scared; it
+and your browser is likely to complain.  Don't be scared: it
 is the page to register to the Neubot mailing list, not your bank account.
 
 We advise you to search the public archive before posting a message,
