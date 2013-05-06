@@ -447,7 +447,7 @@ the same bug. All posts to the mailing list are archived here:
 ---------------------------------------------------------------------------
 
 One possible issue with mobile broadband is the following: if you use
-Windows, you installed Neubot, and you are not connected, and Neubot
+Windows, you installed Neubot, you are not connected, and Neubot
 starts a test, it's possible that Windows asks you to connect. If this
 behavior annoys you, you can temporarily disable Neubot by using its
 [web interface](#7-web-interface).
