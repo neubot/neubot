@@ -231,6 +231,20 @@ Neubot version number follows the *major*, *minor*, *patch*, and
 0, minor version number 4, patch version number 15 and revision
 version number 3.
 
+The major version number will be zero until Neubot implements all
+the features planned for 1.0.0.0.
+
+We make a minor release (e.g. 0.4.0.0) when we believe that this
+release incorporates significant changes since the previous minor
+release of Neubot.
+
+Otherwise, we make a patch release (e.g. 0.4.15.0).
+
+Whatever release we make (be it 1.0.0.0, 0.4.0.0, or 0.4.15.0), the
+code may need additional tweaks before the release can be made
+generally available. When this is the case, we bump the patch version
+number; e.g., 1.0.0.1, 0.4.0.1, or 0.4.15.1.
+
 
 1.11. What is the best version of Neubot?
 -----------------------------------------
