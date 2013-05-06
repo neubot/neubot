@@ -12,7 +12,7 @@ Index
     - [1.8. What is the roadmap to Neubot 1.0.0.0?](#18-what-is-the-roadmap-to-neubot-1000)
     - [1.9. When is the next release of Neubot?](#19-when-is-the-next-release-of-neubot)
     - [1.10. What is your versioning policy?](#110-what-is-your-versioning-policy)
-    - [1.11. What is the best version of Neubot?](#111-what-is-the-best-version-of-neubot)
+    - [1.11. Which is the stable version of Neubot?](#111-which-is-the-stable-version-of-neubot)
     - [1.12. How long should I keep Neubot installed?](#112-how-long-should-i-keep-neubot-installed)
     - [1.13. How much do you test Neubot before release?](#113-how-much-do-you-test-neubot-before-release)
     - [1.14. Who develops Neubot?](#114-who-develops-neubot)
@@ -246,14 +246,14 @@ generally available. When this is the case, we bump the patch version
 number; e.g., 1.0.0.1, 0.4.0.1, or 0.4.15.1.
 
 
-1.11. What is the best version of Neubot?
------------------------------------------
+1.11. Which is the stable version of Neubot?
+--------------------------------------------
 
-The best version of Neubot will always be the one with the highest
-version number; e.g., 0.3.1.3 is better than 0.3.1.1.
-
-When we include experimental features in a new release, they are
-not enabled by default until they become stable.
+We don't release unstable code and we don't make *unstable* or
+*testing* releases. If you want to run unstable code, you should
+track the master branch of the git repository.  Otherwise, we suggest
+you to always install the latest generally available version of
+Neubot.
 
 
 1.12. How long should I keep Neubot installed?
