@@ -12,7 +12,7 @@ Index
     - [1.8. What is the roadmap to Neubot 1.0.0.0?](#18-what-is-the-roadmap-to-neubot-1000)
     - [1.9. When is the next release of Neubot?](#19-when-is-the-next-release-of-neubot)
     - [1.10. What is your versioning policy?](#110-what-is-your-versioning-policy)
-    - [1.11. What is the best version of Neubot?](#111-what-is-the-best-version-of-neubot)
+    - [1.11. Which is the stable version of Neubot?](#111-which-is-the-stable-version-of-neubot)
     - [1.12. How long should I keep Neubot installed?](#112-how-long-should-i-keep-neubot-installed)
     - [1.13. How much do you test Neubot before release?](#113-how-much-do-you-test-neubot-before-release)
     - [1.14. Who develops Neubot?](#114-who-develops-neubot)
@@ -51,8 +51,8 @@ Index
 - [7. Web interface](#7-web-interface)
     - [7.1. What is the web interface?](#71-what-is-the-web-interface)
     - [7.2. How do I open the web interface?](#72-how-do-i-open-the-web-interface)
-    - [7.2. What pages does the web interface contain?](#72-what-pages-does-the-web-interface-contain)
-    - [7.3. How do I change the web interface language?](#73-how-do-i-change-the-web-interface-language)
+    - [7.3. What pages does the web interface contain?](#73-what-pages-does-the-web-interface-contain)
+    - [7.4. How do I change the web interface language?](#74-how-do-i-change-the-web-interface-language)
 - [8. Following development](#8-following-development)
     - [8.1. How do I clone Neubot repository?](#81-how-do-i-clone-neubot-repository)
     - [8.2. How do I prepare a diff for Neubot?](#82-how-do-i-prepare-a-diff-for-neubot)
@@ -231,15 +231,29 @@ Neubot version number follows the *major*, *minor*, *patch*, and
 0, minor version number 4, patch version number 15 and revision
 version number 3.
 
+The major version number will be zero until Neubot implements all
+the features planned for 1.0.0.0.
 
-1.11. What is the best version of Neubot?
------------------------------------------
+We make a minor release (e.g. 0.4.0.0) when we believe that this
+release incorporates significant changes since the previous minor
+release of Neubot.
 
-The best version of Neubot will always be the one with the highest
-version number; e.g., 0.3.1.3 is better than 0.3.1.1.
+Otherwise, we make a patch release (e.g. 0.4.15.0).
 
-When we include experimental features in a new release, they are
-not enabled by default until they become stable.
+Whatever release we make (be it 1.0.0.0, 0.4.0.0, or 0.4.15.0), the
+code may need additional tweaks before the release can be made
+generally available. When this is the case, we bump the patch version
+number; e.g., 1.0.0.1, 0.4.0.1, or 0.4.15.1.
+
+
+1.11. Which is the stable version of Neubot?
+--------------------------------------------
+
+We don't release unstable code and we don't make *unstable* or
+*testing* releases. If you want to run unstable code, you should
+track the master branch of the git repository.  Otherwise, we suggest
+you to always install the latest generally available version of
+Neubot.
 
 
 1.12. How long should I keep Neubot installed?
@@ -418,8 +432,8 @@ your message will not be accepted. To subscribe, go to:
 
       http://www.neubot.org/cgi-bin/mailman/listinfo/neubot
 
-The mailing list subscription page does not have a valid SSL certificate
-and your browser is likely to complain.  Don't be scared; it
+The mailing list subscription page uses an auto-signed SSL certificate
+and your browser is likely to complain.  Don't be scared: it
 is the page to register to the Neubot mailing list, not your bank account.
 
 We advise you to search the public archive before posting a message,
@@ -433,7 +447,7 @@ the same bug. All posts to the mailing list are archived here:
 ---------------------------------------------------------------------------
 
 One possible issue with mobile broadband is the following: if you use
-Windows, you installed Neubot, and you are not connected, and Neubot
+Windows, you installed Neubot, you are not connected, and Neubot
 starts a test, it's possible that Windows asks you to connect. If this
 behavior annoys you, you can temporarily disable Neubot by using its
 [web interface](#7-web-interface).
@@ -508,8 +522,8 @@ MacOS, Neubot also runs two extra processes: one is the privileged
 process that implements the auto-update functionality, the other
 is an unprivileged process that is started on demand by the privileged
 process to download the tarball of a new version.  Under Windows
-Neubot is started when the user logs in for the first time; subsequent
-logins don't start additional instances of Neubot.
+Neubot is started when the user logs in and runs in the context of
+the user's session.
 
 Neubot has a minimal impact on system and network load. It spends
 most of its time asleep, and it performs automatic tests every 23-27
@@ -582,13 +596,16 @@ Both keys are removed by the uninstall process.
 Under Linux the database path is ``/var/lib/neubot/database.sqlite3``,
 while on other UNIX systems it is ``/var/neubot/database.sqlite3``.
 
-Under Windows, the database path is always
-``%APPDATA%\neubot\database.sqlite3``.
+Under Windows, the database path is ``%APPDATA%\neubot\database.sqlite3`` (see
+[Wikipedia's article on Windows special folders][wiki-appdata] for more info
+on `%APPDATA`, the *Application Data* folder).
+
+[wiki-appdata]: http://en.wikipedia.org/wiki/Special_folder#File_system_directories
 
 For Neubot >= 0.3.7 you can query the location of the database running
-the ``neubot database info`` command, for example:
+the ``neubot database`` command, for example:
 
-    # neubot database info
+    # neubot database
     /var/lib/neubot/database.sqlite3
 
 
@@ -614,12 +631,12 @@ To avoid consuming too much user resources, the *bittorrent* test adapts
 the number of bytes to transfer such that the test runs for about ten
 seconds.
 
-Since BitTorrent uses small messages, it is not possible to transfer a
-huge resource and divide the number of transmitted bytes by the time of
-the transfer. Therefore, the test initially makes many back to back requests
-to fill the space between the client and the server of many flying
-responses. The measurement starts only when the requester thinks there
-are enough responses in flight to approximate a continuous transfer.
+Since BitTorrent uses small messages, this test cannot request a
+large resource, as the speedtest test does.  Instead, the test
+initially sends many back to back requests to fill the space between
+the client and the server of many flying responses. The measurement
+starts only when the requester thinks there are enough responses
+in flight to approximate a continuous transfer.
 
 
 4.7. What does measuring goodput mean?
@@ -813,9 +830,11 @@ Commons Zero license:
 Data is published in compressed tarballs, where each tarballs contains
 all the results collected during a day by a test server.  Each result
 is a text file that contains JSON-encoded dictionary, which is described
-here:
+in the manual page:
 
-    http://data.neubot.org/mlab_mirror/README
+    https://github.com/neubot/neubot/blob/master/doc/neubot.1.rst#bittorrent-data-format
+    https://github.com/neubot/neubot/blob/master/doc/neubot.1.rst#raw-test-data-format
+    https://github.com/neubot/neubot/blob/master/doc/neubot.1.rst#speedtest-data-format
 
 Data published before the 27th January 2011 is published in different
 format:
@@ -875,22 +894,28 @@ browser and point it to the following URI:
     http://127.0.0.1:9774/
 
 
-7.2. What pages does the web interface contain?
+7.3. What pages does the web interface contain?
 -----------------------------------------------
 
-* The *status* page (which is the default one) shows the status of Neubot,
+### The status page
+
+The *status* page (which is the default one) shows the status of Neubot,
 and the result of the latest transmission test.
 
 ![Status page][wui-status]
 [wui-status]: http://www.neubot.org/neubotfiles/faq-wui-status.png
 
-* The *results* page shows the results of recent tests; i.e., latency,
+### The results page
+
+The *results* page shows the results of recent tests; i.e., latency,
 download and upload goodput, both in graphical and in tabular form.
 
 ![Results page][wui-results]
 [wui-results]: http://www.neubot.org/neubotfiles/faq-wi-results.png
 
-* The *log* page shows recent logs.  The color of each log entry reflects
+### The log page
+
+The *log* page shows recent logs.  The color of each log entry reflects
 severity.  In particular, the page uses:
 
     - *red* for error messages;
@@ -903,21 +928,25 @@ One can refresh the page by clicking on the `Refresh page` link.
 ![Log page][wui-log]
 [wui-log]: http://www.neubot.org/neubotfiles/faq-wui-log.png
 
-* The *privacy* page shows the privacy policy and allows to set privacy
+### The privacy page
+
+The *privacy* page shows the privacy policy and allows to set privacy
 permissions.  See the [Privacy questions](#5-privacy-questions) section for
 more info.
 
 ![Privacy page][wui-privacy]
 [wui-privacy]: http://www.neubot.org/neubotfiles/faq-wui-privacy.png
 
-* The *settings* page shows and allow to change Neubot settings.  One must
+### The settings page
+
+The *settings* page shows and allow to change Neubot settings.  One must
 click on the `Save` button to make changes effective.
 
 ![Settings page][wui-settings]
 [wui-settings]: http://www.neubot.org/neubotfiles/faq-wui-settings.png
 
 
-7.3. How do I change the web interface language?
+7.4. How do I change the web interface language?
 -----------------------------------------------------
 
 Change the value of the ``www.lang`` setting, which can be modified
@@ -945,8 +974,8 @@ Install git and clone the git repository with the following command:
 
 It contains the `master branch`, which holds the code that will be
 included in next release.  There may be other branches, but
-they are intended for internal development only.  So, they can be
-deleted or rebased without notice.
+they are intended for internal development only.  Therefore, they will
+be deleted or rebased without notice.
 
 Specific repositories are available for ports on supported operating
 systems:
