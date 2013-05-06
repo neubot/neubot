@@ -51,8 +51,8 @@ Index
 - [7. Web interface](#7-web-interface)
     - [7.1. What is the web interface?](#71-what-is-the-web-interface)
     - [7.2. How do I open the web interface?](#72-how-do-i-open-the-web-interface)
-    - [7.2. What pages does the web interface contain?](#72-what-pages-does-the-web-interface-contain)
-    - [7.3. How do I change the web interface language?](#73-how-do-i-change-the-web-interface-language)
+    - [7.3. What pages does the web interface contain?](#73-what-pages-does-the-web-interface-contain)
+    - [7.4. How do I change the web interface language?](#74-how-do-i-change-the-web-interface-language)
 - [8. Following development](#8-following-development)
     - [8.1. How do I clone Neubot repository?](#81-how-do-i-clone-neubot-repository)
     - [8.2. How do I prepare a diff for Neubot?](#82-how-do-i-prepare-a-diff-for-neubot)
@@ -894,22 +894,28 @@ browser and point it to the following URI:
     http://127.0.0.1:9774/
 
 
-7.2. What pages does the web interface contain?
+7.3. What pages does the web interface contain?
 -----------------------------------------------
 
-* The *status* page (which is the default one) shows the status of Neubot,
+### The status page
+
+The *status* page (which is the default one) shows the status of Neubot,
 and the result of the latest transmission test.
 
 ![Status page][wui-status]
 [wui-status]: http://www.neubot.org/neubotfiles/faq-wui-status.png
 
-* The *results* page shows the results of recent tests; i.e., latency,
+### The results page
+
+The *results* page shows the results of recent tests; i.e., latency,
 download and upload goodput, both in graphical and in tabular form.
 
 ![Results page][wui-results]
 [wui-results]: http://www.neubot.org/neubotfiles/faq-wi-results.png
 
-* The *log* page shows recent logs.  The color of each log entry reflects
+### The log page
+
+The *log* page shows recent logs.  The color of each log entry reflects
 severity.  In particular, the page uses:
 
     - *red* for error messages;
@@ -922,21 +928,25 @@ One can refresh the page by clicking on the `Refresh page` link.
 ![Log page][wui-log]
 [wui-log]: http://www.neubot.org/neubotfiles/faq-wui-log.png
 
-* The *privacy* page shows the privacy policy and allows to set privacy
+### The privacy page
+
+The *privacy* page shows the privacy policy and allows to set privacy
 permissions.  See the [Privacy questions](#5-privacy-questions) section for
 more info.
 
 ![Privacy page][wui-privacy]
 [wui-privacy]: http://www.neubot.org/neubotfiles/faq-wui-privacy.png
 
-* The *settings* page shows and allow to change Neubot settings.  One must
+### The settings page
+
+The *settings* page shows and allow to change Neubot settings.  One must
 click on the `Save` button to make changes effective.
 
 ![Settings page][wui-settings]
 [wui-settings]: http://www.neubot.org/neubotfiles/faq-wui-settings.png
 
 
-7.3. How do I change the web interface language?
+7.4. How do I change the web interface language?
 -----------------------------------------------------
 
 Change the value of the ``www.lang`` setting, which can be modified
