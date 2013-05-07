@@ -271,7 +271,7 @@ ongoing effort.
 -------------------------------------------------
 
 Experimental features included in new releases are not enabled by
-default untile they become stable.
+default until they become stable.
 
 Typically, major and minor releases are tested for at least a
 couple of weeks.
@@ -353,7 +353,7 @@ Subsequent FAQ entries will deal with all these options.
 ----------------------------------------
 
 Neubot is part of [FreeBSD ports collection][freebsd-ports].  So it can be
-installed easily, either by using ``pkg_add`` or by compiling the package
+installed easily, either by using `pkg_add` or by compiling the package
 for the ports tree.  Of course, when in doubt, please refer to [FreeBSD
 documentation][freebsd-docs] and [FreeBSD manpages][freebsd-man].  In
 particular, the authoritative Neubot port page is:
@@ -380,6 +380,90 @@ reported using the [send-pr] interface.
 [freebsd-man]: http://www.freebsd.org/cgi/man.cgi
 [freebsd-ml]: http://lists.freebsd.org/mailman/listinfo/freebsd-ports
 [send-pr]: http://www.freebsd.org/send-pr.html
+
+
+2.4. How do I build Neubot from sources on Windows?
+---------------------------------------------------
+
+This section describes the procedure to create your own Neubot Windows
+binary distribution and installer.
+
+### Prerequisites
+
+Download [Python 2.7.4][python.msi], verify its [digital signature]
+[python.msi.asc], and install it accepting default settings.
+
+[python.msi]: http://www.python.org/ftp/python/2.7.4/python-2.7.4.msi
+[python.msi.asc]: http://www.python.org/ftp/python/2.7.4/python-2.7.4.msi.asc
+
+Download [PyWin32 build 218][pywin32] (for Win32 and Python 2.7) from
+sourceforge, and install it accepting default settings.
+
+[pywin32]: http://sourceforge.net/projects/pywin32/files/pywin32/Build%20218/pywin32-218.win32-py2.7.exe/download
+
+Download [py2exe 0.6.9][py2exe] (for Win32 and Python 2.7) from sourceforge,
+and install it accepting default settings.
+
+[py2exe]: http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win32-py2.7.exe/download
+
+Download [NSIS 2.46][nsis] from sourceforge, and install it accepting
+default settings.
+
+[nsis]: http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/nsis-2.46-setup.exe/download
+
+Download the latest version of [msysgit][msysgit] from code.google.com,
+and install it accepting default settings.
+
+[msysgit]: http://code.google.com/p/msysgit/downloads/list
+
+From Git Bash, clone Neubot Win32 helper repository by using this command:
+
+    git clone git://github.com/neubot/neubot_win32.git
+
+Also, apply to py2exe distribution the [patch to make Stderr a blackbole]
+[stderr-patch] (which also includes, at the beginning, instructions on how
+to apply it).
+
+[stderr-patch]: https://github.com/neubot/neubot_win32/blob/master/Win32/py2exe_stderr_blackhole.patch
+
+### Create the installer
+
+These are the instructions to build Neubot 0.4.15.6 for Windows.
+
+From Git Bash, enter into Neubot Win32 helper repository (`neubot_win32`),
+pull changes from upstream, and checkout the 0.4.15.6 tag:
+
+    cd neubot_win32
+    git checkout master
+    git fetch origin
+    git checkout 0.4.15.6
+
+Run the configure script, which downloads the sources, verify their
+integrity, and eventually applies patches:
+
+    ./configure
+
+Enter into Win32 subdirectory and run setup.py:
+
+    cd Win32
+    /c/Python27/python.exe setup.py
+
+Return to the toplevel directory:
+
+    cd ..
+
+You will find the compressed binary distribution here:
+
+    neubot-0.4.15.6/wdist/win32/0.004015006.tar.gz
+
+You will find the installer here:
+
+    neubot-0.4.15.6/wdist/neubot-0.4.15.6-setup.exe
+
+The uncompressed binary distribution (i.e. the files that the installer
+will install), instead, is here:
+
+    neubot-0.4.15.6/wdist/tmp/0.004015006/
 
 - - -
 
@@ -476,17 +560,17 @@ following screenshot provides an example:
 ![Neubot log][neubot-log]
 [neubot-log]: http://www.neubot.org/neubotfiles/neubot-log.png
 
-In addition, under UNIX Neubot saves logs with ``syslog(3)`` and
-``LOG_DAEMON`` facility. Logs end up in ``/var/log``, typically in
-``daemon.log``. When unsure, I run the following command (as root) to
+In addition, under UNIX Neubot saves logs with `syslog(3)` and
+`LOG_DAEMON` facility. Logs end up in `/var/log`, typically in
+`daemon.log`. When unsure, I run the following command (as root) to
 lookup the exact file name:
 
     # grep neubot /var/log/* | awk -F: '{print $1}' | sort | uniq
     /var/log/daemon.log
     /var/log/syslog
 
-In this example, there are interesting logs in both ``/var/log/daemon.log``
-and ``/var/log/syslog``. Once I know the file names, I can grep the logs
+In this example, there are interesting logs in both `/var/log/daemon.log`
+and `/var/log/syslog`. Once I know the file names, I can grep the logs
 out of each file, as follows:
 
     # grep neubot /var/log/daemon.log | less
@@ -496,7 +580,7 @@ out of each file, as follows:
 ------------------------------------------------
 
 No.  Logs are always saved in the database, but Neubot will periodically
-prune old logs.  On UNIX logs are also saved using ``syslog(3)``, which
+prune old logs.  On UNIX logs are also saved using `syslog(3)`, which
 should automatically rotate them.
 
 
@@ -597,17 +681,17 @@ Both keys are removed by the uninstall process.
 4.4. What is the path of Neubot database?
 -----------------------------------------
 
-Under Linux the database path is ``/var/lib/neubot/database.sqlite3``,
-while on other UNIX systems it is ``/var/neubot/database.sqlite3``.
+Under Linux the database path is `/var/lib/neubot/database.sqlite3`,
+while on other UNIX systems it is `/var/neubot/database.sqlite3`.
 
-Under Windows, the database path is ``%APPDATA%\neubot\database.sqlite3`` (see
+Under Windows, the database path is `%APPDATA%\neubot\database.sqlite3` (see
 [Wikipedia's article on Windows special folders][wiki-appdata] for more info
 on `%APPDATA`, the *Application Data* folder).
 
 [wiki-appdata]: http://en.wikipedia.org/wiki/Special_folder#File_system_directories
 
 For Neubot >= 0.3.7 you can query the location of the database running
-the ``neubot database`` command, for example:
+the `neubot database` command, for example:
 
     # neubot database
     /var/lib/neubot/database.sqlite3
@@ -617,8 +701,8 @@ the ``neubot database`` command, for example:
 ------------------------------------------------
 
 You can dump the content of the database using the command
-``neubot database dump``. The output is a JSON file that contains the
-results. Use the ``show`` subcommand (rather than ``dump``) if you
+`neubot database dump`. The output is a JSON file that contains the
+results. Use the `show` subcommand (rather than `dump`) if you
 want a pretty-printed JSON.
 
 
@@ -857,15 +941,15 @@ format:
 
 The web interface is a web-based interface that allows the user to
 control *neubot* and shows recent results.  By default, when
-*neubot* is started, it binds port ``9774`` on ``127.0.0.1``
+*neubot* is started, it binds port `9774` on `127.0.0.1`
 and waits for web requests.
 
-Users can request raw information, using a ``JSON`` API, or regular
+Users can request raw information, using a `JSON` API, or regular
 web pages.  If no page or API is specified, *neubot* will return
 the content of the *status* page.  In turn, this page will
-use ``javascript`` to query the ``JSON`` API and populate the page
-itself.  Similarly, other web pages use ``javascript`` and the
-``JSON`` API to fill themselves with dynamic data; e.g., settings,
+use `javascript` to query the `JSON` API and populate the page
+itself.  Similarly, other web pages use `javascript` and the
+`JSON` API to fill themselves with dynamic data; e.g., settings,
 recent results, logs.
 
 
@@ -875,13 +959,13 @@ recent results, logs.
 On *Windows*, the *Neubot* command on the start menu should open
 the web interface in the default browser.
 
-On *MacOSX*, the *Neubot* application (``/Applications/Neubot.app``)
+On *MacOSX*, the *Neubot* application (`/Applications/Neubot.app`)
 should open the web interface in the default browser.
 
 On *Ubuntu and Debian*, if the user has installed the `neubot`
 package (and not the `neubot-nox` package), the *Neubot* command
 on the applications menu should open the web interface in
-a custom ``Gtk+`` application that embeds ``WebKit`` and uses it
+a custom `Gtk+` application that embeds `WebKit` and uses it
 to show the web interface.
 
 On *UNIX*, if `Gtk+` and `WebKit` bindings for Python are installed,
@@ -889,7 +973,7 @@ the following command:
 
     neubot viewer
 
-opens a custom ``Gtk+`` application that embeds ``WebKit`` and uses
+opens a custom `Gtk+` application that embeds `WebKit` and uses
 it to show the web interface.
 
 On *any platform*, of course, the user can open his or her favorite web
@@ -953,7 +1037,7 @@ click on the `Save` button to make changes effective.
 7.4. How do I change the web interface language?
 -----------------------------------------------------
 
-Change the value of the ``www.lang`` setting, which can be modified
+Change the value of the `www.lang` setting, which can be modified
 using the *settings* page.  Currently the value can be one of:
 
 - *default*: uses the browser's default language;
