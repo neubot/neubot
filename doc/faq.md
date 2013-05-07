@@ -26,6 +26,7 @@ Index
     - [2.1. On what systems does neubot run?](#21-on-what-systems-does-neubot-run)
     - [2.2. How do I install neubot?](#22-how-do-i-install-neubot)
     - [2.3. How do I install Neubot on FreeBSD?](#23-how-do-i-install-neubot-on-freebsd)
+    - [2.4. How do I build Neubot from sources on Windows?](#24-how-do-i-build-neubot-from-sources-on-windows)
 - [3. Using Neubot](#3-using-neubot)
     - [3.1. Neubot installed. What should I do now?](#31-neubot-installed-what-should-i-do-now)
     - [3.2. How many resources does Neubot need?](#32-how-many-resources-does-neubot-need)
