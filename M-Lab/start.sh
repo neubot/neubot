@@ -26,6 +26,8 @@
 # by init/initialize.sh and by init/start.sh.
 #
 
+. /etc/mlab/slice-functions
+
 DEBUG=
 
 if [ `id -u` -ne 0 ]; then
@@ -33,5 +35,10 @@ if [ `id -u` -ne 0 ]; then
     exit 1
 fi
 
+ADDRESS="::"
+if [ -z "`get_slice_ipv6`" ]; then
+    ADDRESS="0.0.0.0"
+fi
+
 $DEBUG /usr/bin/python /home/mlab_neubot/neubot/neubot/main/__init__.py \
-    server -A :: -D server.datadir=/var/spool/mlab_neubot
+    server -A $ADDRESS -D server.datadir=/var/spool/mlab_neubot

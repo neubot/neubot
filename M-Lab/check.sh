@@ -29,7 +29,14 @@
 # we don't need to worry about it anymore.
 #
 
+. /etc/mlab/slice-functions
+
+PORTS="ports_ipv6.txt"
+if [ -z "`get_slice_ipv6`" ]; then
+    PORTS="ports_ipv4.txt"
+fi
+
 echo "make sure we've bind all ports"
 netstat -a --tcp -n | grep LISTEN | grep -v 7999 | awk '{print $4}' \
     | sort > neubot/M-Lab/ports.new
-diff -u neubot/M-Lab/ports.txt neubot/M-Lab/ports.new
+diff -u neubot/M-Lab/$PORTS neubot/M-Lab/ports.new
