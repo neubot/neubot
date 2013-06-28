@@ -1,6 +1,9 @@
 0. Indice
 ---------
 
+.. WARNING:: The companion english FAQ was migrated to markdown and
+             revamped a lot, this one should follow suit.
+
 * `0. Indice`_
 
 * `1. Domande generiche`_
