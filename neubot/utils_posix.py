@@ -176,6 +176,8 @@ def daemonize(pidfile=None, sighandler=None):
     if os.fork() > 0:
         os._exit(0)
 
+    logging.debug("utils_posix: the daemon PID is: %d", os.getpid())
+
     logging.debug('utils_posix: redirect stdio to /dev/null')
     for fdesc in range(3):
         os.close(fdesc)

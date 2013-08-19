@@ -37,9 +37,10 @@ PHONIES += help
 PHONIES += regress
 PHONIES += clean
 PHONIES += archive
+PHONIES += m4
 PHONIES += _install
-PHONIES += install
 PHONIES += uninstall
+PHONIES += install
 PHONIES += release
 
 .PHONY: $(PHONIES)
@@ -93,6 +94,18 @@ archive:
 	 $(ARCHIVE) --format=$$FMT HEAD > dist/$(STEM).$$FMT; \
 	done
 	gzip -9 dist/$(STEM).tar
+
+#
+#            _  _
+#  _ __ ___ | || |
+# | '_ ` _ \| || |_
+# |  | | | | |__   _|
+# |_| |_| |_|  |_|
+#
+# Generates Python code from .m4 files in the m4 directory.
+#
+m4:
+	find m4/neubot -type f -name \*.m4 -exec ./scripts/m4_to_py {} \;
 
 #  _           _        _ _
 # (_)_ __  ___| |_ __ _| | |

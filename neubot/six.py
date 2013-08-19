@@ -378,6 +378,7 @@ if PY3:
         return memoryview(string)[offset:size]
 
     import urllib.parse as urlparse
+    import urllib.parse as urllib
     from collections import OrderedDict
 
     def bytes_to_string(octets, encoding):
@@ -393,6 +394,7 @@ else:
         return buffer(string, offset, size)
 
     import urlparse
+    import urllib
     from neubot.simplejson.ordered_dict import OrderedDict
 
     def bytes_to_string(octets, encoding):

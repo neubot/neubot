@@ -1,0 +1,42 @@
+#!/bin/sh
+
+#
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# Generates Python code from an .m4 file. The perl magic is there to
+# remove the many empty lines that m4 leaves in the output file.
+#
+
+DATE=$(date)
+SOURCE=$1
+DEST=$(echo $1 | sed -e 's-^m4/--g' -e 's-\.m4$-.py-g')
+
+m4 $SOURCE | sed 's-\ *$--g' | perl -p0we "s/\n{3,}/\n\n/g" | \
+    sed -e "s-@DATE@-$DATE-g" -e "s-@SCRIPT@-$0-g" \
+      -e "s-@SOURCE@-$SOURCE-g" -e "s-@DEST@-$DEST-g" \
+      -e "s-@USER@-$USER-g" > $DEST
+
+COUNT_LINES=$(grep -v '^#' $DEST | grep -v '^$' | wc -l)
+if [ $COUNT_LINES -eq 0 ]; then
+    # This file contains only m4 macros definitions
+    rm $DEST
+fi
