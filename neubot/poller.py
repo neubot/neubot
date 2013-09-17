@@ -57,6 +57,7 @@ class Poller(sched.scheduler):
         ''' Initialize '''
         sched.scheduler.__init__(self, ticks, self._poll)
         self.select_timeout = select_timeout
+        self.channels = {}
         self.again = True
         self.readset = {}
         self.writeset = {}
@@ -81,6 +82,27 @@ class Poller(sched.scheduler):
             raise
         except:
             logging.error('poller: run_task() failed', exc_info=1)
+
+    def recv_message(self, channel, function):
+        """ Wait for a message on the given channel """
+        self.channels[channel] = function
+
+    def send_message(self, channel, message):
+        """ Send a message on the given channel """
+        function = self.channels.pop(channel, None)
+        if not function:
+            return
+        try:
+            #
+            # We pass the poller to function(), therefore function() can be
+            # a plain function and does not need to be an object only to keep
+            # a reference to the poller.
+            #
+            function(self, message)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.warning("poller: function() failed", exc_info=1)
 
     def set_readable(self, stream):
         ''' Monitor for readability '''
