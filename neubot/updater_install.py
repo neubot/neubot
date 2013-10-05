@@ -41,7 +41,9 @@ def __verify(basedir, member):
     # Make sure that the combination of basedir and member
     # name falls below basedir.
     #
-    utils_path.append(basedir, member.name)
+    result = utils_path.append(basedir, member.name, False)
+    if not result:
+        raise RuntimeError("updater_install: append() path failed")
 
     #
     # The tar archive should contain directories and

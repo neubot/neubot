@@ -57,9 +57,14 @@ class UpdaterWin32(UpdaterRunner):
         ''' Install new version on Windows '''
 
         # Make file names
-        versiondir = utils_path.join(self.basedir, ctx['vinfo'])
+
+        versiondir = utils_path.append(self.basedir, ctx['vinfo'], False)
+        if not versiondir:
+            raise RuntimeError("updater_win32: append() path failed")
+
         exefile = utils_path.join(versiondir, 'neubotw.exe')
         uninst = utils_path.join(versiondir, 'uninstall.exe')
+
         cmdline = '"%s" start' % exefile
         cmdline_k = '"%s" start -k' % exefile
 

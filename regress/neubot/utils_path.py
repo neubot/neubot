@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012-2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -22,6 +23,7 @@
 
 ''' Regression test for neubot/utils_path.py '''
 
+import logging
 import unittest
 import os
 import sys
@@ -29,36 +31,34 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import six
 from neubot import utils_path
 
 class TestDepthVisit(unittest.TestCase):
-
-    ''' Make sure depth_visit() works as expected '''
+    ''' Make sure that depth_visit() works as expected '''
 
     #
     # This test case wants to garner confidence that:
     #
     # 1. visit() is not invoked when components is empty;
     #
-    # 2. depth_visit() bails out w/ nonabsolute prefix;
+    # 2. depth_visit() accepts a non-ascii prefix;
     #
-    # 3. depth_visit() bails out w/ nonascii prefix;
+    # 3. depth_visit() rejects a non-ascii component;
     #
-    # 4. depth_visit() bails out w/ nonascii component;
+    # 4. depth_visit() bails out w/ upref components;
     #
-    # 5. depth_visit() bails out w/ upref components;
-    #
-    # 6. depth_visit() is more restrictive than needed, and
+    # 5. depth_visit() is more restrictive than needed, and
     #    rejects some paths that are below prefix due to the
-    #    way it is implemented;
+    #    way depth_visit() is implemented;
     #
-    # 7. depth_visit() visits nodes in the expected order;
+    # 6. depth_visit() visits nodes in the expected order;
     #
-    # 8. depth_visit() correctly flags the leaf node.
+    # 7. depth_visit() correctly flags the leaf node.
     #
 
     def test__1(self):
-        ''' Make sure depth_visit() works OK w/ empty components '''
+        ''' Make sure that depth_visit() works OK w/ empty components '''
 
         visit_called = [0]
         def on_visit_called(*args):
@@ -70,32 +70,46 @@ class TestDepthVisit(unittest.TestCase):
         self.assertFalse(visit_called[0])
 
     def test__2(self):
-        ''' Make sure depth_visit() fails w/ nonabsolute prefix '''
-        self.assertRaises(ValueError, utils_path.depth_visit,
-          'foo', ['bar', 'baz'], lambda *args: None)
+        ''' Make sure that depth_visit() accepts a non-ascii prefix '''
+
+        visit = {
+            "count": 0,
+            "expect_path": [
+                six.b("/foo\xc3\xa8").decode("utf-8") + "/bar",
+                six.b("/foo\xc3\xa8").decode("utf-8") + "/bar" + "/baz",
+            ],
+            "expect_leaf": [
+                False,
+                True
+            ],
+        }
+
+        def on_visit_called(path, leaf):
+            ''' Just an helper function '''
+            self.assertEqual(path, visit["expect_path"][visit["count"]])
+            self.assertEqual(leaf, visit["expect_leaf"][visit["count"]])
+            visit["count"] += 1
+
+        utils_path.depth_visit(six.b('/foo\xc3\xa8'), ['bar',
+          'baz'], on_visit_called)
 
     def test__3(self):
-        ''' Make sure depth_visit() fails w/ nonascii prefix '''
-        self.assertRaises(UnicodeError, utils_path.depth_visit,
-          '/foo\xc3\xa8', ['bar', 'baz'], lambda *args: None)
+        ''' Make sure that depth_visit() does not accept non-ascii component '''
+        self.assertRaises(RuntimeError, utils_path.depth_visit,
+          '/foo', ['bar', six.b('baz\xc3\xa8')], lambda *args: None)
 
     def test__4(self):
-        ''' Make sure depth_visit() fails w/ nonascii component '''
-        self.assertRaises(UnicodeError, utils_path.depth_visit,
-          '/foo', ['bar', 'baz\xc3\xa8'], lambda *args: None)
-
-    def test__5(self):
-        ''' Make sure depth_visit() fails w/ upref components '''
-        self.assertRaises(ValueError, utils_path.depth_visit,
+        ''' Make sure that depth_visit() fails w/ upref components '''
+        self.assertRaises(RuntimeError, utils_path.depth_visit,
           '/foo', ['../../baz/xo'], lambda *args: None)
 
-    def test__6(self):
+    def test__5(self):
         ''' Verify that depth_visit() is more restrictive than needed '''
-        self.assertRaises(ValueError, utils_path.depth_visit,
+        self.assertRaises(RuntimeError, utils_path.depth_visit,
           '/foo', ['/bar/bar', '../baz/xo'], lambda *args: None)
 
-    def test__7(self):
-        ''' Make sure depth_visit() visits in the expected order '''
+    def test__6(self):
+        ''' Make sure that depth_visit() visits in the expected order '''
 
         # The result depends on the OS
         expected = [
@@ -114,8 +128,8 @@ class TestDepthVisit(unittest.TestCase):
         utils_path.depth_visit('/foo', components, on_visit_called)
         self.assertEquals(visit_order, expected)
 
-    def test__8(self):
-        ''' Make sure depth_visit() correctly flags the leaf node '''
+    def test__7(self):
+        ''' Make sure that depth_visit() correctly flags the leaf node '''
 
         # The result depends on the OS
         expected = os.sep.join(['', 'foo', 'bar', 'baz',
@@ -131,84 +145,125 @@ class TestDepthVisit(unittest.TestCase):
         utils_path.depth_visit('/foo', components, on_visit_called)
         self.assertFalse(failure[0])
 
-class TestAppend(unittest.TestCase):
+class TestPossiblyDecode(unittest.TestCase):
+    ''' Make sure that possibly() works as expected '''
 
-    ''' Make sure append() works as expected '''
+    #
+    # Note: six.u("cio\xe8") is an italian word and means "that
+    # is".  I write the word using escapes, because I don't want
+    # to add an explicit encoding to this file.
+    #
+
+    def test_nonascii_bytes(self):
+        ''' Test possibly_decode() with unicode bytes input '''
+        self.assertEqual(
+            utils_path.possibly_decode('cio\xc3\xa8', 'utf-8'),
+            six.u("cio\xe8")
+        )
+
+    def test_ascii_bytes(self):
+        ''' Test possibly_decode() with ascii bytes input '''
+        self.assertEqual(
+            utils_path.possibly_decode(six.b('abc'), 'utf-8'),
+            six.u('abc')
+        )
+
+    def test_nonascii_str(self):
+        ''' Test possibly_decode() with unicode string input '''
+        self.assertEqual(
+            utils_path.possibly_decode(six.u("cio\xe8"), 'utf-8'),
+            six.u("cio\xe8")
+        )
+
+    def test_ascii_str(self):
+        ''' Test possibly_decode() with ascii string input '''
+        self.assertEqual(
+            utils_path.possibly_decode(six.u("abc"), 'utf-8'),
+            six.u("abc")
+        )
+
+    def test_decode_failure(self):
+        ''' Make sure that possibly_decode() does not decode
+            an invalid UTF-8 string '''
+        self.assertEqual(
+            utils_path.possibly_decode(six.b("\xc2b7"), 'utf-8'),
+            None
+        )
+
+class TestAppend(unittest.TestCase):
+    ''' Make sure that append() works as expected '''
 
     #
     # This test case wants to gain confidence that the following
     # statements are true:
     #
-    # 1. that append() bails out when prefix is nonascii;
+    # 1. append() fails when it can't decode the prefix or the path;
     #
-    # 2. that append() bails out when path is nonascii;
+    # 2. append() unquotes the path, if requested to do so;
     #
-    # 3. that append() bails out when prefix is nonabsolute;
+    # 3. append() does not allow to go above the rootdir;
     #
-    # 4. that append() bails out when prefix is up-ref;
-    #
-    # 5. that append() squeezes after-join() multiple slashes.
+    # 4. append() ASCII-fies the path in any case.
     #
 
     def test__1(self):
-        ''' Test append() bails out when prefix is nonascii '''
-        self.assertRaises(UnicodeError, utils_path.append,
-                          '/cio\xc3\xa8', '/foobar')
+        ''' Make sure that append() fails when it can't decode
+            the prefix or the path '''
+        # Note: '/cio\xc3a8' is wrong on purpose here
+        self.assertEqual(
+            utils_path.append(six.b('/cio\xc3a8'), '/foobar', False),
+            None
+        )
+        self.assertEqual(
+            utils_path.append('/foobar', six.b('/cio\xc3\xa8'), False),
+            None
+        )
 
     def test__2(self):
-        ''' Test append() bails out when path is nonascii '''
-        self.assertRaises(UnicodeError, utils_path.append,
-                          '/foobar', '/cio\xc3\xa8')
+        ''' Verify that append() unquotes the path, if requested to do so '''
+        self.assertEqual(
+            utils_path.append('/foobar', 'foo%2fbaz', False),
+            "/foobar/foo%2fbaz",
+        )
+        self.assertEqual(
+            utils_path.append('/foobar', 'foo%2fbaz', True),
+            "/foobar/foo/baz",
+        )
 
     def test__3(self):
-        ''' Test append() bails out when prefix is nonabsolute '''
-        self.assertRaises(ValueError, utils_path.append,
-                          'foobar', '/foobaz')
+        ''' Verify that append() does not allow to go above the rootdir '''
+        self.assertEqual(
+            utils_path.append('/foobar', '../etc/passwd', False),
+            None
+        )
+        self.assertEqual(
+            utils_path.append('/foobar',
+                six.b('\x2e\x2e\x2fetc\x2fpasswd'),
+                False),
+            None
+        )
+        self.assertEqual(
+            utils_path.append('/foobar',
+                six.b('..%2fetc%2fpasswd'),
+                True),
+            None
+        )
 
     def test__4(self):
-        ''' Test append() bails out when path is nonabsolute and upref '''
-        self.assertRaises(ValueError, utils_path.append,
-                          '/foobar', '../foobaz')
-
-    def test__5(self):
-        ''' Test append() squeezes after-join() multiple slashes '''
-        self.assertEqual(utils_path.append('/foo', '/bar'), '/foo/bar')
-
-class TestMustBeASCII(unittest.TestCase):
-
-    ''' Make sure must_be_ascii() works as expected '''
-
-    #
-    # With must_be_ascii() we want to guarantee that only ASCII
-    # input can reach normalize().  Hence, this test case ensures
-    # that we reject nonascii input and we accept ascii input.
-    # For each case, ascii and nonascii, we provide both str and
-    # bytes input (or, using python2 names, unicode and str).
-    #
-
-    def test_nonascii_bytes(self):
-        ''' Test must_be_ascii() behavior when input is nonascii bytes '''
-        self.assertRaises(UnicodeError, utils_path.must_be_ascii,
-                          'cio\xc3\xa8')
-
-    def test_ascii_bytes(self):
-        ''' Test must_be_ascii() behavior when input is ascii bytes '''
-        self.assertEqual(utils_path.must_be_ascii('abc'), 'abc')
-
-    def test_nonascii_str(self):
-        ''' Test must_be_ascii() behavior when input is nonascii str '''
-        # Use decode() to avoid declaring file encoding
-        self.assertRaises(UnicodeError, utils_path.must_be_ascii,
-                          'cio\xc3\xa8'.decode('utf-8'))
-
-    def test_ascii_str(self):
-        ''' Test must_be_ascii() behavior when input is ascii str '''
-        self.assertEqual(utils_path.must_be_ascii('abc'),
-                         'abc'.decode('utf-8'))
+        ''' Verify that append() ASCII-fies the path in any case '''
+        self.assertEqual(
+            utils_path.append("/foobar",
+                six.u("'/cio\xe8'"), True),
+            None
+        )
+        self.assertEqual(
+            utils_path.append("/foobar",
+                six.u("'/cio%e8'"), True),
+            None
+        )
 
 class TestNormalize(unittest.TestCase):
-
-    ''' Make sure normalize() works as expected '''
+    ''' Make sure that normalize() works as expected '''
 
     #
     # With this test case we want to gain confidence that
@@ -233,17 +288,17 @@ class TestNormalize(unittest.TestCase):
     #
 
     def test__1(self):
-        ''' Make sure normalize() collapses multiple slashes '''
+        ''' Make sure that normalize() collapses multiple slashes '''
         self.assertEqual(utils_path.normalize('/foo////bar'),
                          os.sep.join(['', 'foo', 'bar']))
 
     def test__2(self):
-        ''' Make sure normalize() simplifies redundant up-level refs '''
+        ''' Make sure that normalize() simplifies redundant up-level refs '''
         self.assertEqual(utils_path.normalize('/foo/bar/../baz'),
                          os.sep.join(['', 'foo', 'baz']))
 
     def test__3(self):
-        ''' Make sure normalize() converts / to \\ on windows '''
+        ''' Make sure that normalize() converts / to \\ on windows '''
         if os.name == 'nt':
             self.assertEqual(utils_path.normalize('foo/bar'), r'foo\bar')
 
@@ -291,58 +346,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(utils_path.normalize('foo/bar/../../../../baz'),
                          os.sep.join(['..', '..', 'baz']))
 
-class TestMustBeAbsolute(unittest.TestCase):
- 
-    ''' Make sure must_be_absolute() works as expected '''
-
-    #
-    # The return value of normalize may only one of: absolute path
-    # and relative path w/o and w/ leading '../'s.  In this test we
-    # make sure that the first case is accepted, and that the 2nd
-    # and the 3rd cases are rejected.
-    #
-
-    def test_success(self):
-        ''' Make sure must_be_absolute() recognizes absolute paths '''
-        string = ''.join([os.sep, 'foo'])
-        self.assertEqual(utils_path.must_be_absolute(string), string)
- 
-    def test_failure(self):
-        ''' Make sure must_be_absolute() bails out on relative paths '''
-        string = ''.join(['foo', os.sep, 'bar'])
-        self.assertRaises(ValueError, utils_path.must_be_absolute, string)
-        string = ''.join(['..', os.sep, 'foo', os.sep, 'bar'])
-        self.assertRaises(ValueError, utils_path.must_be_absolute, string)
- 
-class TestMustNotBeUpref(unittest.TestCase):
-
-    ''' Make sure must_not_be_upref() works as expected '''
-
-    #
-    # The return value of normalize may only one of: absolute path
-    # and relative path w/o and w/ leading '../'s.  In this test we
-    # make sure that the first and second case are accepted, the
-    # latter is rejected.
-    #
-
-    def test_absolute(self):
-        ''' Make sure must_not_be_upref() recognizes absolute paths '''
-        string = ''.join([os.sep, 'foo', os.sep, 'bar'])
-        self.assertEqual(utils_path.must_not_be_upref(string), string)
-
-    def test_relative_nonupref(self):
-        ''' Make sure must_not_be_upref() recognizes nonupref relative paths '''
-        string = ''.join(['foo', os.sep, 'bar'])
-        self.assertEqual(utils_path.must_not_be_upref(string), string)
-
-    def test_relative_upref(self):
-        ''' Make sure must_not_be_upref() bails out on upref relative paths '''
-        string = ''.join(['..', os.sep, 'foo', os.sep, 'bar'])
-        self.assertRaises(ValueError, utils_path.must_not_be_upref, string)
-
 class TestJoin(unittest.TestCase):
-
-    ''' Make sure join() works as expected '''
+    ''' Make sure that join() works as expected '''
 
     #
     # This test case is JUST to stress that join() is
@@ -362,4 +367,5 @@ class TestJoin(unittest.TestCase):
         self.assertEqual(utils_path.join('ab/c', 'd/../ef'), expected)
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.ERROR)  # silence, please
     unittest.main()

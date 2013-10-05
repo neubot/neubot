@@ -75,7 +75,9 @@ def sha256sum_get_uri(system, vinfo):
 def tarball_path(basedir, vinfo):
     ''' Return tarball path '''
     name = '.'.join([vinfo, 'tar', 'gz'])
-    path = utils_path.append(basedir, name)
+    path = utils_path.append(basedir, name, False)
+    if not path:
+        raise RuntimeError("updater_utils: append() path failed")
     return path
 
 def tarball_save(basedir, vinfo, tarball):
@@ -93,7 +95,9 @@ def tarball_get_uri(system, vinfo):
 def signature_path(basedir, vinfo):
     ''' Return signature path '''
     name = '.'.join([vinfo, 'tar', 'gz', 'sig'])
-    path = utils_path.append(basedir, name)
+    path = utils_path.append(basedir, name, False)
+    if not path:
+        raise RuntimeError("updater_utils: append() path failed")
     return path
 
 def signature_save(basedir, vinfo, signature):
