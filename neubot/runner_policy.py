@@ -45,7 +45,7 @@ class RunnerPolicy(object):
         ''' Returns next test that must be performed '''
         selected = self.sequence[0]
         logging.info('runner_policy: test sequence: %s', list(self.sequence))
-        self.sequence.rotate()
+        self.sequence.rotate(1)
         return selected
 
     def get_random_test(self):
