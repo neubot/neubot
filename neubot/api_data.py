@@ -1,8 +1,10 @@
 # neubot/api_data.py
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011, 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
+#
 # Copyright (c) 2012 Marco Scopesi <marco.scopesi@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -31,13 +33,14 @@
 
 import cgi
 
+from neubot.backend import BACKEND
+
 from neubot.compat import json
 from neubot.database import DATABASE
 from neubot.database import table_bittorrent
 from neubot.database import table_speedtest
 from neubot.database import table_raw
 from neubot.http.message import Message
-from neubot.utils_api import NotImplementedTest
 
 from neubot import utils
 
@@ -62,14 +65,49 @@ def api_data(stream, request, query):
     elif test == 'raw':
         table = table_raw
     else:
-        raise NotImplementedTest("Test not implemented")
+        table = None
 
     indent, mimetype, sort_keys = None, "application/json", False
     if "debug" in dictionary and utils.intify(dictionary["debug"][0]):
         indent, mimetype, sort_keys = 4, "text/plain", True
 
     response = Message()
-    lst = table.listify(DATABASE.connection(), since, until)
+
+    if table:
+        lst = table.listify(DATABASE.connection(), since, until)
+
+    #
+    # TODO We should migrate all the tests to use the new
+    # generic interface. At that point, we can also change
+    # the API to access "pages" of data by index.
+    #
+    # Until we change the API, we have an API that allows
+    # the caller to specify date ranges. For this reason
+    # below we emulate the date-ranges semantics provided
+    # by database-based tests.
+    #
+    # Note: we assume that, whatever the test structure,
+    # there is a field called "timestamp".
+    #
+    else:
+        lst = []
+        indexes = [None]
+        indexes.extend(range(16))
+        for index in indexes:
+            tmp = BACKEND.walk_generic(test, index)
+            if not tmp:
+                break
+            found_start = False
+            for elem in reversed(tmp):
+                if until >= 0 and elem["timestamp"] > until:
+                    continue
+                if since >= 0 and elem["timestamp"] < since:
+                    found_start = True
+                    break
+                lst.append(elem)
+            if found_start:
+                break
+
     body = json.dumps(lst, indent=indent, sort_keys=sort_keys)
     response.compose(code="200", reason="Ok", body=body, mimetype=mimetype)
     stream.send_response(request, response)

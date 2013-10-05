@@ -102,7 +102,10 @@ class BackgroundRendezvous(object):
         # disabled.  So we can print the test name also
         # when tests are disabled.
         #
-        test = RUNNER_POLICY.get_next_test()
+        # Note: we pick a test at random because now we
+        # have a fixed probability of running a test.
+        #
+        test = RUNNER_POLICY.get_random_test()
         logging.info('background_rendezvous: chosen test: %s', test)
 
         # Are we allowed to run a test?
@@ -111,18 +114,15 @@ class BackgroundRendezvous(object):
                                'tests disabled')
 
         #
-        # RAW test requires auto_discover to be True, since it uses mlab-ns
-        # to discover servers.  Other tests don't need that, since, at the
-        # moment, they discover servers during the rendezvous.  So, if their
-        # auto_discover were True, they'd end up running two rendezvous in
-        # a row for no good reason.
+        # The two legacy tests, speedtest and bittorent, use the rendezvous
+        # to discover the servers. Other tests use mlab-ns.
         #
-        auto_discover = (test == 'raw')
+        use_mlabns = (test != 'speedtest' and test != 'bittorrent')
 
         # Actually run the test
         deferred = Deferred()
         deferred.add_callback(self._schedule)
-        RUNNER_CORE.run(test, deferred, auto_discover, None)
+        RUNNER_CORE.run(test, deferred, use_mlabns, None)
 
     def _schedule(self, exception):
         ''' Schedule next rendezvous '''

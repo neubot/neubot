@@ -56,6 +56,7 @@ from neubot.raw_srvr_glue import RAW_SERVER_EX
 from neubot import bittorrent
 from neubot import negotiate
 from neubot import system
+from neubot import utils_modules
 
 #from neubot import rendezvous          # Not yet
 import neubot.rendezvous.server
@@ -308,6 +309,12 @@ def main(args):
         server = DebugAPI(POLLER)
         server.configure(conf)
         server.listen(('127.0.0.1 ::1', 9774))
+
+    # Probe existing modules and ask them to attach to us
+    utils_modules.modprobe(None, "server", {
+        "http_server": HTTP_SERVER,
+        "negotiate_server": NEGOTIATE_SERVER,
+    })
 
     #
     # Go background and drop privileges,
