@@ -29,6 +29,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot.backend import BACKEND
 from neubot.background_rendezvous import BACKGROUND_RENDEZVOUS
 from neubot.config import CONFIG
 from neubot.database import DATABASE
@@ -58,6 +59,9 @@ def main(args):
 
     # Read settings from database
     CONFIG.merge_database(DATABASE.connection())
+
+    BACKEND.use_backend("neubot")
+    BACKEND.datadir_init()
 
     #
     # Save logs into the database, to easily access

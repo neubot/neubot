@@ -1,8 +1,8 @@
-# neubot/backend_null.py
+# neubot/backend_volatile.py
 
 #
-# Copyright (c) 2012
-#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),
 #     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -21,25 +21,23 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Null backend driver '''
+""" The volatile backend """
 
-class BackendNull(object):
-    ''' Null backend driver '''
+from neubot.backend_null import BackendNull
+
+class BackendVolatile(BackendNull):
+    """ The volatile backend """
+    # Adapted from neubot/backend_neubot.py
 
     def __init__(self, proxy):
-        self.proxy = proxy
-
-    def bittorrent_store(self, message):
-        ''' Save result of BitTorrent test '''
-
-    def store_raw(self, message):
-        ''' Save result of RAW test '''
-
-    def speedtest_store(self, message):
-        ''' Save result of speedtest test '''
+        BackendNull.__init__(self, proxy)
+        self.generic = {}
 
     def store_generic(self, test, results):
         """ Store the results of a generic test """
+        self.generic.setdefault(test, [])
+        self.generic[test].append(results)
 
     def walk_generic(self, test, index):
         """ Walk over the results of a generic test """
+        return self.generic.get(test, [])

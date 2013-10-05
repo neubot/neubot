@@ -50,7 +50,6 @@ from neubot.database import DATABASE
 from neubot.debug import objgraph
 from neubot.config import CONFIG
 from neubot.backend import BACKEND
-from neubot.filesys import FILESYS
 from neubot.log import LOG
 from neubot.raw_srvr_glue import RAW_SERVER_EX
 
@@ -220,11 +219,13 @@ def main(args):
 
     logging.debug('server: using backend: %s... in progress', backend)
     if backend == 'mlab':
-        FILESYS.datadir_init()
+        BACKEND.datadir_init()
         BACKEND.use_backend('mlab')
     elif backend == 'neubot':
         DATABASE.connect()
         BACKEND.use_backend('neubot')
+    elif backend == 'volatile':
+        BACKEND.use_backend('volatile')
     else:
         BACKEND.use_backend('null')
     logging.debug('server: using backend: %s... complete', backend)
