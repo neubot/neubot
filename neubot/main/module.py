@@ -44,7 +44,6 @@ MODULES = {
     "server"              : "neubot.server",
     "speedtest"           : "neubot.speedtest.client",
     "speedtest.client"    : "neubot.speedtest.client",
-    "speedtest.negotiate" : "neubot.speedtest.negotiate",
     "speedtest.server"    : "neubot.speedtest.server",
     "stream"              : "neubot.net.stream",
     'viewer'              : 'neubot.viewer',
@@ -71,7 +70,6 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     #import neubot.server               # ditto
     import neubot.speedtest.client
     import neubot.speedtest.client
-    import neubot.speedtest.negotiate
     import neubot.speedtest.server
     import neubot.net.stream
 
