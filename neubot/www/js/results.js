@@ -36,6 +36,7 @@ var results = (function () {
 
     self.one_day_in_ms = 24 * 60 * 60 * 1000;
     self.one_hour_in_ms = 60 * 60 * 1000;
+    self.one_min_in_ms = 60 * 1000;
 
     function eval_recipe(code, result) {
 
@@ -583,6 +584,9 @@ var results = (function () {
             break;
         case "h":
             since = utils.getNow() - self.one_hour_in_ms * since;
+            break;
+        case "min":
+            since = utils.getNow() - self.one_min_in_ms * since;
             break;
         default:
             /* nothing */
