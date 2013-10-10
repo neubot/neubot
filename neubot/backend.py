@@ -128,8 +128,18 @@ class BackendProxy(object):
     # any specific driver, because it is common to all drivers.
     #
 
-    def datadir_init(self, uname=None, datadir=None):
+    def really_init_datadir(self, uname=None, datadir=None):
         ''' Initialize datadir '''
+
+        #
+        # Note: this code is the implementation of datadir_init(),
+        # which may be called by the backends that need it.
+        #
+        # The reason for this code structure is that some backends
+        # (e.g., the volatile backend) don't need to initialize
+        # the datadir, while others (e.g., the mlab backend) need
+        # to initialize the datadir.
+        #
 
         if datadir:
             self.datadir = datadir

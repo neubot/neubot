@@ -27,7 +27,6 @@
 
 import getopt
 import logging
-import os
 import sys
 
 if __name__ == "__main__":
@@ -44,26 +43,30 @@ from neubot.negotiate.server import NegotiateServer
 
 from neubot.backend import BACKEND
 from neubot.config import CONFIG
-from neubot.database import DATABASE
 from neubot.poller import POLLER
 
 from neubot import log
 from neubot import runner_clnt
 
+USAGE = """\
+usage: neubot dash [-6flnv] [-A address] [-b backend] [-d datadir] [-p port]"""
+
 def main(args):
     """ Main function """
     try:
-        options, arguments = getopt.getopt(args[1:], "6A:flnp:v")
+        options, arguments = getopt.getopt(args[1:], "6A:b:d:flnp:v")
     except getopt.error:
-        sys.exit("usage: neubot dash [-6lnfv] [-A address] [-p port]")
+        sys.exit(USAGE)
     if arguments:
-        sys.exit("usage: neubot dash [-6lnfv] [-A address] [-p port]")
+        sys.exit(USAGE)
 
     prefer_ipv6 = 0
     address = "127.0.0.1"
+    backend = "volatile"
+    datadir = None  # means: pick the default
     force = 0
-    negotiate = 1
     listen = 0
+    negotiate = 1
     port = 8080
     noisy = 0
     for name, value in options:
@@ -71,6 +74,10 @@ def main(args):
             prefer_ipv6 = 1
         elif name == "-A":
             address = value
+        elif name == "-b":
+            backend = value
+        elif name == "-d":
+            datadir = value
         elif name == "-f":
             force = 1
         elif name == "-l":
@@ -82,12 +89,13 @@ def main(args):
         elif name == "-v":
             noisy = 1
 
-    BACKEND.use_backend("volatile")
-
     if noisy:
         log.set_verbose()
 
     conf = CONFIG.copy()
+
+    BACKEND.use_backend(backend)
+    BACKEND.datadir_init(None, datadir)
 
     if listen:
         if not negotiate:

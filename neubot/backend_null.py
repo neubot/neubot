@@ -43,3 +43,6 @@ class BackendNull(object):
 
     def walk_generic(self, test, index):
         """ Walk over the results of a generic test """
+
+    def datadir_init(self, uname=None, datadir=None):
+        ''' Initialize datadir (if needed) '''

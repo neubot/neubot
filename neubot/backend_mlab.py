@@ -95,3 +95,7 @@ class BackendMLab(BackendNull):
     def walk_generic(self, test, index):
         """ Walk over the results of a generic test """
         return []
+
+    def datadir_init(self, uname=None, datadir=None):
+        ''' Initialize datadir (if needed) '''
+        self.proxy.really_init_datadir(uname, datadir)

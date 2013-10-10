@@ -158,3 +158,7 @@ class BackendNeubot(BackendNull):
             return []
 
         return pickle.loads(content)
+
+    def datadir_init(self, uname=None, datadir=None):
+        ''' Initialize datadir (if needed) '''
+        self.proxy.really_init_datadir(uname, datadir)
