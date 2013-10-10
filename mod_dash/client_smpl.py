@@ -80,8 +80,10 @@ class DASHClientSmpl(ClientHTTP):
 
         STATE.update("test_latency", "---", publish=False)
         STATE.update("test_download", "---", publish=False)
-        STATE.update("test_upload", "---", publish=False)
-        STATE.update("test_name", "dash")
+        STATE.update("test_upload", "N/A", publish=False)
+        STATE.update("test_progress", "0%", publish=False)
+        STATE.update("test_name", "dash", publish=False)
+        STATE.update("test")
 
         self.iteration = 0
         self.saved_ticks = 0.0
@@ -193,6 +195,15 @@ class DASHClientSmpl(ClientHTTP):
         #
 
         self.iteration += 1
+
+        #
+        # TODO it would be nice to also STATE.update() with the dash
+        # rate, but that change requires also some www changes.
+        #
+
+        STATE.update("test_progress", "%d%%" % ((100 * self.iteration)
+          / DASH_MAX_ITERATION), publish=False)
+
         if self.iteration >= DASH_MAX_ITERATION:
             logging.debug("dash: done all iteration")
             stream.close()

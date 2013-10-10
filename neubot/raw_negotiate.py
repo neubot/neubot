@@ -70,6 +70,7 @@ class RawNegotiate(HttpClient):
         STATE.update('test_latency', '---', publish=False)
         STATE.update('test_download', '---', publish=False)
         STATE.update('test_upload', '---', publish=False)
+        STATE.update('test_progress', '0%', publish=False)
         STATE.update('test_name', 'raw', publish=False)
         STATE.update('negotiate')
 

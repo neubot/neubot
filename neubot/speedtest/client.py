@@ -273,6 +273,7 @@ class ClientSpeedtest(ClientHTTP):
         STATE.update("test_latency", "---", publish=False)
         STATE.update("test_download", "---", publish=False)
         STATE.update("test_upload", "---", publish=False)
+        STATE.update("test_progress", "0%", publish=False)
         STATE.update("test_name", "speedtest")
         self.child = None
         self.streams = collections.deque()
@@ -381,6 +382,7 @@ class ClientSpeedtest(ClientHTTP):
                 latency = sum(latency) / len(latency)
                 self.conf["speedtest.client.latency"] = latency
                 # Advertise the result
+                STATE.update("test_progress", "33%", publish=False)
                 STATE.update("test_latency", utils.time_formatter(latency))
                 logging.info("* speedtest: %s ...  done, %s\n", self.state,
                   utils.time_formatter(latency))
@@ -409,12 +411,14 @@ class ClientSpeedtest(ClientHTTP):
                     self.conf["speedtest.client.%s" % self.state] = speed
                     # Advertise
                     STATE.update("test_%s" % self.state,
-                      utils.speed_formatter(speed))
+                      utils.speed_formatter(speed), publish=False)
                     logging.info("* speedtest: %s ...  done, %s\n", self.state,
                       utils.speed_formatter(speed))
                     if self.state == "download":
+                        STATE.update("test_progress", "66%")
                         self.state = "upload"
                     else:
+                        STATE.update("test_progress", "100%")
                         self.state = "collect"
                 elif elapsed > LO_THRESH/3:
                     del self.conf["speedtest.client.%s" % self.state]
