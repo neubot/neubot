@@ -152,6 +152,12 @@ class ClientUpload(ClientHTTP):
 class ClientNegotiate(ClientHTTP):
     def connection_ready(self, stream):
         request = Message()
+        #
+        # Note: the negotiation of the other tests uses POST and includes a
+        # possibly-empty body (see, e.g., mod_dash). Here it is fine, instead,
+        # to have GET plus an empty body, because the speedtest is still
+        # based on the legacy "/speedtest/negotiate" negotiator.
+        #
         request.compose(method="GET", pathquery="/speedtest/negotiate",
           host=self.host_header)
         request["authorization"] = self.conf.get(

@@ -84,7 +84,7 @@ class DASHNegotiateClient(ClientHTTP):
         body = json.dumps({})
 
         request = Message()
-        request.compose(method="GET", pathquery="/negotiate/dash",
+        request.compose(method="POST", pathquery="/negotiate/dash",
           host=self.host_header, body=body, mimetype="application/json")
 
         request["authorization"] = self.authorization

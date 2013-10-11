@@ -84,7 +84,7 @@ class BitTorrentClient(ClientHTTP):
         request = Message()
         body = json.dumps({"test_version": CONFIG['bittorrent_test_version'],
                            "target_bytes": self.conf['bittorrent.bytes.up']})
-        request.compose(method="GET", pathquery="/negotiate/bittorrent",
+        request.compose(method="POST", pathquery="/negotiate/bittorrent",
           host=self.host_header, body=body, mimetype="application/json")
         request["authorization"] = self.conf.get("_authorization", "")
         stream.send_request(request)

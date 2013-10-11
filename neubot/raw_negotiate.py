@@ -116,7 +116,7 @@ class RawNegotiate(HttpClient):
         request = {}  # No options for now
         body = six.b(json.dumps(request))
         host_header = utils_net.format_epnt((extra['address'], extra['port']))
-        self.append_request(stream, 'GET', '/negotiate/raw', 'HTTP/1.1')
+        self.append_request(stream, 'POST', '/negotiate/raw', 'HTTP/1.1')
         self.append_header(stream, 'Host', host_header)
         self.append_header(stream, 'User-Agent', utils_version.HTTP_HEADER)
         self.append_header(stream, 'Content-Type', 'application/json')

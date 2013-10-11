@@ -85,6 +85,14 @@ class NegotiateServer(ServerHTTP):
         ''' Process a /collect or /negotiate HTTP request '''
 
         #
+        # Here we are liberal and we process a GET request plus body
+        # as it was a POST or PUT request, however we warn because the
+        # body has no meaning when you send a GET request.
+        #
+        if request.method != "POST" and request.method != "PUT":
+            logging.warning("%s: GET plus body is surprising", request.uri)
+
+        #
         # We always pass upstream the collect request.  If it is
         # not authorized the module does not have the identifier in
         # its global table and will raise a KeyError.
