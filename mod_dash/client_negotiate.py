@@ -43,6 +43,27 @@ from neubot import utils_net
 STATE_NEGOTIATE = 0
 STATE_COLLECT = 1
 
+# Note: the rates are in Kbit/s
+DASH_RATES = [
+    100,
+    150,
+    200,
+    250,
+    300,
+    400,
+    500,
+    700,
+    900,
+    1200,
+    1500,
+    2000,
+    2500,
+    3000,
+    4000,
+    5000,
+    6000,
+]
+
 class DASHNegotiateClient(ClientHTTP):
     """ Negotiate client for MPEG DASH test """
 
@@ -81,7 +102,9 @@ class DASHNegotiateClient(ClientHTTP):
         STATE.update("negotiate")
         logging.info("dash: negotiate... in progress")
 
-        body = json.dumps({})
+        body = json.dumps({
+            "dash_rates": DASH_RATES,
+        })
 
         request = Message()
         request.compose(method="POST", pathquery="/negotiate/dash",
@@ -122,7 +145,15 @@ class DASHNegotiateClient(ClientHTTP):
 
             self.stream = stream
 
-            self.client = DASHClientSmpl(self.poller, self)
+            #
+            # The server may override the vector of rates with a "better"
+            # vector of rates. If the vector is empty, the client will
+            # automatically request a rate that keeps the download time
+            # around DASH_SECONDS seconds.
+            #
+            rates = list(response_body.get("dash_rates", []))
+
+            self.client = DASHClientSmpl(self.poller, self, rates)
             self.client.configure(self.conf.copy())
             self.client.connect((self.stream.peername[0], 8080))  # XXX
 

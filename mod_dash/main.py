@@ -135,7 +135,7 @@ def main(args):
         if negotiate:
             client = DASHNegotiateClient(POLLER)
         else:
-            client = DASHClientSmpl(POLLER, None)
+            client = DASHClientSmpl(POLLER, None, [])
         client.configure(conf)
         client.connect((address, port))
 

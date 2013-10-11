@@ -38,27 +38,6 @@ from neubot import utils
 from neubot import utils_net
 from neubot import utils_version
 
-# Note: the rates are in Kbit/s
-DASH_RATES = [
-    100,
-    150,
-    200,
-    250,
-    300,
-    400,
-    500,
-    700,
-    900,
-    1200,
-    1500,
-    2000,
-    2500,
-    3000,
-    4000,
-    5000,
-    6000,
-]
-
 #
 # We want the download to run for about this number of seconds,
 # plus one RTT, plus the queuing delay.
@@ -74,9 +53,21 @@ DASH_MAX_ITERATION = 15
 class DASHClientSmpl(ClientHTTP):
     """ The MPEG DASH client """
 
-    def __init__(self, poller, parent):
+    #
+    # As far as user experience is concerned, we want to perform a test
+    # in which each chunks is downloaded in about DASH_SECONDS, plus one
+    # round-trip delay, and hopefully with acceptable queueing delay.
+    #
+    # To this end, if we have a vector of rates, we pick the greatest rate
+    # in the vector that is smaller than the latest piece's rate; otherwise,
+    # we dynamically pick a rate that guarantees that, on the average, we
+    # are below DASH_SECONDS per chunk.
+    #
+
+    def __init__(self, poller, parent, rates):
         ClientHTTP.__init__(self, poller)
         self.parent = parent
+        self.rates = rates
 
         STATE.update("test_latency", "---", publish=False)
         STATE.update("test_download", "---", publish=False)
@@ -86,10 +77,11 @@ class DASHClientSmpl(ClientHTTP):
         STATE.update("test")
 
         self.iteration = 0
+        self.rate_kbit = 0
+        self.speed_kbit = 100
         self.saved_ticks = 0.0
         self.saved_cnt = 0
         self.saved_times = 0
-        self.rate_index = 0
 
     def connect(self, endpoint, count=1):
         if count != 1:
@@ -107,20 +99,28 @@ class DASHClientSmpl(ClientHTTP):
 
         STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
 
-        #
-        # We start with index equal to zero (i.e., the lowest MPEG DASH
-        # rate) and we update the index after each download.
-        #
-        # We request a number of bytes which shall keep the download
-        # time under DASH_SECONDS seconds plus one round-trip time
-        # plus the queuing delay at the bottleneck.
-        #
+        if self.rates:
+            #
+            # Pick the greatest rate in the vector that is smaller
+            # than the latest piece's rate.
+            #
+            # Note: when the rate is faster than the maximum rate,
+            # the bisect point is one past the last element, and
+            # thus we must patch the index to avoid an IndexError.
+            #
+            rate_index = bisect.bisect_left(self.rates, self.speed_kbit)
+            if rate_index >= len(self.rates):
+                rate_index = len(self.rates) - 1
+            self.rate_kbit = self.rates[rate_index]
 
-        rate = DASH_RATES[self.rate_index]
-        count = ((rate * 1000) / 8) * DASH_SECONDS
+        else:
+            self.rate_kbit = self.speed_kbit
+
+        count = ((self.rate_kbit * 1000) / 8) * DASH_SECONDS
         uri = "/dash/download/%d" % count
 
-        logging.debug("dash: connection ready - rate %d Kbit/s", rate)
+        logging.debug("dash: connection ready - rate %d Kbit/s",
+                      self.rate_kbit)
 
         request = Message()
         request.compose(method="GET", pathquery=uri,
@@ -176,10 +176,10 @@ class DASHClientSmpl(ClientHTTP):
                       "delta_user_time": delta_user_time,
                       "delta_sys_time": delta_sys_time,
                       "elapsed": elapsed,
+                      "elapsed_target": DASH_SECONDS,
                       "internal_address": stream.myname[0],
                       "iteration": self.iteration,
-                      "rate": DASH_RATES[self.rate_index],
-                      "rate_index": self.rate_index,
+                      "rate": self.rate_kbit,
                       "real_address": self.parent.real_address,
                       "remote_address": stream.peername[0],
                       "received": received,
@@ -193,7 +193,6 @@ class DASHClientSmpl(ClientHTTP):
         # We perform at most DASH_MAX_ITERATION iterations, to keep
         # the total elapsed test time under control.
         #
-
         self.iteration += 1
 
         #
@@ -209,20 +208,21 @@ class DASHClientSmpl(ClientHTTP):
             stream.close()
             return
 
-        #
-        # Note: when the rate is faster than the maximum rate,
-        # the bisect point is one past the last element, and
-        # thus we must patch the index to avoid an IndexError.
-        #
-
         speed = received / elapsed
-        speed_kilobit = (speed * 8) / 1000
-        self.rate_index = bisect.bisect_left(DASH_RATES, speed_kilobit)
-        if self.rate_index >= len(DASH_RATES):
-            self.rate_index = len(DASH_RATES) - 1
+        self.speed_kbit = (speed * 8) / 1000
 
         STATE.update("test_download", utils.speed_formatter(speed))
-        logging.debug("dash: speed - %f Kbit/s", speed_kilobit)
+        logging.debug("dash: speed - %f Kbit/s", self.speed_kbit)
+
+        if not self.rates and elapsed > DASH_SECONDS:
+            #
+            # If we're adding too much delay, artificially reduce the
+            # measured speed to let the bottleneck breathe.
+            #
+            rel_err = 1 - elapsed / DASH_SECONDS
+            self.speed_kbit += rel_err * self.speed_kbit
+            if self.speed_kbit < 0:
+                self.speed_kbit = 100
 
         self.connection_ready(stream)
 
