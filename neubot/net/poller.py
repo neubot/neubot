@@ -24,38 +24,6 @@
 
 # Will be replaced by neubot/poller.py
 
+from neubot.pollable import WATCHDOG
+from neubot.pollable import Pollable
 from neubot.poller import POLLER
-from neubot.utils import ticks
-
-#
-# The default watchdog timeout is positive and large
-# because we don't want by mistake that something runs
-# forever.  Who needs to do that should override it.
-#
-WATCHDOG = 300
-
-class Pollable(object):
-
-    ''' Base class for pollable objects '''
-
-    def __init__(self):
-        ''' Initialize '''
-        self.created = ticks()
-        self.watchdog = WATCHDOG
-
-    def fileno(self):
-        ''' Return file number '''
-        raise NotImplementedError
-
-    def handle_read(self):
-        ''' Invoked to handle the read event '''
-
-    def handle_write(self):
-        ''' Invoked to handle the write event '''
-
-    def handle_close(self):
-        ''' Invoked to handle the close event '''
-
-    def handle_periodic(self, timenow):
-        ''' Invoked to handle the periodic event '''
-        return self.watchdog >= 0 and timenow - self.created > self.watchdog
