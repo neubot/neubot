@@ -142,6 +142,8 @@ class DASHClientSmpl(ClientHTTP):
         logging.debug("dash: send request - ticks %f, bytes %d, times %s",
           self.saved_ticks, self.saved_cnt, self.saved_times)
 
+        stream.set_timeout(10)
+
         stream.send_request(request, response)
 
     def got_response(self, stream, request, response):

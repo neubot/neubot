@@ -43,6 +43,13 @@ DASH_DEFAULT_BODY_SIZE = 1000
 #
 DASH_MAXIMUM_BODY_SIZE = 104857600
 
+DASH_MAXIMUM_REPETITIONS = 60
+
+class DASHServerSideState(object):
+    """ Per stream server-side state """
+    def __init__(self):
+        self.count = 0
+
 class DASHServerSmpl(ServerHTTP):
     """ Server-side of the MPEG DASH test """
 
@@ -61,12 +68,22 @@ class DASHServerSmpl(ServerHTTP):
         #
         request.body.write = lambda data: None
 
+        if not stream.opaque:
+            stream.opaque = DASHServerSideState()
+
+        stream.set_timeout(10)
+
         return request.uri.startswith("/dash/download")
 
     def process_request(self, stream, request):
         """ Process the incoming HTTP request """
 
         if request.uri.startswith("/dash/download"):
+
+            context = stream.opaque
+            context.count += 1
+            if context.count > DASH_MAXIMUM_REPETITIONS:
+                raise RuntimeError("dash: too many repetitions")
 
             #
             # Parse the "/dash/download/<size>" optional RESTful
@@ -105,6 +122,9 @@ class DASHServerSmpl(ServerHTTP):
             response = Message()
             response.compose(code="200", reason="Ok", body=body,
                              mimetype="video/mp4")
+
+            stream.set_timeout(15)
+
             stream.send_response(request, response)
 
         else:

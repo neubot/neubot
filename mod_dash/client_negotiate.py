@@ -64,6 +64,8 @@ DASH_RATES = [
     6000,
 ]
 
+MAX_ITERATIONS = 512
+
 class DASHNegotiateClient(ClientHTTP):
     """ Negotiate client for MPEG DASH test """
 
@@ -87,6 +89,8 @@ class DASHNegotiateClient(ClientHTTP):
         self.queue_pos = 0
         self.unchoked = False
 
+        self.iterations = 0
+
     def connect(self, endpoint, count=1):
         if count != 1:
             raise RuntimeError("dash: invalid count")
@@ -98,6 +102,10 @@ class DASHNegotiateClient(ClientHTTP):
         raise RuntimeError("dash: please, use connect()")
 
     def connection_ready(self, stream):
+
+        if self.iterations > MAX_ITERATIONS:
+            raise RuntimeError("dash: too many negotiations")
+        self.iterations += 1
 
         STATE.update("negotiate")
         logging.info("dash: negotiate... in progress")
@@ -111,6 +119,8 @@ class DASHNegotiateClient(ClientHTTP):
           host=self.host_header, body=body, mimetype="application/json")
 
         request["authorization"] = self.authorization
+
+        stream.set_timeout(300)
 
         stream.send_request(request)
 
@@ -209,6 +219,8 @@ class DASHNegotiateClient(ClientHTTP):
           body=body, mimetype="application/json", host=self.host_header)
 
         request["authorization"] = self.authorization
+
+        stream.set_timeout(15)
 
         stream.send_request(request)
 
