@@ -28,6 +28,7 @@
 
 . /etc/mlab/slice-functions
 
+DATADIR=/var/spool/mlab_neubot
 DEBUG=
 
 if [ `id -u` -ne 0 ]; then
@@ -35,10 +36,17 @@ if [ `id -u` -ne 0 ]; then
     exit 1
 fi
 
+#
+# When a slice crashes and is re-created, the files and the dirs below
+# $DATADIR are not owned by _neubot:_neubot, therefore neubot cannot
+# save the experiments results inside $DATADIR.
+#
+find $DATADIR -exec chown _neubot:_neubot {} \;
+
 ADDRESS="::"
 if [ -z "`get_slice_ipv6`" ]; then
     ADDRESS="0.0.0.0"
 fi
 
 $DEBUG /usr/bin/python /home/mlab_neubot/neubot/neubot/main/__init__.py \
-    server -A $ADDRESS -D server.datadir=/var/spool/mlab_neubot
+    server -A $ADDRESS -D server.datadir=$DATADIR
