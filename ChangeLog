@@ -1,3 +1,27 @@
+Neubot 0.4.16.3 [2013-10-13]
+	* M-Lab: adapt to new deployment style
+	* server: Add -A option to choose the address to bind()
+	* M-Lab/ports.txt: we're now using IPv6
+	* server: add -D server.datadir=FOO switch to set datadir to FOO
+	* Move master-server related scripts from M-Lab to MasterSrv
+	* MasterSrv: make sure recently-moved scripts work again
+	* MasterSrv/servers.py: minor changes
+	* MasterSrv: update the list of servers
+	* server.py: avoid access to nonexistent STATE attribute
+	* M-Lab/ports.txt: remove 7999 (rsync) and add 80 (now available!)
+	* M-Lab/check.sh: skip port 7999
+	* M-Lab: add code to start/check on IPv4 only machines
+	* ChangeLog: add 0.4.15.8 and 0.4.16.{0-2} changes
+	* README.rst: NEXA -> Nexa and 2012 -> 2013
+	* runner_hosts.py: update
+	* Merge branch 'stable_mlab_20130321b'
+	* agent utils_posix: add and use code to remove pidfile
+	* server.py: Reinstate import line lost during merge with stable_mlab
+	* M-Lab/start.sh: force ownership of files and dirs below $DATADIR
+	* Merge branch 'stable_mlab_20131012'
+	* M-Lab/start.sh: slice -> sliver in a comment
+	* Neubot/0.4.16.3 released
+
 Neubot 0.4.16.2 [2013-10-12]
 	* net/poller.py: pull Pollable from pollable.py
 	* neubot/__init__.py: update copyright years and wording
