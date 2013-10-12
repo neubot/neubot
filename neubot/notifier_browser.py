@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
 from neubot.config import CONFIG
 
+from neubot import background_api
 from neubot import browser
 from neubot import utils
 from neubot import utils_net
@@ -83,13 +84,9 @@ class NotifierBrowser(object):
 
         self.last_show[html_page] = now
 
-        # FIXME This discards IPv6 localhost address
-        address = CONFIG['agent.api.address']
-        if ' ' in address:
-            address = address.split()[0]
+        address, port = background_api.get_address_port()
         uri = 'http://%s/%s' % (
-                                   utils_net.format_epnt((address,
-                                     CONFIG['agent.api.port'])),
+                                   utils_net.format_epnt((address, port)),
                                    html_page
                                 )
 

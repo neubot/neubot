@@ -39,11 +39,12 @@ import time
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import background_api
 from neubot import privacy
 from neubot import utils_hier
 from neubot import utils_net
 
-def __should_adjust_privacy(database_path):
+def __should_adjust_privacy():
 
     ''' Connect to the daemon, get privacy settings and return
         true if the user should adjust privacy settings '''
@@ -56,17 +57,7 @@ def __should_adjust_privacy(database_path):
 
     try:
 
-        address, port = '127.0.0.1', '9774'
-
-        connection = sqlite3.connect(database_path)
-        cursor = connection.cursor()
-        cursor.execute('SELECT * FROM config;')
-        for name, value in cursor:
-            if name == 'agent.api.address':
-                address = value
-            elif name == 'agent.api.port':
-                port = value
-        connection.close()
+        address, port = background_api.get_address_port()
 
         connection = httplib.HTTPConnection(address, port)
         connection.request('GET', '/api/config')
@@ -110,23 +101,18 @@ def main(args):
     ''' Notify the user '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'f:')
+        options, arguments = getopt.getopt(args[1:], '')
     except getopt.error:
-        sys.exit('Usage: neubot notifier [-f database]\n')
+        sys.exit('Usage: neubot notifier\n')
     if arguments:
-        sys.exit('Usage: neubot notifier [-f database]\n')
-
-    database = utils_hier.DATABASEPATH
-    for name, value in options:
-        if name == '-f':
-            database = value
+        sys.exit('Usage: neubot notifier\n')
 
     syslog.openlog('neubot_notify', syslog.LOG_PID, syslog.LOG_USER)
 
     # Give Neubot time to start
     time.sleep(15)
 
-    uri = __should_adjust_privacy(database)
+    uri = __should_adjust_privacy()
     if uri:
         __notify_adjust_privacy(uri)
 
