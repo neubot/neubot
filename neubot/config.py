@@ -195,9 +195,6 @@ CONFIG.register_descriptions_helper = lambda properties: \
                                           map(lambda t: t[2], properties))))
 
 CONFIG.register_defaults({
-    "agent.api": True,
-    "agent.api.address": "127.0.0.1 ::1",
-    "agent.api.port": 9774,
     "agent.daemonize": True,
     "agent.interval": 0,
     "agent.master": "master.neubot.org master2.neubot.org",
@@ -230,9 +227,6 @@ CONFIG.register_defaults({
 })
 
 CONFIG.register_descriptions({
-    "agent.api": "Enable API server",
-#   "agent.api.address": "Set API server address",  # FIXME
-#   "agent.api.port": "Set API server port",  # FIXME
     "agent.daemonize": "Enable daemon behavior",
     "agent.interval": "Set rendezvous interval, in seconds (must be >= 1380 or 0 = random value in a given interval)",
     "agent.master": "Set master server address",

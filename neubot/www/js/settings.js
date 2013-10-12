@@ -107,10 +107,9 @@ function settings_init() {
                 dataType: 'json',
                 success: function(data) {
                     filtered = Array();
-                    filtered[0] = "agent.api";
-                    filtered[1] = "version";
-                    filtered[2] = "uuid";
-                    filtered[3] = "agent.daemonize";
+                    filtered[0] = "version";
+                    filtered[1] = "uuid";
+                    filtered[2] = "agent.daemonize";
 
                     var html = "";
                     html += "<table width='100%' id='table_settings'>";

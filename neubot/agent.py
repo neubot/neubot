@@ -65,8 +65,6 @@ def main(args):
     BACKEND.use_backend("neubot")
     BACKEND.datadir_init()
 
-    # FIXME We're ignoring agent.api.{address,port} that are now
-    # deprecated and should be removed soon.
     background_api.start_api()
 
     if conf["agent.daemonize"]:
