@@ -1,3 +1,147 @@
+Neubot 0.4.16.2 [2013-10-12]
+	* net/poller.py: pull Pollable from pollable.py
+	* neubot/__init__.py: update copyright years and wording
+	* http/message.py: improve the diff that disables prettyprinting
+	* footer.html: NEXA -> Nexa
+	* runner_policy: specify rotate() argument to increase correctness
+	* scripts: add helper scripts to start local server and client
+	* www: allow the user to see the last N minutes of data
+	* results.js: implement append, to-fixed, and to-string operations
+	* utils_path.py: Rewrite append()
+	* add utils_modules.py: code to manage modules as plugins
+	* Reorganize the backend and start using pickle rather then sqlite3
+	* Add the new dash test
+	* Teach Neubot to dynamically load the mod_dash and other plugins
+	* main/module.py: remove import of nonexistent module
+	* Allow mod_dash/main.py to override the default volatile backend
+	* www: Show test progress in the right sidebar
+	* Avoid surprises and use POST to negotiate
+	* mod_dash: negotiate rates and/or auto-adapt the rate
+	* Allow mod_dash to adjust the stream timeout
+	* Merge branch 'dashtest-v8'
+	* Neubot/0.4.16.2 released
+
+Neubot 0.4.16.1 [2013-10-12]
+	* Undo HTTP and networking changes not ready for 0.4.16.0
+	* Update manual page
+	* AUTHORS: Antonio has not being active for some time
+	* updater/unix.py: don't flood syslog with updates-disabled messages
+	* Remove ArchLinux package
+	* scripts/faq: make it work on MacOS
+	* doc/neubot.1.rst: fix a couple of nits
+	* Replace restructured text english FAQ with markdown english FAQ
+	* faq.md: does...contains -> does...contain
+	* doc/faq.md: clarify our versioning policy
+	* doc/faq.md: clarify which is the stable version of Neubot
+	* doc/faq.md: the certificate is not invalid, it's just auto-signed
+	* doc/faq.md: FAQ 3.3 grammar nit
+	* doc/faq.md: zap unneeded 'and' in FAQ 3.4
+	* doc/faq.md: FAQ 4.1: better document Neubot behavior on Win32
+	* faq.md: FAQ 4.4: fix command and provide more info on %APPDATA%
+	* doc/faq.md: clarify text of FAQ 4.6
+	* faq.md: FAQ 6.2: direct to more comprehensive data format doc
+	* faq.md: fix some titles and split FAQ 7.2 into subsections
+	* faq.md: grammar in FAQ 8.1
+	* Merge branch 'faq_nits'
+	* faq.md: add one line that provides link back to neubot.org
+	* faq.md: add horizontal rule between first line and index
+	* faq.md: add instructions to create Win32 installer
+	* faq.md: regen index
+	* Revert "AUTHORS: Antonio has not being active for some time"
+	* Merge branch 'master' of github.com:neubot/neubot
+	* Neubot/0.4.16.1 released
+
+Neubot 0.4.16.0 [2013-10-12]
+	* _handle_send_complete(): reorganize code and avoid redundancy
+	* http_clnt: document treatment of multiple headers with same name
+	* FAQ: fix links
+	* FAQ: remove unrecognized admonitions
+	* runner_hosts.py: sync
+	* www/header.html: more precise copyright statement
+	* http/message.py: disable prettyprint of body
+	* api_results.py js/results.js: rewrite for clarity and flexibility
+	* results.js: use lisp-like code to customize plots
+	* results.js results.html: plot appearance improvements
+	* www: don't mention version number in footer
+	* utils_posix: review the code, fix bugs, improve unit test
+	* utils_posix: add the possibility of using a logfile
+	* utils_posix: simplify interface to daemonize and propagate changes
+	* updater/unix.py: use utils_posix
+	* updater/unix.py: allow to choose nonpriv user for updates
+	* agent.py: honor /etc/neubot/users
+	* updater/unix.py: don't unconditionally append to sys.path
+	* utils_posix.py: make sure we create pidfile with standard umask
+	* js/results.js: be robust when raw's web100_snap is {}
+	* test/raw.json: disable average-cwnd and plr plots
+	* js/results.js: simplify pythonism to work like real python
+	* filesys_posix: honor /etc/neubot/users
+	* Hide agent.api.{address,port}
+	* Remove in-tree debian support
+	* neubot/log.py: invoke VACUUM less frequently
+	* Spring cleanup of manpage and main()s
+	* Bump version number to 0.4.16.0
+	* Merge branch 'stable_20130418'
+	* Neubot/0.4.16.0 released
+
+Neubot 0.4.15.8 [2013-10-12]
+	* system: replace running_as_root with has_enough_privs
+	* README: open source -> free software
+	* http_clnt: fix typo: context.{get => handle}_piece
+	* brigade: implement getvalue() and simplify getline()
+	* http_clnt: implement unbounded body
+	* http_clnt.py: honor encoding and make python3 happy
+	* http_clnt.py: separate encoding and writing to stdout
+	* http_clnt: serialize END_OF_HEADERS and END_OF_BODY
+	* runner_mlabns: re-enable connection-close header
+	* raw_negotiate: remove redirection code
+	* Merge branch 'master' of github.com:neubot/neubot
+	* system_posix: drop_privileges(): remove unused param
+	* Reduce the number of places where we daemonize
+	* system: simplify go_background() by using utils_posix
+	* agent server: require root permissions
+	* system_posix: get rid of lookup_user_info()
+	* www: open-source -> free software
+	* agent.py: write startup/shutdown log entries
+	* Bump version number to 0.4.16.0
+	* networking: allow the caller to pass extra data to the listener
+	* http_clnt: use personalized logger
+	* http_clnt: remove XXX since we were not violating the RFC
+	* http_clnt: implement send-chunked-body
+	* http_clnt: better HEADERS/BODY events dispatch
+	* http_clnt: ClientContext: sort members
+	* http_clnt: update comments and more nits
+	* http_clnt: remove broken append_string()
+	* http_clnt: unify context's handle_piece and handle_line
+	* networking_code: s/brigade/buff/i to minimize surprise
+	* rendezvous/server.py: announce 0.4.15.6
+	* Merge branch 'stable_20121118'
+	* system_posix: USER -> UNPRIV_USER
+	* filesys_posix: fetch unpriv user name from system_posix
+	* runner_core: remove unused import
+	* percentile: return None, not [], when input is empty
+	* raw_analyze.py: make sure test fails for interval, not bytez
+	* neubot/server.py: fix listen() invocation
+	* neubot/raw_srvr.py: save timestamp on the server
+	* agent server: don't stacktrace just fail if not running as root
+	* Merge branch 'stable_20121214'
+	* M-Lab/ports.txt: we're now using IPv6 on the slivers
+	* background_api: http_server is no more
+	* runner_hosts: update
+	* background_api: honor /etc/neubot/api
+	* Merge commit 'c978ff0259440ebba17b2bc661e496c9b77c4e08'
+	* raw_negotiate: fix docstring
+	* http_clnt: fixes and improvements after code auditing
+	* regress: add neubot/http_clnt.py: unit test for http_clnt.py
+	* FAQ: batch of updates after careful reading
+	* Merge branch 'stable_20121231' into master
+	* Revert "networking: allow the caller to pass extra data [...]"
+	* http_clnt: more pythonic event dispatch
+	* http_clnt: repair regression tests
+	* _handle_send_complete(): honor queue, don't send directly
+	* http_clnt: suppress unnecessary check
+	* Merge branch 'stable_20121231'
+	* Neubot/0.4.15.8 released
+
 Neubot 0.4.15.7 [2012-12-14]
 	* percentile: return None, not [], when input is empty
 	* raw_analyze.py: make sure test fails for interval, not bytez
