@@ -1,19 +1,24 @@
 """Implementation of JSONEncoder
 """
+from __future__ import absolute_import
 import re
+from operator import itemgetter
 from decimal import Decimal
-
+from .compat import u, unichr, binary_type, string_types, integer_types, PY3
 def _import_speedups():
     try:
-        from simplejson import _speedups
+        from . import _speedups
         return _speedups.encode_basestring_ascii, _speedups.make_encoder
     except ImportError:
         return None, None
 c_encode_basestring_ascii, c_make_encoder = _import_speedups()
 
-from decoder import PosInf
+from simplejson.decoder import PosInf
 
-ESCAPE = re.compile(ur'[\x00-\x1f\\"\b\f\n\r\t\u2028\u2029]')
+#ESCAPE = re.compile(ur'[\x00-\x1f\\"\b\f\n\r\t\u2028\u2029]')
+# This is required because u() will mangle the string and ur'' isn't valid
+# python3 syntax
+ESCAPE = re.compile(u'[\\x00-\\x1f\\\\"\\b\\f\\n\\r\\t\u2028\u2029]')
 ESCAPE_ASCII = re.compile(r'([\\"]|[^\ -~])')
 HAS_UTF8 = re.compile(r'[\x80-\xff]')
 ESCAPE_DCT = {
@@ -24,32 +29,40 @@ ESCAPE_DCT = {
     '\n': '\\n',
     '\r': '\\r',
     '\t': '\\t',
-    u'\u2028': '\\u2028',
-    u'\u2029': '\\u2029',
 }
 for i in range(0x20):
     #ESCAPE_DCT.setdefault(chr(i), '\\u{0:04x}'.format(i))
     ESCAPE_DCT.setdefault(chr(i), '\\u%04x' % (i,))
+for i in [0x2028, 0x2029]:
+    ESCAPE_DCT.setdefault(unichr(i), '\\u%04x' % (i,))
 
 FLOAT_REPR = repr
 
-def encode_basestring(s):
+def encode_basestring(s, _PY3=PY3, _q=u('"')):
     """Return a JSON representation of a Python string
 
     """
-    if isinstance(s, str) and HAS_UTF8.search(s) is not None:
-        s = s.decode('utf-8')
+    if _PY3:
+        if isinstance(s, binary_type):
+            s = s.decode('utf-8')
+    else:
+        if isinstance(s, str) and HAS_UTF8.search(s) is not None:
+            s = s.decode('utf-8')
     def replace(match):
         return ESCAPE_DCT[match.group(0)]
-    return u'"' + ESCAPE.sub(replace, s) + u'"'
+    return _q + ESCAPE.sub(replace, s) + _q
 
 
-def py_encode_basestring_ascii(s):
+def py_encode_basestring_ascii(s, _PY3=PY3):
     """Return an ASCII-only JSON representation of a Python string
 
     """
-    if isinstance(s, str) and HAS_UTF8.search(s) is not None:
-        s = s.decode('utf-8')
+    if _PY3:
+        if isinstance(s, binary_type):
+            s = s.decode('utf-8')
+    else:
+        if isinstance(s, str) and HAS_UTF8.search(s) is not None:
+            s = s.decode('utf-8')
     def replace(match):
         s = match.group(0)
         try:
@@ -108,7 +121,7 @@ class JSONEncoder(object):
             indent=None, separators=None, encoding='utf-8', default=None,
             use_decimal=True, namedtuple_as_object=True,
             tuple_as_array=True, bigint_as_string=False,
-            item_sort_key=None):
+            item_sort_key=None, for_json=False, ignore_nan=False):
         """Constructor for JSONEncoder, with sensible defaults.
 
         If skipkeys is false, then it is a TypeError to attempt
@@ -140,9 +153,10 @@ class JSONEncoder(object):
         versions of simplejson earlier than 2.1.0, an integer is also accepted
         and is converted to a string with that many spaces.
 
-        If specified, separators should be a (item_separator, key_separator)
-        tuple.  The default is (', ', ': ').  To get the most compact JSON
-        representation you should specify (',', ':') to eliminate whitespace.
+        If specified, separators should be an (item_separator, key_separator)
+        tuple.  The default is (', ', ': ') if *indent* is ``None`` and
+        (',', ': ') otherwise.  To get the most compact JSON representation,
+        you should specify (',', ':') to eliminate whitespace.
 
         If specified, default is a function that gets called for objects
         that can't otherwise be serialized.  It should return a JSON encodable
@@ -169,6 +183,16 @@ class JSONEncoder(object):
         If specified, item_sort_key is a callable used to sort the items in
         each dictionary. This is useful if you want to sort items other than
         in alphabetical order by key.
+
+        If for_json is true (not the default), objects with a ``for_json()``
+        method will use the return value of that method for encoding as JSON
+        instead of the object.
+
+        If *ignore_nan* is true (default: ``False``), then out of range
+        :class:`float` values (``nan``, ``inf``, ``-inf``) will be serialized
+        as ``null`` in compliance with the ECMA-262 specification. If true,
+        this will override *allow_nan*.
+
         """
 
         self.skipkeys = skipkeys
@@ -181,7 +205,9 @@ class JSONEncoder(object):
         self.tuple_as_array = tuple_as_array
         self.bigint_as_string = bigint_as_string
         self.item_sort_key = item_sort_key
-        if indent is not None and not isinstance(indent, basestring):
+        self.for_json = for_json
+        self.ignore_nan = ignore_nan
+        if indent is not None and not isinstance(indent, string_types):
             indent = indent * ' '
         self.indent = indent
         if separators is not None:
@@ -221,12 +247,11 @@ class JSONEncoder(object):
 
         """
         # This is for extremely simple cases and benchmarks.
-        if isinstance(o, basestring):
-            if isinstance(o, str):
-                _encoding = self.encoding
-                if (_encoding is not None
-                        and not (_encoding == 'utf-8')):
-                    o = o.decode(_encoding)
+        if isinstance(o, binary_type):
+            _encoding = self.encoding
+            if (_encoding is not None and not (_encoding == 'utf-8')):
+                o = o.decode(_encoding)
+        if isinstance(o, string_types):
             if self.ensure_ascii:
                 return encode_basestring_ascii(o)
             else:
@@ -262,11 +287,11 @@ class JSONEncoder(object):
             _encoder = encode_basestring
         if self.encoding != 'utf-8':
             def _encoder(o, _orig_encoder=_encoder, _encoding=self.encoding):
-                if isinstance(o, str):
+                if isinstance(o, binary_type):
                     o = o.decode(_encoding)
                 return _orig_encoder(o)
 
-        def floatstr(o, allow_nan=self.allow_nan,
+        def floatstr(o, allow_nan=self.allow_nan, ignore_nan=self.ignore_nan,
                 _repr=FLOAT_REPR, _inf=PosInf, _neginf=-PosInf):
             # Check for specials. Note that this type of test is processor
             # and/or platform-specific, so do tests which don't depend on
@@ -281,7 +306,9 @@ class JSONEncoder(object):
             else:
                 return _repr(o)
 
-            if not allow_nan:
+            if ignore_nan:
+                text = 'null'
+            elif not allow_nan:
                 raise ValueError(
                     "Out of range float values are not JSON compliant: " +
                     repr(o))
@@ -298,6 +325,7 @@ class JSONEncoder(object):
                 self.skipkeys, self.allow_nan, key_memo, self.use_decimal,
                 self.namedtuple_as_object, self.tuple_as_array,
                 self.bigint_as_string, self.item_sort_key,
+                self.encoding, self.for_json, self.ignore_nan,
                 Decimal)
         else:
             _iterencode = _make_iterencode(
@@ -306,6 +334,7 @@ class JSONEncoder(object):
                 self.skipkeys, _one_shot, self.use_decimal,
                 self.namedtuple_as_object, self.tuple_as_array,
                 self.bigint_as_string, self.item_sort_key,
+                self.encoding, self.for_json,
                 Decimal=Decimal)
         try:
             return _iterencode(o, 0)
@@ -343,25 +372,25 @@ class JSONEncoderForHTML(JSONEncoder):
 def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
         _key_separator, _item_separator, _sort_keys, _skipkeys, _one_shot,
         _use_decimal, _namedtuple_as_object, _tuple_as_array,
-        _bigint_as_string, _item_sort_key,
+        _bigint_as_string, _item_sort_key, _encoding, _for_json,
         ## HACK: hand-optimized bytecode; turn globals into locals
-        False=False,
-        True=True,
+        _PY3=PY3,
         ValueError=ValueError,
-        basestring=basestring,
+        string_types=string_types,
         Decimal=Decimal,
         dict=dict,
         float=float,
         id=id,
-        int=int,
+        integer_types=integer_types,
         isinstance=isinstance,
         list=list,
-        long=long,
         str=str,
         tuple=tuple,
     ):
     if _item_sort_key and not callable(_item_sort_key):
         raise TypeError("item_sort_key must be None or callable")
+    elif _sort_keys and not _item_sort_key:
+        _item_sort_key = itemgetter(0)
 
     def _iterencode_list(lst, _current_indent_level):
         if not lst:
@@ -387,7 +416,8 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 first = False
             else:
                 buf = separator
-            if isinstance(value, basestring):
+            if (isinstance(value, string_types) or
+                (_PY3 and isinstance(value, binary_type))):
                 yield buf + _encoder(value)
             elif value is None:
                 yield buf + 'null'
@@ -395,7 +425,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 yield buf + 'true'
             elif value is False:
                 yield buf + 'false'
-            elif isinstance(value, (int, long)):
+            elif isinstance(value, integer_types):
                 yield ((buf + str(value))
                        if (not _bigint_as_string or
                            (-1 << 53) < value < (1 << 53))
@@ -406,7 +436,10 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 yield buf + str(value)
             else:
                 yield buf
-                if isinstance(value, list):
+                for_json = _for_json and getattr(value, 'for_json', None)
+                if for_json and callable(for_json):
+                    chunks = _iterencode(for_json(), _current_indent_level)
+                elif isinstance(value, list):
                     chunks = _iterencode_list(value, _current_indent_level)
                 else:
                     _asdict = _namedtuple_as_object and getattr(value, '_asdict', None)
@@ -428,6 +461,29 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
         if markers is not None:
             del markers[markerid]
 
+    def _stringify_key(key):
+        if isinstance(key, string_types): # pragma: no cover
+            pass
+        elif isinstance(key, binary_type):
+            key = key.decode(_encoding)
+        elif isinstance(key, float):
+            key = _floatstr(key)
+        elif key is True:
+            key = 'true'
+        elif key is False:
+            key = 'false'
+        elif key is None:
+            key = 'null'
+        elif isinstance(key, integer_types):
+            key = str(key)
+        elif _use_decimal and isinstance(key, Decimal):
+            key = str(key)
+        elif _skipkeys:
+            key = None
+        else:
+            raise TypeError("key " + repr(key) + " is not a string")
+        return key
+
     def _iterencode_dict(dct, _current_indent_level):
         if not dct:
             yield '{}'
@@ -447,40 +503,35 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             newline_indent = None
             item_separator = _item_separator
         first = True
-        if _item_sort_key:
-            items = dct.items()
-            items.sort(key=_item_sort_key)
-        elif _sort_keys:
-            items = dct.items()
-            items.sort(key=lambda kv: kv[0])
+        if _PY3:
+            iteritems = dct.items()
         else:
-            items = dct.iteritems()
+            iteritems = dct.iteritems()
+        if _item_sort_key:
+            items = []
+            for k, v in dct.items():
+                if not isinstance(k, string_types):
+                    k = _stringify_key(k)
+                    if k is None:
+                        continue
+                items.append((k, v))
+            items.sort(key=_item_sort_key)
+        else:
+            items = iteritems
         for key, value in items:
-            if isinstance(key, basestring):
-                pass
-            # JavaScript is weakly typed for these, so it makes sense to
-            # also allow them.  Many encoders seem to do something like this.
-            elif isinstance(key, float):
-                key = _floatstr(key)
-            elif key is True:
-                key = 'true'
-            elif key is False:
-                key = 'false'
-            elif key is None:
-                key = 'null'
-            elif isinstance(key, (int, long)):
-                key = str(key)
-            elif _skipkeys:
-                continue
-            else:
-                raise TypeError("key " + repr(key) + " is not a string")
+            if not (_item_sort_key or isinstance(key, string_types)):
+                key = _stringify_key(key)
+                if key is None:
+                    # _skipkeys must be True
+                    continue
             if first:
                 first = False
             else:
                 yield item_separator
             yield _encoder(key)
             yield _key_separator
-            if isinstance(value, basestring):
+            if (isinstance(value, string_types) or
+                (_PY3 and isinstance(value, binary_type))):
                 yield _encoder(value)
             elif value is None:
                 yield 'null'
@@ -488,7 +539,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 yield 'true'
             elif value is False:
                 yield 'false'
-            elif isinstance(value, (int, long)):
+            elif isinstance(value, integer_types):
                 yield (str(value)
                        if (not _bigint_as_string or
                            (-1 << 53) < value < (1 << 53))
@@ -498,7 +549,10 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             elif _use_decimal and isinstance(value, Decimal):
                 yield str(value)
             else:
-                if isinstance(value, list):
+                for_json = _for_json and getattr(value, 'for_json', None)
+                if for_json and callable(for_json):
+                    chunks = _iterencode(for_json(), _current_indent_level)
+                elif isinstance(value, list):
                     chunks = _iterencode_list(value, _current_indent_level)
                 else:
                     _asdict = _namedtuple_as_object and getattr(value, '_asdict', None)
@@ -521,7 +575,8 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             del markers[markerid]
 
     def _iterencode(o, _current_indent_level):
-        if isinstance(o, basestring):
+        if (isinstance(o, string_types) or
+            (_PY3 and isinstance(o, binary_type))):
             yield _encoder(o)
         elif o is None:
             yield 'null'
@@ -529,39 +584,45 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             yield 'true'
         elif o is False:
             yield 'false'
-        elif isinstance(o, (int, long)):
+        elif isinstance(o, integer_types):
             yield (str(o)
                    if (not _bigint_as_string or
                        (-1 << 53) < o < (1 << 53))
                        else ('"' + str(o) + '"'))
         elif isinstance(o, float):
             yield _floatstr(o)
-        elif isinstance(o, list):
-            for chunk in _iterencode_list(o, _current_indent_level):
-                yield chunk
         else:
-            _asdict = _namedtuple_as_object and getattr(o, '_asdict', None)
-            if _asdict and callable(_asdict):
-                for chunk in _iterencode_dict(_asdict(), _current_indent_level):
+            for_json = _for_json and getattr(o, 'for_json', None)
+            if for_json and callable(for_json):
+                for chunk in _iterencode(for_json(), _current_indent_level):
                     yield chunk
-            elif (_tuple_as_array and isinstance(o, tuple)):
+            elif isinstance(o, list):
                 for chunk in _iterencode_list(o, _current_indent_level):
                     yield chunk
-            elif isinstance(o, dict):
-                for chunk in _iterencode_dict(o, _current_indent_level):
-                    yield chunk
-            elif _use_decimal and isinstance(o, Decimal):
-                yield str(o)
             else:
-                if markers is not None:
-                    markerid = id(o)
-                    if markerid in markers:
-                        raise ValueError("Circular reference detected")
-                    markers[markerid] = o
-                o = _default(o)
-                for chunk in _iterencode(o, _current_indent_level):
-                    yield chunk
-                if markers is not None:
-                    del markers[markerid]
+                _asdict = _namedtuple_as_object and getattr(o, '_asdict', None)
+                if _asdict and callable(_asdict):
+                    for chunk in _iterencode_dict(_asdict(),
+                            _current_indent_level):
+                        yield chunk
+                elif (_tuple_as_array and isinstance(o, tuple)):
+                    for chunk in _iterencode_list(o, _current_indent_level):
+                        yield chunk
+                elif isinstance(o, dict):
+                    for chunk in _iterencode_dict(o, _current_indent_level):
+                        yield chunk
+                elif _use_decimal and isinstance(o, Decimal):
+                    yield str(o)
+                else:
+                    if markers is not None:
+                        markerid = id(o)
+                        if markerid in markers:
+                            raise ValueError("Circular reference detected")
+                        markers[markerid] = o
+                    o = _default(o)
+                    for chunk in _iterencode(o, _current_indent_level):
+                        yield chunk
+                    if markers is not None:
+                        del markers[markerid]
 
     return _iterencode
