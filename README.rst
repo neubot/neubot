@@ -14,8 +14,9 @@ test servers. The results dataset contains samples from various
 Providers and is published on the web, allowing anyone to analyze
 the data for research purposes.
 
-As a collection Neubot is Copyright (c) 2010-2012 NEXA Center for
-Internet & Society at Politecnico di Torino <http://nexa.polito.it/>.
+As a collection Neubot is Copyright (c) 2010-2013 Nexa Center for
+Internet & Society, Politecnico di Torino (DAUIN) <http://nexa.polito.it/>.
+
 Each file is copyrighted by the individual contributor.
 
 Neubot collects your Internet address along with the results, and
