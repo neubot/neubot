@@ -37,7 +37,7 @@ if [ `id -u` -ne 0 ]; then
 fi
 
 #
-# When a slice crashes and is re-created, the files and the dirs below
+# When a sliver crashes and is re-created, the files and the dirs below
 # $DATADIR are not owned by _neubot:_neubot, therefore neubot cannot
 # save the experiments results inside $DATADIR.
 #
