@@ -112,6 +112,15 @@ def terminate_process(pid):
         return True
     return False
 
+def write_pidfile(pidfile):
+    ''' Writes the pidfile '''
+    logging.debug('utils_posix: write pidfile: "%s"', pidfile)
+    old_umask = os.umask(MODE_022)
+    filep = open(pidfile, 'w')
+    filep.write('%d\n' % os.getpid())
+    filep.close()
+    os.umask(old_umask)
+
 def daemonize(pidfile=None, sighandler=None):
 
     '''
@@ -193,12 +202,7 @@ def daemonize(pidfile=None, sighandler=None):
     signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
     if pidfile:
-        logging.debug('utils_posix: write pidfile: "%s"', pidfile)
-        old_umask = os.umask(MODE_022)
-        filep = open(pidfile, 'w')
-        filep.write('%d\n' % os.getpid())
-        filep.close()
-        os.umask(old_umask)
+        write_pidfile(pidfile)
 
     if sighandler:
         logging.debug('utils_posix: install SIGTERM and SIGHUP handler')
