@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2011-2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011-2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,15 +21,12 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Write the approxymate location of all nodes in a slice '''
-
-#
-# This file is used to compile M-Lab/servers.dat.
-#
+''' Write the approxymate location of all nodes in a slice 
+    to MasterSrv/servers.dat '''
 
 import ConfigParser
-import asyncore
 import json
+import logging
 import os
 import shlex
 import sys
@@ -39,7 +37,7 @@ def __load_airports():
 
     airports_new = {}
 
-    filep = open('M-Lab/airports.json', 'rb')
+    filep = open('MasterSrv/airports.json', 'rb')
     airports_orig = json.load(filep)
     filep.close()
 
@@ -55,7 +53,7 @@ def __load_airports_cache():
 
     cache = {}
 
-    filep = open('M-Lab/airports_cache.dat', 'rb')
+    filep = open('MasterSrv/airports_cache.dat', 'rb')
     for line in filep:
         line = shlex.split(line)
         if not line:
@@ -66,7 +64,6 @@ def __load_airports_cache():
     return cache
 
 def serversmain():
-
     ''' Write the approxymate location of all nodes in a slice '''
 
     config = ConfigParser.RawConfigParser()
@@ -92,14 +89,14 @@ def serversmain():
     airports = __load_airports()
     cache = __load_airports_cache()
 
-    filep = open('M-Lab/servers.dat', 'wb')
-    for hostname in hostnames:
+    filep = open('MasterSrv/servers.dat', 'wb')
+    for hostname in sorted(hostnames):
         # E.g. mlab1.atl01.measurement-lab.org
         vector = hostname.split('.')
         code = vector[1][:3]
         location = airports[code]
         if not location in cache:
-            raise RuntimeError('Not in cache: %s' % location)
+            sys.exit('FATAL: Not in cache: %s' % location)
         continent, country = cache[location]
         filep.write('%s %s %s\n' % (hostname, country, continent))
     filep.close()
@@ -111,7 +108,7 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         raise
     except:
-        sys.stderr.write('%s\n' % str(asyncore.compact_traceback()))
+        logging.error('unhandled exception', exc_info=1)
         sys.exit(1)
 
 if __name__ == '__main__':

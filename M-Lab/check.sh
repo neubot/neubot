@@ -22,22 +22,21 @@
 #
 
 #
-# Install Neubot on an M-Lab sliver - Invoked on the sliver
-# by init/initialize.sh.
+# Script to check Neubot deployment on M-Lab slivers - Invoked on
+# the sliver by init/initialize.sh.
+#
+# Note: port 7999 (rsync) is now managed by M-Lab scripts; therefore,
+# we don't need to worry about it anymore.
 #
 
-DEBUG=
+. /etc/mlab/slice-functions
 
-if [ `id -u` -ne 0 ]; then
-    echo "$0: FATAL: need root privileges" 1>&2
-    exit 1
+PORTS="ports_ipv6.txt"
+if [ -z "`get_slice_ipv6`" ]; then
+    PORTS="ports_ipv4.txt"
 fi
 
-$DEBUG cd /home/mlab_neubot
-$DEBUG python -m compileall -q neubot/neubot/
-
-$DEBUG grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
-
-# From useradd(8): `The default is to disable the password.`
-$DEBUG grep -q ^_neubot /etc/passwd || \
-       $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
+echo "make sure we've bind all ports"
+netstat -a --tcp -n | grep LISTEN | grep -v 7999 | awk '{print $4}' \
+    | sort > neubot/M-Lab/ports.new
+diff -u neubot/M-Lab/$PORTS neubot/M-Lab/ports.new

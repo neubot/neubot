@@ -36,11 +36,14 @@ if [ $# -ne 0 ]; then
 else
 
     # Start over
-    rm -rf M-Lab/ip_addr.dat
-    install -m644 /dev/null M-Lab/ip_addr.dat
+    rm -rf MasterSrv/ip_addr.dat
+    install -m644 /dev/null MasterSrv/ip_addr.dat
 
-    # Fetch the list of hosts in realtime
-    HOSTS=$(./M-Lab/ls.py)
+    #
+    # Fetch the list of hosts in realtime; requires neubot_mlab repository
+    # to be installed in your home directory.
+    #
+    HOSTS=$($HOME/neubot_mlab/ls.py)
 
     COUNT=0
     for HOST in $HOSTS; do
@@ -66,7 +69,7 @@ else
             echo "$HOST: make sure it's up and running"
             $SSH $HOST uname -a
 
-            echo "$HOST neubot.mlab.$HOST" >> M-Lab/ip_addr.dat
+            echo "$HOST neubot.mlab.$HOST" >> MasterSrv/ip_addr.dat
 
         #
         # As soon as we exit from the subshell, save the errno and

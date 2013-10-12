@@ -1,8 +1,9 @@
 #!/bin/sh -e
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011, 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -21,8 +22,19 @@
 #
 
 #
-# Script to stop Neubot on M-Lab slivers
+# Script to stop Neubot on M-Lab slivers - Invoked on the sliver
+# by init/stop.sh.
 #
 
 DEBUG=
-$DEBUG kill -TERM $($DEBUG cat /var/run/neubot.pid)
+
+if [ `id -u` -ne 0 ]; then
+    echo "$0: FATAL: need root privileges" 1>&2
+    exit 1
+fi
+
+# Note: the daemon should remove the pidfile before exiting
+if [ -f /var/run/neubot.pid ]; then
+    echo "kill old neubot process"
+    $DEBUG kill -TERM $($DEBUG cat /var/run/neubot.pid) || true
+fi

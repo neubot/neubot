@@ -43,7 +43,6 @@ from neubot.negotiate.server import NEGOTIATE_SERVER
 from neubot.negotiate.server_speedtest import NEGOTIATE_SERVER_SPEEDTEST
 from neubot.negotiate.server_bittorrent import NEGOTIATE_SERVER_BITTORRENT
 from neubot.notify import NOTIFIER
-from neubot.state import STATE
 
 from neubot.compat import json
 from neubot.database import DATABASE
@@ -98,7 +97,6 @@ class DebugAPI(ServerHTTP):
                     'NOTIFIER._timestamps': len(NOTIFIER._timestamps),
                     'NOTIFIER._subscribers': len(NOTIFIER._subscribers),
                     'NOTIFIER._tofire': len(NOTIFIER._tofire),
-                    'STATE._events': len(STATE._events),
                    }
 
         elif request.uri == '/debugmem/garbage':
@@ -161,6 +159,7 @@ class ServerSideAPI(ServerHTTP):
 SETTINGS = {
     "server.bittorrent": True,
     "server.daemonize": True,
+    "server.datadir": '',
     'server.debug': False,
     "server.negotiate": True,
     "server.raw": True,
@@ -170,7 +169,7 @@ SETTINGS = {
 }
 
 USAGE = '''\
-usage: neubot server [-dv] [-b backend] [-D macro=value]
+usage: neubot server [-dv] [-A address] [-b backend] [-D macro=value]
 
 valid backends:
   mlab   Saves results as compressed json files (this is the default)
@@ -180,6 +179,7 @@ valid backends:
 valid defines:
   server.bittorrent Set to nonzero to enable BitTorrent server (default: 1)
   server.daemonize  Set to nonzero to run in the background (default: 1)
+  server.datadir    Set data directory (default: LOCALSTATEDIR/neubot)
   server.debug      Set to nonzero to enable debug API (default: 0)
   server.negotiate  Set to nonzero to enable negotiate server (default: 1)
   server.raw        Set to nonzero to enable RAW server (default: 1)
@@ -187,9 +187,9 @@ valid defines:
   server.sapi       Set to nonzero to enable nagios API (default: 1)
   server.speedtest  Set to nonzero to enable speedtest server (default: 1)'''
 
-VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.debug',
-                'server.negotiate', 'server.raw', 'server.rendezvous',
-                'server.sapi', 'server.speedtest')
+VALID_MACROS = ('server.bittorrent', 'server.daemonize', 'server.datadir',
+                'server.debug', 'server.negotiate', 'server.raw',
+                'server.rendezvous', 'server.sapi', 'server.speedtest')
 
 def main(args):
     """ Starts the server module """
@@ -198,21 +198,26 @@ def main(args):
         sys.exit('FATAL: you must be root')
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'b:D:dv')
+        options, arguments = getopt.getopt(args[1:], 'A:b:D:dv')
     except getopt.error:
         sys.exit(USAGE)
     if arguments:
         sys.exit(USAGE)
 
+    address = ':: 0.0.0.0'
     backend = 'mlab'
     for name, value in options:
-        if name == '-b':
+        if name == '-A':
+            address = value
+        elif name == '-b':
             backend = value
         elif name == '-D':
             name, value = value.split('=', 1)
             if name not in VALID_MACROS:
                 sys.exit(USAGE)
-            SETTINGS[name] = int(value)
+            if name != 'server.datadir':  # XXX
+                value = int(value)
+            SETTINGS[name] = value
         elif name == '-d':
             SETTINGS['server.daemonize'] = 0
         elif name == '-v':
@@ -220,7 +225,7 @@ def main(args):
 
     logging.debug('server: using backend: %s... in progress', backend)
     if backend == 'mlab':
-        BACKEND.datadir_init()
+        BACKEND.datadir_init(None, SETTINGS['server.datadir'])
         BACKEND.use_backend('mlab')
     elif backend == 'neubot':
         DATABASE.connect()
@@ -250,7 +255,7 @@ def main(args):
     #
     if CONFIG['server.raw']:
         logging.debug('server: starting raw server... in progress')
-        RAW_SERVER_EX.listen((":: 0.0.0.0", 12345),
+        RAW_SERVER_EX.listen((address, 12345),
           CONFIG['prefer_ipv6'], 0, '')
         logging.debug('server: starting raw server... complete')
 
@@ -258,11 +263,15 @@ def main(args):
     # New-style modules are started just setting a
     # bunch of conf[] variables and then invoking
     # their run() method in order to kick them off.
+    # This is now depricated in favor of the new-
+    # new style described above.
     #
+
     if conf["server.negotiate"]:
         negotiate.run(POLLER, conf)
 
     if conf["server.bittorrent"]:
+        conf["bittorrent.address"] = address
         conf["bittorrent.listen"] = True
         conf["bittorrent.negotiate"] = True
         bittorrent.run(POLLER, conf)
@@ -286,7 +295,6 @@ def main(args):
     # do that easily w/ M-Lab because the port
     # is already taken.
     #
-    address = ":: 0.0.0.0"
     ports = (80, 8080, 9773)
     for port in ports:
         HTTP_SERVER.listen((address, port))
