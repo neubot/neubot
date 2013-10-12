@@ -25,6 +25,7 @@
 import collections
 import random
 import logging
+import zlib
 
 from neubot.config import CONFIG
 from neubot.http.message import Message
@@ -103,7 +104,10 @@ class NegotiateServer(ServerHTTP):
         if request.uri.startswith('/collect/'):
             module = request.uri.replace('/collect/', '')
             module = self.modules[module]
-            request_body = json.load(request.body)
+            if request["content-encoding"] == "gzip":
+                request_body = json.loads(zlib.decompress(request.body.read()))
+            else:
+                request_body = json.load(request.body)
 
             response_body = module.collect_legacy(stream, request_body, request)
             response_body = json.dumps(response_body)
