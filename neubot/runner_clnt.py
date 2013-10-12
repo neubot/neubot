@@ -37,8 +37,9 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot import utils_version
+from neubot import background_api
 
-def runner_client(address, port, verbosity, test):
+def runner_client(verbosity, test):
     ''' Run the specified test in the context of the Neubot
         daemon and shows log messages while the test is
         in progress '''
@@ -46,6 +47,8 @@ def runner_client(address, port, verbosity, test):
     # Just a wrapper function
 
     sys.stderr.write('INFO: Asking Neubot to run the test...\n')
+
+    address, port = background_api.get_address_port()
 
     hint = {}
     try:
