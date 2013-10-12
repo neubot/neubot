@@ -161,10 +161,7 @@ def main(args):
     conf['prefer_ipv6'] = prefer_ipv6
 
     if not force:
-        if runner_clnt.runner_client(conf["agent.api.address"],
-                                     conf["agent.api.port"],
-                                     CONFIG['verbose'],
-                                     "bittorrent"):
+        if runner_clnt.runner_client(CONFIG['verbose'], "bittorrent"):
             sys.exit(0)
         logging.warning(
           'bittorrent: failed to contact Neubot; is Neubot running?')

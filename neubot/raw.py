@@ -79,8 +79,7 @@ def main(args):
         log.set_verbose()
 
     if not force:
-        result = runner_clnt.runner_client(CONFIG['agent.api.address'],
-          CONFIG['agent.api.port'], CONFIG['verbose'], 'raw')
+        result = runner_clnt.runner_client(CONFIG['verbose'], 'raw')
         if result:
             sys.exit(0)
         logging.warning('raw: failed to contact Neubot; is Neubot running?')
