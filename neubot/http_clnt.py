@@ -73,7 +73,7 @@ class ClientContext(Brigade):
     def __init__(self, extra, connection_made, connection_lost):
         Brigade.__init__(self)
 
-        self.outq = []
+        self.outq = collections.deque()
         self.outfp = None
 
         self.method = EMPTY_STRING
@@ -208,13 +208,14 @@ class HttpClient(Handler):
     def send_message(self, stream):
         ''' Send output buffer content to the other end '''
         context = stream.opaque
-        string = EMPTY_STRING.join(context.outq)
-        stream.send(string, self._handle_send_complete)
-        context.outq = []
+        stream.send(context.outq.popleft(), self._handle_send_complete)
 
     def _handle_send_complete(self, stream):
         ''' Internally handles the SEND_COMPLETE event '''
         context = stream.opaque
+        if context.outq:
+            self.send_message(stream)
+            return
         if context.outfp:
             bytez = context.outfp.read(MAXREAD)
             if bytez:
