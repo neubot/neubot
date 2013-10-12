@@ -1,0 +1,116 @@
+{
+
+    "title": "Your recent dash test results",
+
+    "plots": [
+        {
+            "title": "Download speed",
+            "xlabel": "Date",
+            "ylabel": "Goodput (Mbit/s)",
+            "datasets": [
+                {
+                    "recipe": ["to-speed", ["divide",
+                                ["select", "received", "result"],
+                                ["select", "elapsed", "result"]]],
+                    "label": "Dload",
+                    "marker": "circle"
+                }
+            ]
+        },
+
+        {
+            "title": "Base RTT",
+            "xlabel": "Date",
+            "ylabel": "Base RTT (ms)",
+            "datasets": [
+                {
+                    "recipe": ["to-millisecond",
+                               ["select", "connect_time", "result"]],
+                    "label": "Connect time",
+                    "marker": "square"
+                }
+            ]
+        },
+
+        {
+            "title": "Elapsed Time",
+            "xlabel": "Date",
+            "ylabel": "Elapsed Time (s)",
+            "datasets": [
+                {
+                    "recipe": ["select", "elapsed", "result"],
+                    "label": "Elapsed Time",
+                    "marker": "circle"
+                }
+            ]
+        },
+
+        {
+            "title": "Received Bytes",
+            "xlabel": "Date",
+            "ylabel": "Received Bytes (byte)",
+            "datasets": [
+                {
+                    "recipe": ["select", "received", "result"],
+                    "label": "Received Bytes",
+                    "marker": "square"
+                }
+            ]
+        },
+
+        {
+            "title": "Streaming Rate",
+            "xlabel": "Date",
+            "ylabel": "Rate (Kbit/s)",
+            "datasets": [
+                {
+                    "recipe": ["select", "rate", "result"],
+                    "label": "Rate",
+                    "marker": "circle"
+                }
+            ]
+        }
+
+    ],
+
+    "table": [
+        {
+            "recipe": ["to-datetime",
+                        ["select", "timestamp", "result"]],
+            "label": "Timestamp"
+        },
+        {
+            "recipe": ["select", "real_address", "result"],
+            "label": "Neubot address"
+        },
+        {
+            "recipe": ["select", "remote_address", "result"],
+            "label": "Server address"
+        },
+        {
+            "recipe": ["to-millisecond-string",
+                        ["select", "connect_time", "result"]],
+            "label": "Connect time"
+        },
+        {
+            "recipe": ["to-speed-string",
+                        ["divide",
+                          ["select", "received", "result"],
+                          ["select", "elapsed", "result"]]],
+            "label": "Download speed"
+        },
+        {
+            "recipe": ["append",
+                        ["to-string",
+                          ["to-fixed",
+                            ["select", "rate", "result"]]],
+                        " Kbit/s"],
+            "label": "Rate"
+        },
+        {
+            "recipe": ["to-millisecond-string",
+                        ["select", "elapsed", "result"]],
+            "label": "Elapsed"
+        }
+    ]
+}

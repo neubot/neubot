@@ -163,6 +163,11 @@ class SpeedtestWrapper(ServerHTTP):
     def do_negotiate(self, stream, request):
         ''' Invoked on GET /speedtest/negotiate '''
         stream.response_rewriter = self._rewrite_response
+        #
+        # Use POST because the semantic is that the body has no
+        # meaning, when the request method is GET.
+        #
+        request.method = 'POST'
         request.uri = '/negotiate/speedtest'
         request.body = StringIO.StringIO('{}')
         NEGOTIATE_SERVER.process_request(stream, request)

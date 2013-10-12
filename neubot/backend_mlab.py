@@ -1,8 +1,9 @@
 # neubot/backend_mlab.py
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2012
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -31,7 +32,6 @@ import gzip
 import time
 
 from neubot.compat import json
-from neubot.filesys import FILESYS
 
 from neubot.backend_null import BackendNull
 
@@ -50,8 +50,11 @@ class BackendMLab(BackendNull):
         ''' Saves the results of a speedtest test '''
         self.do_store('speedtest', message)
 
-    @staticmethod
-    def do_store(test, message):
+    def store_generic(self, test, results):
+        """ Store the results of a generic test """
+        self.do_store(test, results)
+
+    def do_store(self, test, message):
         ''' Saves the results of the given test '''
 
         # Get time information
@@ -77,7 +80,7 @@ class BackendMLab(BackendNull):
         # Make sure that the path exists and that ownership
         # and permissions are OK.
         #
-        fullpath = FILESYS.datadir_touch(components)
+        fullpath = self.proxy.datadir_touch(components)
 
         #
         # Open the output file for appending, write into
@@ -88,3 +91,11 @@ class BackendMLab(BackendNull):
         filep = gzip.open(fullpath, 'ab')
         json.dump(message, filep)
         filep.close()
+
+    def walk_generic(self, test, index):
+        """ Walk over the results of a generic test """
+        return []
+
+    def datadir_init(self, uname=None, datadir=None):
+        ''' Initialize datadir (if needed) '''
+        self.proxy.really_init_datadir(uname, datadir)

@@ -21,7 +21,7 @@
 #
 
 #
-# Regression test for neubot/filesys_posix.py
+# Regression test for neubot/backend.py's filesystem code.
 #
 
 #
@@ -98,7 +98,7 @@ printf "OK\n"
 printf "Create /A/B/C in /tmp/neubot with owner nobody..."
 (
     set -e
-    python neubot/filesys_posix.py -d /tmp/neubot -u nobody A B C
+    python neubot/backend.py -F -d /tmp/neubot -u nobody A B C
 )
 if [ $? -ne 0 ]; then
     printf "ERROR\n"
@@ -169,7 +169,7 @@ printf "YES\n"
 printf "Create /A/B/D in /tmp/neubot with owner nobody..."
 (
     set -e
-    python neubot/filesys_posix.py -d /tmp/neubot -u nobody A B D
+    python neubot/backend.py -F -d /tmp/neubot -u nobody A B D
 )
 if [ $? -ne 0 ]; then
     printf "ERROR\n"
@@ -198,7 +198,7 @@ printf "YES\n"
 printf "Create /A/K/D in /tmp/neubot with owner nobody..."
 (
     set -e
-    python neubot/filesys_posix.py -d /tmp/neubot -u nobody A K D
+    python neubot/backend.py -F -d /tmp/neubot -u nobody A K D
 )
 if [ $? -ne 0 ]; then
     printf "ERROR\n"

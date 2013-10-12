@@ -1,8 +1,9 @@
-# neubot/filesys.py
+#!/bin/sh
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,22 +21,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Filesystem interface '''
-
 #
-# The mid-term plan is to move here the code that lies in the system
-# module and deals with filesystem.  In this reorganization, also the
-# user-wide database will go away forever.
+# Script to quickly start the Neubot client on Linux
 #
 
-import os
-
-if os.name == 'posix':
-    from neubot.filesys_posix import FileSystemPOSIX
-    FILESYS = FileSystemPOSIX()
-elif os.name == 'nt':
-    from neubot.filesys_null import FileSystemNull
-    FILESYS = FileSystemNull()
-else:
-    from neubot.filesys_null import FileSystemNull
-    FILESYS = FileSystemNull()
+sudo python neubot/agent.py -D agent.daemonize=0 -v \
+	-D agent.rendezvous=0

@@ -453,6 +453,7 @@ class PeerNeubot(StreamHandler):
                                       self.target_bytes)
                     else:
                         download = utils.speed_formatter(self.dload_speed)
+                        STATE.update("test_progress", "50%", publish=False)
                         STATE.update("test_download", download)
                 else:
                     self.saved_ticks = 0

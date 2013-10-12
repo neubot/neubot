@@ -1,8 +1,9 @@
-# neubot/poller.py
+#!/bin/sh
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,10 +21,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Dispatch read, write, periodic and other events '''
+#
+# Script to quickly start the Neubot server
+#
 
-# Will be replaced by neubot/poller.py
-
-from neubot.pollable import WATCHDOG
-from neubot.pollable import Pollable
-from neubot.poller import POLLER
+sudo python neubot/server.py -dvb volatile

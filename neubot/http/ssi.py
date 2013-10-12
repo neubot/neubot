@@ -29,26 +29,21 @@
 '''
 
 # Should be moved to neubot/http_ssi.py
-# Should be converted to utils_path
-
-from neubot.utils import asciiify
 
 import sys
 import os.path
 import re
+
+from neubot import utils_path
 
 MAXDEPTH = 8
 REGEX = '<!--#include virtual="([A-Za-z0-9./_-]+)"-->'
 
 def ssi_open(rootdir, path, mode):
     ''' Wrapper for open() that makes security checks '''
-    rootdir = asciiify(rootdir)
-    path = asciiify(path)
-    path = os.sep.join([rootdir, path])
-    path = os.path.normpath(path)
-    path = asciiify(path)
-    if not path.startswith(rootdir):
-        raise ValueError("ssi: Path name below root directory")
+    path = utils_path.append(rootdir, path, False)
+    if not path:
+        raise ValueError("ssi: Path name above root directory")
     return open(path, mode)
 
 def ssi_split(rootdir, document, page, count):

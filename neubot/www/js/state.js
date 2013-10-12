@@ -25,6 +25,7 @@
 // This file contains the code that tracks the state of the Neubot
 // daemon and updates current test information in the right sidebar
 // of the web user interface.
+//
 // Further processing is possible by passing the tracker() method
 // a callback function.
 //
@@ -60,6 +61,7 @@ var state = (function() {
 
             //
             // Honor information on available updates.
+            //
             // Note that we DON'T trust URI information sent
             // by the server, since it's not signed (yes,
             // today I'm "paranoid mode ON").
@@ -88,6 +90,9 @@ var state = (function() {
             }
             if (data.events.test_upload) {
                 jQuery("#uploadResult").text(data.events.test_upload);
+            }
+            if (data.events.test_progress) {
+                jQuery("#testProgress").text(data.events.test_progress);
             }
 
             // Filter out interesting actions only

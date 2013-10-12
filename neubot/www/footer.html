@@ -30,6 +30,7 @@
                 <option value='speedtest'>speedtest</option>
                 <option value='bittorrent'>bittorrent</option>
                 <option value='raw'>raw</option>
+                <option value='dash'>dash</option> <!-- XXX -->
               </select>
             <input type='button' value='Go!'
               onclick='return utils.startTest();' />
@@ -61,6 +62,10 @@
                   <span class="i18n i18n_ulspeed">Upload speed</span>
               </dt>
               <dd><span id="uploadResult">---</span></dd>
+              <dt>
+                  <span class="i18n i18n_test_progress">Progress</span>
+              </dt>
+              <dd><span id="testProgress">0%</span></dd>
             </dl>
           </div>
 
@@ -90,9 +95,9 @@
 
     <div id="footer" class='i18n i18n_footer_text'>
       Neubot is a research project on network neutrality of the
-      <a href="http://nexa.polito.it/">NEXA Center for Internet &amp;
-      Society</a> at <a href="http://www.dauin.polito.it/">Politecnico
-      di Torino</a>.<br/>
+      <a href="http://nexa.polito.it/">Nexa Center for Internet &amp;
+      Society</a>, <a href="http://www.dauin.polito.it/">Politecnico
+      di Torino (DAUIN)</a>.<br/>
       Neubot servers are deployed on the distributed server-side
       <a href="http://www.measurementlab.net">Measurement Lab</a> platform.
     </div>

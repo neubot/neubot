@@ -56,6 +56,7 @@ class BitTorrentClient(ClientHTTP):
         STATE.update("test_latency", "---", publish=False)
         STATE.update("test_download", "---", publish=False)
         STATE.update("test_upload", "---", publish=False)
+        STATE.update("test_progress", "0%", publish=False)
         STATE.update("test_name", "bittorrent")
         self.negotiating = True
         self.http_stream = None
@@ -83,7 +84,7 @@ class BitTorrentClient(ClientHTTP):
         request = Message()
         body = json.dumps({"test_version": CONFIG['bittorrent_test_version'],
                            "target_bytes": self.conf['bittorrent.bytes.up']})
-        request.compose(method="GET", pathquery="/negotiate/bittorrent",
+        request.compose(method="POST", pathquery="/negotiate/bittorrent",
           host=self.host_header, body=body, mimetype="application/json")
         request["authorization"] = self.conf.get("_authorization", "")
         stream.send_request(request)
@@ -197,6 +198,7 @@ class BitTorrentClient(ClientHTTP):
             self.my_side["upload_speed"] = m["upload_speed"]
 
             upload = utils.speed_formatter(m["upload_speed"])
+            STATE.update("test_progress", "100%", publish=False)
             STATE.update("test_upload", upload)
             logging.info('BitTorrent: upload speed: %s', upload)
 

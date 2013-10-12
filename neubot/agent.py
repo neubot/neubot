@@ -39,6 +39,7 @@ if __name__ == "__main__":
 from neubot.background_rendezvous import BACKGROUND_RENDEZVOUS
 from neubot.net.poller import POLLER
 
+from neubot.backend import BACKEND
 from neubot.config import CONFIG
 from neubot.database import DATABASE
 from neubot.log import LOG
@@ -60,6 +61,9 @@ def main(args):
     conf = CONFIG.copy()
 
     privacy.complain_if_needed()
+
+    BACKEND.use_backend("neubot")
+    BACKEND.datadir_init()
 
     # FIXME We're ignoring agent.api.{address,port} that are now
     # deprecated and should be removed soon.

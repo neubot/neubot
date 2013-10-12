@@ -40,6 +40,10 @@ var utils = (function() {
         return (x * 8 / 1000 / 1000).toFixed(3) + " Mbit/s";
     }
 
+    self.toFixed = function(x) {
+        return x.toFixed(3);
+    }
+
     self.getText = function(text) {
         if (text == "")
             return (text);

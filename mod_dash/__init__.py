@@ -1,8 +1,9 @@
-# neubot/filesys_null.py
+# mod_dash/__init__.py
 
 #
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,13 +21,4 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Null filesystem '''
-
-class FileSystemNull(object):
-    ''' Null file system '''
-
-    def datadir_init(self):
-        ''' Initialize datadir '''
-
-    def datadir_touch(self, components):
-        ''' Touch a file below datadir '''
+""" The MPEG DASH test """

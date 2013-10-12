@@ -50,13 +50,13 @@ from neubot.database import DATABASE
 from neubot.debug import objgraph
 from neubot.config import CONFIG
 from neubot.backend import BACKEND
-from neubot.filesys import FILESYS
 from neubot.log import LOG
 from neubot.raw_srvr_glue import RAW_SERVER_EX
 
 from neubot import bittorrent
 from neubot import negotiate
 from neubot import system
+from neubot import utils_modules
 
 #from neubot import rendezvous          # Not yet
 import neubot.rendezvous.server
@@ -220,11 +220,13 @@ def main(args):
 
     logging.debug('server: using backend: %s... in progress', backend)
     if backend == 'mlab':
-        FILESYS.datadir_init()
+        BACKEND.datadir_init()
         BACKEND.use_backend('mlab')
     elif backend == 'neubot':
         DATABASE.connect()
         BACKEND.use_backend('neubot')
+    elif backend == 'volatile':
+        BACKEND.use_backend('volatile')
     else:
         BACKEND.use_backend('null')
     logging.debug('server: using backend: %s... complete', backend)
@@ -307,6 +309,12 @@ def main(args):
         server = DebugAPI(POLLER)
         server.configure(conf)
         server.listen(('127.0.0.1 ::1', 9774))
+
+    # Probe existing modules and ask them to attach to us
+    utils_modules.modprobe(None, "server", {
+        "http_server": HTTP_SERVER,
+        "negotiate_server": NEGOTIATE_SERVER,
+    })
 
     #
     # Go background and drop privileges,

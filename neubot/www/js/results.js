@@ -36,6 +36,7 @@ var results = (function () {
 
     self.one_day_in_ms = 24 * 60 * 60 * 1000;
     self.one_hour_in_ms = 60 * 60 * 1000;
+    self.one_min_in_ms = 60 * 1000;
 
     function eval_recipe(code, result) {
 
@@ -65,6 +66,10 @@ var results = (function () {
                 throw "must_not_be_undefined: passed undefined value";
             }
             return target;
+        }
+
+        function apply_append(left, right) {
+            return must_be_string(left) + must_be_string(right);
         }
 
         function apply_divide(left, right) {
@@ -124,6 +129,10 @@ var results = (function () {
             return utils.getTimeFromSeconds(must_be_number(target), true);
         }
 
+        function apply_to_fixed(target) {
+            return utils.toFixed(must_be_number(target));
+        }
+
         function apply_to_millisecond(target) {
             return utils.toMsNumber(must_be_number(target));
         }
@@ -140,6 +149,10 @@ var results = (function () {
             return utils.toMbitsPerSecond(must_be_number(target));
         }
 
+        function apply_to_string(target) {
+            return target.toString();
+        }
+
         function do_eval(curcode) {
 
             function eval_target(target) {
@@ -149,7 +162,19 @@ var results = (function () {
                 if (target === "result") {
                     return result;
                 }
+                if (jQuery.type(target) === "string") {
+                    return target;
+                }
                 throw "eval_target: invalid target";
+            }
+
+            // append string string
+            if (curcode[0] === "append") {
+                if (curcode.length !== 3) {
+                    throw "do_eval: append: invalid curcode length";
+                }
+                return apply_append(eval_target(curcode[1]),
+                                    eval_target(curcode[2]));
             }
 
             // divide left right
@@ -201,6 +226,14 @@ var results = (function () {
                 return apply_to_datetime(eval_target(curcode[1]));
             }
 
+            // to-fixed target
+            if (curcode[0] === "to-fixed") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-fixed: invalid curcode length";
+                }
+                return apply_to_fixed(eval_target(curcode[1]));
+            }
+
             // to-millisecond target
             if (curcode[0] === "to-millisecond") {
                 if (curcode.length !== 2) {
@@ -232,6 +265,14 @@ var results = (function () {
                     throw "do_eval: to-speed-string: invalid curcode length";
                 }
                 return apply_to_speed_string(eval_target(curcode[1]));
+            }
+
+            // to-string target
+            if (curcode[0] === "to-string") {
+                if (curcode.length !== 2) {
+                    throw "do_eval: to-string: invalid curcode length";
+                }
+                return apply_to_string(eval_target(curcode[1]));
             }
 
             throw "do_eval: invalid curcode[0]";  /* Catches undefined too */
@@ -583,6 +624,9 @@ var results = (function () {
             break;
         case "h":
             since = utils.getNow() - self.one_hour_in_ms * since;
+            break;
+        case "min":
+            since = utils.getNow() - self.one_min_in_ms * since;
             break;
         default:
             /* nothing */

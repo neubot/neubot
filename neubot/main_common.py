@@ -29,6 +29,8 @@ import logging
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
+from neubot import utils_modules
+
 SUBCOMMANDS = {
     'bittorrent': 'neubot.bittorrent',
     'browser': 'neubot.browser',
@@ -42,6 +44,8 @@ SUBCOMMANDS = {
 
 def main(subcommand, args):
     ''' Run a subcommand's main() '''
+
+    utils_modules.modprobe(None, "load_subcommand", SUBCOMMANDS)
 
     #
     # Map subcommand to module.  The possiblity of running internal subcommands

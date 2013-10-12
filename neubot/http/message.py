@@ -167,7 +167,7 @@ class Message(object):
 
     def serialize_body(self):
         ''' Serialize message body '''
-        #self.prettyprintbody(">")  # Slow in some cases - disable
+        self.prettyprintbody(">")
         return self.body
 
     #
@@ -294,6 +294,9 @@ class Message(object):
 
     def prettyprintbody(self, prefix):
         ''' Pretty print body '''
+
+        return  # Slow in some cases; disable
+
         if self["content-type"] not in ("application/json", "text/xml",
                                         "application/xml"):
             return

@@ -43,7 +43,9 @@ from neubot.net.stream import StreamHandler
 from neubot.net.poller import POLLER
 
 from neubot.main import common
+
 from neubot import utils
+from neubot import utils_path
 from neubot import utils_net
 
 #
@@ -208,13 +210,8 @@ class ServerHTTP(StreamHandler):
         else:
             request_uri = request.uri
 
-        # Paranoid mode: ON
-        rootdir = utils.asciiify(rootdir)
-        uripath = utils.asciiify(request_uri)
-        fullpath = os.path.normpath(rootdir + uripath)
-        fullpath = utils.asciiify(fullpath)
-
-        if not fullpath.startswith(rootdir):
+        fullpath = utils_path.append(rootdir, request_uri, True)
+        if not fullpath:
             response.compose(code="403", reason="Forbidden",
                              body="403 Forbidden")
             stream.send_response(request, response)

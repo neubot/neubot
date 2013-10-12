@@ -57,3 +57,8 @@ class Pollable(object):
     def handle_periodic(self, timenow):
         ''' Handle the PERIODIC event '''
         return self.watchdog >= 0 and timenow - self.created > self.watchdog
+
+    def set_timeout(self, timeo):
+        ''' Set timeout of this pollable '''
+        self.created = utils.ticks()
+        self.watchdog = timeo

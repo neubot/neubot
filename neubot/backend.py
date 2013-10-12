@@ -1,9 +1,11 @@
 # neubot/backend.py
 
 #
+# Copyright (c) 2012-2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
+#
 # Copyright (c) 2012 Fabio Forno <fabio.forno@gmail.com>
-# Copyright (c) 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -39,20 +41,24 @@
 
 import getopt
 import logging
+import os
 import sys
 import time
 
 if __name__ == '__main__':
     sys.path.insert(0, '.')
 
-from neubot.filesys import FILESYS
 from neubot.compat import json
 
 from neubot.backend_mlab import BackendMLab
 from neubot.backend_neubot import BackendNeubot
 from neubot.backend_null import BackendNull
+from neubot.backend_volatile import BackendVolatile
 
 from neubot.config import CONFIG
+
+from neubot import utils_hier
+from neubot import utils_path
 
 class BackendProxy(object):
     ''' Proxy for the real backend '''
@@ -77,42 +83,138 @@ class BackendProxy(object):
 
     def __init__(self):
         ''' Initialize backend proxy '''
-        self.backend = BackendNeubot()
+        self.backend = BackendNeubot(self)
+        self.vfs = None
+        self.datadir = None
+        self.passwd = None
+
+        if os.name == "posix":
+            from neubot import utils_posix
+            self.vfs = utils_posix
+        elif os.name == "nt":
+            from neubot import utils_nt
+            self.vfs = utils_nt
+        else:
+            raise RuntimeError("backend: no VFS available")
 
     def use_backend(self, name):
         ''' Use the specified backend for saving results '''
         logging.debug('backend: use backend: %s', name)
         if name == 'mlab':
-            self.backend = BackendMLab()
+            self.backend = BackendMLab(self)
         elif name == 'neubot':
-            self.backend = BackendNeubot()
+            self.backend = BackendNeubot(self)
         elif name == 'null':
-            self.backend = BackendNull()
+            self.backend = BackendNull(self)
+        elif name == 'volatile':
+            self.backend = BackendVolatile(self)
         else:
             raise RuntimeError('%s: No such backend' % name)
 
     @staticmethod
     def get_available_backends():
         ''' Returns available backends '''
-        return ('mlab', 'neubot', 'null')
+        return ('mlab', 'neubot', 'null', 'volatile')
 
     def __getattr__(self, attr):
         ''' Route calls to the real backend '''
         return getattr(self.backend, attr)
 
+    #
+    # I adapted the following methods from the FileSystemPOSIX
+    # class, which was contained by neubot/filesys_posix.py.
+    #
+    # The following code is here in the proxy, and not inside
+    # any specific driver, because it is common to all drivers.
+    #
+
+    def really_init_datadir(self, uname=None, datadir=None):
+        ''' Initialize datadir '''
+
+        #
+        # Note: this code is the implementation of datadir_init(),
+        # which may be called by the backends that need it.
+        #
+        # The reason for this code structure is that some backends
+        # (e.g., the volatile backend) don't need to initialize
+        # the datadir, while others (e.g., the mlab backend) need
+        # to initialize the datadir.
+        #
+
+        if datadir:
+            self.datadir = datadir
+        else:
+            self.datadir = utils_hier.LOCALSTATEDIR
+        logging.debug('backend: datadir: %s', self.datadir)
+
+        logging.debug('backend: user name: %s', uname)
+        if uname:
+            self.passwd = self.vfs.getpwnam(uname)
+        else:
+            #
+            # The common case (in which you don't override the
+            # default user name with a custom name).
+            #
+            # XXX The following lines are the only piece of code
+            # in this file that is heavily system dependent.
+            #
+            # Ideally it would be better to move the functionality
+            # that they implement into system-specific files.
+            #
+            # BTW the lines below are so heavily system-dependent
+            # because I adapted them from a POSIX-only file.
+            #
+            if os.name == "posix":
+                from neubot import system_posix
+                self.passwd = system_posix.getpwnam()
+            elif os.name == "nt":
+                from neubot import utils_nt
+                self.passwd = utils_nt.PWEntry()
+            else:
+                raise RuntimeError("backend: unsupported system")
+
+        logging.debug('backend: uid: %d', self.passwd.pw_uid)
+        logging.debug('backend: gid: %d', self.passwd.pw_gid)
+
+        #
+        # Here we are assuming that the /var/lib (or /var) dir
+        # exists and has the correct permissions.
+        #
+        # We are also assuming that we are running with enough privs
+        # to be able to create a directory there on behalf of the
+        # specified uid and gid.
+        #
+        logging.debug('backend: datadir init: %s', self.datadir)
+        self.vfs.mkdir_idempotent(self.datadir, self.passwd.pw_uid,
+                                  self.passwd.pw_gid)
+
+    def datadir_touch(self, components):
+        ''' Touch a file below datadir '''
+        return utils_path.depth_visit(self.datadir, components, self._visit)
+
+    def _visit(self, curpath, leaf):
+        ''' Callback for depth_visit() '''
+        if not leaf:
+            logging.debug('backend: mkdir_idempotent: %s', curpath)
+            self.vfs.mkdir_idempotent(curpath, self.passwd.pw_uid,
+                                      self.passwd.pw_gid)
+        else:
+            logging.debug('backend: touch_idempotent: %s', curpath)
+            self.vfs.touch_idempotent(curpath, self.passwd.pw_uid,
+                                      self.passwd.pw_gid)
+
 BACKEND = BackendProxy()
 
 USAGE = '''\
-Usage: backend.py [-v] [-b backend] [-d datadir] [-m message] [-t time]'''
+usage: backend.py [-Fv] [-b backend] [-d datadir] [-m message] [-t time]
+                        [-u user] [filesys-mode-args]'''
 
 def main(args):
     ''' main function '''
 
     try:
-        options, arguments = getopt.getopt(args[1:], 'b:d:m:t:v')
+        options, arguments = getopt.getopt(args[1:], 'b:d:Fm:t:u:v')
     except getopt.error:
-        sys.exit(USAGE)
-    if arguments:
         sys.exit(USAGE)
 
     # Good-enough default message
@@ -138,33 +240,45 @@ def main(args):
 
     bcknd = None
     datadir = None
+    filesys_mode = False
     msg = default_msg
     timestamp = None
+    uname = None
     for name, value in options:
         if name == '-b':
             bcknd = value
         elif name == '-d':
             datadir = value
-        if name == '-m':
+        elif name == "-F":
+            filesys_mode = True
+        elif name == '-m':
             msg = value
         elif name == '-t':
             timestamp = float(value)
+        elif name == "-u":
+            uname = value
         elif name == '-v':
             CONFIG['verbose'] = 1
 
     if bcknd:
         BACKEND.use_backend(bcknd)
-    if datadir:
-        FILESYS.datadir = datadir
     if msg != default_msg:
         msg = json.loads(msg)
     if timestamp:
-        time.time = lambda: timestamp
+        time.time = lambda: timestamp  # XXX
 
-    FILESYS.datadir_init()
+    BACKEND.datadir_init(uname=uname, datadir=datadir)
+
+    if filesys_mode and arguments:
+        BACKEND.datadir_touch(arguments)
+        sys.exit(0)
+    if arguments:
+        sys.exit(USAGE)
 
     BACKEND.bittorrent_store(msg)
     BACKEND.speedtest_store(msg)
+    BACKEND.store_raw(msg)
+    BACKEND.store_generic("generictest", msg)
 
 if __name__ == '__main__':
     main(sys.argv)

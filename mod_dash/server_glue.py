@@ -1,7 +1,7 @@
-# neubot/backend_null.py
+# mod_dash/server_glue.py
 
 #
-# Copyright (c) 2012
+# Copyright (c) 2010-2013
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -21,28 +21,27 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Null backend driver '''
+""" MPEG DASH server glue """
 
-class BackendNull(object):
-    ''' Null backend driver '''
+# Adapted from neubot/raw_srvr_glue.py
 
-    def __init__(self, proxy):
-        self.proxy = proxy
+from mod_dash.server_smpl import DASHServerSmpl
 
-    def bittorrent_store(self, message):
-        ''' Save result of BitTorrent test '''
+class DASHServerGlue(DASHServerSmpl):
+    """ Glue for DASH on the server side """
 
-    def store_raw(self, message):
-        ''' Save result of RAW test '''
+    def __init__(self, poller, negotiator):
+        DASHServerSmpl.__init__(self, poller)
+        self.negotiator = negotiator
 
-    def speedtest_store(self, message):
-        ''' Save result of speedtest test '''
+    def got_request_headers(self, stream, request):
+        """ Filter incoming HTTP requests """
 
-    def store_generic(self, test, results):
-        """ Store the results of a generic test """
+        auth = request["Authorization"]
+        if not auth:
+            return False
 
-    def walk_generic(self, test, index):
-        """ Walk over the results of a generic test """
+        if auth not in self.negotiator.peers:
+            return False
 
-    def datadir_init(self, uname=None, datadir=None):
-        ''' Initialize datadir (if needed) '''
+        return DASHServerSmpl.got_request_headers(self, stream, request)

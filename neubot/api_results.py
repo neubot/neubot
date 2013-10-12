@@ -2,7 +2,7 @@
 
 #
 # Copyright (c) 2012-2013
-#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN) 
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
@@ -37,7 +37,7 @@ from neubot import utils
 
 # Directory that contains the description of each test, which consists of
 # two files per test: a JSON file and an HTML file.
-TESTDIR = utils_path.append(utils_hier.WWWDIR, 'test')
+TESTDIR = utils_path.join(utils_hier.WWWDIR, 'test')
 
 # Config variables to be copied to output: they allow ordinary users to
 # configure the appearance of results.html.
@@ -73,7 +73,9 @@ def api_results(stream, request, query):
 
     # Allow power users to customize results.html heavily, by creating JSON
     # descriptions with local modifications.
-    filepath = utils_path.append(TESTDIR, available_tests[test])
+    filepath = utils_path.append(TESTDIR, available_tests[test], False)
+    if not filepath:
+        raise RuntimeError("api_results: append() path failed")
     localfilepath = filepath + '.local'
     if os.path.isfile(localfilepath):
         filep = open(localfilepath, 'rb')

@@ -24,25 +24,29 @@ import sys
 import textwrap
 import logging
 
+if __name__ == "__main__":
+    sys.path.insert(0, ".")
+
+from neubot import utils_modules
+
 MODULES = {
-    "CA"                  : "net.CA",
-    "agent"               : "agent",
-    "api.client"          : "api.client",
-    "database"            : "database.main",
-    "bittorrent"          : "bittorrent",
-    "http.client"         : "http.client",
-    "http.server"         : "http.server",
-    'notifier'            : 'notifier',
-    "privacy"             : "privacy",
-    "raw"                 : "raw",
-    "rendezvous.server"   : "rendezvous.server",
-    "server"              : "server",
-    "speedtest"           : "speedtest.client",
-    "speedtest.client"    : "speedtest.client",
-    "speedtest.negotiate" : "speedtest.negotiate",
-    "speedtest.server"    : "speedtest.server",
-    "stream"              : "net.stream",
-    'viewer'              : 'viewer',
+    "CA"                  : "neubot.net.CA",
+    "agent"               : "neubot.agent",
+    "api.client"          : "neubot.api.client",
+    "database"            : "neubot.database.main",
+    "bittorrent"          : "neubot.bittorrent",
+    "http.client"         : "neubot.http.client",
+    "http.server"         : "neubot.http.server",
+    'notifier'            : 'neubot.notifier',
+    "privacy"             : "neubot.privacy",
+    "raw"                 : "neubot.raw",
+    "rendezvous.server"   : "neubot.rendezvous.server",
+    "server"              : "neubot.server",
+    "speedtest"           : "neubot.speedtest.client",
+    "speedtest.client"    : "neubot.speedtest.client",
+    "speedtest.server"    : "neubot.speedtest.server",
+    "stream"              : "neubot.net.stream",
+    'viewer'              : 'neubot.viewer',
 }
 
 #
@@ -66,7 +70,6 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     #import neubot.server               # ditto
     import neubot.speedtest.client
     import neubot.speedtest.client
-    import neubot.speedtest.negotiate
     import neubot.speedtest.server
     import neubot.net.stream
 
@@ -88,13 +91,15 @@ def run(argv):
         sys.stdout.write("Try `neubot CMD --help` for more help on CMD.\n")
         sys.exit(0)
 
+    utils_modules.modprobe(None, "load_subcommand", MODULES)
+
     if not module in MODULES:
         sys.stderr.write("Invalid module: %s\n" % module)
         sys.stderr.write("Try `neubot help` to list the available modules\n")
         sys.exit(1)
 
     # Dinamically load the selected module's main() at runtime
-    module = "neubot.%s" % MODULES[module]
+    module = MODULES[module]
     __import__(module)
     MAIN = sys.modules[module].main
 
