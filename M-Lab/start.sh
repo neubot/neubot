@@ -1,8 +1,9 @@
 #!/bin/sh -e
 
 #
-# Copyright (c) 2011 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2011, 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -21,15 +22,31 @@
 #
 
 #
-# Script to start Neubot on M-Lab slivers
+# Script to start Neubot on M-Lab slivers - Invoked on the sliver
+# by init/initialize.sh and by init/start.sh.
 #
 
+. /etc/mlab/slice-functions
+
+DATADIR=/var/spool/mlab_neubot
 DEBUG=
-$DEBUG /etc/init.d/rsyslog restart
+
+if [ `id -u` -ne 0 ]; then
+    echo "$0: FATAL: need root privileges" 1>&2
+    exit 1
+fi
+
 #
-# Must redirect stdin to /dev/null because if the input is a socket
-# rsync believes it has been invoked by inetd and tries to negotiate
-# with us.
+# When a slice crashes and is re-created, the files and the dirs below
+# $DATADIR are not owned by _neubot:_neubot, therefore neubot cannot
+# save the experiments results inside $DATADIR.
 #
-$DEBUG rsync --daemon < /dev/null
-$DEBUG /usr/bin/python /home/mlab_neubot/neubot/neubot/main/__init__.py server
+find $DATADIR -exec chown _neubot:_neubot {} \;
+
+ADDRESS="::"
+if [ -z "`get_slice_ipv6`" ]; then
+    ADDRESS="0.0.0.0"
+fi
+
+$DEBUG /usr/bin/python /home/mlab_neubot/neubot/neubot/main/__init__.py \
+    server -A $ADDRESS -D server.datadir=$DATADIR

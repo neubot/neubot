@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 #
-# Copyright (c) 2011, 2013
+# Copyright (c) 2013
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -22,22 +22,18 @@
 #
 
 #
-# Install Neubot on an M-Lab sliver - Invoked on the sliver
+# Uninstall Neubot from M-Lab sliver - Invoked on the sliver
 # by init/initialize.sh.
+#
+# I want this script to run before installing a new Neubot to make sure that
+# the previous version sources are removed: keeping around old source files
+# removed from current version may cause random bugs.
+#
+# I don't remove the user and the group, though, because I
+# never uninstall Neubot from M-Lab without immediately installing
+# a newer version.
 #
 
 DEBUG=
-
-if [ `id -u` -ne 0 ]; then
-    echo "$0: FATAL: need root privileges" 1>&2
-    exit 1
-fi
-
-$DEBUG cd /home/mlab_neubot
-$DEBUG python -m compileall -q neubot/neubot/
-
-$DEBUG grep -q ^_neubot /etc/group || $DEBUG /usr/sbin/groupadd -r _neubot
-
-# From useradd(8): `The default is to disable the password.`
-$DEBUG grep -q ^_neubot /etc/passwd || \
-       $DEBUG /usr/sbin/useradd -r -d/ -g_neubot -s/sbin/nologin _neubot
+$DEBUG echo "remove old neubot sources"
+$DEBUG rm -rf /home/mlab_neubot/neubot
