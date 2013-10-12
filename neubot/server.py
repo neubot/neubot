@@ -56,6 +56,7 @@ from neubot.raw_srvr_glue import RAW_SERVER_EX
 from neubot import bittorrent
 from neubot import negotiate
 from neubot import system
+from neubot import utils_modules
 from neubot import utils_posix
 
 #from neubot import rendezvous          # Not yet
