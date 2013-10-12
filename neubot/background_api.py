@@ -38,17 +38,23 @@ from neubot.poller import POLLER
 from neubot import utils_rc
 from neubot import utils_hier
 
+def get_address_port():
+    ''' Get API address and port '''
+    settings = utils_rc.parse_safe(utils_hier.APIFILEPATH)
+    address = settings.get('address', '::1 127.0.0.1')
+    port = settings.get('port', '9774')
+    return address, port
+
 def start_api(address=None, port=None):
     ''' Starts API for background module '''
 
     logging.debug('background_api: starting API server...')
 
-    # Honor /etc/neubot/api
-    settings = utils_rc.parse_safe(utils_hier.APIFILEPATH)
+    addrport = get_address_port()
     if not address:
-        address = settings.get('address', '::1 127.0.0.1')
+        address = addrport[0]
     if not port:
-        port = settings.get('port', '9774')
+        port = addrport[1]
 
     # Configure HTTP server
     conf = CONFIG.copy()
