@@ -66,15 +66,8 @@ class DASHNegotiateServer(NegotiateServerModule):
                 "authorization": sha256,
                 "port": 8080,
 
-                #
-                # Do not return a rate vector, which forces the client
-                # to automatically find the "best" rate.
-                #
-                # We have measured, in fact, that the QoE impact of the
-                # test is lower when the client finds the best rate on
-                # its own (as opposed to providing it a vector).
-                #
-                ####"dash_rates": request_body["dash_rates"],
+                # For now just accept the proposal from the client
+                "dash_rates": request_body["dash_rates"],
                }
 
     def collect(self, stream, request_body):

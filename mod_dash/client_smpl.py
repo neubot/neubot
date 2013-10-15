@@ -58,11 +58,6 @@ class DASHClientSmpl(ClientHTTP):
     # in which each chunks is downloaded in about DASH_SECONDS, plus one
     # round-trip delay, and hopefully with acceptable queueing delay.
     #
-    # To this end, if we have a vector of rates, we pick the greatest rate
-    # in the vector that is smaller than the latest piece's rate; otherwise,
-    # we dynamically pick a rate that guarantees that, on the average, we
-    # are below DASH_SECONDS per chunk.
-    #
 
     def __init__(self, poller, parent, rates):
         ClientHTTP.__init__(self, poller)
@@ -99,22 +94,18 @@ class DASHClientSmpl(ClientHTTP):
 
         STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
 
-        if self.rates:
-            #
-            # Pick the greatest rate in the vector that is smaller
-            # than the latest piece's rate.
-            #
-            # Note: when the rate is faster than the maximum rate,
-            # the bisect point is one past the last element, and
-            # thus we must patch the index to avoid an IndexError.
-            #
-            rate_index = bisect.bisect_left(self.rates, self.speed_kbit)
-            if rate_index >= len(self.rates):
-                rate_index = len(self.rates) - 1
-            self.rate_kbit = self.rates[rate_index]
-
-        else:
-            self.rate_kbit = self.speed_kbit
+        #
+        # Pick the greatest rate in the vector that is smaller
+        # than the latest piece's rate.
+        #
+        # Note: when the rate is faster than the maximum rate,
+        # the bisect point is one past the last element, and
+        # thus we must patch the index to avoid an IndexError.
+        #
+        rate_index = bisect.bisect_left(self.rates, self.speed_kbit)
+        if rate_index >= len(self.rates):
+            rate_index = len(self.rates) - 1
+        self.rate_kbit = self.rates[rate_index]
 
         count = ((self.rate_kbit * 1000) / 8) * DASH_SECONDS
         uri = "/dash/download/%d" % count
@@ -216,11 +207,11 @@ class DASHClientSmpl(ClientHTTP):
         STATE.update("test_download", utils.speed_formatter(speed))
         logging.debug("dash: speed - %f Kbit/s", self.speed_kbit)
 
-        if not self.rates and elapsed > DASH_SECONDS:
-            #
-            # If we're adding too much delay, artificially reduce the
-            # measured speed to let the bottleneck breathe.
-            #
+        #
+        # If we're adding too much delay, artificially reduce the
+        # measured speed to let the bottleneck breathe.
+        #
+        if elapsed > DASH_SECONDS:
             rel_err = 1 - elapsed / DASH_SECONDS
             self.speed_kbit += rel_err * self.speed_kbit
             if self.speed_kbit < 0:

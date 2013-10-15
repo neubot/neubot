@@ -34,6 +34,7 @@ if __name__ == "__main__":
 
 from mod_dash.client_smpl import DASHClientSmpl
 from mod_dash.client_negotiate import DASHNegotiateClient
+from mod_dash.client_negotiate import DASH_RATES
 from mod_dash.server_glue import DASHServerGlue
 from mod_dash.server_negotiate import DASHNegotiateServer
 from mod_dash.server_smpl import DASHServerSmpl
@@ -135,7 +136,7 @@ def main(args):
         if negotiate:
             client = DASHNegotiateClient(POLLER)
         else:
-            client = DASHClientSmpl(POLLER, None, [])
+            client = DASHClientSmpl(POLLER, None, DASH_RATES)
         client.configure(conf)
         client.connect((address, port))
 

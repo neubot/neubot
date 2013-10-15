@@ -157,11 +157,9 @@ class DASHNegotiateClient(ClientHTTP):
 
             #
             # The server may override the vector of rates with a "better"
-            # vector of rates. If the vector is empty, the client will
-            # automatically request a rate that keeps the download time
-            # around DASH_SECONDS seconds.
+            # vector of rates of its choice.
             #
-            rates = list(response_body.get("dash_rates", []))
+            rates = list(response_body.get("dash_rates", DASH_RATES))
 
             self.client = DASHClientSmpl(self.poller, self, rates)
             self.client.configure(self.conf.copy())
