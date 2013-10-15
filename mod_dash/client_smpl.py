@@ -39,14 +39,14 @@ from neubot import utils_net
 from neubot import utils_version
 
 #
-# We want the download to run for about this number of seconds,
-# plus one RTT, plus the queuing delay.
+# We want the download of a chunk to run for about this number of
+# seconds, plus one RTT, plus the queuing delay.
 #
 DASH_SECONDS = 2
 
 #
-# We iterate the DASH download the following number of times,
-# and we possibly variate the download rate each time.
+# We iterate the DASH download of a chunk for the following number of
+# times, and we possibly variate the download rate each time.
 #
 DASH_MAX_ITERATION = 15
 
@@ -55,7 +55,7 @@ class DASHClientSmpl(ClientHTTP):
 
     #
     # As far as user experience is concerned, we want to perform a test
-    # in which each chunks is downloaded in about DASH_SECONDS, plus one
+    # in which each chunk is downloaded in roughly DASH_SECONDS, plus one
     # round-trip delay, and hopefully with acceptable queueing delay.
     #
 
@@ -96,9 +96,9 @@ class DASHClientSmpl(ClientHTTP):
 
         #
         # Pick the greatest rate in the vector that is smaller
-        # than the latest piece's rate.
+        # than the latest piece rate (saved in speed_kbit).
         #
-        # Note: when the rate is faster than the maximum rate,
+        # Note: when speed_kbit is faster than the maximum rate,
         # the bisect point is one past the last element, and
         # thus we must patch the index to avoid an IndexError.
         #
@@ -182,10 +182,6 @@ class DASHClientSmpl(ClientHTTP):
                      }
             self.parent.append_result(result)
 
-        #
-        # We perform at most DASH_MAX_ITERATION iterations, to keep
-        # the total elapsed test time under control.
-        #
         self.iteration += 1
 
         #

@@ -102,6 +102,7 @@ class DASHNegotiateClient(ClientHTTP):
         ClientHTTP.connect(self, endpoint, count)
 
     def connect_uri(self, uri=None, count=None):
+        # Note: to discourage people from using connect_uri()
         raise RuntimeError("dash: please, use connect()")
 
     def connection_ready(self, stream):

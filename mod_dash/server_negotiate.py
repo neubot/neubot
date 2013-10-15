@@ -35,7 +35,6 @@ from neubot.backend import BACKEND
 from neubot import utils
 
 class DASHNegotiateServer(NegotiateServerModule):
-
     """ Negotiator for MPEG DASH test """
 
     def __init__(self):
@@ -44,7 +43,7 @@ class DASHNegotiateServer(NegotiateServerModule):
 
     @staticmethod
     def _stream_to_sha256(stream):
-        """ Stream to SHA512 identifier """
+        """ Stream to SHA256 identifier """
         sha256 = hashlib.new("sha256")
         sha256.update(str(hash(stream)))
         return base64.b64encode(sha256.digest())
