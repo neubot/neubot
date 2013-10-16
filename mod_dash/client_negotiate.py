@@ -176,7 +176,7 @@ class DASHNegotiateClient(ClientHTTP):
             #
             # We store each iteration of the test as a separate row of
             # the backend. We also add a whole test timestamp, to allow
-            # one to understand which rows belong to the same test.
+            # one to understand which row belong to the same test.
             #
             whole_test_timestamp = utils.timestamp()
 
