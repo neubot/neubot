@@ -28,7 +28,7 @@ The network neutrality bot
 :Manual section: 1
 :Date: 2013-04-23
 :Manual group: Neubot manual
-:Version: Neubot 0.4.16.0
+:Version: Neubot 0.4.16.4
 
 SYNOPSIS
 ````````

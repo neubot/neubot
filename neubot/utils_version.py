@@ -186,7 +186,7 @@ def compare(left, right):
     return (decimal.Decimal(to_numeric(left)) -
            decimal.Decimal(to_numeric(right)))
 
-CANONICAL_VERSION = '0.4.16.0'
+CANONICAL_VERSION = '0.4.16.4'
 NUMERIC_VERSION = to_numeric(CANONICAL_VERSION)
 PRODUCT = 'Neubot %s' % CANONICAL_VERSION
 HTTP_HEADER = 'Neubot/%s' % CANONICAL_VERSION
