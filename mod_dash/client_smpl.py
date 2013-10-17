@@ -194,11 +194,6 @@ class DASHClientSmpl(ClientHTTP):
         STATE.update("test_progress", "%d%%" % ((100 * self.iteration)
           / DASH_MAX_ITERATION), publish=False)
 
-        if self.iteration >= DASH_MAX_ITERATION:
-            logging.debug("dash: done all iteration")
-            stream.close()
-            return
-
         speed = received / elapsed
         self.speed_kbit = (speed * 8) / 1000
 
@@ -206,6 +201,11 @@ class DASHClientSmpl(ClientHTTP):
         logging.info("dash: [%2d/%d] %6d Kbit/s (%6d Kbit/s) - %.3f s",
           self.iteration, DASH_MAX_ITERATION, self.speed_kbit,
           self.rate_kbit, elapsed)
+
+        if self.iteration >= DASH_MAX_ITERATION:
+            logging.debug("dash: done all iteration")
+            stream.close()
+            return
 
         #
         # If we're adding too much delay, artificially reduce the
