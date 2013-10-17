@@ -39,14 +39,14 @@ from neubot import utils_net
 from neubot import utils_version
 
 #
-# We want the download to run for about this number of seconds,
-# plus one RTT, plus the queuing delay.
+# We want the download of a chunk to run for about this number of
+# seconds, plus one RTT, plus the queuing delay.
 #
 DASH_SECONDS = 2
 
 #
-# We iterate the DASH download the following number of times,
-# and we possibly variate the download rate each time.
+# We iterate the DASH download of a chunk for the following number of
+# times, and we possibly variate the download rate each time.
 #
 DASH_MAX_ITERATION = 15
 
@@ -55,13 +55,8 @@ class DASHClientSmpl(ClientHTTP):
 
     #
     # As far as user experience is concerned, we want to perform a test
-    # in which each chunks is downloaded in about DASH_SECONDS, plus one
+    # in which each chunk is downloaded in roughly DASH_SECONDS, plus one
     # round-trip delay, and hopefully with acceptable queueing delay.
-    #
-    # To this end, if we have a vector of rates, we pick the greatest rate
-    # in the vector that is smaller than the latest piece's rate; otherwise,
-    # we dynamically pick a rate that guarantees that, on the average, we
-    # are below DASH_SECONDS per chunk.
     #
 
     def __init__(self, poller, parent, rates):
@@ -99,22 +94,18 @@ class DASHClientSmpl(ClientHTTP):
 
         STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
 
-        if self.rates:
-            #
-            # Pick the greatest rate in the vector that is smaller
-            # than the latest piece's rate.
-            #
-            # Note: when the rate is faster than the maximum rate,
-            # the bisect point is one past the last element, and
-            # thus we must patch the index to avoid an IndexError.
-            #
-            rate_index = bisect.bisect_left(self.rates, self.speed_kbit)
-            if rate_index >= len(self.rates):
-                rate_index = len(self.rates) - 1
-            self.rate_kbit = self.rates[rate_index]
-
-        else:
-            self.rate_kbit = self.speed_kbit
+        #
+        # Pick the greatest rate in the vector that is smaller
+        # than the latest piece rate (saved in speed_kbit).
+        #
+        # Note: when speed_kbit is faster than the maximum rate,
+        # the bisect point is one past the last element, and
+        # thus we must patch the index to avoid an IndexError.
+        #
+        rate_index = bisect.bisect_left(self.rates, self.speed_kbit)
+        if rate_index >= len(self.rates):
+            rate_index = len(self.rates) - 1
+        self.rate_kbit = self.rates[rate_index]
 
         count = ((self.rate_kbit * 1000) / 8) * DASH_SECONDS
         uri = "/dash/download/%d" % count
@@ -191,10 +182,6 @@ class DASHClientSmpl(ClientHTTP):
                      }
             self.parent.append_result(result)
 
-        #
-        # We perform at most DASH_MAX_ITERATION iterations, to keep
-        # the total elapsed test time under control.
-        #
         self.iteration += 1
 
         #
@@ -216,11 +203,11 @@ class DASHClientSmpl(ClientHTTP):
         STATE.update("test_download", utils.speed_formatter(speed))
         logging.debug("dash: speed - %f Kbit/s", self.speed_kbit)
 
-        if not self.rates and elapsed > DASH_SECONDS:
-            #
-            # If we're adding too much delay, artificially reduce the
-            # measured speed to let the bottleneck breathe.
-            #
+        #
+        # If we're adding too much delay, artificially reduce the
+        # measured speed to let the bottleneck breathe.
+        #
+        if elapsed > DASH_SECONDS:
             rel_err = 1 - elapsed / DASH_SECONDS
             self.speed_kbit += rel_err * self.speed_kbit
             if self.speed_kbit < 0:

@@ -62,6 +62,9 @@ DASH_RATES = [
     4000,
     5000,
     6000,
+    7000,
+    10000,
+    20000
 ]
 
 MAX_ITERATIONS = 512
@@ -99,6 +102,7 @@ class DASHNegotiateClient(ClientHTTP):
         ClientHTTP.connect(self, endpoint, count)
 
     def connect_uri(self, uri=None, count=None):
+        # Note: to discourage people from using connect_uri()
         raise RuntimeError("dash: please, use connect()")
 
     def connection_ready(self, stream):
@@ -157,11 +161,9 @@ class DASHNegotiateClient(ClientHTTP):
 
             #
             # The server may override the vector of rates with a "better"
-            # vector of rates. If the vector is empty, the client will
-            # automatically request a rate that keeps the download time
-            # around DASH_SECONDS seconds.
+            # vector of rates of its choice.
             #
-            rates = list(response_body.get("dash_rates", []))
+            rates = list(response_body.get("dash_rates", DASH_RATES))
 
             self.client = DASHClientSmpl(self.poller, self, rates)
             self.client.configure(self.conf.copy())
@@ -174,7 +176,7 @@ class DASHNegotiateClient(ClientHTTP):
             #
             # We store each iteration of the test as a separate row of
             # the backend. We also add a whole test timestamp, to allow
-            # one to understand which rows belong to the same test.
+            # one to understand which row belong to the same test.
             #
             whole_test_timestamp = utils.timestamp()
 

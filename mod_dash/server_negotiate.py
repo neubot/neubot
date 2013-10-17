@@ -35,7 +35,6 @@ from neubot.backend import BACKEND
 from neubot import utils
 
 class DASHNegotiateServer(NegotiateServerModule):
-
     """ Negotiator for MPEG DASH test """
 
     def __init__(self):
@@ -44,7 +43,7 @@ class DASHNegotiateServer(NegotiateServerModule):
 
     @staticmethod
     def _stream_to_sha256(stream):
-        """ Stream to SHA512 identifier """
+        """ Stream to SHA256 identifier """
         sha256 = hashlib.new("sha256")
         sha256.update(str(hash(stream)))
         return base64.b64encode(sha256.digest())
@@ -66,15 +65,8 @@ class DASHNegotiateServer(NegotiateServerModule):
                 "authorization": sha256,
                 "port": 8080,
 
-                #
-                # Do not return a rate vector, which forces the client
-                # to automatically find the "best" rate.
-                #
-                # We have measured, in fact, that the QoE impact of the
-                # test is lower when the client finds the best rate on
-                # its own (as opposed to providing it a vector).
-                #
-                ####"dash_rates": request_body["dash_rates"],
+                # For now just accept the proposal from the client
+                "dash_rates": request_body["dash_rates"],
                }
 
     def collect(self, stream, request_body):
