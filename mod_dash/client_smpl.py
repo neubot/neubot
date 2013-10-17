@@ -48,7 +48,7 @@ DASH_SECONDS = 2
 # We iterate the DASH download of a chunk for the following number of
 # times, and we possibly variate the download rate each time.
 #
-DASH_MAX_ITERATION = 15
+DASH_MAX_ITERATION = 20
 
 class DASHClientSmpl(ClientHTTP):
     """ The MPEG DASH client """
@@ -92,7 +92,9 @@ class DASHClientSmpl(ClientHTTP):
     def connection_ready(self, stream):
         """ Invoked when the connection is ready """
 
-        STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
+        if self.iteration == 0:
+            STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
+            logging.info("dash: latency %s", utils.time_formatter(self.rtts[0]))
 
         #
         # Pick the greatest rate in the vector that is smaller
@@ -174,8 +176,9 @@ class DASHClientSmpl(ClientHTTP):
                       "iteration": self.iteration,
                       "rate": self.rate_kbit,
                       "real_address": self.parent.real_address,
-                      "remote_address": stream.peername[0],
                       "received": received,
+                      "remote_address": stream.peername[0],
+                      "request_ticks": self.saved_ticks,
                       "timestamp": utils.timestamp(),
                       "uuid": self.conf.get("uuid"),
                       "version": utils_version.NUMERIC_VERSION,
@@ -192,16 +195,18 @@ class DASHClientSmpl(ClientHTTP):
         STATE.update("test_progress", "%d%%" % ((100 * self.iteration)
           / DASH_MAX_ITERATION), publish=False)
 
-        if self.iteration >= DASH_MAX_ITERATION:
-            logging.debug("dash: done all iteration")
-            stream.close()
-            return
-
         speed = received / elapsed
         self.speed_kbit = (speed * 8) / 1000
 
         STATE.update("test_download", utils.speed_formatter(speed))
-        logging.debug("dash: speed - %f Kbit/s", self.speed_kbit)
+        logging.info("dash: [%2d/%d] %6d Kbit/s (%6d Kbit/s) - %.3f s",
+          self.iteration, DASH_MAX_ITERATION, self.speed_kbit,
+          self.rate_kbit, elapsed)
+
+        if self.iteration >= DASH_MAX_ITERATION:
+            logging.debug("dash: done all iteration")
+            stream.close()
+            return
 
         #
         # If we're adding too much delay, artificially reduce the

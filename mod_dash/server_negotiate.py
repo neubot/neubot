@@ -85,7 +85,7 @@ class DASHNegotiateServer(NegotiateServerModule):
         server_timestamp = utils.timestamp()
 
         BACKEND.store_generic("dash", {
-                                       "srvr_schema_version": 1,
+                                       "srvr_schema_version": 2,
                                        "srvr_timestamp": server_timestamp,
                                        "client": request_body,
                                        "server": result,
