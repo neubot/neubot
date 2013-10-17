@@ -92,7 +92,9 @@ class DASHClientSmpl(ClientHTTP):
     def connection_ready(self, stream):
         """ Invoked when the connection is ready """
 
-        STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
+        if self.iteration == 0:
+            STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
+            logging.info("dash: latency %s", utils.time_formatter(self.rtts[0]))
 
         #
         # Pick the greatest rate in the vector that is smaller
@@ -201,7 +203,9 @@ class DASHClientSmpl(ClientHTTP):
         self.speed_kbit = (speed * 8) / 1000
 
         STATE.update("test_download", utils.speed_formatter(speed))
-        logging.debug("dash: speed - %f Kbit/s", self.speed_kbit)
+        logging.info("dash: [%2d/%d] %6d Kbit/s (%6d Kbit/s) - %.3f s",
+          self.iteration, DASH_MAX_ITERATION, self.speed_kbit,
+          self.rate_kbit, elapsed)
 
         #
         # If we're adding too much delay, artificially reduce the
