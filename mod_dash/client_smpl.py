@@ -100,13 +100,13 @@ class DASHClientSmpl(ClientHTTP):
         # Pick the greatest rate in the vector that is smaller
         # than the latest piece rate (saved in speed_kbit).
         #
-        # Note: when speed_kbit is faster than the maximum rate,
-        # the bisect point is one past the last element, and
-        # thus we must patch the index to avoid an IndexError.
+        # Note: we pick one minus the bisect point because we
+        # want to use the closest smaller rate for the next
+        # chunk of "video" that we download.
         #
-        rate_index = bisect.bisect_left(self.rates, self.speed_kbit)
-        if rate_index >= len(self.rates):
-            rate_index = len(self.rates) - 1
+        rate_index = bisect.bisect(self.rates, self.speed_kbit) - 1
+        if rate_index < 0:
+            rate_index = 0
         self.rate_kbit = self.rates[rate_index]
 
         count = ((self.rate_kbit * 1000) / 8) * DASH_SECONDS
@@ -199,9 +199,10 @@ class DASHClientSmpl(ClientHTTP):
         self.speed_kbit = (speed * 8) / 1000
 
         STATE.update("test_download", utils.speed_formatter(speed))
-        logging.info("dash: [%2d/%d] %6d Kbit/s (%6d Kbit/s) - %.3f s",
-          self.iteration, DASH_MAX_ITERATION, self.speed_kbit,
-          self.rate_kbit, elapsed)
+        logging.info(
+          "dash: [%2d/%d] rate: %6d Kbit/s, speed: %6d Kbit/s, elapsed: %.3f s",
+          self.iteration, DASH_MAX_ITERATION, self.rate_kbit, self.speed_kbit,
+          elapsed)
 
         if self.iteration >= DASH_MAX_ITERATION:
             logging.debug("dash: done all iteration")
