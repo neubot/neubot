@@ -79,10 +79,10 @@ IMPLEMENTED TESTS
 All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
-Neubot implements three active network tests: ``bittorrent``, ``raw`` and
-``speedtest``. For each test, there is a Neubot subcommand that allows
-to run the test immediately. Moreover, Neubot schedules one of the
-three tests at random every 23 - 27 minutes.
+Neubot implements four active network tests: ``dash``, ``bittorrent``, ``raw``
+and ``speedtest``. For each test, there is a Neubot subcommand that allows to
+run the test immediately. Moreover, Neubot schedules one of the three tests at
+random every 23 - 27 minutes.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
 estimates the round-trip time, the download and the upload goodput
@@ -111,6 +111,24 @@ response (like ``raw``). It estimates the goodput by dividing the
 amount of transferred bytes by the elapsed time. To avoid consuming
 too much user resources, the ``speedtest`` test adapts the number
 of bytes to transfer such that the test runs for about ten seconds.
+
+The ``dash`` test emulates the DASH (Dynamic Adaptive Streaming over HTTP)
+protocol, which is defined in the DASH ISO/IEC 23009-1 standard.  It estimates
+the round-trip time and the download goodput of subsequent two seconds segments
+of an A/V resource. The goodput is estimated by dividing the amount of received
+bytes by the elapsed time. Note that, for each successive request, the test
+adapts the rate of the requested segment as a function of the goodput measured
+during the last download, i.e., if the last download duration was less than two
+seconds, the requested video rate (thus the video quality) is increased, if the
+duration was more than two seconds, the requested video rate is reduced. This
+dynamic adaptation logic for HTTP streaming is intended to always provide the
+user with the maximum video quality his network connection can afford. To avoid
+introducing latency in the other interactive network connections, the ``dash`` test
+requests video rates slightly lower than the measured goodput. In addition, at
+the beginning of the test, client and server negotiate a list of available
+bitrates, so the client chooses the maximum available bitrate that is still
+less than the measured goodput.
+
 
 SUBCOMMANDS
 ```````````
@@ -261,6 +279,29 @@ This section documents Neubot's subcommands.
   -v
     Makes the command more verbose.
 
+**neubot dash [-6fv] [-A address] [-p port]**
+  Asks Neubot to run a dash test using the web API and fails
+  if Neubot is not running in the background.
+
+  Accepts the following options:
+
+  -6
+    Prefer IPv6 to IPv4.
+
+  -A address
+    Address of the remote test server.
+
+  -f
+    Force the test. Run the test in the local process context
+    (instead of using the web API) and override privacy
+    settings if needed. Useful for developers and for debugging.
+
+  -p port
+    Port of the remote test server.
+
+  -v
+    Makes the command more verbose.
+
 **neubot start**
   On MacOS this command runs launchctl(1), which in turn starts
   Neubot. You must be ``root`` to run this command.  On MacOS, Neubot's
@@ -374,6 +415,10 @@ EXAMPLES
 
 In this section, we represent the unprivileged user prompt with ``$``
 and the ``root`` user prompt with ``#``.
+
+Run on-demand dash test::
+
+    $ neubot dash
 
 Run on-demand bittorrent test::
 
@@ -831,6 +876,7 @@ Here is a detailed description of each API.
 
    {
     "available_tests": [
+        "dash",
         "raw",
         "speedtest",
         "bittorrent"
@@ -1480,6 +1526,106 @@ Example::
      "uuid": "7528d674-25f0-4ac4-aff6-46f446034d81"
     },
     ...
+
+Dash data format
+````````````````
+
+We represent the data collected by the ``dash`` test with a
+dictionary that contains the following fields:
+
+**connect_time (float)**
+  RTT estimated by measuring the time that connect() takes
+  to complete, measured in seconds.
+
+**delta_sys_time (float)**
+  Accumulated system time during a request, measured in seconds.
+
+**delta_user_time (float)**
+  Accumulated user time during a request, measured in seconds.
+
+**elapsed (float)**
+  Time elapsed from the download request to the end of the download (i.e. download duration), measured in seconds.
+
+**elapsed_target (integer)**
+  Expected download duration, measured in seconds.
+
+**received (integer)**
+  Amount of bytes received from the server for the current request, measured in bytes.
+
+**rate (integer)**
+  Segment representation rate for the current request, measured in kbit/s.
+
+**iteration (integer)**
+  Sequence number of the current donwload request.
+
+**internal_address (string)**
+  Neubot's IP address, as seen by Neubot. It is typically either
+  an IPv4 or an IPv6 address.
+
+**real_address (string)**
+  Neubot's IP address, as seen by the server. It is typically either
+  an IPv4 or an IPv6 address.
+
+**remote_address (string)**
+  The server's IP address. It is typically either an IPv4 or an
+  IPv6 address.
+
+**timestamp (integer)**
+  Time when the test was performed, expressed as number of seconds
+  elapsed since midnight of January, 1st 1970.
+
+**uuid (string)**
+  Random unique identifier of the Neubot instance, useful to perform
+  time series analysis.
+
+**neubot_version (string)**
+  Neubot version number, encoded as a floating point number and printed
+  into a string. Given a version number in the format
+  ``<major>.<minor>.<patch>.<revision>``, the encoding is as follows::
+
+    <major> + 1e-03 * <minor> + 1e-06 * <patch>
+            + 1e-09 * <revision>
+
+  For example, the ``0.4.15.3`` version number
+  is encoded as ``0.004015003``.
+
+**platform (string)**
+  The operating system platform, e.g. ``linux2``, ``win32``.
+
+**privacy_can_collect (integer)**
+  The value of the ``can_collect`` privacy setting.
+
+**privacy_can_publish (integer)**
+  The value of the ``can_publish`` privacy setting.
+
+**privacy_informed (integer)**
+  The value of the ``informed`` privacy setting.
+
+Example::
+
+   [
+    {
+     "connect_time": 0.00022292137145996094,
+     "delta_sys_time": 0.023,
+     "delta_user_time": 0.011,
+     "elapsed": 0.0031561851501464844,
+     "elapsed_target": 2,
+     "internal_address": "130.192.91.231",
+     "iteration": 0,
+     "rate": 100,
+     "real_address": "130.192.91.231",
+     "received": 25129,
+     "remote_address": "194.116.85.237",
+     "timestamp": 1381928556,
+     "uuid": "7528d674-25f0-4ac4-aff6-46f446034d81",
+     "version": "0.004016000",
+     "platform": "linux2",
+     "privacy_can_collect": 1,
+     "privacy_can_publish": 1,
+     "privacy_informed": 1
+    },
+    ...
+
 
 DATA PROCESSING LANGUAGE
 ````````````````````````
