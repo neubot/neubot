@@ -448,13 +448,18 @@ list of the files installed.
   Location where the web interface files are installed. The web interface
   is described in the `WEB INTERFACE FILES`_ section.
 
+**/var/lib/neubot/dash.pickle**
+  Contains the results of the dash test.
+
+  On BSD systems this file is under ``/var/neubot`` rather
+  than under ``/var/lib/neubot``.
+
 **/var/lib/neubot/database.sqlite3**
   System-wide results database for Linux systems, created when
   Neubot starts for the first time.
 
-**/var/neubot/database.sqlite3**
-  System-wide results database for non-Linux systems,
-  created when Neubot starts for the first time.
+  On BSD systems the database is under ``/var/neubot`` rather
+  than under ``/var/lib/neubot``.
 
 EXAMPLES
 ````````
