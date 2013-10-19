@@ -161,6 +161,72 @@ This section documents Neubot's subcommands.
   -v
     Makes the command more verbose.
 
+**neubot dash [-6fv] [-A address] [-p port]**
+  Asks Neubot to run a dash test using the web API and fails
+  if Neubot is not running in the background.
+
+  Accepts the following options:
+
+  -6
+    Prefer IPv6 to IPv4. This flag is currently not implemented.
+
+  -A address
+    In client mode indicates the server address. In server mode indicates
+    the address that the server should bind.
+
+    In both the client and the server modes the default address is
+    ``127.0.0.1``.
+
+  -b backend
+    Select the default backend to use, i.e., the code that decides
+    where to save the test results.
+
+    The default backend is ``volatile`` that keeps the results in
+    memory and loses the results when Neubot exits.
+
+    Other available backends are: ``mlab`` (which stores the results
+    as they are stored on Measurement Lab servers), ``null`` (which
+    is the do-nothing backend), and ``neubot`` (which saves the results
+    in the local database).
+
+    Of course this setting is valid only when coupled with -f. If you don't
+    specify -f, Neubot asks the Neubot daemon to run the test, which will
+    store the results using, typically, the ``neubot`` backend.
+
+  -d datadir
+    Select the directory in which the backend should save the
+    test results.
+
+    By default the datadir is not set, because the ``volatile`` backend
+    does not store results on the disk.
+
+    Of course this setting is valid only when coupled with -f. If you don't
+    specify -f, Neubot asks the Neubot daemon to run the test, which will
+    store the results using, typically, the ``neubot`` backend.
+
+  -f
+    Force the test. Run the test in the local process context
+    (instead of using the web API to ask the daemon to run the test)
+    and override privacy settings if needed. Useful for developers
+    and for debugging.
+
+  -l
+    Server (listen) mode. Runs the dash server rather than the dash client.
+
+  -n
+    Disable the negotiate. When in client mode the client will skip the
+    negotiate. When in server mode the server will not start the negotiator
+    and will accept tests from any client.
+
+  -p port
+    In client mode indicates the server port. In server mode indicates
+    the port that the server should bind.
+
+    The default port is ``80``.
+
+  -v
+    Makes the command more verbose.
+
 **neubot database [-f database] [action]**
   Performs the specified ``action`` or prints the database's path
   if no action is specified.  We do not recommended to use this
@@ -261,29 +327,6 @@ This section documents Neubot's subcommands.
 
 **neubot speedtest [-6fv] [-A address] [-p port]**
   Asks Neubot to run a speedtest test using the web API and fails
-  if Neubot is not running in the background.
-
-  Accepts the following options:
-
-  -6
-    Prefer IPv6 to IPv4.
-
-  -A address
-    Address of the remote test server.
-
-  -f
-    Force the test. Run the test in the local process context
-    (instead of using the web API) and override privacy
-    settings if needed. Useful for developers and for debugging.
-
-  -p port
-    Port of the remote test server.
-
-  -v
-    Makes the command more verbose.
-
-**neubot dash [-6fv] [-A address] [-p port]**
-  Asks Neubot to run a dash test using the web API and fails
   if Neubot is not running in the background.
 
   Accepts the following options:
