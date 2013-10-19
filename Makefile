@@ -40,6 +40,7 @@ PHONIES += regress
 PHONIES += clean
 PHONIES += archive
 PHONIES += _install
+PHONIES += _install_umask_ok
 PHONIES += install
 PHONIES += uninstall
 PHONIES += release
@@ -219,12 +220,19 @@ uninstall:
 # Install should be invoked as root and will actually
 # copy neubot on the filesystem, making sure that root
 # owns the installed files.
+#
 # Moreover it will compile the modules into .pyc files
 # using the compileall module.
 #
-install:
+_install_umask_ok:
 	make -f Makefile _install INSTALL='install -o 0 -g 0'
 	$(PYTHON) -m compileall $(DESTDIR)$(DATADIR)/neubot
+
+install:
+	( \
+	 umask 022 && \
+	 make -f Makefile _install_umask_ok \
+	)
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___
