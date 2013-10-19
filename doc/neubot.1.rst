@@ -467,13 +467,13 @@ EXAMPLES
 In this section, we represent the unprivileged user prompt with ``$``
 and the ``root`` user prompt with ``#``.
 
-Run on-demand dash test::
-
-    $ neubot dash
-
 Run on-demand bittorrent test::
 
     $ neubot bittorrent
+
+Run on-demand dash test::
+
+    $ neubot dash
 
 Run on-demand raw test::
 
