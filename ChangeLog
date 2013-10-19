@@ -1,3 +1,41 @@
+Neubot 0.4.16.5 [2013-10-19]
+	* client_smpl.py: less aggressive bisect
+	* Use port 80 for the dash test
+	* Makefile: adapt _install to also install modules
+	* UNIX/etc/neubot: add the api and users configuration files
+	* Makefile: make sure that we run install with umask 0022
+	* Makefile: sort .PHONY targets
+	* Makefile: better uninstall
+	* Move bin/neubot to UNIX/bin/neubot
+	* UNIX/bin/neubot: adapt NEUBOT_HOME to new directory layout
+	* Makefile: tweak the uninstall target
+	* Merge branch 'feature_update_Makefile'
+	* Makefile: change regress find(1) -perm to be more liberal
+	* Repair regress/neubot/bittorrent/config.py
+	* Repair the regress/neubot/http/rootdir.sh test
+	* Preliminary step to repair regress/Makefile tests
+	* Repair the regress/Makefile tests
+	* Merge branch 'repair_regress'
+	* runner_policy: document the correct run-this-test probabilites
+	* mod_dash/client_smpl.py: remember to include the system platform
+	* mod_dash/client_negotiate.py: log when the test is done
+	* Neubot/0.4.16.5 released
+	* Neubot/0.4.16.5 released
+
+Neubot 0.4.16.4 [2013-10-19]
+	* mod_dash: combine the rate vector and rate-adaptation techniques
+	* mod_dash/client_negotiate.py: add more rates
+	* mod_dash: Tidy up some comments
+	* mod_dash/client_negotiate.py: grammar fix
+	* Merge remote-tracking branch 'origin/feature_dash_always_use_rates'
+	* mod_dash/client_smpl.py: print more info at LOG_INFO level
+	* mod_dash/client_smpl.py: move the check on the max iter number
+	* mod_dash/client_smpl.py: raise the max. number of iterations
+	* mod_dash: also save request ticks
+	* Merge branch 'feature_dash_last_tweaks'
+	* Neubot/0.4.16.4 released
+	* Neubot/0.4.16.4 released
+
 Neubot 0.4.16.3 [2013-10-13]
 	* M-Lab: adapt to new deployment style
 	* server: Add -A option to choose the address to bind()
