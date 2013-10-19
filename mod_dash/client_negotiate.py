@@ -181,7 +181,7 @@ class DASHNegotiateClient(ClientHTTP):
             whole_test_timestamp = utils.timestamp()
 
             for index, elem in enumerate(self.measurements):
-                elem["clnt_schema_version"] = 2
+                elem["clnt_schema_version"] = 3
                 elem["whole_test_timestamp"] = whole_test_timestamp
                 if index < len(response_body):
                     elem["srvr_data"] = response_body[index]
