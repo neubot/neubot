@@ -227,9 +227,11 @@ class DASHNegotiateClient(ClientHTTP):
         stream.send_request(request)
 
     def connection_lost(self, stream):
+        logging.info("dash: negotiate connection closed: test done")
         NOTIFIER.publish("testdone")
         self.client = None
         self.stream = None
 
     def connection_failed(self, connector, exception):
+        logging.info("dash: connect() failed: test done")
         NOTIFIER.publish("testdone")
