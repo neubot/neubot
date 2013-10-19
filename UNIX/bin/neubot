@@ -23,7 +23,8 @@
 import sys
 import os
 
-NEUBOT_HOME = "@DATADIR@"
+NEUBOT_HOME = "@DATADIR@/neubot"
+
 if NEUBOT_HOME.startswith("@"):
     NEUBOT_HOME = "."
 
