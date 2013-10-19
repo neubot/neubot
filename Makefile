@@ -211,7 +211,7 @@ uninstall:
 	$(PYTHON) -m compileall dist/r/$(DATADIR)/neubot
 	rm -rf dist/f dist/d dist/UNINSTALL
 	find dist/r/ -depth -type f -print -exec rm {} \; >> dist/f
-	find dist/r/ -depth -type d -empty -print >> dist/d
+	find dist/r/ -depth -type d -print -exec rmdir {} \; >> dist/d
 	sed 's|dist/r|rm -f $(DESTDIR)|g' dist/f >> dist/UNINSTALL
 	sed 's|dist/r|rmdir $(DESTDIR)|g' dist/d >> dist/UNINSTALL
 	sh dist/UNINSTALL
