@@ -79,10 +79,12 @@ IMPLEMENTED TESTS
 All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
-Neubot implements four active network tests: ``dash``, ``bittorrent``, ``raw``
-and ``speedtest``. For each test, there is a Neubot subcommand that allows to
-run the test immediately. Moreover, Neubot schedules one of the three tests at
-random every 23 - 27 minutes.
+Neubot implements four active network tests: ``bittorrent``, ``dash``, ``raw``
+and ``speedtest``. For each test, there is a Neubot subcommand that allows you
+to run the test from the command line. Otherwise, Neubot runs one of the
+four tests every 23 - 27 minutes: the probability that a test is run is
+currently 50% for the dash test, 20% for the speedtest and the bittorrent
+tests, 10% for the raw test.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
 estimates the round-trip time, the download and the upload goodput
@@ -92,6 +94,24 @@ the round-trip time. It estimates the goodput by dividing the amount of
 transferred bytes by the elapsed time. To avoid consuming too much
 user resources, the ``bittorrent`` test adapts the number of bytes to
 transfer such that the test runs for about ten seconds.
+
+The ``dash`` test emulates the DASH (Dynamic Adaptive Streaming over HTTP)
+protocol, which is defined in the DASH ISO/IEC 23009-1 standard. The DASH
+test uses the time that connect() takes to complete as an estimator of
+the round-trip time. The DASH test pretends to download a video resource,
+which is divided into two-second chunks that are encoded at diverse bitrates
+(e.g., 100 Kbit/s, 1 Mbit/s).  When the download of a chunk is complete,
+the DASH test computes the download speed by dividing the amount of received
+bytes by the elapsed time. If the elapsed time is less than two seconds,
+the DASH test requests the next chunk using an higher bitrate. Conversely,
+if the elapsed time is higher than two seconds, the DASH test request the
+next chunk using a lower bitrate. Differently from the DASH protocol, which
+aims to provide the user with the best video quality that his/her Internet
+connection can sustain, the DASH test is less aggressive, because we do
+not want the test to add to much extra latency to the interactive network
+connections of our users. In other words this test is optimized to yield
+the best streaming rate that the Internet connection can sustain
+*without creating too much extra delay*.
 
 The ``raw`` test performs a `raw` 10-second TCP download to estimate
 the download goodput. Also, it estimates the goodput from the
@@ -111,23 +131,6 @@ response (like ``raw``). It estimates the goodput by dividing the
 amount of transferred bytes by the elapsed time. To avoid consuming
 too much user resources, the ``speedtest`` test adapts the number
 of bytes to transfer such that the test runs for about ten seconds.
-
-The ``dash`` test emulates the DASH (Dynamic Adaptive Streaming over HTTP)
-protocol, which is defined in the DASH ISO/IEC 23009-1 standard.  It estimates
-the round-trip time and the download goodput of subsequent two seconds segments
-of an A/V resource. The goodput is estimated by dividing the amount of received
-bytes by the elapsed time. Note that, for each successive request, the test
-adapts the rate of the requested segment as a function of the goodput measured
-during the last download, i.e., if the last download duration was less than two
-seconds, the requested video rate (thus the video quality) is increased, if the
-duration was more than two seconds, the requested video rate is reduced. This
-dynamic adaptation logic for HTTP streaming is intended to always provide the
-user with the maximum video quality his network connection can afford. To avoid
-introducing latency in the other interactive network connections, the ``dash`` test
-requests video rates slightly lower than the measured goodput. In addition, at
-the beginning of the test, client and server negotiate a list of available
-bitrates, so the client chooses the maximum available bitrate that is still
-less than the measured goodput.
 
 
 SUBCOMMANDS
