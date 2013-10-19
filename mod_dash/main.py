@@ -68,7 +68,7 @@ def main(args):
     force = 0
     listen = 0
     negotiate = 1
-    port = 8080
+    port = 80
     noisy = 0
     for name, value in options:
         if name == "-6":

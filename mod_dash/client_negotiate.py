@@ -167,7 +167,7 @@ class DASHNegotiateClient(ClientHTTP):
 
             self.client = DASHClientSmpl(self.poller, self, rates)
             self.client.configure(self.conf.copy())
-            self.client.connect((self.stream.peername[0], 8080))  # XXX
+            self.client.connect((self.stream.peername[0], 80))  # XXX
 
         elif self.state == STATE_COLLECT:
 

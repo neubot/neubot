@@ -188,7 +188,7 @@ class RunnerCore(object):
 
         elif first_elem[0] in self.dynamic_tests:
             address = RUNNER_HOSTS.get_random_host()
-            port = 8080  # XXX
+            port = 80  # XXX
             self.dynamic_tests[first_elem[0]]["test_func"]({
                 "address": address,
                 "conf": CONFIG.copy(),
