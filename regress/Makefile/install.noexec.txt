@@ -1,5 +1,13 @@
 dist/temp/datadir/applications/neubot.desktop
 dist/temp/datadir/icons/hicolor/scalable/apps/neubot.svg
+dist/temp/datadir/neubot/mod_dash/__init__.py
+dist/temp/datadir/neubot/mod_dash/client_negotiate.py
+dist/temp/datadir/neubot/mod_dash/client_smpl.py
+dist/temp/datadir/neubot/mod_dash/main.py
+dist/temp/datadir/neubot/mod_dash/neubot_module.py
+dist/temp/datadir/neubot/mod_dash/server_glue.py
+dist/temp/datadir/neubot/mod_dash/server_negotiate.py
+dist/temp/datadir/neubot/mod_dash/server_smpl.py
 dist/temp/datadir/neubot/neubot/__init__.py
 dist/temp/datadir/neubot/neubot/agent.py
 dist/temp/datadir/neubot/neubot/api/__init__.py
@@ -12,6 +20,7 @@ dist/temp/datadir/neubot/neubot/backend.py
 dist/temp/datadir/neubot/neubot/backend_mlab.py
 dist/temp/datadir/neubot/neubot/backend_neubot.py
 dist/temp/datadir/neubot/neubot/backend_null.py
+dist/temp/datadir/neubot/neubot/backend_volatile.py
 dist/temp/datadir/neubot/neubot/background_api.py
 dist/temp/datadir/neubot/neubot/background_rendezvous.py
 dist/temp/datadir/neubot/neubot/background_win32.py
@@ -49,9 +58,6 @@ dist/temp/datadir/neubot/neubot/database_xxx.py
 dist/temp/datadir/neubot/neubot/debug/__init__.py
 dist/temp/datadir/neubot/neubot/debug/objgraph.py
 dist/temp/datadir/neubot/neubot/defer.py
-dist/temp/datadir/neubot/neubot/filesys.py
-dist/temp/datadir/neubot/neubot/filesys_null.py
-dist/temp/datadir/neubot/neubot/filesys_posix.py
 dist/temp/datadir/neubot/neubot/handler.py
 dist/temp/datadir/neubot/neubot/http/__init__.py
 dist/temp/datadir/neubot/neubot/http/client.py
@@ -60,7 +66,6 @@ dist/temp/datadir/neubot/neubot/http/server.py
 dist/temp/datadir/neubot/neubot/http/ssi.py
 dist/temp/datadir/neubot/neubot/http/stream.py
 dist/temp/datadir/neubot/neubot/http_clnt.py
-dist/temp/datadir/neubot/neubot/http_server.py
 dist/temp/datadir/neubot/neubot/http_utils.py
 dist/temp/datadir/neubot/neubot/listener.py
 dist/temp/datadir/neubot/neubot/log.py
@@ -141,7 +146,9 @@ dist/temp/datadir/neubot/neubot/utils.py
 dist/temp/datadir/neubot/neubot/utils_api.py
 dist/temp/datadir/neubot/neubot/utils_ctl.py
 dist/temp/datadir/neubot/neubot/utils_hier.py
+dist/temp/datadir/neubot/neubot/utils_modules.py
 dist/temp/datadir/neubot/neubot/utils_net.py
+dist/temp/datadir/neubot/neubot/utils_nt.py
 dist/temp/datadir/neubot/neubot/utils_path.py
 dist/temp/datadir/neubot/neubot/utils_posix.py
 dist/temp/datadir/neubot/neubot/utils_random.py
@@ -168,6 +175,7 @@ dist/temp/datadir/neubot/neubot/www/js/jqplot.categoryAxisRenderer.min.js
 dist/temp/datadir/neubot/neubot/www/js/jqplot.cursor.min.js
 dist/temp/datadir/neubot/neubot/www/js/jqplot.dateAxisRenderer.min.js
 dist/temp/datadir/neubot/neubot/www/js/jqplot.highlighter.min.js
+dist/temp/datadir/neubot/neubot/www/js/jqplot.logAxisRenderer.min.js
 dist/temp/datadir/neubot/neubot/www/js/jquery.jqplot.min.js
 dist/temp/datadir/neubot/neubot/www/js/jquery.min.js
 dist/temp/datadir/neubot/neubot/www/js/jquery.qtip.min.js
@@ -185,6 +193,16 @@ dist/temp/datadir/neubot/neubot/www/not_running.html
 dist/temp/datadir/neubot/neubot/www/privacy.html
 dist/temp/datadir/neubot/neubot/www/results.html
 dist/temp/datadir/neubot/neubot/www/settings.html
+dist/temp/datadir/neubot/neubot/www/test/bittorrent.html
+dist/temp/datadir/neubot/neubot/www/test/bittorrent.json
+dist/temp/datadir/neubot/neubot/www/test/dash.html
+dist/temp/datadir/neubot/neubot/www/test/dash.json
+dist/temp/datadir/neubot/neubot/www/test/raw.html
+dist/temp/datadir/neubot/neubot/www/test/raw.json
+dist/temp/datadir/neubot/neubot/www/test/speedtest.html
+dist/temp/datadir/neubot/neubot/www/test/speedtest.json
 dist/temp/datadir/neubot/neubot/www/update.html
 dist/temp/mandir/man1/neubot.1.gz
+dist/temp/sysconfdir/neubot/api
+dist/temp/sysconfdir/neubot/users
 dist/temp/sysconfdir/xdg/autostart/neubot.desktop
