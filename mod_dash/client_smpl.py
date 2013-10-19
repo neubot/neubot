@@ -28,6 +28,7 @@
 import bisect
 import logging
 import os
+import sys
 
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
@@ -174,6 +175,7 @@ class DASHClientSmpl(ClientHTTP):
                       "elapsed_target": DASH_SECONDS,
                       "internal_address": stream.myname[0],
                       "iteration": self.iteration,
+                      "platform": sys.platform,
                       "rate": self.rate_kbit,
                       "real_address": self.parent.real_address,
                       "received": received,
