@@ -1,8 +1,9 @@
 # Makefile
 
 #
-# Copyright (c) 2010-2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c)
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     2010-2013 Simone Basso <bassosimone@gmail.com>
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -30,6 +31,7 @@ VERSION	= 0.4.16.4
 # The list of .PHONY targets.  This is also used to build the
 # help message--and note that the targets named with a leading
 # underscore are private.
+#
 # Here we list targets in file order because this makes it easier
 # to maintain this list.
 #
@@ -38,8 +40,9 @@ PHONIES += regress
 PHONIES += clean
 PHONIES += archive
 PHONIES += _install
-PHONIES += install
 PHONIES += uninstall
+PHONIES += _install_umask_ok
+PHONIES += install
 PHONIES += release
 
 .PHONY: $(PHONIES)
@@ -120,6 +123,7 @@ PYTHON = python
 # These are some of the variables accepted by the GNU
 # build system, in order to follow the rule of the least
 # surprise [1].
+#
 # We install neubot in $(DATADIR)/neubot following sect.
 # 3.1.1 of Debian Python Policy which covers the shipping
 # of private modules [2].
@@ -137,9 +141,9 @@ MANDIR ?= $(PREFIX)/share/man
 SYSCONFDIR ?= $(PREFIX)/etc
 
 _install:
-	find . -type f -name .DS_Store -exec rm {} \;
+	find . -type f -name .DS_Store -exec rm {} \;  # H A T E
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)/neubot
+	$(INSTALL) UNIX/bin/neubot $(DESTDIR)$(BINDIR)/neubot
 	$(INSTALL) -d $(DESTDIR)$(DATADIR)
 	for DIR in `cd UNIX/share && find . -mindepth 1 -type d`; do \
 	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/$$DIR; \
@@ -170,14 +174,22 @@ _install:
 	    $(INSTALL) -m644 UNIX/etc/$$FILE $(DESTDIR)$(SYSCONFDIR)/$$FILE; \
 	    test $$? || exit 1; \
 	done
-	$(INSTALL) -d $(DESTDIR)$(DATADIR)/neubot
+	$(INSTALL) -d $(DESTDIR)$(DATADIR)/neubot/neubot
 	for DIR in `find neubot -type d`; do \
-	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/$$DIR; \
+	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/neubot/$$DIR; \
 	    test $$? || exit 1; \
 	done
 	for FILE in `find neubot -type f`; do \
-	    $(INSTALL) -m644 $$FILE $(DESTDIR)$(DATADIR)/$$FILE; \
+	    $(INSTALL) -m644 $$FILE $(DESTDIR)$(DATADIR)/neubot/$$FILE; \
 	    test $$? || exit 1; \
+	done
+	for DIR in mod_*; do \
+	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/neubot/$$DIR; \
+	    test $$? || exit 1; \
+	    for FILE in `find $$DIR -type f`; do \
+	        $(INSTALL) -m644 $$FILE $(DESTDIR)$(DATADIR)/neubot/$$FILE; \
+	        test $$? || exit 1; \
+	    done; \
 	done
 	$(INSTALL) -d $(DESTDIR)$(LOCALSTATEDIR)/neubot
 	for PATTERN in 's|@BINDIR@|$(BINDIR)|g' 's|@DATADIR@|$(DATADIR)|g' \
@@ -186,10 +198,10 @@ _install:
 	    ./scripts/sed_inplace $$PATTERN \
 	        $(DESTDIR)$(BINDIR)/neubot \
 	        $(DESTDIR)$(DATADIR)/applications/neubot.desktop \
-	        $(DESTDIR)$(DATADIR)/neubot/notifier/unix.py \
-	        $(DESTDIR)$(DATADIR)/neubot/utils_hier.py \
-	        $(DESTDIR)$(DATADIR)/neubot/system_posix.py \
-	        $(DESTDIR)$(DATADIR)/neubot/viewer_webkit_gtk.py \
+	        $(DESTDIR)$(DATADIR)/neubot/neubot/notifier/unix.py \
+	        $(DESTDIR)$(DATADIR)/neubot/neubot/utils_hier.py \
+	        $(DESTDIR)$(DATADIR)/neubot/neubot/system_posix.py \
+	        $(DESTDIR)$(DATADIR)/neubot/neubot/viewer_webkit_gtk.py \
 	        $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop; \
 	    test $$? || exit 1; \
 	done
@@ -199,7 +211,7 @@ uninstall:
 	$(PYTHON) -m compileall dist/r/$(DATADIR)/neubot
 	rm -rf dist/f dist/d dist/UNINSTALL
 	find dist/r/ -depth -type f -print -exec rm {} \; >> dist/f
-	find dist/r/ -depth -type d -empty -print >> dist/d
+	find dist/r/ -depth -mindepth 1 -type d -print >> dist/d
 	sed 's|dist/r|rm -f $(DESTDIR)|g' dist/f >> dist/UNINSTALL
 	sed 's|dist/r|rmdir $(DESTDIR)|g' dist/d >> dist/UNINSTALL
 	sh dist/UNINSTALL
@@ -208,12 +220,19 @@ uninstall:
 # Install should be invoked as root and will actually
 # copy neubot on the filesystem, making sure that root
 # owns the installed files.
+#
 # Moreover it will compile the modules into .pyc files
 # using the compileall module.
 #
-install:
+_install_umask_ok:
 	make -f Makefile _install INSTALL='install -o 0 -g 0'
 	$(PYTHON) -m compileall $(DESTDIR)$(DATADIR)/neubot
+
+install:
+	( \
+	 umask 022 && \
+	 make -f Makefile _install_umask_ok \
+	)
 
 #           _
 #  _ __ ___| | ___  __ _ ___  ___

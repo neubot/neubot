@@ -1,0 +1,7 @@
+#
+# /etc/neubot/users - controls the unprivileged user names used
+# by Neubot to perform various tasks.
+#
+
+#update_user _neubot_update  # For auto-updates (MacOS-only)
+#unpriv_user _neubot         # For network tests
