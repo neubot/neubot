@@ -1,0 +1,7 @@
+#
+# /etc/neubot/api - controls address, port where Neubot listens
+# for incoming web API requests.
+#
+
+#address 127.0.0.1  # Address where the listen
+#port 9774          # Port where to listen
