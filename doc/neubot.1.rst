@@ -1666,6 +1666,8 @@ by using lists.
 Differently from traditional LISP syntax, however, the data processing
 language is encoded using JSON.
 
+TODO: document the new operations added with the 0.4.16.x cycle.
+
 The language implements the following operations:
 
 **["divide", atom-or-list, atom-or-list]**
