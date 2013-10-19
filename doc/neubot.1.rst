@@ -1193,6 +1193,83 @@ Example::
     },
     ...
 
+Dash data format
+````````````````
+
+The dash test saves the results into two different formats; one format is
+used for the client, and the other format is used for the server.  However
+in both formats there is a dictionary that contains the following fields:
+
+**connect_time (float)**
+  RTT estimated by measuring the time that connect() takes
+  to complete, measured in seconds.
+
+**delta_sys_time (float)**
+  Accumulated system time during a request, measured in seconds.
+
+**delta_user_time (float)**
+  Accumulated user time during a request, measured in seconds.
+
+**elapsed (float)**
+  Time elapsed from the download request to the end of the download (i.e.,
+  the download duration), measured in seconds.
+
+**elapsed_target (integer)**
+  Expected download duration, measured in seconds.
+
+**internal_address (string)**
+  Neubot's IP address, as seen by Neubot. It is typically either
+  an IPv4 or an IPv6 address.
+
+**iteration (integer)**
+  The number of the current chunk.
+
+**platform (string)**
+  The operating system platform, e.g. ``linux2``, ``win32``.
+
+**rate (integer)**
+  Segment representation rate for the current request, measured in kbit/s.
+
+**real_address (string)**
+  Neubot's IP address, as seen by the server. It is typically either
+  an IPv4 or an IPv6 address.
+
+**received (integer)**
+  Amount of bytes received from the server for the current request, measured
+  in bytes.
+
+**remote_address (string)**
+  The server's IP address. It is typically either an IPv4 or an
+  IPv6 address.
+
+**request_ticks (float)**
+  The time when we sent the request for the current chunk, measured in
+  seconds and with microsecond precision. Be careful because this
+  variable is not a timestamp on Windows platforms, but is a timestamp
+  on UNIX platforms.
+
+**timestamp (integer)**
+  Time when the test was performed, expressed as number of seconds
+  elapsed since midnight of January, 1st 1970.
+
+**uuid (string)**
+  Random unique identifier of the Neubot instance, useful to perform
+  time series analysis.
+
+**version (string)**
+  Neubot version number, encoded as a floating point number and printed
+  into a string. Given a version number in the format
+  ``<major>.<minor>.<patch>.<revision>``, the encoding is as follows::
+
+    <major> + 1e-03 * <minor> + 1e-06 * <patch>
+            + 1e-09 * <revision>
+
+  For example, the ``0.4.15.3`` version number
+  is encoded as ``0.004015003``.
+
+TODO describe the specific structure in which the above dictionary
+is encapsulated on the client and on the server side.
+
 Raw test data format
 ````````````````````
 
@@ -1575,105 +1652,6 @@ Example::
      "timestamp": 1365074302,
      "upload_speed": 10974865.674026133,
      "uuid": "7528d674-25f0-4ac4-aff6-46f446034d81"
-    },
-    ...
-
-Dash data format
-````````````````
-
-We represent the data collected by the ``dash`` test with a
-dictionary that contains the following fields:
-
-**connect_time (float)**
-  RTT estimated by measuring the time that connect() takes
-  to complete, measured in seconds.
-
-**delta_sys_time (float)**
-  Accumulated system time during a request, measured in seconds.
-
-**delta_user_time (float)**
-  Accumulated user time during a request, measured in seconds.
-
-**elapsed (float)**
-  Time elapsed from the download request to the end of the download (i.e. download duration), measured in seconds.
-
-**elapsed_target (integer)**
-  Expected download duration, measured in seconds.
-
-**received (integer)**
-  Amount of bytes received from the server for the current request, measured in bytes.
-
-**rate (integer)**
-  Segment representation rate for the current request, measured in kbit/s.
-
-**iteration (integer)**
-  Sequence number of the current donwload request.
-
-**internal_address (string)**
-  Neubot's IP address, as seen by Neubot. It is typically either
-  an IPv4 or an IPv6 address.
-
-**real_address (string)**
-  Neubot's IP address, as seen by the server. It is typically either
-  an IPv4 or an IPv6 address.
-
-**remote_address (string)**
-  The server's IP address. It is typically either an IPv4 or an
-  IPv6 address.
-
-**timestamp (integer)**
-  Time when the test was performed, expressed as number of seconds
-  elapsed since midnight of January, 1st 1970.
-
-**uuid (string)**
-  Random unique identifier of the Neubot instance, useful to perform
-  time series analysis.
-
-**neubot_version (string)**
-  Neubot version number, encoded as a floating point number and printed
-  into a string. Given a version number in the format
-  ``<major>.<minor>.<patch>.<revision>``, the encoding is as follows::
-
-    <major> + 1e-03 * <minor> + 1e-06 * <patch>
-            + 1e-09 * <revision>
-
-  For example, the ``0.4.15.3`` version number
-  is encoded as ``0.004015003``.
-
-**platform (string)**
-  The operating system platform, e.g. ``linux2``, ``win32``.
-
-**privacy_can_collect (integer)**
-  The value of the ``can_collect`` privacy setting.
-
-**privacy_can_publish (integer)**
-  The value of the ``can_publish`` privacy setting.
-
-**privacy_informed (integer)**
-  The value of the ``informed`` privacy setting.
-
-Example::
-
-   [
-    {
-     "connect_time": 0.00022292137145996094,
-     "delta_sys_time": 0.023,
-     "delta_user_time": 0.011,
-     "elapsed": 0.0031561851501464844,
-     "elapsed_target": 2,
-     "internal_address": "130.192.91.231",
-     "iteration": 0,
-     "rate": 100,
-     "real_address": "130.192.91.231",
-     "received": 25129,
-     "remote_address": "194.116.85.237",
-     "timestamp": 1381928556,
-     "uuid": "7528d674-25f0-4ac4-aff6-46f446034d81",
-     "version": "0.004016000",
-     "platform": "linux2",
-     "privacy_can_collect": 1,
-     "privacy_can_publish": 1,
-     "privacy_informed": 1
     },
     ...
 
