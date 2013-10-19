@@ -40,9 +40,9 @@ PHONIES += regress
 PHONIES += clean
 PHONIES += archive
 PHONIES += _install
+PHONIES += uninstall
 PHONIES += _install_umask_ok
 PHONIES += install
-PHONIES += uninstall
 PHONIES += release
 
 .PHONY: $(PHONIES)
