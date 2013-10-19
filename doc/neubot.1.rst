@@ -411,7 +411,7 @@ Read Neubot's privacy policy::
 
 Run Neubot ``command`` from the sources directory::
 
-    $ ./bin/neubot command
+    $ ./UNIX/bin/neubot command
 
 WEB INTERFACE FILES
 ```````````````````

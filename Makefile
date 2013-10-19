@@ -143,7 +143,7 @@ SYSCONFDIR ?= $(PREFIX)/etc
 _install:
 	find . -type f -name .DS_Store -exec rm {} \;  # H A T E
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL) bin/neubot $(DESTDIR)$(BINDIR)/neubot
+	$(INSTALL) UNIX/bin/neubot $(DESTDIR)$(BINDIR)/neubot
 	$(INSTALL) -d $(DESTDIR)$(DATADIR)
 	for DIR in `cd UNIX/share && find . -mindepth 1 -type d`; do \
 	    $(INSTALL) -d $(DESTDIR)$(DATADIR)/$$DIR; \
