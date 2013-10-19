@@ -35,7 +35,6 @@ PROPERTIES = (
     'bittorrent.address',
     'bittorrent.bytes.down',
     'bittorrent.bytes.up',
-    'bittorrent.daemonize',
     'bittorrent.infohash',
     'bittorrent.listen',
     'bittorrent.negotiate',
