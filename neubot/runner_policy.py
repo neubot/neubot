@@ -35,20 +35,20 @@ import random
 # I think it's wiser to hardcode the policy for now.
 #
 TEST_NAMES = [
-              # probability: 10%
+              # probability: 9%
               'raw',
 
-              # probability: 30%
+              # probability: 27%
               'bittorrent',
               'bittorrent',
               'bittorrent',
 
-              # probability: 30%
+              # probability: 27%
               'speedtest',
               'speedtest',
               'speedtest',
 
-              # probability: 40%
+              # probability: 36%
               'dash',
               'dash',
               'dash',
