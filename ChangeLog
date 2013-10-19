@@ -1,3 +1,9 @@
+Neubot 0.4.16.6 [2013-10-19]
+	* ChangeLog: sync
+	* mod_dash: oops, I forgot to bump the schema
+	* scripts/release: copyright message: NEXA -> Nexa
+	* Neubot/0.4.16.6 released
+
 Neubot 0.4.16.5 [2013-10-19]
 	* client_smpl.py: less aggressive bisect
 	* Use port 80 for the dash test
