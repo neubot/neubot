@@ -35,7 +35,7 @@ make clean
 #
 export LC_COLLATE=C
 
-grep -R http.server.rootdir neubot/ | sort > \
+grep -R http.server.rootdir neubot | sort > \
   regress/neubot/http/rootdir.txt.new
 diff -u regress/neubot/http/rootdir.txt \
   regress/neubot/http/rootdir.txt.new
