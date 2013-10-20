@@ -51,6 +51,9 @@ else
     exit 1
 fi
 
+# Update the ChangeLog
+./scripts/update_changelog $CURRENT $NEW
+
 #
 # Update the numeric representation first because
 # utils_version.py has the current canonical version
