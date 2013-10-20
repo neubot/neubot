@@ -1,3 +1,9 @@
+Neubot 0.4.16.7 [2013-10-20]
+	* net/stream.py: fix for when the first connect() fails
+	* update_changelog: if the new version does not exist yet, use HEAD
+	* scripts/release: automatically update the changelog
+	* Neubot/0.4.16.7 released
+
 Neubot 0.4.16.6 [2013-10-19]
 	* ChangeLog: sync
 	* mod_dash: oops, I forgot to bump the schema

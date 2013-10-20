@@ -25,7 +25,7 @@
 # The scripts/release script will automatically update the
 # version number each time we tag with a new release.
 #
-VERSION	= 0.4.16.6
+VERSION	= 0.4.16.7
 
 #
 # The list of .PHONY targets.  This is also used to build the
