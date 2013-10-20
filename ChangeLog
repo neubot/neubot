@@ -1,3 +1,7 @@
+Neubot 0.4.16.8 [2013-10-20]
+	* mod_dash: back to 15 iterations, to be sure
+	* Neubot/0.4.16.8 released
+
 Neubot 0.4.16.7 [2013-10-20]
 	* net/stream.py: fix for when the first connect() fails
 	* update_changelog: if the new version does not exist yet, use HEAD
