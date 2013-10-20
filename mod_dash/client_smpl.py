@@ -49,7 +49,7 @@ DASH_SECONDS = 2
 # We iterate the DASH download of a chunk for the following number of
 # times, and we possibly variate the download rate each time.
 #
-DASH_MAX_ITERATION = 20
+DASH_MAX_ITERATION = 15
 
 class DASHClientSmpl(ClientHTTP):
     """ The MPEG DASH client """
