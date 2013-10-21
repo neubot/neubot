@@ -28,11 +28,11 @@ Release procedure
 
 #. Autoupdate
 
-  #. Make sure that Neubot autoupdates on a MacOS machine
-     where it was already installed.
+   #. Make sure that Neubot autoupdates on a MacOS machine
+      where it was already installed.
 
-  #. Make sure that Neubot autoupdates on a Windows machine
-     where it was already installed.
+   #. Make sure that Neubot autoupdates on a Windows machine
+      where it was already installed.
 
 #. Make sure that Windows installer is not identified as a
    virus by <http://www.virustotal.com/>.
