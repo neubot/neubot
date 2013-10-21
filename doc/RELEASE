@@ -1,28 +1,32 @@
 Release procedure
 '''''''''''''''''
 
-:Version: 1.3 of 2012/10/10
+:Version: 1.4 of 2013/10/21
 :Authors: Simone Basso
 :Documents: the release procedure
 
 #. Build a release using the following commands::
 
      make release
-     sudo ./MacOS/makepkg.py
-     Win32/setup.py
 
-   The first command runs on any UNIX operating system and creates
-   a Debian and source release.  The second runs on MacOSX and
-   creates a MacOS release.  The third runs on Windows only and
-   creates a Windows release.
+   The result of this command consists of a tarball, a zipball,
+   and their signature (made using ``openssl``). Publish
+   everything at <http://releases.neubot.org/_packages/>.
 
-#. Run regression tests.  You need access to a Debian machine
-   where you are root and where Neubot is not installed.
+   Then generate the packages for Windows, Debian/Ubuntu, and
+   MacOS using, respectively, the following repositories:
+
+   #. <https://github.com/neubot/neubot_win32>;
+
+   #. <https://github.com/neubot/neubot_debian>;
+
+   #. <https://github.com/neubot/neubot_macos>.
+
+#. Run regression tests as expained the ``neubot_debian`` repository.
+
+#. Run Ubuntu-related checks as explained at the ``neubot_debian`` repository.
 
 #. Autoupdate
-
-    #. Make sure that Neubot autoupdates on a Debian machine
-       where it was already installed.
 
     #. Make sure that Neubot autoupdates on a MacOS machine
        where it was already installed.
@@ -39,18 +43,6 @@ Release procedure
 #. Deploy the new Neubot version at the master server and
    make sure it DOES NOT advertises the new version via
    rendezvous.
-
-#. Install Neubot on a Debian machine and:
-
-     #. make sure it prompts for privacy settings during the
-        install;
-
-     #. make sure it prompts for privacy settings after a
-        reboot;
-
-     #. make sure that the following commands work properly:
-        `bittorrent`, `browser`, `database`, `notifier`,
-        `privacy`, `raw`, `speedtest`, `viewer`;
 
 #. Install Neubot on a MacOS machine and:
 
