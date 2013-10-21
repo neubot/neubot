@@ -251,8 +251,5 @@ release:
 	fi
 	make clean
 	make archive
-	./M-Lab/deploy.sh -n
-	./scripts/sign_all
-	./scripts/update_apt
-	cd dist && find -type f -exec chmod 644 {} \;
-	cd dist && find -type d -exec chmod 755 {} \;
+	./scripts/sign_all dist/*
+	cd dist && chmod 644 *
