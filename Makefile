@@ -240,7 +240,7 @@ install:
 # | | |  __/ |  __/ (_| \__ \  __/
 # |_|  \___|_|\___|\__,_|___/\___|
 #
-# Bless a new neubot release (sources and Debian).
+# Bless a new neubot release (sources).
 #
 release:
 	if ! [ "$(VERSION)" = "$$(git describe --tags)" ]; then		\
