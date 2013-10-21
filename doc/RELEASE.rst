@@ -22,17 +22,17 @@ Release procedure
 
    #. <https://github.com/neubot/neubot_macos>.
 
-#. Run regression tests as expained the ``neubot_debian`` repository.
+#. Run regression tests as expained in the ``neubot_debian`` repository.
 
-#. Run Ubuntu-related checks as explained at the ``neubot_debian`` repository.
+#. Run Ubuntu-related checks as explained in the ``neubot_debian`` repository.
 
 #. Autoupdate
 
-    #. Make sure that Neubot autoupdates on a MacOS machine
-       where it was already installed.
+  #. Make sure that Neubot autoupdates on a MacOS machine
+     where it was already installed.
 
-    #. Make sure that Neubot autoupdates on a Windows machine
-       where it was already installed.
+  #. Make sure that Neubot autoupdates on a Windows machine
+     where it was already installed.
 
 #. Make sure that Windows installer is not identified as a
    virus by <http://www.virustotal.com/>.
@@ -46,24 +46,24 @@ Release procedure
 
 #. Install Neubot on a MacOS machine and:
 
-     #. make sure it prompts for privacy settings during the
-        install;
+   #. make sure it prompts for privacy settings during the
+      install;
 
-     #. make sure that the following commands work properly:
-        `bittorrent`, `browser`, `database`, `notifier`,
-        `privacy`, `raw`, `speedtest`, `viewer`;
+   #. make sure that the following commands work properly:
+      `bittorrent`, `browser`, `database`, `notifier`,
+      `privacy`, `raw`, `speedtest`, `viewer`;
 
 #. Install and upgrade Neubot on a Windows machine and:
 
-     #. make sure it prompts for privacy settings after the
-        install;
+   #. make sure it prompts for privacy settings after the
+      install;
 
-     #. make sure it prompts for privacy settings after a
-        reboot;
+   #. make sure it prompts for privacy settings after a
+      reboot;
 
-     #. make sure that the following commands work properly:
-        `bittorrent`, `browser`, `database`, `notifier`,
-        `privacy`, `raw`, `speedtest`, `viewer`;
+   #. make sure that the following commands work properly:
+      `bittorrent`, `browser`, `database`, `notifier`,
+      `privacy`, `raw`, `speedtest`, `viewer`;
 
 #. Mass deploy Neubot on all Measurement Lab nodes.
 
