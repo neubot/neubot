@@ -209,9 +209,9 @@ class RunnerCore(object):
         # code time to stream logs to the client in case
         # connections fails immediately.
         # This must not be done when we're processing the
-        # somewhat internal 'rendezvous' test.
+        # somewhat internal 'rendezvous' or 'mlab-ns' tests.
         #
-        if self.queue[0][0] != 'rendezvous':
+        if self.queue[0][0] != 'rendezvous' and self.queue[0][0] != 'mlab-ns':
             POLLER.sched(2, STREAMING_LOG.stop_streaming)
 
         # Paranoid
