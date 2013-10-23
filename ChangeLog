@@ -1,3 +1,12 @@
+Neubot 0.4.16.9 [2013-10-24]
+	* Makefile: update to make sources only releases
+	* gc scripts/update_apt: not needed anymore in the sources repo
+	* gc scripts/collect.sh that is not used anymore
+	* Makefile: update comment
+	* runner_core.py: treat mlab-ns like rendezvous
+	* mod_dash: print the server address at INFO level
+	* Neubot/0.4.16.9 released
+
 Neubot 0.4.16.8 [2013-10-20]
 	* mod_dash: back to 15 iterations, to be sure
 	* Neubot/0.4.16.8 released
