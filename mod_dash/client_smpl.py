@@ -82,8 +82,7 @@ class DASHClientSmpl(ClientHTTP):
     def connect(self, endpoint, count=1):
         if count != 1:
             raise RuntimeError("dash: invalid count")
-        logging.debug("dash: connect() to: %s",
-          utils_net.format_epnt(endpoint))
+        logging.info("dash: test with: %s", utils_net.format_epnt(endpoint))
         ClientHTTP.connect(self, endpoint, count)
 
     def connect_uri(self, uri=None, count=None):
