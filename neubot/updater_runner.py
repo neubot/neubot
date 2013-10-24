@@ -152,8 +152,8 @@ class UpdaterRunner(object):
             self._schedule()
             return
 
-        logging.info('updater_runner: signature (base64): %s',
-                     base64.b64encode(body))
+        logging.debug('updater_runner: signature (base64): %s',
+                      base64.b64encode(body))
 
         ctx['signature'] = body
         ctx['uri'] = updater_utils.tarball_get_uri(self.system, ctx['vinfo'])
