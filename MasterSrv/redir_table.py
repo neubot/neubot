@@ -31,28 +31,15 @@ def realmain():
 
     ''' Build redirection table for the master server '''
 
-    sys.stderr.write('Loading slivers addresses...\n')
-    slivers = {}
-    filep = open('MasterSrv/ip_addr.dat', 'rb')
-    for line in filep:
-        node, sliver = line.split()
-        slivers[node] = sliver
-    filep.close()
-    sys.stderr.write('Loading slivers addresses... done\n')
-
     sys.stderr.write('Loading nodes location...\n')
     nodes_by_country = collections.defaultdict(set)
     nodes_by_continent = collections.defaultdict(set)
     filep = open('MasterSrv/servers.dat', 'rb')
     for line in filep:
         fqdn, country, continent = line.split()
-        if not fqdn in slivers:
-            sys.stderr.write('No sliver for: %s, %s, %s\n' %
-                               (fqdn, country, continent))
-            continue
-        address = slivers[fqdn]
-        nodes_by_continent[continent].add(address)
-        nodes_by_country[country].add(address)
+        sliver = "neubot.mlab.%s" % fqdn
+        nodes_by_continent[continent].add(sliver)
+        nodes_by_country[country].add(sliver)
     filep.close()
     sys.stderr.write('Loading nodes location... done\n')
 
