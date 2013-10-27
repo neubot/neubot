@@ -1,7 +1,7 @@
 Release procedure
 '''''''''''''''''
 
-:Version: 1.3 of 2012/10/10
+:Version: 1.4 of 2013/10/27
 :Authors: Simone Basso
 :Documents: the release procedure
 
@@ -15,6 +15,8 @@ Release procedure
    a Debian and source release.  The second runs on MacOSX and
    creates a MacOS release.  The third runs on Windows only and
    creates a Windows release.
+   
+   [TODO: this step is out-of-date]
 
 #. Run regression tests.  You need access to a Debian machine
    where you are root and where Neubot is not installed.
@@ -80,8 +82,6 @@ Release procedure
 
 #. Read wiki/errata and make sure all entries are still up
    to date with reality.
-
-#. Publish SHA256 sums at wiki/sha256.
 
 #. Announce the availability of the new version.
 
