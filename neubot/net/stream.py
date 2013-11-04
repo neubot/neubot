@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
 from neubot.config import CONFIG
 from neubot.log import oops
-from neubot.net.poller import POLLER
-from neubot.net.poller import Pollable
+from neubot.poller import POLLER
+from neubot.poller import Pollable
 
 from neubot import utils
 from neubot import utils_net
@@ -134,13 +134,11 @@ class SocketWrapper(object):
 
 class Stream(Pollable):
     def __init__(self, poller):
-        Pollable.__init__(self)
-        self.poller = poller
+        Pollable.__init__(self, poller)
         self.parent = None
         self.conf = None
 
         self.sock = None
-        self.filenum = -1
         self.myname = None
         self.peername = None
         self.logname = None
@@ -174,7 +172,8 @@ class Stream(Pollable):
         self.parent = parent
         self.conf = conf
 
-        self.filenum = sock.fileno()
+        Pollable.attach(self, sock.fileno())
+
         self.myname = utils_net.getsockname(sock)
         self.peername = utils_net.getpeername(sock)
         self.logname = str((self.myname, self.peername))
@@ -224,7 +223,7 @@ class Stream(Pollable):
         self.close_pending = True
         if self.send_pending or self.close_complete:
             return
-        self.poller.close(self)
+        Pollable.close(self)
 
     def handle_close(self):
         if self.close_complete:
@@ -259,7 +258,7 @@ class Stream(Pollable):
         if self.recv_blocked:
             return
 
-        self.poller.set_readable(self)
+        self.set_readable()
 
         #
         # The client-side of an SSL connection must send the HELLO
@@ -280,9 +279,9 @@ class Stream(Pollable):
 
     def handle_read(self):
         if self.recv_blocked:
-            self.poller.set_writable(self)
+            self.set_writable()
             if not self.recv_pending:
-                self.poller.unset_readable(self)
+                self.unset_readable()
             self.recv_blocked = False
             self.handle_write()
             return
@@ -293,7 +292,7 @@ class Stream(Pollable):
 
             self.bytes_recv_tot += len(octets)
             self.recv_pending = False
-            self.poller.unset_readable(self)
+            self.unset_readable()
 
             self.recv_complete(octets)
             return
@@ -302,19 +301,19 @@ class Stream(Pollable):
             return
 
         if status == WANT_WRITE:
-            self.poller.unset_readable(self)
-            self.poller.set_writable(self)
+            self.unset_readable()
+            self.set_writable()
             self.send_blocked = True
             return
 
         if status == CONNRESET and not octets:
             self.rst = True
-            self.poller.close(self)
+            Pollable.close(self)
             return
 
         if status == SUCCESS and not octets:
             self.eof = True
-            self.poller.close(self)
+            Pollable.close(self)
             return
 
         if status == ERROR:
@@ -369,13 +368,13 @@ class Stream(Pollable):
         if self.send_blocked:
             return
 
-        self.poller.set_writable(self)
+        self.set_writable()
 
     def handle_write(self):
         if self.send_blocked:
-            self.poller.set_readable(self)
+            self.set_readable()
             if not self.send_pending:
-                self.poller.unset_writable(self)
+                self.unset_writable()
             self.send_blocked = False
             self.handle_read()
             return
@@ -392,16 +391,16 @@ class Stream(Pollable):
                     return
 
                 self.send_pending = False
-                self.poller.unset_writable(self)
+                self.unset_writable()
 
                 self.send_complete()
                 if self.close_pending:
-                    self.poller.close(self)
+                    Pollable.close(self)
                 return
 
             if count < len(self.send_octets):
                 self.send_octets = buffer(self.send_octets, count)
-                self.poller.set_writable(self)
+                self.set_writable()
                 return
 
             raise RuntimeError("Sent more than expected")
@@ -410,8 +409,8 @@ class Stream(Pollable):
             return
 
         if status == WANT_READ:
-            self.poller.unset_writable(self)
-            self.poller.set_readable(self)
+            self.unset_writable()
+            self.set_readable()
             self.recv_blocked = True
             return
 
@@ -421,12 +420,12 @@ class Stream(Pollable):
 
         if status == CONNRESET and count == 0:
             self.rst = True
-            self.poller.close(self)
+            Pollable.close(self)
             return
 
         if status == SUCCESS and count == 0:
             self.eof = True
-            self.poller.close(self)
+            Pollable.close(self)
             return
 
         if status == SUCCESS and count < 0:
@@ -439,8 +438,7 @@ class Stream(Pollable):
 
 class Connector(Pollable):
     def __init__(self, poller, parent):
-        Pollable.__init__(self)
-        self.poller = poller
+        Pollable.__init__(self, poller)
         self.parent = parent
         self.sock = None
         self.timestamp = 0
@@ -453,7 +451,7 @@ class Connector(Pollable):
 
     def _connection_failed(self):
         if self.sock:
-            self.poller.unset_writable(self)
+            self.detach()
             self.sock = None
         if not self.epnts:
             self.parent._connection_failed(self, None)
@@ -482,13 +480,11 @@ class Connector(Pollable):
 
         self.sock = sock
         self.timestamp = utils.ticks()
-        self.poller.set_writable(self)
-
-    def fileno(self):
-        return self.sock.fileno()
+        self.attach(sock.fileno())
+        self.set_writable()
 
     def handle_write(self):
-        self.poller.unset_writable(self)
+        self.detach()
 
         if not utils_net.isconnected(self.endpoint, self.sock):
             self._connection_failed()
@@ -502,24 +498,21 @@ class Connector(Pollable):
 
 class Listener(Pollable):
     def __init__(self, poller, parent, sock, endpoint):
-        Pollable.__init__(self)
-        self.poller = poller
+        Pollable.__init__(self, poller)
+        self.attach(sock.fileno())
         self.parent = parent
         self.lsock = sock
         self.endpoint = endpoint
 
         # Want to listen "forever"
-        self.watchdog = -1
+        self.clear_timeout()
 
     def __repr__(self):
         return "listener at %s" % str(self.endpoint)
 
     def listen(self):
-        self.poller.set_readable(self)
+        self.set_readable()
         self.parent.started_listening(self)
-
-    def fileno(self):
-        return self.lsock.fileno()
 
     #
     # Catch all types of exception because an error in
@@ -634,7 +627,7 @@ class GenericProtocolStream(Stream):
         self.buffer = "A" * self.conf["net.stream.chunk"]
         duration = self.conf["net.stream.duration"]
         if duration >= 0:
-            POLLER.sched(duration, self._do_close)
+            POLLER.sched(duration, self._do_close, None)
         if self.kind == "discard":
             self.start_recv()
         elif self.kind == "chargen":
