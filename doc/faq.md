@@ -627,6 +627,7 @@ is a single, central server) to retrieve the address of the closest
 test server (and other information). For the *raw* test, the
 rendezvous consists in connecting to `mlab-ns` (Measurement Lab's
 name service) to retrieve the address of a test server at random.
+(TODO: Dash Test should be mentioned here)
 
 Once the address of the test server is known, Neubot connects to the
 test server and waits for the authorization to perform the test it
@@ -663,7 +664,7 @@ amount of transferred bytes by the elapsed time.
 To avoid consuming too much user resources, the *speedtest* test adapts
 the number of bytes to transfer such that the test runs for about ten
 seconds.
-
+(TODO: Dash Test should be mentioned here)
 
 4.3. How does Neubot change my Windows registry?
 ------------------------------------------------
@@ -815,6 +816,7 @@ In addition, it estimates the round-trip time in two ways:
 2.  by measuring the average time elapsed between sending a small
     request and receiving a small response (like *speedtest*).
 
+(TODO: Dash Test should be mentioned here -> 4.10 "What does the dash test measures?"
 
 - - -
 
@@ -958,7 +960,9 @@ recent results, logs.
 ------------------------------------------
 
 On *Windows*, the *Neubot* command on the start menu should open
-the web interface in the default browser.
+the web interface in the default browser (On Windows 8 version, 
+a new App called "Neubot" will appear on the start interface 
+after installation).
 
 On *MacOSX*, the *Neubot* application (`/Applications/Neubot.app`)
 should open the web interface in the default browser.
