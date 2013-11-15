@@ -80,7 +80,7 @@ All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
 Neubot implements three active network tests: ``bittorrent``, ``raw`` and
-``speedtest``. For each test, there is a Neubot subcommand that allows
+``speedtest``(TODO: Dash Test should be mentioned here). For each test, there is a Neubot subcommand that allows
 to run the test immediately. Moreover, Neubot schedules one of the
 three tests at random every 23 - 27 minutes.
 
