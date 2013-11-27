@@ -211,11 +211,16 @@ neubot_pollable_construct(struct NeubotPoller *poller,
 }
 
 int
-neubot_pollable_attach(struct NeubotPollable *self, evutil_socket_t fileno)
+neubot_pollable_attach(struct NeubotPollable *self, long long fileno)
 {
         if (self->fileno != -1)
                 return (-1);
-        self->fileno = fileno;
+        /*
+         * Note: `long long` simplifies the interaction with SWIG and
+         * shall be wide enough to hold evutil_socket_t, which is `int`
+         * on Unix and `uintptr_t` on Windows.
+         */
+        self->fileno = (evutil_socket_t) fileno;
         self->evread = neubot_poller_event_new_(self->poller,
             self->fileno, EV_READ|EV_PERSIST, self);
         if (self->evread == NULL)
@@ -242,10 +247,10 @@ neubot_pollable_detach(struct NeubotPollable *self)
         }
 }
 
-evutil_socket_t
+long long
 neubot_pollable_fileno(struct NeubotPollable *self)
 {
-        return (self->fileno);
+        return ((long long) self->fileno);
 }
 
 int

@@ -49,11 +49,11 @@ struct NeubotPollable *neubot_pollable_construct(struct NeubotPoller *,
     neubot_pollable_handler *, neubot_pollable_handler *,
     neubot_pollable_handler *);
 
-int neubot_pollable_attach(struct NeubotPollable *, evutil_socket_t);
+int neubot_pollable_attach(struct NeubotPollable *, long long);
 
 void neubot_pollable_detach(struct NeubotPollable *);
 
-evutil_socket_t neubot_pollable_fileno(struct NeubotPollable *);
+long long neubot_pollable_fileno(struct NeubotPollable *);
 
 int neubot_pollable_set_readable(struct NeubotPollable *);
 
