@@ -94,7 +94,7 @@ Commons Zero allowing anyone to re-use it freely for the same purpose.
 1.2. What is Measurement Lab?
 -----------------------------
 
-[Measurement Lab][mlab] is a distributed server platform that provides
+[Measurement Lab][mlab] (M-Lab) is a distributed server platform that provides
 connectivity and servers around the world for projects that aim to
 measure the quality and/or neutrality of broadband Internet connections
 by probing the network with active tests.  It also provides additional
