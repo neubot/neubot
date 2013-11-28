@@ -21,14 +21,28 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+DESTDIR =
+PREFIX = /usr/local
+LIBDIR = $(DESTDIR)/$(PREFIX)/lib
+
 .PHONY: clean
 
 CC = clang
-CFLAGS = -Wall -pedantic
+CFLAGS = -Wall -pedantic -fPIC
+
+LIBRARY = libneubot.so
+OBJECTS = poller.o log.o utils.o
+
+$(LIBRARY): $(OBJECTS)
+	$(CC) -shared $(OBJECTS) -o $(LIBRARY) -levent
 
 poller.o: poller.c
 log.o: log.c
 utils.o: utils.c
 
 clean:
-	rm -rf -- *.o
+	rm -f -- $(OBJECTS) $(LIBRARY) 
+install: $(LIBRARY)
+	install -m 644 $(LIBRARY) $(LIBDIR)/
+uninstall:
+	rm -f -- $(LIBDIR)/(LIBRARY)
