@@ -27,6 +27,7 @@ CC = clang
 CFLAGS = -Wall -pedantic
 
 poller.o: poller.c
+log.o: log.c
 
 clean:
 	rm -rf -- *.o
