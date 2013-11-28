@@ -24,6 +24,7 @@
 #include <sys/queue.h>
 
 #include <stdlib.h>
+#include <math.h>
 
 #include <event2/event.h>
 
@@ -46,6 +47,11 @@ struct NeubotPollable {
 struct NeubotPoller {
         struct event_base *evbase;
         TAILQ_HEAD(, NeubotPollable) head;
+};
+
+struct CallbackContext {
+        neubot_poller_callback *callback;
+        void *opaque;
 };
 
 /*
@@ -91,7 +97,7 @@ neubot_poller_unregister_pollable_(struct NeubotPoller *self,
 }
 
 static void
-neubot_poller_periodic_(evutil_socket_t fileno, short event, void *opaque)
+neubot_poller_periodic_(void *opaque)
 {
         struct NeubotPoller *self;
         struct NeubotPollable *pollable;
@@ -103,7 +109,7 @@ neubot_poller_periodic_(evutil_socket_t fileno, short event, void *opaque)
         retval = neubot_poller_sched(self, 10.0,
             neubot_poller_periodic_, self);
         if (retval < 0)
-                abort();
+                abort();  /* XXX */
 
         curtime = neubot_time_now();
 
@@ -150,14 +156,44 @@ failure:
         return (NULL);
 }
 
+static void
+neubot_poller_do_callback_(evutil_socket_t fileno, short event, void *opaque)
+{
+        neubot_poller_callback *callback;
+        struct CallbackContext *context;
+
+        context = (struct CallbackContext *) opaque;
+        callback = context->callback;
+        opaque = context->opaque;
+
+        free(context);
+
+        callback(opaque);
+}
+
 int
 neubot_poller_sched(struct NeubotPoller *self, double delta,
-    event_callback_fn func, void *opaque)
+    neubot_poller_callback *callback, void *opaque)
 {
-        struct timeval tv;
-        neubot_timeval_now(&tv);
-        return (event_base_once(self->evbase, -1,
-            EV_TIMEOUT, func, opaque, &tv));
+        struct CallbackContext *context;
+        struct timeval tvdelta;
+        struct timeval tvnow;
+        struct timeval tvresult;
+
+        context = calloc(1, sizeof (*context));
+        if (context == NULL)
+            return (-1);
+
+        neubot_timeval_now(&tvnow);
+        tvdelta.tv_sec = (time_t) floor(delta);
+        tvdelta.tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
+        evutil_timeradd(&tvnow, &tvdelta, &tvresult);
+
+        context->callback = callback;
+        context->opaque = opaque;
+
+        return (event_base_once(self->evbase, -1, EV_TIMEOUT,
+          neubot_poller_do_callback_, context, &tvresult));
 }
 
 void

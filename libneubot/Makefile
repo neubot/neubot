@@ -34,7 +34,7 @@ LIBRARY = libneubot.so
 OBJECTS = poller.o log.o utils.o
 
 $(LIBRARY): $(OBJECTS)
-	$(CC) -shared $(OBJECTS) -o $(LIBRARY) -levent
+	$(CC) -shared $(OBJECTS) -o $(LIBRARY) -levent -lm
 
 poller.o: poller.c
 log.o: log.c

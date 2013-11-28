@@ -25,6 +25,7 @@ struct NeubotPollable;
 struct NeubotPoller;
 
 typedef void (neubot_pollable_handler)(struct NeubotPollable *);
+typedef void (neubot_poller_callback)(void *);
 
 /*
  * NeubotPoller API
@@ -33,7 +34,7 @@ typedef void (neubot_pollable_handler)(struct NeubotPollable *);
 struct NeubotPoller *neubot_poller_construct(void);
 
 int neubot_poller_sched(struct NeubotPoller *, double,
-    event_callback_fn, void *);
+    neubot_poller_callback *, void *);
 
 void neubot_poller_loop(struct NeubotPoller *);
 
