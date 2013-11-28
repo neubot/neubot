@@ -28,6 +28,7 @@ CFLAGS = -Wall -pedantic
 
 poller.o: poller.c
 log.o: log.c
+utils.o: utils.c
 
 clean:
 	rm -rf -- *.o
