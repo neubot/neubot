@@ -51,7 +51,7 @@ neubot_time_now(void)
 }
 
 int
-neubot_listen(int prefer_ipv6, const char *address, const char *port)
+neubot_listen(int use_ipv6, const char *address, const char *port)
 {
         struct sockaddr_storage storage;
         struct sockaddr_in *sin;
@@ -65,7 +65,7 @@ neubot_listen(int prefer_ipv6, const char *address, const char *port)
         int filedesc;
         int result;
 
-        if (prefer_ipv6)
+        if (use_ipv6)
                 family = AF_INET6;
         else
                 family = AF_INET;
@@ -85,7 +85,7 @@ neubot_listen(int prefer_ipv6, const char *address, const char *port)
                 goto cleanup;
 
         memset(&storage, 0, sizeof(storage));
-        if (prefer_ipv6) {
+        if (use_ipv6) {
                 sin6 = (struct sockaddr_in6 *) &storage;
                 sin6->sin6_family = AF_INET6;
                 result = inet_pton(AF_INET6, address, &sin6->sin6_addr);
