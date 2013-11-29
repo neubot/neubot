@@ -68,9 +68,9 @@ neubot_poller_handle_pollable_event_(evutil_socket_t filenum,
         pollable = (struct NeubotPollable *) opaque;
 
         if (event & EV_READ)
-                pollable->handle_read(pollable, pollable->opaque);
+                pollable->handle_read(pollable->opaque);
         else if (event & EV_WRITE)
-                pollable->handle_write(pollable, pollable->opaque);
+                pollable->handle_write(pollable->opaque);
         else
                 /* nothing */ ;
 }
@@ -214,7 +214,7 @@ neubot_poller_break_loop(struct NeubotPoller *self)
  */
 
 static void
-neubot_pollable_noop_(struct NeubotPollable *self, void *opaque)
+neubot_pollable_noop_(void *opaque)
 {
         /* nothing */ ;
 }
@@ -340,5 +340,5 @@ void
 neubot_pollable_close(struct NeubotPollable *self)
 {
         neubot_pollable_detach(self);
-        self->handle_close(self, self->opaque);
+        self->handle_close(self->opaque);
 }
