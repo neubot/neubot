@@ -31,11 +31,12 @@ CC = clang
 CFLAGS = -Wall -pedantic -fPIC
 
 LIBRARY = libneubot.so
-OBJECTS = log.o poller.o strtonum.o utils.o
+OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 
 $(LIBRARY): $(OBJECTS)
 	$(CC) -shared $(OBJECTS) -o $(LIBRARY) -levent -lm
 
+echo.o: echo.c
 log.o: log.c
 poller.o: poller.c
 strtonum.o: strtonum.c
