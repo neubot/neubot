@@ -95,6 +95,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
                                                 65535, &errstr);
                 if (errstr)
                         goto cleanup;
+                sin6->sin6_port = htons(sin6->sin6_port);
                 salen = sizeof(struct sockaddr_in6);
         } else {
                 sin = (struct sockaddr_in *) &storage;
@@ -106,6 +107,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
                                               65535, &errstr);
                 if (errstr)
                         goto cleanup;
+                sin->sin_port = htons(sin->sin_port);
                 salen = sizeof(struct sockaddr_in);
         }
         sa = (struct sockaddr *) &storage;
