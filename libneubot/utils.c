@@ -22,9 +22,14 @@
  */
 
 #include <sys/time.h>
+#include <arpa/inet.h>
 
 #include <string.h>
+#include <stdlib.h>
 
+#include <event2/util.h>
+
+#include "strtonum.h"
 #include "utils.h"
 
 void
@@ -43,4 +48,79 @@ neubot_time_now(void)
         result = tv.tv_sec + tv.tv_usec / (double)1000000.0;
 
         return (result);
+}
+
+int
+neubot_listen(int prefer_ipv6, const char *address, const char *port)
+{
+        struct sockaddr_storage storage;
+        struct sockaddr_in *sin;
+        struct sockaddr_in6 *sin6;
+        struct sockaddr *sa;
+        socklen_t salen;
+
+        const char *errstr;
+        int activate;
+        int family;
+        int filedesc;
+        int result;
+
+        if (prefer_ipv6)
+                family = AF_INET6;
+        else
+                family = AF_INET;
+
+        filedesc = socket(family, SOCK_STREAM, 0);
+        if (filedesc == -1)
+                return (-1);
+
+        result = evutil_make_socket_nonblocking(filedesc);
+        if (result != 0)
+                goto cleanup;
+
+        activate = 1;
+        result = setsockopt(filedesc, SOL_SOCKET, SO_REUSEADDR,
+                            &activate, sizeof(activate));
+        if (result != 0)
+                goto cleanup;
+
+        memset(&storage, 0, sizeof(storage));
+        if (prefer_ipv6) {
+                sin6 = (struct sockaddr_in6 *) &storage;
+                sin6->sin6_family = AF_INET6;
+                result = inet_pton(AF_INET6, address, &sin6->sin6_addr);
+                if (result != 1)
+                        goto cleanup;
+                sin6->sin6_port = (in_port_t) openbsd_strtonum(port, 0,
+                                                65535, &errstr);
+                if (errstr)
+                        goto cleanup;
+                salen = sizeof(struct sockaddr_in6);
+        } else {
+                sin = (struct sockaddr_in *) &storage;
+                sin->sin_family = AF_INET;
+                result = inet_pton(AF_INET, address, &sin->sin_addr);
+                if (result != 1)
+                        goto cleanup;
+                sin->sin_port = (in_port_t) openbsd_strtonum(port, 0,
+                                              65535, &errstr);
+                if (errstr)
+                        goto cleanup;
+                salen = sizeof(struct sockaddr_in);
+        }
+        sa = (struct sockaddr *) &storage;
+
+        result = bind(filedesc, sa, salen);
+        if (result != 0)
+                goto cleanup;
+
+        result = listen(filedesc, 10);
+        if (result != 0)
+                goto cleanup;
+
+        return (filedesc);
+
+      cleanup:
+        (void) evutil_closesocket(filedesc);
+        return (-1);
 }
