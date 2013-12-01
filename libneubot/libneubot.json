@@ -18,6 +18,7 @@
                 ["NeubotPollable_callback", "handle_close"],
                 ["void_p", "opaque"]],
             ["void_p", "opaque"],
+            ["NeubotPoller_p", "poller"],
             ["int", "attach", ["long long", "filenum"]],
             ["void", "detach"],
             ["long long", "fileno"],

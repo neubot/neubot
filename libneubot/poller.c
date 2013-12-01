@@ -254,6 +254,12 @@ NeubotPollable_opaque(struct NeubotPollable *self)
         return (self->opaque);
 }
 
+struct NeubotPoller *
+NeubotPollable_poller(struct NeubotPollable *self)
+{
+        return (self->poller);
+}
+
 int
 NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
 {
