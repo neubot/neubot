@@ -27,9 +27,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#include <event2/buffer.h>
-#include <event2/util.h>
+#include <event.h>
 
 #include "log.h"
 #include "neubot.h"
@@ -82,7 +82,7 @@ Connection_write(struct NeubotPollable *pollable)
 		return;
 	}
 
-	if (evbuffer_get_length(self->buffer) == 0)
+	if (EVBUFFER_LENGTH(self->buffer) == 0)
 		NeubotPollable_unset_writable(self->pollable);
 }
 
@@ -101,7 +101,7 @@ Connection_close(struct NeubotPollable *pollable)
 		return;
 
 	if (self->fileno != -1)
-		(void) evutil_closesocket(self->fileno);
+		(void) close(self->fileno);
 	if (self->buffer != NULL)
 		evbuffer_free(self->buffer);
 
@@ -182,7 +182,7 @@ cleanup:
 	if (self != NULL && self->pollable != NULL)
 		NeubotPollable_close(self->pollable);
 	if (self != NULL && self->fileno != -1)
-		(void) evutil_closesocket(self->fileno);
+		(void) close(self->fileno);
 	if (self != NULL && self != NULL)
 		free(self);
 	return (NULL);

@@ -3,11 +3,11 @@
 
 """ Test for NeubotPollable """
 
-import ctypes
 import os
 import sys
 
-LIBNEUBOT = ctypes.CDLL("/usr/local/lib/libneubot.@SHARED_LIBRARY_EXT@")
+from libneubot import LIBNEUBOT
+from libneubot import NEUBOT_POLLABLE_CALLBACK
 
 def read_callback(pollable):
     """ Read callback """
@@ -15,17 +15,19 @@ def read_callback(pollable):
     if not data:
         LIBNEUBOT.NeubotPollable_close(pollable)
         return
-
     sys.stdout.write(data)
+
+def write_callback(pollable):
+    """ Write callback """
 
 def close_callback(pollable):
     """ Close callback """
     poller = LIBNEUBOT.NeubotPollable_poller(pollable)
     LIBNEUBOT.NeubotPoller_break_loop(poller)
 
-CALLBACK_T = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
-READ_CALLBACK = CALLBACK_T(read_callback)
-CLOSE_CALLBACK = CALLBACK_T(close_callback)
+READ_CALLBACK = NEUBOT_POLLABLE_CALLBACK(read_callback)
+WRITE_CALLBACK = NEUBOT_POLLABLE_CALLBACK(write_callback)
+CLOSE_CALLBACK = NEUBOT_POLLABLE_CALLBACK(close_callback)
 
 def main():
     """ Main function """
@@ -33,7 +35,7 @@ def main():
     poller = LIBNEUBOT.NeubotPoller_construct()
 
     pollable = LIBNEUBOT.NeubotPollable_construct(poller, READ_CALLBACK,
-      None, CLOSE_CALLBACK, None)
+      WRITE_CALLBACK, CLOSE_CALLBACK, None)
     LIBNEUBOT.NeubotPollable_attach(pollable, 0)
     LIBNEUBOT.NeubotPollable_set_readable(pollable)
 

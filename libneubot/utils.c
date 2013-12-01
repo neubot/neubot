@@ -22,12 +22,15 @@
  */
 
 #include <sys/time.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-#include <event2/util.h>
+#include <event.h>
 
 #include "strtonum.h"
 #include "utils.h"
@@ -123,6 +126,6 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
         return (filedesc);
 
       cleanup:
-        (void) evutil_closesocket(filedesc);
+        (void) close(filedesc);
         return (-1);
 }
