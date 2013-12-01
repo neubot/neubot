@@ -177,23 +177,19 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
 {
         struct CallbackContext *context;
         struct timeval tvdelta;
-        struct timeval tvnow;
-        struct timeval tvresult;
 
         context = calloc(1, sizeof (*context));
         if (context == NULL)
             return (-1);
 
-        neubot_timeval_now(&tvnow);
         tvdelta.tv_sec = (time_t) floor(delta);
         tvdelta.tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
-        evutil_timeradd(&tvnow, &tvdelta, &tvresult);
 
         context->callback = callback;
         context->opaque = opaque;
 
         return (event_base_once(self->evbase, -1, EV_TIMEOUT,
-          NeubotPoller_callfunc, context, &tvresult));
+          NeubotPoller_callfunc, context, &tvdelta));
 }
 
 void
