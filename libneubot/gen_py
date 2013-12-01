@@ -29,7 +29,7 @@ PYLANG_TYPE = {
     "double": "ctypes.c_double",
     "int": "ctypes.c_int",
     "long long": "ctypes.c_longlong",
-    "void_p": "ctypes.c_void_p",
+    "void_p": "ctypes.py_object",
     "void": "None",
 }
 
