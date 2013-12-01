@@ -21,6 +21,16 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+echo "Generate: libneubot.h"
+
+./gen_header libneubot.json > libneubot.h
+
+echo "Generate: libneubot.py"
+
+./gen_py libneubot.json > libneubot.py
+
+echo "Generate: Makefile"
+
 SYSTEM=$(uname)
 
 if [ "$SYSTEM" = "Darwin" ]; then
