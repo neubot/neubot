@@ -32,7 +32,7 @@
 #include <event2/util.h>
 
 #include "log.h"
-#include "poller.h"
+#include "libneubot.h"
 #include "utils.h"
 
 struct Connection {
@@ -62,11 +62,11 @@ connection_read(void *opaque)
 	self = (struct Connection *) opaque;
 	result = evbuffer_read(self->buffer, self->fileno, MAXREAD);
 	if (result <= 0) {
-		neubot_pollable_close(self->pollable);
+		NeubotPollable_close(self->pollable);
 		return;
 	}
 
-	neubot_pollable_set_writable(self->pollable);
+	NeubotPollable_set_writable(self->pollable);
 }
 
 static void
@@ -78,12 +78,12 @@ connection_write(void *opaque)
 	self = (struct Connection *) opaque;
 	result = evbuffer_write(self->buffer, self->fileno);
 	if (result == -1) {
-		neubot_pollable_close(self->pollable);
+		NeubotPollable_close(self->pollable);
 		return;
 	}
 
 	if (evbuffer_get_length(self->buffer) == 0)
-		neubot_pollable_unset_writable(self->pollable);
+		NeubotPollable_unset_writable(self->pollable);
 }
 
 static void
@@ -92,8 +92,8 @@ connection_close(void *opaque)
 	struct Connection *self;
 
 	/*
-	 * Note: in this function we don't neubot_pollable_close() because
-	 * this function is invoked by neubot_pollable_close().
+	 * Note: in this function we don't NeubotPollable_close() because
+	 * this function is invoked by NeubotPollable_close().
 	 */
 
 	self = (struct Connection *) opaque;
@@ -129,14 +129,14 @@ connection_construct(void *opaque)
 	if (conn->buffer == NULL)
 		goto cleanup;
 
-	conn->pollable = neubot_pollable_construct(self->poller,
+	conn->pollable = NeubotPollable_construct(self->poller,
 	    connection_read, connection_write, connection_close, conn);
 	if (conn->pollable == NULL)
 		goto cleanup;
 
-	neubot_pollable_attach(conn->pollable, (long long) conn->fileno);
+	NeubotPollable_attach(conn->pollable, (long long) conn->fileno);
 
-	result = neubot_pollable_set_readable(conn->pollable);
+	result = NeubotPollable_set_readable(conn->pollable);
 	if (result != -1)
 		return;		/* success */
 
@@ -149,7 +149,7 @@ cleanup:
  */
 
 struct NeubotEchoServer *
-neubot_echo_server_construct(struct NeubotPoller *poller, int use_ipv6,
+NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
     const char *address, const char *port)
 {
 	struct NeubotEchoServer *self;
@@ -165,14 +165,14 @@ neubot_echo_server_construct(struct NeubotPoller *poller, int use_ipv6,
 
 	self->poller = poller;
 
-	self->pollable = neubot_pollable_construct(self->poller,
+	self->pollable = NeubotPollable_construct(self->poller,
 	    connection_construct, NULL, NULL, self);
 	if (self->pollable == NULL)
 		goto cleanup;
 
-	neubot_pollable_attach(self->pollable, (long long) self->fileno);
+	NeubotPollable_attach(self->pollable, (long long) self->fileno);
 
-	result = neubot_pollable_set_readable(self->pollable);
+	result = NeubotPollable_set_readable(self->pollable);
 	if (result == -1)
 		goto cleanup;
 
@@ -180,7 +180,7 @@ neubot_echo_server_construct(struct NeubotPoller *poller, int use_ipv6,
 
 cleanup:
 	if (self != NULL && self->pollable != NULL)
-		neubot_pollable_close(self->pollable);
+		NeubotPollable_close(self->pollable);
 	if (self != NULL && self->fileno != -1)
 		(void) evutil_closesocket(self->fileno);
 	if (self != NULL && self != NULL)
