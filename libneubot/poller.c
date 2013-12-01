@@ -26,6 +26,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifndef WIN32
+#include <signal.h>
+#endif
+
 #include <event2/event.h>
 
 #include "log.h"
@@ -48,6 +52,9 @@ struct NeubotPollable {
 struct NeubotPoller {
         struct event_base *evbase;
         TAILQ_HEAD(, NeubotPollable) head;
+#ifndef WIN32
+        struct event *evsignal;
+#endif
 };
 
 struct CallbackContext {
@@ -125,6 +132,17 @@ NeubotPoller_periodic(void *opaque)
         }
 }
 
+#ifndef WIN32
+static void
+NeubotPoller_sigint(int signo, short event, void *opaque)
+{
+        struct NeubotPoller *self;
+
+        self = (struct NeubotPoller *) opaque;
+        NeubotPoller_break_loop(self);
+}
+#endif
+
 struct NeubotPoller *
 NeubotPoller_construct(void)
 {
@@ -141,6 +159,16 @@ NeubotPoller_construct(void)
 
         TAILQ_INIT(&self->head);
 
+#ifndef WIN32
+        self->evsignal = event_new(self->evbase, SIGINT, EV_SIGNAL,
+            NeubotPoller_sigint, self);
+        if (self->evsignal == NULL)
+                goto failure;
+        retval = event_add(self->evsignal, NULL);
+        if (retval != 0)
+                goto failure;
+#endif
+
         retval = NeubotPoller_sched(self, 10.0,
             NeubotPoller_periodic, self);
         if (retval != 0)
@@ -149,6 +177,10 @@ NeubotPoller_construct(void)
         return (self);
 
 failure:
+#ifndef WIN32
+        if (self != NULL && self->evsignal != NULL)
+                event_free(self->evsignal);
+#endif
         if (self != NULL && self->evbase != NULL)
                 event_base_free(self->evbase);
         if (self != NULL)
