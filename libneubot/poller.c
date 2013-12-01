@@ -60,8 +60,7 @@ struct CallbackContext {
  */
 
 static void
-NeubotPoller_handle_pollable_event_(evutil_socket_t filenum,
-    short event, void *opaque)
+NeubotPoller_dispatch(evutil_socket_t filenum, short event, void *opaque)
 {
         struct NeubotPollable *pollable;
 
@@ -76,29 +75,29 @@ NeubotPoller_handle_pollable_event_(evutil_socket_t filenum,
 }
 
 static inline struct event *
-NeubotPoller_event_new_(struct NeubotPoller *self, evutil_socket_t filenum,
+NeubotPoller_event_new(struct NeubotPoller *self, evutil_socket_t filenum,
     short event, void *opaque)
 {
         return (event_new(self->evbase, filenum, event,
-            NeubotPoller_handle_pollable_event_, opaque));
+            NeubotPoller_dispatch, opaque));
 }
 
 static inline void
-NeubotPoller_register_pollable_(struct NeubotPoller *self,
+NeubotPoller_register_pollable(struct NeubotPoller *self,
     struct NeubotPollable *pollable)
 {
         TAILQ_INSERT_TAIL(&self->head, pollable, entry);
 }
 
 static inline void
-NeubotPoller_unregister_pollable_(struct NeubotPoller *self,
+NeubotPoller_unregister_pollable(struct NeubotPoller *self,
     struct NeubotPollable *pollable)
 {
         TAILQ_REMOVE(&self->head, pollable, entry);
 }
 
 static void
-NeubotPoller_periodic_(void *opaque)
+NeubotPoller_periodic(void *opaque)
 {
         struct NeubotPoller *self;
         struct NeubotPollable *pollable;
@@ -108,7 +107,7 @@ NeubotPoller_periodic_(void *opaque)
 
         self = (struct NeubotPoller *) opaque;
         retval = NeubotPoller_sched(self, 10.0,
-            NeubotPoller_periodic_, self);
+            NeubotPoller_periodic, self);
         if (retval < 0)
                 abort();  /* XXX */
 
@@ -143,7 +142,7 @@ NeubotPoller_construct(void)
         TAILQ_INIT(&self->head);
 
         retval = NeubotPoller_sched(self, 10.0,
-            NeubotPoller_periodic_, self);
+            NeubotPoller_periodic, self);
         if (retval != 0)
             goto failure;
 
@@ -158,7 +157,7 @@ failure:
 }
 
 static void
-NeubotPoller_do_callback_(evutil_socket_t fileno, short event, void *opaque)
+NeubotPoller_callfunc(evutil_socket_t fileno, short event, void *opaque)
 {
         NeubotPoller_callback callback;
         struct CallbackContext *context;
@@ -194,7 +193,7 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
         context->opaque = opaque;
 
         return (event_base_once(self->evbase, -1, EV_TIMEOUT,
-          NeubotPoller_do_callback_, context, &tvresult));
+          NeubotPoller_callfunc, context, &tvresult));
 }
 
 void
@@ -214,7 +213,7 @@ NeubotPoller_break_loop(struct NeubotPoller *self)
  */
 
 static void
-NeubotPollable_noop_(void *opaque)
+NeubotPollable_noop(void *opaque)
 {
         /* nothing */ ;
 }
@@ -229,11 +228,11 @@ NeubotPollable_construct(struct NeubotPoller *poller,
         struct NeubotPollable *self;
 
         if (handle_read == NULL)
-                handle_read = NeubotPollable_noop_;
+                handle_read = NeubotPollable_noop;
         if (handle_write == NULL)
-                handle_write = NeubotPollable_noop_;
+                handle_write = NeubotPollable_noop;
         if (handle_close == NULL)
-                handle_close = NeubotPollable_noop_;
+                handle_close = NeubotPollable_noop;
 
         self = calloc(1, sizeof (*self));
         if (self == NULL)
@@ -260,15 +259,15 @@ NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
          * on Unix and `uintptr_t` on Windows.
          */
         self->fileno = (evutil_socket_t) fileno;
-        self->evread = NeubotPoller_event_new_(self->poller,
+        self->evread = NeubotPoller_event_new(self->poller,
             self->fileno, EV_READ|EV_PERSIST, self);
         if (self->evread == NULL)
                 return (-1);
-        self->evwrite = NeubotPoller_event_new_(self->poller,
+        self->evwrite = NeubotPoller_event_new(self->poller,
             self->fileno, EV_WRITE|EV_PERSIST, self);
         if (self->evwrite == NULL)
                 return (-1);
-        NeubotPoller_register_pollable_(self->poller, self);
+        NeubotPoller_register_pollable(self->poller, self);
         return (0);
 }
 
@@ -281,7 +280,7 @@ NeubotPollable_detach(struct NeubotPollable *self)
                 event_free(self->evwrite);
 
         if (self->fileno != -1) {
-                NeubotPoller_unregister_pollable_(self->poller, self);
+                NeubotPoller_unregister_pollable(self->poller, self);
                 self->fileno = -1;
         }
 }

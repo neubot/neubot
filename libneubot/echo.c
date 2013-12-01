@@ -54,7 +54,7 @@ struct NeubotEchoServer {
  */
 
 static void
-connection_read(void *opaque)
+Connection_read(void *opaque)
 {
 	struct Connection *self;
 	int result;
@@ -70,7 +70,7 @@ connection_read(void *opaque)
 }
 
 static void
-connection_write(void *opaque)
+Connection_write(void *opaque)
 {
 	struct Connection *self;
 	int result;
@@ -87,7 +87,7 @@ connection_write(void *opaque)
 }
 
 static void
-connection_close(void *opaque)
+Connection_close(void *opaque)
 {
 	struct Connection *self;
 
@@ -109,7 +109,7 @@ connection_close(void *opaque)
 }
 
 static void
-connection_construct(void *opaque)
+Connection_construct(void *opaque)
 {
 	struct Connection *conn;
 	struct NeubotEchoServer *self;
@@ -130,7 +130,7 @@ connection_construct(void *opaque)
 		goto cleanup;
 
 	conn->pollable = NeubotPollable_construct(self->poller,
-	    connection_read, connection_write, connection_close, conn);
+	    Connection_read, Connection_write, Connection_close, conn);
 	if (conn->pollable == NULL)
 		goto cleanup;
 
@@ -141,7 +141,7 @@ connection_construct(void *opaque)
 		return;		/* success */
 
 cleanup:
-	connection_close(conn);		/* FIXME: leak */
+	Connection_close(conn);		/* FIXME: leak */
 }
 
 /*
@@ -166,7 +166,7 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 	self->poller = poller;
 
 	self->pollable = NeubotPollable_construct(self->poller,
-	    connection_construct, NULL, NULL, self);
+	    Connection_construct, NULL, NULL, self);
 	if (self->pollable == NULL)
 		goto cleanup;
 
