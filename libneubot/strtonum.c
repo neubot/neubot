@@ -26,8 +26,8 @@
 #define	TOOLARGE        3
 
 long long
-openbsd_strtonum(const char *numstr, long long minval, long long maxval,
-                 const char **errstrp)
+neubot_strtonum(const char *numstr, long long minval, long long maxval,
+                const char **errstrp)
 {
         long long ll = 0;
         int error = 0;

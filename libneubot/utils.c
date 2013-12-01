@@ -91,7 +91,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
                 result = inet_pton(AF_INET6, address, &sin6->sin6_addr);
                 if (result != 1)
                         goto cleanup;
-                sin6->sin6_port = (in_port_t) openbsd_strtonum(port, 0,
+                sin6->sin6_port = (in_port_t) neubot_strtonum(port, 0,
                                                 65535, &errstr);
                 if (errstr)
                         goto cleanup;
@@ -103,7 +103,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
                 result = inet_pton(AF_INET, address, &sin->sin_addr);
                 if (result != 1)
                         goto cleanup;
-                sin->sin_port = (in_port_t) openbsd_strtonum(port, 0,
+                sin->sin_port = (in_port_t) neubot_strtonum(port, 0,
                                               65535, &errstr);
                 if (errstr)
                         goto cleanup;
