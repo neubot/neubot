@@ -92,12 +92,10 @@ def pylang_declare_method(name, method):
 
     sys.stdout.write("LIBNEUBOT.%s.argtypes = (" % funcname)
     if args:
-        for index, elem in enumerate(args):
+        for elem in args:
             name, value = elem
             name = pylang_type(name)
-            sys.stdout.write("%s" % name)
-            if index < len(args) - 1:
-                sys.stdout.write(", ")
+            sys.stdout.write("%s, " % name)
     sys.stdout.write(")\n")
 
 def main():
