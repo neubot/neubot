@@ -46,6 +46,8 @@ utils.o: utils.c
 clean:
 	rm -f -- $(OBJECTS) $(LIBRARY) 
 install: $(LIBRARY)
+	install -d $(LIBDIR)
 	install -m 644 $(LIBRARY) $(LIBDIR)/
 uninstall:
-	rm -f -- $(LIBDIR)/(LIBRARY)
+	rm -f -- $(LIBDIR)/$(LIBRARY)
+	rmdir $(LIBDIR) || true
