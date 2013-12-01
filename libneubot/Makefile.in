@@ -29,13 +29,13 @@ LIBDIR = $(DESTDIR)/$(PREFIX)/lib
 
 CC = clang
 CFLAGS = -Wall -pedantic -fPIC @CFLAGS@
-LDFLAGS = @LDFLAGS@
+LDFLAGS = @LDFLAGS@ -shared
 
 LIBRARY = libneubot.@SHARED_LIBRARY_EXT@
 OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 
 $(LIBRARY): $(OBJECTS)
-	$(CC) $(LDFLAGS) -shared $(OBJECTS) -o $(LIBRARY) -levent -lm
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $(LIBRARY) -levent -lm
 
 echo.o: echo.c
 log.o: log.c
