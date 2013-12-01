@@ -106,7 +106,7 @@ NeubotPoller_periodic(void *opaque)
 
         pollable = TAILQ_FIRST(&self->head);
         while (pollable != NULL) {
-                if (pollable->timeout >= 0 && curtime > pollable->timeout) {
+                if (pollable->timeout >= 0.0 && curtime > pollable->timeout) {
                         neubot_warn("poller.c: watchdog timeout");
                         tmp = pollable;
                         pollable = TAILQ_NEXT(pollable, entry);
@@ -264,6 +264,7 @@ NeubotPollable_construct(struct NeubotPoller *poller,
         self->handle_write = handle_write;
         self->fileno = -1;
         self->opaque = opaque;
+        self->timeout = -1.0;
 
         return (self);
 }
