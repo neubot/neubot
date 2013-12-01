@@ -21,6 +21,7 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 
 #include "log.h"
