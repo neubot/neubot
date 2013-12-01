@@ -62,13 +62,14 @@ def pylang_type(name):
 
 def pylang_declare_callback(retval, cbname, params):
     retval = pylang_type(retval)
-    sys.stdout.write("%s = ctypes.CFUNCTYPE(%s" % (cbname.upper(), retval))
+    uppername = cbname.upper().replace("NEUBOT", "NEUBOT_", 1)
+    sys.stdout.write("%s = ctypes.CFUNCTYPE(%s" % (uppername, retval))
     for elem in params:
         name, value = elem
         name = pylang_type(name)
         sys.stdout.write(", %s" % name)
     sys.stdout.write(")\n")
-    PYLANG_TYPE[cbname] = cbname.upper()
+    PYLANG_TYPE[cbname] = uppername
 
 def pylang_declare_class(name):
     sys.stdout.write("# struct %s\n" % name)
