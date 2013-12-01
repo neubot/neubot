@@ -28,13 +28,14 @@ LIBDIR = $(DESTDIR)/$(PREFIX)/lib
 .PHONY: clean
 
 CC = clang
-CFLAGS = -Wall -pedantic -fPIC
+CFLAGS = -Wall -pedantic -fPIC @CFLAGS@
+LDFLAGS = @LDFLAGS@
 
-LIBRARY = libneubot.so
+LIBRARY = libneubot.@SHARED_LIBRARY_EXT@
 OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 
 $(LIBRARY): $(OBJECTS)
-	$(CC) -shared $(OBJECTS) -o $(LIBRARY) -levent -lm
+	$(CC) $(LDFLAGS) -shared $(OBJECTS) -o $(LIBRARY) -levent -lm
 
 echo.o: echo.c
 log.o: log.c
