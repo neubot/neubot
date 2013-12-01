@@ -23,6 +23,7 @@
 
 DESTDIR =
 PREFIX = /usr/local
+INCLUDEDIR = $(DESTDIR)/$(PREFIX)/include
 LIBDIR = $(DESTDIR)/$(PREFIX)/lib
 
 .PHONY: clean
@@ -31,6 +32,7 @@ CC = clang
 CFLAGS = -Wall -pedantic -fPIC @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
+HEADER = libneubot.h
 LIBRARY = libneubot.@SHARED_LIBRARY_EXT@
 OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 
@@ -48,6 +50,10 @@ clean:
 install: $(LIBRARY)
 	install -d $(LIBDIR)
 	install -m 644 $(LIBRARY) $(LIBDIR)/
+	install -d $(INCLUDEDIR)
+	install -m 644 $(HEADER) $(INCLUDEDIR)/
 uninstall:
 	rm -f -- $(LIBDIR)/$(LIBRARY)
 	rmdir $(LIBDIR) || true
+	rm -f -- $(INCLUDEDIR)/$(HEADER)
+	rmdir $(INCLUDEDIR) || true
