@@ -7,7 +7,7 @@ import ctypes
 
 def main():
     """ Main function """
-    dll = ctypes.CDLL("/usr/local/lib/libneubot.so")
+    dll = ctypes.CDLL("/usr/local/lib/libneubot.@SHARED_LIBRARY_EXT@")
     poller = dll.NeubotPoller_construct()
     dll.NeubotEchoServer_construct(poller, 1, "::1", "12345")
     dll.NeubotPoller_loop(poller)

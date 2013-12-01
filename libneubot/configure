@@ -29,8 +29,6 @@ echo "Generate: libneubot.py"
 
 ./gen_py libneubot.json > libneubot.py
 
-echo "Generate: Makefile"
-
 SYSTEM=$(uname)
 
 if [ "$SYSTEM" = "Darwin" ]; then
@@ -43,9 +41,14 @@ else
     SHARED_LIBRARY_EXT="so"
 fi
 
-sed -e "s|@CFLAGS@|$CFLAGS|g" \
-    -e "s|@LDFLAGS@|$LDFLAGS|g" \
-    -e "s|@SHARED_LIBRARY_EXT@|$SHARED_LIBRARY_EXT|g" \
-    Makefile.in > Makefile
+for FILE in *.in; do
+    NEWFILE=$(echo $FILE|sed 's/\.in$//g')
+    echo "Generate: $NEWFILE"
+    cp -p $FILE $NEWFILE
+    sed -e "s|@CFLAGS@|$CFLAGS|g" \
+        -e "s|@LDFLAGS@|$LDFLAGS|g" \
+        -e "s|@SHARED_LIBRARY_EXT@|$SHARED_LIBRARY_EXT|g" \
+        $FILE > $NEWFILE
+done
 
 echo "Configured for: $SYSTEM"

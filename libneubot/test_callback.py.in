@@ -6,7 +6,7 @@
 import ctypes
 import sys
 
-LIBNEUBOT = ctypes.CDLL("/usr/local/lib/libneubot.so")
+LIBNEUBOT = ctypes.CDLL("/usr/local/lib/libneubot.@SHARED_LIBRARY_EXT@")
 
 def periodic_callback(poller):
     """ The periodic callback """
