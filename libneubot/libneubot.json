@@ -1,7 +1,7 @@
 {
     "callbacks": [
         ["void", "NeubotPoller_callback", ["void_p", "opaque"]],
-        ["void", "NeubotPollable_callback", ["void_p", "opaque"]]
+        ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
     ],
     "classes": {
 
@@ -17,6 +17,7 @@
                 ["NeubotPollable_callback", "handle_write"],
                 ["NeubotPollable_callback", "handle_close"],
                 ["void_p", "opaque"]],
+            ["void_p", "opaque"],
             ["int", "attach", ["long long", "filenum"]],
             ["void", "detach"],
             ["long long", "fileno"],
