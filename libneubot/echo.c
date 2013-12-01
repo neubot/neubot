@@ -32,7 +32,7 @@
 #include <event2/util.h>
 
 #include "log.h"
-#include "libneubot.h"
+#include "neubot.h"
 #include "utils.h"
 
 struct Connection {

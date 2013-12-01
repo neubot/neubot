@@ -32,7 +32,7 @@ CC = clang
 CFLAGS = -Wall -pedantic -fPIC @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
-HEADER = libneubot.h
+HEADER = neubot.h
 LIBRARY = libneubot.@SHARED_LIBRARY_EXT@
 OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 
