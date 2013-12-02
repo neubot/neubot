@@ -44,7 +44,7 @@ class Notifier(object):
         self._timestamps = collections.defaultdict(int)
         self._subscribers = collections.defaultdict(list)
         self._tofire = []
-        POLLER.sched(INTERVAL, self._periodic)
+        POLLER.sched(INTERVAL, self._periodic, None)
 
     def subscribe(self, event, func, context=None, periodic=False):
         ''' Subscribe to event '''

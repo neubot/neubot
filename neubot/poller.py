@@ -37,10 +37,18 @@ from neubot.poller_libevent import PollableLibevent
 from neubot.poller_neubot import PollerNeubot
 from neubot.poller_neubot import PollableNeubot
 
-if os.environ.get("NEUBOT_USE_LIBEVENT"):
+if os.environ.get("NEUBOT_USE_LIBNEUBOT"):
+    from neubot.poller_libneubot import PollableLibneubot
+    from neubot.poller_libneubot import PollerLibneubot
+    sys.stdout.write("neubot: poller engine: libneubot\n")
+    POLLER = PollerLibneubot()
+    Pollable = PollableLibneubot
+
+elif os.environ.get("NEUBOT_USE_LIBEVENT"):
     sys.stdout.write("neubot: poller engine: libevent\n")
     POLLER = PollerLibevent()
     Pollable = PollableLibevent
+
 else:
     sys.stdout.write("neubot: poller engine: neubot\n")
     POLLER = PollerNeubot()
