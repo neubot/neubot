@@ -79,10 +79,10 @@ IMPLEMENTED TESTS
 All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
-Neubot implements three active network tests: ``bittorrent``, ``raw`` and
-``speedtest``(TODO: Dash Test should be mentioned here). For each test, there is a Neubot subcommand that allows
-to run the test immediately. Moreover, Neubot schedules one of the
-three tests at random every 23 - 27 minutes.
+Neubot implements four active network tests: ``bittorrent``, ``raw``, 
+``speedtest`` and ``dashtest``. For each test, there is a Neubot 
+subcommand that allows to run the test immediately. Moreover, Neubot 
+schedules one of the four tests at random every 23 - 27 minutes.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
 estimates the round-trip time, the download and the upload goodput
@@ -111,6 +111,16 @@ response (like ``raw``). It estimates the goodput by dividing the
 amount of transferred bytes by the elapsed time. To avoid consuming
 too much user resources, the ``speedtest`` test adapts the number
 of bytes to transfer such that the test runs for about ten seconds.
+
+The ``dashtest`` test emulates a video playload and estimates the 
+highest available bandwidth. The dashtest is implemented by the 
+Neubot Dash Module that use the dashtest adaptation logic: at the 
+beginning, the client requests a first segment using the highest 
+bitrate representation. After that is calculated the estimated 
+available bandwidth (EAB) of the downloaded segment by dividing 
+the size of segment in kbit by the elapsed download time in second.
+If the download lasts more than two seconds the EAB is scaled down.
+
 
 SUBCOMMANDS
 ```````````
