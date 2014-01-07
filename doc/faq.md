@@ -816,7 +816,17 @@ In addition, it estimates the round-trip time in two ways:
 2.  by measuring the average time elapsed between sending a small
     request and receiving a small response (like *speedtest*).
 
-(TODO: Dash Test should be mentioned here -> 4.10 "What does the dash test measures?"
+4.10. What does the *dashtest* test measures?
+---------------------------------------
+
+The *dashtest* test emulates a video playload and estimates the highest 
+available bandwidth. The dashtest is implemented by the Neubot Dash Module 
+that use the dashtest adaptation logic: at the beginning, the client requests 
+a first segment using the highest bitrate representation. After that is 
+calculated the estimated available bandwidth (EAB) of the downloaded segment 
+by dividing the size of segment in kbit by the elapsed download time in second.
+If the download lasts more than two seconds the EAB is scaled down.
+
 
 - - -
 
