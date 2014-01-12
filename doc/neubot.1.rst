@@ -112,14 +112,15 @@ amount of transferred bytes by the elapsed time. To avoid consuming
 too much user resources, the ``speedtest`` test adapts the number
 of bytes to transfer such that the test runs for about ten seconds.
 
-The ``dashtest`` test emulates a video playload and estimates the 
-highest available bandwidth. The dashtest is implemented by the 
-Neubot Dash Module that use the dashtest adaptation logic: at the 
-beginning, the client requests a first segment using the highest 
-bitrate representation. After that is calculated the estimated 
-available bandwidth (EAB) of the downloaded segment by dividing 
-the size of segment in kbit by the elapsed download time in second.
-If the download lasts more than two seconds the EAB is scaled down.
+The ``dashtest`` test emulates a video playload and estimates the highest 
+available bandwidth. The dashtest use the dashtest adaptation logic: 
+at the beginning, the client requests a first segment using the lowest bitrate 
+representation. During the download of the first segment, the client calculates 
+the estimated available bandwidth of the downloaded segment by dividing the 
+size of segment in kbit by the elapsed download time in second.
+If the download lasted less than two seconds, the client requests a bigger 
+next segment; otherwise, if the download lasted more than two seconds, the 
+client requests a smaller next segment.
 
 
 SUBCOMMANDS
