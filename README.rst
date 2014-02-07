@@ -24,4 +24,4 @@ that is personal data under the European law.  For more details
 regarding our privacy policy, please refer to the file PRIVACY, in
 this directory.
 
-For more info: http://www.neubot.org/
+For more info: <http://www.neubot.org/>.
