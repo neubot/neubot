@@ -46,6 +46,7 @@ Index
     - [4.7. What does measuring goodput mean?](#47-what-does-measuring-goodput-mean)
     - [4.8. Is it possible to compare speedtest and bittorrent results?](#48-is-it-possible-to-compare-speedtest-and-bittorrent-results)
     - [4.9. What does the *raw* test measures?](#49-what-does-the-raw-test-measures)
+    - [4.10. What does the *dashtest* test measures?](#410-what-does-the-dashtest-test-measures)
 - [5. Privacy questions](#5-privacy-questions)
     - [5.1. What personal data does Neubot collect?](#51-what-personal-data-does-neubot-collect)
     - [5.2. Will you publish my IP address?](#52-will-you-publish-my-ip-address)
