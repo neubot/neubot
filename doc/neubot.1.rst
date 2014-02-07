@@ -117,7 +117,7 @@ uses the following adaptation logic: at the beginning, the client
 requests the first segment using the lowest bitrate representation.
 During the download of the first segment, the client calculates the 
 estimated available bandwidth of the downloaded segment by dividing the 
-size of segment in kbit by the elapsed download time in second.
+size of segment in kbit by the download time in second.
 If the download lasted less than two seconds, the client requests a bigger 
 next segment; otherwise, if the download lasted more than two seconds, the 
 client requests a smaller next segment.
