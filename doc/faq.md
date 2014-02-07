@@ -45,8 +45,8 @@ Index
     - [4.6. What does *bittorrent* test measure?](#46-what-does-bittorrent-test-measure)
     - [4.7. What does measuring goodput mean?](#47-what-does-measuring-goodput-mean)
     - [4.8. Is it possible to compare speedtest and bittorrent results?](#48-is-it-possible-to-compare-speedtest-and-bittorrent-results)
-    - [4.9. What does the *raw* test measures?](#49-what-does-the-raw-test-measures)
-    - [4.10. What does the *dashtest* test measures?](#410-what-does-the-dashtest-test-measures)
+    - [4.9. What does the *raw* test measure?](#49-what-does-the-raw-test-measure)
+    - [4.10. What does the *dashtest* test measure?](#410-what-does-the-dashtest-test-measure)
 - [5. Privacy questions](#5-privacy-questions)
     - [5.1. What personal data does Neubot collect?](#51-what-personal-data-does-neubot-collect)
     - [5.2. Will you publish my IP address?](#52-will-you-publish-my-ip-address)
@@ -801,8 +801,8 @@ This is not enough.  Before Neubot 0.5.0 more work must be done to make the
 behavior of the two tests much more similar, allowing for a fair comparison
 of them.
 
-4.9. What does the *raw* test measures?
----------------------------------------
+4.9. What does the *raw* test measure?
+--------------------------------------
 
 The *raw* test performs a raw 10-second TCP download to estimate
 the download goodput. Also, it estimates the goodput from the
@@ -817,8 +817,8 @@ In addition, it estimates the round-trip time in two ways:
 2.  by measuring the average time elapsed between sending a small
     request and receiving a small response (like *speedtest*).
 
-4.10. What does the *dashtest* test measures?
----------------------------------------
+4.10. What does the *dashtest* test measure?
+--------------------------------------------
 
 The *dashtest* test emulates the download of a video payload and 
 uses the following adaptation logic: at the beginning, the client
