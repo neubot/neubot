@@ -665,7 +665,11 @@ amount of transferred bytes by the elapsed time.
 To avoid consuming too much user resources, the *speedtest* test adapts
 the number of bytes to transfer such that the test runs for about ten
 seconds.
-(TODO: Dash Test should be mentioned here)
+
+This test always uses the closest-available Measurement Lab server. The
+closest-available server should deliver better performance than a random
+server. Therefore, this test should generally yield a higher average
+download speed than the tests that use a random Measurement Lab server.
 
 4.3. How does Neubot change my Windows registry?
 ------------------------------------------------
@@ -729,6 +733,10 @@ the client and the server of many flying responses. The measurement
 starts only when the requester thinks there are enough responses
 in flight to approximate a continuous transfer.
 
+This test always uses the closest-available Measurement Lab server. The
+closest-available server should deliver better performance than a random
+server. Therefore, this test should generally yield a higher average
+download speed than the tests that use a random Measurement Lab server.
 
 4.7. What does measuring goodput mean?
 --------------------------------------
@@ -818,6 +826,15 @@ In addition, it estimates the round-trip time in two ways:
 2.  by measuring the average time elapsed between sending a small
     request and receiving a small response (like *speedtest*).
 
+This test always uses a random Measurement Lab server. The
+closest-available server should deliver better performance than a random
+server. Therefore, this test should generally yield a lower average
+download speed than the tests that use the closest-available Measurement
+Lab server. However, a random server allows us to probe more network
+paths and to experiment with diverse latencies, therefore providing a
+more comprehensive view of what can be done from your connection's
+vantage point.
+
 4.10. What does the *dashtest* test measure?
 --------------------------------------------
 
@@ -833,6 +850,15 @@ the next segment using, in the common case, the representation rate
 that is closer to the download speed of the current segment. This process
 is, of course, repeated for all subsequent segments, thereby adapting
 the requested bitrate representation to the download speed.
+
+This test always uses a random Measurement Lab server. The
+closest-available server should deliver better performance than a random
+server. Therefore, this test should generally yield a lower average
+download speed than the tests that use the closest-available Measurement
+Lab server. However, a random server allows us to probe more network
+paths and to experiment with diverse latencies, therefore providing a
+more comprehensive view of what can be done from your connection's
+vantage point.
 
 - - -
 
