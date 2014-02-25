@@ -669,7 +669,7 @@ seconds.
 This test always uses the closest-available Measurement Lab server. The
 closest-available server should deliver better performance than a random
 server. Therefore, this test should generally yield a higher average
-download speed than the tests that use a random Measurement Lab server.
+speed than the tests that use a random Measurement Lab server.
 
 4.3. How does Neubot change my Windows registry?
 ------------------------------------------------
@@ -736,7 +736,7 @@ in flight to approximate a continuous transfer.
 This test always uses the closest-available Measurement Lab server. The
 closest-available server should deliver better performance than a random
 server. Therefore, this test should generally yield a higher average
-download speed than the tests that use a random Measurement Lab server.
+speed than the tests that use a random Measurement Lab server.
 
 4.7. What does measuring goodput mean?
 --------------------------------------
@@ -829,7 +829,7 @@ In addition, it estimates the round-trip time in two ways:
 This test always uses a random Measurement Lab server. The
 closest-available server should deliver better performance than a random
 server. Therefore, this test should generally yield a lower average
-download speed than the tests that use the closest-available Measurement
+speed than the tests that use the closest-available Measurement
 Lab server. However, a random server allows us to probe more network
 paths and to experiment with diverse latencies, therefore providing a
 more comprehensive view of what can be done from your connection's
@@ -854,7 +854,7 @@ the requested bitrate representation to the download speed.
 This test always uses a random Measurement Lab server. The
 closest-available server should deliver better performance than a random
 server. Therefore, this test should generally yield a lower average
-download speed than the tests that use the closest-available Measurement
+speed than the tests that use the closest-available Measurement
 Lab server. However, a random server allows us to probe more network
 paths and to experiment with diverse latencies, therefore providing a
 more comprehensive view of what can be done from your connection's
