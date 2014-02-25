@@ -625,10 +625,9 @@ Before running an automatic test, Neubot performs an operation that
 we call *rendezvous*. For speedtest and for the bittorrent test,
 the rendezvous consists in connecting to the *master server* (which
 is a single, central server) to retrieve the address of the closest
-test server (and other information). For the *raw* test, the
-rendezvous consists in connecting to `mlab-ns` (Measurement Lab's
-name service) to retrieve the address of a test server at random.
-(TODO: Dash Test should be mentioned here)
+test server (and other information). For the *raw* and the *dashtest*
+tests, the rendezvous consists in connecting to `mlab-ns` (Measurement
+Lab's name service) to retrieve the address of a test server at random.
 
 Once the address of the test server is known, Neubot connects to the
 test server and waits for the authorization to perform the test it
