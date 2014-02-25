@@ -812,7 +812,10 @@ of them.
 --------------------------------------
 
 The *raw* test performs a raw 10-second TCP download to estimate
-the download goodput. During the download, this test also collects
+the download goodput.
+It is called *raw* because it directly uses TCP and it does not
+emulate any protocol.
+During the download, this test also collects
 statistics about the TCP sender by using Web100
 (see `http://www.web100.org`), which is installed on all
 Measurement Lab servers.
