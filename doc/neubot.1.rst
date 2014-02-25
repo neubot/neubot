@@ -95,7 +95,7 @@ user resources, the ``bittorrent`` test adapts the number of bytes to
 transfer such that the test runs for about ten seconds.
 
 The ``raw`` test performs a `raw` 10-second TCP download to estimate
-the download goodput. It is called `raw' because it directly uses TCP
+the download goodput. It is called `raw` because it directly uses TCP
 and it does not emulate any protocol. This test uses a random
 Measurement-Lab server.
 During the download, this test also collects statistics about the
