@@ -805,8 +805,7 @@ of them.
 --------------------------------------
 
 The *raw* test performs a raw 10-second TCP download to estimate
-the download goodput. Also, it estimates the goodput from the
-round-trip time, and it collects statistics about the TCP sender
+the download goodput. Moreover it collects statistics about the TCP sender
 by using Web100 (see `http://www.web100.org`).
 
 In addition, it estimates the round-trip time in two ways:
