@@ -119,12 +119,11 @@ the beginning of the test, the dashtest client requests the first segment
 using the lowest bitrate representation. During the download of the
 first segment, the client calculates the estimated available bandwidth
 of the downloaded segment by dividing the size of such segment (in kbit)
-by the download time (in seconds). If the download lasted less than two
-seconds, the client requests a bigger next segment; otherwise, if the
-download lasted more than two seconds, the client requests a smaller
-next segment. This process is, of course, repeated for all subsequent
-segments, thereby adapting the requested bitrate representation to
-the download speed.
+by the download time (in seconds). Next, the Dashtest requests
+the next segment using, in the common case, the representation rate
+that is closer to the download speed of the current segment. This process
+is, of course, repeated for all subsequent segments, thereby adapting
+the requested bitrate representation to the download speed.
 
 
 SUBCOMMANDS
