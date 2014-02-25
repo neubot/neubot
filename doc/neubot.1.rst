@@ -94,12 +94,13 @@ user resources, the ``bittorrent`` test adapts the number of bytes to
 transfer such that the test runs for about ten seconds.
 
 The ``raw`` test performs a `raw` 10-second TCP download to estimate
-the download goodput. Moreover, it collects statistics about the TCP sender
-by using Web100 (see ``http://www.web100.org``). In addition, it
-estimates the round-trip time in two ways: (1) by measuring the
-time that connect() takes to complete (like ``bittorrent``) and (2)
-by measuring the average time elapsed between sending a small request
-and receiving a small response.
+the download goodput. During the download, this test also collects
+statistics about the TCP sender by using Web100 (see
+``http://www.web100.org``), which is installed on all Measurement
+Lab servers. In addition, this test estimates the round-trip time
+in two ways: (1) by measuring the time that connect() takes to complete
+(like ``bittorrent``) and (2) by measuring the average time elapsed
+between sending a small request and receiving a small response.
 
 The ``speedtest`` test emulates HTTP and estimates the round-trip
 time, the download and the upload goodput. It estimates the round-trip
