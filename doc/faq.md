@@ -821,17 +821,19 @@ In addition, it estimates the round-trip time in two ways:
 4.10. What does the *dashtest* test measure?
 --------------------------------------------
 
-The *dashtest* test emulates the download of a video payload and 
-uses the following adaptation logic: at the beginning, the client
-requests the first segment using the lowest bitrate representation.
-During the download of the first segment, the client calculates the 
-estimated available bandwidth of the downloaded segment by dividing 
-the size of segment in kbit by the elapsed download time in second.
-If the download lasted less than two seconds, the client requests a 
-bigger next segment; otherwise, if the download lasted more than two 
-seconds, the client requests a smaller next segment.
-This process is, of course, repeated for all subsequent segments.
-
+The ``dashtest`` test emulates the download of a video payload using
+the Dynamic Adaptive Streaming over HTTP (DASH) MPEG standard. This
+test, in particular, uses the following DASH rate-adaptation logic: at
+the beginning of the test, the dashtest client requests the first segment
+using the lowest bitrate representation. During the download of the
+first segment, the client calculates the estimated available bandwidth
+of the downloaded segment by dividing the size of such segment (in kbit)
+by the download time (in seconds). If the download lasted less than two
+seconds, the client requests a bigger next segment; otherwise, if the
+download lasted more than two seconds, the client requests a smaller
+next segment. This process is, of course, repeated for all subsequent
+segments, thereby adapting the requested bitrate representation to
+the download speed.
 
 - - -
 
