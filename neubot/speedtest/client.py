@@ -58,8 +58,8 @@ ESTIMATE = {
     "download": 64000,
     "upload": 64000,
 }
-LO_THRESH = 3
-TARGET = 5
+LO_THRESH = 15
+TARGET = 20
 
 class ClientLatency(ClientHTTP):
     def __init__(self, poller):

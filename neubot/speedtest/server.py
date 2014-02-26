@@ -28,7 +28,7 @@ from neubot.http.server import ServerHTTP
 
 from neubot.bytegen_speedtest import BytegenSpeedtest
 
-TARGET = 5
+TARGET = 20
 
 class SpeedtestServer(ServerHTTP):
 
