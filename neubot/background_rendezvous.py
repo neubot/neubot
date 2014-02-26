@@ -131,7 +131,7 @@ class BackgroundRendezvous(object):
                             ' rendezvous response: %s', exception)
         #
         # Typically the user does not specify the interval
-        # and we use a random value around 1500 seconds.
+        # and we use a random value around 3600 seconds.
         # The random value is extracted just once and from
         # that point on we keep using it.
         # Suggested by Elias S.G. Carotti some time ago.
@@ -139,7 +139,7 @@ class BackgroundRendezvous(object):
         interval = CONFIG['agent.interval']
         if not interval:
             if not self.interval:
-                self.interval = 1380 + random.randrange(0, 240)
+                self.interval = 3480 + random.randrange(0, 240)
             interval = self.interval
         self._schedule_after(interval)
 
