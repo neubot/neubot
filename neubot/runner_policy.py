@@ -35,24 +35,7 @@ import random
 # I think it's wiser to hardcode the policy for now.
 #
 TEST_NAMES = [
-              # probability: 9%
-              'raw',
-
-              # probability: 27%
-              'bittorrent',
-              'bittorrent',
-              'bittorrent',
-
-              # probability: 27%
               'speedtest',
-              'speedtest',
-              'speedtest',
-
-              # probability: 36%
-              'dash',
-              'dash',
-              'dash',
-              'dash',
              ]
 
 class RunnerPolicy(object):
