@@ -34,6 +34,7 @@ import ssl
 import sys
 
 from neubot import utils
+from neubot import utils_net
 
 # Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR)
@@ -49,6 +50,7 @@ class Pollable(object):
     def __init__(self):
         self.created = utils.ticks()
         self.watchdog = WATCHDOG
+        self.poller_api = 0
 
     def fileno(self):
         return -1
@@ -59,7 +61,10 @@ class Pollable(object):
     def handle_write(self):
         pass
 
-    def handle_close(self):
+    def handle_close(self):  # Only poller_api == 0
+        pass
+
+    def handle_error(self):  # For poller_api >= 1
         pass
 
     def handle_periodic(self, timenow):
@@ -144,3 +149,72 @@ class SocketWrapper(object):
                 return CONNRESET, 0
             else:
                 raise
+
+class PollableConnector(Pollable):
+
+    def __init__(self):
+        Pollable.__init__(self)
+        self.address = "0.0.0.0"
+        self.ainfos = None
+        self.family = "PF_UNSPEC"
+        self.poller = None
+        self.port = "0"
+        self.sock = None
+        self.rtt = 0.0
+        self.poller_api = 1
+
+    def __repr__(self):
+        return "Connector(%s, %s, %s)" % (self.family,
+          self.address, self.port)
+
+    @classmethod
+    def connect(cls, poller, family, address, port):
+        self = cls()
+        self.poller = poller
+        self.family = family
+        self.address = address
+        self.port = port
+        self.ainfos = utils_net.resolve(family, "SOCK_STREAM",
+                                        address, port, "")
+        if not self.ainfos:
+            return None
+        self.poller.sched(0.0, self.connect_next_, None)
+        return self
+
+    def connect_next_(self, argument):
+        if not self.ainfos:
+            self.handle_connect(-1)
+            return
+        ainfo = self.ainfos.popleft()
+        sock = utils_net.connect_ainfo(ainfo)
+        if not sock:
+            self.poller.sched(0.0, self.connect_next_, None)
+            return
+        self.set_timeout(10)
+        self.sock = sock
+        self.rtt = utils.ticks()
+        self.poller.set_writable(self)
+
+    def fileno(self):
+        return self.sock.fileno()
+
+    def handle_write(self):
+        self.poller.unset_writable(self)
+        if utils_net.check_connected(self.sock) != 0:
+            self.poller.sched(0.0, self.connect_next_, None)
+            return
+        self.rtt = utils.ticks() - self.rtt
+        self.handle_connect(0)
+
+    def handle_error(self):
+        self.poller.unset_writable(self)
+        self.poller.sched(0.0, self.connect_next_, None)
+
+    def handle_connect(self, error):
+        pass
+
+    def get_socket(self):
+        return self.sock
+
+    def get_rtt(self):
+        return self.rtt

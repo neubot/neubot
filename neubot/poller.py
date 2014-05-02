@@ -31,6 +31,7 @@ import errno
 import select
 import sched
 import sys
+import time
 
 from neubot.utils import ticks
 from neubot.utils import timestamp
@@ -102,10 +103,18 @@ class Poller(sched.scheduler):
         if fileno in self.writeset:
             del self.writeset[fileno]
 
+    def _on_error(self, stream):
+        if stream.poller_api >= 1:
+            stream.handle_error()
+            return
+        self.close(stream)
+
     def close(self, stream):
         ''' Safely close a stream '''
         self.unset_readable(stream)
         self.unset_writable(stream)
+        if stream.poller_api >= 1:
+            return
         try:
             stream.handle_close()
         except (KeyboardInterrupt, SystemExit):
@@ -135,7 +144,7 @@ class Poller(sched.scheduler):
                 raise
             except:
                 logging.error('poller: handle_read() failed', exc_info=1)
-                self.close(stream)
+                self._on_error(stream)
 
     def _call_handle_write(self, fileno):
         ''' Safely dispatch write event '''
@@ -147,7 +156,7 @@ class Poller(sched.scheduler):
                 raise
             except:
                 logging.error('poller: handle_write() failed', exc_info=1)
-                self.close(stream)
+                self._on_error(stream)
 
     def break_loop(self):
         ''' Break out of poller loop '''
@@ -198,7 +207,7 @@ class Poller(sched.scheduler):
 
         # No I/O pending?  Break out of the loop.
         else:
-            raise KeyboardInterrupt('poller: no I/O pending')
+            time.sleep(timeout)
 
     def check_timeout(self):
         ''' Dispatch the periodic event '''
@@ -214,7 +223,7 @@ class Poller(sched.scheduler):
             for stream in streams:
                 if stream.handle_periodic(timenow):
                     logging.debug('poller: watchdog timeout: %s', str(stream))
-                    self.close(stream)
+                    self._on_error(stream)
 
     def snap(self, data):
         ''' Take a snapshot of poller state '''
