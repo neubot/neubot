@@ -49,7 +49,7 @@ class Connector(Pollable):
         self.extra = extra
         self.sock = None
         self.timestamp = 0
-        self.watchdog = 10
+        self.set_timeout(10)
 
         self.aterror = Deferred()
         self.aterror.add_callback(self.parent.handle_connect_error)

@@ -235,8 +235,7 @@ class RawServer(Handler):
     def _empty_message_sent(stream):
         ''' Sent the empty message to signal end of test '''
         # Tell the poller to reclaim this stream in some seconds
-        stream.created = utils.ticks()
-        stream.watchdog = 5
+        stream.set_timeout(5)
 
     def _connection_lost(self, stream):
         ''' Invoked when the connection is lost '''

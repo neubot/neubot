@@ -41,7 +41,7 @@ class Listener(Pollable):
         self.sslcert = sslcert
 
         # Want to listen "forever"
-        self.watchdog = -1
+        self.clear_timeout()
 
         POLLER.set_readable(self)
         self.parent.handle_listen(self)

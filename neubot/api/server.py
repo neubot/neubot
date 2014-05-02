@@ -76,7 +76,7 @@ class ServerAPI(ServerHTTP):
         }
 
     #
-    # Update the stream timestamp each time we receive a new
+    # Update the stream timeout each time we receive a new
     # request.  Which means that the watchdog timeout will
     # reclaim inactive streams only.
     # For local API services it make sense to disclose some
@@ -86,7 +86,7 @@ class ServerAPI(ServerHTTP):
     #
     def process_request(self, stream, request):
         ''' Process incoming request '''
-        stream.created = utils.ticks()
+        stream.set_timeout(30)
         try:
             self._serve_request(stream, request)
         except (ConfigError, NotImplementedTest):

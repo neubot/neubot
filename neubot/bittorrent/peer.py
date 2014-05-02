@@ -136,7 +136,7 @@ class PeerNeubot(StreamHandler):
         else:
             peer = self
         stream.attach(peer, sock, peer.conf)
-        stream.watchdog = self.conf["bittorrent.watchdog"]
+        stream.set_timeout(self.conf["bittorrent.watchdog"])
 
     def connection_ready(self, stream):
         stream.send_bitfield(str(self.bitfield))

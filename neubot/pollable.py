@@ -69,6 +69,10 @@ class Pollable(object):
         self.created = utils.ticks()
         self.watchdog = timeo
 
+    def clear_timeout(self):
+        self.created = utils.ticks()
+        self.watchdog = -1
+
 class SSLWrapper(object):
     def __init__(self, sock):
         self.sock = sock
