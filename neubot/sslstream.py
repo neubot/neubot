@@ -32,46 +32,9 @@ if __name__ == '__main__':
     sys.path.insert(0, '.')
 
 from neubot.pollable import Pollable
-from neubot.pollable import SUCCESS
-from neubot.pollable import WANT_READ
-from neubot.pollable import WANT_WRITE
+from neubot.pollable import SSLWrapper
+
 from neubot.poller import POLLER
-
-class SSLWrapper(object):
-    def __init__(self, sock):
-        self.sock = sock
-
-    def close(self):
-        try:
-            self.sock.close()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.warning('sslstream: sock.close() failed', exc_info=1)
-
-    def sorecv(self, maxlen):
-        try:
-            return SUCCESS, self.sock.read(maxlen)
-        except ssl.SSLError:
-            exception = sys.exc_info()[1]
-            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                return WANT_READ, b""
-            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                return WANT_WRITE, b""
-            else:
-                raise
-
-    def sosend(self, octets):
-        try:
-            return SUCCESS, self.sock.write(octets)
-        except ssl.SSLError:
-            exception = sys.exc_info()[1]
-            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                return WANT_READ, 0
-            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                return WANT_WRITE, 0
-            else:
-                raise
 
 class Handshaker(Pollable):
     ''' A pollable SSL handshaker '''

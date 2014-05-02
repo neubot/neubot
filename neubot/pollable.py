@@ -1,8 +1,9 @@
 # neubot/pollable.py
 
 #
-# Copyright (c) 2010, 2012 Simone Basso <bassosimone@gmail.com>,
-#  NEXA Center for Internet & Society at Politecnico di Torino
+# Copyright (c) 2010, 2012, 2014
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>.
 #
 # This file is part of Neubot <http://www.neubot.org/>.
 #
@@ -20,12 +21,22 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' An object that can be passed to the poller '''
-
+#
 # Adapted from neubot/net/poller.py
+# pylint: disable = missing-docstring
 # Python3-ready: yes
+#
+
+import errno
+import logging
+import socket
+import ssl
+import sys
 
 from neubot import utils
+
+# Soft errors on sockets, i.e. we can retry later
+SOFT_ERRORS = (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR)
 
 # States returned by the socket model
 (SUCCESS, WANT_READ, WANT_WRITE, CONNRESET) = range(4)
@@ -62,3 +73,75 @@ class Pollable(object):
         ''' Set timeout of this pollable '''
         self.created = utils.ticks()
         self.watchdog = timeo
+
+class SSLWrapper(object):
+    def __init__(self, sock):
+        self.sock = sock
+
+    def close(self):
+        try:
+            self.sock.close()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.warning('sslstream: sock.close() failed', exc_info=1)
+
+    def sorecv(self, maxlen):
+        try:
+            return SUCCESS, self.sock.read(maxlen)
+        except ssl.SSLError:
+            exception = sys.exc_info()[1]
+            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
+                return WANT_READ, b""
+            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                return WANT_WRITE, b""
+            else:
+                raise
+
+    def sosend(self, octets):
+        try:
+            return SUCCESS, self.sock.write(octets)
+        except ssl.SSLError:
+            exception = sys.exc_info()[1]
+            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
+                return WANT_READ, 0
+            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                return WANT_WRITE, 0
+            else:
+                raise
+
+class SocketWrapper(object):
+    def __init__(self, sock):
+        self.sock = sock
+
+    def close(self):
+        try:
+            self.sock.close()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.warning('stream: sock.close() failed', exc_info=1)
+
+    def sorecv(self, maxlen):
+        try:
+            return SUCCESS, self.sock.recv(maxlen)
+        except socket.error:
+            exception = sys.exc_info()[1]
+            if exception.args[0] in SOFT_ERRORS:
+                return WANT_READ, b""
+            elif exception.args[0] == errno.ECONNRESET:
+                return CONNRESET, b""
+            else:
+                raise
+
+    def sosend(self, octets):
+        try:
+            return SUCCESS, self.sock.send(octets)
+        except socket.error:
+            exception = sys.exc_info()[1]
+            if exception.args[0] in SOFT_ERRORS:
+                return WANT_WRITE, 0
+            elif exception.args[0] == errno.ECONNRESET:
+                return CONNRESET, 0
+            else:
+                raise

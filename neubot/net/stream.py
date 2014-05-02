@@ -30,8 +30,6 @@
 # Will be replaced by neubot/stream.py 
 
 import collections
-import errno
-import socket
 import sys
 import types
 import logging
@@ -45,91 +43,20 @@ from neubot.log import oops
 from neubot.net.poller import POLLER
 from neubot.net.poller import Pollable
 
+from neubot.pollable import CONNRESET
+from neubot.pollable import SSLWrapper
+from neubot.pollable import SUCCESS
+from neubot.pollable import SocketWrapper
+from neubot.pollable import WANT_READ
+from neubot.pollable import WANT_WRITE
+
 from neubot import utils
 from neubot import utils_net
 
 from neubot.main import common
 
-# States returned by the socket model
-STATES = [SUCCESS, WANT_READ, WANT_WRITE, CONNRESET] = range(5)
-
 # Maximum amount of bytes we read from a socket
 MAXBUF = 1 << 18
-
-# Soft errors on sockets, i.e. we can retry later
-SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
-
-class SSLWrapper(object):
-    def __init__(self, sock):
-        self.sock = sock
-
-    def close(self):
-        try:
-            self.sock.close()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.warning('sslstream: sock.close() failed', exc_info=1)
-
-    def sorecv(self, maxlen):
-        try:
-            return SUCCESS, self.sock.read(maxlen)
-        except ssl.SSLError:
-            exception = sys.exc_info()[1]
-            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                return WANT_READ, b""
-            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                return WANT_WRITE, b""
-            else:
-                raise
-
-    def sosend(self, octets):
-        try:
-            return SUCCESS, self.sock.write(octets)
-        except ssl.SSLError:
-            exception = sys.exc_info()[1]
-            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                return WANT_READ, 0
-            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                return WANT_WRITE, 0
-            else:
-                raise
-
-class SocketWrapper(object):
-    def __init__(self, sock):
-        self.sock = sock
-
-    def close(self):
-        try:
-            self.sock.close()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.warning('stream: sock.close() failed', exc_info=1)
-
-    def sorecv(self, maxlen):
-        try:
-            return SUCCESS, self.sock.recv(maxlen)
-        except socket.error:
-            exception = sys.exc_info()[1]
-            if exception.args[0] in SOFT_ERRORS:
-                return WANT_READ, b""
-            elif exception.args[0] == errno.ECONNRESET:
-                return CONNRESET, b""
-            else:
-                raise
-
-    def sosend(self, octets):
-        try:
-            return SUCCESS, self.sock.send(octets)
-        except socket.error:
-            exception = sys.exc_info()[1]
-            if exception.args[0] in SOFT_ERRORS:
-                return WANT_WRITE, 0
-            elif exception.args[0] == errno.ECONNRESET:
-                return CONNRESET, 0
-            else:
-                raise
 
 class Stream(Pollable):
     def __init__(self, poller):

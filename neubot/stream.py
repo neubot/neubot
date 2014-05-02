@@ -24,11 +24,8 @@
 
 # Python3-ready: yes
 
-import errno
 import logging
 import os
-import socket
-import sys
 
 from neubot.defer import Deferred
 from neubot.pollable import Pollable
@@ -36,52 +33,14 @@ from neubot.poller import POLLER
 
 from neubot.pollable import CONNRESET
 from neubot.pollable import SUCCESS
+from neubot.pollable import SocketWrapper
 from neubot.pollable import WANT_READ
 from neubot.pollable import WANT_WRITE
 
 from neubot import utils_net
 from neubot import six
 
-# Soft errors on sockets, i.e. we can retry later
-SOFT_ERRORS = (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR)
-
 EMPTY_STRING = six.b('')
-
-class SocketWrapper(object):
-    def __init__(self, sock):
-        self.sock = sock
-
-    def close(self):
-        try:
-            self.sock.close()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.warning('stream: sock.close() failed', exc_info=1)
-
-    def sorecv(self, maxlen):
-        try:
-            return SUCCESS, self.sock.recv(maxlen)
-        except socket.error:
-            exception = sys.exc_info()[1]
-            if exception.args[0] in SOFT_ERRORS:
-                return WANT_READ, b""
-            elif exception.args[0] == errno.ECONNRESET:
-                return CONNRESET, b""
-            else:
-                raise
-
-    def sosend(self, octets):
-        try:
-            return SUCCESS, self.sock.send(octets)
-        except socket.error:
-            exception = sys.exc_info()[1]
-            if exception.args[0] in SOFT_ERRORS:
-                return WANT_WRITE, 0
-            elif exception.args[0] == errno.ECONNRESET:
-                return CONNRESET, 0
-            else:
-                raise
 
 class StreamWrapperDebug(SocketWrapper):
     ''' Debug stream wrapper '''
