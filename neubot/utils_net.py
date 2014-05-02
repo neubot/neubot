@@ -200,6 +200,23 @@ def listen(epnt, prefer_ipv6):
 
     return sockets
 
+def connect_ainfo(ainfo):
+    epnt = format_ainfo(ainfo)
+    try:
+        logging.debug('connect_info: %s', epnt)
+
+        sock = socket.socket(ainfo[0], ainfo[1], ainfo[2])
+        sock.setblocking(False)
+        result = sock.connect_ex(ainfo[4])
+        if result not in INPROGRESS:
+            raise socket.error(result, os.strerror(result))
+
+        logging.debug("connect_info: in progress (fileno %d)", sock.fileno())
+        return sock
+    except:
+        logging.warning('connect(): cannot connect', exc_info=1)
+        return None
+
 def connect(epnt, prefer_ipv6):
     ''' Connect to epnt '''
 
@@ -210,63 +227,38 @@ def connect(epnt, prefer_ipv6):
         return None
 
     for ainfo in addrinfo:
-        try:
-            logging.debug('connect(): trying with: %s', format_ainfo(ainfo))
-
-            sock = socket.socket(ainfo[0], socket.SOCK_STREAM)
-            sock.setblocking(False)
-            result = sock.connect_ex(ainfo[4])
-            if result not in INPROGRESS:
-                raise socket.error(result, os.strerror(result))
-
-            logging.debug('connect(): connection to %s in progress...',
-                          format_epnt(ainfo[4]))
+        sock = connect_ainfo(ainfo)
+        if sock:
             return sock
-
-        except socket.error:
-            logging.warning('connect(): cannot connect to %s',
-              format_epnt(ainfo[4]), exc_info=1)
-        except:
-            logging.warning('connect(): cannot connect to %s',
-              format_epnt(ainfo[4]), exc_info=1)
 
     logging.error('connect(): cannot connect to %s: %s',
       format_epnt(epnt), 'all attempts failed')
     return None
 
-def isconnected(endpoint, sock):
-    ''' Check whether connect() succeeded '''
-
+def check_connected(sock):
     # See http://cr.yp.to/docs/connect.html
-
-    logging.debug('isconnected(): checking whether connect() to %s succeeded',
-                  format_epnt(endpoint))
-
-    exception, peername = None, None
+    logging.debug("check_connected: fileno %d", sock.fileno())
     try:
-        peername = getpeername(sock)
+        peername = sock.getpeername()
     except socket.error:
+        logging.debug("check_connected: is NOT connected")
         exception = sys.exc_info()[1]
+        # Note: MacOSX getpeername() fails with EINVAL
+        if exception.args[0] not in (errno.ENOTCONN, errno.EINVAL):
+            return exception.args[0]
+        try:
+            sock.recv(1)
+        except socket.error:
+            exception = sys.exc_info()[1]
+            return exception.args[0]
+        return errno.ENOTCONN  # Should not happen
+    else:
+        logging.debug("check_connected: is connected w/ %s", peername)
+        return 0
 
-    if not exception:
-        logging.debug('isconnected(): connect() to %s succeeded', (
-                      format_epnt(peername)))
-        return peername
-
-    # MacOSX getpeername() fails with EINVAL
-    if exception.args[0] not in (errno.ENOTCONN, errno.EINVAL):
-        logging.error('isconnected(): connect() to %s failed',
-                      format_epnt(endpoint), exc_info=1)
-        return None
-
-    try:
-        sock.recv(1024)
-    except socket.error:
-        logging.error('isconnected(): connect() to %s failed',
-                      format_epnt(endpoint), exc_info=1)
-        return None
-
-    raise RuntimeError('isconnected(): internal error')
+def isconnected(endpoint, sock):
+    error = check_connected(sock)
+    return (error == 0)
 
 def __strip_ipv4mapped_prefix(function):
     ''' Strip IPv4-mapped and IPv4-compatible prefix when the kernel does
