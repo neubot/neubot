@@ -35,11 +35,7 @@ import socket
 import sys
 import types
 import logging
-
-try:
-    import ssl
-except ImportError:
-    ssl = None
+import ssl
 
 if __name__ == "__main__":
     sys.path.insert(0, ".")
@@ -63,42 +59,41 @@ MAXBUF = 1 << 18
 # Soft errors on sockets, i.e. we can retry later
 SOFT_ERRORS = [ errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR ]
 
-if ssl:
-    class SSLWrapper(object):
-        def __init__(self, sock):
-            self.sock = sock
+class SSLWrapper(object):
+    def __init__(self, sock):
+        self.sock = sock
 
-        def close(self):
-            try:
-                self.sock.close()
-            except (KeyboardInterrupt, SystemExit):
+    def close(self):
+        try:
+            self.sock.close()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.warning('sslstream: sock.close() failed', exc_info=1)
+
+    def sorecv(self, maxlen):
+        try:
+            return SUCCESS, self.sock.read(maxlen)
+        except ssl.SSLError:
+            exception = sys.exc_info()[1]
+            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
+                return WANT_READ, b""
+            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                return WANT_WRITE, b""
+            else:
                 raise
-            except:
-                logging.warning('sslstream: sock.close() failed', exc_info=1)
 
-        def sorecv(self, maxlen):
-            try:
-                return SUCCESS, self.sock.read(maxlen)
-            except ssl.SSLError:
-                exception = sys.exc_info()[1]
-                if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                    return WANT_READ, b""
-                elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                    return WANT_WRITE, b""
-                else:
-                    raise
-
-        def sosend(self, octets):
-            try:
-                return SUCCESS, self.sock.write(octets)
-            except ssl.SSLError:
-                exception = sys.exc_info()[1]
-                if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                    return WANT_READ, 0
-                elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                    return WANT_WRITE, 0
-                else:
-                    raise
+    def sosend(self, octets):
+        try:
+            return SUCCESS, self.sock.write(octets)
+        except ssl.SSLError:
+            exception = sys.exc_info()[1]
+            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
+                return WANT_READ, 0
+            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                return WANT_WRITE, 0
+            else:
+                raise
 
 class SocketWrapper(object):
     def __init__(self, sock):
@@ -186,8 +181,6 @@ class Stream(Pollable):
         logging.debug("* Connection made %s", str(self.logname))
 
         if conf["net.stream.secure"]:
-            if not ssl:
-                raise RuntimeError("SSL support not available")
 
             server_side = conf["net.stream.server_side"]
             certfile = conf["net.stream.certfile"]
