@@ -22,6 +22,7 @@
 
 ''' Network utils '''
 
+import collections
 import errno
 import logging
 import os
@@ -148,7 +149,7 @@ def resolve(family, protocol, address, port, passive):
     for ainfo in addrinfo:
         logging.debug("resolve:\t%s", format_ainfo(ainfo))
 
-    return addrinfo
+    return collections.deque(addrinfo)
 
 def listen(epnt, prefer_ipv6):
     ''' Listen to all sockets represented by epnt '''
