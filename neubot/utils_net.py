@@ -276,6 +276,12 @@ def __strip_ipv4mapped_prefix1(result):
         result[0] = result[0][2:]
     return tuple(result)
 
+#
+# For future memory: getpeername() and getsockname() are supposed
+# to fail if we are not connected (this behavior is assumed in
+# a couple of places of the tree, by the way).
+#
+
 def getpeername(sock):
     ''' getpeername() wrapper that strips IPv4-mapped prefix '''
     return __strip_ipv4mapped_prefix(sock.getpeername)
