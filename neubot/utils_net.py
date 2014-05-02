@@ -82,15 +82,73 @@ def format_ainfo(ainfo):
     return '(%s, %s, %s, %s, %s)' % (family, socktype, proto,
       canonname, sockaddr)
 
-# Make sure AF_INET < AF_INET6
-COMPARE_AF = {
-    socket.AF_INET: 1,
-    socket.AF_INET6: 2,
-}
+def resolve(family, protocol, address, port, passive):
 
-def addrinfo_key(ainfo):
-    ''' Map addrinfo to protocol family '''
-    return COMPARE_AF[ainfo[0]]
+    logging.debug("resolve: '%s' '%s' '%s' '%s' '%s'", family, protocol,
+      address, port, passive)
+
+    prefer_ipv6_map = {
+        "PF_INET": False,
+        "PF_UNSPEC": False,
+        "PF_INET6": True,
+        "PF_UNSPEC6": True,
+        # The family may be boolean for compatibility with below
+        True: True,
+        False: False,
+    }
+    prefer_ipv6 = prefer_ipv6_map[family]
+    logging.debug("resolve: prefer_ipv6 %s", prefer_ipv6)
+
+    family_map = {
+        "PF_INET6": socket.AF_INET6,
+        "PF_INET": socket.AF_INET,
+        "PF_UNSPEC6": socket.AF_UNSPEC,
+        "PF_UNSPEC": socket.AF_UNSPEC,
+        # The family may be boolean for compatibility with below
+        True: socket.AF_UNSPEC,
+        False: socket.AF_UNSPEC,
+    }
+    family = family_map[family]
+
+    protocol_map = {
+        "SOCK_STREAM": socket.SOCK_STREAM,
+        "SOCK_DGRAM": socket.SOCK_DGRAM,
+    }
+    protocol = protocol_map[protocol]
+
+    passive_map = {
+        "AI_PASSIVE": socket.AI_PASSIVE,
+        "": 0,
+    }
+    passive = passive_map[passive]
+
+    logging.debug("resolve: getaddrinfo '%s' '%s' %d %d 0 %d", address, port,
+      family, protocol, passive)
+
+    try:
+        addrinfo = socket.getaddrinfo(address, port, family,
+          protocol, 0, passive)
+    except socket.error:
+        logging.warning('resolve: cannot resolve', exc_info=1)
+        return None
+
+    logging.debug("resolve: getaddrinfo() returned:")
+    for ainfo in addrinfo:
+        logging.debug("resolve:\t%s", format_ainfo(ainfo))
+
+    compare_af = {
+        socket.AF_INET: 1,
+        socket.AF_INET6: 2,
+    }
+    def addrinfo_map_key(ainfo):
+        return compare_af[ainfo[0]]
+    addrinfo.sort(key=addrinfo_map_key, reverse=prefer_ipv6)
+
+    logging.debug("resolve: prioritized ainfo list:")
+    for ainfo in addrinfo:
+        logging.debug("resolve:\t%s", format_ainfo(ainfo))
+
+    return addrinfo
 
 def listen(epnt, prefer_ipv6):
     ''' Listen to all sockets represented by epnt '''
@@ -110,22 +168,10 @@ def listen(epnt, prefer_ipv6):
             sockets.extend(result)
         return sockets
 
-    try:
-        addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
-                            socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
-    except socket.error:
-        logging.error('listen(): cannot listen to %s',
-                      format_epnt(epnt), exc_info=1)
+    addrinfo = resolve(prefer_ipv6, "SOCK_STREAM", epnt[0],
+      epnt[1], "AI_PASSIVE")
+    if not addrinfo:
         return sockets
-
-    message = ['listen(): getaddrinfo() returned: [']
-    for ainfo in addrinfo:
-        message.append(format_ainfo(ainfo))
-        message.append(', ')
-    message[-1] = ']'
-    logging.debug(''.join(message))
-
-    addrinfo.sort(key=addrinfo_key, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
@@ -159,22 +205,9 @@ def connect(epnt, prefer_ipv6):
 
     logging.debug('connect(): about to connect to: %s', str(epnt))
 
-    try:
-        addrinfo = socket.getaddrinfo(epnt[0], epnt[1], socket.AF_UNSPEC,
-                                      socket.SOCK_STREAM)
-    except socket.error:
-        logging.error('connect(): cannot connect to %s',
-                      format_epnt(epnt), exc_info=1)
+    addrinfo = resolve(prefer_ipv6, "SOCK_STREAM", epnt[0], epnt[1], "")
+    if not addrinfo:
         return None
-
-    message = ['connect(): getaddrinfo() returned: [']
-    for ainfo in addrinfo:
-        message.append(format_ainfo(ainfo))
-        message.append(', ')
-    message[-1] = ']'
-    logging.debug(''.join(message))
-
-    addrinfo.sort(key=addrinfo_key, reverse=prefer_ipv6)
 
     for ainfo in addrinfo:
         try:
