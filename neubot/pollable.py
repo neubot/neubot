@@ -46,31 +46,26 @@ WATCHDOG = 300
 
 class Pollable(object):
 
-    ''' Base class for pollable objects '''
-
     def __init__(self):
         self.created = utils.ticks()
         self.watchdog = WATCHDOG
 
     def fileno(self):
-        ''' Return file descriptor number '''
         return -1
 
     def handle_read(self):
-        ''' Handle the READ event '''
+        pass
 
     def handle_write(self):
-        ''' Handle the WRITE event '''
+        pass
 
     def handle_close(self):
-        ''' Handle the CLOSE event '''
+        pass
 
     def handle_periodic(self, timenow):
-        ''' Handle the PERIODIC event '''
         return self.watchdog >= 0 and timenow - self.created > self.watchdog
 
     def set_timeout(self, timeo):
-        ''' Set timeout of this pollable '''
         self.created = utils.ticks()
         self.watchdog = timeo
 
