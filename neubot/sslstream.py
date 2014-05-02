@@ -38,20 +38,10 @@ from neubot.pollable import WANT_WRITE
 from neubot.poller import POLLER
 
 class SSLWrapper(object):
-    ''' Wrapper for an SSL socket '''
-
-    #
-    # The point of this class is to route differently soft errors (i.e. when
-    # you can retry later) and hard errors.  A similar class exists for normal
-    # sockets, and the overall result is that the PollableStream always deals
-    # with the same (simple) socket interface.
-    #
-
     def __init__(self, sock):
         self.sock = sock
 
     def close(self):
-        ''' Wrapper for SSL_close() '''
         try:
             self.sock.close()
         except (KeyboardInterrupt, SystemExit):
@@ -60,20 +50,18 @@ class SSLWrapper(object):
             logging.warning('sslstream: sock.close() failed', exc_info=1)
 
     def sorecv(self, maxlen):
-        ''' Wrapper for SSL_read() '''
         try:
             return SUCCESS, self.sock.read(maxlen)
         except ssl.SSLError:
             exception = sys.exc_info()[1]
             if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
-                return WANT_READ, ''
+                return WANT_READ, b""
             elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
-                return WANT_WRITE, ''
+                return WANT_WRITE, b""
             else:
                 raise
 
     def sosend(self, octets):
-        ''' Wrapper for SSL_write() '''
         try:
             return SUCCESS, self.sock.write(octets)
         except ssl.SSLError:

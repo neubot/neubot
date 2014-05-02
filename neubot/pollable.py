@@ -28,7 +28,7 @@
 from neubot import utils
 
 # States returned by the socket model
-(SUCCESS, WANT_READ, WANT_WRITE, CONNRST) = range(4)
+(SUCCESS, WANT_READ, WANT_WRITE, CONNRESET) = range(4)
 
 # Reclaim stream after 300 seconds
 WATCHDOG = 300

@@ -34,7 +34,7 @@ from neubot.defer import Deferred
 from neubot.pollable import Pollable
 from neubot.poller import POLLER
 
-from neubot.pollable import CONNRST
+from neubot.pollable import CONNRESET
 from neubot.pollable import SUCCESS
 from neubot.pollable import WANT_READ
 from neubot.pollable import WANT_WRITE
@@ -47,22 +47,11 @@ SOFT_ERRORS = (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR)
 
 EMPTY_STRING = six.b('')
 
-class StreamWrapper(object):
-
-    ''' Wrapper for a simple socket '''
-
-    #
-    # The point of this wrapper is to route differently soft errors (e.g. when
-    # you can retry later) and hard errors.  A similar wrapper exists for SSL
-    # sockets, and, overall, those wrappers provide the PollableStream class w/
-    # a consistent socket interface.
-    #
-
+class SocketWrapper(object):
     def __init__(self, sock):
         self.sock = sock
 
     def close(self):
-        ''' Wrapper for socket close() '''
         try:
             self.sock.close()
         except (KeyboardInterrupt, SystemExit):
@@ -71,20 +60,18 @@ class StreamWrapper(object):
             logging.warning('stream: sock.close() failed', exc_info=1)
 
     def sorecv(self, maxlen):
-        ''' Wrapper for socket recv() '''
         try:
             return SUCCESS, self.sock.recv(maxlen)
         except socket.error:
             exception = sys.exc_info()[1]
             if exception.args[0] in SOFT_ERRORS:
-                return WANT_READ, EMPTY_STRING
+                return WANT_READ, b""
             elif exception.args[0] == errno.ECONNRESET:
-                return CONNRST, EMPTY_STRING
+                return CONNRESET, b""
             else:
                 raise
 
     def sosend(self, octets):
-        ''' Wrapper for socket send() '''
         try:
             return SUCCESS, self.sock.send(octets)
         except socket.error:
@@ -92,21 +79,21 @@ class StreamWrapper(object):
             if exception.args[0] in SOFT_ERRORS:
                 return WANT_WRITE, 0
             elif exception.args[0] == errno.ECONNRESET:
-                return CONNRST, 0
+                return CONNRESET, 0
             else:
                 raise
 
-class StreamWrapperDebug(StreamWrapper):
+class StreamWrapperDebug(SocketWrapper):
     ''' Debug stream wrapper '''
 
     def sorecv(self, maxlen):
         maxlen = 1
-        return StreamWrapper.sorecv(self, maxlen)
+        return SocketWrapper.sorecv(self, maxlen)
 
 def _stream_wrapper(sock):
     ''' Create the right stream wrapper '''
     if not os.environ.get('NEUBOT_STREAM_DEBUG'):
-        return StreamWrapper(sock)
+        return SocketWrapper(sock)
     logging.warning('stream: creating debug stream: performance will suck')
     return StreamWrapperDebug(sock)
 
@@ -291,7 +278,7 @@ class Stream(Pollable):
             POLLER.close(self)
             return
 
-        if status == CONNRST and not octets:
+        if status == CONNRESET and not octets:
             logging.debug('stream: RST ')
             self.conn_rst = True
             POLLER.close(self)
@@ -373,7 +360,7 @@ class Stream(Pollable):
             self.recv_blocked = True
             return
 
-        if status == CONNRST and count == 0:
+        if status == CONNRESET and count == 0:
             logging.debug('stream: RST')
             self.conn_rst = True
             POLLER.close(self)
