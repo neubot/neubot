@@ -151,6 +151,15 @@ def resolve(family, protocol, address, port, passive):
 
     return collections.deque(addrinfo)
 
+def resolve_list(family, protocol, addresses, port, passive):
+    result = collections.deque()
+    for address in addresses.split():
+        partial = resolve(family, protocol, address, port, passive)
+        if not partial:
+            continue
+        result.extend(partial)
+    return result
+
 def listen(epnt, prefer_ipv6):
     ''' Listen to all sockets represented by epnt '''
 
@@ -162,14 +171,7 @@ def listen(epnt, prefer_ipv6):
     if not epnt[0]:
         epnt = (None, epnt[1])
 
-    # Allow to listen on a list of addresses
-    if epnt[0] and ' ' in epnt[0]:
-        for address in epnt[0].split():
-            result = listen((address.strip(), epnt[1]), prefer_ipv6)
-            sockets.extend(result)
-        return sockets
-
-    addrinfo = resolve(prefer_ipv6, "SOCK_STREAM", epnt[0],
+    addrinfo = resolve_list(prefer_ipv6, "SOCK_STREAM", epnt[0],
       epnt[1], "AI_PASSIVE")
     if not addrinfo:
         return sockets
@@ -223,7 +225,7 @@ def connect(epnt, prefer_ipv6):
 
     logging.debug('connect(): about to connect to: %s', str(epnt))
 
-    addrinfo = resolve(prefer_ipv6, "SOCK_STREAM", epnt[0], epnt[1], "")
+    addrinfo = resolve_list(prefer_ipv6, "SOCK_STREAM", epnt[0], epnt[1], "")
     if not addrinfo:
         return None
 
