@@ -76,7 +76,7 @@ class Stream(Pollable):
         self.close_complete = False
         self.close_pending = False
         self.recv_blocked = False
-        self.recv_pending = False
+        self.recv_count = 0
         self.recv_ssl_needs_kickoff = False
         self.send_blocked = False
         self.send_octets = None
@@ -175,10 +175,10 @@ class Stream(Pollable):
 
     def start_recv(self):
         if (self.close_complete or self.close_pending
-          or self.recv_pending):
+          or self.recv_count > 0):
             return
 
-        self.recv_pending = True
+        self.recv_count = MAXBUF
 
         if self.recv_blocked:
             return
@@ -203,23 +203,21 @@ class Stream(Pollable):
             self.handle_read()
 
     def handle_read(self):
+
         if self.recv_blocked:
             self.poller.set_writable(self)
-            if not self.recv_pending:
+            if self.recv_count <= 0:
                 self.poller.unset_readable(self)
             self.recv_blocked = False
             self.handle_write()
             return
 
-        status, octets = self.sock.sorecv(MAXBUF)
+        status, octets = self.sock.sorecv(self.recv_count)
 
         if status == SUCCESS and octets:
-
-            self.bytes_recv_tot += len(octets)
-            self.recv_pending = False
+            self.recv_count = 0
             self.poller.unset_readable(self)
-
-            self.recv_complete(octets)
+            self.on_data(octets)
             return
 
         if status == WANT_READ:
@@ -231,17 +229,27 @@ class Stream(Pollable):
             self.send_blocked = True
             return
 
-        if status == CONNRESET and not octets:
-            self.rst = True
-            self.poller.close(self)
-            return
-
         if status == SUCCESS and not octets:
-            self.eof = True
+            self.on_eof()
             self.poller.close(self)
             return
 
-        raise RuntimeError("Unexpected status value")
+        if status == CONNRESET and not octets:
+            self.on_rst()
+            self.poller.close(self)
+            return
+
+        raise RuntimeError('stream: invalid status')
+
+    def on_data(self, octets):
+        self.bytes_recv_tot += len(octets)
+        self.recv_complete(octets)
+
+    def on_eof(self):
+        self.eof = True
+
+    def on_rst(self):
+        self.rst = True
 
     def recv_complete(self, octets):
         pass

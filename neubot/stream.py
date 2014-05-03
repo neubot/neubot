@@ -71,6 +71,7 @@ class Stream(Pollable):
                  sslcert, opaque):
         Pollable.__init__(self)
 
+        self.poller = POLLER
         self.filenum = sock.fileno()
         self.myname = utils_net.getsockname(sock)
         self.peername = utils_net.getpeername(sock)
@@ -94,7 +95,7 @@ class Stream(Pollable):
         self.conn_rst = False
         self.eof = False
         self.isclosed = False
-        self.recv_bytes = 0
+        self.recv_count = 0
         self.recv_blocked = False
         self.send_blocked = False
 
@@ -125,7 +126,7 @@ class Stream(Pollable):
     def _connection_made_error(self, exception):
         ''' Invoked when connection_made() callback fails '''
         logging.warning('stream: connection_made() failed: %s', str(exception))
-        POLLER.close(self)
+        self.poller.close(self)
 
     #
     # Close path: the close() function simply tells the poller to generate
@@ -139,7 +140,7 @@ class Stream(Pollable):
 
     def close(self):
         ''' Close the stream '''
-        POLLER.close(self)
+        self.poller.close(self)
 
     def handle_close(self):
 
@@ -170,80 +171,73 @@ class Stream(Pollable):
     # is complete.
     #
 
-    def recv(self, recv_bytes, recv_complete):
+    def recv(self, recv_count, recv_complete):
         ''' Async recv() '''
 
         if self.isclosed:
             raise RuntimeError('stream: recv() on a closed stream')
-        if self.recv_bytes > 0:
+        if self.recv_count > 0:
             raise RuntimeError('stream: already recv()ing')
-        if recv_bytes <= 0:
-            raise RuntimeError('stream: invalid recv_bytes')
+        if recv_count <= 0:
+            raise RuntimeError('stream: invalid recv_count')
 
-        self.recv_bytes = recv_bytes
+        self.recv_count = recv_count
         self.recv_complete = recv_complete
 
         if self.recv_blocked:
             logging.debug('stream: recv() is blocked')
             return
 
-        POLLER.set_readable(self)
+        self.poller.set_readable(self)
 
     def handle_read(self):
 
-        #
-        # Deal with the case where recv() is blocked by send(), that happens
-        # when we are using SSL and write() returned WANT_READ.  In the common
-        # case, this costs just one extra if in the fast path.
-        #
         if self.recv_blocked:
-            logging.debug('stream: handle_read() => handle_write()')
-            POLLER.set_writable(self)
-            if self.recv_bytes <= 0:
-                POLLER.unset_readable(self)
+            self.poller.set_writable(self)
+            if self.recv_count <= 0:
+                self.poller.unset_readable(self)
             self.recv_blocked = False
             self.handle_write()
             return
 
-        status, octets = self.sock.sorecv(self.recv_bytes)
-
-        #
-        # Optimisation: reorder if branches such that the ones more relevant
-        # for better performance come first.  Testing in early 2011 showed that
-        # this arrangement allows to gain a little more speed.  (And the code
-        # is still readable.)
-        #
+        status, octets = self.sock.sorecv(self.recv_count)
 
         if status == SUCCESS and octets:
-            self.bytes_in += len(octets)
-            self.recv_bytes = 0
-            POLLER.unset_readable(self)
-            self.recv_complete(self, octets)
+            self.recv_count = 0
+            self.poller.unset_readable(self)
+            self.on_data(octets)
             return
 
         if status == WANT_READ:
             return
 
         if status == WANT_WRITE:
-            logging.debug('stream: blocking send()')
-            POLLER.unset_readable(self)
-            POLLER.set_writable(self)
+            self.poller.unset_readable(self)
+            self.poller.set_writable(self)
             self.send_blocked = True
             return
 
         if status == SUCCESS and not octets:
-            logging.debug('stream: EOF')
-            self.eof = True
-            POLLER.close(self)
+            self.on_eof()
+            self.poller.close(self)
             return
 
         if status == CONNRESET and not octets:
-            logging.debug('stream: RST ')
-            self.conn_rst = True
-            POLLER.close(self)
+            self.on_rst()
+            self.poller.close(self)
             return
 
         raise RuntimeError('stream: invalid status')
+
+    def on_data(self, octets):
+        self.bytes_in += len(octets)
+        self.recv_complete(self, octets)
+
+    def on_eof(self):
+        self.eof = True
+
+    def on_rst(self):
+        self.conn_rst = True
 
     #
     # Send path: the protocol invokes start send to start an async send()
@@ -267,7 +261,7 @@ class Stream(Pollable):
             logging.debug('stream: send() is blocked')
             return
 
-        POLLER.set_writable(self)
+        self.poller.set_writable(self)
 
     def handle_write(self):
 
@@ -278,9 +272,9 @@ class Stream(Pollable):
         #
         if self.send_blocked:
             logging.debug('stream: handle_write() => handle_read()')
-            POLLER.set_readable(self)
+            self.poller.set_readable(self)
             if not self.send_octets:
-                POLLER.unset_writable(self)
+                self.poller.unset_writable(self)
             self.send_blocked = False
             self.handle_read()
             return
@@ -298,7 +292,7 @@ class Stream(Pollable):
             self.bytes_out += count
 
             if count == len(self.send_octets):
-                POLLER.unset_writable(self)
+                self.poller.unset_writable(self)
                 self.send_octets = EMPTY_STRING
                 self.send_complete(self)
                 return
@@ -314,15 +308,15 @@ class Stream(Pollable):
 
         if status == WANT_READ:
             logging.debug('stream: blocking recv()')
-            POLLER.unset_writable(self)
-            POLLER.set_readable(self)
+            self.poller.unset_writable(self)
+            self.poller.set_readable(self)
             self.recv_blocked = True
             return
 
         if status == CONNRESET and count == 0:
             logging.debug('stream: RST')
             self.conn_rst = True
-            POLLER.close(self)
+            self.poller.close(self)
             return
 
         if status == SUCCESS and count < 0:
