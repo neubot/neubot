@@ -161,7 +161,7 @@ class StreamConnector(Pollable):
         self.port = "0"
         self.sock = None
         self.rtt = 0.0
-        self.poller_api = 1
+        self.poller_api = 1  # XXX
 
     def __repr__(self):
         return "StreamConnector(%s, %s, %s)" % (self.family,
