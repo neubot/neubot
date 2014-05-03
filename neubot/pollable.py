@@ -34,6 +34,8 @@ import socket
 import ssl
 import sys
 
+from neubot.defer import Deferred
+
 from neubot import six
 from neubot import utils
 from neubot import utils_net
@@ -116,6 +118,9 @@ class SSLWrapper(object):
             else:
                 raise
 
+    def __getattr__(self, attr):
+        return getattr(self.sock, attr)
+
 class SocketWrapper(object):
     def __init__(self, sock):
         self.sock = sock
@@ -151,6 +156,9 @@ class SocketWrapper(object):
                 return CONNRESET, 0
             else:
                 raise
+
+    def __getattr__(self, attr):
+        return getattr(self.sock, attr)
 
 class StreamConnector(Pollable):
 
@@ -410,3 +418,69 @@ class AsyncStream(Pollable):
 
     def __del__(self):
         logging.debug('stream: __del__(): %s', self)
+
+class SSLHandshaker(Pollable):
+
+    def __init__(self):
+        Pollable.__init__(self)
+        self.deferred = None
+        self.certfile = ""
+        self.poller = None
+        self.server_side = False
+        self.sock = None
+        self.sslsock = None
+
+    @classmethod
+    def handshake(cls, poller, sock, server_side, certfile):
+        self = cls()
+        self.poller = poller
+        self.sock = sock
+        self.server_side = server_side
+        self.certfile = certfile
+        self.deferred = Deferred()
+        self.poller.sched(0.0, self.do_handshake, None)
+        return self.deferred
+
+    def fileno(self):
+        # With Python3 wrap_socket() closes self.sock
+        if self.sslsock:
+            return self.sslsock.fileno()
+        else:
+            return self.sock.fileno()
+
+    def handle_read(self):
+        self.poller.unset_readable(self)
+        self.do_handshake(None)
+
+    def handle_write(self):
+        self.poller.unset_writable(self)
+        self.do_handshake(None)
+
+    def do_handshake(self, argument):
+
+        if not self.sslsock:
+            try:
+                self.sslsock = ssl.wrap_socket(self.sock,
+                  certfile=self.certfile, server_side=self.server_side,
+                  do_handshake_on_connect=False)
+            except ssl.SSLError:
+                exception = sys.exc_info()[1]
+                self.deferred.errback(exception)
+                return
+
+        try:
+            self.sslsock.do_handshake()
+        except ssl.SSLError:
+            exception = sys.exc_info()[1]
+            if exception.args[0] == ssl.SSL_ERROR_WANT_READ:
+                self.poller.set_readable(self)
+            elif exception.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                self.poller.set_writable(self)
+            else:
+                self.deferred.errback(exception)
+            return
+
+        self.deferred.callback(self.sslsock)
+
+    def handle_close(self):
+        self.deferred.errback(None)

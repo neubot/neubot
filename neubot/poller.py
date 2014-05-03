@@ -173,6 +173,7 @@ class Poller(sched.scheduler):
                 break  # overriden semantic: break out of poller loop NOW
             except:
                 logging.error('poller: unhandled exception', exc_info=1)
+                time.sleep(1)
 
     def _poll(self, timeout):
         ''' Poll for readability and writability '''

@@ -158,6 +158,8 @@ def resolve(family, protocol, address, port, passive):
     return collections.deque(addrinfo)
 
 def resolve_list(family, protocol, addresses, port, passive):
+    if not addresses:
+        return resolve(family, protocol, addresses, port, passive)
     result = collections.deque()
     for address in addresses.split():
         partial = resolve(family, protocol, address, port, passive)
@@ -165,6 +167,22 @@ def resolve_list(family, protocol, addresses, port, passive):
             continue
         result.extend(partial)
     return result
+
+def listen_ainfo(ainfo):
+    epnt = format_ainfo(ainfo)
+    try:
+        logging.debug("listen_ainfo: listen %s", epnt)
+        sock = socket.socket(ainfo[0], ainfo[1])
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setblocking(False)
+        sock.bind(ainfo[4])
+        sock.listen(128)  # Too big?
+        logging.debug("listen_ainfo: listen OK")
+        return sock
+    except:
+        exception = sys.exc_info()[1]
+        logging.warning("listen_ainfo: listen FAIL: %s", exception)
+        return None
 
 def listen(epnt, prefer_ipv6):
     ''' Listen to all sockets represented by epnt '''
@@ -179,25 +197,10 @@ def listen(epnt, prefer_ipv6):
         return sockets
 
     for ainfo in addrinfo:
-        try:
-            logging.debug('listen(): trying with: %s', format_ainfo(ainfo))
-
-            sock = socket.socket(ainfo[0], socket.SOCK_STREAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.setblocking(False)
-            sock.bind(ainfo[4])
-            # Probably the backlog here is too big
-            sock.listen(128)
-
-            logging.debug('listen(): listening at: %s', format_epnt(ainfo[4]))
-            sockets.append(sock)
-
-        except socket.error:
-            logging.warning('listen(): cannot listen to %s',
-              format_epnt(ainfo[4]), exc_info=1)
-        except:
-            logging.warning('listen(): cannot listen to %s',
-              format_epnt(ainfo[4]), exc_info=1)
+        sock = listen_ainfo(ainfo)
+        if not sock:
+            continue
+        sockets.append(sock)
 
     if not sockets:
         logging.error('listen(): cannot listen to %s: %s',
