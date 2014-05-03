@@ -176,19 +176,29 @@ class Stream(Pollable):
 
         if self.isclosed:
             raise RuntimeError('stream: recv() on a closed stream')
+
+        if self.simple_recv(recv_count) < 0:
+            raise RuntimeError("stream: simple_recv failed")
+
+        self.recv_complete = recv_complete
+
+    def simple_recv(self, recv_count):
+
         if self.recv_count > 0:
-            raise RuntimeError('stream: already recv()ing')
+            logging.warning("stream: already receiving")
+            return -1
         if recv_count <= 0:
-            raise RuntimeError('stream: invalid recv_count')
+            logging.warning("stream: invalid recv_count")
+            return -1
 
         self.recv_count = recv_count
-        self.recv_complete = recv_complete
 
         if self.recv_blocked:
             logging.debug('stream: recv() is blocked')
-            return
+            return 0
 
         self.poller.set_readable(self)
+        return 1
 
     def handle_read(self):
 

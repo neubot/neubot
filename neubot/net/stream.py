@@ -174,16 +174,12 @@ class Stream(Pollable):
     # Recv path
 
     def start_recv(self):
-        if (self.close_complete or self.close_pending
-          or self.recv_count > 0):
+        if self.close_complete or self.close_pending:
             return
 
-        self.recv_count = MAXBUF
-
-        if self.recv_blocked:
+        result = self.simple_recv(MAXBUF)
+        if result <= 0:
             return
-
-        self.poller.set_readable(self)
 
         #
         # The client-side of an SSL connection must send the HELLO
@@ -201,6 +197,24 @@ class Stream(Pollable):
         if self.recv_ssl_needs_kickoff:
             self.recv_ssl_needs_kickoff = False
             self.handle_read()
+
+    def simple_recv(self, recv_count):
+
+        if self.recv_count > 0:
+            logging.warning("stream: already receiving")
+            return -1
+        if recv_count <= 0:
+            logging.warning("stream: invalid recv_count")
+            return -1
+
+        self.recv_count = recv_count
+
+        if self.recv_blocked:
+            logging.debug('stream: recv() is blocked')
+            return 0
+
+        self.poller.set_readable(self)
+        return 1
 
     def handle_read(self):
 
