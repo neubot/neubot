@@ -23,6 +23,7 @@
 
 #
 # Adapted from neubot/net/poller.py
+# Contains bits of neubot/net/stream.py and neubot/stream.py
 # pylint: disable = missing-docstring
 # Python3-ready: yes
 #
