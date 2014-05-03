@@ -150,12 +150,12 @@ class SocketWrapper(object):
             else:
                 raise
 
-class PollableConnector(Pollable):
+class StreamConnector(Pollable):
 
     def __init__(self):
         Pollable.__init__(self)
         self.address = "0.0.0.0"
-        self.ainfos = None
+        self.addrinfos = None
         self.family = "PF_UNSPEC"
         self.poller = None
         self.port = "0"
@@ -164,57 +164,92 @@ class PollableConnector(Pollable):
         self.poller_api = 1
 
     def __repr__(self):
-        return "Connector(%s, %s, %s)" % (self.family,
+        return "StreamConnector(%s, %s, %s)" % (self.family,
           self.address, self.port)
 
     @classmethod
     def connect(cls, poller, family, address, port):
+        logging.debug("StreamConnector: %s %s %s", family, address, port)
+
         self = cls()
         self.poller = poller
         self.family = family
         self.address = address
         self.port = port
-        self.ainfos = utils_net.resolve(family, "SOCK_STREAM",
-                                        address, port, "")
-        if not self.ainfos:
+
+        logging.debug("StreamConnector: resolve_list")
+        self.addrinfos = utils_net.resolve_list(family, "SOCK_STREAM",
+                                              address, port, "")
+        if not self.addrinfos:
+            logging.warning("StreamConnector: resolve FAIL")
             return None
+
+        logging.debug("StreamConnector: resolve_list OK")
+        logging.debug("StreamConnector: defer connect_next_")
         self.poller.sched(0.0, self.connect_next_, None)
         return self
 
     def connect_next_(self, argument):
-        if not self.ainfos:
+        logging.debug("StreamConnector: connect_next_")
+
+        if not self.addrinfos:
+            logging.debug("StreamConnector: no more addrinfos: FAIL")
             self.handle_connect(-1)
             return
-        ainfo = self.ainfos.popleft()
+
+        logging.debug("StreamConnector: connect_ainfo")
+        ainfo = self.addrinfos.popleft()
         sock = utils_net.connect_ainfo(ainfo)
         if not sock:
+            logging.warning("StreamConnector: connect_ainfo FAIL")
+            logging.debug("StreamConnector: defer connect_next_")
             self.poller.sched(0.0, self.connect_next_, None)
             return
+
+        logging.debug("StreamConnector: connect_ainfo INPROGRESS")
+        logging.debug("StreamConnector: wait for WRITABLE")
         self.set_timeout(10)
         self.sock = sock
         self.rtt = utils.ticks()
         self.poller.set_writable(self)
 
     def fileno(self):
+        logging.debug("StreamConnector: fileno requested")
         return self.sock.fileno()
 
     def handle_write(self):
+        logging.debug("StreamConnector: is WRITABLE")
+        logging.debug("StreamConnector: stop waiting for WRITABLE")
         self.poller.unset_writable(self)
+
+        logging.debug("StreamConnector: check_connected")
         if utils_net.check_connected(self.sock) != 0:
+            logging.debug("StreamConnector: check_connected FAIL")
+            logging.debug("StreamConnector: defer connect_next_")
             self.poller.sched(0.0, self.connect_next_, None)
             return
+
+        logging.debug("StreamConnector: check_connected OK")
         self.rtt = utils.ticks() - self.rtt
+        logging.debug("StreamConnector: RTT %f", self.rtt)
         self.handle_connect(0)
 
     def handle_error(self):
+
+        logging.debug("StreamConnector: error while waiting for WRITABLE")
+        logging.debug("StreamConnector: stop waiting for WRITABLE")
         self.poller.unset_writable(self)
+
+        logging.debug("StreamConnector: defer connect_next_")
         self.poller.sched(0.0, self.connect_next_, None)
 
     def handle_connect(self, error):
         pass
 
     def get_socket(self):
+        logging.debug("StreamConnector: socket requested")
         return self.sock
 
     def get_rtt(self):
+        logging.debug("StreamConnector: rtt requested")
         return self.rtt

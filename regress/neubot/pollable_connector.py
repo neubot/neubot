@@ -21,7 +21,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Regression test for neubot/pollable.py PollableConnector
+# Regression test for neubot/pollable.py StreamConnector
 
 import logging
 import sys
@@ -30,10 +30,11 @@ import time
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot.pollable import PollableConnector
+from neubot.pollable import StreamConnector
 from neubot.poller import POLLER
 
-class MyConnector(PollableConnector):
+class MyConnector(StreamConnector):
+
     def handle_connect(self, error):
         if error != 0:
             logging.warning("MyConnector: cannot connect")
