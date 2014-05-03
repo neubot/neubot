@@ -478,7 +478,7 @@ class StreamHandler(object):
                     connector, exception = self.bad.popleft()
                     self.connection_failed(connector, exception)
                 while self.good:
-                    sock = self.good.popleft()
+                    sock, endpoint, rtt = self.good.popleft()
                     sock.close()
             else:
                 while self.good:
