@@ -404,9 +404,6 @@ class AsyncStream(Pollable):
     def on_flush(self, count, complete):
         pass
 
-    def __repr__(self):
-        return "AsyncStream(fileno=%d)" % self.fileno()
-
     def fileno(self):
         return self.sock.fileno()
 

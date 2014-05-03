@@ -20,59 +20,26 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Pollable socket stream '''
-
+#
+# pylint: disable = missing-docstring
 # Python3-ready: yes
+#
 
 import logging
-import os
 
 from neubot.defer import Deferred
-from neubot.pollable import Pollable
+from neubot.pollable import AsyncStream
+from neubot.pollable import SocketWrapper
 from neubot.poller import POLLER
 
-from neubot.pollable import CONNRESET
-from neubot.pollable import SUCCESS
-from neubot.pollable import SocketWrapper
-from neubot.pollable import WANT_READ
-from neubot.pollable import WANT_WRITE
-
 from neubot import utils_net
-from neubot import six
 
-EMPTY_STRING = six.b('')
-
-class StreamWrapperDebug(SocketWrapper):
-    ''' Debug stream wrapper '''
-
-    def sorecv(self, maxlen):
-        maxlen = 1
-        return SocketWrapper.sorecv(self, maxlen)
-
-def _stream_wrapper(sock):
-    ''' Create the right stream wrapper '''
-    if not os.environ.get('NEUBOT_STREAM_DEBUG'):
-        return SocketWrapper(sock)
-    logging.warning('stream: creating debug stream: performance will suck')
-    return StreamWrapperDebug(sock)
-
-class Stream(Pollable):
-
-    ''' A pollable stream socket '''
-
-    #
-    # Init path: register connection_made() and connection_lost() callbacks,
-    # and eventually configure SSL.  Note that this class routes the calls
-    # to another class, so the protocol does not need to subclass this class,
-    # reducing explict code dependency.
-    #
+class Stream(AsyncStream):
 
     def __init__(self, sock, connection_made, connection_lost, sslconfig,
                  sslcert, opaque):
-        Pollable.__init__(self)
+        AsyncStream.__init__(self, POLLER, None)
 
-        self.poller = POLLER
-        self.filenum = sock.fileno()
         self.myname = utils_net.getsockname(sock)
         self.peername = utils_net.getpeername(sock)
         self.logname = '%s %s' % (utils_net.format_epnt(self.myname),
@@ -86,8 +53,6 @@ class Stream(Pollable):
         self.opaque = opaque
         self.recv_complete = None
         self.send_complete = None
-        self.send_octets = EMPTY_STRING
-        self.sock = None
 
         # Variables we don't need to clear
         self.bytes_in = 0
@@ -95,16 +60,13 @@ class Stream(Pollable):
         self.conn_rst = False
         self.eof = False
         self.isclosed = False
-        self.recv_count = 0
-        self.recv_blocked = False
-        self.send_blocked = False
 
         self.atclose.add_callback(connection_lost)
         self.atconnect.add_callback(connection_made)
         self.atconnect.add_errback(self._connection_made_error)
 
         if not sslconfig:
-            self.sock = _stream_wrapper(sock)
+            self.sock = SocketWrapper(sock)  # XXX
             self.atconnect.callback(self)
             return
 
@@ -124,23 +86,11 @@ class Stream(Pollable):
         sslstream.initialise(self, sock, sslcert)
 
     def _connection_made_error(self, exception):
-        ''' Invoked when connection_made() callback fails '''
         logging.warning('stream: connection_made() failed: %s', str(exception))
         self.poller.close(self)
 
-    #
-    # Close path: the close() function simply tells the poller to generate
-    # the handle_close() event, the handle_close() function is reentrant and
-    # invokes the registered callback functions.
-    #
-
     def register_cleanup(self, func):
-        ''' Register a cleanup function '''
         self.atclose.add_callback(func)
-
-    def close(self):
-        ''' Close the stream '''
-        self.poller.close(self)
 
     def handle_close(self):
 
@@ -158,86 +108,16 @@ class Stream(Pollable):
         self.opaque = None
         self.recv_complete = None
         self.send_complete = None
-        self.send_octets = None
-        self.sock = None
-
-    def __del__(self):
-        logging.debug('stream: __del__(): %s', self.logname)
-
-    #
-    # Receive path: the protocol invokes recv() to start an async recv()
-    # operation, the poller invokes handle_read() when the socket becomes
-    # readbable, handle_read() invokes recv_complete() when the recv()
-    # is complete.
-    #
 
     def recv(self, recv_count, recv_complete):
-        ''' Async recv() '''
 
         if self.isclosed:
             raise RuntimeError('stream: recv() on a closed stream')
 
-        if self.simple_recv(recv_count) < 0:
-            raise RuntimeError("stream: simple_recv failed")
+        if self.read(recv_count) < 0:
+            raise RuntimeError("stream: read failed")
 
         self.recv_complete = recv_complete
-
-    def simple_recv(self, recv_count):
-
-        if self.recv_count > 0:
-            logging.warning("stream: already receiving")
-            return -1
-        if recv_count <= 0:
-            logging.warning("stream: invalid recv_count")
-            return -1
-
-        self.recv_count = recv_count
-
-        if self.recv_blocked:
-            logging.debug('stream: recv() is blocked')
-            return 0
-
-        self.poller.set_readable(self)
-        return 1
-
-    def handle_read(self):
-
-        if self.recv_blocked:
-            self.poller.set_writable(self)
-            if self.recv_count <= 0:
-                self.poller.unset_readable(self)
-            self.recv_blocked = False
-            self.handle_write()
-            return
-
-        status, octets = self.sock.sorecv(self.recv_count)
-
-        if status == SUCCESS and octets:
-            self.recv_count = 0
-            self.poller.unset_readable(self)
-            self.on_data(octets)
-            return
-
-        if status == WANT_READ:
-            return
-
-        if status == WANT_WRITE:
-            self.poller.unset_readable(self)
-            self.poller.set_writable(self)
-            self.send_blocked = True
-            return
-
-        if status == SUCCESS and not octets:
-            self.on_eof()
-            self.poller.close(self)
-            return
-
-        if status == CONNRESET and not octets:
-            self.on_rst()
-            self.poller.close(self)
-            return
-
-        raise RuntimeError('stream: invalid status')
 
     def on_data(self, octets):
         self.bytes_in += len(octets)
@@ -249,100 +129,18 @@ class Stream(Pollable):
     def on_rst(self):
         self.conn_rst = True
 
-    #
-    # Send path: the protocol invokes start send to start an async send()
-    # operation, the poller invokes handle_write() when the underlying socket
-    # becomes writable, handle_write() invokes send_complete() when send()
-    # is complete.
-    #
-
     def send(self, send_octets, send_complete):
-        ''' Async send() '''
 
         if self.isclosed:
             raise RuntimeError('stream: send() on a closed stream')
 
-        if self.simple_send(send_octets) < 0:
-            raise RuntimeError("stream: simple_send failed")
+        if self.write(send_octets) < 0:
+            raise RuntimeError("stream: write failed")
 
         self.send_complete = send_complete
-
-    def send_pending(self):
-        return self.send_octets
-
-    def simple_send(self, send_octets):
-
-        if self.send_octets:
-            logging.warning("stream: already sending")
-            return -1
-
-        self.send_octets = send_octets
-
-        if self.send_blocked:
-            logging.debug('stream: send() is blocked')
-            return 0
-
-        self.poller.set_writable(self)
-        return len(send_octets)
-
-    def handle_write(self):
-
-        if self.send_blocked:
-            self.poller.set_readable(self)
-            if not self.send_octets:
-                self.poller.unset_writable(self)
-            self.send_blocked = False
-            self.handle_read()
-            return
-
-        status, count = self.sock.sosend(self.send_octets)
-
-        if status == SUCCESS and count > 0:
-
-            if count == len(self.send_octets):
-                self.poller.unset_writable(self)
-                self.send_octets = b""
-                self.on_flush(count, True)
-                return
-
-            if count < len(self.send_octets):
-                self.send_octets = six.buff(self.send_octets, count)
-                self.on_flush(count, False)
-                return
-
-            raise RuntimeError('stream: invalid count')
-
-        if status == WANT_WRITE:
-            return
-
-        if status == WANT_READ:
-            self.poller.unset_writable(self)
-            self.poller.set_readable(self)
-            self.recv_blocked = True
-            return
-
-        if status == CONNRESET and count == 0:
-            self.on_rst()
-            self.poller.close(self)
-            return
-
-        if status == SUCCESS and count < 0:
-            raise RuntimeError('stream: negative count')
-
-        raise RuntimeError('stream: invalid status')
 
     def on_flush(self, count, complete):
         self.bytes_out += count
         if not complete:
             return
         self.send_complete(self)
-
-    #
-    # Miscellaneous functions
-    #
-
-    def __repr__(self):
-        return self.logname
-
-    def fileno(self):
-        return self.filenum
