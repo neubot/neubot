@@ -261,17 +261,29 @@ class Stream(Pollable):
 
         if self.isclosed:
             raise RuntimeError('stream: send() on a closed stream')
+
+        if self.simple_send(send_octets) < 0:
+            raise RuntimeError("stream: simple_send failed")
+
+        self.send_complete = send_complete
+
+    def send_pending(self):
+        return self.send_octets
+
+    def simple_send(self, send_octets):
+
         if self.send_octets:
-            raise RuntimeError('stream: already send()ing')
+            logging.warning("stream: already sending")
+            return -1
 
         self.send_octets = send_octets
-        self.send_complete = send_complete
 
         if self.send_blocked:
             logging.debug('stream: send() is blocked')
-            return
+            return 0
 
         self.poller.set_writable(self)
+        return len(send_octets)
 
     def handle_write(self):
 

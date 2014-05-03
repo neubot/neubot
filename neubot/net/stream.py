@@ -299,17 +299,32 @@ class Stream(Pollable):
             return
 
         self.send_queue.append(octets)
-        if self.send_octets:
+        if self.send_pending():
             return
 
-        self.send_octets = self.read_send_queue()
-        if not self.send_octets:
+        chunk = self.read_send_queue()
+        if not chunk:
             return
+
+        self.simple_send(chunk)
+
+    def send_pending(self):
+        return self.send_octets
+
+    def simple_send(self, send_octets):
+
+        if self.send_octets:
+            logging.warning("stream: already sending")
+            return -1
+
+        self.send_octets = send_octets
 
         if self.send_blocked:
-            return
+            logging.debug('stream: send() is blocked')
+            return 0
 
         self.poller.set_writable(self)
+        return len(send_octets)
 
     def handle_write(self):
 
