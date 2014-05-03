@@ -135,7 +135,8 @@ def resolve(family, protocol, address, port, passive):
         addrinfo = socket.getaddrinfo(address, port, family,
           protocol, 0, passive)
     except socket.error:
-        logging.warning('resolve: cannot resolve', exc_info=1)
+        exception = sys.exc_info()[1]
+        logging.warning('resolve: cannot resolve: %s', exception)
         return None
 
     logging.debug("resolve: getaddrinfo() returned:")
@@ -207,7 +208,7 @@ def listen(epnt, prefer_ipv6):
 def connect_ainfo(ainfo):
     epnt = format_ainfo(ainfo)
     try:
-        logging.debug('connect_info: %s', epnt)
+        logging.debug('connect_ainfo: %s', epnt)
 
         sock = socket.socket(ainfo[0], ainfo[1], ainfo[2])
         sock.setblocking(False)
@@ -215,10 +216,11 @@ def connect_ainfo(ainfo):
         if result not in INPROGRESS:
             raise socket.error(result, os.strerror(result))
 
-        logging.debug("connect_info: in progress (fileno %d)", sock.fileno())
+        logging.debug("connect_ainfo: in progress (fileno %d)", sock.fileno())
         return sock
     except:
-        logging.warning('connect(): cannot connect', exc_info=1)
+        exception = sys.exc_info()[1]
+        logging.warning('connect_ainfo: cannot connect: %s', exception)
         return None
 
 def connect(epnt, prefer_ipv6):
