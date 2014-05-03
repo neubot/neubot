@@ -20,39 +20,39 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-''' Pollable socket connector '''
-
+#
+# pylint: disable = missing-docstring
 # Adapted from neubot/net/stream.py
 # Python3-ready: yes
+#
 
 import logging
 
 from neubot.defer import Deferred
-from neubot.pollable import Pollable
+from neubot.pollable import StreamConnector
 from neubot.poller import POLLER
 
-from neubot import utils_net
-from neubot import utils
+class ChildConnector(StreamConnector):
 
-class Connector(Pollable):
+    def __init__(self):
+        StreamConnector.__init__(self)
+        self.parent = None
 
-    ''' Pollable socket connector '''
+    def handle_connect(self, error):
+        self.parent.child_completed_(self, error)
+
+class Connector(object):
 
     def __init__(self, parent, endpoint, prefer_ipv6, sslconfig, extra):
-        Pollable.__init__(self)
 
         self.parent = parent
+        self.endpoint = endpoint
         self.prefer_ipv6 = prefer_ipv6
         self.sslconfig = sslconfig
         self.extra = extra
-        self.sock = None
-        self.timestamp = 0
-        self.set_timeout(10)
 
         self.aterror = Deferred()
         self.aterror.add_callback(self.parent.handle_connect_error)
-
-        self.endpoint = endpoint
 
         self._connect()
 
@@ -60,48 +60,35 @@ class Connector(Pollable):
         return str(self.endpoint)
 
     def register_errfunc(self, func):
-        ''' Register a cleanup function '''
         self.aterror.add_callback(func)
 
     def _connection_failed(self):
-        ''' Failed to connect first available epnt '''
-        if self.sock:
-            POLLER.unset_writable(self)
-            self.sock = None  # MUST be below unset_writable()
         self.aterror.callback_each_np(self)
 
     def _connect(self):
-        ''' Connect to the specified endpoint '''
-        sock = utils_net.connect(self.endpoint, self.prefer_ipv6)
-        if sock:
-            self.sock = sock
-            self.timestamp = utils.ticks()
-            POLLER.set_writable(self)
-        else:
+
+        # Note that connect() also accepts a boolean family
+        child = ChildConnector.connect(POLLER, self.prefer_ipv6,
+          self.endpoint[0], self.endpoint[1])
+        if not child:
             self._connection_failed()
+            return
 
-    def fileno(self):
-        return self.sock.fileno()
+        child.parent = self
 
-    def handle_write(self):
-        POLLER.unset_writable(self)
-        if not utils_net.isconnected(self.endpoint, self.sock):
+    def child_completed_(self, child, error):
+        if error:
             self._connection_failed()
             return
         deferred = Deferred()
         deferred.add_callback(self._handle_connect)
         deferred.add_errback(self._handle_connect_error)
-        deferred.callback(utils.ticks())
+        deferred.callback(child)
 
-    def _handle_connect(self, ticks):
-        ''' Internally handle connect '''
-        self.parent.handle_connect(self, self.sock, (ticks - self.timestamp),
+    def _handle_connect(self, child):
+        self.parent.handle_connect(self, child.get_socket(), child.get_rtt(),
           self.sslconfig, self.extra)
 
     def _handle_connect_error(self, error):
-        ''' Internally handle connect error '''
         logging.warning('connector: connect() error: %s', str(error))
-        self._connection_failed()
-
-    def handle_close(self):
         self._connection_failed()

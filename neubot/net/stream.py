@@ -43,6 +43,7 @@ from neubot.log import oops
 from neubot.net.poller import POLLER
 from neubot.net.poller import Pollable
 
+from neubot.connector import ChildConnector
 from neubot.pollable import CONNRESET
 from neubot.pollable import SSLWrapper
 from neubot.pollable import SUCCESS
@@ -50,7 +51,6 @@ from neubot.pollable import SocketWrapper
 from neubot.pollable import WANT_READ
 from neubot.pollable import WANT_WRITE
 
-from neubot import utils
 from neubot import utils_net
 
 from neubot.main import common
@@ -353,23 +353,17 @@ class Stream(Pollable):
     def send_complete(self):
         pass
 
-class Connector(Pollable):
+class Connector(object):
+
     def __init__(self, poller, parent):
-        Pollable.__init__(self)
         self.poller = poller
         self.parent = parent
-        self.sock = None
-        self.timestamp = 0
         self.endpoint = None
-        self.set_timeout(10)
 
     def __repr__(self):
         return "connector to %s" % str(self.endpoint)
 
     def _connection_failed(self):
-        if self.sock:
-            self.poller.unset_writable(self)
-            self.sock = None
         self.parent._connection_failed(self, None)
 
     def connect(self, endpoint, conf):
@@ -379,30 +373,24 @@ class Connector(Pollable):
         prefer_ipv6 = CONFIG["prefer_ipv6"]
         if conf and "prefer_ipv6" in conf:
             prefer_ipv6 = conf["prefer_ipv6"]
-        sock = utils_net.connect(endpoint, prefer_ipv6)
-        if not sock:
+
+        # Note that connect() also accepts a boolean family
+        child = ChildConnector.connect(self.poller, prefer_ipv6,
+          self.endpoint[0], self.endpoint[1])
+        if not child:
             self._connection_failed()
             return
 
-        self.sock = sock
-        self.timestamp = utils.ticks()
-        self.poller.set_writable(self)
+        child.parent = self
 
-    def fileno(self):
-        return self.sock.fileno()
+    def child_completed_(self, child, error):
 
-    def handle_write(self):
-        self.poller.unset_writable(self)
-
-        if not utils_net.isconnected(self.endpoint, self.sock):
+        if error:
             self._connection_failed()
             return
 
-        rtt = utils.ticks() - self.timestamp
-        self.parent._connection_made(self.sock, self.endpoint, rtt)
-
-    def handle_close(self):
-        self._connection_failed()
+        self.parent._connection_made(child.get_socket(),
+          self.endpoint, child.get_rtt())
 
 class Listener(Pollable):
     def __init__(self, poller, parent, sock, endpoint):
