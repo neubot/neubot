@@ -126,6 +126,10 @@ def resolve(family, protocol, address, port, passive):
     logging.debug("resolve: getaddrinfo '%s' '%s' %d %d 0 %d", address, port,
       family, protocol, passive)
 
+    # Be compatible with Python2.6
+    if passive and not address:
+        address = None
+
     try:
         addrinfo = socket.getaddrinfo(address, port, family,
           protocol, 0, passive)
@@ -166,10 +170,6 @@ def listen(epnt, prefer_ipv6):
     logging.debug('listen(): about to listen to: %s', str(epnt))
 
     sockets = []
-
-    # Allow to set any-address from command line
-    if not epnt[0]:
-        epnt = (None, epnt[1])
 
     addrinfo = resolve_list(prefer_ipv6, "SOCK_STREAM", epnt[0],
       epnt[1], "AI_PASSIVE")
