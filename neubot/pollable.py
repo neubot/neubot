@@ -169,7 +169,7 @@ class StreamConnector(Pollable):
 
     @classmethod
     def connect(cls, poller, family, address, port):
-        logging.debug("StreamConnector: %s %s %s", family, address, port)
+        logging.debug("StreamConnector: %s '%s' %s", family, address, port)
 
         self = cls()
         self.poller = poller

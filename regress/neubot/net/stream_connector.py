@@ -32,6 +32,8 @@ if __name__ == "__main__":
 from neubot.net.stream import StreamHandler
 from neubot.poller import POLLER
 
+from neubot import log
+
 class Parent(StreamHandler):
     def connection_made(self, sock, endpoint, rtt):
         logging.debug("handle_connect: %s, %s, %f", sock, endpoint, rtt)
@@ -41,8 +43,10 @@ class Parent(StreamHandler):
 
 def main():
     logging.basicConfig(level=logging.DEBUG, format="%(message)s")
+    log.set_verbose()
     parent = Parent(POLLER)
     parent.connect(("www.neubot.org www2.neubot.org", 81), 2)
+    parent.connect(("www.neubot.org www2.neubot.org", 80), 2)
     POLLER.loop()
 
 if __name__ == "__main__":
