@@ -25,7 +25,6 @@
 # Adapted from neubot/net/stream.py
 # Python3-ready: yes
 
-import collections
 import logging
 
 from neubot.defer import Deferred
@@ -42,7 +41,6 @@ class Connector(Pollable):
     def __init__(self, parent, endpoint, prefer_ipv6, sslconfig, extra):
         Pollable.__init__(self)
 
-        self.epnts = collections.deque()
         self.parent = parent
         self.prefer_ipv6 = prefer_ipv6
         self.sslconfig = sslconfig
@@ -54,15 +52,7 @@ class Connector(Pollable):
         self.aterror = Deferred()
         self.aterror.add_callback(self.parent.handle_connect_error)
 
-        # For logging purpose, save original endpoint
         self.endpoint = endpoint
-
-        if " " in endpoint[0]:
-            for address in endpoint[0].split():
-                tmp = (address.strip(), endpoint[1])
-                self.epnts.append(tmp)
-        else:
-            self.epnts.append(endpoint)
 
         self._connect()
 
@@ -78,14 +68,11 @@ class Connector(Pollable):
         if self.sock:
             POLLER.unset_writable(self)
             self.sock = None  # MUST be below unset_writable()
-        if not self.epnts:
-            self.aterror.callback_each_np(self)
-            return
-        self._connect()
+        self.aterror.callback_each_np(self)
 
     def _connect(self):
-        ''' Connect first available epnt '''
-        sock = utils_net.connect(self.epnts.popleft(), self.prefer_ipv6)
+        ''' Connect to the specified endpoint '''
+        sock = utils_net.connect(self.endpoint, self.prefer_ipv6)
         if sock:
             self.sock = sock
             self.timestamp = utils.ticks()

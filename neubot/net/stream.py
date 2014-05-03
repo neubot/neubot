@@ -361,7 +361,6 @@ class Connector(Pollable):
         self.sock = None
         self.timestamp = 0
         self.endpoint = None
-        self.epnts = collections.deque()
         self.set_timeout(10)
 
     def __repr__(self):
@@ -371,20 +370,9 @@ class Connector(Pollable):
         if self.sock:
             self.poller.unset_writable(self)
             self.sock = None
-        if not self.epnts:
-            self.parent._connection_failed(self, None)
-            return
-        self.connect(self.epnts.popleft(), None)
+        self.parent._connection_failed(self, None)
 
     def connect(self, endpoint, conf):
-
-        # Connect first address in a list
-        if ' ' in endpoint[0]:
-            logging.debug('* Connecting to %s', str(endpoint))
-            for address in endpoint[0].split():
-                epnt = (address.strip(), endpoint[1])
-                self.epnts.append(epnt)
-            endpoint = self.epnts.popleft()
 
         self.endpoint = endpoint
 
