@@ -265,13 +265,7 @@ class Stream(Pollable):
 
     def handle_write(self):
 
-        #
-        # Deal with the case where send() is blocked by recv(), that happens
-        # when we are using SSL and recv() returned WANT_WRITE.  In the common
-        # case, this costs just one extra if in the fast path.
-        #
         if self.send_blocked:
-            logging.debug('stream: handle_write() => handle_read()')
             self.poller.set_readable(self)
             if not self.send_octets:
                 self.poller.unset_writable(self)
@@ -281,24 +275,17 @@ class Stream(Pollable):
 
         status, count = self.sock.sosend(self.send_octets)
 
-        #
-        # Optimisation: reorder if branches such that the ones more relevant
-        # for better performance come first.  Testing in early 2011 showed that
-        # this arrangement allows to gain a little more speed.  (And the code
-        # is still readable.)
-        #
-
         if status == SUCCESS and count > 0:
-            self.bytes_out += count
 
             if count == len(self.send_octets):
                 self.poller.unset_writable(self)
-                self.send_octets = EMPTY_STRING
-                self.send_complete(self)
+                self.send_octets = b""
+                self.on_flush(count, True)
                 return
 
             if count < len(self.send_octets):
                 self.send_octets = six.buff(self.send_octets, count)
+                self.on_flush(count, False)
                 return
 
             raise RuntimeError('stream: invalid count')
@@ -307,15 +294,13 @@ class Stream(Pollable):
             return
 
         if status == WANT_READ:
-            logging.debug('stream: blocking recv()')
             self.poller.unset_writable(self)
             self.poller.set_readable(self)
             self.recv_blocked = True
             return
 
         if status == CONNRESET and count == 0:
-            logging.debug('stream: RST')
-            self.conn_rst = True
+            self.on_rst()
             self.poller.close(self)
             return
 
@@ -323,6 +308,12 @@ class Stream(Pollable):
             raise RuntimeError('stream: negative count')
 
         raise RuntimeError('stream: invalid status')
+
+    def on_flush(self, count, complete):
+        self.bytes_out += count
+        if not complete:
+            return
+        self.send_complete(self)
 
     #
     # Miscellaneous functions

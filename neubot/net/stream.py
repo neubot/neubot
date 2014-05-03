@@ -52,6 +52,7 @@ from neubot.pollable import WANT_READ
 from neubot.pollable import WANT_WRITE
 
 from neubot import utils_net
+from neubot import six
 
 from neubot.main import common
 
@@ -79,9 +80,8 @@ class Stream(Pollable):
         self.recv_count = 0
         self.recv_ssl_needs_kickoff = False
         self.send_blocked = False
-        self.send_octets = None
         self.send_queue = collections.deque()
-        self.send_pending = False
+        self.send_octets = b""
 
         self.bytes_recv_tot = 0
         self.bytes_sent_tot = 0
@@ -146,7 +146,7 @@ class Stream(Pollable):
 
     def close(self):
         self.close_pending = True
-        if self.send_pending or self.close_complete:
+        if self.send_octets or self.close_complete:
             return
         self.poller.close(self)
 
@@ -168,7 +168,7 @@ class Stream(Pollable):
             except:
                 logging.error("Error in atclosev", exc_info=1)
 
-        self.send_octets = None
+        self.send_octets = b""
         self.sock.close()
 
     # Recv path
@@ -285,14 +285,12 @@ class Stream(Pollable):
             return
 
         self.send_queue.append(octets)
-        if self.send_pending:
+        if self.send_octets:
             return
 
         self.send_octets = self.read_send_queue()
         if not self.send_octets:
             return
-
-        self.send_pending = True
 
         if self.send_blocked:
             return
@@ -300,9 +298,10 @@ class Stream(Pollable):
         self.poller.set_writable(self)
 
     def handle_write(self):
+
         if self.send_blocked:
             self.poller.set_readable(self)
-            if not self.send_pending:
+            if not self.send_octets:
                 self.poller.unset_writable(self)
             self.send_blocked = False
             self.handle_read()
@@ -311,25 +310,16 @@ class Stream(Pollable):
         status, count = self.sock.sosend(self.send_octets)
 
         if status == SUCCESS and count > 0:
-            self.bytes_sent_tot += count
 
             if count == len(self.send_octets):
-
-                self.send_octets = self.read_send_queue()
-                if self.send_octets:
-                    return
-
-                self.send_pending = False
                 self.poller.unset_writable(self)
-
-                self.send_complete()
-                if self.close_pending:
-                    self.poller.close(self)
+                self.send_octets = b""
+                self.on_flush(count, True)
                 return
 
             if count < len(self.send_octets):
-                self.send_octets = buffer(self.send_octets, count)
-                self.poller.set_writable(self)
+                self.send_octets = six.buff(self.send_octets, count)
+                self.on_flush(count, False)
                 return
 
             raise RuntimeError("Sent more than expected")
@@ -344,12 +334,7 @@ class Stream(Pollable):
             return
 
         if status == CONNRESET and count == 0:
-            self.rst = True
-            self.poller.close(self)
-            return
-
-        if status == SUCCESS and count == 0:
-            self.eof = True
+            self.on_rst()
             self.poller.close(self)
             return
 
@@ -357,6 +342,22 @@ class Stream(Pollable):
             raise RuntimeError("Unexpected count value")
 
         raise RuntimeError("Unexpected status value")
+
+    def on_flush(self, count, complete):
+        self.bytes_sent_tot += count
+        if not complete:
+            return
+
+        self.send_octets = self.read_send_queue()
+        if self.send_octets:
+            self.poller.set_writable(self)
+            return
+
+        self.send_complete()
+
+        if self.close_pending:
+            self.poller.close(self)
+            return
 
     def send_complete(self):
         pass
