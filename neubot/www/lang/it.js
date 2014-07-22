@@ -190,7 +190,7 @@ advertised download speeds, by country'</a> (in formato XLS).",
     'i18n_log_intro':
 'Questa pagina presenta i log di Neubot \
  in formato HTML. La <a href="/api/log%3Fdebug%3D1%26verbosity%3D2" onclick="window.open(unescape(this.href)); return false;" target="_blank">rappresentazione \
- testuale</a> dei log e\' disponibile, per quanto hai bisogno di\
+ testuale</a> dei log è disponibile, per quando hai bisogno di\
  <a href="http://www.neubot.org/mailing-lists">segnalare un\
  bug</a>.',
 
