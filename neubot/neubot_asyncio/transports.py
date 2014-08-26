@@ -12,7 +12,6 @@ from collections import deque
 import errno
 import socket
 
-from ._globals import _get_event_loop
 from ._utils import _getsockname
 from ._utils import _getpeername
 
@@ -61,10 +60,8 @@ _HI_WATERMARK = 1 << 17
 
 class _TransportTCP(_Transport):
 
-    def __init__(self, sock, proto, evloop=None):
+    def __init__(self, sock, proto, evloop):
         _Transport.__init__(self)
-        if not evloop:
-            evloop = _get_event_loop()
         self.evloop = evloop
         self.is_reading = False
         self.proto = proto

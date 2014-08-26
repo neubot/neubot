@@ -16,6 +16,7 @@ import time
 
 from ._futures import _FutureImpl
 from ._utils import _ticks
+from .transports import _TransportTCP
 
 # Winsock returns EWOULDBLOCK
 _CONNECT_IN_PROGRESS = (0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN)
@@ -172,7 +173,23 @@ class _EventLoop(object):
     #
 
     def create_connection(self, factory, hostname=None, port=None, **kwargs):
-        raise NotImplementedError
+        # This implementation is very limited
+        sock = kwargs.get("sock")
+        if not sock:
+            raise RuntimeError("The sock argument must be provided")
+        future = _FutureImpl(self)
+        try:
+            protocol = factory()
+            transport = _TransportTCP(sock, protocol, self)
+            self.call_soon(protocol.connection_made, transport)
+            future.set_result((transport, protocol))
+        except KeyboardInterrupt:
+            raise
+        except SystemExit:
+            raise
+        except Exception as error:
+            future.set_exception(error)
+        return future
 
     def create_datagram_endpoint(self, factory, local_addr=None,
                                  remote_addr=None, **kwargs):
