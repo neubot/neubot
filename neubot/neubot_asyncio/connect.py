@@ -18,7 +18,7 @@ try:
     from asyncio import get_event_loop
 
 except ImportError:
-    from .futures import Future
+    from .futures import _Future as Future
     from .tasks import _async as async
     from ._globals import _get_event_loop as get_event_loop
     from .transports import _TransportTCP
@@ -34,7 +34,7 @@ def connect_tcp_socket(hostname, port, family):
 
     logging.debug("connect: resolve '%s'", hostname)
     resolve_fut = loop.getaddrinfo(hostname, port, type=socket.SOCK_STREAM)
-    outer_fut = Future()
+    outer_fut = Future(loop=loop)
 
     def has_ainfo(fut):
         if fut.exception():
@@ -102,7 +102,7 @@ def connect_tcp_socket(hostname, port, family):
 def connect_tcp_transport(factory, hostname, port, family):
 
     loop = get_event_loop()
-    outer_fut = Future()
+    outer_fut = Future(loop=loop)
     connect_fut = connect_tcp_socket(hostname, port, family)
 
     def connection_made(future):

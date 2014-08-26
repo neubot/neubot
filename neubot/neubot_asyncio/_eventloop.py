@@ -14,7 +14,7 @@ import select
 import socket
 import time
 
-from ._futures import _FutureImpl
+from .futures import _Future
 from ._utils import _ticks
 from .transports import _TransportTCP
 
@@ -177,7 +177,7 @@ class _EventLoop(object):
         sock = kwargs.get("sock")
         if not sock:
             raise RuntimeError("The sock argument must be provided")
-        future = _FutureImpl(self)
+        future = _Future(loop=self)
         try:
             protocol = factory()
             transport = _TransportTCP(sock, protocol, self)
@@ -237,7 +237,7 @@ class _EventLoop(object):
         raise NotImplementedError
 
     def sock_connect(self, sock, address):
-        future = _FutureImpl(self)
+        future = _Future(loop=self)
 
         try:
             sock.connect(address)
@@ -265,7 +265,7 @@ class _EventLoop(object):
         return future
 
     def sock_accept(self, sock):
-        future = _FutureImpl(self)
+        future = _Future(loop=self)
 
         def maybe_accept():
             try:
@@ -286,7 +286,7 @@ class _EventLoop(object):
 
     def getaddrinfo(self, hostname, port, **kwargs):
 
-        future = _FutureImpl(self)
+        future = _Future(loop=self)
         try:
             ainfo = socket.getaddrinfo(hostname, port, kwargs.get("family", 0),
               kwargs.get("type", 0), kwargs.get("proto", 0),

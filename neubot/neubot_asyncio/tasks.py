@@ -7,10 +7,10 @@
 
 # pylint: disable = missing-docstring
 
-from ._futures import _FutureImpl
+from .futures import _Future
 
 def _async(coro_or_future, **kwargs):
     # This implementation is very `create_connection()` specific
-    if not isinstance(coro_or_future, _FutureImpl):
+    if not isinstance(coro_or_future, _Future):
         raise RuntimeError("Invalid argument")
     return coro_or_future
