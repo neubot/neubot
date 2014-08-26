@@ -178,4 +178,4 @@ class _TransportTCP(_Transport):
 try:
     from asyncio.transports import Transport
 except ImportError:
-    _Transport = Transport
+    Transport = _Transport
