@@ -12,16 +12,9 @@ from collections import deque
 import logging
 import socket
 
-try:
-    from asyncio import Future
-    from asyncio import async
-    from asyncio import get_event_loop
-
-except ImportError:
-    from .futures import _Future as Future
-    from .tasks import _async as async
-    from ._globals import _get_event_loop as get_event_loop
-    from .transports import _TransportTCP
+from neubot.neubot_asyncio import Future
+from neubot.neubot_asyncio import async
+from neubot.neubot_asyncio import get_event_loop
 
 def connect_tcp_socket(hostname, port, family):
 
