@@ -7,9 +7,9 @@
 
 # pylint: disable = missing-docstring
 
-from .futures import _CancelledError
-from .futures import _FutureImpl
-from .futures import _InvalidStateError
+from ._futures import _CancelledError
+from ._futures import _FutureImpl
+from ._futures import _InvalidStateError
 from ._globals import _get_event_loop
 
 #
