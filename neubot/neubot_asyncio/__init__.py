@@ -7,4 +7,14 @@
 
 # pylint: disable = missing-docstring
 
-from ._eventloop import _get_event_loop
+try:
+    from asyncio import Protocol
+    from asyncio import Transport
+    from asyncio import async
+    from asyncio import get_event_loop
+
+except ImportError:
+    from .protocols import _Protocol as Protocol
+    from .transports import _Transport as Transport
+    from .tasks import _async as async
+    from ._globals import _get_event_loop as get_event_loop
