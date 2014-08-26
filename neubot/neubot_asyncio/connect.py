@@ -14,14 +14,14 @@ import socket
 
 try:
     from asyncio import Future
+    from asyncio import async
     from asyncio import get_event_loop
-    _HAVE_NATIVE_ASYNCIO = True
 
 except ImportError:
     from .futures import Future
+    from .tasks import _async as async
     from ._globals import _get_event_loop as get_event_loop
     from .transports import _TransportTCP
-    _HAVE_NATIVE_ASYNCIO = False
 
 def connect_tcp_socket(hostname, port, family):
 
@@ -46,7 +46,7 @@ def connect_tcp_socket(hostname, port, family):
         ainfo_all = fut.result()
 
         for index, ainfo in enumerate(ainfo_all):
-            logging.debug("connect: ainfo_all[%d] = %s", (index, ainfo))
+            logging.debug("connect: ainfo_all[%d] = %s", index, ainfo)
 
         ainfo_v4 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET]
         ainfo_v6 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET6]
@@ -67,7 +67,7 @@ def connect_tcp_socket(hostname, port, family):
             return
 
         for index, ainfo in enumerate(ainfo_todo):
-            logging.debug("connect: ainfo_todo[%d] = %s", (index, ainfo))
+            logging.debug("connect: ainfo_todo[%d] = %s", index, ainfo)
 
         def connect_next():
             if not ainfo_todo:
@@ -99,56 +99,29 @@ def connect_tcp_socket(hostname, port, family):
     resolve_fut.add_done_callback(has_ainfo)
     return outer_fut
 
-if _HAVE_NATIVE_ASYNCIO:
+def connect_tcp_transport(factory, hostname, port, family):
 
-    def connect_tcp_transport(factory, hostname, port, family):
+    loop = get_event_loop()
+    outer_fut = Future()
+    connect_fut = connect_tcp_socket(hostname, port, family)
 
-        loop = get_event_loop()
-        outer_fut = Future()
-        connect_fut = connect_tcp_socket(hostname, port, family)
-
-        def connection_made(future):
-            if future.exception():
-                error = future.exception()
-                outer_fut.set_exception(error)
-                return
-
-            sock = future.result()
-
-            generator = loop.create_connection(factory, sock=sock)
-            generator_fut = async(generator)
-
-            def really_done(future):
-                if future.exception():
-                    outer_fut.set_exception(future.exception())
-                    return
-                outer_fut.set_result(future.result())
-
-            generator_fut.add_done_callback(really_done)
-
-        connect_fut.add_done_callback(connection_made)
-        return outer_fut
-
-else:
-    def connect_tcp_transport(factory, hostname, port, family):
-
-        loop = get_event_loop()
-        outer_fut = Future()
-        connect_fut = connect_tcp_socket(hostname, port, family)
-
-        def connection_made(future):
-            if future.exception():
-                error = future.exception()
-                outer_fut.set_exception(error)
-                return
-
-            sock = future.result()
-
-            protocol = factory()
-            transport = _TransportTCP(sock, protocol)
-            loop.call_soon(protocol.connection_made, transport)
-            outer_fut.set_result((transport, protocol))
+    def connection_made(future):
+        if future.exception():
+            error = future.exception()
+            outer_fut.set_exception(error)
             return
 
-        connect_fut.add_done_callback(connection_made)
-        return outer_fut
+        sock = future.result()
+
+        generator_fut = async(loop.create_connection(factory, sock=sock))
+
+        def really_done(future):
+            if future.exception():
+                outer_fut.set_exception(future.exception())
+                return
+            outer_fut.set_result(future.result())
+
+        generator_fut.add_done_callback(really_done)
+
+    connect_fut.add_done_callback(connection_made)
+    return outer_fut
