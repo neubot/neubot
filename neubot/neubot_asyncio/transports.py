@@ -167,12 +167,3 @@ class _TransportTCP(_Transport):
                 return
 
             self.proto.resume_writing()
-
-#
-# pylint: disable = import-error, invalid-name
-#
-
-try:
-    from asyncio.transports import Transport
-except ImportError:
-    Transport = _Transport
