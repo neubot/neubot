@@ -16,14 +16,15 @@ from neubot.neubot_asyncio import Future
 from neubot.neubot_asyncio import async
 from neubot.neubot_asyncio import get_event_loop
 
-def connect_tcp_socket(hostname, port, prefer_ipv6):
+def connect_tcp_socket(endpoint, prefer_ipv6):
 
-    logging.debug("connect: %s:%s [%s]", hostname, port, prefer_ipv6)
+    logging.debug("connect: %s [%s]", endpoint, prefer_ipv6)
 
     loop = get_event_loop()
 
-    logging.debug("connect: resolve '%s'", hostname)
-    resolve_fut = loop.getaddrinfo(hostname, port, type=socket.SOCK_STREAM)
+    logging.debug("connect: resolve '%s'", endpoint[0])
+    resolve_fut = loop.getaddrinfo(endpoint[0], endpoint[1],
+                                   type=socket.SOCK_STREAM)
     outer_fut = Future(loop=loop)
 
     def has_ainfo(fut):
@@ -82,11 +83,11 @@ def connect_tcp_socket(hostname, port, prefer_ipv6):
     resolve_fut.add_done_callback(has_ainfo)
     return outer_fut
 
-def connect_tcp_transport(factory, hostname, port, prefer_ipv6):
+def connect_tcp_transport(factory, endpoint, prefer_ipv6):
 
     loop = get_event_loop()
     outer_fut = Future(loop=loop)
-    connect_fut = connect_tcp_socket(hostname, port, prefer_ipv6)
+    connect_fut = connect_tcp_socket(endpoint, prefer_ipv6)
 
     def connection_made(future):
         if future.exception():
