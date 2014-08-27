@@ -16,12 +16,9 @@ from neubot.neubot_asyncio import Future
 from neubot.neubot_asyncio import async
 from neubot.neubot_asyncio import get_event_loop
 
-def connect_tcp_socket(hostname, port, family):
+def connect_tcp_socket(hostname, port, prefer_ipv6):
 
-    if family.startswith("PF_"):
-        family = family.replace("PF_", "AF_")
-
-    logging.debug("connect: %s:%s [%s]", hostname, port, family)
+    logging.debug("connect: %s:%s [%s]", hostname, port, prefer_ipv6)
 
     loop = get_event_loop()
 
@@ -45,19 +42,12 @@ def connect_tcp_socket(hostname, port, family):
         ainfo_v6 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET6]
         ainfo_todo = deque()
 
-        if family == "AF_INET":
-            ainfo_todo.extend(ainfo_v4)
-        elif family == "AF_INET6":
-            ainfo_todo.extend(ainfo_v6)
-        elif family == "AF_UNSPEC":
-            ainfo_todo.extend(ainfo_v4)
-            ainfo_todo.extend(ainfo_v6)
-        elif family == "AF_UNSPEC6":
+        if prefer_ipv6:
             ainfo_todo.extend(ainfo_v6)
             ainfo_todo.extend(ainfo_v4)
         else:
-            outer_fut.set_exception(RuntimeError("Invalid family"))
-            return
+            ainfo_todo.extend(ainfo_v4)
+            ainfo_todo.extend(ainfo_v6)
 
         for index, ainfo in enumerate(ainfo_todo):
             logging.debug("connect: ainfo_todo[%d] = %s", index, ainfo)
@@ -92,11 +82,11 @@ def connect_tcp_socket(hostname, port, family):
     resolve_fut.add_done_callback(has_ainfo)
     return outer_fut
 
-def connect_tcp_transport(factory, hostname, port, family):
+def connect_tcp_transport(factory, hostname, port, prefer_ipv6):
 
     loop = get_event_loop()
     outer_fut = Future(loop=loop)
-    connect_fut = connect_tcp_socket(hostname, port, family)
+    connect_fut = connect_tcp_socket(hostname, port, prefer_ipv6)
 
     def connection_made(future):
         if future.exception():
