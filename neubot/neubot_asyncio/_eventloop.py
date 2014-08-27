@@ -179,6 +179,7 @@ class _EventLoop(object):
             raise RuntimeError("The sock argument must be provided")
         future = _Future(loop=self)
         try:
+            sock.setblocking(False)  # To be sure...
             protocol = factory()
             transport = _TransportTCP(sock, protocol, self)
             self.call_soon(protocol.connection_made, transport)
