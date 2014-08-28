@@ -10,7 +10,9 @@
 from collections import deque
 
 import errno
+import logging
 import socket
+import ssl
 
 from ._utils import _getsockname
 from ._utils import _getpeername
@@ -50,20 +52,22 @@ class _Transport(object):
     def abort(self):
         raise NotImplementedError
 
-_SOFT_IO_ERRORS = (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR)
 _HI_WATERMARK = 1 << 17
+_MAXRECV = 1 << 17
+_SOFT_IO_ERRORS = (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR)
 
 #
 # In the following, we do not override methods on purpose
 # pylint: disable = abstract-method
 #
 
-class _TransportTCP(_Transport):
+class _TransportMixin(_Transport):
 
     def __init__(self, sock, proto, evloop):
         _Transport.__init__(self)
         self.evloop = evloop
         self.is_reading = False
+        self.is_writing = False
         self.proto = proto
         self.snd_buff = deque()
         self.snd_count = 0
@@ -85,39 +89,43 @@ class _TransportTCP(_Transport):
         self.evloop = None
         self.sock = None
 
-    def get_extra_info(self, name, default=None):
-        return {
-            "peername": _getpeername(self.sock),
-            "socket": self.sock,
-            "sockname": _getsockname(self.sock),
-        }.get(name, default)
-
     def pause_reading(self):
+        if not self.is_reading:
+            return
         self.evloop.remove_reader(self.sock.fileno())
         self.is_reading = False
 
     def resume_reading(self):
-        self.evloop.add_reader(self.sock.fileno(), self._do_read)
         if self.is_reading:
             return
+        self.evloop.add_reader(self.sock.fileno(), self._do_read)
         self.is_reading = True
 
     def _do_read(self):
+        pass
 
-        try:
-            data = self.sock.recv()
-        except socket.error as error:
-            if error.errno in _SOFT_IO_ERRORS:
-                return
-            self.evloop.call_soon(self._do_close, error)
-            return
+    def _handle_read_error(self, error):
+        logging.debug("transport: read error: %s", error)
+        self.evloop.call_soon(self._do_close, error)
 
+    def _handle_read(self, data):
         if not data:
             if not self.proto.eof_received():
                 self.evloop.call_soon(self._do_close)
-            return
+        else:
+            self.proto.data_received(data)
 
-        self.proto.data_received(data)
+    def _pause_writing(self):
+        if not self.is_writing:
+            return
+        self.evloop.remove_writer(self.sock.fileno())
+        self.is_writing = False
+
+    def _resume_writing(self):
+        if self.is_writing:
+            return
+        self.evloop.add_writer(self.sock.fileno(), self._do_write)
+        self.is_writing = True
 
     def write(self, data):
         if not data:
@@ -128,42 +136,126 @@ class _TransportTCP(_Transport):
         if self.snd_count > _HI_WATERMARK:
             self.proto.pause_writing()
 
-        if len(self.snd_buff) > 1:  # Not first time we insert in queue
-            return
-
-        self.evloop.add_writer(self.sock.fileno(), self._do_write)
+        self._resume_writing()
 
     def _do_write(self):
+        pass
 
-        try:
-            count = self.sock.send(self.snd_buff[0])
-        except socket.error as error:
-            if error.errno in _SOFT_IO_ERRORS:
-                return
-            # Hard I/O error
-            self.snd_buff.clear()
-            self.evloop.call_soon(self._do_close, error)
-            return
+    def _handle_write_error(self, error):
+        logging.debug("transport: write error: %s", error)
+        self.snd_buff.clear()  # Make full close possible
+        self.evloop.call_soon(self._do_close, error)
 
-        self.snd_count -= len(self.snd_buff[0])
-        self.snd_buff[0] = memoryview(self.snd_buff[0])[count:]
+    def _handle_write(self, count):
 
         if count != len(self.snd_buff[0]):  # Not fully consumed piece
             if count > len(self.snd_buff[0]):
-                self.snd_buff.clear()  # Make full close possible
-                self.evloop.call_soon(self._do_close,
-                  RuntimeError("Programmer error"))
+                self._handle_write_error(RuntimeError("Programmer error"))
                 return
+            self.snd_count -= count
+            self.snd_buff[0] = memoryview(self.snd_buff[0])[count:]
             return
 
+        self.snd_count -= len(self.snd_buff[0])
         self.snd_buff.popleft()
         if self.snd_buff:  # More pieces to send
             return
 
-        self.evloop.remove_writer(self.sock.fileno())
+        self._pause_writing()
 
         if not self.proto:  # Detached
             self.evloop.call_soon(self._do_close)
             return
 
         self.proto.resume_writing()
+
+class _TransportTCP(_TransportMixin):
+
+    def __init__(self, sock, proto, evloop):
+        _TransportMixin.__init__(self, sock, proto, evloop)
+
+    def get_extra_info(self, name, default=None):
+        return {
+            "peername": _getpeername(self.sock),
+            "socket": self.sock,
+            "sockname": _getsockname(self.sock),
+        }.get(name, default)
+
+    def _do_read(self):
+        try:
+            data = self.sock.recv(_MAXRECV)
+        except socket.error as error:
+            if error.errno in _SOFT_IO_ERRORS:
+                return
+            self._handle_read_error(error)
+        else:
+            self._handle_read(data)
+
+    def _do_write(self):
+        try:
+            count = self.sock.send(self.snd_buff[0])
+        except socket.error as error:
+            if error.errno in _SOFT_IO_ERRORS:
+                return
+            self._handle_write_error(error)
+        else:
+            self._handle_write(count)
+
+class _TransportSSL(_TransportMixin):
+
+    def __init__(self, sock, proto, evloop):
+        _TransportMixin.__init__(self, sock, proto, evloop)
+        self.divert_read = False
+        self.divert_write = False
+        self.was_reading = False
+        self.was_writing = False
+
+    def get_extra_info(self, name, default=None):  # XXX
+        return {
+            "compression": None,
+            "cipher": None,
+            "peercert": None,
+            "sslcontext": None,
+        }.get(name, default)
+
+    def _do_read(self):
+        if self.divert_read:
+            self.divert_read = False
+            if not self.was_reading:
+                self.pause_reading()
+            self._do_write()
+            return
+        try:
+            data = self.sock.read()
+        except socket.error as error:
+            if error.args[0] in ssl.SSL_ERROR_WANT_READ:
+                return
+            if error.args[0] in ssl.SSL_ERROR_WANT_WRITE:
+                self.divert_write = True
+                self.was_writing = self.is_writing
+                self._resume_writing()
+                return
+            self._handle_read_error(error)
+        else:
+            self._handle_read(data)
+
+    def _do_write(self):
+        if self.divert_write:
+            self.divert_write = False
+            if not self.was_writing:
+                self._pause_writing()
+            self._do_read()
+            return
+        try:
+            count = self.sock.write(self.snd_buff[0])
+        except socket.error as error:
+            if error.args[0] in ssl.SSL_ERROR_WANT_READ:
+                self.divert_read = True
+                self.was_reading = self.is_reading
+                self.resume_reading()
+                return
+            if error.args[0] in ssl.SSL_ERROR_WANT_WRITE:
+                return
+            self._handle_write_error(error)
+        else:
+            self._handle_write(count)
