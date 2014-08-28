@@ -97,27 +97,27 @@ class _TransportTCP(_Transport):
         self.is_reading = False
 
     def resume_reading(self):
-        self.evloop.add_reader(self.sock.fileno(), do_read)
+        self.evloop.add_reader(self.sock.fileno(), self._do_read)
         if self.is_reading:
             return
         self.is_reading = True
 
-        def do_read():
+    def _do_read(self):
 
-            try:
-                data = self.sock.recv()
-            except socket.error as error:
-                if error.errno in _SOFT_IO_ERRORS:
-                    return
-                self.evloop.call_soon(self._do_close, error)
+        try:
+            data = self.sock.recv()
+        except socket.error as error:
+            if error.errno in _SOFT_IO_ERRORS:
                 return
+            self.evloop.call_soon(self._do_close, error)
+            return
 
-            if not data:
-                if not self.proto.eof_received():
-                    self.evloop.call_soon(self._do_close)
-                return
+        if not data:
+            if not self.proto.eof_received():
+                self.evloop.call_soon(self._do_close)
+            return
 
-            self.proto.data_received(data)
+        self.proto.data_received(data)
 
     def write(self, data):
         if not data:
@@ -131,39 +131,39 @@ class _TransportTCP(_Transport):
         if len(self.snd_buff) > 1:  # Not first time we insert in queue
             return
 
-        self.evloop.add_writer(self.sock.fileno(), do_write)
+        self.evloop.add_writer(self.sock.fileno(), self._do_write)
 
-        def do_write():
+    def _do_write(self):
 
-            try:
-                count = self.sock.send(self.snd_buff[0])
-            except socket.error as error:
-                if error.errno in _SOFT_IO_ERRORS:
-                    return
-                # Hard I/O error
-                self.snd_buff.clear()
-                self.evloop.call_soon(self._do_close, error)
+        try:
+            count = self.sock.send(self.snd_buff[0])
+        except socket.error as error:
+            if error.errno in _SOFT_IO_ERRORS:
                 return
+            # Hard I/O error
+            self.snd_buff.clear()
+            self.evloop.call_soon(self._do_close, error)
+            return
 
-            self.snd_count -= len(self.snd_buff[0])
-            self.snd_buff[0] = memoryview(self.snd_buff[0])[count:]
+        self.snd_count -= len(self.snd_buff[0])
+        self.snd_buff[0] = memoryview(self.snd_buff[0])[count:]
 
-            if count != len(self.snd_buff[0]):  # Not fully consumed piece
-                if count > len(self.snd_buff[0]):
-                    self.snd_buff.clear()  # Make full close possible
-                    self.evloop.call_soon(self._do_close,
-                      RuntimeError("Programmer error"))
-                    return
+        if count != len(self.snd_buff[0]):  # Not fully consumed piece
+            if count > len(self.snd_buff[0]):
+                self.snd_buff.clear()  # Make full close possible
+                self.evloop.call_soon(self._do_close,
+                  RuntimeError("Programmer error"))
                 return
+            return
 
-            self.snd_buff.popleft()
-            if self.snd_buff:  # More pieces to send
-                return
+        self.snd_buff.popleft()
+        if self.snd_buff:  # More pieces to send
+            return
 
-            self.evloop.remove_writer(self.sock.fileno())
+        self.evloop.remove_writer(self.sock.fileno())
 
-            if not self.proto:  # Detached
-                self.evloop.call_soon(self._do_close)
-                return
+        if not self.proto:  # Detached
+            self.evloop.call_soon(self._do_close)
+            return
 
-            self.proto.resume_writing()
+        self.proto.resume_writing()
