@@ -90,30 +90,3 @@ class TCPConnector(object):
 
 def connect_tcp_socket(endpoint, prefer_ipv6):
     return TCPConnector(endpoint, prefer_ipv6).connect()
-
-def connect_tcp_transport(factory, endpoint, prefer_ipv6):
-
-    loop = get_event_loop()
-    outer_fut = Future(loop=loop)
-    connect_fut = connect_tcp_socket(endpoint, prefer_ipv6)
-
-    def connection_made(future):
-        if future.exception():
-            error = future.exception()
-            outer_fut.set_exception(error)
-            return
-
-        sock = future.result()
-
-        generator_fut = async(loop.create_connection(factory, sock=sock))
-
-        def really_done(future):
-            if future.exception():
-                outer_fut.set_exception(future.exception())
-                return
-            outer_fut.set_result(future.result())
-
-        generator_fut.add_done_callback(really_done)
-
-    connect_fut.add_done_callback(connection_made)
-    return outer_fut
