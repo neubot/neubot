@@ -17,6 +17,7 @@ import time
 from .futures import _Future
 from ._utils import _ticks
 from .transports import _TransportTCP
+from ._server import _Server
 
 # Winsock returns EWOULDBLOCK
 _CONNECT_IN_PROGRESS = (0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN)
@@ -172,6 +173,13 @@ class _EventLoop(object):
     # 18.5.1.5. Creating connections
     #
 
+    def _make_new_socket(self, sock, factory):
+        sock.setblocking(False)  # To be sure...
+        protocol = factory()
+        transport = _TransportTCP(sock, protocol, self)
+        self.call_soon(protocol.connection_made, transport)
+        return transport, protocol
+
     def create_connection(self, factory, hostname=None, port=None, **kwargs):
         # This implementation is very limited
         sock = kwargs.get("sock")
@@ -179,10 +187,7 @@ class _EventLoop(object):
             raise RuntimeError("The sock argument must be provided")
         future = _Future(loop=self)
         try:
-            sock.setblocking(False)  # To be sure...
-            protocol = factory()
-            transport = _TransportTCP(sock, protocol, self)
-            self.call_soon(protocol.connection_made, transport)
+            transport, protocol = self._make_new_socket(sock, factory)
             future.set_result((transport, protocol))
         except KeyboardInterrupt:
             raise
@@ -204,7 +209,23 @@ class _EventLoop(object):
     #
 
     def create_server(self, factory, host=None, port=None, **kwargs):
-        raise NotImplementedError
+        # This implementation is very limited
+
+        sock = kwargs.get("sock")
+        if sock:
+            raise RuntimeError("sock must be not set")
+
+        def have_new_socket(new_sock):
+            try:
+                self._make_new_socket(new_sock, factory)
+            except KeyboardInterrupt:
+                raise
+            except SystemExit:
+                raise
+            except:
+                logging.warning("evloop: unhandled exception", exc_info=1)
+
+        return _Server(host, port, self, have_new_socket).listen_()
 
     def create_unix_server(self, factory, path=None, **kwargs):
         raise NotImplementedError
