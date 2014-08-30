@@ -229,9 +229,9 @@ class _TransportSSL(_TransportMixin):
         try:
             data = self.sock.read()
         except socket.error as error:
-            if error.args[0] in ssl.SSL_ERROR_WANT_READ:
+            if error.args[0] == ssl.SSL_ERROR_WANT_READ:
                 return
-            if error.args[0] in ssl.SSL_ERROR_WANT_WRITE:
+            if error.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                 self.divert_write = True
                 self.was_writing = self.is_writing
                 self._resume_writing()
@@ -250,12 +250,12 @@ class _TransportSSL(_TransportMixin):
         try:
             count = self.sock.write(self.snd_buff[0])
         except socket.error as error:
-            if error.args[0] in ssl.SSL_ERROR_WANT_READ:
+            if error.args[0] == ssl.SSL_ERROR_WANT_READ:
                 self.divert_read = True
                 self.was_reading = self.is_reading
                 self.resume_reading()
                 return
-            if error.args[0] in ssl.SSL_ERROR_WANT_WRITE:
+            if error.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                 return
             self._handle_write_error(error)
         else:
