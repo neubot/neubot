@@ -16,7 +16,7 @@ import time
 
 from .futures import _Future
 from ._utils import _ticks
-from .transports import _TransportTCP
+from .transports import _TransportTCP, _TransportSSL, _ssl_handshake
 from ._server import _Server
 
 # Winsock returns EWOULDBLOCK
@@ -173,10 +173,10 @@ class _EventLoop(object):
     # 18.5.1.5. Creating connections
     #
 
-    def _make_new_socket(self, sock, factory):
+    def _make_new_socket(self, sock, factory, transport):
         sock.setblocking(False)  # To be sure...
         protocol = factory()
-        transport = _TransportTCP(sock, protocol, self)
+        transport = transport(sock, protocol, self)
         self.call_soon(protocol.connection_made, transport)
         return transport, protocol
 
@@ -185,10 +185,28 @@ class _EventLoop(object):
         sock = kwargs.get("sock")
         if not sock:
             raise RuntimeError("The sock argument must be provided")
+        ssl_context = kwargs.get("ssl")
+        if ssl_context and not kwargs.get("server_hostname"):
+            raise RuntimeError("server_hostname is missing")
+        # XXX we ignore server_hostname, we only check whether it's there
         future = _Future(loop=self)
         try:
-            transport, protocol = self._make_new_socket(sock, factory)
-            future.set_result((transport, protocol))
+            if ssl_context:
+                # XXX
+                fut = _ssl_handshake(self, sock, ssl_context, False, hostname)
+                def ssl_is_handshaked(fut2):
+                    if fut2.exception():
+                        future.set_exception(fut2.exception())
+                        return
+                    ssl_sock = fut2.result()
+                    transport, protocol = self._make_new_socket(ssl_sock,
+                                            factory, _TransportSSL)
+                    future.set_result((transport, protocol))
+                fut.add_done_callback(ssl_is_handshaked)
+            else:
+                transport, protocol = self._make_new_socket(sock, factory,
+                                                            _TransportTCP)
+                future.set_result((transport, protocol))
         except KeyboardInterrupt:
             raise
         except SystemExit:
@@ -214,10 +232,22 @@ class _EventLoop(object):
         sock = kwargs.get("sock")
         if sock:
             raise RuntimeError("sock must be not set")
+        ssl_context = kwargs.get("ssl")
 
         def have_new_socket(new_sock):
             try:
-                self._make_new_socket(new_sock, factory)
+                if ssl_context:
+                    # XXX
+                    fut = _ssl_handshake(self, new_sock, ssl_context,
+                                         True, None)
+                    def ssl_is_handshaked(fut2):
+                        if fut2.exception():
+                            return
+                        ssl_sock = fut2.result()
+                        self._make_new_socket(ssl_sock, factory, _TransportSSL)
+                    fut.add_done_callback(ssl_is_handshaked)
+                else:
+                    self._make_new_socket(new_sock, factory, _TransportTCP)
             except KeyboardInterrupt:
                 raise
             except SystemExit:

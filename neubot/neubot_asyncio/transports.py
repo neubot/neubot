@@ -16,6 +16,7 @@ import ssl
 
 from ._utils import _getsockname
 from ._utils import _getpeername
+from .futures import _Future
 
 class _Transport(object):
 
@@ -259,3 +260,39 @@ class _TransportSSL(_TransportMixin):
             self._handle_write_error(error)
         else:
             self._handle_write(count)
+
+def _ssl_handshake(evloop, sock, ssl_context, server_side, server_hostname):
+    # XXX This function raises, make sure the evloop knows that
+    ssl_sock = ssl_context.wrap_socket(sock, server_side=server_side,
+      do_handshake_on_connect=False, server_hostname=server_hostname)
+    future = _Future(loop=evloop)
+
+    def try_handshake():
+
+        def retry_read():
+            evloop.remove_reader(ssl_sock.fileno())
+            try_handshake()
+        def retry_write():
+            evloop.remove_writer(ssl_sock.fileno())
+            try_handshake()
+
+        try:
+            logging.debug("ssl handshaking fileno %d", ssl_sock.fileno())
+            ssl_sock.do_handshake()
+        except ssl.SSLError as error:
+            if error.args[0] == ssl.SSL_ERROR_WANT_READ:
+                logging.debug("ssl handshake wants read")
+                evloop.add_reader(ssl_sock.fileno(), retry_read)
+            elif error.args[0] == ssl.SSL_ERROR_WANT_WRITE:
+                logging.debug("ssl handshake wants write")
+                evloop.add_writer(ssl_sock.fileno(), retry_write)
+            else:
+                logging.debug("ssl handshake error: %s", error)
+                future.set_exception(error)
+        else:
+            logging.debug("ssl handshake complete")
+            future.set_result(ssl_sock)
+
+    logging.debug("ssl handhsake in progress for %d", ssl_sock.fileno())
+    evloop.call_soon(try_handshake)
+    return future
