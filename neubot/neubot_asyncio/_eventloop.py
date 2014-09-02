@@ -175,7 +175,7 @@ class _EventLoop(object):
     #
 
     def _create_transport(self, factory, ssl_context, sock,
-                          hostname, result=None):
+                          hostname, result=None, server_side=False):
         if not result:
             result = _Future(loop=self)
 
@@ -194,7 +194,7 @@ class _EventLoop(object):
             result.set_result(make_both(ssl_sock, factory, _TransportSSL))
 
         if ssl_context:
-            fut = _ssl_handshake(self, sock, ssl_context, False, hostname)
+            fut = _ssl_handshake(self, sock, ssl_context, server_side, hostname)
             fut.add_done_callback(on_ssl_handshake)
         else:
             result.set_result(make_both(sock, factory, _TransportTCP))
@@ -203,9 +203,11 @@ class _EventLoop(object):
     def create_connection(self, factory, hostname=None, port=None, **kwargs):
         # This implementation is very limited
 
+        ssl_context = kwargs.get("ssl")
+
         if hostname and port:
             future = _Future(loop=self)
-            connector = _TCPConnector(hostname, port)
+            connector = _TCPConnector(hostname, port, self)
 
             def on_connect(sock):
                 self._create_transport(factory, ssl_context, sock, hostname,
@@ -222,7 +224,6 @@ class _EventLoop(object):
             raise RuntimeError("The sock argument must be provided")
 
         # XXX we ignore server_hostname, we only check whether it's there
-        ssl_context = kwargs.get("ssl")
         if ssl_context and not kwargs.get("server_hostname"):
             raise RuntimeError("server_hostname is missing")
 
@@ -249,7 +250,8 @@ class _EventLoop(object):
 
         def have_new_socket(new_sock):
             # This calls protocols' connection_made() on success
-            self._create_transport(factory, ssl_context, new_sock, host)
+            self._create_transport(factory, ssl_context, new_sock, host,
+                                   server_side=True)
 
         return _Server(host, port, self, have_new_socket).listen_()
 

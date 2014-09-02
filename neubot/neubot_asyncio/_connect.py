@@ -14,8 +14,6 @@ from collections import deque
 import logging
 import socket
 
-from neubot.neubot_asyncio import get_event_loop
-
 class _TCPConnector(object):
 
     """ Connects to the given address and port.
@@ -30,14 +28,15 @@ class _TCPConnector(object):
         all the addrinfos have been exhausted. In such case, the "error"
         event is emitted with an exception as an argument. """
 
-    def __init__(self, address, port):
+    def __init__(self, address, port, evloop):
+        self._evloop = evloop
         self._handlers = {}
         self._is_cancelled = False
         self._ainfo_todo = None
 
-        logging.debug("connect: %s:%d", address, port)
-        loop = get_event_loop()
-        resolve_fut = loop.getaddrinfo(address, port, type=socket.SOCK_STREAM)
+        logging.debug("connect: %s:%s", address, port)
+        resolve_fut = self._evloop.getaddrinfo(address, port,
+                        type=socket.SOCK_STREAM)
         resolve_fut.add_done_callback(self._has_ainfo)
 
     def on(self, event, handler):
@@ -79,20 +78,19 @@ class _TCPConnector(object):
             self._emit("error", RuntimeError("All connect()s failed"))
             return
 
-        loop = get_event_loop()
         ainfo = self._ainfo_todo.popleft()
         logging.debug("connect: try connect: %s", ainfo)
 
         sock = socket.socket(ainfo[0], socket.SOCK_STREAM)
         sock.setblocking(False)
-        connect_fut = loop.sock_connect(sock, ainfo[4])
+        connect_fut = self._evloop.sock_connect(sock, ainfo[4])
 
         def maybe_connected(fut):
             if fut.exception():
                 error = fut.exception()
                 logging.warning("connect: connect error: %s", error)
                 logging.warning("connect: will try next available address")
-                loop.call_soon(self._connect_next)
+                self._evloop.call_soon(self._connect_next)
                 return
 
             logging.debug("connect: connect ok")
