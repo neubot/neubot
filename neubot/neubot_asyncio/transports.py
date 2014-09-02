@@ -262,10 +262,19 @@ class _TransportSSL(_TransportMixin):
             self._handle_write(count)
 
 def _ssl_handshake(evloop, sock, ssl_context, server_side, server_hostname):
-    # XXX This function raises, make sure the evloop knows that
-    ssl_sock = ssl_context.wrap_socket(sock, server_side=server_side,
-      do_handshake_on_connect=False, server_hostname=server_hostname)
+
     future = _Future(loop=evloop)
+
+    try:
+        ssl_sock = ssl_context.wrap_socket(sock, server_side=server_side,
+          do_handshake_on_connect=False, server_hostname=server_hostname)
+    except KeyboardInterrupt:
+        raise
+    except SystemExit:
+        raise
+    except Exception as exc:
+        future.set_exception(exc)
+        return future
 
     def try_handshake():
 

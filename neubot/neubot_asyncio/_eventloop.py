@@ -14,6 +14,7 @@ import select
 import socket
 import time
 
+from ._connect import _TCPConnector
 from .futures import _Future
 from ._utils import _ticks
 from .transports import _TransportTCP, _TransportSSL, _ssl_handshake
@@ -173,47 +174,59 @@ class _EventLoop(object):
     # 18.5.1.5. Creating connections
     #
 
-    def _make_new_socket(self, sock, factory, transport):
-        sock.setblocking(False)  # To be sure...
-        protocol = factory()
-        transport = transport(sock, protocol, self)
-        self.call_soon(protocol.connection_made, transport)
-        return transport, protocol
+    def _create_transport(self, factory, ssl_context, sock,
+                          hostname, result=None):
+        if not result:
+            result = _Future(loop=self)
+
+        def make_both(sock, factory, transport):
+            sock.setblocking(False)  # To be sure...
+            protocol = factory()
+            transport = transport(sock, protocol, self)
+            self.call_soon(protocol.connection_made, transport)
+            return transport, protocol
+
+        def on_ssl_handshake(future):
+            if future.exception():
+                result.set_exception(future.exception())
+                return
+            ssl_sock = future.result()
+            result.set_result(make_both(ssl_sock, factory, _TransportSSL))
+
+        if ssl_context:
+            fut = _ssl_handshake(self, sock, ssl_context, False, hostname)
+            fut.add_done_callback(on_ssl_handshake)
+        else:
+            result.set_result(make_both(sock, factory, _TransportTCP))
+        return result
 
     def create_connection(self, factory, hostname=None, port=None, **kwargs):
         # This implementation is very limited
+
+        if hostname and port:
+            future = _Future(loop=self)
+            connector = _TCPConnector(hostname, port)
+
+            def on_connect(sock):
+                self._create_transport(factory, ssl_context, sock, hostname,
+                                       result=future)
+            def on_connect_error(error):
+                future.set_exception(error)
+
+            connector.on("connect", on_connect)
+            connector.on("error", on_connect_error)
+            return future
+
         sock = kwargs.get("sock")
         if not sock:
             raise RuntimeError("The sock argument must be provided")
+
+        # XXX we ignore server_hostname, we only check whether it's there
         ssl_context = kwargs.get("ssl")
         if ssl_context and not kwargs.get("server_hostname"):
             raise RuntimeError("server_hostname is missing")
-        # XXX we ignore server_hostname, we only check whether it's there
-        future = _Future(loop=self)
-        try:
-            if ssl_context:
-                # XXX
-                fut = _ssl_handshake(self, sock, ssl_context, False, hostname)
-                def ssl_is_handshaked(fut2):
-                    if fut2.exception():
-                        future.set_exception(fut2.exception())
-                        return
-                    ssl_sock = fut2.result()
-                    transport, protocol = self._make_new_socket(ssl_sock,
-                                            factory, _TransportSSL)
-                    future.set_result((transport, protocol))
-                fut.add_done_callback(ssl_is_handshaked)
-            else:
-                transport, protocol = self._make_new_socket(sock, factory,
-                                                            _TransportTCP)
-                future.set_result((transport, protocol))
-        except KeyboardInterrupt:
-            raise
-        except SystemExit:
-            raise
-        except Exception as error:
-            future.set_exception(error)
-        return future
+
+        return self._create_transport(factory, ssl_context, sock, hostname)
 
     def create_datagram_endpoint(self, factory, local_addr=None,
                                  remote_addr=None, **kwargs):
@@ -235,25 +248,8 @@ class _EventLoop(object):
         ssl_context = kwargs.get("ssl")
 
         def have_new_socket(new_sock):
-            try:
-                if ssl_context:
-                    # XXX
-                    fut = _ssl_handshake(self, new_sock, ssl_context,
-                                         True, None)
-                    def ssl_is_handshaked(fut2):
-                        if fut2.exception():
-                            return
-                        ssl_sock = fut2.result()
-                        self._make_new_socket(ssl_sock, factory, _TransportSSL)
-                    fut.add_done_callback(ssl_is_handshaked)
-                else:
-                    self._make_new_socket(new_sock, factory, _TransportTCP)
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
-            except:
-                logging.warning("evloop: unhandled exception", exc_info=1)
+            # This calls protocols' connection_made() on success
+            self._create_transport(factory, ssl_context, new_sock, host)
 
         return _Server(host, port, self, have_new_socket).listen_()
 
