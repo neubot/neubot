@@ -13,6 +13,7 @@ try:
     from asyncio import Transport
     from asyncio import async
     from asyncio import get_event_loop
+    from asyncio import wait_for
 
 except ImportError:
     from .futures import _Future
@@ -20,6 +21,7 @@ except ImportError:
     from .transports import _Transport as Transport
     from .tasks import _async as async
     from ._globals import _get_event_loop as get_event_loop
+    from .tasks import _wait_for as wait_for
 
     class Future(_Future):
 

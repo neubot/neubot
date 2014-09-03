@@ -28,15 +28,26 @@ class _LeaveEventLoop(Exception):
 
 class _Handle(object):
 
-    def __init__(self, evloop, evt):
-        self.evloop = evloop
-        self.evt = evt
+    def __init__(self, evloop, function, args):
+        self._args = args
+        self._evloop = evloop
+        self._evt = None
+        self._function = function
 
     def cancel(self):
-        self.evloop.cancel_evt_(self.evt)
+        if self._evt:  # is pending?
+            self._evloop.cancel_evt_(self._evt)
+            self._evt = None
 
-    def get_evt_(self):
-        return self.evt
+    def get_event_(self):
+        return self._evt
+
+    def set_event_(self, evt):
+        self._evt = evt
+
+    def callback_(self):
+        self._evt = None  # mark as non pending
+        self._function(*self._args)
 
 class _KeepaliveEvent(object):
 
@@ -151,7 +162,10 @@ class _EventLoop(object):
     #
 
     def call_later(self, delay, function, *args):
-        return _Handle(self, self.scheduler.enter(delay, 0, function, args))
+        handle = _Handle(self, function, args)
+        handle.set_event_(self.scheduler.enter(delay, 0,
+                          handle.callback_, ()))
+        return handle
 
     def cancel_evt_(self, evt):
         self.scheduler.cancel(evt)
