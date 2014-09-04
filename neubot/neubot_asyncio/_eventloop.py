@@ -14,11 +14,10 @@ import select
 import socket
 import time
 
-from ._connect import _TCPConnector
 from .futures import _Future
 from ._utils import _ticks
-from .transports import _TransportTCP, _TransportSSL, _ssl_handshake
-from ._server import _Server
+from .transports import _TransportTCP, _TransportSSL, _ssl_handshake, \
+                        _TCPConnector, _Server
 
 # Winsock returns EWOULDBLOCK
 _CONNECT_IN_PROGRESS = (0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN)

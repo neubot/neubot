@@ -305,3 +305,186 @@ def _ssl_handshake(evloop, sock, ssl_context, server_side, server_hostname):
     logging.debug("ssl handhsake in progress for %d", ssl_sock.fileno())
     evloop.call_soon(try_handshake)
     return future
+
+class _TCPConnector(object):
+
+    """ Connects to the given address and port.
+
+        Address is always resolved to a sequence of addrinfo using the
+        getaddrinfo library call, as implemented by the event loop.
+
+        Then, the connector tries to connect() to the first addrinfo
+        returned. If successful, it emits the "connect" event that also
+        receives the connected socket as an argument. Otherwise, it
+        tries with the second addrinfo in the list, and so on, until
+        all the addrinfos have been exhausted. In such case, the "error"
+        event is emitted with an exception as an argument. """
+
+    def __init__(self, address, port, evloop):
+        self._evloop = evloop
+        self._handlers = {}
+        self._is_cancelled = False
+        self._ainfo_todo = None
+
+        logging.debug("connect: %s:%s", address, port)
+        resolve_fut = self._evloop.getaddrinfo(address, port,
+                        type=socket.SOCK_STREAM)
+        resolve_fut.add_done_callback(self._has_ainfo)
+
+    def on(self, event, handler):
+        self._handlers[event] = handler
+
+    def cancel(self):
+        self._is_cancelled = True
+
+    def _emit(self, event, *args):
+        handler = self._handlers.get(event)
+        if handler:
+            handler(*args)
+
+    def _has_ainfo(self, fut):
+        if self._is_cancelled:
+            self._emit("error", RuntimeError("Is cancelled"))
+            return
+
+        if fut.exception():
+            error = fut.exception()
+            logging.warning("connect: resolver error: %s", error)
+            self._emit("error", error)
+            return
+
+        self._ainfo_todo = deque(fut.result())
+
+        for index, ainfo in enumerate(self._ainfo_todo):
+            logging.debug("connect: ainfo[%d] = %s", index, ainfo)
+
+        self._connect_next()
+
+    def _connect_next(self):
+        if self._is_cancelled:
+            self._emit("error", RuntimeError("Is cancelled"))
+            return
+
+        if not self._ainfo_todo:
+            logging.warning("connect: no more available addrs")
+            self._emit("error", RuntimeError("All connect()s failed"))
+            return
+
+        ainfo = self._ainfo_todo.popleft()
+        logging.debug("connect: try connect: %s", ainfo)
+
+        sock = socket.socket(ainfo[0], socket.SOCK_STREAM)
+        sock.setblocking(False)
+        connect_fut = self._evloop.sock_connect(sock, ainfo[4])
+
+        def maybe_connected(fut):
+            if fut.exception():
+                error = fut.exception()
+                logging.warning("connect: connect error: %s", error)
+                logging.warning("connect: will try next available address")
+                self._evloop.call_soon(self._connect_next)
+                return
+
+            logging.debug("connect: connect ok")
+            self._emit("connect", sock)
+
+        connect_fut.add_done_callback(maybe_connected)
+
+class _Server(object):
+
+    def __init__(self, address, port, evloop, callback):
+        self._address = address
+        self._port = port
+        self._loop = evloop
+        self._callback = callback
+        self._ainfo_todo = deque()
+        self._server_fut = _Future(loop=evloop)
+        self.sockets = []
+
+    def listen_(self):
+        logging.debug("listen at %s:%s", self._address, self._port)
+        resolve_fut = self._loop.getaddrinfo(
+                                             self._address,
+                                             self._port,
+                                             type=socket.SOCK_STREAM,
+                                             flags=socket.AI_PASSIVE
+                                            )
+        resolve_fut.add_done_callback(self._has_ainfo)
+        return self._server_fut
+
+    def _has_ainfo(self, fut):
+
+        if fut.exception():
+            error = fut.exception()
+            logging.warning("listen: resolver error: %s", error)
+            self._server_fut.set_result(self)
+            return
+
+        ainfo_all = fut.result()
+
+        for index, ainfo in enumerate(ainfo_all):
+            logging.debug("listen: ainfo_all[%d] = %s", index, ainfo)
+
+        ainfo_v4 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET]
+        ainfo_v6 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET6]
+
+        # XXX
+        self._ainfo_todo.extend(ainfo_v6)
+        self._ainfo_todo.extend(ainfo_v4)
+
+        for index, ainfo in enumerate(self._ainfo_todo):
+            logging.debug("listen: ainfo_todo[%d] = %s", index, ainfo)
+
+        self._loop.call_soon(self._listen_next)
+
+    def _listen_next(self):
+
+        if not self._ainfo_todo:
+            logging.debug("listen: no more available addrs")
+            self._server_fut.set_result(self)
+            return
+
+        ainfo = self._ainfo_todo.popleft()
+        logging.debug("listen: try listen: %s", ainfo)
+
+        try:
+            sock = socket.socket(ainfo[0], socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.setblocking(False)
+            # Nice trick from asyncio: disable dual stack on Linux
+            if (ainfo[0] == socket.AF_INET6 and hasattr(socket, "IPV6_V6ONLY")
+                and hasattr(socket, "IPPROTO_IPV6")):
+                sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, True)
+            sock.bind(ainfo[4])
+            # Probably the backlog here is too big
+            sock.listen(128)
+
+        except socket.error as error:
+            # Mimic the behavior of asyncio and bind all or nothing
+            logging.debug("listen: error occurred for %s: %s", ainfo[4], error)
+            for sock in self.sockets:
+                sock.close()
+            self.sockets = []
+            self._server_fut.set_result(self)
+        else:
+            logging.debug("listen: OK for %s", ainfo[4])
+            self.sockets.append(sock)
+            self._loop.call_soon(self._do_accept, sock)
+            self._loop.call_soon(self._listen_next)
+
+    def _do_accept(self, sock):
+        future = self._loop.sock_accept(sock)
+        def has_connected_socket(future):
+            new_future = self._loop.sock_accept(sock)
+            new_future.add_done_callback(has_connected_socket)
+            if future.exception():  # Should not happen
+                return
+            new_sock, _ = future.result()
+            self._callback(new_sock)
+        future.add_done_callback(has_connected_socket)
+
+    def close(self):
+        raise NotImplementedError
+
+    def wait_closed(self):
+        raise NotImplementedError
