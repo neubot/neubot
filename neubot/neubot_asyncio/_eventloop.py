@@ -423,3 +423,8 @@ class _EventLoop(object):
 
     def set_debug(self, enabled):
         raise NotImplementedError
+
+_EVENT_LOOP = _EventLoop()
+
+def _get_event_loop():
+    return _EVENT_LOOP

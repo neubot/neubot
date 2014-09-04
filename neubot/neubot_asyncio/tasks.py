@@ -7,7 +7,7 @@
 
 # pylint: disable = missing-docstring
 
-from ._globals import _get_event_loop
+from ._eventloop import _get_event_loop
 from .futures import _Future
 
 def _wait_for(internal, timeout, **kwargs):
