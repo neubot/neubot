@@ -334,11 +334,12 @@ class _TCPConnector(object):
         getaddrinfo library call, as implemented by the event loop.
 
         Then, the connector tries to connect() to the first addrinfo
-        returned. If successful, it emits the "connect" event that also
-        receives the connected socket as an argument. Otherwise, it
+        returned. If successful, it calls the `done` callback passing
+        it a future whose `result` is the connected socket.  Otherwise,
         tries with the second addrinfo in the list, and so on, until
-        all the addrinfos have been exhausted. In such case, the "error"
-        event is emitted with an exception as an argument. """
+        all the addrinfos have been exhausted. In such case, it calls
+        the `done` callback passing it a future whose `exception` is
+        a RuntimeError exception. """
 
     def __init__(self, address, port, evloop):
         self._evloop = evloop
