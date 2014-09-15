@@ -435,17 +435,7 @@ class _Server(object):
             self._future.set_result(self)
             return
 
-        ainfo_all = fut.result()
-
-        for index, ainfo in enumerate(ainfo_all):
-            logging.debug("listen: ainfo_all[%d] = %s", index, ainfo)
-
-        ainfo_v4 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET]
-        ainfo_v6 = [elem for elem in ainfo_all if elem[0] == socket.AF_INET6]
-
-        # XXX
-        self._ainfo_todo.extend(ainfo_v6)
-        self._ainfo_todo.extend(ainfo_v4)
+        self._ainfo_todo.extend(fut.result())
 
         for index, ainfo in enumerate(self._ainfo_todo):
             logging.debug("listen: ainfo_todo[%d] = %s", index, ainfo)
