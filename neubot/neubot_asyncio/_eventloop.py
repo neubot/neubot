@@ -242,7 +242,7 @@ class _EventLoop(object):
                     future.cancel()
                     return
                 if fut.exception():
-                    future.set_exception(error)
+                    future.set_exception(fut.exception())
                     return
                 sock = fut.result()
                 self._create_transport(factory, ssl_context, sock, hostname,
