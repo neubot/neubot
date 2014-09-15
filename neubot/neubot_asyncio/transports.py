@@ -231,12 +231,33 @@ class _TransportSSL(_TransportMixin):
         self._was_reading = False
         self._was_writing = False
 
-    def get_extra_info(self, name, default=None):  # XXX
+    def get_extra_info(self, name, default=None):
+
+        try:
+            compression = self._sock.compression()
+        except AttributeError:
+            compression = None
+        try:
+            cipher = self._sock.cipher()
+        except AttributeError:
+            cipher = None
+        try:
+            peercert = self._sock.getpeercert()
+        except AttributeError:
+            peercert = None
+        try:
+            sslcontext = self._sock.context
+        except AttributeError:
+            sslcontext = None
+
         return {
-            "compression": None,
-            "cipher": None,
-            "peercert": None,
-            "sslcontext": None,
+            "compression": compression,
+            "cipher": cipher,
+            "peercert": peercert,
+            "peername": getpeername(self._sock),
+            "socket": self._sock,
+            "sockname": getsockname(self._sock),
+            "sslcontext": sslcontext,
         }.get(name, default)
 
     def _do_read(self):
