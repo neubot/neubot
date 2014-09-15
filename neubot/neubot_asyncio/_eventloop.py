@@ -85,42 +85,42 @@ class _KeepaliveEvent(object):
 class _EventLoop(object):
 
     def __init__(self):
-        self.keep_running = True
-        self.i_am_running = False
-        self.i_am_dead = False
-        self.readset = {}
-        self.scheduler = sched.scheduler(ticks, self._run_select)
-        self.writeset = {}
+        self._keep_running = True
+        self._i_am_running = False
+        self._i_am_dead = False
+        self._readset = {}
+        self._scheduler = sched.scheduler(ticks, self._run_select)
+        self._writeset = {}
 
     #
     # 18.5.1.1. Run an event loop
     #
 
     def run_forever(self):
-        if self.i_am_dead:
+        if self._i_am_dead:
             raise RuntimeError("eventloop: already closed")
         keepalive_evt = _KeepaliveEvent()
         keepalive_evt.register(self)
-        self.i_am_running = True
+        self._i_am_running = True
         try:
-            self.scheduler.run()
+            self._scheduler.run()
         except _LeaveEventLoop:
             pass
-        self.keep_running = True  # Make restart possible
-        self.i_am_running = False
+        self._keep_running = True  # Make restart possible
+        self._i_am_running = False
 
     def _run_select(self, timeout):
 
-        if not self.keep_running:
+        if not self._keep_running:
             raise _LeaveEventLoop()
 
-        if not self.readset and not self.writeset:
+        if not self._readset and not self._writeset:
             time.sleep(timeout)
             return
 
         try:
-            fdread, fdwrite, _ = select.select(list(self.readset),
-              list(self.writeset), [], timeout)
+            fdread, fdwrite, _ = select.select(list(self._readset),
+              list(self._writeset), [], timeout)
         except select.error as error:
             if error[0] == errno.EINTR:
                 return
@@ -143,23 +143,23 @@ class _EventLoop(object):
                 })
 
         for filenum in fdread:
-            dispatch_io("read", self.readset, filenum)
+            dispatch_io("read", self._readset, filenum)
         for filenum in fdwrite:
-            dispatch_io("write", self.writeset, filenum)
+            dispatch_io("write", self._writeset, filenum)
 
     def run_until_complete(self, future):
         future.add_done_callback(self.stop)
         self.run_forever()
 
     def is_running(self):
-        return self.i_am_running
+        return self._i_am_running
 
     def stop(self):
-        self.keep_running = False
+        self._keep_running = False
 
     def close(self):
-        self.keep_running = False
-        self.i_am_dead = True
+        self._keep_running = False
+        self._i_am_dead = True
 
     #
     # 18.5.1.2. Calls
@@ -177,12 +177,12 @@ class _EventLoop(object):
 
     def call_later(self, delay, function, *args):
         handle = _Handle(self, function, args)
-        handle.set_event_(self.scheduler.enter(delay, 0,
+        handle.set_event_(self._scheduler.enter(delay, 0,
                           handle.callback_, ()))
         return handle
 
     def cancel_evt_(self, evt):
-        self.scheduler.cancel(evt)
+        self._scheduler.cancel(evt)
 
     def call_at(self, when, function, *args):
         raise NotImplementedError
@@ -295,18 +295,18 @@ class _EventLoop(object):
     #
 
     def add_reader(self, filenum, callback, *args):
-        self.readset[filenum] = (self.time(), callback, args)
+        self._readset[filenum] = (self.time(), callback, args)
 
     def remove_reader(self, filenum):
-        if filenum in self.readset:
-            del self.readset[filenum]
+        if filenum in self._readset:
+            del self._readset[filenum]
 
     def add_writer(self, filenum, callback, *args):
-        self.writeset[filenum] = (self.time(), callback, args)
+        self._writeset[filenum] = (self.time(), callback, args)
 
     def remove_writer(self, filenum):
-        if filenum in self.writeset:
-            del self.writeset[filenum]
+        if filenum in self._writeset:
+            del self._writeset[filenum]
 
     #
     # 18.5.1.8. Low-level socket operations
