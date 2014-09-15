@@ -14,9 +14,29 @@ import logging
 import socket
 import ssl
 
-from ._utils import _getsockname
-from ._utils import _getpeername
 from .futures import _Future
+
+def _strip_ipv4mapped_prefix(function):
+    ''' Strip IPv4-mapped and IPv4-compatible prefix when the kernel does
+        not implement a hard separation between IPv4 and IPv6 '''
+
+    def do_strip(result):
+        result = list(result)
+        if result[0].startswith('::ffff:'):
+            result[0] = result[0][7:]
+        elif result[0].startswith('::') and result[0] != '::1':
+            result[0] = result[0][2:]
+        return tuple(result)
+
+    return do_strip(function())
+
+def getpeername(sock):
+    ''' getpeername() wrapper that strips IPv4-mapped prefix '''
+    return _strip_ipv4mapped_prefix(sock.getpeername)
+
+def getsockname(sock):
+    ''' getsockname() wrapper that strips IPv4-mapped prefix '''
+    return _strip_ipv4mapped_prefix(sock.getsockname)
 
 class _Transport(object):
 
@@ -177,9 +197,9 @@ class _TransportTCP(_TransportMixin):
 
     def get_extra_info(self, name, default=None):
         return {
-            "peername": _getpeername(self.sock),
+            "peername": getpeername(self.sock),
             "socket": self.sock,
-            "sockname": _getsockname(self.sock),
+            "sockname": getsockname(self.sock),
         }.get(name, default)
 
     def _do_read(self):

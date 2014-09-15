@@ -9,18 +9,33 @@
 
 import errno
 import logging
+import os
 import sched
 import select
 import socket
 import time
 
 from .futures import _Future
-from ._utils import _ticks
 from .transports import _TransportTCP, _TransportSSL, _ssl_handshake, \
                         _TCPConnector, _Server
 
 # Winsock returns EWOULDBLOCK
 _CONNECT_IN_PROGRESS = (0, errno.EINPROGRESS, errno.EWOULDBLOCK, errno.EAGAIN)
+
+if os.name == 'nt':
+    _TICKS_FUNC = time.clock
+elif os.name == 'posix':
+    _TICKS_FUNC = time.time
+else:
+    raise RuntimeError("Operating system not supported")
+
+def ticks():
+    ''' Returns a real representing the most precise clock available
+        on the current platform.  Note that, depending on the platform,
+        the returned value MIGHT NOT be a timestamp.  So, you MUST
+        use this clock to calculate the time elapsed between two events
+        ONLY, and you must not use it with timestamp semantics. '''
+    return _TICKS_FUNC()
 
 class _LeaveEventLoop(Exception):
     pass
@@ -74,7 +89,7 @@ class _EventLoop(object):
         self.i_am_running = False
         self.i_am_dead = False
         self.readset = {}
-        self.scheduler = sched.scheduler(_ticks, self._run_select)
+        self.scheduler = sched.scheduler(ticks, self._run_select)
         self.writeset = {}
 
     #
@@ -174,7 +189,7 @@ class _EventLoop(object):
 
     @staticmethod
     def time():
-        return _ticks()
+        return ticks()
 
     #
     # 18.5.1.4. Coroutines
