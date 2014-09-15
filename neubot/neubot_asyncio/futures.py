@@ -19,12 +19,12 @@ class _Future(object):
 
     def __init__(self, **kwargs):
         evloop = kwargs.get("loop")
-        self.callbacks = []
-        self.is_cancelled = False
-        self.raised_exception = None
-        self.evloop = evloop
-        self.result_obj = None
-        self.has_valid_result = False
+        self._callbacks = []
+        self._is_cancelled = False
+        self._raised_exception = None
+        self._evloop = evloop
+        self._result_obj = None
+        self._has_valid_result = False
 
     def _run_callback_safe(self, callback):
         try:
@@ -37,35 +37,35 @@ class _Future(object):
             logging.warning("future: callback error", exc_info=1)
 
     def _future_is_done(self):
-        for callback in self.callbacks:
+        for callback in self._callbacks:
             self._run_callback_safe(callback)
 
     def cancel(self):
         if self.done():
             return True
-        self.is_cancelled = True
-        self.evloop.call_soon(self._future_is_done)
+        self._is_cancelled = True
+        self._evloop.call_soon(self._future_is_done)
         return False
 
     def cancelled(self):
-        return self.is_cancelled
+        return self._is_cancelled
 
     def done(self):
-        return (self.is_cancelled or self.has_valid_result
-                or self.raised_exception)
+        return (self._is_cancelled or self._has_valid_result
+                or self._raised_exception)
 
     #
-    # Pylint is confused by raised_exception initially being None.
+    # Pylint is confused by _raised_exception initially being None.
     # pylint: disable = raising-bad-type
     #
 
     def result(self):
-        if self.is_cancelled:
+        if self._is_cancelled:
             raise _CancelledError()
-        if self.has_valid_result:
-            return self.result_obj
-        if self.raised_exception:
-            raise self.raised_exception
+        if self._has_valid_result:
+            return self._result_obj
+        if self._raised_exception:
+            raise self._raised_exception
         raise _InvalidStateError()
 
     #
@@ -74,35 +74,35 @@ class _Future(object):
     #
 
     def exception(self):
-        if self.is_cancelled:
+        if self._is_cancelled:
             raise _CancelledError()
-        if self.raised_exception:
-            return self.raised_exception
-        if self.has_valid_result:
+        if self._raised_exception:
+            return self._raised_exception
+        if self._has_valid_result:
             return None
         raise _InvalidStateError()
 
     def add_done_callback(self, callback):
         if self.done():
-            self.evloop.call_soon(self._run_callback_safe, callback)
+            self._evloop.call_soon(self._run_callback_safe, callback)
             return
-        self.callbacks.append(callback)
+        self._callbacks.append(callback)
 
     def remove_done_callback(self, callback):
-        count = self.callbacks.count(callback)
+        count = self._callbacks.count(callback)
         for _ in range(count):
-            self.callbacks.remove(callback)
+            self._callbacks.remove(callback)
         return count
 
     def set_result(self, result):
         if self.done():
             raise _InvalidStateError()
-        self.result_obj = result
-        self.has_valid_result = True
-        self.evloop.call_soon(self._future_is_done)
+        self._result_obj = result
+        self._has_valid_result = True
+        self._evloop.call_soon(self._future_is_done)
 
     def set_exception(self, exception):
         if self.done():
             raise _InvalidStateError()
-        self.raised_exception = exception
-        self.evloop.call_soon(self._future_is_done)
+        self._raised_exception = exception
+        self._evloop.call_soon(self._future_is_done)
