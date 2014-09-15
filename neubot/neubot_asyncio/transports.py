@@ -403,6 +403,13 @@ class _TCPConnector(object):
 
         connect_fut.add_done_callback(maybe_connected)
 
+#
+# The following class contains two nonimplemented methods,
+# make sure that pylint does not complain about that.
+#
+# pylint: disable = abstract-class-not-used
+#
+
 class _Server(object):
 
     def __init__(self, address, port, evloop, callback):
