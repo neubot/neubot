@@ -237,14 +237,18 @@ class _EventLoop(object):
             future = _Future(loop=self)
             connector = _TCPConnector(hostname, port, self)
 
-            def on_connect(sock):
+            def on_connect(fut):
+                if fut.cancelled():
+                    future.cancel()
+                    return
+                if fut.exception():
+                    future.set_exception(error)
+                    return
+                sock = fut.result()
                 self._create_transport(factory, ssl_context, sock, hostname,
                                        result=future)
-            def on_connect_error(error):
-                future.set_exception(error)
 
-            connector.on("connect", on_connect)
-            connector.on("error", on_connect_error)
+            connector.add_done_callback(on_connect)
             return future
 
         sock = kwargs.get("sock")

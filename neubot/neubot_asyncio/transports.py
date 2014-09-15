@@ -342,8 +342,7 @@ class _TCPConnector(object):
 
     def __init__(self, address, port, evloop):
         self._evloop = evloop
-        self._handlers = {}
-        self._is_cancelled = False
+        self._future = _Future(loop=evloop)
         self._ainfo_todo = None
 
         logging.debug("connect: %s:%s", address, port)
@@ -351,26 +350,20 @@ class _TCPConnector(object):
                         type=socket.SOCK_STREAM)
         resolve_fut.add_done_callback(self._has_ainfo)
 
-    def on(self, event, handler):
-        self._handlers[event] = handler
+    def add_done_callback(self, func):
+        self._future.add_done_callback(func)
 
     def cancel(self):
-        self._is_cancelled = True
-
-    def _emit(self, event, *args):
-        handler = self._handlers.get(event)
-        if handler:
-            handler(*args)
+        self._future.cancel()
 
     def _has_ainfo(self, fut):
-        if self._is_cancelled:
-            self._emit("error", RuntimeError("Is cancelled"))
+        if self._future.cancelled():
             return
 
         if fut.exception():
             error = fut.exception()
             logging.warning("connect: resolver error: %s", error)
-            self._emit("error", error)
+            self._future.set_exception(error)
             return
 
         self._ainfo_todo = deque(fut.result())
@@ -381,13 +374,12 @@ class _TCPConnector(object):
         self._connect_next()
 
     def _connect_next(self):
-        if self._is_cancelled:
-            self._emit("error", RuntimeError("Is cancelled"))
+        if self._future.cancelled():
             return
 
         if not self._ainfo_todo:
             logging.warning("connect: no more available addrs")
-            self._emit("error", RuntimeError("All connect()s failed"))
+            self._future.set_exception(RuntimeError("All connect()s failed"))
             return
 
         ainfo = self._ainfo_todo.popleft()
@@ -406,7 +398,7 @@ class _TCPConnector(object):
                 return
 
             logging.debug("connect: connect ok")
-            self._emit("connect", sock)
+            self._future.set_result(sock)
 
         connect_fut.add_done_callback(maybe_connected)
 
