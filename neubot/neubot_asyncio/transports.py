@@ -406,14 +406,13 @@ class _Server(object):
 
     def __init__(self, address, port, evloop, callback):
         self._address = address
-        self._port = port
-        self._loop = evloop
-        self._callback = callback
         self._ainfo_todo = deque()
-        self._server_fut = _Future(loop=evloop)
+        self._callback = callback
+        self._future = _Future(loop=evloop)
+        self._loop = evloop
+        self._port = port
         self.sockets = []
 
-    def listen_(self):
         logging.debug("listen at %s:%s", self._address, self._port)
         resolve_fut = self._loop.getaddrinfo(
                                              self._address,
@@ -422,14 +421,18 @@ class _Server(object):
                                              flags=socket.AI_PASSIVE
                                             )
         resolve_fut.add_done_callback(self._has_ainfo)
-        return self._server_fut
+
+    def get_future_(self):
+        return self._future
 
     def _has_ainfo(self, fut):
+        if self._future.cancelled():
+            return
 
         if fut.exception():
             error = fut.exception()
             logging.warning("listen: resolver error: %s", error)
-            self._server_fut.set_result(self)
+            self._future.set_result(self)
             return
 
         ainfo_all = fut.result()
@@ -450,10 +453,12 @@ class _Server(object):
         self._loop.call_soon(self._listen_next)
 
     def _listen_next(self):
+        if self._future.cancelled():
+            return
 
         if not self._ainfo_todo:
             logging.debug("listen: no more available addrs")
-            self._server_fut.set_result(self)
+            self._future.set_result(self)
             return
 
         ainfo = self._ainfo_todo.popleft()
@@ -477,7 +482,7 @@ class _Server(object):
             for sock in self.sockets:
                 sock.close()
             self.sockets = []
-            self._server_fut.set_result(self)
+            self._future.set_result(self)
         else:
             logging.debug("listen: OK for %s", ainfo[4])
             self.sockets.append(sock)

@@ -285,7 +285,7 @@ class _EventLoop(object):
             self._create_transport(factory, ssl_context, new_sock, host,
                                    server_side=True)
 
-        return _Server(host, port, self, have_new_socket).listen_()
+        return _Server(host, port, self, have_new_socket).get_future_()
 
     def create_unix_server(self, factory, path=None, **kwargs):
         raise NotImplementedError
