@@ -25,7 +25,7 @@
 
 # Adapted from neubot/raw_srvr_glue.py
 
-from mod_dash.server_smpl import DASHServerSmpl
+from .server_smpl import DASHServerSmpl
 
 class DASHServerGlue(DASHServerSmpl):
     """ Glue for DASH on the server side """
@@ -37,11 +37,12 @@ class DASHServerGlue(DASHServerSmpl):
     def got_request_headers(self, stream, request):
         """ Filter incoming HTTP requests """
 
-        auth = request["Authorization"]
-        if not auth:
-            return False
+        if self.negotiator:
+            auth = request["Authorization"]
+            if not auth:
+                return False
 
-        if auth not in self.negotiator.peers:
-            return False
+            if auth not in self.negotiator.peers:
+                return False
 
         return DASHServerSmpl.got_request_headers(self, stream, request)

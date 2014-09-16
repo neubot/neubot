@@ -29,17 +29,17 @@ import base64
 import logging
 import hashlib
 
-from neubot.negotiate.server import NegotiateServerModule
-from neubot.backend import BACKEND
+from neubot.negotiate.module import NegotiateServerModule
 
 from neubot import utils
 
 class DASHNegotiateServer(NegotiateServerModule):
     """ Negotiator for MPEG DASH test """
 
-    def __init__(self):
+    def __init__(self, backend):
         NegotiateServerModule.__init__(self)
         self.peers = {}
+        self._backend = backend
 
     @staticmethod
     def _stream_to_sha256(stream):
@@ -84,12 +84,12 @@ class DASHNegotiateServer(NegotiateServerModule):
 
         server_timestamp = utils.timestamp()
 
-        BACKEND.store_generic("dash", {
-                                       "srvr_schema_version": 3,
-                                       "srvr_timestamp": server_timestamp,
-                                       "client": request_body,
-                                       "server": result,
-                                      })
+        self._backend.store_generic("dash", {
+                                             "srvr_schema_version": 3,
+                                             "srvr_timestamp": server_timestamp,
+                                             "client": request_body,
+                                             "server": result,
+                                            })
 
         #
         # Return back, at a minimum, the server timestamp.

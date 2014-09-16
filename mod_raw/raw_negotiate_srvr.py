@@ -31,16 +31,16 @@
 import logging
 import hashlib
 
-from neubot.negotiate.server import NegotiateServerModule
-from neubot.backend import BACKEND
+from neubot.negotiate.module import NegotiateServerModule
 
 class NegotiateServerRaw(NegotiateServerModule):
 
     ''' Negotiator for RAW test '''
 
-    def __init__(self):
+    def __init__(self, backend):
         NegotiateServerModule.__init__(self)
         self.peers = {}
+        self._backend = backend
 
     @staticmethod
     def _stream_to_sha512(stream):
@@ -74,7 +74,7 @@ class NegotiateServerRaw(NegotiateServerModule):
             logging.debug('negotiate_server_raw: del sha512 OK: %s',
               sha512.encode('hex'))
             complete_result = {'client': request_body, 'server': result}
-            BACKEND.store_raw(complete_result)
+            self._backend.store_raw(complete_result)
             return result
 
     def _update_peers(self, stream, ignored):
@@ -85,5 +85,3 @@ class NegotiateServerRaw(NegotiateServerModule):
             logging.warning('negotiate_server_raw: del sha512 unexpected: %s',
               sha512.encode('hex'))
             del self.peers[sha512]
-
-NEGOTIATE_SERVER_RAW = NegotiateServerRaw()

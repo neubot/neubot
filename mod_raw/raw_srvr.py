@@ -27,27 +27,14 @@
 
 # Python3-ready: yes
 
-import getopt
 import logging
 import os
 import struct
 import sys
 
-if __name__ == '__main__':
-    sys.path.insert(0, '.')
-
 from neubot.brigade import Brigade
 from neubot.defer import Deferred
 from neubot.handler import Handler
-from neubot.poller import POLLER
-from neubot.raw_defs import AUTH_LEN
-from neubot.raw_defs import EMPTY_MESSAGE
-from neubot.raw_defs import FAKEAUTH
-from neubot.raw_defs import RAWTEST
-from neubot.raw_defs import RAWTEST_CODE
-from neubot.raw_defs import PIECE_CODE
-from neubot.raw_defs import PING_CODE
-from neubot.raw_defs import PINGBACK
 from neubot.stream import Stream
 
 from neubot import six
@@ -55,6 +42,15 @@ from neubot import utils
 from neubot import utils_net
 from neubot import utils_version
 from neubot import web100
+
+from .raw_defs import AUTH_LEN
+from .raw_defs import EMPTY_MESSAGE
+from .raw_defs import FAKEAUTH
+from .raw_defs import RAWTEST
+from .raw_defs import RAWTEST_CODE
+from .raw_defs import PIECE_CODE
+from .raw_defs import PING_CODE
+from .raw_defs import PINGBACK
 
 LEN_MESSAGE = 32768
 MAXRECV = 262144
@@ -79,6 +75,9 @@ class ServerContext(Brigade):
 class RawServer(Handler):
 
     ''' Raw test server '''
+
+    def __init__(self, poller):
+        self._poller = poller
 
     def handle_accept(self, listener, sock, sslconfig, sslcert):
         logging.info('raw_srvr: new connection at %s', listener)
@@ -152,7 +151,7 @@ class RawServer(Handler):
         context.message = struct.pack('!I', len(message)) + message
         stream.send(context.message, self._piece_sent)
         #logging.debug('> PIECE')
-        POLLER.sched(1, self._periodic, stream)
+        self._poller.sched(1, self._periodic, stream)
         stream.recv(1, self._waiting_eof)
 
     @staticmethod
@@ -197,7 +196,7 @@ class RawServer(Handler):
             deferred.add_callback(self._periodic_internal)
             deferred.add_errback(lambda err: self._periodic_error(stream, err))
             deferred.callback(stream)
-            POLLER.sched(1, self._periodic, stream)
+            self._poller.sched(1, self._periodic, stream)
 
     @staticmethod
     def _periodic_error(stream, err):
@@ -240,44 +239,3 @@ class RawServer(Handler):
 
     def _connection_lost(self, stream):
         ''' Invoked when the connection is lost '''
-
-def main(args):
-    ''' Main function '''
-
-    try:
-        options, arguments = getopt.getopt(args[1:], '6A:p:Sv')
-    except getopt.error:
-        sys.exit('usage: neubot mod_raw [-6Sv] [-A address] [-p port]')
-    if arguments:
-        sys.exit('usage: neubot mod_raw [-6Sv] [-A address] [-p port]')
-
-    prefer_ipv6 = 0
-    address = '127.0.0.1'
-    port = 12345
-    sslconfig = False
-    sslcert = ''
-    verbose = 0
-    for name, value in options:
-        if name == '-6':
-            prefer_ipv6 = 1
-        elif name == '-A':
-            address = value
-        elif name == '-p':
-            port = int(value)
-        elif name == '-S':
-            sslconfig = True
-            sslcert = 'cert.pem'
-        elif name == '-v':
-            verbose += 1
-
-    level = logging.INFO
-    if verbose > 0:
-        level = logging.DEBUG
-    logging.getLogger().setLevel(level)
-
-    handler = RawServer()
-    handler.listen((address, port), prefer_ipv6, sslconfig, sslcert)
-    POLLER.loop()
-
-if __name__ == '__main__':
-    main(sys.argv)

@@ -28,28 +28,22 @@
 # Python3-ready: yes
 
 import logging
-import getopt
 import os
 import socket
 import struct
-import sys
-
-if __name__ == '__main__':
-    sys.path.insert(0, '.')
 
 from neubot.brigade import Brigade
 from neubot.defer import Deferred
 from neubot.handler import Handler
-from neubot.poller import POLLER
-from neubot.raw_defs import FAKEAUTH
-from neubot.raw_defs import PING
-from neubot.raw_defs import PINGBACK
-from neubot.raw_defs import PINGBACK_CODE
-from neubot.raw_defs import RAWTEST
-from neubot.state import STATE
 from neubot.stream import Stream
 
 from neubot import utils
+
+from .raw_defs import FAKEAUTH
+from .raw_defs import PING
+from .raw_defs import PINGBACK
+from .raw_defs import PINGBACK_CODE
+from .raw_defs import RAWTEST
 
 AUTH_LEN = 64
 LEN_MESSAGE = 32768
@@ -76,13 +70,17 @@ class RawClient(Handler):
 
     ''' Raw test client '''
 
+    def __init__(self, poller, state):
+        self._poller = poller
+        self._state = state
+
     def handle_connect(self, connector, sock, rtt, sslconfig, state):
         logging.info('raw_clnt: connection established with %s', connector)
         logging.info('raw_clnt: connect_time: %s', utils.time_formatter(rtt))
         state['connect_time'] = rtt
         Stream(sock, self._connection_ready, self._connection_lost,
           sslconfig, '', ClientContext(state))
-        STATE.update('test', 'raw')
+        self._state.update('test', 'raw')
         state['mss'] = sock.getsockopt(socket.IPPROTO_TCP, socket.TCP_MAXSEG)
         state['rcvr_data'] = []
 
@@ -152,8 +150,8 @@ class RawClient(Handler):
         context.state['alrtt_avg'] = alrtt_avg
         latency = utils.time_formatter(alrtt_avg)
         logging.info('raw_clnt: alrtt_avg: %s', latency)
-        STATE.update("test_progress", "50%", publish=False)
-        STATE.update('test_latency', latency)
+        self._state.update("test_progress", "50%", publish=False)
+        self._state.update('test_latency', latency)
         logging.info('raw_clnt: estimating ALRTT... complete')
         logging.info('raw_clnt: raw goodput test... in progress')
         logging.debug('> RAWTEST')
@@ -186,7 +184,7 @@ class RawClient(Handler):
                     context.ticks = context.snap_ticks = utils.ticks()
                     context.count = context.snap_count = stream.bytes_in
                     context.snap_utime, context.snap_stime = os.times()[:2]
-                    POLLER.sched(1, self._periodic, stream)
+                    self._poller.sched(1, self._periodic, stream)
                 if context.left == 0:
                     logging.debug('< {empty-message}')
                     logging.info('raw_clnt: raw goodput test... complete')
@@ -201,9 +199,9 @@ class RawClient(Handler):
                     if timediff > 1e-06:
                         speed = utils.speed_formatter(bytesdiff / timediff)
                         logging.info('raw_clnt: goodput: %s', speed)
-                        STATE.update("test_progress", "100%", publish=False)
-                        STATE.update('test_download', speed, publish=0)
-                        STATE.update('test_upload', 'N/A')
+                        self._state.update("test_progress", "100%", publish=0)
+                        self._state.update('test_download', speed, publish=0)
+                        self._state.update('test_upload', 'N/A')
                     self._periodic_internal(stream)
                     context.state['complete'] = 1
                     stream.close()
@@ -220,7 +218,7 @@ class RawClient(Handler):
             deferred.add_callback(self._periodic_internal)
             deferred.add_errback(lambda err: self._periodic_error(stream, err))
             deferred.callback(stream)
-            POLLER.sched(1, self._periodic, stream)
+            self._poller.sched(1, self._periodic, stream)
 
     @staticmethod
     def _periodic_error(stream, err):
@@ -283,42 +281,3 @@ class RawClient(Handler):
             on_failure = context.state.get('on_failure')
             if on_failure:
                 on_failure('connection unexpectedly closed')
-
-def main(args):
-    ''' Main function '''
-
-    try:
-        options, arguments = getopt.getopt(args[1:], '6A:p:Sv')
-    except getopt.error:
-        sys.exit('usage: neubot raw_clnt [-6Sv] [-A address] [-p port]')
-    if arguments:
-        sys.exit('usage: neubot raw_clnt [-6Sv] [-A address] [-p port]')
-
-    prefer_ipv6 = 0
-    address = '127.0.0.1'
-    port = 12345
-    sslconfig = False
-    verbose = 0
-    for name, value in options:
-        if name == '-6':
-            prefer_ipv6 = 1
-        elif name == '-A':
-            address = value
-        elif name == '-p':
-            port = int(value)
-        elif name == '-S':
-            sslconfig = True
-        elif name == '-v':
-            verbose += 1
-
-    level = logging.INFO
-    if verbose > 0:
-        level = logging.DEBUG
-    logging.getLogger().setLevel(level)
-
-    handler = RawClient()
-    handler.connect((address, port), prefer_ipv6, sslconfig, {})
-    POLLER.loop()
-
-if __name__ == '__main__':
-    main(sys.argv)

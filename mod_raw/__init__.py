@@ -21,59 +21,58 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-""" The MPEG DASH test """
+""" The RAW TCP test """
 
-from .client_negotiate import DASHNegotiateClient
-from .client_negotiate import DASH_RATES
-from .client_smpl import DASHClientSmpl
-from .server_glue import DASHServerGlue
-from .server_negotiate import DASHNegotiateServer
+from .raw_clnt import RawClient
+from .raw_negotiate import RawNegotiate
+from .raw_negotiate_srvr import NegotiateServerRaw
+from .raw_srvr import RawServer
+from .raw_srvr_glue import RawServerEx
 
 def _run_test_provider_client(params, context):
-    """ Run DASH TestProvider client """
-    client = DASHClientSmpl(context["POLLER"], None, DASH_RATES,
-        context["STATE"])
-    client.configure(context["SETTINGS"])
-    client.connect((params["address"], params["port"]))
+    """ Run RAW TestProvider client """
+    handler = RawClient(context["POLLER"], context["STATE"])
+    handler.connect((params["address"], params["port"]),
+      context["SETTINGS"]["prefer_ipv6"], 0, {})
 
 def _run_test_controller_client(params, context):
-    """ Run DASH TestController client """
-    client = DASHNegotiateClient(context["POLLER"], context["BACKEND"],
-        context["NOTIFIER"], context["STATE"])
-    client.configure(context["SETTINGS"])
-    client.connect((params["address"], params["port"]))
+    """ Run RAW TestController client """
+    handler = RawNegotiate(context["BACKEND"], context["NOTIFIER"],
+        context["SETTINGS"], context["POLLER"], context["STATE"])
+    handler.connect((params["address"], params["port"]),
+      context["SETTINGS"]["prefer_ipv6"], 0, {})
 
 def _run_test_provider_server(params, context):
     """ Run DASH TestProvider server """
-    provider = DASHServerGlue(context["POLLER"], None)
-    provider.configure(context["SETTINGS"])
-    provider.listen((params["address"], params["port"]))
+    handler = RawServer(context["POLLER"])
+    handler.listen((params["address"], params["port"]),
+      context["SETTINGS"]["prefer_ipv6"], 0, "")
 
 def _run_test_controller_server(params, context):
     """ Run DASH TestController server """
 
-    controller = DASHNegotiateServer(context["BACKEND"])
-    context["NEGOTIATE_SERVER"].register_module("dash", controller)
+    controller = NegotiateServerRaw(context["BACKEND"])
+    context["NEGOTIATE_SERVER"].register_module("raw", controller)
 
-    provider = DASHServerGlue(context["POLLER"], controller)
-    provider.configure(context["SETTINGS"])
-    context["HTTP_SERVER"].register_child(provider, "/dash")
+    handler = RawServerEx(context["POLLER"], controller)
+    handler.listen((params["test_provider_address"],
+      params["test_provider_port"]), context["SETTINGS"]["prefer_ipv6"], 0, "")
 
 def neubot_plugin_spec():
     """ Returns the plugin spec """
     return {
         "spec_version": 1.0,
-        "name": "dash",
-        "short_description": "Neubot MPEG DASH test",
+        "name": "raw",
+        "short_description": "Neubot RAW TCP test",
         "author": "Simone Basso <bassosimone@gmail.com>",
         "version": 1.0,
         "www": {
             "spec_version": 1.0,
-            "description": "dash.html",
-            "results_producer": "dash.json",
+            "description": "raw.html",
+            "results_producer": "raw.json",
         },
         "backend": {
-            "spec_version": 2.0,
+            "spec_version": 1.0,  # FIXME
         },
         "test_provider": {
             "spec_version": 1.0,
@@ -104,6 +103,8 @@ def neubot_plugin_spec():
             "server": {
                 "run": _run_test_controller_server,
                 "params": {
+                    "test_provider_address": str,
+                    "test_provider_port": int,
                 },
             },
         },

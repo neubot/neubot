@@ -26,7 +26,7 @@
 import collections
 import logging
 
-from neubot import percentile
+from . import percentile
 
 def compute_bottleneck_capacity(vector, mss):
     ''' Compute bottleneck capacity using packet pair '''

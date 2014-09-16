@@ -33,8 +33,6 @@ import sys
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 
-from neubot.state import STATE
-
 from neubot import utils
 from neubot import utils_net
 from neubot import utils_version
@@ -60,17 +58,18 @@ class DASHClientSmpl(ClientHTTP):
     # round-trip delay, and hopefully with acceptable queueing delay.
     #
 
-    def __init__(self, poller, parent, rates):
+    def __init__(self, poller, parent, rates, state):
         ClientHTTP.__init__(self, poller)
         self.parent = parent
         self.rates = rates
+        self.state = state
 
-        STATE.update("test_latency", "---", publish=False)
-        STATE.update("test_download", "---", publish=False)
-        STATE.update("test_upload", "N/A", publish=False)
-        STATE.update("test_progress", "0%", publish=False)
-        STATE.update("test_name", "dash", publish=False)
-        STATE.update("test")
+        self.state.update("test_latency", "---", publish=False)
+        self.state.update("test_download", "---", publish=False)
+        self.state.update("test_upload", "N/A", publish=False)
+        self.state.update("test_progress", "0%", publish=False)
+        self.state.update("test_name", "dash", publish=False)
+        self.state.update("test")
 
         self.iteration = 0
         self.rate_kbit = 0
@@ -93,7 +92,7 @@ class DASHClientSmpl(ClientHTTP):
         """ Invoked when the connection is ready """
 
         if self.iteration == 0:
-            STATE.update("test_latency", utils.time_formatter(self.rtts[0]))
+            self.state.update("test_latency", utils.time_formatter(self.rtts[0]))
             logging.info("dash: latency %s", utils.time_formatter(self.rtts[0]))
 
         #
@@ -189,17 +188,17 @@ class DASHClientSmpl(ClientHTTP):
         self.iteration += 1
 
         #
-        # TODO it would be nice to also STATE.update() with the dash
+        # TODO it would be nice to also self.state.update() with the dash
         # rate, but that change requires also some www changes.
         #
 
-        STATE.update("test_progress", "%d%%" % ((100 * self.iteration)
+        self.state.update("test_progress", "%d%%" % ((100 * self.iteration)
           / DASH_MAX_ITERATION), publish=False)
 
         speed = received / elapsed
         self.speed_kbit = (speed * 8) / 1000
 
-        STATE.update("test_download", utils.speed_formatter(speed))
+        self.state.update("test_download", utils.speed_formatter(speed))
         logging.info(
           "dash: [%2d/%d] rate: %6d Kbit/s, speed: %6d Kbit/s, elapsed: %.3f s",
           self.iteration, DASH_MAX_ITERATION, self.rate_kbit, self.speed_kbit,

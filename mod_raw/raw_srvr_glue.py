@@ -25,18 +25,19 @@
  access control capabilities.
 '''
 
-from neubot.negotiate.server_raw import NEGOTIATE_SERVER_RAW
-from neubot.raw_srvr import RawServer
+from .raw_srvr import RawServer
 
 class RawServerEx(RawServer):
     ''' Negotiation-enabled RAW test server '''
     # Same-as RawServer but checks that the peer is authorized
 
+    def __init__(self, poller, parent):
+        RawServer.__init__(self, poller)
+        self._parent = parent
+
     def filter_auth(self, stream, tmp):
         ''' Filter client auth '''
-        if tmp not in NEGOTIATE_SERVER_RAW.peers:
+        if tmp not in self._parent.peers:
             raise RuntimeError('raw_negotiate: unknown peer')
         context = stream.opaque
-        context.state = NEGOTIATE_SERVER_RAW.peers[tmp]
-
-RAW_SERVER_EX = RawServerEx()
+        context.state = self._parent.peers[tmp]

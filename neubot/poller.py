@@ -31,6 +31,7 @@ import errno
 import select
 import sched
 import sys
+import time
 
 from neubot.utils import ticks
 from neubot.utils import timestamp
@@ -61,6 +62,7 @@ class Poller(sched.scheduler):
         self.readset = {}
         self.writeset = {}
         self.check_timeout()
+        self._run_forever = False
 
     def sched(self, delta, func, *args):
         ''' Schedule task '''
@@ -153,6 +155,11 @@ class Poller(sched.scheduler):
         ''' Break out of poller loop '''
         self.again = False
 
+    def loop_forever(self):
+        ''' Poller loop that runs forever '''
+        self._run_forever = True
+        self.loop()
+
     def loop(self):
         ''' Poller loop '''
         while True:
@@ -196,7 +203,11 @@ class Poller(sched.scheduler):
             for fileno in res[1]:
                 self._call_handle_write(fileno)
 
-        # No I/O pending?  Break out of the loop.
+        # No I/O pending but `run forever`?  Sleep.
+        elif self._run_forever:
+            time.sleep(timeout)
+
+        # No I/O pending and no `run forever`?  Break out of the loop.
         else:
             raise KeyboardInterrupt('poller: no I/O pending')
 

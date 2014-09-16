@@ -31,26 +31,7 @@ from neubot.http.message import Message
 from neubot.http.server import ServerHTTP
 from neubot.compat import json
 
-class NegotiateServerModule(object):
-
-    ''' Each test should implement this interface '''
-
-    # The minimal collect echoes the request body
-    def collect(self, stream, request_body):
-        ''' Invoked at the end of the test, to collect data '''
-        return request_body
-
-    # Only speedtest reimplements this method
-    def collect_legacy(self, stream, request_body, request):
-        ''' Legacy interface to collect that also receives the
-            request object: speedtest needs to inspect the Authorization
-            header when the connecting client is pretty old '''
-        return self.collect(stream, request_body)
-
-    # The minimal unchoke returns the stream unique identifier only
-    def unchoke(self, stream, request_body):
-        ''' Invoked when a stream is authorized to take the test '''
-        return { 'authorization': str(hash(stream)) }
+from .module import NegotiateServerModule
 
 class NegotiateServer(ServerHTTP):
 

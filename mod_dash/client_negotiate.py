@@ -25,20 +25,16 @@
 
 # Adapted from neubot/bittorrent/client.py
 
+import json
 import logging
-
-from mod_dash.client_smpl import DASHClientSmpl
 
 from neubot.http.client import ClientHTTP
 from neubot.http.message import Message
 
-from neubot.backend import BACKEND
-from neubot.compat import json
-from neubot.notify import NOTIFIER
-from neubot.state import STATE
-
 from neubot import utils
 from neubot import utils_net
+
+from .client_smpl import DASHClientSmpl
 
 STATE_NEGOTIATE = 0
 STATE_COLLECT = 1
@@ -72,16 +68,20 @@ MAX_ITERATIONS = 512
 class DASHNegotiateClient(ClientHTTP):
     """ Negotiate client for MPEG DASH test """
 
-    def __init__(self, poller):
+    def __init__(self, poller, backend, notifier, state):
         ClientHTTP.__init__(self, poller)
 
-        STATE.update("test_latency", "---", publish=False)
-        STATE.update("test_download", "---", publish=False)
-        STATE.update("test_upload", "---", publish=False)
-        STATE.update("test_progress", "0%", publish=False)
-        STATE.update("test_name", "dash")
+        self._backend = backend
+        self._notifier = notifier
+        self._state = state
 
-        self.state = STATE_NEGOTIATE
+        self._state.update("test_latency", "---", publish=False)
+        self._state.update("test_download", "---", publish=False)
+        self._state.update("test_upload", "---", publish=False)
+        self._state.update("test_progress", "0%", publish=False)
+        self._state.update("test_name", "dash")
+
+        self.cur_state = STATE_NEGOTIATE
 
         self.stream = None
         self.measurements = []
@@ -111,7 +111,7 @@ class DASHNegotiateClient(ClientHTTP):
             raise RuntimeError("dash: too many negotiations")
         self.iterations += 1
 
-        STATE.update("negotiate")
+        self._state.update("negotiate")
         logging.info("dash: negotiate... in progress")
 
         body = json.dumps({
@@ -135,7 +135,7 @@ class DASHNegotiateClient(ClientHTTP):
             stream.close()
             return
 
-        if self.state == STATE_NEGOTIATE:
+        if self.cur_state == STATE_NEGOTIATE:
 
             response_body = json.load(response.body)
 
@@ -151,7 +151,7 @@ class DASHNegotiateClient(ClientHTTP):
             if not self.unchoked:
                 logging.info("dash: negotiate... done (queue pos %d)",
                              self.queue_pos)
-                STATE.update("negotiate", {"queue_pos": self.queue_pos})
+                self._state.update("negotiate", {"queue_pos": self.queue_pos})
                 self.connection_ready(stream)
                 return
 
@@ -165,11 +165,11 @@ class DASHNegotiateClient(ClientHTTP):
             #
             rates = list(response_body.get("dash_rates", DASH_RATES))
 
-            self.client = DASHClientSmpl(self.poller, self, rates)
+            self.client = DASHClientSmpl(self.poller, self, rates, self._state)
             self.client.configure(self.conf.copy())
             self.client.connect((self.stream.peername[0], 80))  # XXX
 
-        elif self.state == STATE_COLLECT:
+        elif self.cur_state == STATE_COLLECT:
 
             response_body = json.load(response.body)
 
@@ -185,7 +185,7 @@ class DASHNegotiateClient(ClientHTTP):
                 elem["whole_test_timestamp"] = whole_test_timestamp
                 if index < len(response_body):
                     elem["srvr_data"] = response_body[index]
-                BACKEND.store_generic("dash", elem)
+                self._backend.store_generic("dash", elem)
 
             stream.close()
 
@@ -211,8 +211,8 @@ class DASHNegotiateClient(ClientHTTP):
         stream = self.stream
 
         logging.info("dash: collect... in progress")
-        STATE.update("collect")
-        self.state = STATE_COLLECT
+        self._state.update("collect")
+        self.cur_state = STATE_COLLECT
 
         body = json.dumps(self.measurements)
 
@@ -228,10 +228,10 @@ class DASHNegotiateClient(ClientHTTP):
 
     def connection_lost(self, stream):
         logging.info("dash: negotiate connection closed: test done")
-        NOTIFIER.publish("testdone")
+        self._notifier.publish("testdone")
         self.client = None
         self.stream = None
 
     def connection_failed(self, connector, exception):
         logging.info("dash: connect() failed: test done")
-        NOTIFIER.publish("testdone")
+        self._notifier.publish("testdone")

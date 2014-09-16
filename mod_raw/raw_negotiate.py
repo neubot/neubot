@@ -33,28 +33,20 @@
 # negotiates with the test server and collects the results.
 #
 
-import getopt
+import json
 import logging
 import sys
 
-if __name__ == '__main__':
-    sys.path.insert(0, '.')
-
-from neubot.backend import BACKEND
-from neubot.config import CONFIG
-from neubot.compat import json
 from neubot.defer import Deferred
 from neubot.http_clnt import HttpClient
-from neubot.notify import NOTIFIER
-from neubot.poller import POLLER
-from neubot.raw_clnt import RawClient
-from neubot.state import STATE
 
 from neubot import http_utils
-from neubot import raw_analyze
 from neubot import six
 from neubot import utils_net
 from neubot import utils_version
+
+from . import raw_analyze
+from .raw_clnt import RawClient
 
 APPLICATION_JSON = six.b('application/json')
 CODE200 = six.b('200')
@@ -64,15 +56,23 @@ class RawNegotiate(HttpClient):
 
     ''' Raw negotiate client '''
 
+    def __init__(self, backend, notifier, config, poller, state):
+        HttpClient.__init__(self)
+        self._backend = backend
+        self._notifier = notifier
+        self._config = config
+        self._poller = poller
+        self._state = state
+
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
 
         # Reset web interface
-        STATE.update('test_latency', '---', publish=False)
-        STATE.update('test_download', '---', publish=False)
-        STATE.update('test_upload', '---', publish=False)
-        STATE.update('test_progress', '0%', publish=False)
-        STATE.update('test_name', 'raw', publish=False)
-        STATE.update('negotiate')
+        self._state.update('test_latency', '---', publish=False)
+        self._state.update('test_download', '---', publish=False)
+        self._state.update('test_upload', '---', publish=False)
+        self._state.update('test_progress', '0%', publish=False)
+        self._state.update('test_name', 'raw', publish=False)
+        self._state.update('negotiate')
 
         # Variables
         extra['address'] = endpoint[0]
@@ -88,14 +88,13 @@ class RawNegotiate(HttpClient):
 
     def handle_connect_error(self, connector):
         logging.warning('raw_negotiate: connect() failed')
-        NOTIFIER.publish('testdone')
+        self._notifier.publish('testdone')
 
     def handle_connect(self, connector, sock, rtt, sslconfig, extra):
         self.create_stream(sock, self.handle_connection_made,
           self.handle_connection_lost, sslconfig, None, extra)
 
-    @staticmethod
-    def handle_connection_lost(stream):
+    def handle_connection_lost(self, stream):
         ''' Invoked when the connection is lost '''
         final_state = 0
         context = stream.opaque
@@ -105,7 +104,7 @@ class RawNegotiate(HttpClient):
                 final_state = extra['final_state']
         if not final_state:
             logging.warning('raw_negotiate: not reached final state')
-        NOTIFIER.publish('testdone')  # Tell the runner we're done
+        self._notifier.publish('testdone')  # Tell the runner we're done
 
     def handle_connection_made(self, stream):
         ''' Invoked when the connection is established '''
@@ -147,9 +146,9 @@ class RawNegotiate(HttpClient):
             return
         response = json.loads(six.u(context.body.getvalue()))
         http_utils.prettyprint_json(response, '<')
-        if STATE.current == 'negotiate':
+        if self._state.current == 'negotiate':
             self._process_negotiate_response(stream, response)
-        elif STATE.current == 'collect':
+        elif self._state.current == 'collect':
             self._process_collect_response(stream, response)
         else:
             raise RuntimeError('raw_negotiate: internal error')
@@ -183,11 +182,10 @@ class RawNegotiate(HttpClient):
         queue_pos = response['queue_pos']
         logging.debug('raw_negotiate: negotiate complete... in queue (%d)',
           queue_pos)
-        STATE.update('negotiate', {'queue_pos': queue_pos})
+        self._state.update('negotiate', {'queue_pos': queue_pos})
         self.handle_connection_made(stream)  # Tail call (sort of)
 
-    @staticmethod
-    def _start_test(opaque):
+    def _start_test(self, opaque):
         ''' Start RAW test '''
         on_success, on_failure, response, extra = opaque
         state = {
@@ -195,7 +193,7 @@ class RawNegotiate(HttpClient):
            'on_success': on_success,
            'on_failure': on_failure,
         }
-        client = RawClient()
+        client = RawClient(self._poller, self._state)
         connector = client.connect((response['address'], response['port']),
                        extra['prefer_ipv6'], 0, state)
         connector.register_errfunc(lambda arg: on_failure('connect failed'))
@@ -217,7 +215,7 @@ class RawNegotiate(HttpClient):
                   'myname': state['myname'],
                   'peername': state['peername'],
                   'platform': sys.platform,
-                  'uuid': CONFIG['uuid'],
+                  'uuid': self._config['uuid'],
                   'version': utils_version.NUMERIC_VERSION,
                  }
         self._start_collect(stream, result)
@@ -230,7 +228,7 @@ class RawNegotiate(HttpClient):
 
     def _start_collect(self, stream, result):
         ''' Start the COLLECT phase '''
-        STATE.update('collect')
+        self._state.update('collect')
         logging.debug('raw_negotiate: collect in progress...')
         context = stream.opaque
         extra = context.extra
@@ -269,42 +267,9 @@ class RawNegotiate(HttpClient):
         extra['final_state'] = 1
         stream.close()
 
-    @staticmethod
-    def _save_results(opaque):
+    def _save_results(self, opaque):
         ''' Save test results '''
         local_result, remote_result = opaque
         remote_result['web100_snap'] = []  # XXX disabled for 0.4.15
         complete_result = {'client': local_result, 'server': remote_result}
-        BACKEND.store_raw(complete_result)
-
-def main(args):
-    ''' Main function '''
-    try:
-        options, arguments = getopt.getopt(args[1:], '6A:p:v')
-    except getopt.error:
-        sys.exit('usage: neubot raw_negotiate [-6v] [-A address] [-p port]')
-    if arguments:
-        sys.exit('usage: neubot raw_negotiate [-6v] [-A address] [-p port]')
-
-    prefer_ipv6 = 0
-    address = '127.0.0.1'
-    port = 8080
-    level = logging.INFO
-    for name, value in options:
-        if name == '-6':
-            prefer_ipv6 = 1
-        elif name == '-A':
-            address = value
-        elif name == '-p':
-            port = int(value)
-        elif name == '-v':
-            level = logging.DEBUG
-
-    logging.getLogger().setLevel(level)
-
-    handler = RawNegotiate()
-    handler.connect((address, port), prefer_ipv6, 0, {})
-    POLLER.loop()
-
-if __name__ == '__main__':
-    main(sys.argv)
+        self._backend.store_raw(complete_result)
