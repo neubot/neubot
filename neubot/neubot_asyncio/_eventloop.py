@@ -53,15 +53,24 @@ class _Handle(object):
             self._evloop.cancel_evt_(self._evt)
             self._evt = None
 
-    def get_event_(self):
-        return self._evt
-
     def set_event_(self, evt):
         self._evt = evt
 
     def callback_(self):
-        self._evt = None  # mark as non pending
-        self._function(*self._args)
+        if self._evt:
+            self._evt = None  # mark as non pending
+        try:
+            self._function(*self._args)
+        except KeyboardInterrupt:
+            raise
+        except SystemExit:
+            raise
+        except Exception as error:
+            self._evloop.call_exception_handler({
+                "message": "Exception in callback: %s" % self._function,
+                "exception": error,
+                "handle": self
+            })
 
 class _KeepaliveEvent(object):
 
@@ -85,6 +94,7 @@ class _KeepaliveEvent(object):
 class _EventLoop(object):
 
     def __init__(self):
+        self._exc_handler = None
         self._keep_running = True
         self._i_am_running = False
         self._i_am_dead = False
@@ -129,18 +139,8 @@ class _EventLoop(object):
         def dispatch_io(what, ioset, filenum):
             logging.debug("eventloop: dispatch '%s' event of filedesc %d",
                           what, filenum)
-            try:
-                _, callback, args = ioset[filenum]
-                callback(*args)
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
-            except Exception as error:
-                self.call_exception_handler({
-                    "message": "I/O callback failed",
-                    "exception": error
-                })
+            handle = ioset[filenum]
+            handle.callback_()
 
         for filenum in fdread:
             dispatch_io("read", self._readset, filenum)
@@ -295,14 +295,14 @@ class _EventLoop(object):
     #
 
     def add_reader(self, filenum, callback, *args):
-        self._readset[filenum] = (self.time(), callback, args)
+        self._readset[filenum] = _Handle(self, callback, args)
 
     def remove_reader(self, filenum):
         if filenum in self._readset:
             del self._readset[filenum]
 
     def add_writer(self, filenum, callback, *args):
-        self._writeset[filenum] = (self.time(), callback, args)
+        self._writeset[filenum] = _Handle(self, callback, args)
 
     def remove_writer(self, filenum):
         if filenum in self._writeset:
@@ -421,17 +421,20 @@ class _EventLoop(object):
     #
 
     def set_exception_handler(self, handler):
-        raise NotImplementedError
+        self._exc_handler = handler
 
     def default_exception_handler(self, context):
-        self._real_exception_handler(context)
+        self._real_exception_handler(self, context)
 
     @staticmethod
-    def _real_exception_handler(context):
-        logging.debug("evloop: unhandled exception: %s", context)
+    def _real_exception_handler(evloop, context):
+        logging.debug("evloop %s: unhandled exception: %s", evloop, context)
 
     def call_exception_handler(self, context):
-        self.default_exception_handler(context)
+        if not self._exc_handler:
+            self.default_exception_handler(context)
+        else:
+            self._exc_handler(self, context)
 
     #
     # 18.5.1.14. Debug mode
