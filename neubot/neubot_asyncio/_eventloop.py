@@ -321,6 +321,8 @@ class _EventLoop(object):
     def sock_connect(self, sock, address):
         future = _Future(loop=self)
 
+        sock.setblocking(False)  # Must be nonblocking...
+
         try:
             sock.connect(address)
         except socket.error as error:
