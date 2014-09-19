@@ -64,7 +64,7 @@ class _Handle(object):
         except KeyboardInterrupt:
             raise
         except SystemExit:
-            raise
+            self._evloop.close()
         except Exception as error:
             self._evloop.call_exception_handler({
                 "message": "Exception in callback: %s" % self._function,
@@ -108,7 +108,7 @@ class _EventLoop(object):
 
     def run_forever(self):
         if self._i_am_dead:
-            raise RuntimeError("eventloop: already closed")
+            return
         keepalive_evt = _KeepaliveEvent()
         keepalive_evt.register(self)
         self._i_am_running = True
