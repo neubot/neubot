@@ -370,6 +370,11 @@ class _EventLoop(object):
 
     def getaddrinfo(self, hostname, port, **kwargs):
 
+        # Note that this function is blocking. This is not compatible
+        # with asyncio, however getaddrinfo() has been blocking on Neubot
+        # since forever, therefore we can afford to have it blocking
+        # until we switch from Python 2 to Python 3.
+
         future = _Future(loop=self)
         try:
             ainfo = socket.getaddrinfo(hostname, port, kwargs.get("family", 0),
