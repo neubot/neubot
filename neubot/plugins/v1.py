@@ -7,13 +7,13 @@
 
 """ Neubot plugins protocol version 1. """
 
-from neubot.backend import BACKEND
 from neubot.config import CONFIG
 from neubot.http.server import HTTP_SERVER
 from neubot.negotiate.server import NEGOTIATE_SERVER
 from neubot.poller import POLLER
 
 from .statechanges import ForwardStateChanges
+from .backend import BackendStdout
 
 def _make_settings():
     """ Prepare the SETTINGS variable """
@@ -33,7 +33,7 @@ def _run_something(spec, selector1, selector2, params):
         params[key] = runnable["params"][key](params[key])  # Cast
     statechanges = ForwardStateChanges(POLLER)
     runnable["run"](params, {
-        "BACKEND": BACKEND,
+        "BACKEND": BackendStdout(),
         "HTTP_SERVER": HTTP_SERVER,
         "NEGOTIATE_SERVER": NEGOTIATE_SERVER,
         "NOTIFIER": statechanges,
