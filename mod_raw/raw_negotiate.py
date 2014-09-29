@@ -63,6 +63,7 @@ class RawNegotiate(HttpClient):
         self._config = config
         self._poller = poller
         self._state = state
+        self._current = ''
 
     def connect(self, endpoint, prefer_ipv6, sslconfig, extra):
 
@@ -73,6 +74,7 @@ class RawNegotiate(HttpClient):
         self._state.update('test_progress', '0%', publish=False)
         self._state.update('test_name', 'raw', publish=False)
         self._state.update('negotiate')
+        self._current = 'negotiate'
 
         # Variables
         extra['address'] = endpoint[0]
@@ -146,9 +148,9 @@ class RawNegotiate(HttpClient):
             return
         response = json.loads(six.u(context.body.getvalue()))
         http_utils.prettyprint_json(response, '<')
-        if self._state.current == 'negotiate':
+        if self._current == 'negotiate':
             self._process_negotiate_response(stream, response)
-        elif self._state.current == 'collect':
+        elif self._current == 'collect':
             self._process_collect_response(stream, response)
         else:
             raise RuntimeError('raw_negotiate: internal error')
@@ -229,6 +231,7 @@ class RawNegotiate(HttpClient):
     def _start_collect(self, stream, result):
         ''' Start the COLLECT phase '''
         self._state.update('collect')
+        self._current = 'collect'
         logging.debug('raw_negotiate: collect in progress...')
         context = stream.opaque
         extra = context.extra
