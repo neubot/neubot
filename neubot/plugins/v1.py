@@ -11,9 +11,9 @@ from neubot.backend import BACKEND
 from neubot.config import CONFIG
 from neubot.http.server import HTTP_SERVER
 from neubot.negotiate.server import NEGOTIATE_SERVER
-from neubot.notify import NOTIFIER
 from neubot.poller import POLLER
-from neubot.state import STATE
+
+from .statechanges import ForwardStateChanges
 
 def _make_settings():
     """ Prepare the SETTINGS variable """
@@ -31,14 +31,15 @@ def _run_something(spec, selector1, selector2, params):
         if key not in params:
             raise RuntimeError("missing param: %s", key)
         params[key] = runnable["params"][key](params[key])  # Cast
+    statechanges = ForwardStateChanges(POLLER)
     runnable["run"](params, {
         "BACKEND": BACKEND,
         "HTTP_SERVER": HTTP_SERVER,
         "NEGOTIATE_SERVER": NEGOTIATE_SERVER,
-        "NOTIFIER": NOTIFIER,
+        "NOTIFIER": statechanges,
         "POLLER": POLLER,
         "SETTINGS": _make_settings(),
-        "STATE": STATE,
+        "STATE": statechanges,
     })
 
 def run_testcontroller_client(spec, params):
