@@ -5,7 +5,7 @@ The network neutrality bot
 ''''''''''''''''''''''''''
 
 ..
-.. Copyright (c) 2010-2013
+.. Copyright (c) 2010-2014
 ..     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 ..     and Simone Basso <bassosimone@gmail.com>
 ..
