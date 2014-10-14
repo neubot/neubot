@@ -1284,7 +1284,7 @@ This is the meaning of the above fields:
 
 The following example shows the results of a test as collected on
 the client side. To help the reader, we only show the fields that are
-not present in the above dictionary.
+not present in the above dictionary::
 
     {
         "clnt_schema_version": 3,
@@ -1319,7 +1319,7 @@ the results of a dashtest into a vector instead.
 
 Regarding data saved on the server side (i.e., on Measurement Lab), we have
 less restrictions on the data format. In particular, the result of a whole
-dashtest looks like this:
+dashtest looks like this::
 
     {
         "client": [{
