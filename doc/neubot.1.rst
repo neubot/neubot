@@ -155,7 +155,10 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -178,7 +181,10 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -276,7 +282,10 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -299,7 +308,10 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -415,13 +427,18 @@ list of the files installed.
   Location where the web interface files are installed. The web interface
   is described in the `WEB INTERFACE FILES`_ section.
 
-**/var/lib/neubot/database.sqlite3**
-  System-wide results database for Linux systems, created when
-  Neubot starts for the first time.
+**/var/lib/neubot**
+  System-wide directory where results are saved on Linux systems.
+  This contains `database.sqlite3` and possibly other files containing the
+  results of some tests; as of this writing dashtest uses Python's
+  pickle format to save data, while other tests use the sqlite3 database.
 
-**/var/neubot/database.sqlite3**
-  System-wide results database for non-Linux systems,
-  created when Neubot starts for the first time.
+**/var/neubot/**
+  System-wide results database for other Unix-like systems such as MacOS
+  and other BSD systems.
+  This contains `database.sqlite3` and possibly other files containing the
+  results of some tests; as of this writing dashtest uses Python's
+  pickle format to save data, while other tests use the sqlite3 database.
 
 EXAMPLES
 ````````
