@@ -84,7 +84,9 @@ Neubot implements four active network tests: ``bittorrent``, ``raw``,
 ``speedtest`` and ``dashtest``. For each test, there is a Neubot
 subcommand that allows one to run the test immediately (see the
 `SUBCOMMANDS`_ section). Moreover, Neubot
-schedules one test at random every 23 - 27 minutes.
+schedules one test at random every 23 - 27 minutes; the likelyhood
+with which tests are selected is not equal for all tests, depending
+on the Neubot release certain tests are selected more often.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
 estimates the round-trip time, the download and the upload goodput
