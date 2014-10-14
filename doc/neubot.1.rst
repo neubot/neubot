@@ -5,7 +5,7 @@ The network neutrality bot
 ''''''''''''''''''''''''''
 
 ..
-.. Copyright (c) 2010-2013
+.. Copyright (c) 2010-2014
 ..     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 ..     and Simone Basso <bassosimone@gmail.com>
 ..
@@ -26,7 +26,7 @@ The network neutrality bot
 ..
 
 :Manual section: 1
-:Date: 2013-04-23
+:Date: 2013-10-14
 :Manual group: Neubot manual
 :Version: Neubot 0.4.17.0
 
@@ -71,7 +71,8 @@ configuration file (see the `FILES`_ section).
 
 The command line interface allows you to get the usage string
 (``neubot --help``), get the version number (``neubot -V``), and
-run a Neubot's subcommand (``neubot subcommand...``).
+run a Neubot's subcommand (``neubot subcommand...``). Those
+are described in the `SUBCOMMANDS`_ section of this manual page.
 
 IMPLEMENTED TESTS
 `````````````````
@@ -79,10 +80,13 @@ IMPLEMENTED TESTS
 All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
-Neubot implements four active network tests: ``bittorrent``, ``raw``, 
-``speedtest`` and ``dashtest``. For each test, there is a Neubot 
-subcommand that allows one to run the test immediately. Moreover, Neubot 
-schedules one of the four tests at random every 23 - 27 minutes.
+Neubot implements four active network tests: ``bittorrent``, ``raw``,
+``speedtest`` and ``dashtest``. For each test, there is a Neubot
+subcommand that allows one to run the test immediately (see the
+`SUBCOMMANDS`_ section). Moreover, Neubot
+schedules one test at random every 23 - 27 minutes; the likelyhood
+with which tests are selected is not equal for all tests, depending
+on the Neubot release certain tests are selected more often.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
 estimates the round-trip time, the download and the upload goodput
@@ -135,7 +139,8 @@ As said, the speedtest and the bittorrent tests use the closest-available
 Measurement Lab server; the raw and the dashtest tests use, instead,
 a random Measurement Lab server. As a consequence, it is normal
 that the average speed measured with speedtest and bittorrent is
-generally greater than the one measured with the other two tests.
+generally greater than the one measured with the other two tests (since
+the measured speed depends on the latency).
 
 
 SUBCOMMANDS
@@ -150,7 +155,36 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
+
+  -A address
+    Address of the remote test server.
+
+  -f
+    Force the test. Run the test in the local process context
+    (instead of using the web API) and override privacy
+    settings if needed. Useful for developers and for debugging.
+
+  -p port
+    Port of the remote test server.
+
+  -v
+    Makes the command more verbose.
+
+**neubot dash [-6fv] [-A address] [-p port]**
+  Asks Neubot to run a dashtest test using the web API and fails
+  if Neubot is not running in the background.
+
+  Accepts the following options:
+
+  -6
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -248,7 +282,10 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -271,7 +308,10 @@ This section documents Neubot's subcommands.
   Accepts the following options:
 
   -6
-    Prefer IPv6 to IPv4.
+    Prefer IPv6 to IPv4. This means that, if a server is available both
+    via IPv6 and via IPv6, Neubot tries to connect to the IPv6 address first
+    and falls back to IPv4 if IPv6 fails. If this option is not specified,
+    IPv4 is tried first and IPv6 is used as a fallback.
 
   -A address
     Address of the remote test server.
@@ -387,13 +427,18 @@ list of the files installed.
   Location where the web interface files are installed. The web interface
   is described in the `WEB INTERFACE FILES`_ section.
 
-**/var/lib/neubot/database.sqlite3**
-  System-wide results database for Linux systems, created when
-  Neubot starts for the first time.
+**/var/lib/neubot**
+  System-wide directory where results are saved on Linux systems.
+  This contains `database.sqlite3` and possibly other files containing the
+  results of some tests; as of this writing dashtest uses Python's
+  pickle format to save data, while other tests use the sqlite3 database.
 
-**/var/neubot/database.sqlite3**
-  System-wide results database for non-Linux systems,
-  created when Neubot starts for the first time.
+**/var/neubot/**
+  System-wide results database for other Unix-like systems such as MacOS
+  and other BSD systems.
+  This contains `database.sqlite3` and possibly other files containing the
+  results of some tests; as of this writing dashtest uses Python's
+  pickle format to save data, while other tests use the sqlite3 database.
 
 EXAMPLES
 ````````
@@ -412,6 +457,10 @@ Run on-demand raw test::
 Run on-demand speedtest test::
 
     $ neubot speedtest
+
+Run on-demand dashtest test::
+
+    $ neubot dash
 
 Start Neubot::
 
@@ -435,7 +484,8 @@ Read Neubot's privacy policy::
 
     $ neubot privacy -P
 
-Run Neubot ``command`` from the sources directory::
+Run Neubot ``command`` from the sources directory (useful for
+developing Neubot)::
 
     $ ./UNIX/bin/neubot command
 
@@ -646,8 +696,8 @@ Here is a detailed description of each API.
   name using the query string.
 
   This API returns a JSON that serializes a list of dictionaries, in which
-  each dictionary is the data collected during a test. We dedicate a section
-  of the manual page to the structure returned by each test.
+  each dictionary is the data collected during a test. There is a section of
+  this manual page describing the data format of each implemented test.
 
   This API accepts the following query-string parameters:
 
@@ -1122,10 +1172,193 @@ Example::
     },
     ...
 
+Dashtest data format
+````````````````````
+
+The dashtest format depends on whether your are looking at its results
+from a Neubot instance or whether you are looking at data collected on the
+server-side and made available by Measurement Lab.
+
+The basic piece of information saved during the dashtest consists of the
+*per_segment* dictionary, which contains the results of the download of a
+single segment of data during the test (recall that the test downloads
+several segments of data)::
+
+    {
+        "connect_time": 0.21549296379089355,
+        "delta_sys_time": 0.0,
+        "delta_user_time": 0.01999999999998181,
+        "elapsed": 1.557049036026001,
+        "elapsed_target": 2,
+        "internal_address": "130.192.91.215",
+        "iteration": 1,
+        "platform": "linux2",
+        "rate": 2500,
+        "real_address": "130.192.91.215",
+        "received": 625130,
+        "remote_address": "196.24.45.160",
+        "request_ticks": 1413299395.564522,
+        "timestamp": 1413299397,
+        "uuid": "e4cd449a-f703-4c6a-a271-f0cea350d723",
+        "version": "0.004016009",
+    }
+
+This is the meaning of the above fields:
+
+**connect_time (float)**
+  RTT estimated by measuring the time that connect() takes
+  to complete, measured in seconds. This piece of data is
+  collected before the test, and (yes, this is confusing) is
+  repeated in each dictionary.
+
+**delta_user_time (float)**
+  The time spent by the current process in userland during
+  the download of the current segment.
+
+**delta_sys_time (float)**
+  The time spent by the current process in kernel-land during
+  the download of the current segment.
+
+**elapsed (float)**
+  Time elapsed since the beginning of the download to the end of
+  the download of this segment.
+
+**elapsed_target (float)**
+  Target elapsed time for the download of the current segment. In the
+  current implementation it is a constant set to two seconds.
+
+**internal_address (string)**
+  Neubot's IP address, as seen by Neubot. It is typically either
+  an IPv4 or an IPv6 address. This is of course constant within the test.
+
+**iteration (int)**
+  Index of this segment within the test; currently 15 segments
+  are downloaded during the dashtest.
+
+**platform (string)**
+  Name of the operating system platform (e.g., `linux`).
+
+**rate (float)**
+  This is the bitrate of the segment currently being downloaded. This is
+  chosen by the test and adjusted depending on the download speed of
+  the previous segment so that the download of this segment should take
+  about two seconds (the elapsed_target).
+
+  Note that, if the download of the previous segment took more than two
+  seconds, the rate of the next segment is reduced, because it is assumed
+  that the download took more than two seconds due to congestion.
+
+**real_address (string)**
+  Neubot's IP address, as seen by the server. It is typically either
+  an IPv4 or an IPv6 address.
+
+**received (int)**
+  Size of the current segment in bytes, also including HTTP metadata (i.e.,
+  response line and headers). You can compute the download speed by
+  dividing this by elapsed.
+
+**remote_address (string)**
+  The server's IP address. It is typically either an IPv4 or an
+  IPv6 address.
+
+**request_ticks (float)**
+  Time when the request for the current segment
+  was sent. This may not be a timestamp relative
+  to the Unix epoch. Add elapsed to this to get the time when the response
+  was received (again not necessarily a timestamp).
+
+**timestamp (int)**
+  Timestamp relative to the Unix epoch of when the response was received.
+
+**uuid (string)**
+  Random unique identifier of the Neubot instance, useful to perform
+  time series analysis.
+
+**version (string)**
+  Neubot version number, encoded as a floating point number and printed
+  into a string. Given a version number in the format
+  <major>.<minor>.<patch>.<revision>, the encoding is as follows::
+
+    <major> + 1e-03 * <minor> + 1e-06 * <patch>
+            + 1e-09 * <revision>
+
+  For example, the `0.4.15.3` version number is encoded as `0.004015003`.
+
+The following example shows the results of a test as collected on
+the client side. To help the reader, we only show the fields that are
+not present in the above dictionary::
+
+    {
+        "clnt_schema_version": 3,
+
+        ... per_segment dictionary fields here (iteration: 1)
+
+        "srvr_data": {
+            "timestamp": 1413299382
+        },
+        "whole_test_timestamp": 1413299397
+    }, {
+        "clnt_schema_version": 3,
+
+        ... per_segment dictionary fields here (iteration: 2)
+
+        "srvr_data": {
+            "timestamp": 1413299382
+        },
+    },
+    ...
+    }, {
+        "clnt_schema_version": 3,
+
+        ... per_segment dictionary fields here (iteration: 15)
+
+        "srvr_data": {
+            "timestamp": 1413299382
+        },
+    },
+
+So, basically the dashtest adds fiteen entries to the results
+each representing the download of a single segment plus some extra
+information. In particular, the version of the client-side data schema is
+added (currently it is three); server data is added (currently only the
+server-side timestamp); the timestamp when the whole test started is added.
+
+It is counterintuitive that a single test adds many dictionaries to
+the results, however we are forced to do so due to limitations of the
+web interface implementation. A better design would have been to group
+the results of a dashtest into a vector instead.
+
+Regarding data saved on the server side (i.e., on Measurement Lab), we have
+less restrictions on the data format. In particular, the result of a whole
+dashtest looks like this::
+
+    {
+        "client": [{
+            ... per_segment dictionary fields here (iteration: 1)
+          }, {
+            ... per_segment dictionary fields here (iteration: 2)
+          }
+          ...
+        ],
+        "server": [],
+        "srvr_schema_version": 3,
+        "srvr_timestamp": 123456789
+    }
+
+So, basically, there is a list called client and containing the results
+of each iteration of the test. Then there is server-related data, including
+the version of the schema and the server-side timestamp. No server-specific
+data is currently collected during the test.
+
+
 Raw test data format
 ````````````````````
 
-We represent the data collected by the ``raw`` test with a
+The raw test data format used on the server is different from the
+format used on the Neubot side.
+
+On the Neubot side,
+we represent the data collected by the ``raw`` test with a
 dictionary that contains the following fields:
 
 **connect_time (float)**
@@ -1200,9 +1433,13 @@ Example::
     },
     ...
 
-Once unserialized, the JSON object saved into the ``json_data`` field
-of the ``raw`` dictionary (henceforth, 'outer dictionary') is a
-dictionary that contains the following fields:
+On the server side we save the dictionary corresponding to the JSON
+object serialized into the ``json_data`` on the Neubot side. Henceforth
+we call 'outer dictionary' the dictionary saved on the Neubot side and
+we call 'inner dictionary' the one saved both on the server side on
+and the ``json_data`` field.
+
+The inner dictionary contains the following fields:
 
 **client (dictionary)**
   A dictionary that contains data collected on the client side.
@@ -1350,7 +1587,9 @@ The server dictionary contains the following fields:
   during the upload.
 
   On the client side, this field is empty. We are working to identify
-  the most interesting fields that is interesting to save.
+  the most interesting fields that is interesting to save. The data saved
+  on the server side (and that you can download from Measurement Lab)
+  instead contains all the data collected using Web100.
 
 Example::
 
