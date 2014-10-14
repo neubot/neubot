@@ -139,7 +139,8 @@ As said, the speedtest and the bittorrent tests use the closest-available
 Measurement Lab server; the raw and the dashtest tests use, instead,
 a random Measurement Lab server. As a consequence, it is normal
 that the average speed measured with speedtest and bittorrent is
-generally greater than the one measured with the other two tests.
+generally greater than the one measured with the other two tests (since
+the measured speed depends on the latency).
 
 
 SUBCOMMANDS
