@@ -71,7 +71,8 @@ configuration file (see the `FILES`_ section).
 
 The command line interface allows you to get the usage string
 (``neubot --help``), get the version number (``neubot -V``), and
-run a Neubot's subcommand (``neubot subcommand...``).
+run a Neubot's subcommand (``neubot subcommand...``). Those
+are described in the `SUBCOMMANDS`_ section of this manual page.
 
 IMPLEMENTED TESTS
 `````````````````
@@ -80,9 +81,10 @@ All Neubot tests receive and send random data. Neubot does
 not monitor the user's traffic.
 
 Neubot implements four active network tests: ``bittorrent``, ``raw``, 
-``speedtest`` and ``dashtest``. For each test, there is a Neubot 
-subcommand that allows one to run the test immediately. Moreover, Neubot 
-schedules one of the four tests at random every 23 - 27 minutes.
+``speedtest`` and ``dashtest``. For each test, there is a Neubot
+subcommand that allows one to run the test immediately (see the
+`SUBCOMMANDS`_ section). Moreover, Neubot
+schedules one test at random every 23 - 27 minutes.
 
 The ``bittorrent`` test emulates BitTorrent peer-wire protocol and
 estimates the round-trip time, the download and the upload goodput
