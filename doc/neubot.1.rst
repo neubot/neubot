@@ -458,6 +458,10 @@ Run on-demand speedtest test::
 
     $ neubot speedtest
 
+Run on-demand dashtest test::
+
+    $ neubot dash
+
 Start Neubot::
 
     # neubot start
@@ -472,7 +476,8 @@ Run Neubot in the foreground with verbose logging::
     # neubot start -dv                       # MacOS
     $ neubot agent -v -D agent.daemonize=no  # other UNIX
 
-Export Neubot results to JSON::
+Export Neubot results to JSON (note that this does not export the
+results of the dashtest test)::
 
     $ neubot database dump > output.json
 
@@ -480,7 +485,8 @@ Read Neubot's privacy policy::
 
     $ neubot privacy -P
 
-Run Neubot ``command`` from the sources directory::
+Run Neubot ``command`` from the sources directory (useful for
+developing Neubot)::
 
     $ ./UNIX/bin/neubot command
 
