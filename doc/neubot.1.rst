@@ -1224,7 +1224,7 @@ This is the meaning of the above fields:
   the download of this segment.
 
 **elapsed_target (float)**
-  Target elapsed time for the download if the current segment. In the
+  Target elapsed time for the download of the current segment. In the
   current implementation it is a constant set to two seconds.
 
 **internal_address (string)**
@@ -1232,7 +1232,7 @@ This is the meaning of the above fields:
   an IPv4 or an IPv6 address. This is of course constant within the test.
 
 **iteration (int)**
-  Index of this segment within the gloabal test. Currently 15 segments
+  Index of this segment within the test; currently 15 segments
   are downloaded during the dashtest.
 
 **platform (string)**
@@ -1240,7 +1240,7 @@ This is the meaning of the above fields:
 
 **rate (float)**
   This is the bitrate of the segment currently being downloaded. This is
-  chosen by the test and adjusted depending on the downdload speed of
+  chosen by the test and adjusted depending on the download speed of
   the previous segment so that the download of this segment should take
   about two seconds (the elapsed_target).
 
@@ -1254,14 +1254,16 @@ This is the meaning of the above fields:
 
 **received (int)**
   Size of the current segment in bytes, also including HTTP metadata (i.e.,
-  response line and headers).
+  response line and headers). You can compute the download speed by
+  dividing this by elapsed.
 
 **remote_address (string)**
   The server's IP address. It is typically either an IPv4 or an
   IPv6 address.
 
 **request_ticks (float)**
-  Time when the request was sent. This may not be a timestamp relative
+  Time when the request for the current segment
+  was sent. This may not be a timestamp relative
   to the Unix epoch. Add elapsed to this to get the time when the response
   was received (again not necessarily a timestamp).
 
@@ -1305,12 +1307,21 @@ not present in the above dictionary::
         },
     },
     ...
+    }, {
+        "clnt_schema_version": 3,
+
+        ... per_segment dictionary fields here (iteration: 15)
+
+        "srvr_data": {
+            "timestamp": 1413299382
+        },
+    },
 
 So, basically the dashtest adds fiteen entries to the results
 each representing the download of a single segment plus some extra
 information. In particular, the version of the client-side data schema is
-added (currently is is three); server data is added (currently only the
-server-side timestamp; the timestamp when the whole test started is added.
+added (currently it is three); server data is added (currently only the
+server-side timestamp); the timestamp when the whole test started is added.
 
 It is counterintuitive that a single test adds many dictionaries to
 the results, however we are forced to do so due to limitations of the
@@ -1337,7 +1348,7 @@ dashtest looks like this::
 So, basically, there is a list called client and containing the results
 of each iteration of the test. Then there is server-related data, including
 the version of the schema and the server-side timestamp. No server-specific
-data is actually collected during the test.
+data is currently collected during the test.
 
 
 Raw test data format
