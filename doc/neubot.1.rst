@@ -476,8 +476,7 @@ Run Neubot in the foreground with verbose logging::
     # neubot start -dv                       # MacOS
     $ neubot agent -v -D agent.daemonize=no  # other UNIX
 
-Export Neubot results to JSON (note that this does not export the
-results of the dashtest test)::
+Export Neubot results to JSON::
 
     $ neubot database dump > output.json
 
