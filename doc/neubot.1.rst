@@ -696,8 +696,8 @@ Here is a detailed description of each API.
   name using the query string.
 
   This API returns a JSON that serializes a list of dictionaries, in which
-  each dictionary is the data collected during a test. We dedicate a section
-  of the manual page to the structure returned by each test.
+  each dictionary is the data collected during a test. There is a section of
+  this manual page describing the data format of each implemented test.
 
   This API accepts the following query-string parameters:
 
@@ -1175,7 +1175,11 @@ Example::
 Raw test data format
 ````````````````````
 
-We represent the data collected by the ``raw`` test with a
+The raw test data format used on the server is different from the
+format used on the Neubot side.
+
+On the Neubot side,
+we represent the data collected by the ``raw`` test with a
 dictionary that contains the following fields:
 
 **connect_time (float)**
@@ -1250,9 +1254,13 @@ Example::
     },
     ...
 
-Once unserialized, the JSON object saved into the ``json_data`` field
-of the ``raw`` dictionary (henceforth, 'outer dictionary') is a
-dictionary that contains the following fields:
+On the server side we save the dictionary corresponding to the JSON
+object serialized into the ``json_data`` on the Neubot side. Henceforth
+we call 'outer dictionary' the dictionary saved on the Neubot side and
+we call 'inner dictionary' the one saved both on the server side on
+and the ``json_data`` field.
+
+The inner dictionary contains the following fields:
 
 **client (dictionary)**
   A dictionary that contains data collected on the client side.
@@ -1400,7 +1408,9 @@ The server dictionary contains the following fields:
   during the upload.
 
   On the client side, this field is empty. We are working to identify
-  the most interesting fields that is interesting to save.
+  the most interesting fields that is interesting to save. The data saved
+  on the server side (and that you can download from Measurement Lab)
+  instead contains all the data collected using Web100.
 
 Example::
 
