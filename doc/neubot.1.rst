@@ -171,6 +171,29 @@ This section documents Neubot's subcommands.
   -v
     Makes the command more verbose.
 
+**neubot dash [-6fv] [-A address] [-p port]**
+  Asks Neubot to run a dashtest test using the web API and fails
+  if Neubot is not running in the background.
+
+  Accepts the following options:
+
+  -6
+    Prefer IPv6 to IPv4.
+
+  -A address
+    Address of the remote test server.
+
+  -f
+    Force the test. Run the test in the local process context
+    (instead of using the web API) and override privacy
+    settings if needed. Useful for developers and for debugging.
+
+  -p port
+    Port of the remote test server.
+
+  -v
+    Makes the command more verbose.
+
 **neubot database [-f database] [action]**
   Performs the specified ``action`` or prints the database's path
   if no action is specified.  We do not recommended to use this
