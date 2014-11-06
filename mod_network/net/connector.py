@@ -131,7 +131,7 @@ class Connector(object):
         self._connector = ConnectorSimple(self._poller, self)
         self._connector.connect(endpoint, self._conf)
 
-    def connection_failed(self, error):
+    def connection_failed(self, connector, error):
         """ Called when the connect() attempt fails """
         self._connector = None
         self._connect_next()

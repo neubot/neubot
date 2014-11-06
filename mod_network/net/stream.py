@@ -78,7 +78,7 @@ class Stream(Pollable):
         self._atclosev = set()
 
     def __repr__(self):
-        return "stream %s" % self._logname
+        return self._logname
 
     def fileno(self):
         return self._filenum
@@ -95,7 +95,7 @@ class Stream(Pollable):
         self._filenum = sock.fileno()
         self.myname = utils_net.getsockname(sock)
         self.peername = utils_net.getpeername(sock)
-        self._logname = "Stream(%s, %s)" % (self.myname, self.peername)
+        self._logname = "%s <=> %s" % (self.myname, self.peername)
 
         logging.debug("%s: connection made", self)
 
@@ -364,3 +364,19 @@ class Stream(Pollable):
 
     def send_complete(self):
         """ Override this method in derived classes """
+
+class StreamEx(Stream):
+    """ Extended stream """
+
+    def __init__(self, poller, parent, sock, conf=None):
+        Stream.__init__(self, poller)
+        self.attach(parent, sock, conf)
+
+    def recv_complete(self, data):
+        self.parent.got_data(self, data)
+
+    def send_complete(self):
+        self.parent.can_send(self)
+
+    def write(self, data):
+        self.start_send(data)

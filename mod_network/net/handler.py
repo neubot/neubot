@@ -42,7 +42,8 @@ class Handler(object):
     def listen(self, endpoint):
         """ Listen at the specified endpoint """
         # API change: we now ignore the global CONFIG
-        sockets = utils_net.listen(endpoint, self.conf)
+        sockets = utils_net.listen(endpoint, self.conf.get(
+                                   "prefer_ipv6", False))
         if not sockets:
             self.bind_failed(endpoint)
             return
@@ -74,7 +75,16 @@ class Handler(object):
         """ Override this method in derived classes """
 
     def connection_made(self, sock, endpoint, rtt):
-        """ Override this method on derived classes """
+        """ Override this method in derived classes """
 
     def connection_lost(self, stream):
-        """ Override this method on derived classes """
+        """ Override this method in derived classes """
+
+class HandlerEx(Handler):
+    """ Extended handler """
+
+    def got_data(self, stream, data):
+        """ Override this method in derived classes """
+
+    def can_send(self, stream):
+        """ Override this method in derived classes """

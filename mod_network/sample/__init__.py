@@ -1,4 +1,4 @@
-# net/__init__.py
+# sample/__init__.py
 
 #
 # Copyright (c) 2014
@@ -23,5 +23,5 @@
 
 """ Network """
 
-from .handler import Handler, HandlerEx
-from .stream import Stream, StreamEx, MAXBUF
+from .chargen import ChargenClient
+from .discard import DiscardServer
