@@ -39,7 +39,7 @@ class ConnectorSimple(Pollable):
         self._sock = None
         self._ticks = 0.0
         self._endpoint = None
-        self.watchdog = 10  # Override default specified by Pollable
+        self.set_timeout(10)
 
     def __repr__(self):
         return "Connector(%s)" % str(self._endpoint)
@@ -89,8 +89,11 @@ class ConnectorSimple(Pollable):
         self._parent.connection_made(self._sock, self._endpoint,
           connect_time)
 
-    def handle_close(self):
+    def handle_close(self):  # Part of the Pollable object model
         self._connection_failed()
+
+    def handle_read(self):  # Part of the Pollable object model
+        raise RuntimeError("Unexpected event")
 
 class Connector(object):
     """ Connector conformant with Neubot API """
@@ -107,7 +110,6 @@ class Connector(object):
         self._connector = None
         self._conf = {}
         self._endpoints = collections.deque()
-        self.watchdog = 10  # Here so one can override it
 
     def connect(self, endpoint, conf=None):
         """ Connect to the specified endpoint """
@@ -128,7 +130,6 @@ class Connector(object):
         endpoint = self._endpoints.popleft()
         self._connector = ConnectorSimple(self._poller, self)
         self._connector.connect(endpoint, self._conf)
-        self._connector.watchdog = self.watchdog
 
     def connection_failed(self, error):
         """ Called when the connect() attempt fails """
