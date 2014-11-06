@@ -23,8 +23,6 @@
 
 ''' An HTTP message '''
 
-# Will be replaced by neubot/http_utils.py
-
 import StringIO
 import email.utils
 import collections
