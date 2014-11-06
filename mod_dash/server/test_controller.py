@@ -1,7 +1,7 @@
-# mod_dash/server_negotiate.py
+# mod_dash/server/test_controller.py
 
 #
-# Copyright (c) 2011-2013
+# Copyright (c) 2011-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -33,7 +33,7 @@ from neubot.negotiate.module import NegotiateServerModule
 
 from neubot import utils
 
-class DASHNegotiateServer(NegotiateServerModule):
+class TestControllerServer(NegotiateServerModule):
     """ Negotiator for MPEG DASH test """
 
     def __init__(self, backend):

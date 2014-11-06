@@ -1,9 +1,9 @@
-# mod_dash/server_smpl.py
+# mod_dash/server/test_provider.py
 
 #
 # Copyright (c) 2013 Antonio Servetti <antonio.servetti@polito.it>
 #
-# Copyright (c) 2010-2013
+# Copyright (c) 2010-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -50,7 +50,7 @@ class DASHServerSideState(object):
     def __init__(self):
         self.count = 0
 
-class DASHServerSmpl(ServerHTTP):
+class TestProviderServer(ServerHTTP):
     """ Server-side of the MPEG DASH test """
 
     def got_request_headers(self, stream, request):

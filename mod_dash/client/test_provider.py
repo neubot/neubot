@@ -1,9 +1,9 @@
-# mod_dash/client_smpl.py
+# mod_dash/client/test_provider.py
 
 #
 # Copyright (c) 2013 Antonio Servetti <antonio.servetti@polito.it>
 #
-# Copyright (c) 2010-2013
+# Copyright (c) 2010-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -49,7 +49,7 @@ DASH_SECONDS = 2
 #
 DASH_MAX_ITERATION = 15
 
-class DASHClientSmpl(ClientHTTP):
+class TestProviderClient(ClientHTTP):
     """ The MPEG DASH client """
 
     #

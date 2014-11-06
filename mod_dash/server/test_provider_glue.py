@@ -1,7 +1,7 @@
-# mod_dash/server_glue.py
+# mod_dash/server/test_provider_glue.py
 
 #
-# Copyright (c) 2010-2013
+# Copyright (c) 2010-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -25,13 +25,13 @@
 
 # Adapted from neubot/raw_srvr_glue.py
 
-from .server_smpl import DASHServerSmpl
+from .test_provider import TestProviderServer
 
-class DASHServerGlue(DASHServerSmpl):
+class TestProviderServerGlue(TestProviderServer):
     """ Glue for DASH on the server side """
 
     def __init__(self, poller, negotiator):
-        DASHServerSmpl.__init__(self, poller)
+        TestProviderServer.__init__(self, poller)
         self.negotiator = negotiator
 
     def got_request_headers(self, stream, request):
@@ -45,4 +45,4 @@ class DASHServerGlue(DASHServerSmpl):
             if auth not in self.negotiator.peers:
                 return False
 
-        return DASHServerSmpl.got_request_headers(self, stream, request)
+        return TestProviderServer.got_request_headers(self, stream, request)

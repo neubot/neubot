@@ -1,7 +1,7 @@
-# mod_dash/client_negotiate.py
+# mod_dash/client/test_controller.py
 
 #
-# Copyright (c) 2010-2011, 2013
+# Copyright (c) 2010-2011, 2013-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -34,7 +34,7 @@ from neubot.http.message import Message
 from neubot import utils
 from neubot import utils_net
 
-from .client_smpl import DASHClientSmpl
+from .test_provider import TestProviderClient
 
 STATE_NEGOTIATE = 0
 STATE_COLLECT = 1
@@ -65,7 +65,7 @@ DASH_RATES = [
 
 MAX_ITERATIONS = 512
 
-class DASHNegotiateClient(ClientHTTP):
+class TestControllerClient(ClientHTTP):
     """ Negotiate client for MPEG DASH test """
 
     def __init__(self, poller, backend, notifier, state):
@@ -165,7 +165,8 @@ class DASHNegotiateClient(ClientHTTP):
             #
             rates = list(response_body.get("dash_rates", DASH_RATES))
 
-            self.client = DASHClientSmpl(self.poller, self, rates, self._state)
+            self.client = TestProviderClient(self.poller, self, rates,
+                                             self._state)
             self.client.configure(self.conf.copy())
             self.client.connect((self.stream.peername[0], 80))  # XXX
 

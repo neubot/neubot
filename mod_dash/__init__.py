@@ -1,7 +1,7 @@
 # mod_dash/__init__.py
 
 #
-# Copyright (c) 2013
+# Copyright (c) 2013-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>
 #
@@ -23,39 +23,41 @@
 
 """ The MPEG DASH test """
 
-from .client_negotiate import DASHNegotiateClient
-from .client_negotiate import DASH_RATES
-from .client_smpl import DASHClientSmpl
-from .server_glue import DASHServerGlue
-from .server_negotiate import DASHNegotiateServer
+from .client import DASH_RATES
+from .client import TestControllerClient
+from .client import TestProviderClient
+
+from .server import TestProviderServerGlue
+from .server import TestProviderServer
+from .server import TestControllerServer
 
 def _run_test_provider_client(params, context):
     """ Run DASH TestProvider client """
-    client = DASHClientSmpl(context["POLLER"], None, DASH_RATES,
+    client = TestProviderClient(context["POLLER"], None, DASH_RATES,
         context["STATE"])
     client.configure(context["SETTINGS"])
     client.connect((params["address"], params["port"]))
 
 def _run_test_controller_client(params, context):
     """ Run DASH TestController client """
-    client = DASHNegotiateClient(context["POLLER"], context["BACKEND"],
+    client = TestControllerClient(context["POLLER"], context["BACKEND"],
         context["NOTIFIER"], context["STATE"])
     client.configure(context["SETTINGS"])
     client.connect((params["address"], params["port"]))
 
 def _run_test_provider_server(params, context):
     """ Run DASH TestProvider server """
-    provider = DASHServerGlue(context["POLLER"], None)
+    provider = TestProviderServer(context["POLLER"], None)
     provider.configure(context["SETTINGS"])
     provider.listen((params["address"], params["port"]))
 
 def _run_test_controller_server(params, context):
     """ Run DASH TestController server """
 
-    controller = DASHNegotiateServer(context["BACKEND"])
+    controller = TestControllerServer(context["BACKEND"])
     context["NEGOTIATE_SERVER"].register_module("dash", controller)
 
-    provider = DASHServerGlue(context["POLLER"], controller)
+    provider = TestProviderServerGlue(context["POLLER"], controller)
     provider.configure(context["SETTINGS"])
     context["HTTP_SERVER"].register_child(provider, "/dash")
 
@@ -69,8 +71,8 @@ def neubot_plugin_spec():
         "version": 1.0,
         "www": {
             "spec_version": 1.0,
-            "description": "dash.html",
-            "results_producer": "dash.json",
+            "description": "www/dash.html",
+            "results_producer": "www/dash.json",
         },
         "backend": {
             "spec_version": 2.0,
