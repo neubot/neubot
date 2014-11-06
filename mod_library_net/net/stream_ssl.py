@@ -49,7 +49,7 @@ class StreamSSL(StreamModel):
         try:
             octets = self.sock.read(maxlen)
             return SUCCESS, octets
-        except ssl.SSLError, exception:
+        except ssl.SSLError as exception:
             if exception[0] == ssl.SSL_ERROR_WANT_READ:
                 return WANT_READ, ""
             elif exception[0] == ssl.SSL_ERROR_WANT_WRITE:
@@ -61,7 +61,7 @@ class StreamSSL(StreamModel):
         try:
             count = self.sock.write(octets)
             return SUCCESS, count
-        except ssl.SSLError, exception:
+        except ssl.SSLError as exception:
             if exception[0] == ssl.SSL_ERROR_WANT_READ:
                 return WANT_READ, 0
             elif exception[0] == ssl.SSL_ERROR_WANT_WRITE:

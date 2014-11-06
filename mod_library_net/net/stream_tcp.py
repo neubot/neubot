@@ -53,7 +53,7 @@ class StreamTCP(StreamModel):
         try:
             octets = self.sock.recv(maxlen)
             return SUCCESS, octets
-        except socket.error, exception:
+        except socket.error as exception:
             if exception[0] in SOFT_ERRORS:
                 return WANT_READ, ""
             elif exception[0] == errno.ECONNRESET:
@@ -65,7 +65,7 @@ class StreamTCP(StreamModel):
         try:
             count = self.sock.send(octets)
             return SUCCESS, count
-        except socket.error, exception:
+        except socket.error as exception:
             if exception[0] in SOFT_ERRORS:
                 return WANT_WRITE, 0
             elif exception[0] == errno.ECONNRESET:
