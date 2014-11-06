@@ -24,4 +24,4 @@
 """ Network """
 
 from .handler import Handler
-from .stream import Stream
+from .stream import Stream, MAXBUF

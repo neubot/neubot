@@ -61,8 +61,8 @@ class Stream(Pollable):
         self.eof = False
         self.rst = False
 
-        self._close_complete = False
-        self._close_pending = False
+        self.close_complete = False
+        self.close_pending = False
         self._recv_blocked = False
         self._recv_pending = False
         self._recv_ssl_needs_kickoff = False
@@ -146,17 +146,17 @@ class Stream(Pollable):
     def close(self):
         """ Close the stream """
 
-        self._close_pending = True
-        if self._send_pending or self._close_complete:
+        self.close_pending = True
+        if self._send_pending or self.close_complete:
             return
         self._poller.close(self)
 
     def handle_close(self):  # Part of the Pollable object model
 
-        if self._close_complete:
+        if self.close_complete:
             return
 
-        self._close_complete = True
+        self.close_complete = True
 
         self.connection_lost(None)
         self._parent.connection_lost(self)
@@ -179,7 +179,7 @@ class Stream(Pollable):
     def start_recv(self):
         """ Start an async receive operation """
 
-        if (self._close_complete or self._close_pending
+        if (self.close_complete or self.close_pending
           or self._recv_pending):
             return
 
@@ -280,7 +280,7 @@ class Stream(Pollable):
     def start_send(self, octets):
         """ Start an async send operation """
 
-        if self._close_complete or self._close_pending:
+        if self.close_complete or self.close_pending:
             return
 
         self._send_queue.append(octets)
@@ -323,7 +323,7 @@ class Stream(Pollable):
                 self._poller.unset_writable(self)
 
                 self.send_complete()
-                if self._close_pending:
+                if self.close_pending:
                     self._poller.close(self)
                 return
 
