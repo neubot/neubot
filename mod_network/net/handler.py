@@ -27,6 +27,7 @@ from neubot import utils_net
 
 from .connector import Connector
 from .listener import Listener
+from .stream import StreamEx
 
 class Handler(object):
     """ Network events handler """
@@ -82,6 +83,19 @@ class Handler(object):
 
 class HandlerEx(Handler):
     """ Extended handler """
+
+    def __init__(self, poller, conf=None):
+        Handler.__init__(self, poller)
+        if conf is None:
+            conf = {}
+        self.configure(conf)
+
+    def connection_made(self, sock, endpoint, rtt):
+        self.connection_established(StreamEx(self.poller, self,
+                                    sock, self.conf), rtt)
+
+    def connection_established(self, stream, rtt):
+        """ Override this method in derived classes """
 
     def got_data(self, stream, data):
         """ Override this method in derived classes """

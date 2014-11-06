@@ -26,24 +26,19 @@
 import logging
 
 from ..net import HandlerEx
-from ..net import StreamEx
 
 class DiscardServer(HandlerEx):
     """ Discard server """
 
     def __init__(self, poller, endpoint, conf=None):
-        HandlerEx.__init__(self, poller)
-        self._poller = poller
+        HandlerEx.__init__(self, poller, conf)
         self._endpoint = endpoint
-        self._conf = conf
         logging.debug("discard: listening at %s:%s", self._endpoint[0],
                       self._endpoint[1])
         self.listen(self._endpoint)
 
-    def connection_made(self, sock, endpoint, rtt):
-        logging.debug("discard: connection from %s:%s established",
-                      endpoint[0], endpoint[1])
-        stream = StreamEx(self._poller, self, sock)
+    def connection_established(self, stream, rtt):
+        logging.debug("discard: connection %s established", stream)
         stream.start_recv()
 
     def got_data(self, stream, data):

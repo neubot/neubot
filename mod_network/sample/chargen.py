@@ -26,7 +26,6 @@
 import logging
 
 from ..net import HandlerEx
-from ..net import StreamEx
 from ..net import MAXBUF
 
 BUFFER = b"A" * MAXBUF
@@ -35,18 +34,14 @@ class ChargenClient(HandlerEx):
     """ Chargen client """
 
     def __init__(self, poller, endpoint, conf=None):
-        HandlerEx.__init__(self, poller)
-        self._poller = poller
+        HandlerEx.__init__(self, poller, conf)
         self._endpoint = endpoint
-        self._conf = conf
         logging.debug("chargen: connecting to %s:%s", self._endpoint[0],
                       self._endpoint[1])
         self.connect(self._endpoint)
 
-    def connection_made(self, sock, endpoint, rtt):
-        logging.debug("chargen: connection to %s:%s established",
-                      endpoint[0], endpoint[1])
-        stream = StreamEx(self._poller, self, sock)
+    def connection_established(self, stream, rtt):
+        logging.debug("chargen: connection %s established", stream)
         stream.write(BUFFER)
 
     def can_send(self, stream):
