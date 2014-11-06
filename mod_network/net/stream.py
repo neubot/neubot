@@ -50,8 +50,8 @@ class Stream(Pollable):
 
         Pollable.__init__(self)
         self._poller = poller
-        self._parent = None
-        self._conf = None
+        self.parent = None
+        self.conf = None
 
         self._sock = None
         self._filenum = -1
@@ -89,8 +89,8 @@ class Stream(Pollable):
         if not conf:
             conf = {}
 
-        self._parent = parent
-        self._conf = conf
+        self.parent = parent
+        self.conf = conf
 
         self._filenum = sock.fileno()
         self.myname = utils_net.getsockname(sock)
@@ -100,14 +100,14 @@ class Stream(Pollable):
         logging.debug("%s: connection made", self)
 
         # Map old names for compatibility
-        self._conf["ssl/enable"] = self._conf.get("net.stream.secure")
-        self._conf["ssl/server_side"] = self._conf.get("net.stream.server_side")
-        self._conf["ssl/certfile"] = self._conf.get("net.stream.certfile")
+        self.conf["ssl/enable"] = self.conf.get("net.stream.secure")
+        self.conf["ssl/server_side"] = self.conf.get("net.stream.server_side")
+        self.conf["ssl/certfile"] = self.conf.get("net.stream.certfile")
 
-        if self._conf.get("ssl/enable"):
+        if self.conf.get("ssl/enable"):
 
-            server_side = self._conf.get("ssl/server_side")
-            certfile = self._conf.get("ssl/certfile")
+            server_side = self.conf.get("ssl/server_side")
+            certfile = self.conf.get("ssl/certfile")
 
             # wrap_socket distinguishes between None and ''
             if not certfile:
@@ -159,7 +159,7 @@ class Stream(Pollable):
         self.close_complete = True
 
         self.connection_lost(None)
-        self._parent.connection_lost(self)
+        self.parent.connection_lost(self)
 
         atclosev, self._atclosev = self._atclosev, set()
         for func in atclosev:

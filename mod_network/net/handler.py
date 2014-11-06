@@ -32,22 +32,22 @@ class Handler(object):
     """ Network events handler """
 
     def __init__(self, poller):
-        self._poller = poller
-        self._conf = {}
+        self.poller = poller
+        self.conf = {}
 
     def configure(self, conf):
         """ Attach this object to its configuration """
-        self._conf = conf
+        self.conf = conf
 
     def listen(self, endpoint):
         """ Listen at the specified endpoint """
         # API change: we now ignore the global CONFIG
-        sockets = utils_net.listen(endpoint, self._conf)
+        sockets = utils_net.listen(endpoint, self.conf)
         if not sockets:
             self.bind_failed(endpoint)
             return
         for sock in sockets:
-            listener = Listener(self._poller, self, sock, endpoint)
+            listener = Listener(self.poller, self, sock, endpoint)
             listener.listen()
 
     def bind_failed(self, epnt):
@@ -64,8 +64,8 @@ class Handler(object):
         # API note: we keep the count argument for compatibility
         if count > 1:
             raise RuntimeError("connect() multiple sockets: not implemented")
-        connector = Connector(self._poller, self)
-        connector.connect(endpoint, self._conf)
+        connector = Connector(self.poller, self)
+        connector.connect(endpoint, self.conf)
 
     def connection_failed(self, connector, exception):
         """ Override this method in derived classes """
