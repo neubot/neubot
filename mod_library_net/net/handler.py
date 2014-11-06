@@ -1,4 +1,4 @@
-# neubot/net/stream.py
+# net/stream.py
 
 #
 # There are tons of pylint warnings in this file, disable

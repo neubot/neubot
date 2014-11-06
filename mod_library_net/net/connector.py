@@ -1,4 +1,4 @@
-# mod_library_net/net/connector.py
+# net/connector.py
 
 #
 # Copyright (c) 2010-2012, 2014

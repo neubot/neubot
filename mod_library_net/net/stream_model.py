@@ -1,4 +1,4 @@
-# mod_library_net/net/stream_model.py
+# net/stream_model.py
 
 #
 # Copyright (c) 2010-2012, 2014

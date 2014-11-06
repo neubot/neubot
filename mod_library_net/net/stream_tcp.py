@@ -1,4 +1,4 @@
-# mod_library_net/net/stream_tcp.py
+# net/stream_tcp.py
 
 #
 # Copyright (c) 2010-2012, 2014
