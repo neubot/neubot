@@ -23,11 +23,13 @@
 
 """ Stream connector """
 
+import collections
+
 from neubot.pollable import Pollable
 from neubot import utils_net
 from neubot import utils
 
-class Connector(Pollable):
+class ConnectorSimple(Pollable):
     """ Stream connector """
 
     def __init__(self, poller, parent):
@@ -49,17 +51,20 @@ class Connector(Pollable):
             self._sock = None
         self._parent.connection_failed(self, None)
 
-    def connect(self, address, port, conf=None):  # API changed
+    def connect(self, endpoint, conf=None):
         """ Connect to the specified endpoint """
 
-        self._endpoint = (address, port)
+        self._endpoint = endpoint
 
         if not conf:
             conf = {}
 
-        if " " in address:
+        if " " in self._endpoint[0]:
             raise RuntimeError("%s: spaces in address not supported", self)
 
+        #
+        # API changed: we don't check CONFIG["prefer_ipv6"] anymore.
+        #
         prefer_ipv6 = conf.get("prefer_ipv6", False)
         sock = utils_net.connect(self._endpoint, prefer_ipv6)
         if not sock:
@@ -86,3 +91,51 @@ class Connector(Pollable):
 
     def handle_close(self):
         self._connection_failed()
+
+class Connector(object):
+    """ Connector conformant with Neubot API """
+
+    #
+    # Neubot has had the feature of trying to connect() to a list of
+    # addresses, e.g., 'master.neubot.org master2.neubot.org', for
+    # quite some time now. This is why this class implements that behavior.
+    #
+
+    def __init__(self, poller, parent):
+        self._poller = poller
+        self._parent = parent
+        self._connector = None
+        self._conf = {}
+        self._endpoints = collections.deque()
+        self.watchdog = 10  # Here so one can override it
+
+    def connect(self, endpoint, conf=None):
+        """ Connect to the specified endpoint """
+
+        if conf:
+            self._conf = conf
+
+        for address in endpoint[0].split():
+            self._endpoints.append((address, endpoint[1]))
+
+        self._connect_next()
+
+    def _connect_next(self):
+        """ Connect the next available endpoint """
+        if not self._endpoints:
+            self._parent.connection_failed(self, None)
+            return
+        endpoint = self._endpoints.popleft()
+        self._connector = ConnectorSimple(self._poller, self)
+        self._connector.connect(endpoint, self._conf)
+        self._connector.watchdog = self.watchdog
+
+    def connection_failed(self, error):
+        """ Called when the connect() attempt fails """
+        self._connector = None
+        self._connect_next()
+
+    def connection_made(self, sock, endpoint, rtt):
+        """ Called when the connect() attempt succeeds """
+        self._connector = None
+        self._parent.connection_made(sock, endpoint, rtt)
