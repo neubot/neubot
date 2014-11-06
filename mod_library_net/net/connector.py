@@ -52,7 +52,7 @@ class Connector(Pollable):
     def connect(self, address, port, conf=None):  # API changed
         """ Connect to the specified endpoint """
 
-        endpoint = (address, port)
+        self._endpoint = (address, port)
 
         if not conf:
             conf = {}
@@ -60,9 +60,8 @@ class Connector(Pollable):
         if " " in address:
             raise RuntimeError("%s: spaces in address not supported", self)
 
-        self._endpoint = endpoint
         prefer_ipv6 = conf.get("prefer_ipv6", False)
-        sock = utils_net.connect(endpoint, prefer_ipv6)
+        sock = utils_net.connect(self._endpoint, prefer_ipv6)
         if not sock:
             self._connection_failed()
             return
