@@ -36,15 +36,13 @@ class Listener(Pollable):
         self._lsock = sock
         self._endpoint = endpoint
 
-        # API note: listen() is now a no-op
-        self._poller.set_readable(self)
-        self._parent.started_listening(self)
-
     def __repr__(self):
         return "Listener(%s)" % str(self._endpoint)
 
-    def listen(self):  # Keep this only to avoid changing the API
+    def listen(self):
         """ Start listening """
+        self._poller.set_readable(self)
+        self._parent.started_listening(self)
 
     def fileno(self):  # Part of the Pollable object model
         return self._lsock.fileno()
