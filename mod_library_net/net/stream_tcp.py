@@ -21,7 +21,7 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-""" Base stream wrapper """
+""" TCP stream wrapper """
 
 import errno
 import logging
