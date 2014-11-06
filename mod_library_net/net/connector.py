@@ -140,3 +140,7 @@ class Connector(object):
         """ Called when the connect() attempt succeeds """
         self._connector = None
         self._parent.connection_made(sock, endpoint, rtt)
+
+    def set_timeout(self, timeo):
+        if self._connector:
+            self._connector.set_timeout(timeo)
