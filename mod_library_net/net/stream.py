@@ -172,6 +172,7 @@ class Stream(Pollable):
 
         self._send_octets = None
         self._sock.soclose()
+        self.opaque = None
 
     # Recv path
 
