@@ -142,5 +142,6 @@ class Connector(object):
         self._parent.connection_made(sock, endpoint, rtt)
 
     def set_timeout(self, timeo):
+        """ Set timeout """
         if self._connector:
             self._connector.set_timeout(timeo)
