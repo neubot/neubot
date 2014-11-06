@@ -27,8 +27,9 @@ import logging
 
 from ..net import HandlerEx
 from ..net import StreamEx
+from ..net import MAXBUF
 
-BUFFER = "A" * 8000
+BUFFER = b"A" * MAXBUF
 
 class ChargenClient(HandlerEx):
     """ Chargen client """
