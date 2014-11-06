@@ -74,14 +74,15 @@ class Connector(Pollable):
         return self._sock.fileno()
 
     def handle_write(self):  # Part of the Pollable object model
-        self._poller.unset_writable(self)
 
         if not utils_net.isconnected(self._endpoint, self._sock):
             self._connection_failed()
             return
 
-        rtt = utils.ticks() - self._ticks
-        self._parent.connection_made(self._sock, self._endpoint, rtt)
+        self._poller.unset_writable(self)
+        connect_time = utils.ticks() - self._ticks
+        self._parent.connection_made(self._sock, self._endpoint,
+          connect_time)
 
     def handle_close(self):
         self._connection_failed()
