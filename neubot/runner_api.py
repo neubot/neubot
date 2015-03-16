@@ -64,6 +64,9 @@ def runner_api(stream, request, query):
     if not query:
         response.compose(code='200', reason='Ok', body='{}',
                          mimetype='application/json')
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
         return
 
@@ -94,6 +97,9 @@ def runner_api(stream, request, query):
         RUNNER_CORE.run(test, deferred, True, 'idle')
         response.compose(code='200', reason='Ok', body='{}',
                          mimetype='application/json')
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
         return
 
@@ -111,6 +117,9 @@ def runner_api(stream, request, query):
     #
     response.compose(code='200', reason='Ok',
       up_to_eof=True, mimetype='text/plain')
+    response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+    response["Access-Control-Allow-Origin"] = "*"
     stream.send_response(request, response)
     STREAMING_LOG.start_streaming(stream)
     deferred = Deferred()

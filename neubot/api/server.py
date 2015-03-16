@@ -116,6 +116,9 @@ class ServerAPI(ServerHTTP):
         response = Message()
         response.compose(code="200", reason="Ok",
           body=json.dumps(sorted(self._dispatch.keys()), indent=4))
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
 
     @staticmethod
@@ -132,6 +135,9 @@ class ServerAPI(ServerHTTP):
         body = pprint.pformat(debuginfo)
         response.compose(code="200", reason="Ok", body=body,
                          mimetype="text/plain")
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
 
     @staticmethod
@@ -145,6 +151,9 @@ class ServerAPI(ServerHTTP):
             response.compose_redirect(stream, '/privacy.html')
         else:
             response.compose_redirect(stream, '/index.html')
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
 
     def _api_state(self, stream, request, query):
@@ -177,6 +186,9 @@ class ServerAPI(ServerHTTP):
         response = Message()
         response.compose(code="200", reason="Ok", body=octets,
                          mimetype=mimetype)
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
 
     @staticmethod
@@ -185,6 +197,9 @@ class ServerAPI(ServerHTTP):
         response = Message()
         response.compose(code="200", reason="Ok", body=VERSION,
                          mimetype="text/plain")
+        response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+        response["Access-Control-Allow-Origin"] = "*"
         stream.send_response(request, response)
 
     @staticmethod

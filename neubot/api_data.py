@@ -110,4 +110,7 @@ def api_data(stream, request, query):
 
     body = json.dumps(lst, indent=indent, sort_keys=sort_keys)
     response.compose(code="200", reason="Ok", body=body, mimetype=mimetype)
+    response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+    response["Access-Control-Allow-Origin"] = "*"
     stream.send_response(request, response)
