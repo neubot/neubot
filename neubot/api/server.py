@@ -95,8 +95,20 @@ class ServerAPI(ServerHTTP):
             reason = re.sub(r"[\x7f-\xff]", "", reason)
             logging.info('Internal error while serving response', exc_info=1)
             response = Message()
-            response.compose(code="500", reason=reason,
-                    body=reason)
+            response.compose(code="500", reason=reason, body=reason)
+            response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+            response["Access-Control-Allow-Origin"] = "*"
+            stream.send_response(request, response)
+        except:
+            logging.info('Internal error while serving response', exc_info=1)
+            response = Message()
+            response.compose(code="500", reason="Internal Server Error",
+                             body="Internal Server Error")
+            response["Content-Type"] = "text/plain"
+            response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+            response["Access-Control-Allow-Origin"] = "*"
             stream.send_response(request, response)
 
     def _serve_request(self, stream, request):
@@ -109,6 +121,10 @@ class ServerAPI(ServerHTTP):
             response = Message()
             response.compose(code="404", reason="Not Found",
                     body="404 Not Found")
+            response["Content-Type"] = "text/plain"
+            response["Access-Control-Allow-Methods"] = "GET, HEAD, POST"
+            response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+            response["Access-Control-Allow-Origin"] = "*"
             stream.send_response(request, response)
 
     def _api(self, stream, request, query):
