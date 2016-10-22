@@ -40,7 +40,6 @@ MODULES = {
     'notifier'            : 'neubot.notifier',
     "privacy"             : "neubot.privacy",
     "raw"                 : "neubot.raw",
-    "rendezvous.server"   : "neubot.rendezvous.server",
     "server"              : "neubot.server",
     "speedtest"           : "neubot.speedtest.client",
     "speedtest.client"    : "neubot.speedtest.client",
@@ -66,8 +65,7 @@ if sys.platform == 'win32' and not hasattr(sys, 'frozen'):
     import neubot.http.client
     import neubot.http.server
     import neubot.privacy
-    #import neubot.rendezvous.server    # requires PyGeoIP
-    #import neubot.server               # ditto
+    #import neubot.server               # requires PyGeoIP
     import neubot.speedtest.client
     import neubot.speedtest.client
     import neubot.speedtest.server

@@ -22,7 +22,7 @@
 
 """
 This module implements the command that manages server-side
-components, including the rendezvous server and, for each test,
+components, including for each test,
 the negotiate server and the test server.
 """
 
@@ -58,9 +58,6 @@ from neubot import negotiate
 from neubot import system
 from neubot import utils_modules
 from neubot import utils_posix
-
-#from neubot import rendezvous          # Not yet
-import neubot.rendezvous.server
 
 #from neubot import speedtest           # Not yet
 import neubot.speedtest.wrapper
@@ -165,7 +162,7 @@ SETTINGS = {
     'server.debug': False,
     "server.negotiate": True,
     "server.raw": True,
-    "server.rendezvous": False,         # Not needed on the random server
+    "server.rendezvous": False,         # For backward compatibility only
     "server.sapi": True,
     "server.speedtest": True,
 }
@@ -283,10 +280,8 @@ def main(args):
         #conf['speedtest.negotiate'] = 1        # Not yet
         neubot.speedtest.wrapper.run(POLLER, conf)
 
-    # Migrating from old style to new style
     if conf["server.rendezvous"]:
-        #conf["rendezvous.listen"] = True       # Not yet
-        neubot.rendezvous.server.run()
+        logging.warning("Rendezvous not implemented by this server anymore")
 
     #
     # Historically Neubot runs on port 9773 and
