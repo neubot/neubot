@@ -124,11 +124,6 @@ dist/temp/datadir/neubot/neubot/raw_defs.py
 dist/temp/datadir/neubot/neubot/raw_negotiate.py
 dist/temp/datadir/neubot/neubot/raw_srvr.py
 dist/temp/datadir/neubot/neubot/raw_srvr_glue.py
-dist/temp/datadir/neubot/neubot/rendezvous
-dist/temp/datadir/neubot/neubot/rendezvous/__init__.py
-dist/temp/datadir/neubot/neubot/rendezvous/compat.py
-dist/temp/datadir/neubot/neubot/rendezvous/geoip_wrapper.py
-dist/temp/datadir/neubot/neubot/rendezvous/server.py
 dist/temp/datadir/neubot/neubot/resmon_linux.py
 dist/temp/datadir/neubot/neubot/runner_api.py
 dist/temp/datadir/neubot/neubot/runner_clnt.py
