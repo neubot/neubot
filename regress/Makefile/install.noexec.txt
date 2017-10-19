@@ -103,7 +103,6 @@ dist/temp/datadir/neubot/neubot/raw_defs.py
 dist/temp/datadir/neubot/neubot/raw_negotiate.py
 dist/temp/datadir/neubot/neubot/raw_srvr.py
 dist/temp/datadir/neubot/neubot/raw_srvr_glue.py
-dist/temp/datadir/neubot/neubot/resmon_linux.py
 dist/temp/datadir/neubot/neubot/runner_api.py
 dist/temp/datadir/neubot/neubot/runner_clnt.py
 dist/temp/datadir/neubot/neubot/runner_core.py
