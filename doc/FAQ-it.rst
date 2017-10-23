@@ -816,20 +816,6 @@ la web user interface nel browser predefinito.
 Su **MacOSX**, l'applicazione *Neubot* (``/Applications/Neubot.app``)
 dovrebbe aprire la web user interface nel browser predefinito.
 
-Su **Ubuntu e Debian**, se l'utente ha installato il pacchetto
-`neubot` (e non il pacchetto `neubot-nox`), il comando *Neubot*
-nel menu applicazioni dovrebbe aprire la web user interface in
-una applicazione ad-hoc, basata su ``Gtk+`` e ``WebKit``, utilizzata
-per accedere alla web user interface.
-
-Su **UNIX**, se i binding `Gtk+` e `WebKit` per Python sono installati,
-il seguente comando::
-
-    neubot viewer
-
-apre una applicazione ad-hoc, basata su ``Gtk+`` e ``WebKit``,
-utilizzata per accedere alla web user interface.
-
 Su **qualsiasi sistema**, ovviamente, l'utente può aprire il suo
 web browser preferito e farlo puntare alla seguente URI::
 

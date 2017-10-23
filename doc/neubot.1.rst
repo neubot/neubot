@@ -60,8 +60,8 @@ section for more info.
 Neubot is a background process. You can control it by using its
 subcommands, its web interface or its web API. Neubot
 listens for web requests at ``http://127.0.0.1:9774/``. To access
-the web interface, use either your favorite browser or the ``viewer``
-subcommand. To change the address and/or port where Neubot listens
+the web interface, use your favorite browser.
+To change the address and/or port where Neubot listens
 for web requests, edit ``/etc/neubot/api`` (see the `FILES`_
 section).
 
@@ -379,12 +379,6 @@ This section documents Neubot's subcommands.
 
   On other UNIX systems, this command uses the web
   API to request Neubot to exit.
-
-**neubot viewer**
-  This command shows the web interface by embedding a web
-  rendering engine into a window manager's window. Currently,
-  the only implemented ``viewer`` is based on ``python-webkit``
-  and ``pygtk``.
 
 FILES
 `````

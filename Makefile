@@ -201,7 +201,6 @@ _install:
 	        $(DESTDIR)$(DATADIR)/neubot/neubot/notifier/unix.py \
 	        $(DESTDIR)$(DATADIR)/neubot/neubot/utils_hier.py \
 	        $(DESTDIR)$(DATADIR)/neubot/neubot/system_posix.py \
-	        $(DESTDIR)$(DATADIR)/neubot/neubot/viewer_webkit_gtk.py \
 	        $(DESTDIR)$(SYSCONFDIR)/xdg/autostart/neubot.desktop; \
 	    test $$? || exit 1; \
 	done

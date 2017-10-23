@@ -45,7 +45,6 @@ MODULES = {
     "speedtest.client"    : "neubot.speedtest.client",
     "speedtest.server"    : "neubot.speedtest.server",
     "stream"              : "neubot.net.stream",
-    'viewer'              : 'neubot.viewer',
 }
 
 #

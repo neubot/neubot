@@ -173,8 +173,6 @@ dist/temp/datadir/neubot/neubot/utils_posix.py
 dist/temp/datadir/neubot/neubot/utils_random.py
 dist/temp/datadir/neubot/neubot/utils_rc.py
 dist/temp/datadir/neubot/neubot/utils_version.py
-dist/temp/datadir/neubot/neubot/viewer.py
-dist/temp/datadir/neubot/neubot/viewer_webkit_gtk.py
 dist/temp/datadir/neubot/neubot/web100.py
 dist/temp/datadir/neubot/neubot/www
 dist/temp/datadir/neubot/neubot/www/css
