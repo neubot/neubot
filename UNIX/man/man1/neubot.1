@@ -96,8 +96,8 @@ section for more info.
 Neubot is a background process. You can control it by using its
 subcommands, its web interface or its web API. Neubot
 listens for web requests at \fBhttp://127.0.0.1:9774/\fP. To access
-the web interface, use either your favorite browser or the \fBviewer\fP
-subcommand. To change the address and/or port where Neubot listens
+the web interface, use your favorite browser.
+To change the address and/or port where Neubot listens
 for web requests, edit \fB/etc/neubot/api\fP (see the \fI\%FILES\fP
 section).
 .sp
@@ -364,12 +364,6 @@ command accepts the \fB\-v\fP option, which makes it more verbose.
 .sp
 On other UNIX systems, this command uses the web
 API to request Neubot to exit.
-.TP
-.B \fBneubot viewer\fP
-This command shows the web interface by embedding a web
-rendering engine into a window manager\(aqs window. Currently,
-the only implemented \fBviewer\fP is based on \fBpython\-webkit\fP
-and \fBpygtk\fP.
 .UNINDENT
 .SH FILES
 .sp

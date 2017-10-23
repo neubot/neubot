@@ -52,7 +52,7 @@ Release procedure
 
      #. make sure that the following commands work properly:
         `bittorrent`, `browser`, `database`, `notifier`,
-        `privacy`, `raw`, `speedtest`, `viewer`;
+        `privacy`, `raw`, `speedtest`;
 
 #. Install Neubot on a MacOS machine and:
 
@@ -61,7 +61,7 @@ Release procedure
 
      #. make sure that the following commands work properly:
         `bittorrent`, `browser`, `database`, `notifier`,
-        `privacy`, `raw`, `speedtest`, `viewer`;
+        `privacy`, `raw`, `speedtest`;
 
 #. Install and upgrade Neubot on a Windows machine and:
 
@@ -73,7 +73,7 @@ Release procedure
 
      #. make sure that the following commands work properly:
         `bittorrent`, `browser`, `database`, `notifier`,
-        `privacy`, `raw`, `speedtest`, `viewer`;
+        `privacy`, `raw`, `speedtest`;
 
 #. Mass deploy Neubot on all Measurement Lab nodes.
 

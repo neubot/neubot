@@ -39,7 +39,6 @@ SUBCOMMANDS = {
     'privacy': 'neubot.privacy',
     'raw': 'neubot.raw',
     'speedtest': 'neubot.speedtest.client',
-    'viewer': 'neubot.viewer',
 }
 
 def main(subcommand, args):

@@ -1011,20 +1011,6 @@ after installation).
 On *MacOSX*, the *Neubot* application (`/Applications/Neubot.app`)
 should open the web interface in the default browser.
 
-On *Ubuntu and Debian*, if the user has installed the `neubot`
-package (and not the `neubot-nox` package), the *Neubot* command
-on the applications menu should open the web interface in
-a custom `Gtk+` application that embeds `WebKit` and uses it
-to show the web interface.
-
-On *UNIX*, if `Gtk+` and `WebKit` bindings for Python are installed,
-the following command:
-
-    neubot viewer
-
-opens a custom `Gtk+` application that embeds `WebKit` and uses
-it to show the web interface.
-
 On *any platform*, of course, the user can open his or her favorite web
 browser and point it to the following URI:
 
