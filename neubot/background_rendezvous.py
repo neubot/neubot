@@ -43,7 +43,6 @@ if __name__ == '__main__':
 
 from neubot.config import CONFIG
 from neubot.defer import Deferred
-from neubot.notifier_browser import NOTIFIER_BROWSER
 from neubot.poller import POLLER
 from neubot.runner_core import RUNNER_CORE
 from neubot.runner_policy import RUNNER_POLICY
@@ -57,20 +56,6 @@ class BackgroundRendezvous(object):
 
     def __init__(self):
         self.interval = 0
-
-    @staticmethod
-    def _open_browser_on_windows(page):
-        ''' Open a browser in the user session to notify something '''
-        #
-        # This is possible only on Windows, where we run in the same
-        # context of the user.  I contend that opening the browser is
-        # a bit brute force, but it works.  This is now mitigated by
-        # code that ensures Neubot does not notify the user too often.
-        # If you are annoyed by that and have time, please consider
-        # contributing a PyWin32 notification mechanism.
-        #
-        if os.name == 'nt':
-            NOTIFIER_BROWSER.notify_page(page)
 
     def _after_rendezvous(self, unused):
         ''' After rendezvous actions '''
@@ -94,7 +79,6 @@ class BackgroundRendezvous(object):
                          new_version, new_uri)
             STATE.update('update', {'version': new_version,
                                     'uri': new_uri})
-            self._open_browser_on_windows('update.html')
 
         #
         # Choose the test we would like to run even if
@@ -158,12 +142,6 @@ class BackgroundRendezvous(object):
 
     def run(self):
         ''' Periodically run rendezvous '''
-        #
-        # Except from opening the browser, privacy actions are
-        # now performed by RUNNER_CORE
-        #
-        if not privacy.allowed_to_run():
-            self._open_browser_on_windows('privacy.html')
         logging.info('background_rendezvous: automatic rendezvous...')
         deferred = Deferred()
         deferred.add_callback(self._after_rendezvous)
