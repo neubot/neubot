@@ -34,10 +34,6 @@ dist/temp/datadir/neubot/neubot/bittorrent/peer.py
 dist/temp/datadir/neubot/neubot/bittorrent/server.py
 dist/temp/datadir/neubot/neubot/bittorrent/stream.py
 dist/temp/datadir/neubot/neubot/brigade.py
-dist/temp/datadir/neubot/neubot/browser.py
-dist/temp/datadir/neubot/neubot/browser_macos.py
-dist/temp/datadir/neubot/neubot/browser_nt.py
-dist/temp/datadir/neubot/neubot/browser_null.py
 dist/temp/datadir/neubot/neubot/bytegen_speedtest.py
 dist/temp/datadir/neubot/neubot/compat.py
 dist/temp/datadir/neubot/neubot/config.py
@@ -90,7 +86,6 @@ dist/temp/datadir/neubot/neubot/net/stream.py
 dist/temp/datadir/neubot/neubot/notifier/__init__.py
 dist/temp/datadir/neubot/neubot/notifier/macos.py
 dist/temp/datadir/neubot/neubot/notifier/unix.py
-dist/temp/datadir/neubot/neubot/notifier_browser.py
 dist/temp/datadir/neubot/neubot/notify.py
 dist/temp/datadir/neubot/neubot/percentile.py
 dist/temp/datadir/neubot/neubot/pollable.py
